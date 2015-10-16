@@ -1,0 +1,2 @@
+defmodule ExGraphql do
+end
