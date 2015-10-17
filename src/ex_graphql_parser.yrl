@@ -221,9 +221,9 @@ extract_line(_) -> nil.
 
 extract_child_line([head|tail]) ->
     extract_child_line(head);
-extract_child_line(#{loc := #{start := Line}} = This) ->
+extract_child_line(#{loc := #{start := Line}}) ->
     Line;
-extract_child_line(O) ->
+extract_child_line(_) ->
     nil.
 
 build_ast_node(Type, Node) ->
