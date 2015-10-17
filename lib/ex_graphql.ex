@@ -36,19 +36,18 @@ defmodule ExGraphQL do
     end
   end
 
-  @spec execute(%ExGraphQL.Types.Schema{}, binary) :: {:ok, %{}} | {:error, binary}
-  @spec execute(%ExGraphQL.Types.Schema{}, %ExGraphQL.AST.Document{}) :: {:ok, %{}} | {:error, binary}
-  def execute(schema, input) do
+  @spec execute(%ExGraphQL.Types.Schema{}, binary | %ExGraphQL.AST.Document{}) :: {:ok, %{}} | {:error, binary}
+  def execute(schema, input) when is_binary(input) do
     case parse(input) do
       {:ok, document} -> execute(schema, document)
       other -> other
     end
   end
-  def execute(schema, document) do
-    {:ok, %{nope: :nothing}}
+  def execute(schema, input) do
+    {:ok, {:nope, :not_really}}
   end
 
-  @spec execute!(%ExGraphQL.Types.Schema{}, binary) :: %{}
+  @spec execute!(%ExGraphQL.Types.Schema{}, binary | %ExGraphQL.AST.Document{}) :: %{}
   def execute!(schema, input) do
     case execute(schema, input) do
       {:ok, result} -> result

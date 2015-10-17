@@ -66,14 +66,12 @@ defmodule Fixtures.StarWarsSchema do
   end
 
 
-  @doc """
-  The original trilogy consists of three movies.
-
-  This implements the following type system shorthand:
-
-      enum Episode { NEWHOPE, EMPIRE, JEDI }
-
-  """
+  # The original trilogy consists of three movies.
+  #
+  # This implements the following type system shorthand:
+  #
+  #     enum Episode { NEWHOPE, EMPIRE, JEDI }
+  #
   defp episodeEnum do
     %Types.Enum{
       name: 'Episode',
@@ -90,24 +88,22 @@ defmodule Fixtures.StarWarsSchema do
           description: 'Released in 1983.'}}}
   end
 
-  @doc """
-  Characters in the Star Wars trilogy are either humans or droids.
-
-  This implements the following type system shorthand:
-
-      interface Character {
-        id: String!
-        name: String
-        friends: [Character]
-        appearsIn: [Episode]
-      }
-
-  """
+  # Characters in the Star Wars trilogy are either humans or droids.
+  #
+  # This implements the following type system shorthand:
+  #
+  #     interface Character {
+  #       id: String!
+  #       name: String
+  #       friends: [Character]
+  #       appearsIn: [Episode]
+  #     }
+  #
   defp characterInterface do
     %Types.Interface{
       name: 'Character',
       description: 'A character in the Star Wars Trilogy',
-      fields: %{
+      fields: fn -> %{
         id: %{
           type: %Types.NonNull{type: Types.String},
           description: 'The id of the character.'},
@@ -120,6 +116,7 @@ defmodule Fixtures.StarWarsSchema do
         appearsIn: %{
           type: %Types.List{type: episodeEnum},
           description: 'Which movies they appear in.'}}
+      end,
       resolveType: fn (character) ->
         if StarWarsData.getHuman(character.id) do
           humanType
@@ -129,24 +126,22 @@ defmodule Fixtures.StarWarsSchema do
       end}
   end
 
-  @doc """
-  We define our human type, which implements the character interface.
-
-  This implements the following type system shorthand:
-
-      type Human : Character {
-        id: String!
-        name: String
-        friends: [Character]
-        appearsIn: [Episode]
-      }
-
-  """
+  # We define our human type, which implements the character interface.
+  #
+  # This implements the following type system shorthand:
+  #
+  #     type Human : Character {
+  #       id: String!
+  #       name: String
+  #       friends: [Character]
+  #       appearsIn: [Episode]
+  #     }
+  #
   defp humanType do
     %Types.Object{
       name: 'Human',
       description: 'A humanoid creature in the Star Wars universe.',
-      fields: %{
+      fields: fn -> %{
         id: %{
           type: %Types.NonNull{type: Types.String},
           description: 'The id of the human.'},
@@ -162,29 +157,28 @@ defmodule Fixtures.StarWarsSchema do
           description: 'Which movies they appear in.'},
         homePlanet: %{
           type: Types.String,
-          description: 'The home planet of the human, or null if unknown.'}},
+          description: 'The home planet of the human, or null if unknown.'}}
+      end,
       interfaces: [characterInterface]}
   end
 
-  @doc """
-  The other type of character in Star Wars is a droid.
-
-  This implements the following type system shorthand:
-
-      type Droid : Character {
-        id: String!
-        name: String
-        friends: [Character]
-        appearsIn: [Episode]
-        primaryFunction: String
-      }
-
-  """
+  # The other type of character in Star Wars is a droid.
+  #
+  # This implements the following type system shorthand:
+  #
+  #     type Droid : Character {
+  #       id: String!
+  #       name: String
+  #       friends: [Character]
+  #       appearsIn: [Episode]
+  #       primaryFunction: String
+  #     }
+  #
   defp droidType do
     %Types.Object{
       name:  'Droid',
       description: 'A mechanical creature in the Star Wars universe.',
-      fields: %{
+      fields: fn -> %{
         id: %{
           type: %Types.NonNull{type: Types.String},
           description: 'The id of the droid.'},
@@ -200,52 +194,51 @@ defmodule Fixtures.StarWarsSchema do
           description: 'Which movies they appear in.'},
         primaryFunction: %{
           type: Types.String,
-          description: 'The primary function of the droid.'}},
+          description: 'The primary function of the droid.'}}
+      end,
       interfaces: [characterInterface]}
   end
 
-  @doc """
-  This is the type that will be the root of our query, and the
-  entry point into our schema. It gives us the ability to fetch
-  objects by their IDs, as well as to fetch the undisputed hero
-  of the Star Wars trilogy, R2-D2, directly.
-
-  This implements the following type system shorthand:
-
-      type Query {
-        hero(episode: Episode): Character
-        human(id: String!): Human
-        droid(id: String!): Droid
-      }
-
-  """
+  # This is the type that will be the root of our query, and the
+  # entry point into our schema. It gives us the ability to fetch
+  # objects by their IDs, as well as to fetch the undisputed hero
+  # of the Star Wars trilogy, R2-D2, directly.
+  #
+  # This implements the following type system shorthand:
+  #
+  #     type Query {
+  #       hero(episode: Episode): Character
+  #       human(id: String!): Human
+  #       droid(id: String!): Droid
+  #     }
   defp queryType do
     %Types.Object{
       name: 'Query',
-      fields: %{
+      fields: fn -> %{
         hero: %{
           type: characterInterface,
           args: %{
             episode: %{
               description: 'If omitted, returns the hero of the whole saga. If provided, returns the hero of that particular episode.',
               type: episodeEnum}},
-                resolve: fn (root, %{episode: episode}) -> StarWarsDat.getHero(episode) end},
+                resolve: fn (_root, %{episode: episode}) -> StarWarsDat.getHero(episode) end},
         human: %{
           type: humanType,
           args: %{
             id: %{
               description: 'id of the human',
               type: %Types.NonNull{type: Types.String}}},
-                 resolve: fn (root, %{id: id}) -> StarWarsData.getHuman(id) end},
+                 resolve: fn (_root, %{id: id}) -> StarWarsData.getHuman(id) end},
         droid: %{
           type: droidType,
           args: %{
             id: %{
               description: 'id of the droid',
               type: %Types.NonNull{type: Types.String}}},
-                 resolve: fn (root, %{id: id}) ->
+                 resolve: fn (_root, %{id: id}) ->
                    StarWarsData.getDroid(id)
-                 end}}}
+                 end}}
+    end}
   end
 
 end
