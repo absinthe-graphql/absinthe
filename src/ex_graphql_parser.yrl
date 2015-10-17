@@ -231,4 +231,4 @@ build_ast_node(Type, Node) ->
 build_ast_node(Type, Node, #{start := nil}) ->
   build_ast_node(Type, Node, nil);
 build_ast_node(Type, Node, Loc) ->
-  Node#{'__struct__' => list_to_atom("Elixir.ExGraphQL.AST." ++ atom_to_list(Type)), loc => Loc}.
+  Node#{'__struct__' => list_to_atom("Elixir.ExGraphQL.Language." ++ atom_to_list(Type)), loc => Loc}.

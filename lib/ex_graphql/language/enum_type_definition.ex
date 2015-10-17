@@ -1,3 +1,3 @@
-defmodule ExGraphQL.AST.EnumTypeDefinition do
+defmodule ExGraphQL.Language.EnumTypeDefinition do
   defstruct name: nil, values: [], loc: %{start: nil}
 end

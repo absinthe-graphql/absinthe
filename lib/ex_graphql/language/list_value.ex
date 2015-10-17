@@ -1,3 +1,3 @@
-defmodule ExGraphQL.AST.ListValue do
+defmodule ExGraphQL.Language.ListValue do
   defstruct values: [], loc: %{start: nil}
 end

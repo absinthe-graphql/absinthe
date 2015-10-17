@@ -22,8 +22,8 @@ defmodule ExGraphQL do
     end
   end
 
-  @spec parse(binary) :: {:ok, %ExGraphQL.AST.Document{}} | {:error, tuple}
-  @spec parse(%ExGraphQL.Source{}) :: {:ok, %ExGraphQL.AST.Document{}} | {:error, tuple}
+  @spec parse(binary) :: {:ok, %ExGraphQL.Language.Document{}} | {:error, tuple}
+  @spec parse(%ExGraphQL.Source{}) :: {:ok, %ExGraphQL.Language.Document{}} | {:error, tuple}
   def parse(input) when is_binary(input) do
     parse(%ExGraphQL.Source{body: input})
   end
@@ -34,8 +34,8 @@ defmodule ExGraphQL do
     end
   end
 
-  @spec parse!(binary) :: %ExGraphQL.AST.Document{}
-  @spec parse!(%ExGraphQL.Source{}) :: %ExGraphQL.AST.Document{}
+  @spec parse!(binary) :: %ExGraphQL.Language.Document{}
+  @spec parse!(%ExGraphQL.Source{}) :: %ExGraphQL.Language.Document{}
   def parse!(input) when is_binary(input) do
     parse!(%ExGraphQL.Source{body: input})
   end
@@ -46,8 +46,8 @@ defmodule ExGraphQL do
     end
   end
 
-  @spec run(%ExGraphQL.Types.Schema{}, binary | %ExGraphQL.Source{} | %ExGraphQL.AST.Document{}) :: {:ok, %{}} | {:error, any}
-  def run(schema, %ExGraphQL.AST.Document{} = document) do
+  @spec run(%ExGraphQL.Types.Schema{}, binary | %ExGraphQL.Source{} | %ExGraphQL.Language.Document{}) :: {:ok, %{}} | {:error, any}
+  def run(schema, %ExGraphQL.Language.Document{} = document) do
     {:ok, {:nope, document}}
   end
   def run(schema, input) do
@@ -57,7 +57,7 @@ defmodule ExGraphQL do
     end
   end
 
-  @spec run!(%ExGraphQL.Types.Schema{}, binary | %ExGraphQL.Source{} | %ExGraphQL.AST.Document{}) :: %{}
+  @spec run!(%ExGraphQL.Types.Schema{}, binary | %ExGraphQL.Source{} | %ExGraphQL.Language.Document{}) :: %{}
   def run!(schema, input) do
     case run(schema, input) do
       {:ok, result} -> result
@@ -65,7 +65,7 @@ defmodule ExGraphQL do
     end
   end
 
-  @spec validate(%ExGraphQL.Types.Schema{}, %ExGraphQL.AST.Document{}) :: :ok | {:error, [any]}
+  @spec validate(%ExGraphQL.Types.Schema{}, %ExGraphQL.Language.Document{}) :: :ok | {:error, [any]}
   def validate(schema, document) do
     Validation.validate(schema, document)
   end

@@ -28,8 +28,8 @@ defmodule ExGraphQL.Validation do
     Rules.VariablesInAllowedPosition
   ]
 
-  @spec validate(%ExGraphQL.Types.Schema{}, %ExGraphQL.AST.Document{}) :: :ok | {:error, term}
-  @spec validate(%ExGraphQL.Types.Schema{}, %ExGraphQL.AST.Document{}, [atom]) :: :ok | {:error, term}
+  @spec validate(%ExGraphQL.Types.Schema{}, %ExGraphQL.Language.Document{}) :: :ok | {:error, term}
+  @spec validate(%ExGraphQL.Types.Schema{}, %ExGraphQL.Language.Document{}, [atom]) :: :ok | {:error, term}
   def validate(schema, document, rules \\ @specified_rules) do
     context = nil
     rules
