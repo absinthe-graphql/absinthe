@@ -6,64 +6,75 @@
 #  of patent rights can be found in the PATENTS file in the same directory.
 
 defmodule Fixtures.StarWarsSchema do
+  @moduledoc """
+   This is designed to be an end-to-end test, demonstrating
+   the full GraphQL stack.
+
+   We will create a GraphQL schema that describes the major
+   characters in the original Star Wars trilogy.
+
+   NOTE: This may contain spoilers for the original Star
+   Wars trilogy.
+
+
+   Using our shorthand to describe type systems, the type system for our
+   Star Wars example is:
+
+       enum Episode { NEWHOPE, EMPIRE, JEDI }
+
+       interface Character {
+         id: String!
+         name: String
+         friends: [Character]
+         appearsIn: [Episode]
+       }
+
+       type Human : Character {
+         id: String!
+         name: String
+         friends: [Character]
+         appearsIn: [Episode]
+         homePlanet: String
+       }
+
+       type Droid : Character {
+         id: String!
+         name: String
+         friends: [Character]
+         appearsIn: [Episode]
+         primaryFunction: String
+       }
+
+       type Query {
+         hero(episode: Episode): Character
+         human(id: String!): Human
+         droid(id: String!): Droid
+       }
+
+   We begin by setting up our schema.
+
+  """
 
   alias ExGraphQL.Types
   alias Fixtures.StarWarsData
 
-  # This is designed to be an end-to-end test, demonstrating
-  # the full GraphQL stack.
-  #
-  # We will create a GraphQL schema that describes the major
-  # characters in the original Star Wars trilogy.
-  #
-  # NOTE: This may contain spoilers for the original Star
-  # Wars trilogy.
 
-  ##
-  # Using our shorthand to describe type systems, the type system for our
-  # Star Wars example is:
-  #
-  # enum Episode { NEWHOPE, EMPIRE, JEDI }
-  #
-  # interface Character {
-  #   id: String!
-  #   name: String
-  #   friends: [Character]
-  #   appearsIn: [Episode]
-  # }
-  #
-  # type Human : Character {
-  #   id: String!
-  #   name: String
-  #   friends: [Character]
-  #   appearsIn: [Episode]
-  #   homePlanet: String
-  # }
-  #
-  # type Droid : Character {
-  #   id: String!
-  #   name: String
-  #   friends: [Character]
-  #   appearsIn: [Episode]
-  #   primaryFunction: String
-  # }
-  #
-  # type Query {
-  #   hero(episode: Episode): Character
-  #   human(id: String!): Human
-  #   droid(id: String!): Droid
-  # }
-  #
-  # We begin by setting up our schema.
-  #
+  # Uses the `queryType` defined below
+  @doc "The schema"
+  def schema do
+    %Types.Schema{query: queryType}
+  end
 
-  ##
-  # The original trilogy consists of three movies.
-  #
-  # This implements the following type system shorthand:
-  #   enum Episode { NEWHOPE, EMPIRE, JEDI }
-  #
-  def episodeEnum do
+
+  @doc """
+  The original trilogy consists of three movies.
+
+  This implements the following type system shorthand:
+
+      enum Episode { NEWHOPE, EMPIRE, JEDI }
+
+  """
+  defp episodeEnum do
     %Types.Enum{
       name: 'Episode',
       description: 'One of the films in the Star Wars Trilogy',
@@ -79,18 +90,20 @@ defmodule Fixtures.StarWarsSchema do
           description: 'Released in 1983.'}}}
   end
 
-  ##
-  # Characters in the Star Wars trilogy are either humans or droids.
-  #
-  # This implements the following type system shorthand:
-  #   interface Character {
-  #     id: String!
-  #     name: String
-  #     friends: [Character]
-  #     appearsIn: [Episode]
-  #   }
-  #
-  def chararacterInterface do
+  @doc """
+  Characters in the Star Wars trilogy are either humans or droids.
+
+  This implements the following type system shorthand:
+
+      interface Character {
+        id: String!
+        name: String
+        friends: [Character]
+        appearsIn: [Episode]
+      }
+
+  """
+  defp characterInterface do
     %Types.Interface{
       name: 'Character',
       description: 'A character in the Star Wars Trilogy',
@@ -116,18 +129,20 @@ defmodule Fixtures.StarWarsSchema do
       end}
   end
 
-  ##
-  # We define our human type, which implements the character interface.
-  #
-  # This implements the following type system shorthand:
-  #   type Human : Character {
-  #     id: String!
-  #     name: String
-  #     friends: [Character]
-  #     appearsIn: [Episode]
-  #   }
-  #
-  def humanType do
+  @doc """
+  We define our human type, which implements the character interface.
+
+  This implements the following type system shorthand:
+
+      type Human : Character {
+        id: String!
+        name: String
+        friends: [Character]
+        appearsIn: [Episode]
+      }
+
+  """
+  defp humanType do
     %Types.Object{
       name: 'Human',
       description: 'A humanoid creature in the Star Wars universe.',
@@ -151,19 +166,21 @@ defmodule Fixtures.StarWarsSchema do
       interfaces: [characterInterface]}
   end
 
-  ##
-  # The other type of character in Star Wars is a droid.
-  #
-  # This implements the following type system shorthand:
-  #   type Droid : Character {
-  #     id: String!
-  #     name: String
-  #     friends: [Character]
-  #     appearsIn: [Episode]
-  #     primaryFunction: String
-  #   }
-  #
-  def droidType do
+  @doc """
+  The other type of character in Star Wars is a droid.
+
+  This implements the following type system shorthand:
+
+      type Droid : Character {
+        id: String!
+        name: String
+        friends: [Character]
+        appearsIn: [Episode]
+        primaryFunction: String
+      }
+
+  """
+  defp droidType do
     %Types.Object{
       name:  'Droid',
       description: 'A mechanical creature in the Star Wars universe.',
@@ -187,21 +204,22 @@ defmodule Fixtures.StarWarsSchema do
       interfaces: [characterInterface]}
   end
 
-  ##
-  # This is the type that will be the root of our query, and the
-  # entry point into our schema. It gives us the ability to fetch
-  # objects by their IDs, as well as to fetch the undisputed hero
-  # of the Star Wars trilogy, R2-D2, directly.
-  #
-  # This implements the following type system shorthand:
-  #   type Query {
-  #     hero(episode: Episode): Character
-  #     human(id: String!): Human
-  #     droid(id: String!): Droid
-  #   }
-  #
-  #
-  def queryType do
+  @doc """
+  This is the type that will be the root of our query, and the
+  entry point into our schema. It gives us the ability to fetch
+  objects by their IDs, as well as to fetch the undisputed hero
+  of the Star Wars trilogy, R2-D2, directly.
+
+  This implements the following type system shorthand:
+
+      type Query {
+        hero(episode: Episode): Character
+        human(id: String!): Human
+        droid(id: String!): Droid
+      }
+
+  """
+  defp queryType do
     %Types.Object{
       name: 'Query',
       fields: %{
@@ -228,14 +246,6 @@ defmodule Fixtures.StarWarsSchema do
                  resolve: fn (root, %{id: id}) ->
                    StarWarsData.getDroid(id)
                  end}}}
-  end
-
-  ##
-  # Finally, we construct our schema (whose starting query type is the query
-  # type we defined above) and export it.
-  #
-  def schema do
-    %Types.Schema{query: queryType}
   end
 
 end

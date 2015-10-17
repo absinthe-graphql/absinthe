@@ -1,4 +1,16 @@
+#  Copyright (c) 2015, Facebook, Inc.
+#  All rights reserved.
+#  LICENSE file in the root directory of this source tree. An additional grant
+#  of patent rights can be found in the PATENTS file in the same directory.
+
 defmodule Fixtures.StarWarsData do
+  @moduledoc """
+  This defines a basic set of data for our Star Wars Schema.
+
+  This data is hard coded for the sake of the demo, but you could imagine
+  fetching this data from a backend service rather than from hardcoded
+  JSON objects in a more complex demo.
+  """
 
   @luke %{
     id: "1000",
