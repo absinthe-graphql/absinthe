@@ -17,6 +17,6 @@ defmodule ExecuteTest do
         }
       }
       """
-    assert ExGraphQL.execute(Fixtures.StarWarsSchema.schema, query) == %{hero: %{name: "R2-D2"}}
+    assert ExGraphQL.run(Fixtures.StarWarsSchema.schema, query) == %{hero: %{name: "R2-D2"}}
   end
 end

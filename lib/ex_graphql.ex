@@ -1,5 +1,7 @@
 defmodule ExGraphQL do
 
+  alias ExGraphQL.Validation
+
   defmodule ExecutionError do
     defexception message: "execution failed"
   end
@@ -21,38 +23,51 @@ defmodule ExGraphQL do
   end
 
   @spec parse(binary) :: {:ok, %ExGraphQL.AST.Document{}} | {:error, tuple}
+  @spec parse(%ExGraphQL.Source{}) :: {:ok, %ExGraphQL.AST.Document{}} | {:error, tuple}
+  def parse(input) when is_binary(input) do
+    parse(%ExGraphQL.Source{body: input})
+  end
   def parse(input) do
-    case input |> tokenize do
+    case input.body |> tokenize do
       {:ok, tokens} -> :ex_graphql_parser.parse(tokens)
       other -> other
     end
   end
 
   @spec parse!(binary) :: %ExGraphQL.AST.Document{}
+  @spec parse!(%ExGraphQL.Source{}) :: %ExGraphQL.AST.Document{}
+  def parse!(input) when is_binary(input) do
+    parse!(%ExGraphQL.Source{body: input})
+  end
   def parse!(input) do
     case parse(input) do
       {:ok, result} -> result
-      {:error, {line_number, _, errs}} -> raise SyntaxError, line_number: line_number, error: errs
+      {:error, {line_number, _, errs}} -> raise SyntaxError, source: input, line_number: line_number, error: errs
     end
   end
 
-  @spec execute(%ExGraphQL.Types.Schema{}, binary | %ExGraphQL.AST.Document{}) :: {:ok, %{}} | {:error, binary}
-  def execute(schema, input) when is_binary(input) do
+  @spec run(%ExGraphQL.Types.Schema{}, binary | %ExGraphQL.Source{} | %ExGraphQL.AST.Document{}) :: {:ok, %{}} | {:error, any}
+  def run(schema, %ExGraphQL.AST.Document{} = document) do
+    {:ok, {:nope, document}}
+  end
+  def run(schema, input) do
     case parse(input) do
-      {:ok, document} -> execute(schema, document)
+      {:ok, document} -> run(schema, document)
       other -> other
     end
   end
-  def execute(schema, input) do
-    {:ok, {:nope, :not_really}}
-  end
 
-  @spec execute!(%ExGraphQL.Types.Schema{}, binary | %ExGraphQL.AST.Document{}) :: %{}
-  def execute!(schema, input) do
-    case execute(schema, input) do
+  @spec run!(%ExGraphQL.Types.Schema{}, binary | %ExGraphQL.Source{} | %ExGraphQL.AST.Document{}) :: %{}
+  def run!(schema, input) do
+    case run(schema, input) do
       {:ok, result} -> result
       {:error, err} -> raise ExecutionError, message: err
     end
+  end
+
+  @spec validate(%ExGraphQL.Types.Schema{}, %ExGraphQL.AST.Document{}) :: :ok | {:error, [any]}
+  def validate(schema, document) do
+    Validation.validate(schema, document)
   end
 
 end
