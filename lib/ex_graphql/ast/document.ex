@@ -1,3 +1,3 @@
 defmodule ExGraphQL.AST.Document do
-  defstruct definitions: [], source_location: nil
+  defstruct definitions: [], loc: %{start: nil}
 end

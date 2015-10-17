@@ -12,9 +12,23 @@ extract_float({_Token, _Line, Value}) ->
 extract_boolean({_Token, _Line, "true"}) -> true;
 extract_boolean({_Token, _Line, "false"}) -> false.
 extract_keyword({Value, _Line}) -> list_to_binary(atom_to_list(Value)).
+extract_line({_Token, Line}) -> Line;                                
+extract_line({_Token, Line, _Value}) -> Line;
+extract_line(_) -> nil.
+
+extract_child_line([head|tail]) ->
+    extract_child_line(head);
+extract_child_line(#{loc := #{start := Line}} = This) ->
+    Line;
+extract_child_line(O) ->
+    nil.
 
 build_ast_node(Type, Node) ->
-  Node#{'__struct__' => list_to_atom("Elixir.ExGraphQL.AST." ++ atom_to_list(Type)), source_location => #{start => 0}}.
+  build_ast_node(Type, Node, nil).
+build_ast_node(Type, Node, #{start := nil}) ->
+  build_ast_node(Type, Node, nil);
+build_ast_node(Type, Node, Loc) ->
+  Node#{'__struct__' => list_to_atom("Elixir.ExGraphQL.AST." ++ atom_to_list(Type)), loc => Loc}.
 
 -file("/usr/local/lib/erlang/lib/parsetools-2.1/include/yeccpre.hrl", 0).
 %%
@@ -190,7 +204,7 @@ yecctoken2string(Other) ->
 
 
 
--file("src/ex_graphql_parser.erl", 193).
+-file("src/ex_graphql_parser.erl", 207).
 
 -dialyzer({nowarn_function, yeccpars2/7}).
 yeccpars2(0=S, Cat, Ss, Stack, T, Ts, Tzr) ->
@@ -2462,7 +2476,7 @@ yeccpars2_202(_S, Cat, Ss, Stack, T, Ts, Tzr) ->
 yeccpars2_4_(__Stack0) ->
  [__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'OperationDefinition' , # { operation => query , selectionSet => __1 } )
+   build_ast_node ( 'OperationDefinition' , # { operation => query , selectionSet => __1 } , # { start => extract_child_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_14_/1}).
@@ -2470,7 +2484,7 @@ yeccpars2_4_(__Stack0) ->
 yeccpars2_14_(__Stack0) ->
  [__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'Document' , # { definitions => __1 } )
+   build_ast_node ( 'Document' , # { definitions => __1 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_15_/1}).
@@ -2510,7 +2524,7 @@ yeccpars2_28_(__Stack0) ->
 yeccpars2_30_(__Stack0) ->
  [__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'Field' , # { name => __1 } )
+   build_ast_node ( 'Field' , # { name => __1 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_36_/1}).
@@ -2630,7 +2644,7 @@ yeccpars2_49_(__Stack0) ->
 yeccpars2_51_(__Stack0) ->
  [__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'FragmentSpread' , # { name => __2 } )
+   build_ast_node ( 'FragmentSpread' , # { name => __2 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_55_/1}).
@@ -2638,7 +2652,7 @@ yeccpars2_51_(__Stack0) ->
 yeccpars2_55_(__Stack0) ->
  [__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'NamedType' , # { name => __1 } )
+   build_ast_node ( 'NamedType' , # { name => __1 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_56_/1}).
@@ -2646,7 +2660,7 @@ yeccpars2_55_(__Stack0) ->
 yeccpars2_56_(__Stack0) ->
  [__4,__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'InlineFragment' , # { typeCondition => __3 , selectionSet => __4 } )
+   build_ast_node ( 'InlineFragment' , # { typeCondition => __3 , selectionSet => __4 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_58_/1}).
@@ -2670,7 +2684,7 @@ yeccpars2_60_(__Stack0) ->
 yeccpars2_61_(__Stack0) ->
  [__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'Directive' , # { name => __2 , arguments => __3 } )
+   build_ast_node ( 'Directive' , # { name => __2 , arguments => __3 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_65_/1}).
@@ -2702,7 +2716,7 @@ yeccpars2_67_(__Stack0) ->
 yeccpars2_70_(__Stack0) ->
  [__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'Argument' , # { name => __1 , value => __3 } )
+   build_ast_node ( 'Argument' , # { name => __1 , value => __3 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_71_/1}).
@@ -2710,7 +2724,7 @@ yeccpars2_70_(__Stack0) ->
 yeccpars2_71_(__Stack0) ->
  [__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'ObjectValue' , # { fields => __1 } )
+   build_ast_node ( 'ObjectValue' , # { fields => __1 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_73_/1}).
@@ -2718,7 +2732,7 @@ yeccpars2_71_(__Stack0) ->
 yeccpars2_73_(__Stack0) ->
  [__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'ListValue' , # { values => __1 } )
+   build_ast_node ( 'ListValue' , # { values => __1 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_74_/1}).
@@ -2726,7 +2740,7 @@ yeccpars2_73_(__Stack0) ->
 yeccpars2_74_(__Stack0) ->
  [__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'EnumValue' , # { value => __1 } )
+   build_ast_node ( 'EnumValue' , # { value => __1 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_77_/1}).
@@ -2734,7 +2748,7 @@ yeccpars2_74_(__Stack0) ->
 yeccpars2_77_(__Stack0) ->
  [__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'BooleanValue' , # { value => extract_boolean ( __1 ) } )
+   build_ast_node ( 'BooleanValue' , # { value => extract_boolean ( __1 ) } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_78_/1}).
@@ -2742,7 +2756,7 @@ yeccpars2_77_(__Stack0) ->
 yeccpars2_78_(__Stack0) ->
  [__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'FloatValue' , # { value => extract_float ( __1 ) } )
+   build_ast_node ( 'FloatValue' , # { value => extract_float ( __1 ) } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_79_/1}).
@@ -2750,7 +2764,7 @@ yeccpars2_78_(__Stack0) ->
 yeccpars2_79_(__Stack0) ->
  [__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'IntValue' , # { value => extract_integer ( __1 ) } )
+   build_ast_node ( 'IntValue' , # { value => extract_integer ( __1 ) } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_80_/1}).
@@ -2758,7 +2772,7 @@ yeccpars2_79_(__Stack0) ->
 yeccpars2_80_(__Stack0) ->
  [__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'StringValue' , # { value => extract_quoted_string_token ( __1 ) } )
+   build_ast_node ( 'StringValue' , # { value => extract_quoted_string_token ( __1 ) } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_83_/1}).
@@ -2782,7 +2796,7 @@ yeccpars2_85_(__Stack0) ->
 yeccpars2_87_(__Stack0) ->
  [__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'ObjectField' , # { name => __1 , value => __3 } )
+   build_ast_node ( 'ObjectField' , # { name => __1 , value => __3 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_88_/1}).
@@ -2838,7 +2852,7 @@ yeccpars2_94_(__Stack0) ->
 yeccpars2_95_(__Stack0) ->
  [__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'Variable' , # { name => __2 } )
+   build_ast_node ( 'Variable' , # { name => __2 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_96_/1}).
@@ -2854,7 +2868,7 @@ yeccpars2_96_(__Stack0) ->
 yeccpars2_97_(__Stack0) ->
  [__5,__4,__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'InlineFragment' , # { typeCondition => __3 , directives => __4 , selectionSet => __5 } )
+   build_ast_node ( 'InlineFragment' , # { typeCondition => __3 , directives => __4 , selectionSet => __5 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_98_/1}).
@@ -2862,7 +2876,7 @@ yeccpars2_97_(__Stack0) ->
 yeccpars2_98_(__Stack0) ->
  [__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'FragmentSpread' , # { name => __2 , directives => __3 } )
+   build_ast_node ( 'FragmentSpread' , # { name => __2 , directives => __3 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_99_/1}).
@@ -2870,7 +2884,7 @@ yeccpars2_98_(__Stack0) ->
 yeccpars2_99_(__Stack0) ->
  [__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'Field' , # { alias => __1 , name => __2 } )
+   build_ast_node ( 'Field' , # { alias => __1 , name => __2 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_100_/1}).
@@ -2878,7 +2892,7 @@ yeccpars2_99_(__Stack0) ->
 yeccpars2_100_(__Stack0) ->
  [__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'Field' , # { alias => __1 , name => __2 , selectionSet => __3 } )
+   build_ast_node ( 'Field' , # { alias => __1 , name => __2 , selectionSet => __3 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_101_/1}).
@@ -2886,7 +2900,7 @@ yeccpars2_100_(__Stack0) ->
 yeccpars2_101_(__Stack0) ->
  [__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'Field' , # { alias => __1 , name => __2 , directives => __3 } )
+   build_ast_node ( 'Field' , # { alias => __1 , name => __2 , directives => __3 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_102_/1}).
@@ -2894,7 +2908,7 @@ yeccpars2_101_(__Stack0) ->
 yeccpars2_102_(__Stack0) ->
  [__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'Field' , # { alias => __1 , name => __2 , arguments => __3 } )
+   build_ast_node ( 'Field' , # { alias => __1 , name => __2 , arguments => __3 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_103_/1}).
@@ -2902,7 +2916,7 @@ yeccpars2_102_(__Stack0) ->
 yeccpars2_103_(__Stack0) ->
  [__4,__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'Field' , # { alias => __1 , name => __2 , arguments => __3 , selectionSet => __4 } )
+   build_ast_node ( 'Field' , # { alias => __1 , name => __2 , arguments => __3 , selectionSet => __4 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_104_/1}).
@@ -2910,7 +2924,7 @@ yeccpars2_103_(__Stack0) ->
 yeccpars2_104_(__Stack0) ->
  [__4,__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'Field' , # { alias => __1 , name => __2 , arguments => __3 , directives => __4 } )
+   build_ast_node ( 'Field' , # { alias => __1 , name => __2 , arguments => __3 , directives => __4 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_105_/1}).
@@ -2918,7 +2932,7 @@ yeccpars2_104_(__Stack0) ->
 yeccpars2_105_(__Stack0) ->
  [__5,__4,__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'Field' , # { alias => __1 , name => __2 , arguments => __3 , directives => __4 , selectionSet => __5 } )
+   build_ast_node ( 'Field' , # { alias => __1 , name => __2 , arguments => __3 , directives => __4 , selectionSet => __5 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_106_/1}).
@@ -2926,7 +2940,7 @@ yeccpars2_105_(__Stack0) ->
 yeccpars2_106_(__Stack0) ->
  [__4,__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'Field' , # { alias => __1 , name => __2 , directives => __3 , selectionSet => __4 } )
+   build_ast_node ( 'Field' , # { alias => __1 , name => __2 , directives => __3 , selectionSet => __4 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_107_/1}).
@@ -2934,7 +2948,7 @@ yeccpars2_106_(__Stack0) ->
 yeccpars2_107_(__Stack0) ->
  [__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'Field' , # { name => __1 , selectionSet => __2 } )
+   build_ast_node ( 'Field' , # { name => __1 , selectionSet => __2 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_108_/1}).
@@ -2942,7 +2956,7 @@ yeccpars2_107_(__Stack0) ->
 yeccpars2_108_(__Stack0) ->
  [__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'Field' , # { name => __1 , directives => __2 } )
+   build_ast_node ( 'Field' , # { name => __1 , directives => __2 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_109_/1}).
@@ -2950,7 +2964,7 @@ yeccpars2_108_(__Stack0) ->
 yeccpars2_109_(__Stack0) ->
  [__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'Field' , # { name => __1 , arguments => __2 } )
+   build_ast_node ( 'Field' , # { name => __1 , arguments => __2 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_110_/1}).
@@ -2966,7 +2980,7 @@ yeccpars2_110_(__Stack0) ->
 yeccpars2_111_(__Stack0) ->
  [__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'Field' , # { name => __1 , arguments => __2 , selectionSet => __3 } )
+   build_ast_node ( 'Field' , # { name => __1 , arguments => __2 , selectionSet => __3 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_112_/1}).
@@ -2974,7 +2988,7 @@ yeccpars2_111_(__Stack0) ->
 yeccpars2_112_(__Stack0) ->
  [__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'Field' , # { name => __1 , arguments => __2 , directives => __3 } )
+   build_ast_node ( 'Field' , # { name => __1 , arguments => __2 , directives => __3 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_113_/1}).
@@ -2982,7 +2996,7 @@ yeccpars2_112_(__Stack0) ->
 yeccpars2_113_(__Stack0) ->
  [__4,__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'Field' , # { name => __1 , arguments => __2 , directives => __3 , selectionSet => __4 } )
+   build_ast_node ( 'Field' , # { name => __1 , arguments => __2 , directives => __3 , selectionSet => __4 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_114_/1}).
@@ -2990,7 +3004,7 @@ yeccpars2_113_(__Stack0) ->
 yeccpars2_114_(__Stack0) ->
  [__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'Field' , # { name => __1 , directives => __2 , selectionSet => __3 } )
+   build_ast_node ( 'Field' , # { name => __1 , directives => __2 , selectionSet => __3 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_115_/1}).
@@ -3006,7 +3020,7 @@ yeccpars2_115_(__Stack0) ->
 yeccpars2_116_(__Stack0) ->
  [__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'SelectionSet' , # { selections => __2 } )
+   build_ast_node ( 'SelectionSet' , # { selections => __2 } , # { start => extract_line ( __1 ) , 'end' => extract_line ( __3 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_119_/1}).
@@ -3014,7 +3028,7 @@ yeccpars2_116_(__Stack0) ->
 yeccpars2_119_(__Stack0) ->
  [__4,__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'UnionTypeDefinition' , # { name => __2 , types => __4 } )
+   build_ast_node ( 'UnionTypeDefinition' , # { name => __2 , types => __4 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_120_/1}).
@@ -3054,7 +3068,7 @@ yeccpars2_130_(__Stack0) ->
 yeccpars2_131_(__Stack0) ->
  [__5,__4,__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'ObjectTypeDefinition' , # { name => __2 , fields => __4 } )
+   build_ast_node ( 'ObjectTypeDefinition' , # { name => __2 , fields => __4 } , # { start => extract_line ( __1 ) , 'end' => extract_line ( __5 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_135_/1}).
@@ -3062,7 +3076,7 @@ yeccpars2_131_(__Stack0) ->
 yeccpars2_135_(__Stack0) ->
  [__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'FieldDefinition' , # { name => __1 , type => __3 } )
+   build_ast_node ( 'FieldDefinition' , # { name => __1 , type => __3 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_141_/1}).
@@ -3070,7 +3084,7 @@ yeccpars2_135_(__Stack0) ->
 yeccpars2_141_(__Stack0) ->
  [__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'ListType' , # { type => __2 } )
+   build_ast_node ( 'ListType' , # { type => __2 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_142_/1}).
@@ -3078,7 +3092,7 @@ yeccpars2_141_(__Stack0) ->
 yeccpars2_142_(__Stack0) ->
  [__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'NonNullType' , # { type => __1 } )
+   build_ast_node ( 'NonNullType' , # { type => __1 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_143_/1}).
@@ -3086,7 +3100,7 @@ yeccpars2_142_(__Stack0) ->
 yeccpars2_143_(__Stack0) ->
  [__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'NonNullType' , # { type => __1 } )
+   build_ast_node ( 'NonNullType' , # { type => __1 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_146_/1}).
@@ -3118,7 +3132,7 @@ yeccpars2_148_(__Stack0) ->
 yeccpars2_150_(__Stack0) ->
  [__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'InputValueDefinition' , # { name => __1 , type => __3 } )
+   build_ast_node ( 'InputValueDefinition' , # { name => __1 , type => __3 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_151_/1}).
@@ -3126,7 +3140,7 @@ yeccpars2_150_(__Stack0) ->
 yeccpars2_151_(__Stack0) ->
  [__4,__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'InputValueDefinition' , # { name => __1 , type => __3 , defaultValue => __4 } )
+   build_ast_node ( 'InputValueDefinition' , # { name => __1 , type => __3 , defaultValue => __4 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_153_/1}).
@@ -3174,7 +3188,7 @@ yeccpars2_158_(__Stack0) ->
 yeccpars2_161_(__Stack0) ->
  [__6,__5,__4,__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'ObjectTypeDefinition' , # { name => __2 , interfaces => __3 , fields => __5 } )
+   build_ast_node ( 'ObjectTypeDefinition' , # { name => __2 , interfaces => __3 , fields => __5 } , # { start => extract_line ( __1 ) , 'end' => extract_line ( __6 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_162_/1}).
@@ -3182,7 +3196,7 @@ yeccpars2_161_(__Stack0) ->
 yeccpars2_162_(__Stack0) ->
  [__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'ScalarTypeDefinition' , # { name => __2 } )
+   build_ast_node ( 'ScalarTypeDefinition' , # { name => __2 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_166_/1}).
@@ -3190,7 +3204,7 @@ yeccpars2_162_(__Stack0) ->
 yeccpars2_166_(__Stack0) ->
  [__5,__4,__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'InterfaceTypeDefinition' , # { name => __2 , fields => __4 } )
+   build_ast_node ( 'InterfaceTypeDefinition' , # { name => __2 , fields => __4 } , # { start => extract_line ( __1 ) , 'end' => extract_line ( __5 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_170_/1}).
@@ -3198,7 +3212,7 @@ yeccpars2_166_(__Stack0) ->
 yeccpars2_170_(__Stack0) ->
  [__5,__4,__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'InputObjectTypeDefinition' , # { name => __2 , fields => __4 } )
+   build_ast_node ( 'InputObjectTypeDefinition' , # { name => __2 , fields => __4 } , # { start => extract_line ( __1 ) , 'end' => extract_line ( __5 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_174_/1}).
@@ -3206,7 +3220,7 @@ yeccpars2_170_(__Stack0) ->
 yeccpars2_174_(__Stack0) ->
  [__5,__4,__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'FragmentDefinition' , # { name => __2 , typeCondition => __4 , selectionSet => __5 } )
+   build_ast_node ( 'FragmentDefinition' , # { name => __2 , typeCondition => __4 , selectionSet => __5 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_176_/1}).
@@ -3214,7 +3228,7 @@ yeccpars2_174_(__Stack0) ->
 yeccpars2_176_(__Stack0) ->
  [__6,__5,__4,__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'FragmentDefinition' , # { name => __2 , typeCondition => __4 , directives => __5 , selectionSet => __6 } )
+   build_ast_node ( 'FragmentDefinition' , # { name => __2 , typeCondition => __4 , directives => __5 , selectionSet => __6 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_177_/1}).
@@ -3222,7 +3236,7 @@ yeccpars2_176_(__Stack0) ->
 yeccpars2_177_(__Stack0) ->
  [__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'TypeExtensionDefinition' , # { definition => __2 } )
+   build_ast_node ( 'TypeExtensionDefinition' , # { definition => __2 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_181_/1}).
@@ -3246,7 +3260,7 @@ yeccpars2_183_(__Stack0) ->
 yeccpars2_184_(__Stack0) ->
  [__5,__4,__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'EnumTypeDefinition' , # { name => __2 , values => __4 } )
+   build_ast_node ( 'EnumTypeDefinition' , # { name => __2 , values => __4 } , # { start => extract_line ( __1 ) , 'end' => extract_line ( __5 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_185_/1}).
@@ -3262,7 +3276,7 @@ yeccpars2_185_(__Stack0) ->
 yeccpars2_188_(__Stack0) ->
  [__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'OperationDefinition' , # { operation => __1 , name => __2 , selectionSet => __3 } )
+   build_ast_node ( 'OperationDefinition' , # { operation => __1 , name => __2 , selectionSet => __3 } , # { start => extract_line ( __2 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_192_/1}).
@@ -3278,7 +3292,7 @@ yeccpars2_192_(__Stack0) ->
 yeccpars2_195_(__Stack0) ->
  [__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'VariableDefinition' , # { variable => __1 , type => __3 } )
+   build_ast_node ( 'VariableDefinition' , # { variable => __1 , type => __3 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_196_/1}).
@@ -3286,7 +3300,7 @@ yeccpars2_195_(__Stack0) ->
 yeccpars2_196_(__Stack0) ->
  [__4,__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'VariableDefinition' , # { variable => __1 , type => __3 , defaultValue => __4 } )
+   build_ast_node ( 'VariableDefinition' , # { variable => __1 , type => __3 , defaultValue => __4 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_197_/1}).
@@ -3310,7 +3324,7 @@ yeccpars2_198_(__Stack0) ->
 yeccpars2_199_(__Stack0) ->
  [__4,__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'OperationDefinition' , # { operation => __1 , name => __2 , directives => __3 , selectionSet => __4 } )
+   build_ast_node ( 'OperationDefinition' , # { operation => __1 , name => __2 , directives => __3 , selectionSet => __4 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_200_/1}).
@@ -3318,7 +3332,7 @@ yeccpars2_199_(__Stack0) ->
 yeccpars2_200_(__Stack0) ->
  [__4,__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'OperationDefinition' , # { operation => __1 , name => __2 , variableDefinitions => __3 , selectionSet => __4 } )
+   build_ast_node ( 'OperationDefinition' , # { operation => __1 , name => __2 , variableDefinitions => __3 , selectionSet => __4 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 -compile({inline,yeccpars2_202_/1}).
@@ -3326,8 +3340,8 @@ yeccpars2_200_(__Stack0) ->
 yeccpars2_202_(__Stack0) ->
  [__5,__4,__3,__2,__1 | __Stack] = __Stack0,
  [begin
-   build_ast_node ( 'OperationDefinition' , # { operation => __1 , name => __2 , variableDefinitions => __3 , directives => __4 , selectionSet => __5 } )
+   build_ast_node ( 'OperationDefinition' , # { operation => __1 , name => __2 , variableDefinitions => __3 , directives => __4 , selectionSet => __5 } , # { start => extract_line ( __1 ) } )
   end | __Stack].
 
 
--file("src/ex_graphql_parser.yrl", 221).
+-file("src/ex_graphql_parser.yrl", 235).

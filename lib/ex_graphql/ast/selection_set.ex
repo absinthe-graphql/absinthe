@@ -1,3 +1,3 @@
 defmodule ExGraphQL.AST.SelectionSet do
-  defstruct selections: [], source_location: nil
+  defstruct selections: [], loc: %{start: nil}
 end

@@ -1,3 +1,3 @@
 defmodule ExGraphQL.AST.ObjectTypeDefinition do
-  defstruct name: nil, interfaces: [], fields: [], source_location: nil
+  defstruct name: nil, interfaces: [], fields: [], loc: %{start: nil}
 end

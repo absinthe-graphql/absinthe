@@ -1,3 +1,3 @@
 defmodule ExGraphQL.AST.VariableDefinition do
-  defstruct variable: nil, type: nil, default_value: nil, source_location: nil
+  defstruct variable: nil, type: nil, default_value: nil, loc: %{start: nil}
 end

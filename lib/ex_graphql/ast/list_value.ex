@@ -1,3 +1,3 @@
 defmodule ExGraphQL.AST.ListValue do
-  defstruct values: [], source_location: nil
+  defstruct values: [], loc: %{start: nil}
 end

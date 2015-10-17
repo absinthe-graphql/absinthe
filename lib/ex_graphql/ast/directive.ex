@@ -1,3 +1,3 @@
 defmodule ExGraphQL.AST.Directive do
-  defstruct directive: nil, arguments: [], source_location: nil
+  defstruct directive: nil, arguments: [], loc: %{start: nil}
 end

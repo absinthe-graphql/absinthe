@@ -1,3 +1,3 @@
 defmodule ExGraphQL.AST.InputObjectTypeDefinition do
-  defstruct name: nil, fields: [], source_location: nil
+  defstruct name: nil, fields: [], loc: %{start: nil}
 end

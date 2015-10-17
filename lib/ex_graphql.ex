@@ -15,7 +15,7 @@ defmodule ExGraphQL do
   @spec tokenize(binary) :: {:ok, [tuple]} | {:error, binary}
   def tokenize(input) do
     case :ex_graphql_lexer.string(input |> to_char_list) do
-      {:ok, tokens, _} -> {:ok, tokens}
+      {:ok, tokens, _line_count} -> {:ok, tokens}
       other -> other
     end
   end

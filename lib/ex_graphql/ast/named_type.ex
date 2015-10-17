@@ -1,3 +1,3 @@
 defmodule ExGraphQL.AST.NamedType do
-  defstruct name: nil, source_location: nil
+  defstruct name: nil, loc: %{start: nil}
 end

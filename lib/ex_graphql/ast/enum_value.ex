@@ -1,3 +1,3 @@
 defmodule ExGraphQL.AST.EnumValue do
-  defstruct value: nil, source_location: nil
+  defstruct value: nil, loc: %{start: nil}
 end

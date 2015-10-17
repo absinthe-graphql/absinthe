@@ -1,3 +1,3 @@
 defmodule ExGraphQL.AST.NonNullType do
-  defstruct type: nil, source_location: nil
+  defstruct type: nil, loc: %{start: nil}
 end

@@ -1,3 +1,3 @@
 defmodule ExGraphQL.AST.FragmentSpread do
-  defstruct name: nil, directives: [], source_location: nil
+  defstruct name: nil, directives: [], loc: %{start: nil}
 end
