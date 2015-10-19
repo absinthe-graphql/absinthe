@@ -34,14 +34,14 @@ Definition -> TypeDefinition : '$1'.
 OperationType -> 'query' : extract_atom('$1').
 OperationType -> 'mutation' : extract_atom('$1').
 
-OperationDefinition -> SelectionSet : build_ast_node('OperationDefinition', #{'operation' => 'query', 'selectionSet' => '$1'}, #{start => extract_child_line('$1')}).
-OperationDefinition -> OperationType Name SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => '$2', 'selectionSet' => '$3'}, #{start => extract_line('$2')}).
-OperationDefinition -> OperationType Name VariableDefinitions SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => '$2', 'variableDefinitions' => '$3', 'selectionSet' => '$4'}, #{start => extract_line('$1')}).
-OperationDefinition -> OperationType Name Directives SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => '$2', 'directives' => '$3', 'selectionSet' => '$4'}, #{start => extract_line('$1')}).
-OperationDefinition -> OperationType Name VariableDefinitions Directives SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => '$2', 'variableDefinitions' => '$3', 'directives' => '$4', 'selectionSet' => '$5'}, #{start => extract_line('$1')}).
+OperationDefinition -> SelectionSet : build_ast_node('OperationDefinition', #{'operation' => 'query', 'selection_set' => '$1'}, #{start => extract_child_line('$1')}).
+OperationDefinition -> OperationType Name SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => '$2', 'selection_set' => '$3'}, #{start => extract_line('$2')}).
+OperationDefinition -> OperationType Name VariableDefinitions SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => '$2', 'variableDefinitions' => '$3', 'selection_set' => '$4'}, #{start => extract_line('$1')}).
+OperationDefinition -> OperationType Name Directives SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => '$2', 'directives' => '$3', 'selection_set' => '$4'}, #{start => extract_line('$1')}).
+OperationDefinition -> OperationType Name VariableDefinitions Directives SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => '$2', 'variableDefinitions' => '$3', 'directives' => '$4', 'selection_set' => '$5'}, #{start => extract_line('$1')}).
 
-FragmentDefinition -> 'fragment' FragmentName 'on' TypeCondition SelectionSet : build_ast_node('FragmentDefinition', #{'name' => '$2', 'typeCondition' => '$4', 'selectionSet' => '$5'}, #{start => extract_line('$1')}).
-FragmentDefinition -> 'fragment' FragmentName 'on' TypeCondition Directives SelectionSet : build_ast_node('FragmentDefinition', #{'name' => '$2', 'typeCondition' => '$4', 'directives' => '$5', 'selectionSet' => '$6'}, #{start => extract_line('$1')}).
+FragmentDefinition -> 'fragment' FragmentName 'on' TypeCondition SelectionSet : build_ast_node('FragmentDefinition', #{'name' => '$2', 'type_condition' => '$4', 'selection_set' => '$5'}, #{start => extract_line('$1')}).
+FragmentDefinition -> 'fragment' FragmentName 'on' TypeCondition Directives SelectionSet : build_ast_node('FragmentDefinition', #{'name' => '$2', 'type_condition' => '$4', 'directives' => '$5', 'selection_set' => '$6'}, #{start => extract_line('$1')}).
 
 TypeCondition -> NamedType : '$1'.
 
@@ -74,27 +74,27 @@ Selection -> InlineFragment : '$1'.
 FragmentSpread -> '...' FragmentName : build_ast_node('FragmentSpread', #{'name' => '$2'}, #{start => extract_line('$1')}).
 FragmentSpread -> '...' FragmentName Directives : build_ast_node('FragmentSpread', #{'name' => '$2', 'directives' => '$3'}, #{start => extract_line('$1')}).
 
-InlineFragment -> '...' 'on' TypeCondition SelectionSet : build_ast_node('InlineFragment', #{'typeCondition' => '$3', 'selectionSet' => '$4'}, #{start => extract_line('$1')}).
-InlineFragment -> '...' 'on' TypeCondition Directives SelectionSet : build_ast_node('InlineFragment', #{'typeCondition' => '$3', 'directives' => '$4', 'selectionSet' => '$5'}, #{start => extract_line('$1')}).
+InlineFragment -> '...' 'on' TypeCondition SelectionSet : build_ast_node('InlineFragment', #{'type_condition' => '$3', 'selection_set' => '$4'}, #{start => extract_line('$1')}).
+InlineFragment -> '...' 'on' TypeCondition Directives SelectionSet : build_ast_node('InlineFragment', #{'type_condition' => '$3', 'directives' => '$4', 'selection_set' => '$5'}, #{start => extract_line('$1')}).
 
 FragmentName -> NameWithoutOn : '$1'.
 
 Field -> Name : build_ast_node('Field', #{'name' => '$1'}, #{start => extract_line('$1')}).
 Field -> Name Arguments : build_ast_node('Field', #{'name' => '$1', 'arguments' => '$2'}, #{start => extract_line('$1')}).
 Field -> Name Directives : build_ast_node('Field', #{'name' => '$1', 'directives' => '$2'}, #{start => extract_line('$1')}).
-Field -> Name SelectionSet : build_ast_node('Field', #{'name' => '$1', 'selectionSet' => '$2'}, #{start => extract_line('$1')}).
-Field -> Name Directives SelectionSet : build_ast_node('Field', #{'name' => '$1', 'directives' => '$2', 'selectionSet' => '$3'}, #{start => extract_line('$1')}).
-Field -> Name Arguments SelectionSet : build_ast_node('Field', #{'name' => '$1', 'arguments' => '$2', 'selectionSet' => '$3'}, #{start => extract_line('$1')}).
+Field -> Name SelectionSet : build_ast_node('Field', #{'name' => '$1', 'selection_set' => '$2'}, #{start => extract_line('$1')}).
+Field -> Name Directives SelectionSet : build_ast_node('Field', #{'name' => '$1', 'directives' => '$2', 'selection_set' => '$3'}, #{start => extract_line('$1')}).
+Field -> Name Arguments SelectionSet : build_ast_node('Field', #{'name' => '$1', 'arguments' => '$2', 'selection_set' => '$3'}, #{start => extract_line('$1')}).
 Field -> Name Arguments Directives : build_ast_node('Field', #{'name' => '$1', 'arguments' => '$2', 'directives' => '$3'}, #{start => extract_line('$1')}).
-Field -> Name Arguments Directives SelectionSet : build_ast_node('Field', #{'name' => '$1', 'arguments' => '$2', 'directives' => '$3', 'selectionSet' => '$4'}, #{start => extract_line('$1')}).
+Field -> Name Arguments Directives SelectionSet : build_ast_node('Field', #{'name' => '$1', 'arguments' => '$2', 'directives' => '$3', 'selection_set' => '$4'}, #{start => extract_line('$1')}).
 Field -> Alias Name : build_ast_node('Field', #{'alias' => '$1', 'name' => '$2'}, #{start => extract_line('$1')}).
 Field -> Alias Name Arguments : build_ast_node('Field', #{'alias' => '$1', 'name' => '$2', 'arguments' => '$3'}, #{start => extract_line('$1')}).
-Field -> Alias Name SelectionSet : build_ast_node('Field', #{'alias' => '$1', 'name' => '$2', 'selectionSet' => '$3'}, #{start => extract_line('$1')}).
-Field -> Alias Name Arguments SelectionSet : build_ast_node('Field', #{'alias' => '$1', 'name' => '$2', 'arguments' => '$3', 'selectionSet' => '$4'}, #{start => extract_line('$1')}).
+Field -> Alias Name SelectionSet : build_ast_node('Field', #{'alias' => '$1', 'name' => '$2', 'selection_set' => '$3'}, #{start => extract_line('$1')}).
+Field -> Alias Name Arguments SelectionSet : build_ast_node('Field', #{'alias' => '$1', 'name' => '$2', 'arguments' => '$3', 'selection_set' => '$4'}, #{start => extract_line('$1')}).
 Field -> Alias Name Directives : build_ast_node('Field', #{'alias' => '$1', 'name' => '$2', 'directives' => '$3'}, #{start => extract_line('$1')}).
 Field -> Alias Name Arguments Directives : build_ast_node('Field', #{'alias' => '$1', 'name' => '$2', 'arguments' => '$3', 'directives' => '$4'}, #{start => extract_line('$1')}).
-Field -> Alias Name Directives SelectionSet : build_ast_node('Field', #{'alias' => '$1', 'name' => '$2', 'directives' => '$3', 'selectionSet' => '$4'}, #{start => extract_line('$1')}).
-Field -> Alias Name Arguments Directives SelectionSet : build_ast_node('Field', #{'alias' => '$1', 'name' => '$2', 'arguments' => '$3', 'directives' => '$4', 'selectionSet' => '$5'}, #{start => extract_line('$1')}).
+Field -> Alias Name Directives SelectionSet : build_ast_node('Field', #{'alias' => '$1', 'name' => '$2', 'directives' => '$3', 'selection_set' => '$4'}, #{start => extract_line('$1')}).
+Field -> Alias Name Arguments Directives SelectionSet : build_ast_node('Field', #{'alias' => '$1', 'name' => '$2', 'arguments' => '$3', 'directives' => '$4', 'selection_set' => '$5'}, #{start => extract_line('$1')}).
 
 Alias -> Name ':' : '$1'.
 
@@ -231,4 +231,4 @@ build_ast_node(Type, Node) ->
 build_ast_node(Type, Node, #{start := nil}) ->
   build_ast_node(Type, Node, nil);
 build_ast_node(Type, Node, Loc) ->
-  Node#{'__struct__' => list_to_atom("Elixir.ExGraphQL.Language." ++ atom_to_list(Type)), loc => Loc}.
+  'Elixir.Kernel':struct(list_to_atom("Elixir.ExGraphQL.Language." ++ atom_to_list(Type)), Node#{loc => Loc}).

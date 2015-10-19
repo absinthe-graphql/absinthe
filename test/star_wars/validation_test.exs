@@ -1,13 +1,13 @@
 defmodule ValidationTest do
   use ExUnit.Case
 
-  alias Fixtures.StarWarsSchema
+  alias StarWars.Schema
 
   # Helper function to test a query and the expected response.
   defp validate(query) do
-    source = %ExGraphQL.Source{body: query, name: "StarWars.graphql"}
-    document = ExGraphQL.parse(source)
-    ExGraphQL.Validation.validate(StarWarsSchema.schema, document)
+    source = %ExGraphQL.Language.Source{body: query, name: "StarWars.graphql"}
+    document = ExGraphQL.parse!(source)
+    ExGraphQL.Validation.validate(Schema.schema, document)
   end
 
   defp assert_valid(query) do

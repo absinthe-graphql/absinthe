@@ -3,7 +3,7 @@
 #  LICENSE file in the root directory of this source tree. An additional grant
 #  of patent rights can be found in the PATENTS file in the same directory.
 
-defmodule Fixtures.StarWarsData do
+defmodule StarWars.Data do
   @moduledoc """
   This defines a basic set of data for our Star Wars Schema.
 

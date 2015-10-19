@@ -5,7 +5,7 @@
 #  LICENSE file in the root directory of this source tree. An additional grant
 #  of patent rights can be found in the PATENTS file in the same directory.
 
-defmodule ExGraphQL.Source do
+defmodule ExGraphQL.Language.Source do
   @moduledoc """
   A representation of source input to GraphQL. The name is optional,
   but is mostly useful for clients who store GraphQL documents in

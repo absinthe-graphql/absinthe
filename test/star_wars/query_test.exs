@@ -5,7 +5,7 @@
 #  LICENSE file in the root directory of this source tree. An additional grant
 #  of patent rights can be found in the PATENTS file in the same directory.
 
-defmodule ExecuteTest do
+defmodule StarWars.QueryTest do
   use ExUnit.Case
   doctest ExGraphQL
 
@@ -17,6 +17,6 @@ defmodule ExecuteTest do
         }
       }
       """
-    assert ExGraphQL.run(Fixtures.StarWarsSchema.schema, query) == %{hero: %{name: "R2-D2"}}
+    assert ExGraphQL.run(StarWars.Schema.schema, query) == %{hero: %{name: "R2-D2"}}
   end
 end

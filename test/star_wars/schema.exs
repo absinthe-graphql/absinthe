@@ -5,7 +5,7 @@
 #  LICENSE file in the root directory of this source tree. An additional grant
 #  of patent rights can be found in the PATENTS file in the same directory.
 
-defmodule Fixtures.StarWarsSchema do
+defmodule StarWars.Schema do
   @moduledoc """
    This is designed to be an end-to-end test, demonstrating
    the full GraphQL stack.
@@ -55,14 +55,14 @@ defmodule Fixtures.StarWarsSchema do
 
   """
 
-  alias ExGraphQL.Types
-  alias Fixtures.StarWarsData
+  alias ExGraphQL.Type
+  alias StarWars.Data
 
 
   # Uses the `queryType` defined below
   @doc "The schema"
   def schema do
-    %Types.Schema{query: queryType}
+    %Type.Schema{query: queryType}
   end
 
 
@@ -73,7 +73,7 @@ defmodule Fixtures.StarWarsSchema do
   #     enum Episode { NEWHOPE, EMPIRE, JEDI }
   #
   defp episodeEnum do
-    %Types.Enum{
+    %Type.Enum{
       name: 'Episode',
       description: 'One of the films in the Star Wars Trilogy',
       values: %{
@@ -100,25 +100,25 @@ defmodule Fixtures.StarWarsSchema do
   #     }
   #
   defp characterInterface do
-    %Types.Interface{
+    %Type.Interface{
       name: 'Character',
       description: 'A character in the Star Wars Trilogy',
       fields: fn -> %{
         id: %{
-          type: %Types.NonNull{type: Types.String},
+          type: %Type.NonNull{type: Type.String},
           description: 'The id of the character.'},
         name: %{
-          type: Types.String,
+          type: Type.String,
           description: 'The name of the character.'},
         friends: %{
-          type: %Types.List{type: characterInterface},
+          type: %Type.List{type: characterInterface},
           description: 'The friends of the character, or an empty list if they have none.'},
         appearsIn: %{
-          type: %Types.List{type: episodeEnum},
+          type: %Type.List{type: episodeEnum},
           description: 'Which movies they appear in.'}}
       end,
       resolveType: fn (character) ->
-        if StarWarsData.getHuman(character.id) do
+        if Data.getHuman(character.id) do
           humanType
         else
           droidType
@@ -138,25 +138,25 @@ defmodule Fixtures.StarWarsSchema do
   #     }
   #
   defp humanType do
-    %Types.Object{
+    %Type.Object{
       name: 'Human',
       description: 'A humanoid creature in the Star Wars universe.',
       fields: fn -> %{
         id: %{
-          type: %Types.NonNull{type: Types.String},
+          type: %Type.NonNull{type: Type.String},
           description: 'The id of the human.'},
         name: %{
-          type: Types.String,
+          type: Type.String,
           description: 'The name of the human.'},
         friends: %{
-          type: %Types.List{type: characterInterface},
+          type: %Type.List{type: characterInterface},
           description: 'The friends of the human, or an empty list if they have none.',
-          resolve: &StarWarsData.getFriends/1},
+          resolve: &Data.getFriends/1},
         appearsIn: %{
-          type: %Types.List{type: episodeEnum},
+          type: %Type.List{type: episodeEnum},
           description: 'Which movies they appear in.'},
         homePlanet: %{
-          type: Types.String,
+          type: Type.String,
           description: 'The home planet of the human, or null if unknown.'}}
       end,
       interfaces: [characterInterface]}
@@ -175,25 +175,25 @@ defmodule Fixtures.StarWarsSchema do
   #     }
   #
   defp droidType do
-    %Types.Object{
+    %Type.Object{
       name:  'Droid',
       description: 'A mechanical creature in the Star Wars universe.',
       fields: fn -> %{
         id: %{
-          type: %Types.NonNull{type: Types.String},
+          type: %Type.NonNull{type: Type.String},
           description: 'The id of the droid.'},
         name: %{
-          type: Types.String,
+          type: Type.String,
           description: 'The name of the droid.'},
         friends: %{
-          type: %Types.List{type: characterInterface},
+          type: %Type.List{type: characterInterface},
           description: 'The friends of the droid, or an empty list if they have none.',
-          resolve: &StarWarsData.getFriends/1},
+          resolve: &Data.getFriends/1},
         appearsIn: %{
-          type: %Types.List{type: episodeEnum},
+          type: %Type.List{type: episodeEnum},
           description: 'Which movies they appear in.'},
         primaryFunction: %{
-          type: Types.String,
+          type: Type.String,
           description: 'The primary function of the droid.'}}
       end,
       interfaces: [characterInterface]}
@@ -212,7 +212,7 @@ defmodule Fixtures.StarWarsSchema do
   #       droid(id: String!): Droid
   #     }
   defp queryType do
-    %Types.Object{
+    %Type.Object{
       name: 'Query',
       fields: fn -> %{
         hero: %{
@@ -227,16 +227,16 @@ defmodule Fixtures.StarWarsSchema do
           args: %{
             id: %{
               description: 'id of the human',
-              type: %Types.NonNull{type: Types.String}}},
-                 resolve: fn (_root, %{id: id}) -> StarWarsData.getHuman(id) end},
+              type: %Type.NonNull{type: Type.String}}},
+                 resolve: fn (_root, %{id: id}) -> Data.getHuman(id) end},
         droid: %{
           type: droidType,
           args: %{
             id: %{
               description: 'id of the droid',
-              type: %Types.NonNull{type: Types.String}}},
+              type: %Type.NonNull{type: Type.String}}},
                  resolve: fn (_root, %{id: id}) ->
-                   StarWarsData.getDroid(id)
+                   Data.getDroid(id)
                  end}}
     end}
   end

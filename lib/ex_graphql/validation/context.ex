@@ -1,4 +1,6 @@
 defmodule ExGraphQL.Validation.Context do
+  @type t :: %{schema: ExGraphQL.Type.Schema, document: ExGraphQL.Language.Document,
+               type_info: nil, fragments: map}
   defstruct schema: nil, document: nil, type_info: nil, fragments: %{}
 
   @doc "Lookup fragment by name"
