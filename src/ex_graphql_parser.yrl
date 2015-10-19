@@ -36,9 +36,9 @@ OperationType -> 'mutation' : extract_atom('$1').
 
 OperationDefinition -> SelectionSet : build_ast_node('OperationDefinition', #{'operation' => 'query', 'selection_set' => '$1'}, #{start => extract_child_line('$1')}).
 OperationDefinition -> OperationType Name SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => '$2', 'selection_set' => '$3'}, #{start => extract_line('$2')}).
-OperationDefinition -> OperationType Name VariableDefinitions SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => '$2', 'variableDefinitions' => '$3', 'selection_set' => '$4'}, #{start => extract_line('$1')}).
+OperationDefinition -> OperationType Name VariableDefinitions SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => '$2', 'variable_definitions' => '$3', 'selection_set' => '$4'}, #{start => extract_line('$1')}).
 OperationDefinition -> OperationType Name Directives SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => '$2', 'directives' => '$3', 'selection_set' => '$4'}, #{start => extract_line('$1')}).
-OperationDefinition -> OperationType Name VariableDefinitions Directives SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => '$2', 'variableDefinitions' => '$3', 'directives' => '$4', 'selection_set' => '$5'}, #{start => extract_line('$1')}).
+OperationDefinition -> OperationType Name VariableDefinitions Directives SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => '$2', 'variable_definitions' => '$3', 'directives' => '$4', 'selection_set' => '$5'}, #{start => extract_line('$1')}).
 
 FragmentDefinition -> 'fragment' FragmentName 'on' TypeCondition SelectionSet : build_ast_node('FragmentDefinition', #{'name' => '$2', 'type_condition' => '$4', 'selection_set' => '$5'}, #{start => extract_line('$1')}).
 FragmentDefinition -> 'fragment' FragmentName 'on' TypeCondition Directives SelectionSet : build_ast_node('FragmentDefinition', #{'name' => '$2', 'type_condition' => '$4', 'directives' => '$5', 'selection_set' => '$6'}, #{start => extract_line('$1')}).
@@ -176,7 +176,7 @@ InputValueDefinitionList -> InputValueDefinition : ['$1'].
 InputValueDefinitionList -> InputValueDefinition InputValueDefinitionList : ['$1'|'$2'].
 
 InputValueDefinition -> Name ':' Type : build_ast_node('InputValueDefinition', #{'name' => '$1', 'type' => '$3'}, #{start => extract_line('$1')}).
-InputValueDefinition -> Name ':' Type DefaultValue : build_ast_node('InputValueDefinition', #{'name' => '$1', 'type' => '$3', 'defaultValue' => '$4'}, #{start => extract_line('$1')}).
+InputValueDefinition -> Name ':' Type DefaultValue : build_ast_node('InputValueDefinition', #{'name' => '$1', 'type' => '$3', 'default_value' => '$4'}, #{start => extract_line('$1')}).
 
 InterfaceTypeDefinition -> 'interface' Name '{' FieldDefinitionList '}' :
   build_ast_node('InterfaceTypeDefinition', #{'name' => '$2', 'fields' => '$4'}, #{start => extract_line('$1'), 'end' => extract_line('$5')}).
