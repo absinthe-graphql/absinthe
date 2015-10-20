@@ -2,10 +2,10 @@ defmodule ExGraphQL.Type do
 
   # ALL TYPES
 
-  @type_modules [__MODULE__.Scalar, __MODULE__.Object, __MODULE__.Interface, __MODULE__.Union, __MODULE__.InputObject, __MODULE__.List, __MODULE__.NonNull]
+  @type_modules [__MODULE__.Scalar, __MODULE__.Object, __MODULE__.Interface, __MODULE__.Union, __MODULE__.Enum, __MODULE__.InputObject, __MODULE__.List, __MODULE__.NonNull]
 
-  @doc "These are all of the possible kinds of types."
-  @type t :: __MODULE__.Scalar.t | __MODULE__.Object.t | __MODULE__.Interface.t | __MODULE__.Union.t | __MODULE__.InputObject.t | __MODULE__.List.t | __MODULE__.NonNull.t
+  @typedoc "These are all of the possible kinds of types."
+  @type t :: __MODULE__.Scalar.t | __MODULE__.Object.t | __MODULE__.Interface.t | __MODULE__.Union.t | __MODULE__.Enum.t | __MODULE__.InputObject.t | __MODULE__.List.t | __MODULE__.NonNull.t
 
   @doc "Determine if a struct matches one of the types"
   @spec type?(any) :: boolean
@@ -16,7 +16,7 @@ defmodule ExGraphQL.Type do
 
   @input_type_modules [__MODULE__.Scalar, __MODULE__.Enum, __MODULE__.InputObject, __MODULE__.List, __MODULE__.NonNull]
 
-  @doc "These types may be used as input types for arguments and directives."
+  @typedoc "These types may be used as input types for arguments and directives."
   @type input_t :: __MODULE__.Scalar.t | __MODULE__.Enum.t | __MODULE__.InputObject.t | __MODULE__.List.t | __MODULE__.NonNull.t
 
   @doc "Determine if a term is an input type"
@@ -34,7 +34,7 @@ defmodule ExGraphQL.Type do
 
   @output_type_modules [__MODULE__.Scalar, __MODULE__.Object, __MODULE__.Interface, __MODULE__.Union, __MODULE__.Enum]
 
-  @doc "These types may be used as output types as the result of fields."
+  @typedoc "These types may be used as output types as the result of fields."
   @type output_t :: __MODULE__.Scalar.t | __MODULE__.Object.t | __MODULE__.Interface.t | __MODULE__.Union.t | __MODULE__.Enum.t
 
   @doc "Determine if a term is an output type"
@@ -52,7 +52,7 @@ defmodule ExGraphQL.Type do
 
   @leaf_type_modules [__MODULE__.Scalar, __MODULE__.Enum]
 
-  @doc "These types may describe types which may be leaf values."
+  @typedoc "These types may describe types which may be leaf values."
   @type leaf_t :: __MODULE__.Scalar.t | __MODULE__.Enum.t
 
   @doc "Determine if a term is a leaf type"
@@ -70,7 +70,7 @@ defmodule ExGraphQL.Type do
 
   @composite_type_modules [__MODULE__.Object, __MODULE__.Interface, __MODULE__.Union]
 
-  @doc "These types may describe the parent context of a selection set."
+  @typedoc "These types may describe the parent context of a selection set."
   @type composite_t :: __MODULE__.Object.t | __MODULE__.Interface.t | __MODULE__.Union.t
 
   @doc "Determine if a term is a composite type"
@@ -82,7 +82,7 @@ defmodule ExGraphQL.Type do
 
   @abstract_type_modules [__MODULE__.Interface, __MODULE__.Union]
 
-  @doc "These types may describe the parent context of a selection set."
+  @typedoc "These types may describe the parent context of a selection set."
   @type abstract_t :: __MODULE__.Interface.t | __MODULE__.Union.t
 
   @doc "Determine if a term is an abstract type"
@@ -94,7 +94,7 @@ defmodule ExGraphQL.Type do
 
   @nullable_type_modules [__MODULE__.Scalar, __MODULE__.Object, __MODULE__.Interface, __MODULE__.Union, __MODULE__.Enum, __MODULE__.InputObject, __MODULE__.List]
 
-  @doc "These types can all accept null as a value."
+  @typedoc "These types can all accept null as a value."
   @type nullable_t :: __MODULE__.Scalar.t | __MODULE__.Object.t | __MODULE__.Interface.t | __MODULE__.Union.t | __MODULE__.Enum.t | __MODULE__.InputObject.t | __MODULE__.List.t
 
   @doc "Unwrap the underlying nullable type or return unmodified"
@@ -106,7 +106,7 @@ defmodule ExGraphQL.Type do
 
   @named_type_modules [__MODULE__.Scalar, __MODULE__.Object, __MODULE__.Interface, __MODULE__.Union, __MODULE__.Enum, __MODULE__.InputObject]
 
-  @doc "These named types do not include modifiers like ExGraphQL.Type.List or ExGraphQL.Type.NonNull."
+  @typedoc "These named types do not include modifiers like ExGraphQL.Type.List or ExGraphQL.Type.NonNull."
   @type named_t :: __MODULE__.Scalar.t | __MODULE__.Object.t | __MODULE__.Interface.t | __MODULE__.Union.t | __MODULE__.Enum.t | __MODULE__.InputObject.t
 
   @doc "Determine the underlying named type, if any"
