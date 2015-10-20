@@ -22,8 +22,8 @@ defmodule ExGraphQL do
     end
   end
 
-  @spec parse(binary) :: {:ok, %ExGraphQL.Language.Document{}} | {:error, tuple}
-  @spec parse(%ExGraphQL.Language.Source{}) :: {:ok, %ExGraphQL.Language.Document{}} | {:error, tuple}
+  @spec parse(binary) :: {:ok, ExGraphQL.Language.Document.t} | {:error, tuple}
+  @spec parse(ExGraphQL.Language.Source.t) :: {:ok, ExGraphQL.Language.Document.t} | {:error, tuple}
   def parse(input) when is_binary(input) do
     parse(%ExGraphQL.Language.Source{body: input})
   end
@@ -34,8 +34,8 @@ defmodule ExGraphQL do
     end
   end
 
-  @spec parse!(binary) :: %ExGraphQL.Language.Document{}
-  @spec parse!(%ExGraphQL.Language.Source{}) :: %ExGraphQL.Language.Document{}
+  @spec parse!(binary) :: ExGraphQL.Language.Document.t
+  @spec parse!(ExGraphQL.Language.Source.t) :: ExGraphQL.Language.Document.t
   def parse!(input) when is_binary(input) do
     parse!(%ExGraphQL.Language.Source{body: input})
   end
@@ -46,7 +46,7 @@ defmodule ExGraphQL do
     end
   end
 
-  @spec run(%ExGraphQL.Type.Schema{}, binary | %ExGraphQL.Language.Source{} | %ExGraphQL.Language.Document{}) :: {:ok, %{}} | {:error, any}
+  @spec run(ExGraphQL.Type.Schema.t, binary | ExGraphQL.Language.Source.t | ExGraphQL.Language.Document.t) :: {:ok, map} | {:error, any}
   def run(schema, %ExGraphQL.Language.Document{} = document) do
     {:ok, {:nope, document}}
   end
@@ -57,7 +57,7 @@ defmodule ExGraphQL do
     end
   end
 
-  @spec run!(%ExGraphQL.Type.Schema{}, binary | %ExGraphQL.Language.Source{} | %ExGraphQL.Language.Document{}) :: %{}
+  @spec run!(ExGraphQL.Type.Schema.t, binary | ExGraphQL.Language.Source.t | ExGraphQL.Language.Document.t) :: %{}
   def run!(schema, input) do
     case run(schema, input) do
       {:ok, result} -> result
@@ -65,10 +65,10 @@ defmodule ExGraphQL do
     end
   end
 
-  @spec validate(%ExGraphQL.Type.Schema{}, %ExGraphQL.Language.Document{}) :: :ok | {:error, term}
+  @spec validate(ExGraphQL.Type.Schema.t, ExGraphQL.Language.Document.t) :: :ok | {:error, term}
   defdelegate validate(schema, document), to: ExGraphQL.Validation
 
-  @spec validate(%ExGraphQL.Type.Schema{}, %ExGraphQL.Language.Document{}, [atom]) :: :ok | {:error, term}
+  @spec validate(ExGraphQL.Type.Schema.t, ExGraphQL.Language.Document.t, [atom]) :: :ok | {:error, term}
   defdelegate validate(schema, document, rules), to: ExGraphQL.Validation
 
 end

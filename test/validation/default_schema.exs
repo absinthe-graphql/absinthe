@@ -109,8 +109,8 @@ defmodule Validation.DefaultSchema do
                   name: %{
                     type: Type.String,
                     args: %{surname: %{type: Type.Boolean}}},
-                  pets: %{type: %Type.List{type: pet}},
-                  relatives: %{type: %Type.List{type: human}},
+                  pets: %{type: %Type.List{of_type: pet}},
+                  relatives: %{type: %Type.List{of_type: human}},
                   iq: %{type: Type.Int}}
     end}
   end
@@ -161,11 +161,11 @@ defmodule Validation.DefaultSchema do
     %Type.InputObject{
       name: 'ComplexInput',
       fields: %{
-        requiredField: %{type: %Type.NonNull{type: Type.Boolean}},
+        requiredField: %{type: %Type.NonNull{of_type: Type.Boolean}},
         intField: %{type: Type.Int},
         stringField: %{type: Type.String},
         booleanField: %{type: Type.Boolean},
-        stringListField: %{type: %Type.List{type: Type.String}},
+        stringListField: %{type: %Type.List{of_type: Type.String}},
       }}
   end
 
@@ -181,7 +181,7 @@ defmodule Validation.DefaultSchema do
                       args: %{intArg: %{type: Type.Int}}},
                     nonNullIntArgField: %{
                       type: Type.String,
-                      args: %{nonNullIntArg: %{type: %Type.NonNull{type: Type.Int}}}},
+                      args: %{nonNullIntArg: %{type: %Type.NonNull{of_type: Type.Int}}}},
                     stringArgField: %{
                       type: Type.String,
                       args: %{stringArg: %{type: Type.String}}},
@@ -199,15 +199,15 @@ defmodule Validation.DefaultSchema do
                       args: %{idArg: %{type: Type.ID}}},
                     stringListArgField: %{
                       type: Type.String,
-                      args: %{stringListArg: %{type: %Type.List{type: Type.String}}}},
+                      args: %{stringListArg: %{type: %Type.List{of_type: Type.String}}}},
                     complexArgField: %{
                       type: Type.String,
                       args: %{complexArg: %{type: complex_input}}},
                     multipleReqs: %{
                       type: Type.String,
                       args: %{
-                        req1: %{type: %Type.NonNull{type: Type.Int}},
-                        req2: %{type: %Type.NonNull{type: Type.Int}}}},
+                        req1: %{type: %Type.NonNull{of_type: Type.Int}},
+                        req2: %{type: %Type.NonNull{of_type: Type.Int}}}},
                     multipleOpts: %{
                       type: Type.String,
                       args: %{
@@ -220,8 +220,8 @@ defmodule Validation.DefaultSchema do
                     multipleOptAndReq: %{
                       type: Type.String,
                       args: %{
-                        req1: %{type: %Type.NonNull{type: Type.Int}},
-                        req2: %{type: %Type.NonNull{type: Type.Int}},
+                        req1: %{type: %Type.NonNull{of_type: Type.Int}},
+                        req2: %{type: %Type.NonNull{of_type: Type.Int}},
                         opt1: %{
                           type: Type.Int,
                           defaultValue: 0},

@@ -1,3 +1,6 @@
 defmodule ExGraphQL.Type.List do
-  defstruct type: nil
+
+  @type t :: %{of_type: ExGraphQL.Type.t}
+  defstruct of_type: nil
+
 end

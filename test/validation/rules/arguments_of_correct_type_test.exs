@@ -594,6 +594,7 @@ defmodule Validation.ArgumentsOfCorrectTypeTest do
 
   describe "Invalid non-nullable value" do
 
+    @tag :current
     it "Incorrect value type" do
       assert_fails_rule ArgumentsOfCorrectType, """
         {

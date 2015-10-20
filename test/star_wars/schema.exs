@@ -105,16 +105,16 @@ defmodule StarWars.Schema do
       description: 'A character in the Star Wars Trilogy',
       fields: fn -> %{
         id: %{
-          type: %Type.NonNull{type: Type.String},
+          type: %Type.NonNull{of_type: Type.String},
           description: 'The id of the character.'},
         name: %{
           type: Type.String,
           description: 'The name of the character.'},
         friends: %{
-          type: %Type.List{type: characterInterface},
+          type: %Type.List{of_type: characterInterface},
           description: 'The friends of the character, or an empty list if they have none.'},
         appearsIn: %{
-          type: %Type.List{type: episodeEnum},
+          type: %Type.List{of_type: episodeEnum},
           description: 'Which movies they appear in.'}}
       end,
       resolveType: fn (character) ->
@@ -143,17 +143,17 @@ defmodule StarWars.Schema do
       description: 'A humanoid creature in the Star Wars universe.',
       fields: fn -> %{
         id: %{
-          type: %Type.NonNull{type: Type.String},
+          type: %Type.NonNull{of_type: Type.String},
           description: 'The id of the human.'},
         name: %{
           type: Type.String,
           description: 'The name of the human.'},
         friends: %{
-          type: %Type.List{type: characterInterface},
+          type: %Type.List{of_type: characterInterface},
           description: 'The friends of the human, or an empty list if they have none.',
           resolve: &Data.getFriends/1},
         appearsIn: %{
-          type: %Type.List{type: episodeEnum},
+          type: %Type.List{of_type: episodeEnum},
           description: 'Which movies they appear in.'},
         homePlanet: %{
           type: Type.String,
@@ -180,17 +180,17 @@ defmodule StarWars.Schema do
       description: 'A mechanical creature in the Star Wars universe.',
       fields: fn -> %{
         id: %{
-          type: %Type.NonNull{type: Type.String},
+          type: %Type.NonNull{of_type: Type.String},
           description: 'The id of the droid.'},
         name: %{
           type: Type.String,
           description: 'The name of the droid.'},
         friends: %{
-          type: %Type.List{type: characterInterface},
+          type: %Type.List{of_type: characterInterface},
           description: 'The friends of the droid, or an empty list if they have none.',
           resolve: &Data.getFriends/1},
         appearsIn: %{
-          type: %Type.List{type: episodeEnum},
+          type: %Type.List{of_type: episodeEnum},
           description: 'Which movies they appear in.'},
         primaryFunction: %{
           type: Type.String,
@@ -227,14 +227,14 @@ defmodule StarWars.Schema do
           args: %{
             id: %{
               description: 'id of the human',
-              type: %Type.NonNull{type: Type.String}}},
+              type: %Type.NonNull{of_type: Type.String}}},
                  resolve: fn (_root, %{id: id}) -> Data.getHuman(id) end},
         droid: %{
           type: droidType,
           args: %{
             id: %{
               description: 'id of the droid',
-              type: %Type.NonNull{type: Type.String}}},
+              type: %Type.NonNull{of_type: Type.String}}},
                  resolve: fn (_root, %{id: id}) ->
                    Data.getDroid(id)
                  end}}

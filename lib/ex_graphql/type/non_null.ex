@@ -1,3 +1,6 @@
 defmodule ExGraphQL.Type.NonNull do
-  defstruct type: nil
+
+  @type t :: %{of_type: ExGraphQL.Type.nullable_t}
+  defstruct of_type: nil
+
 end

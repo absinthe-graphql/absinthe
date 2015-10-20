@@ -1,8 +1,9 @@
 defmodule ExGraphQL.Language.Document do
+
   @type t :: %{definitions: [ExGraphQL.Language.Node.t], loc: ExGraphQL.Language.loc_t}
   defstruct definitions: [], loc: %{start: nil}
 
-  @spec fragments_by_name(%ExGraphQL.Language.Document{}) :: %{binary => %ExGraphQL.Language.FragmentDefinition{}}
+  @spec fragments_by_name(ExGraphQL.Language.Document.t) :: %{binary => ExGraphQL.Language.FragmentDefinition.t}
   def fragments_by_name(%{definitions: definitions}) do
     definitions
     |> Enum.reduce %{}, fn (statement, memo) ->

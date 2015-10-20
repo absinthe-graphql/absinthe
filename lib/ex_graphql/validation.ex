@@ -29,8 +29,8 @@ defmodule ExGraphQL.Validation do
     Rules.VariablesInAllowedPosition
   ]
 
-  @spec validate(%ExGraphQL.Type.Schema{}, %ExGraphQL.Language.Document{}) :: :ok | {:error, term}
-  @spec validate(%ExGraphQL.Type.Schema{}, %ExGraphQL.Language.Document{}, [atom]) :: :ok | {:error, term}
+  @spec validate(ExGraphQL.Type.Schema.t, ExGraphQL.Language.Document.t) :: :ok | {:error, term}
+  @spec validate(ExGraphQL.Type.Schema.t, ExGraphQL.Language.Document.t, [atom]) :: :ok | {:error, term}
   def validate(schema, document, rules \\ @specified_rules) do
     context = %ExGraphQL.Validation.Context{schema: schema, document: document}
     errors = rules |> Enum.flat_map &(check(context, document, &1))

@@ -4,13 +4,13 @@ defmodule ExGraphQL.Validation.Context do
   defstruct schema: nil, document: nil, type_info: nil, fragments: %{}
 
   @doc "Lookup fragment by name"
-  @spec fragment(%__MODULE__{}, binary) :: nil | %ExGraphQL.Language.FragmentDefinition{}
+  @spec fragment(t, binary) :: nil | ExGraphQL.Language.FragmentDefinition.t
   def fragment(%{fragments: fragment}, name) do
     fragment |> Map.get(name)
   end
 
   @doc "Populate context with document fragments"
-  @spec with_fragments(%__MODULE__{}) :: %__MODULE__{}
+  @spec with_fragments(t) :: t
   def with_fragments(%{document: document} = context) do
     fragments = document |> ExGraphQL.Language.Document.fragments_by_name
     %{context | fragments: fragments}
