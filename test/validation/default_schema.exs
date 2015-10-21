@@ -38,7 +38,7 @@ defmodule Validation.DefaultSchema do
   defp dog do
     %Type.Object{
       name: 'Dog',
-      isTypeOf: fn ->
+      is_type_of: fn ->
         true
       end,
       fields: fn -> %{
@@ -68,7 +68,7 @@ defmodule Validation.DefaultSchema do
   defp cat do
     %Type.Object{
       name: 'Cat',
-      isTypeOf: fn ->
+      is_type_of: fn ->
         true
       end,
       fields: fn -> %{
@@ -103,7 +103,7 @@ defmodule Validation.DefaultSchema do
   defp human do
     %Type.Object{
       name: 'Human',
-      isTypeOf: fn -> true end,
+      is_type_of: fn -> true end,
     interfaces: [being, intelligent],
     fields: fn -> %{
                   name: %{
@@ -118,7 +118,7 @@ defmodule Validation.DefaultSchema do
   defp alien do
     %Type.Object{
       name: 'Alien',
-      isTypeOf: fn -> true end,
+      is_type_of: fn -> true end,
     interfaces: [being, intelligent],
     fields: %{
       iq: %{type: Type.Int},
