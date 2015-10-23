@@ -3,14 +3,14 @@ defmodule Type.Fixtures do
   alias ExGraphQL.Type
 
   def blog_image do
-    %Type.Object{name: "Image",
+    %Type.ObjectType{name: "Image",
                  fields: %{url: %{type: Type.Scalar.string},
                            width: %{type: Type.Scalar.integer},
                            height: %{type: Type.Scalar.integer}}}
   end
 
   def blog_author do
-    %Type.Object{name: "Author",
+    %Type.ObjectType{name: "Author",
                   fields: fn -> %{
                                 id: %{type: Type.Scalar.string},
                                 name: %{type: Type.Scalar.string},
@@ -22,7 +22,7 @@ defmodule Type.Fixtures do
   end
 
   def blog_article do
-    %Type.Object{name: "Article",
+    %Type.ObjectType{name: "Article",
                  fields: %{id: %{type: Type.Scalar.string},
                            isPublished: %{type: Type.Scalar.boolean},
                            author: %{type: blog_author},
@@ -31,26 +31,26 @@ defmodule Type.Fixtures do
   end
 
   def blog_query do
-    %Type.Object{name: "Query",
+    %Type.ObjectType{name: "Query",
                  fields: %{article: %{args: %{id: %{type: Type.Scalar.string}},
                                       type: blog_article},
                            feed: %{type: %Type.List{of_type: blog_article}}}}
   end
 
   def blog_mutation do
-    %Type.Object{name: "Mutation",
+    %Type.ObjectType{name: "Mutation",
                  fields: %{writeArticle: %{type: blog_article}}}
   end
 
   def object_type do
-    %Type.Object{name: "Object",
+    %Type.ObjectType{name: "Object",
                   is_type_of: fn ->
                     true
                   end}
   end
 
   def interface_type do
-    %Type.Interface{name: "Interface"}
+    %Type.InterfaceType{name: "Interface"}
   end
 
   def union_type do
@@ -62,7 +62,7 @@ defmodule Type.Fixtures do
   end
 
   def input_object_type do
-    %Type.InputObject{name: "InputObject"}
+    %Type.InputObjectType{name: "InputObject"}
   end
 
 end

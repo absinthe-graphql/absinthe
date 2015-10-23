@@ -2,10 +2,10 @@ defmodule ExGraphQL.Type do
 
   # ALL TYPES
 
-  @type_modules [__MODULE__.Scalar, __MODULE__.Object, __MODULE__.Interface, __MODULE__.Union, __MODULE__.Enum, __MODULE__.InputObject, __MODULE__.List, __MODULE__.NonNull]
+  @type_modules [__MODULE__.Scalar, __MODULE__.ObjectType, __MODULE__.InterfaceType, __MODULE__.Union, __MODULE__.Enum, __MODULE__.InputObjectType, __MODULE__.List, __MODULE__.NonNull]
 
   @typedoc "These are all of the possible kinds of types."
-  @type t :: __MODULE__.Scalar.t | __MODULE__.Object.t | __MODULE__.Interface.t | __MODULE__.Union.t | __MODULE__.Enum.t | __MODULE__.InputObject.t | __MODULE__.List.t | __MODULE__.NonNull.t
+  @type t :: __MODULE__.Scalar.t | __MODULE__.ObjectType.t | __MODULE__.InterfaceType.t | __MODULE__.Union.t | __MODULE__.Enum.t | __MODULE__.InputObjectType.t | __MODULE__.List.t | __MODULE__.NonNull.t
 
   @doc "Determine if a struct matches one of the types"
   @spec type?(any) :: boolean
@@ -14,10 +14,10 @@ defmodule ExGraphQL.Type do
 
   # INPUT TYPES
 
-  @input_type_modules [__MODULE__.Scalar, __MODULE__.Enum, __MODULE__.InputObject, __MODULE__.List, __MODULE__.NonNull]
+  @input_type_modules [__MODULE__.Scalar, __MODULE__.Enum, __MODULE__.InputObjectType, __MODULE__.List, __MODULE__.NonNull]
 
   @typedoc "These types may be used as input types for arguments and directives."
-  @type input_t :: __MODULE__.Scalar.t | __MODULE__.Enum.t | __MODULE__.InputObject.t | __MODULE__.List.t | __MODULE__.NonNull.t
+  @type input_t :: __MODULE__.Scalar.t | __MODULE__.Enum.t | __MODULE__.InputObjectType.t | __MODULE__.List.t | __MODULE__.NonNull.t
 
   @doc "Determine if a term is an input type"
   @spec input_type?(any) :: boolean
@@ -32,10 +32,10 @@ defmodule ExGraphQL.Type do
 
   # OUTPUT TYPES
 
-  @output_type_modules [__MODULE__.Scalar, __MODULE__.Object, __MODULE__.Interface, __MODULE__.Union, __MODULE__.Enum]
+  @output_type_modules [__MODULE__.Scalar, __MODULE__.ObjectType, __MODULE__.InterfaceType, __MODULE__.Union, __MODULE__.Enum]
 
   @typedoc "These types may be used as output types as the result of fields."
-  @type output_t :: __MODULE__.Scalar.t | __MODULE__.Object.t | __MODULE__.Interface.t | __MODULE__.Union.t | __MODULE__.Enum.t
+  @type output_t :: __MODULE__.Scalar.t | __MODULE__.ObjectType.t | __MODULE__.InterfaceType.t | __MODULE__.Union.t | __MODULE__.Enum.t
 
   @doc "Determine if a term is an output type"
   @spec output_type?(any) :: boolean
@@ -68,10 +68,10 @@ defmodule ExGraphQL.Type do
 
   # COMPOSITE TYPES
 
-  @composite_type_modules [__MODULE__.Object, __MODULE__.Interface, __MODULE__.Union]
+  @composite_type_modules [__MODULE__.ObjectType, __MODULE__.InterfaceType, __MODULE__.Union]
 
   @typedoc "These types may describe the parent context of a selection set."
-  @type composite_t :: __MODULE__.Object.t | __MODULE__.Interface.t | __MODULE__.Union.t
+  @type composite_t :: __MODULE__.ObjectType.t | __MODULE__.InterfaceType.t | __MODULE__.Union.t
 
   @doc "Determine if a term is a composite type"
   @spec composite_type?(any) :: boolean
@@ -80,10 +80,10 @@ defmodule ExGraphQL.Type do
 
   # ABSTRACT TYPES
 
-  @abstract_type_modules [__MODULE__.Interface, __MODULE__.Union]
+  @abstract_type_modules [__MODULE__.InterfaceType, __MODULE__.Union]
 
   @typedoc "These types may describe the parent context of a selection set."
-  @type abstract_t :: __MODULE__.Interface.t | __MODULE__.Union.t
+  @type abstract_t :: __MODULE__.InterfaceType.t | __MODULE__.Union.t
 
   @doc "Determine if a term is an abstract type"
   @spec abstract_type?(any) :: boolean
@@ -92,10 +92,10 @@ defmodule ExGraphQL.Type do
 
   # NULLABLE TYPES
 
-  @nullable_type_modules [__MODULE__.Scalar, __MODULE__.Object, __MODULE__.Interface, __MODULE__.Union, __MODULE__.Enum, __MODULE__.InputObject, __MODULE__.List]
+  @nullable_type_modules [__MODULE__.Scalar, __MODULE__.ObjectType, __MODULE__.InterfaceType, __MODULE__.Union, __MODULE__.Enum, __MODULE__.InputObjectType, __MODULE__.List]
 
   @typedoc "These types can all accept null as a value."
-  @type nullable_t :: __MODULE__.Scalar.t | __MODULE__.Object.t | __MODULE__.Interface.t | __MODULE__.Union.t | __MODULE__.Enum.t | __MODULE__.InputObject.t | __MODULE__.List.t
+  @type nullable_t :: __MODULE__.Scalar.t | __MODULE__.ObjectType.t | __MODULE__.InterfaceType.t | __MODULE__.Union.t | __MODULE__.Enum.t | __MODULE__.InputObjectType.t | __MODULE__.List.t
 
   @doc "Unwrap the underlying nullable type or return unmodified"
   @spec nullable(any) :: nullable_t | t # nullable_t is a subset of t, but broken out for clarity
@@ -104,10 +104,10 @@ defmodule ExGraphQL.Type do
 
   # NAMED TYPES
 
-  @named_type_modules [__MODULE__.Scalar, __MODULE__.Object, __MODULE__.Interface, __MODULE__.Union, __MODULE__.Enum, __MODULE__.InputObject]
+  @named_type_modules [__MODULE__.Scalar, __MODULE__.ObjectType, __MODULE__.InterfaceType, __MODULE__.Union, __MODULE__.Enum, __MODULE__.InputObjectType]
 
   @typedoc "These named types do not include modifiers like ExGraphQL.Type.List or ExGraphQL.Type.NonNull."
-  @type named_t :: __MODULE__.Scalar.t | __MODULE__.Object.t | __MODULE__.Interface.t | __MODULE__.Union.t | __MODULE__.Enum.t | __MODULE__.InputObject.t
+  @type named_t :: __MODULE__.Scalar.t | __MODULE__.ObjectType.t | __MODULE__.InterfaceType.t | __MODULE__.Union.t | __MODULE__.Enum.t | __MODULE__.InputObjectType.t
 
   @doc "Determine the underlying named type, if any"
   @spec named_type(any) :: nil | named_t
@@ -116,5 +116,20 @@ defmodule ExGraphQL.Type do
   end
   def named_type(%{__struct__: mod} = term) when mod in @named_type_modules, do: term
   def named_type(_), do: nil
+
+  # WRAPPERS
+
+  @wrapping_modules [__MODULE__.List, __MODULE__.NonNull]
+
+  @typedoc "A type wrapped in a List on NonNull"
+  @type wrapping_t :: __MODULE__.List.t | __MODULE__.NonNull.t
+
+  @spec wrapped?(t) :: boolean
+  def wrapped?(%{__struct__: mod}) when mod in @wrapping_modules, do: true
+  def wrapped?(_), do: false
+
+  @doc "Unwrap a type from a List or NonNull"
+  @spec unwrap(wrapping_t) :: t
+  def unwrap(%{of_type: t}), do: t
 
 end

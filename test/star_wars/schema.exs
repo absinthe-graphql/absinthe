@@ -100,7 +100,7 @@ defmodule StarWars.Schema do
   #     }
   #
   defp characterInterface do
-    %Type.Interface{
+    %Type.InterfaceType{
       name: 'Character',
       description: 'A character in the Star Wars Trilogy',
       fields: fn -> %{
@@ -138,7 +138,7 @@ defmodule StarWars.Schema do
   #     }
   #
   defp humanType do
-    %Type.Object{
+    %Type.ObjectType{
       name: 'Human',
       description: 'A humanoid creature in the Star Wars universe.',
       fields: fn -> %{
@@ -175,7 +175,7 @@ defmodule StarWars.Schema do
   #     }
   #
   defp droidType do
-    %Type.Object{
+    %Type.ObjectType{
       name:  'Droid',
       description: 'A mechanical creature in the Star Wars universe.',
       fields: fn -> %{
@@ -212,7 +212,7 @@ defmodule StarWars.Schema do
   #       droid(id: String!): Droid
   #     }
   defp queryType do
-    %Type.Object{
+    %Type.ObjectType{
       name: 'Query',
       fields: fn -> %{
         hero: %{

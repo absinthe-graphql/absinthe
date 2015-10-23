@@ -3,8 +3,8 @@ defmodule Type.DefinitionTest do
 
   alias Type.Fixtures
   alias ExGraphQL.Type.FieldDefinitionMap
+  alias ExGraphQL.Type
 
-  @tag :type_def
   it "defines a query only schema" do
 
     blog_schema = %ExGraphQL.Type.Schema{query: Fixtures.blog_query}
@@ -40,6 +40,23 @@ defmodule Type.DefinitionTest do
     assert write_mutation.name == "write_article"
   end
 
+  it "includes nested input objects in the map" do
+    nested_input_object = %Type.InputObjectType{
+      name: "NestedInputObject",
+      fields: %{value: %{type: Type.Scalar.string}}}
+    some_input_object = %Type.InputObjectType{
+      name: "SomeInputObject",
+      fields: %{nested: %{type: nested_input_object}}}
+    some_mutation = %Type.ObjectType{
+      name: "SomeMutation",
+      fields: %{
+        mutateSomething: %{
+          type: Fixtures.blog_article,
+          args: %{input: %{type: some_input_object}}}}}
+    {:ok, schema} = Type.Schema.create(query: Fixtures.blog_query,
+                                       mutation: some_mutation)
+    assert schema.type_map |> Map.get("NestedInputObject") == nested_input_object
+  end
 
   # it("includes nested input objects in the map", fn -> {
   #   var NestedInputObject = new GraphQLInputObjectType({

@@ -7,22 +7,22 @@ defmodule Validation.DefaultSchema do
   end
 
   defp being do
-    %Type.Interface{
+    %Type.InterfaceType{
       name: 'Being',
       fields: fn -> %{
                     name: %{
-                      type: Type.String,
-                      args: %{surname: %{type: Type.Boolean}}}}
+                      type: Type.Scalar.string,
+                      args: %{surname: %{type: Type.Scalar.boolean}}}}
       end}
   end
 
   defp pet do
-    %Type.Interface{
+    %Type.InterfaceType{
       name: 'Pet',
       fields: fn -> %{
                     name: %{
-                      type: Type.String,
-                      args: %{surname: %{type: Type.Boolean}}}}
+                      type: Type.Scalar.string,
+                      args: %{surname: %{type: Type.Scalar.boolean}}}}
       end}
   end
 
@@ -36,48 +36,48 @@ defmodule Validation.DefaultSchema do
   end
 
   defp dog do
-    %Type.Object{
+    %Type.ObjectType{
       name: 'Dog',
       is_type_of: fn ->
         true
       end,
       fields: fn -> %{
                     name: %{
-                      type: Type.String,
-                      args: %{surname: %{type: Type.Boolean}}},
-                    nickname: %{type: Type.String},
-                    barkVolume: %{type: Type.Int},
-                    barks: %{type: Type.Boolean},
+                      type: Type.Scalar.string,
+                      args: %{surname: %{type: Type.Scalar.boolean}}},
+                    nickname: %{type: Type.Scalar.string},
+                    barkVolume: %{type: Type.Scalar.integer},
+                    barks: %{type: Type.Scalar.boolean},
                     doesKnowCommand: %{
-                      type: Type.Boolean,
+                      type: Type.Scalar.boolean,
                       args: %{dogCommand: %{type: dog_command}}},
                     isHousetrained: %{
-                      type: Type.Boolean,
+                      type: Type.Scalar.boolean,
                       args: %{
                         atOtherHomes: %{
-                          type: Type.Boolean,
+                          type: Type.Scalar.boolean,
                           defaultValue: true}}},
                     isAtLocation: %{
-                      type: Type.Boolean,
-                      args: %{x: %{type: Type.Int},
-                              y: %{type: Type.Int}}}}
+                      type: Type.Scalar.boolean,
+                      args: %{x: %{type: Type.Scalar.integer},
+                              y: %{type: Type.Scalar.integer}}}}
       end,
       interfaces: [being, pet]}
   end
 
   defp cat do
-    %Type.Object{
+    %Type.ObjectType{
       name: 'Cat',
       is_type_of: fn ->
         true
       end,
       fields: fn -> %{
                     name: %{
-                      type: Type.String,
-                      args: %{surname: %{type: Type.Boolean}}},
-                    nickname: %{type: Type.String},
-                    meows: %{type: Type.Boolean},
-                    meowVolume: %{type: Type.Int},
+                      type: Type.Scalar.string,
+                      args: %{surname: %{type: Type.Scalar.boolean}}},
+                    nickname: %{type: Type.Scalar.string},
+                    meows: %{type: Type.Scalar.boolean},
+                    meowVolume: %{type: Type.Scalar.integer},
                     furColor: %{type: FurColor}}
       end,
       interfaces: [being, pet]}
@@ -93,39 +93,39 @@ defmodule Validation.DefaultSchema do
   end
 
   defp intelligent do
-    %Type.Interface{
+    %Type.InterfaceType{
       name: 'Intelligent',
       fields: %{
-        iq: %{type: Type.Int}
+        iq: %{type: Type.Scalar.integer}
       }}
   end
 
   defp human do
-    %Type.Object{
+    %Type.ObjectType{
       name: 'Human',
       is_type_of: fn -> true end,
     interfaces: [being, intelligent],
     fields: fn -> %{
                   name: %{
-                    type: Type.String,
-                    args: %{surname: %{type: Type.Boolean}}},
+                    type: Type.Scalar.string,
+                    args: %{surname: %{type: Type.Scalar.boolean}}},
                   pets: %{type: %Type.List{of_type: pet}},
                   relatives: %{type: %Type.List{of_type: human}},
-                  iq: %{type: Type.Int}}
+                  iq: %{type: Type.Scalar.integer}}
     end}
   end
 
   defp alien do
-    %Type.Object{
+    %Type.ObjectType{
       name: 'Alien',
       is_type_of: fn -> true end,
     interfaces: [being, intelligent],
     fields: %{
-      iq: %{type: Type.Int},
+      iq: %{type: Type.Scalar.integer},
       name: %{
-        type: Type.String,
-        args: %{surname: %{type: Type.Boolean}}},
-      numEyes: %{type: Type.Int}}}
+        type: Type.Scalar.string,
+        args: %{surname: %{type: Type.Scalar.boolean}}},
+      numEyes: %{type: Type.Scalar.integer}}}
   end
 
   defp dog_or_human do
@@ -158,85 +158,85 @@ defmodule Validation.DefaultSchema do
   end
 
   defp complex_input do
-    %Type.InputObject{
+    %Type.InputObjectType{
       name: 'ComplexInput',
       fields: %{
-        requiredField: %{type: %Type.NonNull{of_type: Type.Boolean}},
-        intField: %{type: Type.Int},
-        stringField: %{type: Type.String},
-        booleanField: %{type: Type.Boolean},
-        stringListField: %{type: %Type.List{of_type: Type.String}},
+        requiredField: %{type: %Type.NonNull{of_type: Type.Scalar.boolean}},
+        intField: %{type: Type.Scalar.integer},
+        stringField: %{type: Type.Scalar.string},
+        booleanField: %{type: Type.Scalar.boolean},
+        stringListField: %{type: %Type.List{of_type: Type.Scalar.string}},
       }}
   end
 
   defp complicated_args do
-    %Type.Object{
+    %Type.ObjectType{
       name: 'ComplicatedArgs',
       # TODO List
       # TODO Coercion
       # TODO NotNulls
       fields: fn -> %{
                     intArgField: %{
-                      type: Type.String,
-                      args: %{intArg: %{type: Type.Int}}},
+                      type: Type.Scalar.string,
+                      args: %{intArg: %{type: Type.Scalar.integer}}},
                     nonNullIntArgField: %{
-                      type: Type.String,
-                      args: %{nonNullIntArg: %{type: %Type.NonNull{of_type: Type.Int}}}},
+                      type: Type.Scalar.string,
+                      args: %{nonNullIntArg: %{type: %Type.NonNull{of_type: Type.Scalar.integer}}}},
                     stringArgField: %{
-                      type: Type.String,
-                      args: %{stringArg: %{type: Type.String}}},
+                      type: Type.Scalar.string,
+                      args: %{stringArg: %{type: Type.Scalar.string}}},
                     booleanArgField: %{
-                      type: Type.String,
-                      args: %{booleanArg: %{type: Type.Boolean}}},
+                      type: Type.Scalar.string,
+                      args: %{booleanArg: %{type: Type.Scalar.boolean}}},
                     enumArgField: %{
-                      type: Type.String,
+                      type: Type.Scalar.string,
                       args: %{enumArg: %{type: fur_color} }},
                     floatArgField: %{
-                      type: Type.String,
+                      type: Type.Scalar.string,
                       args: %{floatArg: %{type: Type.Float}}},
                     idArgField: %{
-                      type: Type.String,
-                      args: %{idArg: %{type: Type.ID}}},
+                      type: Type.Scalar.string,
+                      args: %{idArg: %{type: Type.Scalar.id}}},
                     stringListArgField: %{
-                      type: Type.String,
-                      args: %{stringListArg: %{type: %Type.List{of_type: Type.String}}}},
+                      type: Type.Scalar.string,
+                      args: %{stringListArg: %{type: %Type.List{of_type: Type.Scalar.string}}}},
                     complexArgField: %{
-                      type: Type.String,
+                      type: Type.Scalar.string,
                       args: %{complexArg: %{type: complex_input}}},
                     multipleReqs: %{
-                      type: Type.String,
+                      type: Type.Scalar.string,
                       args: %{
-                        req1: %{type: %Type.NonNull{of_type: Type.Int}},
-                        req2: %{type: %Type.NonNull{of_type: Type.Int}}}},
+                        req1: %{type: %Type.NonNull{of_type: Type.Scalar.integer}},
+                        req2: %{type: %Type.NonNull{of_type: Type.Scalar.integer}}}},
                     multipleOpts: %{
-                      type: Type.String,
+                      type: Type.Scalar.string,
                       args: %{
                         opt1: %{
-                          type: Type.Int,
+                          type: Type.Scalar.integer,
                           defaultValue: 0},
                         opt2: %{
-                          type: Type.Int,
+                          type: Type.Scalar.integer,
                           defaultValue: 0}}},
                     multipleOptAndReq: %{
-                      type: Type.String,
+                      type: Type.Scalar.string,
                       args: %{
-                        req1: %{type: %Type.NonNull{of_type: Type.Int}},
-                        req2: %{type: %Type.NonNull{of_type: Type.Int}},
+                        req1: %{type: %Type.NonNull{of_type: Type.Scalar.integer}},
+                        req2: %{type: %Type.NonNull{of_type: Type.Scalar.integer}},
                         opt1: %{
-                          type: Type.Int,
+                          type: Type.Scalar.integer,
                           defaultValue: 0},
                         opt2: %{
-                          type: Type.Int,
+                          type: Type.Scalar.integer,
                           defaultValue: 0}}}}
       end}
   end
 
   defp query_root do
-    %Type.Object{
+    %Type.ObjectType{
       name: 'QueryRoot',
       fields: fn -> %{
                     human: %{
-                      args: %{id: %{type: Type.ID}},
+                      args: %{id: %{type: Type.Scalar.id}},
                       type: human},
                     alien: %{type: alien},
                     dog: %{type: dog},
