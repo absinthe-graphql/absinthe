@@ -1,51 +1,79 @@
 defmodule Type.Fixtures do
 
+  use ExGraphQL.Type
   alias ExGraphQL.Type
 
   def blog_image do
-    %Type.ObjectType{name: "Image",
-                     fields: %{url: %Type.FieldDefinition{type: Type.Scalar.string},
-                               width: %Type.FieldDefinition{type: Type.Scalar.integer},
-                               height: %Type.FieldDefinition{type: Type.Scalar.integer}}}
+    %Type.ObjectType{
+      name: "Image",
+      fields: fields(
+        url: [type: Type.Scalar.string],
+        width: [type: Type.Scalar.integer],
+        height: [type: Type.Scalar.integer]
+      )
+    }
   end
 
   def blog_author do
-    %Type.ObjectType{name: "Author",
-                     fields: %{
-                       id: %Type.FieldDefinition{type: Type.Scalar.string},
-                       name: %Type.FieldDefinition{type: Type.Scalar.string},
-                       pic: %Type.FieldDefinition{args: %{width: %Type.Argument{type: Type.Scalar.integer},
-                                                          height: %Type.Argument{type: Type.Scalar.integer}},
-                                                  type: blog_image},
-                       recent_article: %Type.FieldDefinition{type: blog_article}}}
+    %Type.ObjectType{
+      name: "Author",
+      fields: fields(
+        id: [type: Type.Scalar.string],
+        name: [type: Type.Scalar.string],
+        recent_article: [type: blog_article],
+        pic: [
+          type: blog_image,
+          args: args(
+            width: [type: Type.Scalar.integer],
+            height: [type: Type.Scalar.integer]
+          )
+        ]
+      )
+    }
   end
 
   def blog_article do
-    %Type.ObjectType{name: "Article",
-                     fields: %{id: %Type.FieldDefinition{type: Type.Scalar.string},
-                               isPublished: %Type.FieldDefinition{type: Type.Scalar.boolean},
-                               author: %Type.FieldDefinition{type: blog_author},
-                               title: %Type.FieldDefinition{type: Type.Scalar.string},
-                               body: %Type.FieldDefinition{type: Type.Scalar.string}}}
+    %Type.ObjectType{
+      name: "Article",
+      fields: fields(
+        id: [type: Type.Scalar.string],
+        is_published: [type: Type.Scalar.string],
+        author: [type: blog_author],
+        title: [type: Type.Scalar.string],
+        body: [type: Type.Scalar.string]
+      )
+    }
   end
 
   def blog_query do
-    %Type.ObjectType{name: "Query",
-                     fields: %{article: %Type.FieldDefinition{args: %{id: %Type.Argument{type: Type.Scalar.string}},
-                                                              type: blog_article},
-                               feed: %Type.FieldDefinition{type: %Type.List{of_type: blog_article}}}}
+    %Type.ObjectType{
+      name: "Query",
+      fields: fields(
+        article: [
+          type: blog_article,
+          args: args(
+            id: [type: Type.Scalar.string]
+          )
+        ],
+        feed: [type: %Type.List{of_type: blog_article}]
+      )
+    }
   end
 
   def blog_mutation do
-    %Type.ObjectType{name: "Mutation",
-                     fields: %{writeArticle: %Type.FieldDefinition{type: blog_article}}}
+    %Type.ObjectType{
+      name: "Mutation",
+      fields: fields(
+        write_article: [type: blog_article]
+      )
+    }
   end
 
   def object_type do
-    %Type.ObjectType{name: "Object",
-                      is_type_of: fn ->
-                        true
-                      end}
+    %Type.ObjectType{
+      name: "Object",
+      is_type_of: fn -> true end
+    }
   end
 
   def interface_type do

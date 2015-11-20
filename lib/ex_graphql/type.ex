@@ -1,5 +1,11 @@
 defmodule ExGraphQL.Type do
 
+  defmacro __using__(_) do
+    quote do
+      import unquote(__MODULE__).Definitions
+    end
+  end
+
   # ALL TYPES
 
   @type_modules [__MODULE__.Scalar, __MODULE__.ObjectType, __MODULE__.InterfaceType, __MODULE__.Union, __MODULE__.Enum, __MODULE__.InputObjectType, __MODULE__.List, __MODULE__.NonNull]
@@ -131,5 +137,11 @@ defmodule ExGraphQL.Type do
   @doc "Unwrap a type from a List or NonNull"
   @spec unwrap(wrapping_t) :: t
   def unwrap(%{of_type: t}), do: t
+
+  @doc "Unwrap a value from a thunk"
+  @spec unthunk((() -> any)) :: any
+  @spec unthunk(any) :: any
+  def unthunk(thunk) when is_function(thunk), do: thunk.()
+  def unthunk(thunk), do: thunk
 
 end
