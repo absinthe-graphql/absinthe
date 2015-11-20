@@ -59,10 +59,10 @@ defmodule StarWars.Schema do
   alias StarWars.Data
 
 
-  # Uses the `queryType` defined below
+  # Uses the `query_type` defined below
   @doc "The schema"
   def schema do
-    %Type.Schema{query: queryType}
+    %Type.Schema{query: query_type}
   end
 
 
@@ -72,20 +72,20 @@ defmodule StarWars.Schema do
   #
   #     enum Episode { NEWHOPE, EMPIRE, JEDI }
   #
-  defp episodeEnum do
+  defp episode_enum do
     %Type.Enum{
-      name: 'Episode',
-      description: 'One of the films in the Star Wars Trilogy',
+      name: "Episode",
+      description: "One of the films in the Star Wars Trilogy",
       values: %{
         NEWHOPE: %{
           value: 4,
-          description: 'Released in 1977.'},
+          description: "Released in 1977."},
         EMPIRE: %{
           value: 5,
-          description: 'Released in 1980.'},
+          description: "Released in 1980."},
         JEDI: %{
           value: 6,
-          description: 'Released in 1983.'}}}
+          description: "Released in 1983."}}}
   end
 
   # Characters in the Star Wars trilogy are either humans or droids.
@@ -99,29 +99,32 @@ defmodule StarWars.Schema do
   #       appearsIn: [Episode]
   #     }
   #
-  defp characterInterface do
+  defp character_interface do
     %Type.InterfaceType{
-      name: 'Character',
-      description: 'A character in the Star Wars Trilogy',
-      fields: fn -> %{
-        id: %{
-          type: %Type.NonNull{of_type: Type.String},
-          description: 'The id of the character.'},
-        name: %{
-          type: Type.String,
-          description: 'The name of the character.'},
-        friends: %{
-          type: %Type.List{of_type: characterInterface},
-          description: 'The friends of the character, or an empty list if they have none.'},
-        appearsIn: %{
-          type: %Type.List{of_type: episodeEnum},
-          description: 'Which movies they appear in.'}}
-      end,
-      resolveType: fn (character) ->
-        if Data.getHuman(character.id) do
+      name: "Character",
+      description: "A character in the Star Wars Trilogy",
+      fields: %{
+        id: %Type.FieldDefinition{
+          name: "id",
+          type: %Type.NonNull{of_type: Type.Scalar.string},
+          description: "The id of the character."},
+        name: %Type.FieldDefinition{
+          name: "name",
+          type: Type.Scalar.string,
+          description: "The name of the character."},
+        friends: %Type.FieldDefinition{
+          name: "fields",
+          type: %Type.List{of_type: character_interface},
+          description: "The friends of the character, or an empty list if they have none."},
+        appearsIn: %Type.FieldDefinition{
+          name: "appearsIn",
+          type: %Type.List{of_type: episode_enum},
+          description: "Which movies they appear in."}},
+      resolve_type: fn (character) ->
+        if Data.get_human(character.id) do
           humanType
         else
-          droidType
+          droid_type
         end
       end}
   end
@@ -139,27 +142,31 @@ defmodule StarWars.Schema do
   #
   defp humanType do
     %Type.ObjectType{
-      name: 'Human',
-      description: 'A humanoid creature in the Star Wars universe.',
-      fields: fn -> %{
-        id: %{
-          type: %Type.NonNull{of_type: Type.String},
-          description: 'The id of the human.'},
-        name: %{
-          type: Type.String,
-          description: 'The name of the human.'},
-        friends: %{
-          type: %Type.List{of_type: characterInterface},
-          description: 'The friends of the human, or an empty list if they have none.',
+      name: "Human",
+      description: "A humanoid creature in the Star Wars universe.",
+      fields: %{
+        id: %Type.FieldDefinition{
+          name: "id",
+          type: %Type.NonNull{of_type: Type.Scalar.string},
+          description: "The id of the human."},
+        name: %Type.FieldDefinition{
+          name: "name",
+          type: Type.Scalar.string,
+          description: "The name of the human."},
+        friends: %Type.FieldDefinition{
+          name: "friends",
+          type: %Type.List{of_type: character_interface},
+          description: "The friends of the human, or an empty list if they have none.",
           resolve: &Data.getFriends/1},
-        appearsIn: %{
-          type: %Type.List{of_type: episodeEnum},
-          description: 'Which movies they appear in.'},
-        homePlanet: %{
-          type: Type.String,
-          description: 'The home planet of the human, or null if unknown.'}}
-      end,
-      interfaces: [characterInterface]}
+        appearsIn: %Type.FieldDefinition{
+          name: "appearsIn",
+          type: %Type.List{of_type: episode_enum},
+          description: "Which movies they appear in."},
+        homePlanet: %Type.FieldDefinition{
+          name: "homePlanet",
+          type: Type.Scalar.string,
+          description: "The home planet of the human, or null if unknown."}},
+      interfaces: [character_interface]}
   end
 
   # The other type of character in Star Wars is a droid.
@@ -174,29 +181,33 @@ defmodule StarWars.Schema do
   #       primaryFunction: String
   #     }
   #
-  defp droidType do
+  defp droid_type do
     %Type.ObjectType{
-      name:  'Droid',
-      description: 'A mechanical creature in the Star Wars universe.',
-      fields: fn -> %{
-        id: %{
-          type: %Type.NonNull{of_type: Type.String},
-          description: 'The id of the droid.'},
-        name: %{
-          type: Type.String,
-          description: 'The name of the droid.'},
-        friends: %{
-          type: %Type.List{of_type: characterInterface},
-          description: 'The friends of the droid, or an empty list if they have none.',
+      name:  "Droid",
+      description: "A mechanical creature in the Star Wars universe.",
+      fields: %{
+        id: %Type.FieldDefinition{
+          name: "id",
+          type: %Type.NonNull{of_type: Type.Scalar.string},
+          description: "The id of the droid."},
+        name: %Type.FieldDefinition{
+          name: "name",
+          type: Type.Scalar.string,
+          description: "The name of the droid."},
+        friends: %Type.FieldDefinition{
+          name: "friends",
+          type: %Type.List{of_type: character_interface},
+          description: "The friends of the droid, or an empty list if they have none.",
           resolve: &Data.getFriends/1},
-        appearsIn: %{
-          type: %Type.List{of_type: episodeEnum},
-          description: 'Which movies they appear in.'},
-        primaryFunction: %{
-          type: Type.String,
-          description: 'The primary function of the droid.'}}
-      end,
-      interfaces: [characterInterface]}
+        appearsIn: %Type.FieldDefinition{
+          name: "appearsIn",
+          type: %Type.List{of_type: episode_enum},
+          description: "Which movies they appear in."},
+        primaryFunction: %Type.FieldDefinition{
+          name: "primaryFunction",
+          type: Type.Scalar.string,
+          description: "The primary function of the droid."}},
+      interfaces: [character_interface]}
   end
 
   # This is the type that will be the root of our query, and the
@@ -211,34 +222,39 @@ defmodule StarWars.Schema do
   #       human(id: String!): Human
   #       droid(id: String!): Droid
   #     }
-  defp queryType do
+  defp query_type do
     %Type.ObjectType{
-      name: 'Query',
-      fields: fn -> %{
-        hero: %{
-          type: characterInterface,
+      name: "Query",
+      fields: %{
+        hero: %Type.FieldDefinition{
+          name: "hero",
+          type: character_interface,
           args: %{
-            episode: %{
-              description: 'If omitted, returns the hero of the whole saga. If provided, returns the hero of that particular episode.',
-              type: episodeEnum}},
-                resolve: fn (_root, %{episode: episode}) -> StarWarsDat.getHero(episode) end},
-        human: %{
+            episode: %Type.Argument{
+              name: "episode",
+              description: "If omitted, returns the hero of the whole saga. If provided, returns the hero of that particular episode.",
+              type: episode_enum}},
+                resolve: fn (_root, %{episode: episode}) -> StarWarsDat.get_hero(episode) end},
+        human: %Type.FieldDefinition{
+          name: "human",
           type: humanType,
           args: %{
-            id: %{
-              description: 'id of the human',
-              type: %Type.NonNull{of_type: Type.String}}},
-                 resolve: fn (_root, %{id: id}) -> Data.getHuman(id) end},
-        droid: %{
-          type: droidType,
+            id: %Type.Argument{
+              name: "id",
+              description: "id of the human",
+              type: %Type.NonNull{of_type: Type.Scalar.string}}},
+                 resolve: fn (_root, %{id: id}) -> Data.get_human(id) end},
+        droid: %Type.FieldDefinition{
+          name: "droid",
+          type: droid_type,
           args: %{
-            id: %{
-              description: 'id of the droid',
-              type: %Type.NonNull{of_type: Type.String}}},
+            id: %Type.Argument{
+              name: "id",
+              description: "id of the droid",
+              type: %Type.NonNull{of_type: Type.Scalar.string}}},
                  resolve: fn (_root, %{id: id}) ->
-                   Data.getDroid(id)
-                 end}}
-    end}
+                   Data.get_droid(id)
+                 end}}}
   end
 
 end

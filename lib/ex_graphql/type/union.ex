@@ -1,7 +1,10 @@
 defmodule ExGraphQL.Type.Union do
-  defstruct name: nil, description: nil, resolveType: nil, types: []
-  @type t :: %{name: binary, description: binary, resolveType: ((any, ExGraphQL.Type.ResolveInfo.t) -> any) | ((any) -> any), types: [any]}
 
-  use ExGraphQL.Type.Creation
-  def setup(struct), do: {:ok, struct}
+  @type t :: %{name: binary,
+               description: binary,
+               resolve_type: ((any, ExGraphQL.Type.ResolveInfo.t) -> ExGraphQL.Type.ObjectType.t),
+              types: [ExGraphQL.Type.t]}
+
+  defstruct name: nil, description: nil, resolve_type: nil, types: []
+
 end

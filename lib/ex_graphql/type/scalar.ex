@@ -12,81 +12,78 @@ defmodule ExGraphQL.Type.Scalar do
 
   defstruct name: nil, description: nil, serialize: nil, parse_value: nil, parse_literal: nil
 
-  use ExGraphQL.Type.Creation
-  def setup(struct), do: {:ok, struct}
-
   @graphql_spec "https://facebook.github.io/graphql/#sec-Int"
   @spec integer :: t
   def integer do
-    __MODULE__.create!(name: "Int",
-                       description: """
-                       The `Int` scalar type represents non-fractional signed whole numeric
-                       values. Int can represent values between -(2^53 - 1) and 2^53 - 1 since
-                       represented in JSON as double-precision floating point numbers specified
-                       by [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
-                       """ |> String.replace("\n", " "),
-                       serialize: &coerce_int/1,
-                       parse_value: &coerce_int/1,
-                       parse_literal: node_parser([ExGraphQL.Language.IntValue], &coerce_int/1))
+    %__MODULE__{name: "Int",
+                description: """
+                The `Int` scalar type represents non-fractional signed whole numeric
+                values. Int can represent values between -(2^53 - 1) and 2^53 - 1 since
+                represented in JSON as double-precision floating point numbers specified
+                by [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
+                """ |> String.replace("\n", " "),
+                serialize: &coerce_int/1,
+                parse_value: &coerce_int/1,
+                parse_literal: node_parser([ExGraphQL.Language.IntValue], &coerce_int/1)}
   end
 
   @graphql_spec "https://facebook.github.io/graphql/#sec-Float"
   @spec float :: t
   def float do
-    __MODULE__.create!(name: "Float",
-                       description: """
-                       The `Float` scalar type represents signed double-precision fractional
-                       values as specified by
-                       [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
-                       """ |> String.replace("\n", " "),
-                       serialize: &coerce_float/1,
-                       parse_value: &coerce_float/1,
-                       parse_literal: node_parser([ExGraphQL.Language.IntValue,
-                                                   ExGraphQL.Language.FloatValue], &coerce_float/1))
+    %__MODULE__{name: "Float",
+                description: """
+                The `Float` scalar type represents signed double-precision fractional
+                values as specified by
+                [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
+                """ |> String.replace("\n", " "),
+                serialize: &coerce_float/1,
+                parse_value: &coerce_float/1,
+                parse_literal: node_parser([ExGraphQL.Language.IntValue,
+                                            ExGraphQL.Language.FloatValue], &coerce_float/1)}
   end
 
   @graphql_spec "https://facebook.github.io/graphql/#sec-String"
   @spec string :: t
   def string do
-    __MODULE__.create!(name: "String",
-                       description: """
-                       The `String` scalar type represents textual data, represented as UTF-8
-                       character sequences. The String type is most often used by GraphQL to
-                       represent free-form human-readable text.
-                       """ |> String.replace("\n", " "),
-                       serialize: &to_string/1,
-                       parse_value: &to_string/1,
-                       parse_literal: node_parser([ExGraphQL.Language.StringValue], &to_string/1))
+    %__MODULE__{name: "String",
+                description: """
+                The `String` scalar type represents textual data, represented as UTF-8
+                character sequences. The String type is most often used by GraphQL to
+                represent free-form human-readable text.
+                """ |> String.replace("\n", " "),
+                serialize: &to_string/1,
+                parse_value: &to_string/1,
+                parse_literal: node_parser([ExGraphQL.Language.StringValue], &to_string/1)}
   end
 
   @graphql_spec "https://facebook.github.io/graphql/#sec-ID"
   @spec id :: t
   def id do
-    __MODULE__.create!(name: "ID",
-                       description: """
-                       The `ID` scalar type represents a unique identifier, often used to
-                       refetch an object or as key for a cache. The ID type appears in a JSON
-                       response as a String; however, it is not intended to be human-readable.
-                       When expected as an input type, any string (such as `"4"`) or integer
-                       (such as `4`) input value will be accepted as an ID.
-                       """ |> String.replace("\n", " "),
-                       serialize: &to_string/1,
-                       parse_value: &to_string/1,
-                       parse_literal: node_parser([ExGraphQL.Language.IntValue,
-                                                   ExGraphQL.Language.StringValue], &(&1)))
+    %__MODULE__{name: "ID",
+                description: """
+                The `ID` scalar type represents a unique identifier, often used to
+                refetch an object or as key for a cache. The ID type appears in a JSON
+                response as a String; however, it is not intended to be human-readable.
+                When expected as an input type, any string (such as `"4"`) or integer
+                (such as `4`) input value will be accepted as an ID.
+                """ |> String.replace("\n", " "),
+                serialize: &to_string/1,
+                parse_value: &to_string/1,
+                parse_literal: node_parser([ExGraphQL.Language.IntValue,
+                                            ExGraphQL.Language.StringValue], &(&1))}
   end
 
   @graphql_spec "https://facebook.github.io/graphql/#sec-Boolean"
   @spec boolean :: t
   def boolean do
-    __MODULE__.create!(name: "Boolean",
-                       description: """
-                       The `Boolean` scalar type represents `true` or `false`.
-                       """ |> String.replace("\n", " "),
-                       serialize: &coerce_boolean/1,
-                       parse_value: &coerce_boolean/1,
-                       parse_literal: node_parser([ExGraphQL.Language.BooleanValue],
-                                                  &coerce_boolean/1))
+    %__MODULE__{name: "Boolean",
+                description: """
+                The `Boolean` scalar type represents `true` or `false`.
+                """ |> String.replace("\n", " "),
+                serialize: &coerce_boolean/1,
+                parse_value: &coerce_boolean/1,
+                parse_literal: node_parser([ExGraphQL.Language.BooleanValue],
+                                           &coerce_boolean/1)}
   end
 
   # Integers are only safe when between -(2^53 - 1) and 2^53 - 1 due to being

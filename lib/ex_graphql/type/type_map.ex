@@ -17,7 +17,7 @@ defmodule ExGraphQL.Type.TypeMap do
   end
   defp build([type | rest], acc) do
     cond do
-      Type.wrapped?(type) -> build([ExGraphQL.Type.unwrap(type) | rest], acc)
+      Type.wrapped?(type) -> build([Type.unwrap(type) | rest], acc)
       true -> do_build(type, rest, acc)
     end
   end
@@ -29,7 +29,6 @@ defmodule ExGraphQL.Type.TypeMap do
     end
   end
 
-  @doc "Extract deeper types "
   @spec deep_types(Type.t) :: [Type.t]
   defp deep_types(%{__struct__: Type.Union} = type) do
     Type.possible_types(type)

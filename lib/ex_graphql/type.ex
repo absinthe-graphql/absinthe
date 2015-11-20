@@ -5,7 +5,7 @@ defmodule ExGraphQL.Type do
   @type_modules [__MODULE__.Scalar, __MODULE__.ObjectType, __MODULE__.InterfaceType, __MODULE__.Union, __MODULE__.Enum, __MODULE__.InputObjectType, __MODULE__.List, __MODULE__.NonNull]
 
   @typedoc "These are all of the possible kinds of types."
-  @type t :: __MODULE__.Scalar.t | __MODULE__.ObjectType.t | __MODULE__.InterfaceType.t | __MODULE__.Union.t | __MODULE__.Enum.t | __MODULE__.InputObjectType.t | __MODULE__.List.t | __MODULE__.NonNull.t
+  @type t :: __MODULE__.Scalar.t | __MODULE__.ObjectType.t | __MODULE__.FieldDefinition.t | __MODULE__.InterfaceType.t | __MODULE__.Union.t | __MODULE__.Enum.t | __MODULE__.InputObjectType.t | __MODULE__.List.t | __MODULE__.NonNull.t
 
   @doc "Determine if a struct matches one of the types"
   @spec type?(any) :: boolean
