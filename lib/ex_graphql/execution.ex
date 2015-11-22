@@ -6,6 +6,30 @@ defmodule ExGraphQL.Execution do
   @type t :: %{schema: Type.Schema.t, document: Language.Document.t, context: map, variables: map, validate: boolean, selected_operation: ExGraphQL.Type.ObjectType.t, operation_name: atom, result: map}
   defstruct schema: nil, document: nil, context: %{}, variables: %{}, fragments: %{}, operations: %{}, validate: true, selected_operation: nil, operation_name: nil, result: %{}
 
+  def run(execution, options \\ []) do
+    raw = execution |> Map.merge(options |> Enum.into(%{}))
+    case prepare(raw) do
+      {:ok, prepared} -> execute(prepared)
+      other -> other
+    end
+  end
+
+  def prepare(execution) do
+    defined = execution |> categorize_definitions
+    case selected_operation(defined) do
+      {:ok, operation} ->
+        %{defined | selected_operation: operation}
+        |> set_variables
+        |> validate
+      other -> other
+    end
+  end
+
+  # TODO: We're not actually doing the execution yet
+  defp execute(execution) do
+    {:ok, execution}
+  end
+
   @doc "Categorize definitions in the execution document as operations or fragments"
   @spec categorize_definitions(t) :: t
   def categorize_definitions(%{document: %Language.Document{definitions: definitions}} = execution) do
@@ -31,10 +55,6 @@ defmodule ExGraphQL.Execution do
     {:ok, execution}
   end
 
-  defp execute(execution) do
-    {:ok, execution}
-  end
-
   def selected_operation(%{selected_operation: value}) when not is_nil(value) do
     {:ok, value}
   end
@@ -57,25 +77,6 @@ defmodule ExGraphQL.Execution do
 
   def set_variables(%{schema: schema, variables: variables} = execution) do
     execution
-  end
-
-  def prepare(execution) do
-    defined = execution |> categorize_definitions
-    case selected_operation(defined) do
-      {:ok, operation} ->
-        %{defined | selected_operation: operation}
-        |> set_variables
-        |> validate
-      other -> other
-    end
-  end
-
-  def run(execution, options \\ []) do
-    raw = execution |> Map.merge(options |> Enum.into(%{}))
-    case prepare(raw) do
-      {:ok, prepared} -> execute(prepared)
-      other -> other
-    end
   end
 
 end
