@@ -1,7 +1,7 @@
-defmodule Type.DefinitionTest do
+defmodule ExGraphQL.Type.DefinitionTest do
   use ExSpec, async: true
 
-  alias Type.Fixtures
+  alias ExGraphQL.Type.Fixtures
 
   use ExGraphQL.Type
   alias ExGraphQL.Type

@@ -29,6 +29,7 @@ defmodule ExGraphQL do
   end
   def parse(input) do
     case input.body |> tokenize do
+      {:ok, []} -> {:ok, %ExGraphQL.Language.Document{}}
       {:ok, tokens} -> :ex_graphql_parser.parse(tokens)
       other -> other
     end
@@ -46,29 +47,41 @@ defmodule ExGraphQL do
     end
   end
 
-  @spec run(ExGraphQL.Type.Schema.t, binary | ExGraphQL.Language.Source.t | ExGraphQL.Language.Document.t) :: {:ok, map} | {:error, any}
-  def run(schema, %ExGraphQL.Language.Document{} = document) do
-    {:ok, {:nope, document}}
+  @spec run(ExGraphQL.Type.Schema.t, binary | ExGraphQL.Language.Source.t | ExGraphQL.Language.Document.t, Keyword.t) :: {:ok, map} | {:error, any}
+  def run(schema, %ExGraphQL.Language.Document{} = document, options) do
+    case execute(schema, document, options) do
+      {:ok, execution} -> {:ok, execution.result}
+      other -> other
+    end
   end
-  def run(schema, input) do
+  def run(schema, input, options) do
     case parse(input) do
-      {:ok, document} -> run(schema, document)
+      {:ok, document} -> run(schema, document, options)
       other -> other
     end
   end
 
-  @spec run!(ExGraphQL.Type.Schema.t, binary | ExGraphQL.Language.Source.t | ExGraphQL.Language.Document.t) :: %{}
-  def run!(schema, input) do
-    case run(schema, input) do
+  @spec run(ExGraphQL.Type.Schema.t, binary | ExGraphQL.Language.Source.t | ExGraphQL.Language.Document.t) :: {:ok, map} | {:error, any}
+  def run(schema, input), do: run(schema, input, [])
+
+  @spec run!(ExGraphQL.Type.Schema.t, binary | ExGraphQL.Language.Source.t | ExGraphQL.Language.Document.t, Keyword.t) :: map
+  def run!(schema, input, options) do
+    case run(schema, input, options) do
       {:ok, result} -> result
       {:error, err} -> raise ExecutionError, message: err
     end
   end
 
-  @spec validate(ExGraphQL.Type.Schema.t, ExGraphQL.Language.Document.t) :: :ok | {:error, term}
-  defdelegate validate(schema, document), to: ExGraphQL.Validation
+  @spec run!(ExGraphQL.Type.Schema.t, binary | ExGraphQL.Language.Source.t | ExGraphQL.Language.Document.t) :: map
+  def run!(schema, input), do: run!(schema, input, [])
 
-  @spec validate(ExGraphQL.Type.Schema.t, ExGraphQL.Language.Document.t, [atom]) :: :ok | {:error, term}
-  defdelegate validate(schema, document, rules), to: ExGraphQL.Validation
+  #
+  # EXECUTION
+  #
+
+  defp execute(schema, document, options) do
+    %ExGraphQL.Execution{schema: schema, document: document}
+    |> ExGraphQL.Execution.run(options)
+  end
 
 end

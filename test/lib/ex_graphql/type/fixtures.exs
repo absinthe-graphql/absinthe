@@ -1,4 +1,4 @@
-defmodule Type.Fixtures do
+defmodule ExGraphQL.Type.Fixtures do
 
   use ExGraphQL.Type
   alias ExGraphQL.Type

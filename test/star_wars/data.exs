@@ -81,7 +81,7 @@ defmodule StarWars.Data do
   # Allows us to query for a character"s friends.
   def get_friends(character) do
     character.friends
-    |> Enum.map &get_character/1
+    |> Enum.map(&get_character/1)
   end
 
   # Allows us to fetch the undisputed hero of the Star Wars trilogy, R2-D2.

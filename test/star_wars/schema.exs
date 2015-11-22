@@ -6,9 +6,6 @@
 #  of patent rights can be found in the PATENTS file in the same directory.
 
 defmodule StarWars.Schema do
-
-  use ExGraphQL.Type
-
   @moduledoc """
    This is designed to be an end-to-end test, demonstrating
    the full GraphQL stack.
@@ -58,6 +55,7 @@ defmodule StarWars.Schema do
 
   """
 
+  use ExGraphQL.Type
   alias ExGraphQL.Type
   alias StarWars.Data
 
@@ -126,11 +124,12 @@ defmodule StarWars.Schema do
       ),
       resolve_type: fn (character) ->
         if Data.get_human(character.id) do
-          humanType
+          human_type
         else
           droid_type
         end
-      end}
+      end
+    }
   end
 
   # We define our human type, which implements the character interface.
@@ -144,7 +143,7 @@ defmodule StarWars.Schema do
   #       appearsIn: [Episode]
   #     }
   #
-  defp humanType do
+  defp human_type do
     %Type.ObjectType{
       name: "Human",
       description: "A humanoid creature in the Star Wars universe.",
@@ -236,18 +235,16 @@ defmodule StarWars.Schema do
           type: character_interface,
           args: args(
             episode: [
-              name: "episode",
               description: "If omitted, returns the hero of the whole saga. If provided, returns the hero of that particular episode.",
               type: episode_enum
             ]
           ),
-          resolve: fn (_root, %{episode: episode}) -> StarWarsDat.get_hero(episode) end
+          resolve: fn (_root, %{episode: episode}) -> Data.get_hero(episode) end
         ],
         human: [
-          type: humanType,
+          type: human_type,
           args: args(
             id: [
-              name: "id",
               description: "id of the human",
               type: %Type.NonNull{of_type: Type.Scalar.string}
             ]
@@ -258,7 +255,6 @@ defmodule StarWars.Schema do
           type: droid_type,
           args: args(
             id: [
-              name: "id",
               description: "id of the droid",
               type: %Type.NonNull{of_type: Type.Scalar.string}
             ]

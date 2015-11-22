@@ -1,4 +1,4 @@
-defmodule ParseTest do
+defmodule ExGraphQL.Language.ParseTest do
   use ExUnit.Case
 
   test "returns a document" do
