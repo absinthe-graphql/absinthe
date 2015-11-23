@@ -1,4 +1,4 @@
-# ExGraphql
+# ExGraphQL
 
 **TODO: Add description**
 

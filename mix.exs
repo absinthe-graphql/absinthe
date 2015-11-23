@@ -1,4 +1,4 @@
-defmodule ExGraphql.Mixfile do
+defmodule ExGraphQL.Mixfile do
   use Mix.Project
 
   def project do
