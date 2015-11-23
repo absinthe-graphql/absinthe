@@ -3,8 +3,8 @@ defmodule ExGraphQL.Execution do
   alias ExGraphQL.Language
   alias ExGraphQL.Type
 
-  @type t :: %{schema: Type.Schema.t, document: Language.Document.t, context: map, variables: map, validate: boolean, selected_operation: ExGraphQL.Type.ObjectType.t, operation_name: atom, result: map}
-  defstruct schema: nil, document: nil, context: %{}, variables: %{}, fragments: %{}, operations: %{}, validate: true, selected_operation: nil, operation_name: nil, result: %{}
+  @type t :: %{schema: Type.Schema.t, document: Language.Document.t, context: map, variables: map, validate: boolean, selected_operation: ExGraphQL.Type.ObjectType.t, operation_name: atom, result: map, categorized: boolean}
+  defstruct schema: nil, document: nil, context: %{}, variables: %{}, fragments: %{}, operations: %{}, validate: true, selected_operation: nil, operation_name: nil, result: %{}, categorized: false
 
   def run(execution, options \\ []) do
     raw = execution |> Map.merge(options |> Enum.into(%{}))
@@ -33,7 +33,7 @@ defmodule ExGraphQL.Execution do
   @doc "Categorize definitions in the execution document as operations or fragments"
   @spec categorize_definitions(t) :: t
   def categorize_definitions(%{document: %Language.Document{definitions: definitions}} = execution) do
-    categorize_definitions(%{execution | operations: %{}, fragments: %{}}, definitions)
+    categorize_definitions(%{execution | operations: %{}, fragments: %{}, categorized: true}, definitions)
   end
 
   defp categorize_definitions(execution, []) do
@@ -55,6 +55,9 @@ defmodule ExGraphQL.Execution do
     {:ok, execution}
   end
 
+  def selected_operation(%{categorized: false}) do
+    {:error, "Call Execution.categorize_definitions first"}
+  end
   def selected_operation(%{selected_operation: value}) when not is_nil(value) do
     {:ok, value}
   end
