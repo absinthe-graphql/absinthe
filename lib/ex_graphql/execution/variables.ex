@@ -36,9 +36,9 @@ defmodule ExGraphQL.Execution.Variables do
         )
       else
         err = if is_nil(value) do
-          "Missing"
+          "can not be missing"
         else
-          "Invalid value: #{inspect value}"
+          "invalid value: #{inspect value}"
         end
         parse(
           rest, schema, provided_variables,

@@ -11,38 +11,64 @@ defmodule ExGraphQL.Execution.VariablesTest do
     }
     """
 
+  @default "1000"
   @with_default """
-    query FetchHumanQuery($id: String = "1000") {
+    query FetchHumanQuery($id: String = "#{@default}") {
       human(id: $id) {
         name
       }
     }
-  """
+    """
 
-  it "supports required variables" do
-    {:ok, document} = ExGraphQL.parse(@id_required)
+  def variables(query_document, provided \\ %{}) do
+    # Parse
+    {:ok, document} = ExGraphQL.parse(query_document)
+    # Get schema
     schema = StarWars.Schema.schema
+    # Prepare execution context
     {:ok, selected_op} = %Execution{schema: schema, document: document}
     |> Execution.categorize_definitions
     |> Execution.selected_operation
-    # Provided
-    assert {:ok, %{"id" => "2000"}} = Execution.Variables.build(schema, selected_op.variable_definitions, %{"id" => 2000})
-    # Not provided
-    assert {:error, %{"id" => _}} = Execution.Variables.build(schema, selected_op.variable_definitions, %{})
+    # Build variable map
+    Execution.Variables.build(
+      schema,
+      selected_op.variable_definitions,
+      provided
+    )
   end
 
-  it "supports variable defaults" do
-    {:ok, document} = ExGraphQL.parse(@with_default)
-    schema = StarWars.Schema.schema
-    {:ok, selected_op} = %Execution{schema: schema, document: document}
-    |> Execution.categorize_definitions
-    |> Execution.selected_operation
-    # Provided variable
-    assert {:ok, %{"id" => "2000"}} = Execution.Variables.build(schema, selected_op.variable_definitions, %{"id" => "2000"})
-    # Using default
-    assert {:ok, %{"id" => "1000"}} = Execution.Variables.build(schema, selected_op.variable_definitions, %{})
+  describe "a required variable" do
+
+    context "when provided" do
+
+      it "returns a value" do
+        provided = %{"id" => "2000"}
+        assert {:ok, %{"id" => "2000"}} = @id_required |> variables(provided)
+      end
+
+    end
+
+    context "when not provided" do
+
+      it "returns an error" do
+        assert {:error, %{"id" => "can not be missing"}} = @id_required |> variables
+      end
+
+    end
 
   end
 
+  describe "a defaulted variable" do
+
+    it "when provided" do
+      provided = %{"id" => "2000"}
+      assert {:ok, %{"id" => "2000"}} = @with_default |> variables(provided)
+    end
+
+    it "when not provided" do
+      assert {:ok, %{"id" => @default}} = @with_default |> variables
+    end
+
+  end
 
 end
