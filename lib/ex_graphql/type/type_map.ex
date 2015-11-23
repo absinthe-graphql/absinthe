@@ -56,6 +56,9 @@ defmodule ExGraphQL.Type.TypeMap do
     end
   end
 
+  # TODO: Make interface types actually traversable; their `types` field
+  # should return the types that implement the interface, but that would mean
+  # collecting those types in a separate traversal
   defp accumulate_from_concrete_types(acc, type) do
     if Type.abstract?(type) do
       type.types
