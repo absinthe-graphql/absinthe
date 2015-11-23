@@ -20,24 +20,25 @@ defmodule ExGraphQL.Execution.Variables do
     variable_name = definition.variable.name
     variable_type = Type.Schema.type_from_ast(schema, definition.type)
     if variable_type do
-      default_value = definition.default_value
+      default_value = default(definition.default_value)
       provided_value = provided_variables[variable_name]
-      if Type.valid_input?(variable_type, provided_value) do
-        coerced = if is_nil(provided_value) do
+      value = provided_value || default_value
+      if Type.valid_input?(variable_type, value) do
+        coerced = if is_nil(value) do
           nil
         else
           variable_type
-          |> Type.coerce(provided_value)
+          |> Type.coerce(value)
         end
         parse(
           rest, schema, provided_variables,
           %{acc | values: values |> Map.put(variable_name, coerced)}
         )
       else
-        err = if is_nil(provided_value) do
+        err = if is_nil(value) do
           "Missing"
         else
-          "Invalid value: #{inspect provided_value}"
+          "Invalid value: #{inspect value}"
         end
         parse(
           rest, schema, provided_variables,
@@ -50,8 +51,10 @@ defmodule ExGraphQL.Execution.Variables do
         %{acc | errors: errors |> Map.put(variable_name, "Could not determine type")}
       )
     end
-
   end
 
+  @spec default(ExGraphQL.Language.value_t) :: any
+  defp default(%{value: value}), do: value
+  defp default(_), do: nil
 
 end

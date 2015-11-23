@@ -167,10 +167,10 @@ defmodule ExGraphQL.Type do
 
   # VALID TYPE
 
-  def valid_input?(%{__struct__: Type.NonNull}, nil) do
+  def valid_input?(%{__struct__: __MODULE__.NonNull}, nil) do
     false
   end
-  def valid_input?(_type, nil) do
+  def valid_input?(type, nil) do
     true
   end
   def valid_input?(_type, _value) do

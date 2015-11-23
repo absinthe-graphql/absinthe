@@ -49,7 +49,7 @@ VariableDefinitions -> '(' VariableDefinitionList ')' : '$2'.
 VariableDefinitionList -> VariableDefinition : ['$1'].
 VariableDefinitionList -> VariableDefinition VariableDefinitionList : ['$1'|'$2'].
 VariableDefinition -> Variable ':' Type : build_ast_node('VariableDefinition', #{'variable' => '$1', 'type' => '$3'}, #{start => extract_line('$1')}).
-VariableDefinition -> Variable ':' Type DefaultValue : build_ast_node('VariableDefinition', #{'variable' => '$1', 'type' => '$3', 'defaultValue' => '$4'}, #{start => extract_line('$1')}).
+VariableDefinition -> Variable ':' Type DefaultValue : build_ast_node('VariableDefinition', #{'variable' => '$1', 'type' => '$3', 'default_value' => '$4'}, #{start => extract_line('$1')}).
 Variable -> '$' Name : build_ast_node('Variable', #{'name' => '$2'}, #{start => extract_line('$1')}).
 
 DefaultValue -> '=' Value : '$2'.
