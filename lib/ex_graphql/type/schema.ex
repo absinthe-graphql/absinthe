@@ -34,6 +34,7 @@ defmodule ExGraphQL.Type.Schema do
     name = ast_type.name
     schema
     |> with_type_map
+    |> Map.get(:type_map)
     |> Map.get(name)
   end
 

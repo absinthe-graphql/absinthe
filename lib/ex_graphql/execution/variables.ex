@@ -26,7 +26,8 @@ defmodule ExGraphQL.Execution.Variables do
         coerced = if is_nil(provided_value) do
           nil
         else
-          provided_value |> Type.coerce(variable_type)
+          variable_type
+          |> Type.coerce(provided_value)
         end
         parse(
           rest, schema, provided_variables,

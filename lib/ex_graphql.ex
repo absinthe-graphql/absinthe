@@ -1,7 +1,5 @@
 defmodule ExGraphQL do
 
-  alias ExGraphQL.Validation
-
   defmodule ExecutionError do
     defexception message: "execution failed"
   end
