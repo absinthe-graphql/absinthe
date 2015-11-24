@@ -12,4 +12,16 @@ defmodule ExGraphQL.Language.OperationDefinition do
 
   end
 
+  defimpl ExGraphQL.Execution.Resolution do
+
+    def resolve(operation, target, execution) do
+      ExGraphQL.Execution.Resolution.resolve(
+        operation.selection_set,
+        target,
+        execution
+      )
+    end
+
+  end
+
 end
