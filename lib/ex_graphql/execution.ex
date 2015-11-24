@@ -25,6 +25,29 @@ defmodule ExGraphQL.Execution do
     end
   end
 
+
+  @spec resolve_type(t, t, t) :: t | nil
+  def resolve_type(_target, nil = _child_type, _parent_type) do
+    nil
+  end
+  def resolve_type(target, nil = _child_type, %{__struct__: Type.Union} = parent_type) do
+    parent_type
+    |> Type.Union.resolve_type(target)
+  end
+  def resolve_type(_target, %{__struct__: Type.Union} = child_type, parent_type) do
+    child_type |> Type.Union.member?(parent_type) || nil
+  end
+  def resolve_type(target, %{__struct__: Type.InterfaceType} = child_type, _parent_type) do
+    target
+    |> Type.InterfaceType.resolve_type
+  end
+  def resolve_type(_target, child_type, parent_type) when child_type == parent_type do
+    parent_type
+  end
+  def resolve_type(_target, _child_type, _parent_type) do
+    nil
+  end
+
   defp execute(execution) do
     execution
     |> __MODULE__.Runner.run
