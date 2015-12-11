@@ -25,7 +25,6 @@ defmodule ExGraphQL.Execution do
     end
   end
 
-
   @spec resolve_type(t, t, t) :: t | nil
   def resolve_type(_target, nil = _child_type, _parent_type) do
     nil

@@ -85,15 +85,10 @@ defmodule StarWars.Data do
   end
 
   # Allows us to fetch the undisputed hero of the Star Wars trilogy, R2-D2.
-  def get_hero(episode) do
-    if (episode === 5) do
-      # Luke is the hero of Episode V.
-      @luke
-    else
-      # Artoo is the hero otherwise.
-      @artoo
-    end
-  end
+  def get_hero(), do: @artoo
+
+  def get_hero(5 = episode), do: @luke
+  def get_hero(_), do: @artoo
 
   # Allows us to query for the human with the given id.
   def get_human(id), do: @humanData[id]

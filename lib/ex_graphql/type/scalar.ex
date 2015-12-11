@@ -1,5 +1,4 @@
 defmodule ExGraphQL.Type.Scalar do
-  alias ExGraphQL.Type
 
   @type t :: %{
     name: binary,

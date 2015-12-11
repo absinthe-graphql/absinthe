@@ -239,7 +239,10 @@ defmodule StarWars.Schema do
               type: episode_enum
             ]
           ),
-          resolve: fn (_root, %{episode: episode}) -> Data.get_hero(episode) end
+          resolve: fn
+            (%{episode: episode}, _exe, _res) -> Data.get_hero(episode)
+            (%{}, _exe, _res) -> Data.get_hero
+          end
         ],
         human: [
           type: human_type,
@@ -249,7 +252,7 @@ defmodule StarWars.Schema do
               type: %Type.NonNull{of_type: Type.Scalar.string}
             ]
           ),
-          resolve: fn (_root, %{id: id}) -> Data.get_human(id) end
+          resolve: fn (%{id: id}, _exe, _res) -> Data.get_human(id) end
         ],
         droid: [
           type: droid_type,
@@ -259,7 +262,7 @@ defmodule StarWars.Schema do
               type: %Type.NonNull{of_type: Type.Scalar.string}
             ]
           ),
-          resolve: fn (_root, %{id: id}) ->
+          resolve: fn (%{id: id}, _exe, _res) ->
             Data.get_droid(id)
           end
         ]

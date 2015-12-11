@@ -170,7 +170,7 @@ defmodule ExGraphQL.Type do
   def valid_input?(%{__struct__: __MODULE__.NonNull}, nil) do
     false
   end
-  def valid_input?(type, nil) do
+  def valid_input?(_type, nil) do
     true
   end
   def valid_input?(_type, _value) do
@@ -181,6 +181,13 @@ defmodule ExGraphQL.Type do
   def coerce(input_type, value) do
     value
     |> unwrap(input_type).parse_value.()
+  end
+
+  # TODO: Support __typename, __schema, and __type for introspection
+  def field(type, name) do
+    type.fields
+    |> unthunk
+    |> Map.get(name |> String.to_atom)
   end
 
 end

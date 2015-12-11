@@ -14,12 +14,12 @@ defmodule ExGraphQL.Type.Definitions do
 
   def named(mod, definitions) do
     definitions
-    |> Enum.into %{}, fn ({identifier, definition}) ->
+    |> Enum.into(%{}, fn ({identifier, definition}) ->
       {
         identifier,
         struct(mod, [{:name, identifier |> to_string} | definition])
       }
-    end
+    end)
   end
 
 end
