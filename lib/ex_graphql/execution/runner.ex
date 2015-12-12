@@ -9,7 +9,10 @@ defmodule ExGraphQL.Execution.Runner do
     {:ok, %{}}
   end
   def run(%{selected_operation: %{operation: op_type} = operation} = execution) do
-    execute(op_type, operation, execution)
+    case execute(op_type, operation, execution) do
+      {:ok, value, %{errors: errors}} -> {:ok, %{data: value, errors: errors}}
+      other -> other
+    end
   end
 
   @spec execute(atom, ExGraphQL.Execution.t) :: {:ok, map} | {:error, any}

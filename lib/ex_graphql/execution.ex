@@ -3,8 +3,8 @@ defmodule ExGraphQL.Execution do
   alias ExGraphQL.Language
   alias ExGraphQL.Type
 
-  @type t :: %{schema: Type.Schema.t, document: Language.Document.t, variables: map, validate: boolean, selected_operation: ExGraphQL.Type.ObjectType.t, operation_name: atom, result: map, categorized: boolean, strategy: atom}
-  defstruct schema: nil, document: nil, variables: %{}, fragments: %{}, operations: %{}, validate: true, selected_operation: nil, operation_name: nil, result: %{}, categorized: false, strategy: nil
+  @type t :: %{schema: Type.Schema.t, document: Language.Document.t, variables: map, validate: boolean, selected_operation: ExGraphQL.Type.ObjectType.t, operation_name: atom, errors: [binary], categorized: boolean, strategy: atom}
+  defstruct schema: nil, document: nil, variables: %{}, fragments: %{}, operations: %{}, validate: true, selected_operation: nil, operation_name: nil, errors: [], categorized: false, strategy: nil
 
   def run(execution, options \\ []) do
     raw = execution |> Map.merge(options |> Enum.into(%{}))

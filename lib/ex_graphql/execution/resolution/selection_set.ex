@@ -9,23 +9,23 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.SelectionSet do
                 Resolution.t,
                 Execution.t) :: {:ok, map} | {:error, any}
   def resolve(%{selections: selections}, resolution, %{strategy: :serial} = execution) do
-    selections
+    {result, execution_to_return} = selections
     |> Enum.map(&(flatten(&1, resolution, execution)))
     |> Enum.reduce(&Map.merge/2)
-    |> Enum.reduce(%{}, fn ({name, ast_node}, acc) ->
-      acc
-      |> Map.put(
-        name,
-        resolve_field(
-          ast_node,
-          %Resolution{
-            parent_type: resolution.type,
-            target: resolution.target
-          },
-          execution
-        )
-      )
+    |> Enum.reduce({%{}, execution}, fn ({name, ast_node}, {acc, exe}) ->
+      case resolve_field(
+            ast_node,
+            %Resolution{
+              parent_type: resolution.type,
+              target: resolution.target
+            },
+            exe
+          ) do
+        {:ok, value, changed_execution} -> {acc |> Map.put(name, value), changed_execution}
+        {:skip, changed_execution} -> {acc, changed_execution}
+      end
     end)
+    {:ok, result, execution_to_return}
   end
 
   @spec flatten(Language.t, Resolution.t, Execution.t) :: %{binary => Language.t}
@@ -90,6 +90,8 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.SelectionSet do
   defp resolve_field(ast_node, resolution, execution) do
     if directives_pass?(ast_node, execution) do
       Execution.Resolution.resolve(ast_node, resolution, execution)
+    else
+      {:skip, execution}
     end
   end
 

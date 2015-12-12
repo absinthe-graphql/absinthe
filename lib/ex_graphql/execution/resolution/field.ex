@@ -7,19 +7,31 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
   @spec resolve(ExGraphQL.Language.Field.t,
                 ExGraphQL.Resolution.t,
                 ExGraphQL.Execution.t) :: {:ok, map} | {:error, any}
-  def resolve(ast_node, %{parent_type: parent_type} = resolution, %{schema: schema, variables: variables, strategy: :serial} = execution) do
+  def resolve(%{name: name} = ast_node, %{parent_type: parent_type, target: target} = resolution, %{schema: schema, errors: errors, variables: variables, strategy: :serial} = execution) do
     field = Type.field(parent_type, ast_node.name)
-    arguments = Execution.LiteralInput.from_arguments(ast_node.arguments, field.args, variables)
-    case field.resolve.(arguments, execution, resolution) do
-      nil -> {:ok, nil, execution}
-      value -> value |> result(ast_node, field, resolution, execution)
+    if field do
+      arguments = Execution.LiteralInput.from_arguments(ast_node.arguments, field.args, variables)
+      case field do
+        %{resolve: nil} ->
+          target |> Map.get(name |> String.to_atom) |> result(ast_node, field, resolution, execution)
+        %{resolve: resolver} ->
+          case field.resolve.(arguments, execution, resolution) do
+            nil -> {:ok, nil, execution}
+            value -> value |> result(ast_node, field, resolution, execution)
+          end
+      end
+    else
+      {:skip, %{execution | errors: ["No field '#{ast_node.name}'"|errors]}}
     end
   end
 
   defp result(value, ast_node, field, resolution, execution) do
-    resolved_type = field.type.resolve_type.(value)
-    resolved_value = ValueResolution.resolve(resolved_type, value, ast_node, resolution, execution)
-    {:ok, resolved_value, execution}
+    resolved_type = Type.resolve_type(field.type, value)
+    Execution.Resolution.resolve(
+      resolved_type,
+      %Execution.Resolution{type: resolved_type, ast_node: ast_node, target: value},
+      execution
+    )
   end
 
 end

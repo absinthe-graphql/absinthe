@@ -26,7 +26,22 @@ defmodule ExGraphQL.Language.ParseTest do
   """
 
   test "can parse a mutation with an alias" do
-    assert {:ok, doc} = ExGraphQL.parse(@mutation_with_alias)
+    assert {:ok, _} = ExGraphQL.parse(@mutation_with_alias)
+  end
+
+  @nested_input """
+  mutation CreateSession {
+    createSession(contact: {value: "5551212"}, token: "124125124jlkj12") {
+      token
+      user {
+        id
+        name
+      }
+    }
+  }
+  """
+  test "can parse a mutation with a complex input" do
+    assert {:ok, _} = ExGraphQL.parse(@nested_input)
   end
 
 end

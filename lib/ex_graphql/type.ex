@@ -43,6 +43,11 @@ defmodule ExGraphQL.Type do
   def object_type?(%{__struct__: __MODULE__.ObjectType}), do: true
   def object_type?(_), do: false
 
+  @doc "Resolve a type for a value from an interface (if necessary)"
+  @spec resolve_type(t, any) :: t
+  def resolve_type(%{resolve_type: resolver}, value), do: resolver.(value)
+  def resolve_type(type, _value), do: type
+
   # TYPE WITH FIELDS
 
   @doc "Determine if a type has fields"
