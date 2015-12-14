@@ -2,6 +2,7 @@ defmodule ExGraphQL.Execution.Variables do
 
   alias ExGraphQL.Type
   alias ExGraphQL.Language
+  alias ExGraphQL.Execution.LiteralInput
 
   @spec build(Type.Schema.t, [Language.VariableDefinition.t], %{binary => any}) :: %{binary => any}
   def build(schema, variable_definitions, provided_variables) do
@@ -28,7 +29,7 @@ defmodule ExGraphQL.Execution.Variables do
           nil
         else
           variable_type
-          |> Type.coerce(value)
+          |> LiteralInput.coerce(value)
         end
         parse(
           rest, schema, provided_variables,

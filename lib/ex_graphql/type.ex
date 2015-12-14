@@ -1,5 +1,7 @@
 defmodule ExGraphQL.Type do
 
+  alias __MODULE__
+
   defmacro __using__(_) do
     quote do
       import unquote(__MODULE__).Definitions
@@ -8,10 +10,10 @@ defmodule ExGraphQL.Type do
 
   # ALL TYPES
 
-  @type_modules [__MODULE__.Scalar, __MODULE__.ObjectType, __MODULE__.InterfaceType, __MODULE__.Union, __MODULE__.Enum, __MODULE__.InputObjectType, __MODULE__.List, __MODULE__.NonNull]
+  @type_modules [Type.Scalar, Type.ObjectType, Type.InterfaceType, Type.Union, Type.Enum, Type.InputObjectType, Type.List, Type.NonNull]
 
   @typedoc "These are all of the possible kinds of types."
-  @type t :: __MODULE__.Scalar.t | __MODULE__.ObjectType.t | __MODULE__.FieldDefinition.t | __MODULE__.InterfaceType.t | __MODULE__.Union.t | __MODULE__.Enum.t | __MODULE__.InputObjectType.t | __MODULE__.List.t | __MODULE__.NonNull.t
+  @type t :: Type.Scalar.t | Type.ObjectType.t | Type.FieldDefinition.t | Type.InterfaceType.t | Type.Union.t | Type.Enum.t | Type.InputObjectType.t | Type.List.t | Type.NonNull.t
 
   @doc "Determine if a struct matches one of the types"
   @spec type?(any) :: boolean
@@ -20,10 +22,10 @@ defmodule ExGraphQL.Type do
 
   # INPUT TYPES
 
-  @input_type_modules [__MODULE__.Scalar, __MODULE__.Enum, __MODULE__.InputObjectType, __MODULE__.List, __MODULE__.NonNull]
+  @input_type_modules [Type.Scalar, Type.Enum, Type.InputObjectType, Type.List, Type.NonNull]
 
   @typedoc "These types may be used as input types for arguments and directives."
-  @type input_t :: __MODULE__.Scalar.t | __MODULE__.Enum.t | __MODULE__.InputObjectType.t | __MODULE__.List.t | __MODULE__.NonNull.t
+  @type input_t :: Type.Scalar.t | Type.Enum.t | Type.InputObjectType.t | Type.List.t | Type.NonNull.t
 
   @doc "Determine if a term is an input type"
   @spec input_type?(any) :: boolean
@@ -40,7 +42,7 @@ defmodule ExGraphQL.Type do
 
   @doc "Determine if a term is an object type"
   @spec object_type?(any) :: boolean
-  def object_type?(%{__struct__: __MODULE__.ObjectType}), do: true
+  def object_type?(%{__struct__: Type.ObjectType}), do: true
   def object_type?(_), do: false
 
   @doc "Resolve a type for a value from an interface (if necessary)"
@@ -57,10 +59,10 @@ defmodule ExGraphQL.Type do
 
   # OUTPUT TYPES
 
-  @output_type_modules [__MODULE__.Scalar, __MODULE__.ObjectType, __MODULE__.InterfaceType, __MODULE__.Union, __MODULE__.Enum]
+  @output_type_modules [Type.Scalar, Type.ObjectType, Type.InterfaceType, Type.Union, Type.Enum]
 
   @typedoc "These types may be used as output types as the result of fields."
-  @type output_t :: __MODULE__.Scalar.t | __MODULE__.ObjectType.t | __MODULE__.InterfaceType.t | __MODULE__.Union.t | __MODULE__.Enum.t
+  @type output_t :: Type.Scalar.t | Type.ObjectType.t | Type.InterfaceType.t | Type.Union.t | Type.Enum.t
 
   @doc "Determine if a term is an output type"
   @spec output_type?(any) :: boolean
@@ -75,10 +77,10 @@ defmodule ExGraphQL.Type do
 
   # LEAF TYPES
 
-  @leaf_type_modules [__MODULE__.Scalar, __MODULE__.Enum]
+  @leaf_type_modules [Type.Scalar, Type.Enum]
 
   @typedoc "These types may describe types which may be leaf values."
-  @type leaf_t :: __MODULE__.Scalar.t | __MODULE__.Enum.t
+  @type leaf_t :: Type.Scalar.t | Type.Enum.t
 
   @doc "Determine if a term is a leaf type"
   @spec leaf_type?(any) :: boolean
@@ -93,10 +95,10 @@ defmodule ExGraphQL.Type do
 
   # COMPOSITE TYPES
 
-  @composite_type_modules [__MODULE__.ObjectType, __MODULE__.InterfaceType, __MODULE__.Union]
+  @composite_type_modules [Type.ObjectType, Type.InterfaceType, Type.Union]
 
   @typedoc "These types may describe the parent context of a selection set."
-  @type composite_t :: __MODULE__.ObjectType.t | __MODULE__.InterfaceType.t | __MODULE__.Union.t
+  @type composite_t :: Type.ObjectType.t | Type.InterfaceType.t | Type.Union.t
 
   @doc "Determine if a term is a composite type"
   @spec composite_type?(any) :: boolean
@@ -105,10 +107,10 @@ defmodule ExGraphQL.Type do
 
   # ABSTRACT TYPES
 
-  @abstract_type_modules [__MODULE__.InterfaceType, __MODULE__.Union]
+  @abstract_type_modules [Type.InterfaceType, Type.Union]
 
   @typedoc "These types may describe the parent context of a selection set."
-  @type abstract_t :: __MODULE__.InterfaceType.t | __MODULE__.Union.t
+  @type abstract_t :: Type.InterfaceType.t | Type.Union.t
 
   @doc "Determine if a term is an abstract type"
   @spec abstract?(any) :: boolean
@@ -117,26 +119,26 @@ defmodule ExGraphQL.Type do
 
   # NULLABLE TYPES
 
-  @nullable_type_modules [__MODULE__.Scalar, __MODULE__.ObjectType, __MODULE__.InterfaceType, __MODULE__.Union, __MODULE__.Enum, __MODULE__.InputObjectType, __MODULE__.List]
+  @nullable_type_modules [Type.Scalar, Type.ObjectType, Type.InterfaceType, Type.Union, Type.Enum, Type.InputObjectType, Type.List]
 
   @typedoc "These types can all accept null as a value."
-  @type nullable_t :: __MODULE__.Scalar.t | __MODULE__.ObjectType.t | __MODULE__.InterfaceType.t | __MODULE__.Union.t | __MODULE__.Enum.t | __MODULE__.InputObjectType.t | __MODULE__.List.t
+  @type nullable_t :: Type.Scalar.t | Type.ObjectType.t | Type.InterfaceType.t | Type.Union.t | Type.Enum.t | Type.InputObjectType.t | Type.List.t
 
   @doc "Unwrap the underlying nullable type or return unmodified"
   @spec nullable(any) :: nullable_t | t # nullable_t is a subset of t, but broken out for clarity
-  def nullable(%{__struct__: __MODULE__.NonNull, of_type: nullable}), do: nullable
+  def nullable(%{__struct__: Type.NonNull, of_type: nullable}), do: nullable
   def nullable(term), do: term
 
   # NAMED TYPES
 
-  @named_type_modules [__MODULE__.Scalar, __MODULE__.ObjectType, __MODULE__.InterfaceType, __MODULE__.Union, __MODULE__.Enum, __MODULE__.InputObjectType]
+  @named_type_modules [Type.Scalar, Type.ObjectType, Type.InterfaceType, Type.Union, Type.Enum, Type.InputObjectType]
 
   @typedoc "These named types do not include modifiers like ExGraphQL.Type.List or ExGraphQL.Type.NonNull."
-  @type named_t :: __MODULE__.Scalar.t | __MODULE__.ObjectType.t | __MODULE__.InterfaceType.t | __MODULE__.Union.t | __MODULE__.Enum.t | __MODULE__.InputObjectType.t
+  @type named_t :: Type.Scalar.t | Type.ObjectType.t | Type.InterfaceType.t | Type.Union.t | Type.Enum.t | Type.InputObjectType.t
 
   @doc "Determine the underlying named type, if any"
   @spec named_type(any) :: nil | named_t
-  def named_type(%{__struct__: mod, of_type: unmodified}) when mod in [__MODULE__.List, __MODULE__.NonNull] do
+  def named_type(%{__struct__: mod, of_type: unmodified}) when mod in [Type.List, Type.NonNull] do
     named_type(unmodified)
   end
   def named_type(%{__struct__: mod} = term) when mod in @named_type_modules, do: term
@@ -150,10 +152,10 @@ defmodule ExGraphQL.Type do
 
   # WRAPPERS
 
-  @wrapping_modules [__MODULE__.List, __MODULE__.NonNull]
+  @wrapping_modules [Type.List, Type.NonNull]
 
   @typedoc "A type wrapped in a List on NonNull"
-  @type wrapping_t :: __MODULE__.List.t | __MODULE__.NonNull.t
+  @type wrapping_t :: Type.List.t | Type.NonNull.t
 
   @spec wrapped?(t) :: boolean
   def wrapped?(%{__struct__: mod}) when mod in @wrapping_modules, do: true
@@ -172,7 +174,7 @@ defmodule ExGraphQL.Type do
 
   # VALID TYPE
 
-  def valid_input?(%{__struct__: __MODULE__.NonNull}, nil) do
+  def valid_input?(%{__struct__: Type.NonNull}, nil) do
     false
   end
   def valid_input?(_type, nil) do
@@ -181,11 +183,6 @@ defmodule ExGraphQL.Type do
   def valid_input?(_type, _value) do
     # TODO: Actually check validity
     true
-  end
-
-  def coerce(input_type, value) do
-    value
-    |> unwrap(input_type).parse_value.()
   end
 
   # TODO: Support __typename, __schema, and __type for introspection

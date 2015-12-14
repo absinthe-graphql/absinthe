@@ -3,7 +3,6 @@ defmodule ExGraphQLTest do
   use ExGraphQL.Type
   alias ExGraphQL.Type
 
-  @tag :starwars
   it "can run without validation" do
     schema = StarWars.Schema.schema
     query = """
@@ -14,7 +13,7 @@ defmodule ExGraphQLTest do
       }
     """
     # This does not actually resolve data yet
-    assert {:ok, %{data: %{"hero" => %{"name" => "R2-D2"}}, errors: []}} = ExGraphQL.run(schema, query, validate: false)
+    assert {:ok, %{"data" => %{"hero" => %{"name" => "R2-D2"}}, "errors" => []}} = ExGraphQL.run(schema, query, validate: false)
   end
 
   defp thing_type do
@@ -63,7 +62,7 @@ defmodule ExGraphQLTest do
                 type: %Type.NonNull{of_type: Type.Scalar.string}
               ]
             ),
-            resolve: fn (%{id: id}, _exe, _res) ->
+            resolve: fn (%{"id" => id}, _exe, _res) ->
               things
               |> Map.get(id)
             end
@@ -81,7 +80,7 @@ defmodule ExGraphQLTest do
       }
     }
     """
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: []}} = ExGraphQL.run(simple_schema, query, validate: false)
+    assert {:ok, %{"data" => %{"thing" => %{"name" => "Foo"}}, "errors" => []}} = ExGraphQL.run(simple_schema, query, validate: false)
   end
 
   it "can identify a bad field" do
@@ -93,7 +92,7 @@ defmodule ExGraphQLTest do
       }
     }
     """
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: ["No field 'bad'"]}} = ExGraphQL.run(simple_schema, query, validate: false)
+    assert {:ok, %{"data" => %{"thing" => %{"name" => "Foo"}}, "errors" => ["No field 'bad'"]}} = ExGraphQL.run(simple_schema, query, validate: false)
   end
 
   it "returns the correct results for an alias" do
@@ -104,7 +103,7 @@ defmodule ExGraphQLTest do
       }
     }
     """
-    assert {:ok, %{data: %{"widget" => %{"name" => "Foo"}}, errors: []}} = ExGraphQL.run(simple_schema, query, validate: false)
+    assert {:ok, %{"data" => %{"widget" => %{"name" => "Foo"}}, "errors" => []}} = ExGraphQL.run(simple_schema, query, validate: false)
   end
 
   it "returns nested objects" do
@@ -118,7 +117,7 @@ defmodule ExGraphQLTest do
       }
     }
     """
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo", "other_thing" => %{"name" => "Bar"}}}, errors: []}} = ExGraphQL.run(simple_schema, query, validate: false)
+    assert {:ok, %{"data" => %{"thing" => %{"name" => "Foo", "other_thing" => %{"name" => "Bar"}}}, "errors" => []}} = ExGraphQL.run(simple_schema, query, validate: false)
   end
 
 end
