@@ -1,11 +1,17 @@
 defmodule ExGraphQL.Type.Definitions do
 
+  alias ExGraphQL.Type
+
   defmacro fields(definitions) do
     quote do
       fn ->
         named(ExGraphQL.Type.FieldDefinition, unquote(definitions))
       end
     end
+  end
+
+  def non_null(type) do
+    %Type.NonNull{of_type: type}
   end
 
   def args(definitions) do
