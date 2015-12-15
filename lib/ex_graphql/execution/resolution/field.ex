@@ -15,16 +15,17 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
         %{resolve: nil} ->
           target |> Map.get(name |> String.to_atom) |> result(ast_node, field, resolution, execution)
         %{resolve: resolver} ->
-          case field.resolve.(arguments, execution, resolution) do
-            nil -> {:ok, nil, execution}
-            value -> value |> result(ast_node, field, resolution, execution)
-          end
+          field.resolve.(arguments, execution, resolution)
+          |> result(ast_node, field, resolution, execution)
       end
     else
       {:skip, %{execution | errors: ["No field '#{ast_node.name}'"|errors]}}
     end
   end
 
+  defp result(nil, _ast_node, _field, _resolution, execution) do
+    {:ok, nil, execution}
+  end
   defp result(value, ast_node, field, resolution, execution) do
     resolved_type = Type.resolve_type(field.type, value)
     Execution.Resolution.resolve(
