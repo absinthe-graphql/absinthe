@@ -14,6 +14,10 @@ defmodule ExGraphQL.Type.Definitions do
     %Type.NonNull{of_type: type}
   end
 
+  def list_of(type) do
+    %Type.List{of_type: type}
+  end
+
   def args(definitions) do
     named(ExGraphQL.Type.Argument, definitions)
   end
