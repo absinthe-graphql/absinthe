@@ -3,6 +3,7 @@ defmodule ExGraphQL.Execution.Runner do
   Determines the root object to resolve, then runs the correct strategy.
   """
 
+  alias ExGraphQL.Execution
   alias ExGraphQL.Execution.Resolution
 
   def run(%{selected_operation: nil}) do
@@ -10,7 +11,7 @@ defmodule ExGraphQL.Execution.Runner do
   end
   def run(%{selected_operation: %{operation: op_type} = operation} = execution) do
     case execute(op_type, operation, execution) do
-      {:ok, value, %{errors: errors}} -> {:ok, %{"data" => value, "errors" => errors}}
+      {:ok, value, %{errors: errors}} -> {:ok, %{"data" => value, "errors" => Execution.stringify_keys(errors)}}
       other -> other
     end
   end

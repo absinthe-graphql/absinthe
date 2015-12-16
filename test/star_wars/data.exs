@@ -76,7 +76,7 @@ defmodule StarWars.Data do
   }
 
   # Helper function to get a character by ID.
-  def get_character(id), do: @humanData[id] || @droidData[id]
+  def get_character(id), do: {:ok, @humanData[id] || @droidData[id]}
 
   # Allows us to query for a character"s friends.
   def get_friends(character) do
@@ -85,15 +85,15 @@ defmodule StarWars.Data do
   end
 
   # Allows us to fetch the undisputed hero of the Star Wars trilogy, R2-D2.
-  def get_hero(), do: @artoo
+  def get_hero(), do: {:ok, @artoo}
 
-  def get_hero(5 = episode), do: @luke
-  def get_hero(_), do: @artoo
+  def get_hero(5 = episode), do: {:ok, @luke}
+  def get_hero(_), do: {:ok, @artoo}
 
   # Allows us to query for the human with the given id.
-  def get_human(id), do: @humanData[id]
+  def get_human(id), do: {:ok, @humanData[id]}
 
   # Allows us to query for the droid with the given id.
-  def get_droid(id), do: @droidData[id]
+  def get_droid(id), do: {:ok, @droidData[id]}
 
 end

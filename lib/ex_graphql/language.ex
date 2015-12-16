@@ -1,19 +1,21 @@
 defmodule ExGraphQL.Language do
 
-  @type t :: __MODULE__.Argument.t
-  | __MODULE__.BooleanValue.t
-  | __MODULE__.Directive.t | __MODULE__.Document.t | __MODULE__.EnumTypeDefinition.t | __MODULE__.EnumValue.t | __MODULE__.Field.t | __MODULE__.FieldDefinition.t | __MODULE__.FloatValue.t | __MODULE__.FragmentDefinition.t | __MODULE__.FragmentSpread.t | __MODULE__.InlineFragment.t | __MODULE__.InputObjectTypeDefinition.t | __MODULE__.InputValueDefinition.t | __MODULE__.IntValue.t | __MODULE__.InterfaceTypeDefinition.t | __MODULE__.ListType.t | __MODULE__.ListValue.t | __MODULE__.NamedType.t | __MODULE__.NonNullType.t | __MODULE__.ObjectField.t | __MODULE__.ObjectTypeDefinition.t | __MODULE__.ObjectValue.t | __MODULE__.OperationDefinition.t | __MODULE__.ScalarTypeDefinition.t | __MODULE__.SelectionSet.t | __MODULE__.Source.t | __MODULE__.StringValue.t | __MODULE__.TypeExtensionDefinition.t | __MODULE__.UnionTypeDefinition.t | __MODULE__.Variable.t | __MODULE__.VariableDefinition.t
+  alias __MODULE__
+
+  @type t :: Language.Argument.t
+  | Language.BooleanValue.t
+  | Language.Directive.t | Language.Document.t | Language.EnumTypeDefinition.t | Language.EnumValue.t | Language.Field.t | Language.FieldDefinition.t | Language.FloatValue.t | Language.FragmentDefinition.t | Language.FragmentSpread.t | Language.InlineFragment.t | Language.InputObjectTypeDefinition.t | Language.InputValueDefinition.t | Language.IntValue.t | Language.InterfaceTypeDefinition.t | Language.ListType.t | Language.ListValue.t | Language.NamedType.t | Language.NonNullType.t | Language.ObjectField.t | Language.ObjectTypeDefinition.t | Language.ObjectValue.t | Language.OperationDefinition.t | Language.ScalarTypeDefinition.t | Language.SelectionSet.t | Language.Source.t | Language.StringValue.t | Language.TypeExtensionDefinition.t | Language.UnionTypeDefinition.t | Language.Variable.t | Language.VariableDefinition.t
 
   @typedoc "Value nodes"
-  @type value_t :: __MODULE__.Variable.t | __MODULE__.IntValue.t | __MODULE__.FloatValue.t | __MODULE__.StringValue.t | __MODULE__.BooleanValue.t | __MODULE__.EnumValue.t | __MODULE__.ListValue.t | __MODULE__.ObjectValue.t
+  @type value_t :: Language.Variable.t | Language.IntValue.t | Language.FloatValue.t | Language.StringValue.t | Language.BooleanValue.t | Language.EnumValue.t | Language.ListValue.t | Language.ObjectValue.t
 
   @typedoc "Type reference nodes"
-  @type type_reference_t :: __MODULE__.NamedType.t | __MODULE__.ListType.t | __MODULE__.NonNullType.t
+  @type type_reference_t :: Language.NamedType.t | Language.ListType.t | Language.NonNullType.t
 
   @typedoc "Type definition nodes"
-  @type type_definition_t :: __MODULE__.ObjectTypeDefinition.t | __MODULE__.InterfaceTypeDefinition.t | __MODULE__.UnionTypeDefinition.t | __MODULE__.ScalarTypeDefinition.t | __MODULE__.EnumTypeDefinition.t | __MODULE__.InputObjectTypeDefinition.t | __MODULE__.TypeExtensionDefinition.t
+  @type type_definition_t :: Language.ObjectTypeDefinition.t | Language.InterfaceTypeDefinition.t | Language.UnionTypeDefinition.t | Language.ScalarTypeDefinition.t | Language.EnumTypeDefinition.t | Language.InputObjectTypeDefinition.t | Language.TypeExtensionDefinition.t
 
-  @type loc_t :: %{start: nil | integer,
-                   end:   nil | integer}
+  @type loc_t :: %{start_line: nil | integer,
+                   end_line:   nil | integer}
 
 end

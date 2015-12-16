@@ -3,7 +3,9 @@ defmodule ExGraphQL.Execution do
   alias ExGraphQL.Language
   alias ExGraphQL.Type
 
-  @type t :: %{schema: Type.Schema.t, document: Language.Document.t, variables: map, validate: boolean, selected_operation: ExGraphQL.Type.ObjectType.t, operation_name: atom, errors: [binary], categorized: boolean, strategy: atom}
+  @type error_t :: %{message: binary, locations: [%{line: integer, column: integer}]}
+
+  @type t :: %{schema: Type.Schema.t, document: Language.Document.t, variables: map, validate: boolean, selected_operation: ExGraphQL.Type.ObjectType.t, operation_name: atom, errors: [error_t], categorized: boolean, strategy: atom}
   defstruct schema: nil, document: nil, variables: %{}, fragments: %{}, operations: %{}, validate: true, selected_operation: nil, operation_name: nil, errors: [], categorized: false, strategy: nil
 
   def run(execution, options \\ []) do
@@ -23,6 +25,11 @@ defmodule ExGraphQL.Execution do
         |> validate
       other -> other
     end
+  end
+
+  @spec format_error(binary, Language.t) :: error_t
+  def format_error(message, %{loc: %{start_line: line}}) do
+    %{message: message, locations: [%{line: line, column: 0}]}
   end
 
   @spec resolve_type(t, t, t) :: t | nil
@@ -45,6 +52,16 @@ defmodule ExGraphQL.Execution do
   end
   def resolve_type(_target, _child_type, _parent_type) do
     nil
+  end
+
+  def stringify_keys(node) when is_map(node) do
+    for {key, val} <- node, into: %{}, do: {key |> to_string, val}
+  end
+  def stringify_keys([node|rest]) do
+    [stringify_keys(node)|rest]
+  end
+  def stringify_keys(node) do
+    node
   end
 
   defp execute(execution) do

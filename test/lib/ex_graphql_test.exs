@@ -33,8 +33,8 @@ defmodule ExGraphQLTest do
           type: thing_type,
           resolve: fn (_, _exe, %{target: %{id: id}}) ->
             case id do
-              "foo" -> things |> Map.get("bar")
-              "bar" -> things |> Map.get("foo")
+              "foo" -> {:ok, things |> Map.get("bar")}
+              "bar" -> {:ok, things |> Map.get("foo")}
             end
           end
         ]
@@ -63,8 +63,7 @@ defmodule ExGraphQLTest do
               ]
             ),
             resolve: fn (%{"id" => id}, _exe, _res) ->
-              things
-              |> Map.get(id)
+              {:ok, things |> Map.get(id)}
             end
           ]
         )
@@ -92,7 +91,7 @@ defmodule ExGraphQLTest do
       }
     }
     """
-    assert {:ok, %{"data" => %{"thing" => %{"name" => "Foo"}}, "errors" => ["No field 'bad'"]}} = ExGraphQL.run(simple_schema, query, validate: false)
+    assert {:ok, %{"data" => %{"thing" => %{"name" => "Foo"}}, "errors" => [%{"message" => "No field 'bad'", "locations" => _}]}} = ExGraphQL.run(simple_schema, query, validate: false)
   end
 
   it "returns the correct results for an alias" do

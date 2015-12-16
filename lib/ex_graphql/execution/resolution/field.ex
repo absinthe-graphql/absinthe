@@ -2,7 +2,6 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
 
   alias ExGraphQL.Execution
   alias ExGraphQL.Type
-  alias ExGraphQL.Execution.ValueResolution
 
   @spec resolve(ExGraphQL.Language.Field.t,
                 ExGraphQL.Resolution.t,
@@ -16,11 +15,21 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
           target |> Map.get(name |> String.to_atom) |> result(ast_node, field, resolution, execution)
         %{resolve: resolver} ->
           field.resolve.(arguments, execution, resolution)
-          |> result(ast_node, field, resolution, execution)
+          |> process_raw_result(ast_node, field, resolution, execution)
       end
     else
-      {:skip, %{execution | errors: ["No field '#{ast_node.name}'"|errors]}}
+      {:skip, %{execution | errors: [Execution.format_error("No field '#{ast_node.name}'", ast_node)|errors]}}
     end
+  end
+
+  defp process_raw_result({:ok, value}, ast_node, field, resolution, execution) do
+    value
+    |> result(ast_node, field, resolution, execution)
+  end
+  # TODO: Support line number
+  defp process_raw_result({:error, error}, ast_node, _field, _resolution, execution) do
+    new_errors = error |> List.wrap |> Enum.map(&(Execution.format_error(&1, ast_node)))
+    {:skip, %{execution | errors: new_errors ++ execution.errors }}
   end
 
   defp result(nil, _ast_node, _field, _resolution, execution) do
