@@ -3,6 +3,8 @@ defmodule ExGraphQL.Execution do
   alias ExGraphQL.Language
   alias ExGraphQL.Type
 
+  alias __MODULE__
+
   @type error_t :: %{message: binary, locations: [%{line: integer, column: integer}]}
 
   @type t :: %{schema: Type.Schema.t, document: Language.Document.t, variables: map, validate: boolean, selected_operation: ExGraphQL.Type.ObjectType.t, operation_name: atom, errors: [error_t], categorized: boolean, strategy: atom}
@@ -31,7 +33,7 @@ defmodule ExGraphQL.Execution do
   def format_error(message, %{loc: %{start_line: line}}) when is_binary(message) do
     %{message: message |> to_string, locations: [%{line: line, column: 0}]}
   end
-  def format_error(non_binary_message, ast_node) do
+  def format_error(non_binary_message, %{start_line: _} = ast_node) do
     non_binary_message
     |> inspect
     |> format_error(ast_node)
@@ -71,7 +73,7 @@ defmodule ExGraphQL.Execution do
 
   defp execute(execution) do
     execution
-    |> __MODULE__.Runner.run
+    |> Execution.Runner.run
   end
 
   @doc "Categorize definitions in the execution document as operations or fragments"
@@ -122,8 +124,11 @@ defmodule ExGraphQL.Execution do
     {:error, "Multiple operations available, but no operation_name provided"}
   end
 
-  def set_variables(%{schema: schema, variables: variables} = execution) do
-    execution
+  def set_variables(%{schema: schema, selected_operation: selected_op, variables: variables} = execution) do
+    case Execution.Variables.build(schema, selected_op.variable_definitions, variables) do
+      %{values: values, errors: new_errors} ->
+        %{execution | variables: values, errors: new_errors ++ execution.errors}
+    end
   end
 
 end

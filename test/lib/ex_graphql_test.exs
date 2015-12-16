@@ -76,7 +76,8 @@ defmodule ExGraphQLTest do
               ]
             ),
             resolve: fn
-              (%{"id" => id}, _exe, _res) -> {:ok, things |> Map.get(id)}
+              (%{"id" => id}, _exe, _res) ->
+                {:ok, things |> Map.get(id)}
             end
           ]
         )
@@ -156,7 +157,7 @@ defmodule ExGraphQLTest do
 
   it "can use variables" do
     query = """
-    query GimmeThingByVariable($thingId: Int!) {
+    query GimmeThingByVariable($thingId: String!) {
       thing(id: $thingId) {
         name
       }
@@ -164,6 +165,19 @@ defmodule ExGraphQLTest do
     """
     result = ExGraphQL.run(simple_schema, query, validate: false, variables: %{"thingId" => "bar"})
     assert {:ok, %{"data" => %{"thing" => %{"name" => "Bar"}}, "errors" => []}} = result
+  end
+
+  @tag :focus
+  it "reports missing, required variable values" do
+    query = """
+      query GimmeThingByVariable($thingId: String!, $other: String!) {
+        thing(id: $thingId) {
+          name
+        }
+      }
+    """
+    result = ExGraphQL.run(simple_schema, query, validate: false, variables: %{thingId: "bar"})
+    assert {:ok, %{"data" => %{"thing" => %{"name" => "Bar"}}, "errors" => [%{"message" => "Missing required variable 'other' (String)"}]}} = result
   end
 
 end

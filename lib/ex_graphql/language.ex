@@ -18,4 +18,9 @@ defmodule ExGraphQL.Language do
   @type loc_t :: %{start_line: nil | integer,
                    end_line:   nil | integer}
 
+  @doc "Unwrap an AST type from a NonNullType"
+  @spec unwrap(Language.NonNullType.t | t) :: t
+  def unwrap(%{__struct__: Language.NonNullType, type: t}), do: t
+  def unwrap(type), do: type
+
 end
