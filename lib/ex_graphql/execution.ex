@@ -27,9 +27,14 @@ defmodule ExGraphQL.Execution do
     end
   end
 
-  @spec format_error(binary, Language.t) :: error_t
-  def format_error(message, %{loc: %{start_line: line}}) do
-    %{message: message, locations: [%{line: line, column: 0}]}
+  @spec format_error(binary | any, Language.t) :: error_t
+  def format_error(message, %{loc: %{start_line: line}}) when is_binary(message) do
+    %{message: message |> to_string, locations: [%{line: line, column: 0}]}
+  end
+  def format_error(non_binary_message, ast_node) do
+    non_binary_message
+    |> inspect
+    |> format_error(ast_node)
   end
 
   @spec resolve_type(t, t, t) :: t | nil
