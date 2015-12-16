@@ -60,6 +60,13 @@ defmodule ExGraphQLTest do
               :not_expected
             end
           ],
+          thingByContext: [
+            type: thing_type,
+            resolve: fn
+              (_args, %{context: %{thing: id}}, _res) -> {:ok, things |> Map.get(id)}
+              (_args, _exe, _res) -> {:error, "No :id context provided"}
+            end
+          ],
           thing: [
             type: thing_type,
             args: args(
@@ -68,8 +75,8 @@ defmodule ExGraphQLTest do
                 type: %Type.NonNull{of_type: Type.Scalar.string}
               ]
             ),
-            resolve: fn (%{"id" => id}, _exe, _res) ->
-              {:ok, things |> Map.get(id)}
+            resolve: fn
+              (%{"id" => id}, _exe, _res) -> {:ok, things |> Map.get(id)}
             end
           ]
         )
@@ -133,6 +140,30 @@ defmodule ExGraphQLTest do
     }
     """
     assert {:ok, %{"data" => %{"thing" => %{"name" => "Foo", "other_thing" => %{"name" => "Bar"}}}, "errors" => []}} = ExGraphQL.run(simple_schema, query, validate: false)
+  end
+
+  it "can provide context" do
+    query = """
+      query GimmeThingByContext {
+        thingByContext {
+          name
+        }
+      }
+    """
+    assert {:ok, %{"data" => %{"thingByContext" => %{"name" => "Bar"}}, "errors" => []}} = ExGraphQL.run(simple_schema, query, validate: false, context: %{thing: "bar"})
+    assert {:ok, %{"data" => %{}, "errors" => [%{"message" => "No :id context provided"}]}} = ExGraphQL.run(simple_schema, query, validate: false)
+  end
+
+  it "can use variables" do
+    query = """
+    query GimmeThingByVariable($thingId: Int!) {
+      thing(id: $thingId) {
+        name
+      }
+    }
+    """
+    result = ExGraphQL.run(simple_schema, query, validate: false, variables: %{"thingId" => "bar"})
+    assert {:ok, %{"data" => %{"thing" => %{"name" => "Bar"}}, "errors" => []}} = result
   end
 
 end
