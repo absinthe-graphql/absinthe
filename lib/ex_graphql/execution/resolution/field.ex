@@ -31,6 +31,10 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
     new_errors = error |> List.wrap |> Enum.map(&(Execution.format_error(&1, ast_node)))
     {:skip, %{execution | errors: new_errors ++ execution.errors }}
   end
+  defp process_raw_result(_other, ast_node, _field, _resolution, execution) do
+    error = "Invalid value resolved for field '#{ast_node.name}'" |> Execution.format_error(ast_node)
+    {:skip, %{execution | errors: [error|execution.errors]}}
+  end
 
   defp result(nil, _ast_node, _field, _resolution, execution) do
     {:ok, nil, execution}

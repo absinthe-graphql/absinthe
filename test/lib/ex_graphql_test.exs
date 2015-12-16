@@ -54,6 +54,12 @@ defmodule ExGraphQLTest do
       query: %Type.ObjectType{
         name: "RootQuery",
         fields: fields(
+          bad_resolution: [
+            type: thing_type,
+            resolve: fn(_args, _exe, _res) ->
+              :not_expected
+            end
+          ],
           thing: [
             type: thing_type,
             args: args(
@@ -92,6 +98,16 @@ defmodule ExGraphQLTest do
     }
     """
     assert {:ok, %{"data" => %{"thing" => %{"name" => "Foo"}}, "errors" => [%{"message" => "No field 'bad'", "locations" => [%{"line" => 4}]}]}} = ExGraphQL.run(simple_schema, query, validate: false)
+  end
+
+  it "gives nice errors for bad resolutions" do
+    query = """
+    {
+      bad_resolution
+    }
+    """
+    assert {:ok, %{"data" => %{},
+                   "errors" => [%{"message" => "Invalid value resolved for field 'bad_resolution'", "locations" => _}]}} = ExGraphQL.run(simple_schema, query, validate: false)
   end
 
   it "returns the correct results for an alias" do
