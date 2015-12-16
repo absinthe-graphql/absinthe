@@ -107,7 +107,7 @@ defmodule ExGraphQLTest do
     }
     """
     assert {:ok, %{"data" => %{},
-                   "errors" => [%{"message" => "Resolved value for 'bad_resolution' does not match {:ok, _} or {:error, _}", "locations" => _}]}} = ExGraphQL.run(simple_schema, query, validate: false)
+                   "errors" => [%{"message" => "Schema did not resolve 'bad_resolution' to match {:ok, _} or {:error, _}", "locations" => _}]}} = ExGraphQL.run(simple_schema, query, validate: false)
   end
 
   it "returns the correct results for an alias" do

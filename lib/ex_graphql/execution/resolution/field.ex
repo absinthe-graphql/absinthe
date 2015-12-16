@@ -32,7 +32,7 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
     {:skip, %{execution | errors: new_errors ++ execution.errors }}
   end
   defp process_raw_result(_other, ast_node, _field, _resolution, execution) do
-    error = "Resolved value for '#{ast_node.name}' does not match {:ok, _} or {:error, _}" |> Execution.format_error(ast_node)
+    error = "Schema did not resolve '#{ast_node.name}' to match {:ok, _} or {:error, _}" |> Execution.format_error(ast_node)
     {:skip, %{execution | errors: [error|execution.errors]}}
   end
 
