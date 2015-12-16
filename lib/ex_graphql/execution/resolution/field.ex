@@ -9,7 +9,7 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
   def resolve(%{name: name} = ast_node, %{parent_type: parent_type, target: target} = resolution, %{schema: schema, errors: errors, variables: variables, strategy: :serial} = execution) do
     field = Type.field(parent_type, ast_node.name)
     if field do
-      arguments = Execution.LiteralInput.from_arguments(ast_node.arguments, field.args, variables)
+      arguments = Execution.LiteralInput.arguments(ast_node.arguments, field.args, variables)
       case field do
         %{resolve: nil} ->
           target |> Map.get(name |> String.to_atom) |> result(ast_node, field, resolution, execution)

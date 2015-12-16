@@ -2,16 +2,13 @@ defmodule ExGraphQL.Execution.Variables do
 
   alias ExGraphQL.Type
   alias ExGraphQL.Language
+  alias ExGraphQL.Execution
   alias ExGraphQL.Execution.LiteralInput
 
   @spec build(Type.Schema.t, [Language.VariableDefinition.t], %{binary => any}) :: %{binary => any}
   def build(schema, variable_definitions, provided_variables) do
     parsed = variable_definitions
-    |> parse(schema, provided_variables, %{errors: %{}, values: %{}})
-    case parsed do
-      %{errors: errors, values: values} when map_size(errors) == 0 -> {:ok, values}
-      %{errors: errors} -> {:error, errors}
-    end
+    |> parse(schema, provided_variables |> Execution.stringify_keys, %{errors: [], values: %{}})
   end
 
   defp parse([], schema, provided_variables, acc) do
@@ -19,6 +16,7 @@ defmodule ExGraphQL.Execution.Variables do
   end
   defp parse([definition|rest], schema, provided_variables, %{errors: errors, values: values} = acc) do
     variable_name = definition.variable.name
+    %{name: type_name} = unwrapped_definition_type = definition.type |> Language.unwrap
     variable_type = Type.Schema.type_from_ast(schema, definition.type)
     if variable_type do
       default_value = default(definition.default_value)
@@ -28,8 +26,9 @@ defmodule ExGraphQL.Execution.Variables do
         coerced = if is_nil(value) do
           nil
         else
-          variable_type
-          |> LiteralInput.coerce(value)
+          with type <- variable_type |> Type.unwrap do
+            type.parse_value.(value)
+          end
         end
         parse(
           rest, schema, provided_variables,
@@ -37,19 +36,21 @@ defmodule ExGraphQL.Execution.Variables do
         )
       else
         err = if is_nil(value) do
-          "can not be missing"
+          "Missing required variable '#{variable_name}' (#{type_name})"
         else
-          "invalid value: #{inspect value}"
+          "Invalid value for variable '#{variable_name}' (#{type_name}): #{inspect value}"
         end
+        error = Execution.format_error(err, unwrapped_definition_type)
         parse(
           rest, schema, provided_variables,
-          %{acc | errors: errors |> Map.put(variable_name, err)}
+          %{acc | errors: [error|errors]}
         )
       end
     else
+      error = Execution.format_error("Could not find type '#{type_name}' in schema", unwrapped_definition_type)
       parse(
         rest, schema, provided_variables,
-        %{acc | errors: errors |> Map.put(variable_name, "Could not determine type")}
+        %{acc | errors: [error|errors]}
       )
     end
   end

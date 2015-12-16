@@ -43,7 +43,7 @@ defmodule ExGraphQL.Execution.VariablesTest do
 
       it "returns a value" do
         provided = %{"id" => "2000"}
-        assert {:ok, %{"id" => "2000"}} = @id_required |> variables(provided)
+        assert %{values: %{"id" => "2000"}, errors: []} = @id_required |> variables(provided)
       end
 
     end
@@ -51,7 +51,7 @@ defmodule ExGraphQL.Execution.VariablesTest do
     context "when not provided" do
 
       it "returns an error" do
-        assert {:error, %{"id" => "can not be missing"}} = @id_required |> variables
+        assert %{values: %{}, errors: [%{message: "Missing required variable 'id' (String)"}]} = @id_required |> variables
       end
 
     end
@@ -62,11 +62,11 @@ defmodule ExGraphQL.Execution.VariablesTest do
 
     it "when provided" do
       provided = %{"id" => "2000"}
-      assert {:ok, %{"id" => "2000"}} = @with_default |> variables(provided)
+      assert %{values: %{"id" => "2000"}, errors: []} = @with_default |> variables(provided)
     end
 
     it "when not provided" do
-      assert {:ok, %{"id" => @default}} = @with_default |> variables
+      assert %{values: %{"id" => @default}, errors: []} = @with_default |> variables
     end
 
   end
