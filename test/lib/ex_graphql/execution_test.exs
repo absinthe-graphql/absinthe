@@ -115,4 +115,9 @@ defmodule ExGraphQL.ExecutionTest do
 
   end
 
+  it "can stringify keys" do
+    source = [%{"locations" => [%{column: 0, line: 4}], "message" => "No field 'bad'"}]
+    assert [%{"locations" => [%{"column" => 0, "line" => 4}], "message" => "No field 'bad'"}] = Execution.stringify_keys(source)
+  end
+
 end

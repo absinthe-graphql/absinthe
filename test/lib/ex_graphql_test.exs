@@ -91,7 +91,7 @@ defmodule ExGraphQLTest do
       }
     }
     """
-    assert {:ok, %{"data" => %{"thing" => %{"name" => "Foo"}}, "errors" => [%{"message" => "No field 'bad'", "locations" => _}]}} = ExGraphQL.run(simple_schema, query, validate: false)
+    assert {:ok, %{"data" => %{"thing" => %{"name" => "Foo"}}, "errors" => [%{"message" => "No field 'bad'", "locations" => [%{"line" => 4}]}]}} = ExGraphQL.run(simple_schema, query, validate: false)
   end
 
   it "returns the correct results for an alias" do

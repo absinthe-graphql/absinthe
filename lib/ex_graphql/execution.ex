@@ -55,10 +55,10 @@ defmodule ExGraphQL.Execution do
   end
 
   def stringify_keys(node) when is_map(node) do
-    for {key, val} <- node, into: %{}, do: {key |> to_string, val}
+    for {key, val} <- node, into: %{}, do: {key |> to_string, stringify_keys(val)}
   end
   def stringify_keys([node|rest]) do
-    [stringify_keys(node)|rest]
+    [stringify_keys(node)|stringify_keys(rest)]
   end
   def stringify_keys(node) do
     node
