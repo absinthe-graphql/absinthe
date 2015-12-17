@@ -28,6 +28,7 @@ defmodule ExGraphQL.Execution do
     end
   end
 
+  @spec prepare(t) :: t
   def prepare(execution) do
     defined = execution
     |> add_configured_adapter

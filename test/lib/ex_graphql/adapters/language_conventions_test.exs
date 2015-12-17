@@ -83,7 +83,7 @@ defmodule ExGraphQL.Adapters.LanguageConventionsTest do
               ]
             ),
             resolve: fn
-              (%{"id" => id}, _) ->
+              (%{id: id}, _) ->
                 {:ok, field_trips |> Map.get(id)}
             end
           ],
@@ -95,7 +95,7 @@ defmodule ExGraphQL.Adapters.LanguageConventionsTest do
                 type: Type.Scalar.string
               ]
             ),
-            resolve: fn (%{"location_name" => loc}, _) ->
+            resolve: fn (%{location_name: loc}, _) ->
               results = for {_, %{location_name: location} = ft} <- field_trips, location == loc, into: []  do
                 ft
               end

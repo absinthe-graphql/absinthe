@@ -76,7 +76,7 @@ defmodule ExGraphQLTest do
               ]
             ),
             resolve: fn
-              (%{"id" => id}, _) ->
+              (%{id: id}, _) ->
                 {:ok, things |> Map.get(id)}
             end
           ]
