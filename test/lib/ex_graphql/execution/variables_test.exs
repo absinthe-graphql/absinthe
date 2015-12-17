@@ -52,7 +52,7 @@ defmodule ExGraphQL.Execution.VariablesTest do
     context "when not provided" do
 
       it "returns an error" do
-        assert %{values: %{}, errors: [%{message: "Variable id (String): Not provided"}]} = @id_required |> variables
+        assert %{values: %{}, errors: [%{message: "Variable `id' (String): Not provided"}]} = @id_required |> variables
       end
 
     end

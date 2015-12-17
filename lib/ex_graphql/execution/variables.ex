@@ -36,9 +36,9 @@ defmodule ExGraphQL.Execution.Variables do
         )
       else
         err = if is_nil(value) do
-          &"Variable #{&1} (#{type_name}): Not provided"
+          &"Variable `#{&1}' (#{type_name}): Not provided"
         else
-          &"Variable #{&1} (#{type_name}): Invalid value"
+          &"Variable `#{&1}' (#{type_name}): Invalid value"
         end
         error_info = %{
           name: variable_name,

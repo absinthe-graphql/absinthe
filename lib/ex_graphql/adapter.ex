@@ -29,7 +29,7 @@ defmodule ExGraphQL.Adapter do
       end
       def format_error(%{value: value, role: role} = error_info, locations) when is_binary(value) do
         role_name = role |> to_string |> String.capitalize
-        %{error_info | value: &"#{role_name} #{&1}: #{value}"}
+        %{error_info | value: &"#{role_name} `#{&1}': #{value}"}
         |> format_error(locations)
       end
       def format_error(%{value: value} = error_info, locations) do

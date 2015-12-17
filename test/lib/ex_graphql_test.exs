@@ -105,7 +105,7 @@ defmodule ExGraphQLTest do
       }
     }
     """
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: "Field bad: Not present in schema", locations: [%{line: 4, column: 0}]}]}} = ExGraphQL.run(simple_schema, query, validate: false)
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: "Field `bad': Not present in schema", locations: [%{line: 4, column: 0}]}]}} = ExGraphQL.run(simple_schema, query, validate: false)
   end
 
   it "gives nice errors for bad resolutions" do
@@ -115,7 +115,7 @@ defmodule ExGraphQLTest do
     }
     """
     assert {:ok, %{data: %{},
-                   errors: [%{message: "Field bad_resolution: Did not resolve to match {:ok, _} or {:error, _}", locations: _}]}} = ExGraphQL.run(simple_schema, query, validate: false)
+                   errors: [%{message: "Field `bad_resolution': Did not resolve to match {:ok, _} or {:error, _}", locations: _}]}} = ExGraphQL.run(simple_schema, query, validate: false)
   end
 
   it "returns the correct results for an alias" do
@@ -152,7 +152,7 @@ defmodule ExGraphQLTest do
       }
     """
     assert {:ok, %{data: %{"thingByContext" => %{"name" => "Bar"}}, errors: []}} = ExGraphQL.run(simple_schema, query, validate: false, context: %{thing: "bar"})
-    assert {:ok, %{data: %{}, errors: [%{message: "Field thingByContext: No :id context provided"}]}} = ExGraphQL.run(simple_schema, query, validate: false)
+    assert {:ok, %{data: %{}, errors: [%{message: "Field `thingByContext': No :id context provided"}]}} = ExGraphQL.run(simple_schema, query, validate: false)
   end
 
   it "can use variables" do
@@ -176,7 +176,7 @@ defmodule ExGraphQLTest do
       }
     """
     result = ExGraphQL.run(simple_schema, query, validate: false, variables: %{thingId: "bar"})
-    assert {:ok, %{data: %{"thing" => %{"name" => "Bar"}}, errors: [%{message: "Variable other (String): Not provided"}]}} = result
+    assert {:ok, %{data: %{"thing" => %{"name" => "Bar"}}, errors: [%{message: "Variable `other' (String): Not provided"}]}} = result
   end
 
 end
