@@ -2,7 +2,7 @@ defmodule ExGraphQL.Adapter do
 
   defmacro __using__(_) do
     quote do
-      @behaviour ExGraphQL.Adapter
+      @behaviour unquote(__MODULE__)
 
       # TODO: Process keys through `to_internal_name`
       def load_variables(external_variables), do: external_variables
@@ -14,15 +14,15 @@ defmodule ExGraphQL.Adapter do
       #       support use of adapter in `Execution.format_error`
       def dump_results(internal_results), do: internal_results
 
-      def to_internal_name(external_name), do: external_name
+      def to_internal_name(_role, external_name), do: external_name
 
-      def to_external_name(internal_name), do: internal_name
+      def to_external_name(_role, internal_name), do: internal_name
 
       defoverridable [load_variables: 1,
                       load_document: 1,
                       dump_results: 1,
-                      to_internal_name: 1,
-                      to_external_name: 1]
+                      to_internal_name: 2,
+                      to_external_name: 2]
     end
   end
 
@@ -44,15 +44,17 @@ defmodule ExGraphQL.Adapter do
   """
   @callback dump_results(ExGraphQL.Execution.result_t) :: any
 
+  @typedoc "The lexical role of a name within the document/schema"
+  @type role_t :: :operation | :field | :variable | :argument
+
   @doc """
   Convert a name from an external name to an internal name
   """
-  @callback to_internal_name(binary) :: binary
-
+  @callback to_internal_name(role_t, binary) :: binary
 
   @doc """
   Convert a name from an internal name to an external name
   """
-  @callback to_external_name(binary) :: binary
+  @callback to_external_name(role_t, binary) :: binary
 
 end
