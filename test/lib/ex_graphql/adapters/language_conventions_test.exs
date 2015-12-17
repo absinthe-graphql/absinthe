@@ -136,7 +136,7 @@ defmodule ExGraphQL.Adapters.LanguageConventionsTest do
   it "can do a query with an object argument" do
     query = """
     query GimmeMuseum {
-      fieldTrips(location: {name: 1}) {
+      fieldTrips(location: {name: "Portland"}) {
         name
         locationName
       }
