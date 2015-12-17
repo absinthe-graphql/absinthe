@@ -13,7 +13,7 @@ defmodule ExGraphQL.Type.Schema do
   def with_type_map(%{type_map: type_map} = schema) when map_size(type_map) == 0 do
     %{schema | type_map: Type.TypeMap.build(schema)}
   end
-  def with_type_map(%{type_map: type_map} = schema) do
+  def with_type_map(schema) do
     schema
   end
 

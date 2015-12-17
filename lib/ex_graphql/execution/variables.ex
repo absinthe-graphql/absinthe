@@ -6,11 +6,11 @@ defmodule ExGraphQL.Execution.Variables do
 
   @spec build(Type.Schema.t, [Language.VariableDefinition.t], %{binary => any}) :: %{binary => any}
   def build(execution, variable_definitions, provided_variables) do
-    parsed = variable_definitions
+    variable_definitions
     |> parse(execution, provided_variables |> Execution.stringify_keys, %{errors: [], values: %{}})
   end
 
-  defp parse([], execution, provided_variables, acc) do
+  defp parse([], _execution, _provided_variables, acc) do
     acc
   end
   defp parse([definition|rest], %{schema: schema} = execution, provided_variables, %{errors: errors, values: values} = acc) do
@@ -25,9 +25,8 @@ defmodule ExGraphQL.Execution.Variables do
         coerced = if is_nil(value) do
           nil
         else
-          with type <- variable_type |> Type.unwrap do
-            type.parse_value.(value)
-          end
+          type = variable_type |> Type.unwrap
+          type.parse_value.(value)
         end
         parse(
           rest, execution, provided_variables,

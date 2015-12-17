@@ -2,7 +2,6 @@ defmodule ExGraphQL.Execution.Literal do
 
   alias ExGraphQL.Type
   alias ExGraphQL.Language
-  alias ExGraphQL.Execution.Variables
 
   def coerce(input_type, input_value, variables) do
     input_type
