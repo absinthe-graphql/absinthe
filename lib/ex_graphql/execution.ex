@@ -17,8 +17,8 @@ defmodule ExGraphQL.Execution do
   @typedoc "The canonical result representation of an execution"
   @type result_t :: %{data: %{binary => any}, errors: [error_t]}
 
-  @type t :: %{schema: Type.Schema.t, document: Language.Document.t, variables: map, validate: boolean, selected_operation: ExGraphQL.Type.ObjectType.t, operation_name: atom, errors: [error_t], categorized: boolean, strategy: atom, adapter: atom}
-  defstruct schema: nil, document: nil, variables: %{}, fragments: %{}, operations: %{}, validate: true, selected_operation: nil, operation_name: nil, errors: [], categorized: false, strategy: nil, adapter: nil
+  @type t :: %{schema: Type.Schema.t, document: Language.Document.t, variables: map, validate: boolean, selected_operation: ExGraphQL.Type.ObjectType.t, operation_name: atom, errors: [error_t], categorized: boolean, strategy: atom, adapter: atom, resolution: Execution.Resolution.t}
+  defstruct schema: nil, document: nil, variables: %{}, fragments: %{}, operations: %{}, validate: true, selected_operation: nil, operation_name: nil, errors: [], categorized: false, strategy: nil, adapter: nil, resolution: nil
 
   def run(execution, options \\ []) do
     raw = execution |> Map.merge(options |> Enum.into(%{}))
@@ -28,6 +28,7 @@ defmodule ExGraphQL.Execution do
     end
   end
 
+  @spec prepare(t) :: t
   def prepare(execution) do
     defined = execution
     |> add_configured_adapter
@@ -76,17 +77,17 @@ defmodule ExGraphQL.Execution do
   end
 
   @spec resolve_type(t, t, t) :: t | nil
-  def resolve_type(target, nil = _child_type, %{__struct__: Type.Union} = parent_type) do
+  def resolve_type(target, nil = _child_type, %Type.Union{} = parent_type) do
     parent_type
     |> Type.Union.resolve_type(target)
   end
   def resolve_type(_target, nil = _child_type, _parent_type) do
     nil
   end
-  def resolve_type(_target, %{__struct__: Type.Union} = child_type, parent_type) do
+  def resolve_type(_target, %Type.Union{} = child_type, parent_type) do
     child_type |> Type.Union.member?(parent_type) || nil
   end
-  def resolve_type(target, %{__struct__: Type.InterfaceType} = _child_type, _parent_type) do
+  def resolve_type(target, %Type.InterfaceType{} = _child_type, _parent_type) do
     target
     |> Type.InterfaceType.resolve_type
   end
@@ -125,10 +126,10 @@ defmodule ExGraphQL.Execution do
   defp categorize_definitions(execution, []) do
     execution
   end
-  defp categorize_definitions(%{operations: operations} = execution, [%{__struct__: ExGraphQL.Language.OperationDefinition, name: name} = definition | rest]) do
+  defp categorize_definitions(%{operations: operations} = execution, [%ExGraphQL.Language.OperationDefinition{name: name} = definition | rest]) do
     categorize_definitions(%{execution | operations: operations |> Map.put(name, definition)}, rest)
   end
-  defp categorize_definitions(%{fragments: fragments} = execution, [%{__struct__: ExGraphQL.Language.FragmentDefinition, name: name} = definition | rest]) do
+  defp categorize_definitions(%{fragments: fragments} = execution, [%ExGraphQL.Language.FragmentDefinition{name: name} = definition | rest]) do
     categorize_definitions(%{execution | fragments: fragments |> Map.put(name, definition)}, rest)
   end
 

@@ -2,11 +2,11 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.OperationDefinit
 
   alias ExGraphQL.Execution.Resolution
 
-  def resolve(operation, resolution, execution) do
+  def resolve(operation, %{resolution: %{target: target}} = execution) do
+    deeper_resolution = %Resolution{type: target}
     Resolution.resolve(
       operation.selection_set,
-      %Resolution{type: resolution.target},
-      execution
+      %{execution | resolution: deeper_resolution}
     )
   end
 

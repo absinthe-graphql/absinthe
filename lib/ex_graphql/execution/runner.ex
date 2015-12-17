@@ -18,13 +18,16 @@ defmodule ExGraphQL.Execution.Runner do
 
   @spec execute(atom, ExGraphQL.Language.OperationDefinition.t, ExGraphQL.Execution.t) :: {:ok, Execution.result_t} | {:error, any}
   defp execute(:query, operation, %{schema: %{query: query}} = execution) do
-    Resolution.resolve(operation, %Resolution{target: query}, %{execution | strategy: :serial})
+    resolution = %Resolution{target: query}
+    Resolution.resolve(operation, %{execution | strategy: :serial, resolution: resolution})
   end
   defp execute(:mutation, operation, %{schema: %{mutation: mutation}} = execution) do
-    Resolution.resolve(operation, %Resolution{target: mutation}, %{execution | strategy: :serial})
+    resolution = %Resolution{target: mutation}
+    Resolution.resolve(operation, %{execution | strategy: :serial, resolution: resolution})
   end
   defp execute(:subscription, operation, %{schema: %{subscription: subscription}} = execution) do
-    Resolution.resolve(operation, %Resolution{target: subscription}, %{execution | strategy: :serial})
+    resolution = %Resolution{target: subscription}
+    Resolution.resolve(operation, %{execution | strategy: :serial, resolution: resolution})
   end
   defp execute(op_type, _operation, _execution) do
     {:error, "No execution strategy for: #{op_type}"}

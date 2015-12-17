@@ -13,18 +13,18 @@ defmodule ExGraphQL.Type.Schema do
   def with_type_map(%{type_map: type_map} = schema) when map_size(type_map) == 0 do
     %{schema | type_map: Type.TypeMap.build(schema)}
   end
-  def with_type_map(%{type_map: type_map} = schema) do
+  def with_type_map(schema) do
     schema
   end
 
   @spec type_from_ast(t, Language.type_reference_t) :: ExGraphQL.Type.t | nil
-  def type_from_ast(schema, %{__struct__: Language.NonNullType, type: inner_type}) do
+  def type_from_ast(schema, %Language.NonNullType{type: inner_type}) do
     case type_from_ast(schema, inner_type) do
       nil -> nil
       type -> %Type.NonNull{of_type: type}
     end
   end
-  def type_from_ast(schema, %{__struct__: Language.ListType, type: inner_type}) do
+  def type_from_ast(schema, %Language.ListType{type: inner_type}) do
     case type_from_ast(schema, inner_type) do
       nil -> nil
       type -> %Type.List{of_type: type}

@@ -5,21 +5,14 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.SelectionSet do
   alias ExGraphQL.Language
 
   @spec resolve(Language.SelectionSet.t,
-                Resolution.t,
                 Execution.t) :: {:ok, map} | {:error, any}
-  def resolve(%{selections: selections}, resolution, %{strategy: :serial} = execution) do
+  def resolve(%{selections: selections}, %{resolution: %{type: type, target: target}, strategy: :serial} = execution) do
     {result, execution_to_return} = selections
-    |> Enum.map(&(flatten(&1, resolution, execution)))
+    |> Enum.map(&(flatten(&1, execution)))
     |> Enum.reduce(&Map.merge/2)
     |> Enum.reduce({%{}, execution}, fn ({name, ast_node}, {acc, exe}) ->
-      case resolve_field(
-            ast_node,
-            %Resolution{
-              parent_type: resolution.type,
-              target: resolution.target
-            },
-            exe
-          ) do
+      field_resolution = %Resolution{parent_type: type, target: target}
+      case resolve_field(ast_node, %{exe | resolution: field_resolution}) do
         {:ok, value, changed_execution} -> {acc |> Map.put(name, value), changed_execution}
         {:skip, changed_execution} -> {acc, changed_execution}
       end
@@ -27,68 +20,68 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.SelectionSet do
     {:ok, result, execution_to_return}
   end
 
-  @spec flatten(Language.t, Resolution.t, Execution.t) :: %{binary => Language.t}
-  defp flatten(%{__struct__: Language.Field, alias: alias, name: name} = ast_node, _target, _execution) do
+  @spec flatten(Language.t, Execution.t) :: %{binary => Language.t}
+  defp flatten(%Language.Field{alias: alias, name: name} = ast_node, _execution) do
     alias_or_name = alias || name
     %{alias_or_name => ast_node}
   end
-  defp flatten(%{__struct__: Language.InlineFragment} = ast_node, resolution, execution) do
-    if directives_pass?(ast_node, execution) && can_apply_fragment?(ast_node, resolution, execution) do
+  defp flatten(%Language.InlineFragment{} = ast_node, execution) do
+    if directives_pass?(ast_node, execution) && can_apply_fragment?(ast_node, execution) do
       ast_node.selection_set.selections
       |> Enum.reduce(%{}, fn (selection, acc) ->
-        flatten(selection, resolution, execution)
+        flatten(selection, execution)
         |> Enum.reduce(acc, fn ({_name, selection}, acc_for_selection) ->
-          merge_into_result(acc_for_selection, selection, resolution, execution)
+          merge_into_result(acc_for_selection, selection, execution)
         end)
       end)
     else
       %{}
     end
   end
-  defp flatten(%{__struct__: Language.FragmentSpread, name: name} = ast_node, resolution, %{fragments: fragments} = execution) do
+  defp flatten(%Language.FragmentSpread{name: name} = ast_node, %{fragments: fragments} = execution) do
     if directives_pass?(ast_node, execution) do
-      flatten(fragments[name], resolution, execution)
+      flatten(fragments[name], execution)
     else
       %{}
     end
   end
   # For missing fragments
-  defp flatten(nil = _ast_node, _resolution, _execution) do
+  defp flatten(nil = _ast_node, _execution) do
     %{}
   end
 
-  defp can_apply_fragment?(%{type_condition: type_condition}, resolution, %{schema: schema}) do
+  defp can_apply_fragment?(%{type_condition: type_condition}, %{resolution: %{type: type}, schema: schema}) do
     child_type = schema.type_map[type_condition]
-    Execution.resolve_type(nil, child_type, resolution.type)
+    Execution.resolve_type(nil, child_type, type)
   end
 
-  @spec merge_into_result(map, Language.t, Resolution.t, Execution.t) :: map
-  defp merge_into_result(acc, %{alias: alias} = selection, resolution, execution) do
+  @spec merge_into_result(map, Language.t, Execution.t) :: map
+  defp merge_into_result(acc, %{alias: alias} = selection, execution) do
     acc
-    |> do_merge_into_result(%{alias => selection}, resolution, execution)
+    |> do_merge_into_result(%{alias => selection}, execution)
   end
-  defp merge_into_result(acc, %{name: name} = selection, resolution, execution) do
+  defp merge_into_result(acc, %{name: name} = selection, execution) do
     acc
-    |> do_merge_into_result(%{name => selection}, resolution, execution)
+    |> do_merge_into_result(%{name => selection}, execution)
   end
 
-  defp do_merge_into_result(acc, change, resolution, execution) do
+  defp do_merge_into_result(acc, change, execution) do
     acc
     |> Map.merge(change, fn (_name, field1, field2) ->
-      merge_fields(field1, field2, resolution, execution)
+      merge_fields(field1, field2, execution)
     end)
   end
 
-  @spec merge_fields(Language.t, Language.t, Resolution.t, Execution.t) :: Language.t
-  defp merge_fields(_field1, field2, _resolution, %{schema: _schema}) do
+  @spec merge_fields(Language.t, Language.t, Execution.t) :: Language.t
+  defp merge_fields(_field1, field2, %{schema: _schema}) do
     # TODO: Merge fields into a new Language.Field.t if the field_type is ObjectType.t
     # field_type = schema |> Schema.field(resolution.type, field2.name).type |> Type.unwrap
     field2
   end
 
-  defp resolve_field(ast_node, resolution, execution) do
+  defp resolve_field(ast_node, execution) do
     if directives_pass?(ast_node, execution) do
-      Execution.Resolution.resolve(ast_node, resolution, execution)
+      Execution.Resolution.resolve(ast_node, execution)
     else
       {:skip, execution}
     end

@@ -14,16 +14,16 @@ defmodule ExGraphQL.Adapter do
       end
 
       # Rename a AST node and traverse children
-      defp load_ast_node(%{__struct__: Language.OperationDefinition, name: name, selection_set: selection_set} = node) do
+      defp load_ast_node(%Language.OperationDefinition{name: name, selection_set: selection_set} = node) do
         %{node | name: name |> to_internal_name(:operation), selection_set: load_ast_node(selection_set)}
       end
-      defp load_ast_node(%{__struct__: Language.SelectionSet, selections: selections} = node) do
+      defp load_ast_node(%Language.SelectionSet{selections: selections} = node) do
         %{node | selections: selections |> Enum.map(&load_ast_node/1)}
       end
-      defp load_ast_node(%{__struct__: Language.Field, arguments: args, name: name, selection_set: selection_set} = node) do
+      defp load_ast_node(%Language.Field{arguments: args, name: name, selection_set: selection_set} = node) do
         %{node | name: name |> to_internal_name(:field), selection_set: load_ast_node(selection_set), arguments: args |> Enum.map(&load_ast_node/1)}
       end
-      defp load_ast_node(%{__struct__: Language.Argument, name: name} = node) do
+      defp load_ast_node(%Language.Argument{name: name} = node) do
         %{node | name: name |> to_internal_name(:argument)}
       end
       defp load_ast_node(nil) do
