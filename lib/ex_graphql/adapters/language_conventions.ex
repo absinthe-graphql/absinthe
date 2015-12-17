@@ -36,13 +36,22 @@ defmodule ExGraphQL.Adapters.LanguageConventions do
         errors: []
       }
 
+  Note variables are a client-facing concern (they may be provided as
+  parameters), so variable names should match the convention of the query
+  document (eg, camelCase).
   """
 
+  def to_internal_name(nil, _role) do
+    nil
+  end
   def to_internal_name(camelized_name, _role) do
     camelized_name
     |> Macro.underscore
   end
 
+  def to_external_name(nil, _role) do
+    nil
+  end
   def to_external_name(underscored_name, _role) do
     underscored_name
     |> camelize_lower

@@ -3,22 +3,59 @@ defmodule ExGraphQL.Adapter do
   alias ExGraphQL.Execution
 
   defmacro __using__(_) do
-    quote do
+    quote location: :keep do
       @behaviour unquote(__MODULE__)
 
-      # TODO: Process keys through `to_internal_name`
-      def load_variables(external_variables), do: external_variables
+      alias ExGraphQL.Execution
+      alias ExGraphQL.Language
 
-      # TODO: Process keys through `to_internal_name`
-      def load_document(external_document), do: external_document
+      def load_document(%{definitions: definitions} = node) do
+        %{node | definitions: definitions |> Enum.map(&load_ast_node/1)}
+      end
 
-      # TODO: Process :data keys through `to_external_name`,
-      #       support use of adapter in `Execution.format_error`
-      def dump_results(internal_results), do: internal_results
+      # Rename a AST node and traverse children
+      defp load_ast_node(%{__struct__: Language.OperationDefinition, name: name, selection_set: selection_set} = node) do
+        %{node | name: name |> to_internal_name(:operation), selection_set: load_ast_node(selection_set)}
+      end
+      defp load_ast_node(%{__struct__: Language.SelectionSet, selections: selections} = node) do
+        %{node | selections: selections |> Enum.map(&load_ast_node/1)}
+      end
+      defp load_ast_node(%{__struct__: Language.Field, arguments: args, name: name, selection_set: selection_set} = node) do
+        %{node | name: name |> to_internal_name(:field), selection_set: load_ast_node(selection_set), arguments: args |> Enum.map(&load_ast_node/1)}
+      end
+      defp load_ast_node(%{__struct__: Language.Argument, name: name} = node) do
+        %{node | name: name |> to_internal_name(:argument)}
+      end
+      defp load_ast_node(nil) do
+        nil
+      end
+
+      def dump_results(%{data: data, errors: _} = results) do
+        %{results | data: do_dump_results(data)}
+      end
+
+      # Rename a result data value and traverse children
+      defp do_dump_results(node) when is_map(node) do
+        for {key, val} <- node, into: %{} do
+          case key do
+            name when is_binary(name) ->
+              {to_external_name(name, :result), do_dump_results(val)}
+            other ->
+              {key, do_dump_results(val)}
+          end
+        end
+      end
+      defp do_dump_results([node|rest]) do
+        [do_dump_results(node)|do_dump_results(rest)]
+      end
+      defp do_dump_results(node) do
+        node
+      end
 
       def to_internal_name(external_name, _role), do: external_name
 
       def to_external_name(internal_name, _role), do: internal_name
+
 
       def format_error(%{name: name, role: role, value: value}, locations) when is_function(value) do
         external_name = name |> to_external_name(role)
@@ -37,26 +74,14 @@ defmodule ExGraphQL.Adapter do
         |> format_error(locations)
       end
 
-      defoverridable [load_variables: 1,
-                      load_document: 1,
+      defoverridable [load_document: 1,
                       dump_results: 1,
                       format_error: 2,
                       to_internal_name: 2,
                       to_external_name: 2]
+
     end
   end
-
-  @typedoc "An arbitrarily deep map of variables with binary key names"
-  @type variable_map_t :: %{binary => variable_value_t}
-
-  @typedoc "A value within a variable map"
-  @type variable_value_t :: binary | integer | float | [variable_value_t] | variable_map_t
-
-  @doc """
-  Convert the incoming (external) variables to the internal representation
-  that matches the schema.
-  """
-  @callback load_variables(map) :: variable_map_t
 
   @doc """
   Convert the incoming (external) parsed document to the canonical (internal)
@@ -71,7 +96,7 @@ defmodule ExGraphQL.Adapter do
   @callback dump_results(ExGraphQL.Execution.result_t) :: any
 
   @typedoc "The lexical role of a name within the document/schema"
-  @type role_t :: :operation | :field | :variable | :argument
+  @type role_t :: :operation | :field | :argument | :result
 
   @doc """
   Convert a name from an external name to an internal name

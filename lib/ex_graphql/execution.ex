@@ -31,6 +31,7 @@ defmodule ExGraphQL.Execution do
   def prepare(execution) do
     defined = execution
     |> add_configured_adapter
+    |> adapt
     |> categorize_definitions
     case selected_operation(defined) do
       {:ok, operation} ->
@@ -55,6 +56,10 @@ defmodule ExGraphQL.Execution do
   @spec configured_adapter :: atom
   defp configured_adapter do
     Application.get_env(:ex_graphql, :adapter, @default_adapter)
+  end
+
+  defp adapt(%{document: document, adapter: adapter} = execution) do
+    %{execution | document: adapter.load_document(document)}
   end
 
   @default_column_number 0
@@ -102,9 +107,13 @@ defmodule ExGraphQL.Execution do
     node
   end
 
-  defp execute(execution) do
-    execution
-    |> Execution.Runner.run
+  defp execute(%{adapter: adapter} = execution) do
+    case Execution.Runner.run(execution) do
+      {:ok, results} ->
+        {:ok, adapter.dump_results(results)}
+      other ->
+        other
+    end
   end
 
   @doc "Categorize definitions in the execution document as operations or fragments"

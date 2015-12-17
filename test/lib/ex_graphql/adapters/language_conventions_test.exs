@@ -79,12 +79,27 @@ defmodule ExGraphQL.Adapters.LanguageConventionsTest do
             args: args(
               id: [
                 description: "id of the field trip",
-                type: %Type.NonNull{of_type: Type.Scalar.string}
+                type: non_null(Type.Scalar.string)
               ]
             ),
             resolve: fn
               (%{"id" => id}, _exe, _res) ->
                 {:ok, field_trips |> Map.get(id)}
+            end
+          ],
+          field_trips: [
+            type: list_of(field_trip_type),
+            args: args(
+              location_name: [
+                description: "The location of the field trip",
+                type: Type.Scalar.string
+              ]
+            ),
+            resolve: fn (%{"location_name" => loc}, _exe, _res) ->
+              results = for {_, %{location_name: location} = ft} <- field_trips, location == loc, into: []  do
+                ft
+              end
+              {:ok, results}
             end
           ]
         )
@@ -103,6 +118,31 @@ defmodule ExGraphQL.Adapters.LanguageConventionsTest do
     """
     assert {:ok, %{data: %{"fieldTrip" => %{"name" => "Museum", "locationName" => "Portland"}}, errors: []}} = run(query)
   end
+
+  it "can do a simple query with an adapted variable" do
+    query = """
+      query GimmeMuseumWithVariable($myId: String!) {
+        fieldTrip(id: $myId) {
+          name
+          locationName
+        }
+      }
+    """
+    assert {:ok, %{data: %{"fieldTrip" => %{"name" => "Museum", "locationName" => "Portland"}}, errors: []}} = run(query, %{myId: "museum"})
+  end
+
+  it "can do a simple query with an adapted argument" do
+    query = """
+      query GimmeMuseumByLocationName {
+        fieldTrips(locationName: "Portland") {
+          name
+          locationName
+        }
+      }
+    """
+    assert {:ok, %{data: %{"fieldTrips" => [%{"name" => "Museum", "locationName" => "Portland"}]}, errors: []}} = run(query)
+  end
+
 
   it "can do a simple query with an alias" do
     query = """
@@ -130,7 +170,12 @@ defmodule ExGraphQL.Adapters.LanguageConventionsTest do
   end
 
   defp run(query_document) do
-    ExGraphQL.run(simple_schema, query_document, validate: false, adapter: LanguageConventions)
+    run(query_document, %{})
   end
+  defp run(query_document, variables) do
+    ExGraphQL.run(simple_schema, query_document,
+                  validate: false, variables: variables, adapter: LanguageConventions)
+  end
+
 
 end
