@@ -19,7 +19,6 @@ defmodule ExGraphQL.Execution.Runner do
   @spec execute(atom, ExGraphQL.Language.OperationDefinition.t, ExGraphQL.Execution.t) :: {:ok, Execution.result_t} | {:error, any}
   defp execute(:query, operation, %{schema: %{query: query}} = execution) do
     resolution = %Resolution{target: query}
-    operation |> IO.inspect
     Resolution.resolve(operation, %{execution | strategy: :serial, resolution: resolution})
   end
   defp execute(:mutation, operation, %{schema: %{mutation: mutation}} = execution) do
