@@ -25,7 +25,7 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.SelectionSet do
     alias_or_name = alias || name
     %{alias_or_name => ast_node}
   end
-  defp flatten(%{__struct__: Language.InlineFragment} = ast_node, execution) do
+  defp flatten(%Language.InlineFragment{} = ast_node, execution) do
     if directives_pass?(ast_node, execution) && can_apply_fragment?(ast_node, execution) do
       ast_node.selection_set.selections
       |> Enum.reduce(%{}, fn (selection, acc) ->

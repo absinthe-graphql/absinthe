@@ -8,7 +8,7 @@ defmodule ExGraphQL.Language.Document do
     definitions
     |> Enum.reduce(%{}, fn (statement, memo) ->
       case statement do
-        %{__struct__: ExGraphQL.Language.FragmentDefinition} ->
+        %ExGraphQL.Language.FragmentDefinition{} ->
           memo |> Map.put(statement.name, statement)
         _ ->
           memo

@@ -10,7 +10,7 @@ defmodule ExGraphQL.Execution.Literal do
     |> coerce_unwrapped(input_value, variables)
   end
 
-  defp coerce_unwrapped(%{__struct__: Type.Scalar} = scalar, %{value: internal_value}, _variables) do
+  defp coerce_unwrapped(%Type.Scalar{} = scalar, %{value: internal_value}, _variables) do
     internal_value
     |> scalar.parse_value.()
   end
@@ -18,7 +18,7 @@ defmodule ExGraphQL.Execution.Literal do
     variable_value = variables |> Map.get(name)
     coerce(definition_type, variable_value, variables)
   end
-  defp coerce_unwrapped(%{__struct__: Type.Scalar} = scalar, bare, _variables) do
+  defp coerce_unwrapped(%Type.Scalar{} = scalar, bare, _variables) do
     bare
     |> to_string
     |> scalar.parse_value.()

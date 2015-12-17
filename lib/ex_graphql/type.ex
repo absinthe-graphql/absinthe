@@ -42,7 +42,7 @@ defmodule ExGraphQL.Type do
 
   @doc "Determine if a term is an object type"
   @spec object_type?(any) :: boolean
-  def object_type?(%{__struct__: Type.ObjectType}), do: true
+  def object_type?(%Type.ObjectType{}), do: true
   def object_type?(_), do: false
 
   @doc "Resolve a type for a value from an interface (if necessary)"
