@@ -9,7 +9,7 @@ defmodule ExGraphQL.Execution do
   @type result_t :: %{data: %{binary => any}, errors: [error_t]}
 
   @type t :: %{schema: Type.Schema.t, document: Language.Document.t, variables: map, validate: boolean, selected_operation: ExGraphQL.Type.ObjectType.t, operation_name: atom, errors: [error_t], categorized: boolean, strategy: atom, adapter: atom}
-  defstruct schema: nil, document: nil, variables: %{}, fragments: %{}, operations: %{}, validate: true, selected_operation: nil, operation_name: nil, errors: [], categorized: false, strategy: nil, adapter: ExGraphQL.Adapters.Passthrough
+  defstruct schema: nil, document: nil, variables: %{}, fragments: %{}, operations: %{}, validate: true, selected_operation: nil, operation_name: nil, errors: [], categorized: false, strategy: nil, adapter: nil
 
   def run(execution, options \\ []) do
     raw = execution |> Map.merge(options |> Enum.into(%{}))
@@ -20,7 +20,9 @@ defmodule ExGraphQL.Execution do
   end
 
   def prepare(execution) do
-    defined = execution |> categorize_definitions
+    defined = execution
+    |> add_configured_adapter
+    |> categorize_definitions
     case selected_operation(defined) do
       {:ok, operation} ->
         %{defined | selected_operation: operation}
@@ -28,6 +30,22 @@ defmodule ExGraphQL.Execution do
         |> validate
       other -> other
     end
+  end
+
+  @default_adapter ExGraphQL.Adapters.Passthrough
+
+  # Add the configured adapter, if needed
+  @spec add_configured_adapter(t) :: t
+  defp add_configured_adapter(%{adapter: nil} = execution) do
+    %{execution | adapter: configured_adapter}
+  end
+  defp add_configured_adapter(execution) do
+    execution
+  end
+
+  @spec configured_adapter :: atom
+  defp configured_adapter do
+    Application.get_env(:ex_graphql, :adapter, @default_adapter)
   end
 
   @spec format_error(binary | any, Language.t) :: error_t
@@ -41,17 +59,17 @@ defmodule ExGraphQL.Execution do
   end
 
   @spec resolve_type(t, t, t) :: t | nil
-  def resolve_type(_target, nil = _child_type, _parent_type) do
-    nil
-  end
   def resolve_type(target, nil = _child_type, %{__struct__: Type.Union} = parent_type) do
     parent_type
     |> Type.Union.resolve_type(target)
   end
+  def resolve_type(_target, nil = _child_type, _parent_type) do
+    nil
+  end
   def resolve_type(_target, %{__struct__: Type.Union} = child_type, parent_type) do
     child_type |> Type.Union.member?(parent_type) || nil
   end
-  def resolve_type(target, %{__struct__: Type.InterfaceType} = child_type, _parent_type) do
+  def resolve_type(target, %{__struct__: Type.InterfaceType} = _child_type, _parent_type) do
     target
     |> Type.InterfaceType.resolve_type
   end
@@ -115,13 +133,13 @@ defmodule ExGraphQL.Execution do
     op = ops |> Map.values |> List.first
     {:ok, op}
   end
-  def selected_operation(%{operations: ops, operation_name: name}) do
+  def selected_operation(%{operations: ops, operation_name: name}) when not is_nil(name) do
     case Map.get(ops, name) do
       nil -> {:error, "No operation with name: #{name}"}
       op -> {:ok, op}
     end
   end
-  def selected_operation(%{operations: ops, operation_name: nil}) do
+  def selected_operation(%{operations: _, operation_name: nil}) do
     {:error, "Multiple operations available, but no operation_name provided"}
   end
 

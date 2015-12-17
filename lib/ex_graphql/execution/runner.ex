@@ -16,14 +16,14 @@ defmodule ExGraphQL.Execution.Runner do
     end
   end
 
-  @spec execute(atom, ExGraphQL.Execution.t) :: {:ok, map} | {:error, any}
+  @spec execute(atom, ExGraphQL.Language.OperationDefinition.t, ExGraphQL.Execution.t) :: {:ok, Execution.result_t} | {:error, any}
   defp execute(:query, operation, %{schema: %{query: query}} = execution) do
     Resolution.resolve(operation, %Resolution{target: query}, %{execution | strategy: :serial})
   end
   defp execute(:mutation, operation, %{schema: %{mutation: mutation}} = execution) do
     Resolution.resolve(operation, %Resolution{target: mutation}, %{execution | strategy: :serial})
   end
-  defp execute(:subscription, %{schema: %{subscription: subscription}} = execution) do
+  defp execute(:subscription, operation, %{schema: %{subscription: subscription}} = execution) do
     Resolution.resolve(operation, %Resolution{target: subscription}, %{execution | strategy: :serial})
   end
   defp execute(op_type, _operation, _execution) do

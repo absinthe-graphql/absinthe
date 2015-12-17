@@ -6,7 +6,7 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
   @spec resolve(ExGraphQL.Language.Field.t,
                 ExGraphQL.Resolution.t,
                 ExGraphQL.Execution.t) :: {:ok, map} | {:error, any}
-  def resolve(%{name: name} = ast_node, %{parent_type: parent_type, target: target} = resolution, %{schema: schema, errors: errors, variables: variables, strategy: :serial} = execution) do
+  def resolve(%{name: name} = ast_node, %{parent_type: parent_type, target: target} = resolution, %{errors: errors, variables: variables, strategy: :serial} = execution) do
     field = Type.field(parent_type, ast_node.name)
     if field do
       arguments = Execution.LiteralInput.arguments(ast_node.arguments, field.args, variables)
@@ -14,7 +14,7 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
         %{resolve: nil} ->
           target |> Map.get(name |> String.to_atom) |> result(ast_node, field, resolution, execution)
         %{resolve: resolver} ->
-          field.resolve.(arguments, execution, resolution)
+          resolver.(arguments, execution, resolution)
           |> process_raw_result(ast_node, field, resolution, execution)
       end
     else
@@ -38,7 +38,7 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
   defp result(nil, _ast_node, _field, _resolution, execution) do
     {:ok, nil, execution}
   end
-  defp result(value, ast_node, field, resolution, execution) do
+  defp result(value, ast_node, field, _resolution, execution) do
     resolved_type = Type.resolve_type(field.type, value)
     Execution.Resolution.resolve(
       resolved_type,

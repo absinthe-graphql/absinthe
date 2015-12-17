@@ -3,7 +3,6 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.SelectionSet do
   alias ExGraphQL.Execution
   alias ExGraphQL.Execution.Resolution
   alias ExGraphQL.Language
-  alias ExGraphQL.Type
 
   @spec resolve(Language.SelectionSet.t,
                 Resolution.t,
