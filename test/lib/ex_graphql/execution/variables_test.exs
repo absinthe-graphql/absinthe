@@ -26,12 +26,13 @@ defmodule ExGraphQL.Execution.VariablesTest do
     # Get schema
     schema = StarWars.Schema.schema
     # Prepare execution context
-    {:ok, selected_op} = %Execution{schema: schema, document: document}
+    execution = %Execution{schema: schema, document: document}
     |> Execution.categorize_definitions
-    |> Execution.selected_operation
+    |> Execution.add_configured_adapter
+    {:ok, selected_op} = Execution.selected_operation(execution)
     # Build variable map
     Execution.Variables.build(
-      schema,
+      execution,
       selected_op.variable_definitions,
       provided
     )
@@ -51,7 +52,7 @@ defmodule ExGraphQL.Execution.VariablesTest do
     context "when not provided" do
 
       it "returns an error" do
-        assert %{values: %{}, errors: [%{message: "Missing required variable 'id' (String)"}]} = @id_required |> variables
+        assert %{values: %{}, errors: [%{message: "Variable `id' (String): Not provided"}]} = @id_required |> variables
       end
 
     end

@@ -48,14 +48,18 @@ defmodule ExGraphQL do
   @spec run(ExGraphQL.Type.Schema.t, binary | ExGraphQL.Language.Source.t | ExGraphQL.Language.Document.t, Keyword.t) :: {:ok, map} | {:error, any}
   def run(schema, %ExGraphQL.Language.Document{} = document, options) do
     case execute(schema, document, options) do
-      {:ok, result} -> {:ok, result}
-      other -> other
+      {:ok, result} ->
+        {:ok, result}
+      other ->
+        other
     end
   end
   def run(schema, input, options) do
     case parse(input) do
-      {:ok, document} -> run(schema, document, options)
-      other -> other
+      {:ok, document} ->
+        run(schema, document, options)
+      other ->
+        other
     end
   end
 
