@@ -113,7 +113,7 @@ defmodule ExGraphQL.Adapter do
 
   ## Examples
 
-    iex> format_error(%{name: "foo", value: &"missing value '\#{&1}'" end}, [%{line: 2, column: 4}])
+    iex> format_error(%{name: "foo", value: &"missing value '\#{&1}'"}, [%{line: 2, column: 4}])
     %{message: "missing value 'foo'", locations: [%{line: 2, column: 4}]}
 
     iex> format_error(%{name: "foo", value: "missing value"}, [%{line: 2, column: 4}])
