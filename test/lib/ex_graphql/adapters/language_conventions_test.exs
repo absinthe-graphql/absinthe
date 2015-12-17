@@ -90,16 +90,24 @@ defmodule ExGraphQL.Adapters.LanguageConventionsTest do
           field_trips: [
             type: list_of(field_trip_type),
             args: args(
+              location: [
+                description: "nested location object",
+                type: %Type.InputObjectType{
+                  name: "Location",
+                  description: "A location",
+                  fields: fields(
+                    name: [type: non_null(Type.Scalar.string)],
+                  )
+                }
+              ],
               location_name: [
                 description: "The location of the field trip",
                 type: Type.Scalar.string
               ]
             ),
-            resolve: fn (%{location_name: loc}, _) ->
-              results = for {_, %{location_name: location} = ft} <- field_trips, location == loc, into: []  do
-                ft
-              end
-              {:ok, results}
+            resolve: fn
+              %{location_name: name}, _     -> {:ok, find_trips(name)}
+              %{location: %{name: name}}, _ -> {:ok, find_trips(name)}
             end
           ]
         )
@@ -107,10 +115,28 @@ defmodule ExGraphQL.Adapters.LanguageConventionsTest do
     }
   end
 
+  defp find_trips(name) do
+    for {_, %{location_name: location} = ft} <- field_trips, location == name, into: []  do
+      ft
+    end
+  end
+
   it "can do a simple query" do
     query = """
     query GimmeMuseum {
       fieldTrip(id: "museum") {
+        name
+        locationName
+      }
+    }
+    """
+    assert {:ok, %{data: %{"fieldTrip" => %{"name" => "Museum", "locationName" => "Portland"}}, errors: []}} = run(query)
+  end
+
+  it "can do a query with an object argument" do
+    query = """
+    query GimmeMuseum {
+      fieldTrips(location: {name: 1}) {
         name
         locationName
       }
