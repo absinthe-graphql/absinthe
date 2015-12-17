@@ -38,7 +38,7 @@ defmodule ExGraphQL.Adapters.LanguageConventionsTest do
         ],
         other_field_trip: [
           type: field_trip_type,
-          resolve: fn (_, _exe, %{target: %{id: id}}) ->
+          resolve: fn (_, %{resolution: %{target: %{id: id}}}) ->
             case id do
               "museum" -> {:ok, field_trips |> Map.get("opera_house")}
               "opera_house" -> {:ok, field_trips |> Map.get("museum")}
@@ -63,15 +63,15 @@ defmodule ExGraphQL.Adapters.LanguageConventionsTest do
         fields: fields(
           bad_resolution: [
             type: field_trip_type,
-            resolve: fn(_args, _exe, _res) ->
+            resolve: fn(_, _) ->
               :not_expected
             end
           ],
           field_trip_by_context: [
             type: field_trip_type,
             resolve: fn
-              (_args, %{context: %{field_trip: id}}, _res) -> {:ok, field_trips |> Map.get(id)}
-              (_args, _exe, _res) -> {:error, "No :id context provided"}
+              (_, %{context: %{field_trip: id}}) -> {:ok, field_trips |> Map.get(id)}
+              (_, _) -> {:error, "No :id context provided"}
             end
           ],
           field_trip: [
@@ -83,7 +83,7 @@ defmodule ExGraphQL.Adapters.LanguageConventionsTest do
               ]
             ),
             resolve: fn
-              (%{"id" => id}, _exe, _res) ->
+              (%{"id" => id}, _) ->
                 {:ok, field_trips |> Map.get(id)}
             end
           ],
@@ -95,7 +95,7 @@ defmodule ExGraphQL.Adapters.LanguageConventionsTest do
                 type: Type.Scalar.string
               ]
             ),
-            resolve: fn (%{"location_name" => loc}, _exe, _res) ->
+            resolve: fn (%{"location_name" => loc}, _) ->
               results = for {_, %{location_name: location} = ft} <- field_trips, location == loc, into: []  do
                 ft
               end

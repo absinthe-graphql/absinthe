@@ -31,7 +31,7 @@ defmodule ExGraphQLTest do
         ],
         other_thing: [
           type: thing_type,
-          resolve: fn (_, _exe, %{target: %{id: id}}) ->
+          resolve: fn (_, %{resolution: %{target: %{id: id}}}) ->
             case id do
               "foo" -> {:ok, things |> Map.get("bar")}
               "bar" -> {:ok, things |> Map.get("foo")}
@@ -56,15 +56,15 @@ defmodule ExGraphQLTest do
         fields: fields(
           bad_resolution: [
             type: thing_type,
-            resolve: fn(_args, _exe, _res) ->
+            resolve: fn(_, _) ->
               :not_expected
             end
           ],
           thingByContext: [
             type: thing_type,
             resolve: fn
-              (_args, %{context: %{thing: id}}, _res) -> {:ok, things |> Map.get(id)}
-              (_args, _exe, _res) -> {:error, "No :id context provided"}
+              (_, %{context: %{thing: id}}) -> {:ok, things |> Map.get(id)}
+              (_, _) -> {:error, "No :id context provided"}
             end
           ],
           thing: [
@@ -76,7 +76,7 @@ defmodule ExGraphQLTest do
               ]
             ),
             resolve: fn
-              (%{"id" => id}, _exe, _res) ->
+              (%{"id" => id}, _) ->
                 {:ok, things |> Map.get(id)}
             end
           ]
