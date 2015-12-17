@@ -56,7 +56,6 @@ defmodule ExGraphQL.Adapter do
 
       def to_external_name(internal_name, _role), do: internal_name
 
-
       def format_error(%{name: name, role: role, value: value}, locations) when is_function(value) do
         external_name = name |> to_external_name(role)
         %{
