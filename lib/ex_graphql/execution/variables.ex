@@ -6,15 +6,15 @@ defmodule ExGraphQL.Execution.Variables do
   alias ExGraphQL.Execution.LiteralInput
 
   @spec build(Type.Schema.t, [Language.VariableDefinition.t], %{binary => any}) :: %{binary => any}
-  def build(schema, variable_definitions, provided_variables) do
+  def build(execution, variable_definitions, provided_variables) do
     parsed = variable_definitions
-    |> parse(schema, provided_variables |> Execution.stringify_keys, %{errors: [], values: %{}})
+    |> parse(execution, provided_variables |> Execution.stringify_keys, %{errors: [], values: %{}})
   end
 
-  defp parse([], schema, provided_variables, acc) do
+  defp parse([], execution, provided_variables, acc) do
     acc
   end
-  defp parse([definition|rest], schema, provided_variables, %{errors: errors, values: values} = acc) do
+  defp parse([definition|rest], %{schema: schema} = execution, provided_variables, %{errors: errors, values: values} = acc) do
     variable_name = definition.variable.name
     %{name: type_name} = unwrapped_definition_type = definition.type |> Language.unwrap
     variable_type = Type.Schema.type_from_ast(schema, definition.type)
@@ -31,25 +31,35 @@ defmodule ExGraphQL.Execution.Variables do
           end
         end
         parse(
-          rest, schema, provided_variables,
+          rest, execution, provided_variables,
           %{acc | values: values |> Map.put(variable_name, coerced)}
         )
       else
         err = if is_nil(value) do
-          "Missing required variable '#{variable_name}' (#{type_name})"
+          &"Variable #{&1} (#{type_name}): Not provided"
         else
-          "Invalid value for variable '#{variable_name}' (#{type_name}): #{inspect value}"
+          &"Variable #{&1} (#{type_name}): Invalid value"
         end
-        error = Execution.format_error(err, unwrapped_definition_type)
+        error_info = %{
+          name: variable_name,
+          role: :variable,
+          value: err
+        }
+        error = Execution.format_error(execution, error_info, unwrapped_definition_type)
         parse(
-          rest, schema, provided_variables,
+          rest, execution, provided_variables,
           %{acc | errors: [error|errors]}
         )
       end
     else
-      error = Execution.format_error("Could not find type '#{type_name}' in schema", unwrapped_definition_type)
+      error_info = %{
+        name: variable_name,
+        role: :variable,
+        value: "Type (#{type_name}) not present in schema"
+      }
+      error = Execution.format_error(execution, error_info, unwrapped_definition_type)
       parse(
-        rest, schema, provided_variables,
+        rest, execution, provided_variables,
         %{acc | errors: [error|errors]}
       )
     end

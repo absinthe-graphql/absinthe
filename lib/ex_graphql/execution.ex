@@ -5,7 +5,16 @@ defmodule ExGraphQL.Execution do
 
   alias __MODULE__
 
-  @type error_t :: %{message: binary, locations: [%{line: integer, column: integer}]}
+  @typedoc "The raw information for an error"
+  @type error_info_t :: %{name: binary, role: ExGraphQL.Adapter.role_t, value: ((binary) -> binary) | any}
+
+  @typedoc "A document location for an error"
+  @type error_location_t :: %{line: integer, column: integer}
+
+  @typedoc "The canonical representation of an error, as returned in the result"
+  @type error_t :: %{message: binary, locations: [error_location_t]}
+
+  @typedoc "The canonical result representation of an execution"
   @type result_t :: %{data: %{binary => any}, errors: [error_t]}
 
   @type t :: %{schema: Type.Schema.t, document: Language.Document.t, variables: map, validate: boolean, selected_operation: ExGraphQL.Type.ObjectType.t, operation_name: atom, errors: [error_t], categorized: boolean, strategy: atom, adapter: atom}
@@ -34,12 +43,12 @@ defmodule ExGraphQL.Execution do
 
   @default_adapter ExGraphQL.Adapters.Passthrough
 
-  # Add the configured adapter, if needed
+  @doc "Add the configured adapter to an execution"
   @spec add_configured_adapter(t) :: t
-  defp add_configured_adapter(%{adapter: nil} = execution) do
+  def add_configured_adapter(%{adapter: nil} = execution) do
     %{execution | adapter: configured_adapter}
   end
-  defp add_configured_adapter(execution) do
+  def add_configured_adapter(execution) do
     execution
   end
 
@@ -48,14 +57,17 @@ defmodule ExGraphQL.Execution do
     Application.get_env(:ex_graphql, :adapter, @default_adapter)
   end
 
-  @spec format_error(binary | any, Language.t) :: error_t
-  def format_error(message, %{loc: %{start_line: line}}) when is_binary(message) do
-    %{message: message |> to_string, locations: [%{line: line, column: 0}]}
+  @default_column_number 0
+
+  @spec format_error(atom, error_info_t, Language.t) :: error_t
+  def format_error(%{adapter: adapter}, error_info, %{loc: %{start_line: line}}) do
+    adapter.format_error(error_info, [%{line: line, column: @default_column_number}])
   end
-  def format_error(non_binary_message, %{start_line: _} = ast_node) do
-    non_binary_message
-    |> inspect
-    |> format_error(ast_node)
+
+  @spec format_error(binary, Language.t) :: error_t
+  @doc "Format an error, without using the adapter (useful when reporting on types and other unadapted names)"
+  def format_error(message, %{loc: %{start_line: line}}) do
+    %{message: message, locations: [%{line: line, column: @default_column_number}]}
   end
 
   @spec resolve_type(t, t, t) :: t | nil
@@ -143,8 +155,8 @@ defmodule ExGraphQL.Execution do
     {:error, "Multiple operations available, but no operation_name provided"}
   end
 
-  def set_variables(%{schema: schema, selected_operation: selected_op, variables: variables} = execution) do
-    case Execution.Variables.build(schema, selected_op.variable_definitions, variables) do
+  def set_variables(%{selected_operation: selected_op, variables: variables} = execution) do
+    case Execution.Variables.build(execution, selected_op.variable_definitions, variables) do
       %{values: values, errors: new_errors} ->
         %{execution | variables: values, errors: new_errors ++ execution.errors}
     end

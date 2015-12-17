@@ -18,7 +18,9 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
           |> process_raw_result(ast_node, field, resolution, execution)
       end
     else
-      {:skip, %{execution | errors: [Execution.format_error("No field '#{ast_node.name}'", ast_node)|errors]}}
+      error_info = %{name: ast_node.name, role: :field, value: "Not present in schema"}
+      error = Execution.format_error(execution, error_info, ast_node)
+      {:skip, %{execution | errors: [error|errors]}}
     end
   end
 
@@ -27,11 +29,21 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
     |> result(ast_node, field, resolution, execution)
   end
   defp process_raw_result({:error, error}, ast_node, _field, _resolution, execution) do
-    new_errors = error |> List.wrap |> Enum.map(&(Execution.format_error(&1, ast_node)))
+    new_errors = error
+    |> List.wrap
+    |> Enum.map(fn (value) ->
+      error_info = %{name: ast_node.name, role: :field, value: value}
+      Execution.format_error(execution, error_info, ast_node)
+    end)
     {:skip, %{execution | errors: new_errors ++ execution.errors }}
   end
   defp process_raw_result(_other, ast_node, _field, _resolution, execution) do
-    error = "Schema did not resolve '#{ast_node.name}' to match {:ok, _} or {:error, _}" |> Execution.format_error(ast_node)
+    error_info = %{
+      name: ast_node.name,
+      role: :field,
+      value: "Did not resolve to match {:ok, _} or {:error, _}"
+    }
+    error = Execution.format_error(execution, error_info, ast_node)
     {:skip, %{execution | errors: [error|execution.errors]}}
   end
 
