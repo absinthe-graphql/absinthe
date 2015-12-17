@@ -13,7 +13,7 @@ defmodule ExGraphQLTest do
       }
     """
     # This does not actually resolve data yet
-    assert {:ok, %{"data" => %{"hero" => %{"name" => "R2-D2"}}, "errors" => []}} = ExGraphQL.run(schema, query, validate: false)
+    assert {:ok, %{data: %{"hero" => %{"name" => "R2-D2"}}, errors: []}} = ExGraphQL.run(schema, query, validate: false)
   end
 
   defp thing_type do
@@ -93,7 +93,7 @@ defmodule ExGraphQLTest do
       }
     }
     """
-    assert {:ok, %{"data" => %{"thing" => %{"name" => "Foo"}}, "errors" => []}} = ExGraphQL.run(simple_schema, query, validate: false)
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: []}} = ExGraphQL.run(simple_schema, query, validate: false)
   end
 
   it "can identify a bad field" do
@@ -105,7 +105,7 @@ defmodule ExGraphQLTest do
       }
     }
     """
-    assert {:ok, %{"data" => %{"thing" => %{"name" => "Foo"}}, "errors" => [%{"message" => "No field 'bad'", "locations" => [%{"line" => 4}]}]}} = ExGraphQL.run(simple_schema, query, validate: false)
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: "No field 'bad'", locations: [%{line: 4}]}]}} = ExGraphQL.run(simple_schema, query, validate: false)
   end
 
   it "gives nice errors for bad resolutions" do
@@ -114,8 +114,8 @@ defmodule ExGraphQLTest do
       bad_resolution
     }
     """
-    assert {:ok, %{"data" => %{},
-                   "errors" => [%{"message" => "Schema did not resolve 'bad_resolution' to match {:ok, _} or {:error, _}", "locations" => _}]}} = ExGraphQL.run(simple_schema, query, validate: false)
+    assert {:ok, %{data: %{},
+                   errors: [%{message: "Schema did not resolve 'bad_resolution' to match {:ok, _} or {:error, _}", locations: _}]}} = ExGraphQL.run(simple_schema, query, validate: false)
   end
 
   it "returns the correct results for an alias" do
@@ -126,7 +126,7 @@ defmodule ExGraphQLTest do
       }
     }
     """
-    assert {:ok, %{"data" => %{"widget" => %{"name" => "Foo"}}, "errors" => []}} = ExGraphQL.run(simple_schema, query, validate: false)
+    assert {:ok, %{data: %{"widget" => %{"name" => "Foo"}}, errors: []}} = ExGraphQL.run(simple_schema, query, validate: false)
   end
 
   it "returns nested objects" do
@@ -140,7 +140,7 @@ defmodule ExGraphQLTest do
       }
     }
     """
-    assert {:ok, %{"data" => %{"thing" => %{"name" => "Foo", "other_thing" => %{"name" => "Bar"}}}, "errors" => []}} = ExGraphQL.run(simple_schema, query, validate: false)
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo", "other_thing" => %{"name" => "Bar"}}}, errors: []}} = ExGraphQL.run(simple_schema, query, validate: false)
   end
 
   it "can provide context" do
@@ -151,8 +151,8 @@ defmodule ExGraphQLTest do
         }
       }
     """
-    assert {:ok, %{"data" => %{"thingByContext" => %{"name" => "Bar"}}, "errors" => []}} = ExGraphQL.run(simple_schema, query, validate: false, context: %{thing: "bar"})
-    assert {:ok, %{"data" => %{}, "errors" => [%{"message" => "No :id context provided"}]}} = ExGraphQL.run(simple_schema, query, validate: false)
+    assert {:ok, %{data: %{"thingByContext" => %{"name" => "Bar"}}, errors: []}} = ExGraphQL.run(simple_schema, query, validate: false, context: %{thing: "bar"})
+    assert {:ok, %{data: %{}, errors: [%{message: "No :id context provided"}]}} = ExGraphQL.run(simple_schema, query, validate: false)
   end
 
   it "can use variables" do
@@ -164,7 +164,7 @@ defmodule ExGraphQLTest do
     }
     """
     result = ExGraphQL.run(simple_schema, query, validate: false, variables: %{"thingId" => "bar"})
-    assert {:ok, %{"data" => %{"thing" => %{"name" => "Bar"}}, "errors" => []}} = result
+    assert {:ok, %{data: %{"thing" => %{"name" => "Bar"}}, errors: []}} = result
   end
 
   @tag :focus
@@ -177,7 +177,7 @@ defmodule ExGraphQLTest do
       }
     """
     result = ExGraphQL.run(simple_schema, query, validate: false, variables: %{thingId: "bar"})
-    assert {:ok, %{"data" => %{"thing" => %{"name" => "Bar"}}, "errors" => [%{"message" => "Missing required variable 'other' (String)"}]}} = result
+    assert {:ok, %{data: %{"thing" => %{"name" => "Bar"}}, errors: [%{message: "Missing required variable 'other' (String)"}]}} = result
   end
 
 end

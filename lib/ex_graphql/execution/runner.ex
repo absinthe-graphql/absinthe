@@ -11,7 +11,7 @@ defmodule ExGraphQL.Execution.Runner do
   end
   def run(%{selected_operation: %{operation: op_type} = operation} = execution) do
     case execute(op_type, operation, execution) do
-      {:ok, value, %{errors: errors}} -> {:ok, %{"data" => value, "errors" => Execution.stringify_keys(errors)}}
+      {:ok, value, %{errors: errors}} -> {:ok, %{data: value, errors: errors}}
       other -> other
     end
   end
