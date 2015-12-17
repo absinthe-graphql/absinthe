@@ -18,13 +18,13 @@ defmodule ExGraphQL.Type.Schema do
   end
 
   @spec type_from_ast(t, Language.type_reference_t) :: ExGraphQL.Type.t | nil
-  def type_from_ast(schema, %{__struct__: Language.NonNullType, type: inner_type}) do
+  def type_from_ast(schema, %Language.NonNullType{type: inner_type}) do
     case type_from_ast(schema, inner_type) do
       nil -> nil
       type -> %Type.NonNull{of_type: type}
     end
   end
-  def type_from_ast(schema, %{__struct__: Language.ListType, type: inner_type}) do
+  def type_from_ast(schema, %Language.ListType{type: inner_type}) do
     case type_from_ast(schema, inner_type) do
       nil -> nil
       type -> %Type.List{of_type: type}

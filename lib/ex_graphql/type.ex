@@ -126,7 +126,7 @@ defmodule ExGraphQL.Type do
 
   @doc "Unwrap the underlying nullable type or return unmodified"
   @spec nullable(any) :: nullable_t | t # nullable_t is a subset of t, but broken out for clarity
-  def nullable(%{__struct__: Type.NonNull, of_type: nullable}), do: nullable
+  def nullable(%Type.NonNull{of_type: nullable}), do: nullable
   def nullable(term), do: term
 
   # NAMED TYPES
@@ -174,7 +174,7 @@ defmodule ExGraphQL.Type do
 
   # VALID TYPE
 
-  def valid_input?(%{__struct__: Type.NonNull}, nil) do
+  def valid_input?(%Type.NonNull{}, nil) do
     false
   end
   def valid_input?(_type, nil) do

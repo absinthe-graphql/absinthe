@@ -1,28 +1,8 @@
-defmodule ExGraphQL.Execution.LiteralInput do
+defmodule ExGraphQL.Execution.Literal do
 
   alias ExGraphQL.Type
   alias ExGraphQL.Language
   alias ExGraphQL.Execution.Variables
-
-  def arguments(ast_arguments, schema_arguments, variables) do
-    schema_arguments
-    |> Enum.reduce(%{}, fn ({name, definition}, acc) ->
-      ast_arg = ast_arguments |> Enum.find(&(String.to_atom(&1.name) == name))
-      if ast_arg do
-        ast_value = if ast_arg.value do
-          coerce(definition.type, ast_arg.value, variables)
-        else
-          nil
-        end
-        variable_value = variables[ast_arg.name]
-        default_value = definition.default_value
-        acc
-        |> Map.put(name |> to_string, ast_value || variable_value || default_value)
-      else
-        acc
-      end
-    end)
-  end
 
   def coerce(input_type, input_value, variables) do
     input_type
@@ -34,7 +14,7 @@ defmodule ExGraphQL.Execution.LiteralInput do
     internal_value
     |> scalar.parse_value.()
   end
-  defp coerce_unwrapped(definition_type, %{__struct__: Language.Variable, name: name}, variables) do
+  defp coerce_unwrapped(definition_type, %Language.Variable{name: name}, variables) do
     variable_value = variables |> Map.get(name)
     coerce(definition_type, variable_value, variables)
   end
@@ -44,7 +24,7 @@ defmodule ExGraphQL.Execution.LiteralInput do
     |> scalar.parse_value.()
   end
 
-  defp coerce_unwrapped(%{__struct__: Type.InputObjectType, fields: thunked_schema_fields}, %{fields: input_fields}, variables) do
+  defp coerce_unwrapped(%Type.InputObjectType{fields: thunked_schema_fields}, %{fields: input_fields}, variables) do
     schema_fields = thunked_schema_fields |> Type.unthunk
     input_fields
     |> Enum.reduce(%{}, fn (%{name: name, value: input_value}, acc) ->
@@ -54,7 +34,7 @@ defmodule ExGraphQL.Execution.LiteralInput do
       end
     end)
   end
-  defp coerce_unwrapped(%{__struct__: Type.Enum, values: enum_values}, %{value: raw_value}, _variables) do
+  defp coerce_unwrapped(%Type.Enum{values: enum_values}, %{value: raw_value}, _variables) do
     enum_values |> Map.get(raw_value)
   end
 

@@ -21,7 +21,7 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.SelectionSet do
   end
 
   @spec flatten(Language.t, Execution.t) :: %{binary => Language.t}
-  defp flatten(%{__struct__: Language.Field, alias: alias, name: name} = ast_node, _execution) do
+  defp flatten(%Language.Field{alias: alias, name: name} = ast_node, _execution) do
     alias_or_name = alias || name
     %{alias_or_name => ast_node}
   end
@@ -38,7 +38,7 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.SelectionSet do
       %{}
     end
   end
-  defp flatten(%{__struct__: Language.FragmentSpread, name: name} = ast_node, %{fragments: fragments} = execution) do
+  defp flatten(%Language.FragmentSpread{name: name} = ast_node, %{fragments: fragments} = execution) do
     if directives_pass?(ast_node, execution) do
       flatten(fragments[name], execution)
     else

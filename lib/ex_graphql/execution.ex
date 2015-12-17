@@ -125,10 +125,10 @@ defmodule ExGraphQL.Execution do
   defp categorize_definitions(execution, []) do
     execution
   end
-  defp categorize_definitions(%{operations: operations} = execution, [%{__struct__: ExGraphQL.Language.OperationDefinition, name: name} = definition | rest]) do
+  defp categorize_definitions(%{operations: operations} = execution, [%ExGraphQL.Language.OperationDefinition{name: name} = definition | rest]) do
     categorize_definitions(%{execution | operations: operations |> Map.put(name, definition)}, rest)
   end
-  defp categorize_definitions(%{fragments: fragments} = execution, [%{__struct__: ExGraphQL.Language.FragmentDefinition, name: name} = definition | rest]) do
+  defp categorize_definitions(%{fragments: fragments} = execution, [%ExGraphQL.Language.FragmentDefinition{name: name} = definition | rest]) do
     categorize_definitions(%{execution | fragments: fragments |> Map.put(name, definition)}, rest)
   end
 

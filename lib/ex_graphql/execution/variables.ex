@@ -3,7 +3,6 @@ defmodule ExGraphQL.Execution.Variables do
   alias ExGraphQL.Type
   alias ExGraphQL.Language
   alias ExGraphQL.Execution
-  alias ExGraphQL.Execution.LiteralInput
 
   @spec build(Type.Schema.t, [Language.VariableDefinition.t], %{binary => any}) :: %{binary => any}
   def build(execution, variable_definitions, provided_variables) do
