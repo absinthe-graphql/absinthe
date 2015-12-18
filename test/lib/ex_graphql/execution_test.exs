@@ -27,12 +27,6 @@ defmodule ExGraphQL.ExecutionTest do
     assert execution.operations |> Map.size == 1
   end
 
-  it "doesn't currently validate" do
-    document = ExGraphQL.parse!(@document)
-    assert {:error, _} = %Execution{document: document, validate: true} |> Execution.validate
-    assert {:ok, _} = %Execution{document: document, validate: false} |> Execution.validate
-  end
-
   it "can select the correct operation when multiple are available" do
     schema = StarWars.Schema.schema
     query = """

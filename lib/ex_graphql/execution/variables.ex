@@ -1,84 +1,106 @@
 defmodule ExGraphQL.Execution.Variables do
 
+  @moduledoc """
+  Handles the logic around building and validating variable values for an
+  execution.
+  """
+
   alias ExGraphQL.Type
   alias ExGraphQL.Language
   alias ExGraphQL.Execution
 
-  @spec build([Language.VariableDefinition.t], Execution.t) :: {%{binary => any}, Execution.t}
-  def build(definitions, %{variables: variables} = execution) do
-    definitions
-    |> parse(execution, Execution.stringify_keys(variables))
+  @doc """
+  Build variables from the variable definitions in the selection operation
+  and the variable values provided in the execution struct.
+  """
+  @spec build(Execution.t) :: {%{binary => any}, Execution.t}
+  def build(execution) do
+    execution.selected_operation.variable_definitions
+    |> Enum.reduce({%{}, execution |> normalize_keys}, &parse/2)
   end
 
-  defp parse(definitions, execution, provided) do
-    do_parse(definitions, provided, {%{}, execution})
+  # Normalize the variable keys to binaries
+  @spec normalize_keys(Execution.t) :: Execution.t
+  defp normalize_keys(execution) do
+    %{execution | variables: execution.variables |> Execution.stringify_keys}
   end
 
-  defp do_parse([] = _definitions, _provided, acc) do
-    acc
+  # Parse a definition and add values/errors
+  @spec parse(Language.VariableDefinition.t, {map, Execution.t}) :: {map, Execution.t}
+  defp parse(definition, {_, execution} = acc) do
+    name = definition.variable.name
+    ast_type = definition.type |> Language.unwrap
+    schema_type = Type.Schema.type_from_ast(execution.schema, definition.type)
+    do_parse(name, definition, ast_type, schema_type, acc)
   end
-  defp do_parse([definition|rest], provided, {values, %{schema: schema} = execution}) do
-    variable_name = definition.variable.name
-    %{name: type_name} = unwrapped_definition_type = definition.type |> Language.unwrap
-    variable_type = Type.Schema.type_from_ast(schema, definition.type)
-    if variable_type do
-      default_value = default(definition.default_value)
-      provided_value = provided |> Map.get(variable_name |> to_string)
-      value = provided_value || default_value
-      if Type.valid_input?(variable_type, value) do
-        coerced = if is_nil(value) do
-          nil
-        else
-          type = variable_type |> Type.unwrap
-          type.parse_value.(value)
-        end
-        do_parse(
-          rest,
-          provided,
-          {
-            values |> Map.put(variable_name, coerced),
-            execution
-          }
-        )
-      else
-        err = if is_nil(value) do
-          &"Variable `#{&1}' (#{type_name}): Not provided"
-        else
-          &"Variable `#{&1}' (#{type_name}): Invalid value"
-        end
-        error_info = %{
-          name: variable_name,
-          role: :variable,
-          value: err
-        }
-        error = Execution.format_error(execution, error_info, unwrapped_definition_type)
-        do_parse(
-          rest,
-          provided,
-          {
-            values,
-            %{execution | errors: [error | execution.errors]}
-          }
-        )
-      end
+
+  # No schema type was found
+  @spec do_parse(atom, Language.VariableDefinition.t, Language.NamedType.t, Type.input_t, {map, Execution.t}) :: {map, Execution.t}
+  defp do_parse(name, _definition, ast_type, nil, {values, execution}) do
+    error_info = %{
+      name: name |> to_string,
+      role: :variable,
+      value: "Type (#{ast_type.name}) not present in schema"
+    }
+    error = Execution.format_error(execution, error_info, ast_type)
+    {values, %{execution | errors: [error | execution.errors]}}
+  end
+  defp do_parse(name, definition, ast_type, schema_type, {_, execution} = acc) do
+    default_value = default(definition.default_value)
+    provided_value = execution.variables |> Map.get(name |> to_string)
+    value = provided_value || default_value
+    if Type.valid_input?(schema_type, value) do
+      valid(name, value, schema_type, acc)
     else
-      error_info = %{
-        name: variable_name,
-        role: :variable,
-        value: "Type (#{type_name}) not present in schema"
-      }
-      error = Execution.format_error(execution, error_info, unwrapped_definition_type)
-      parse(
-        rest,
-        provided,
-        {
-          values,
-          %{execution | errors: [error | execution.errors]}
-        }
-      )
+      invalid(name, value, ast_type, schema_type, acc)
     end
   end
 
+  # Accumulate the value for a valid variable
+  @spec valid(atom, any, Type.input_t, {map, Execution.t}) :: {map, Execution.t}
+  defp valid(name, value, schema_type, {values, execution}) do
+    {
+      values |> Map.put(to_string(name), coerce(value, schema_type)),
+      execution
+    }
+  end
+
+  # Accumulate an error for an invalid variable
+  @spec invalid(atom, any, Language.NamedType.t, Type.input_t, {map, Execution.t}) :: {map, Execution.t}
+  defp invalid(name, value, ast_type, _schema_type, {values, execution}) do
+    error_info = %{
+      name: name |> to_string,
+      role: :variable,
+      value: error_message(ast_type, value)
+    }
+    error = Execution.format_error(execution, error_info, ast_type)
+    {
+      values,
+      %{execution | errors: [error | execution.errors]}
+    }
+  end
+
+  # Define the error message for an invalid variable
+  @spec error_message(Language.NamedType.t, any) :: (binary -> binary)
+  defp error_message(ast_type, nil) do
+    &"Variable `#{&1}' (#{ast_type.name}): Not provided"
+  end
+  defp error_message(ast_type, _value) do
+    &"Variable `#{&1}' (#{ast_type.name}): Invalid value"
+  end
+
+  # Coerce a value or default provided for a variable so it is suitable for
+  # the defined type
+  @spec coerce(any, Type.input_t) :: any
+  defp coerce(nil, _schema_type) do
+    nil
+  end
+  defp coerce(value, schema_type) do
+    %{parse_value: parser} = schema_type |> Type.unwrap
+    parser.(value)
+  end
+
+  # Extract the default value, if any
   @spec default(ExGraphQL.Language.value_t) :: any
   defp default(%{value: value}), do: value
   defp default(_), do: nil

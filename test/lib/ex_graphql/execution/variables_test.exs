@@ -26,7 +26,7 @@ defmodule ExGraphQL.Execution.VariablesTest do
     # Get schema
     schema = StarWars.Schema.schema
     # Prepare execution context
-    {:ok, execution} = %Execution{schema: schema, document: document, variables: provided, validate: false}
+    {:ok, execution} = %Execution{schema: schema, document: document, variables: provided}
     |> Execution.prepare
     execution
   end

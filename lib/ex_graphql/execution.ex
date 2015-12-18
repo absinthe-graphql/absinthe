@@ -17,8 +17,8 @@ defmodule ExGraphQL.Execution do
   @typedoc "The canonical result representation of an execution"
   @type result_t :: %{data: %{binary => any}, errors: [error_t]}
 
-  @type t :: %{schema: Type.Schema.t, document: Language.Document.t, variables: map, validate: boolean, selected_operation: ExGraphQL.Type.ObjectType.t, operation_name: atom, errors: [error_t], categorized: boolean, strategy: atom, adapter: atom, resolution: Execution.Resolution.t}
-  defstruct schema: nil, document: nil, variables: %{}, fragments: %{}, operations: %{}, validate: true, selected_operation: nil, operation_name: nil, errors: [], categorized: false, strategy: nil, adapter: nil, resolution: nil
+  @type t :: %{schema: Type.Schema.t, document: Language.Document.t, variables: map, selected_operation: ExGraphQL.Type.ObjectType.t, operation_name: atom, errors: [error_t], categorized: boolean, strategy: atom, adapter: atom, resolution: Execution.Resolution.t}
+  defstruct schema: nil, document: nil, variables: %{}, fragments: %{}, operations: %{}, selected_operation: nil, operation_name: nil, errors: [], categorized: false, strategy: nil, adapter: nil, resolution: nil
 
   def run(execution, options \\ []) do
     raw = execution |> Map.merge(options |> Enum.into(%{}))
@@ -34,12 +34,8 @@ defmodule ExGraphQL.Execution do
     |> add_configured_adapter
     |> adapt
     |> categorize_definitions
-    case selected_operation(defined) do
-      {:ok, operation} ->
-        %{defined | selected_operation: operation}
-        |> set_variables
-        |> validate
-      other -> other
+    with {:ok, operation} <- selected_operation(defined) do
+      set_variables(%{defined | selected_operation: operation})
     end
   end
 
@@ -133,15 +129,6 @@ defmodule ExGraphQL.Execution do
     categorize_definitions(%{execution | fragments: fragments |> Map.put(name, definition)}, rest)
   end
 
-  @doc "Validate an execution"
-  @spec validate(t) :: {:ok, t} | {:error, binary}
-  def validate(%{validate: true}) do
-    {:error, "Validation is not currently supported"}
-  end
-  def validate(execution) do
-    {:ok, execution}
-  end
-
   def selected_operation(%{categorized: false}) do
     {:error, "Call Execution.categorize_definitions first"}
   end
@@ -165,9 +152,11 @@ defmodule ExGraphQL.Execution do
     {:error, "Multiple operations available, but no operation_name provided"}
   end
 
-  def set_variables(%{selected_operation: %{variable_definitions: definitions}} = execution) do
-    {values, next_execution} = Execution.Variables.build(definitions, execution)
-    %{next_execution | variables: values}
+  # Set the variables on the execution struct
+  @spec set_variables(Execution.t) :: Execution.t
+  defp set_variables(execution) do
+    {values, next_execution} = Execution.Variables.build(execution)
+    {:ok, %{next_execution | variables: values}}
   end
 
 end
