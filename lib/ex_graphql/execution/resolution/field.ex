@@ -13,7 +13,7 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
         %{resolve: nil} ->
           target |> Map.get(name |> String.to_atom) |> result(ast_node, field, execution)
         %{resolve: resolver} ->
-          {args, exe} = Execution.Arguments.build(ast_node.arguments, field.args, execution)
+          {args, exe} = Execution.Arguments.build(ast_node, field.args, execution)
           resolver.(args, exe)
           |> process_raw_result(ast_node, field, exe)
       end

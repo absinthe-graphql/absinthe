@@ -1,30 +1,54 @@
 defmodule ExGraphQL.Execution.Arguments do
 
+  @moduledoc """
+  Handles the logic around building and validating argument values for a field.
+  """
+
   alias ExGraphQL.Type
   alias ExGraphQL.Language
 
-  @spec build([Language.Argument.t], [Type.Argument.t], Execution.t) :: {%{atom => any}, Execution.t}
-  def build(ast_arguments, schema_arguments, %{variables: variables} = execution) do
-    result = {%{}, execution}
+  @doc """
+  Build an arguments map from the argument definitions in the schema, using the
+  argument values from the query document.
+  """
+  @spec build(Language.Field.t, %{atom => Type.Argument.t}, Execution.t) :: {%{atom => any}, Execution.t}
+  def build(ast_field, schema_arguments, execution) do
     schema_arguments
-    |> Enum.reduce(result, fn ({name, definition}, {values, exe} = acc) ->
-      ast_arg = ast_arguments |> Enum.find(&(&1.name == name |> to_string))
-      if ast_arg do
-        value_to_coerce = ast_arg.value || variables[ast_arg.name] || definition.default_value
-        {coerced_value, next_execution} = coerce(definition.type, value_to_coerce, exe)
-        {
-          values |> Map.put(name, coerced_value),
-          next_execution
-        }
-      else
-        acc
-      end
-    end)
+    |> Enum.reduce({%{}, execution}, &(parse(&1, ast_field, &2)))
   end
 
-  @doc "Coerce an input value into an input type, tracking errors"
+  # Parse the argument value from the query document field
+  @spec parse({atom, Type.Argument.t}, Language.Field.t, {map, Execution.t}) :: {map, Execution.t}
+  defp parse({name, definition} = schema_argument, ast_field, acc) do
+    ast_field
+    |> lookup_argument(name)
+    |> do_parse(definition, acc)
+  end
+
+  # No argument found in the query document field
+  @spec do_parse(Language.Argument.t | nil, Type.Argument.t, {map, Execution.t}) :: {map, Execution.t}
+  defp do_parse(nil, _definition, acc) do
+    acc
+  end
+  defp do_parse(ast_argument, definition, {values, execution}) do
+    value_to_coerce = ast_argument.value || execution.variables[ast_argument.name] || definition.default_value
+    {coerced_value, next_execution} = coerce(definition.type, value_to_coerce, execution)
+    {
+      values |> Map.put(ast_argument.name |> String.to_existing_atom, coerced_value),
+      next_execution
+    }
+  end
+
+  @spec lookup_argument(Language.Field.t, atom) :: Language.Argument.t | nil
+  defp lookup_argument(ast_field, name) do
+    argument_name = name |> to_string
+    ast_field.arguments
+    |> Enum.find(&(&1.name == argument_name))
+  end
+
+  # Coerce an input value into an input type, tracking errors
   @spec coerce(Type.input_t, any, Execution.t) :: {any, Execution.t}
-  def coerce(input_type, input_value, execution) do
+  defp coerce(input_type, input_value, execution) do
     input_type
     |> Type.unwrap
     |> coerce_unwrapped(input_value, execution)
@@ -36,9 +60,8 @@ defmodule ExGraphQL.Execution.Arguments do
       execution
     }
   end
-  defp coerce_unwrapped(definition_type, %Language.Variable{name: name}, %{variables: variables} = execution) do
-    variable_value = variables |> Map.get(name)
-    coerce(definition_type, variable_value, execution)
+  defp coerce_unwrapped(definition_type, %Language.Variable{name: name}, execution) do
+    coerce(definition_type, execution.variables[name], execution)
   end
   defp coerce_unwrapped(%Type.Scalar{parse_value: parser}, bare, execution) do
     {
@@ -47,7 +70,7 @@ defmodule ExGraphQL.Execution.Arguments do
     }
   end
 
-  defp coerce_unwrapped(%Type.InputObjectType{fields: thunked_schema_fields}, %{fields: input_fields}, %{variables: variables} = execution) do
+  defp coerce_unwrapped(%Type.InputObjectType{fields: thunked_schema_fields}, %{fields: input_fields}, execution) do
     schema_fields = thunked_schema_fields |> Type.unthunk
     result = {%{}, execution}
     schema_fields

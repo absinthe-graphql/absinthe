@@ -10,8 +10,8 @@ defmodule ExGraphQL.Execution.Variables do
   alias ExGraphQL.Execution
 
   @doc """
-  Build variables from the variable definitions in the selection operation
-  and the variable values provided in the execution struct.
+  Build a variables map from the variable definitions in the selected operation
+  and the variable values provided to the execution.
   """
   @spec build(Execution.t) :: {%{binary => any}, Execution.t}
   def build(execution) do
