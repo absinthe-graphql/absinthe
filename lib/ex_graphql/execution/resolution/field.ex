@@ -6,16 +6,16 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
 
   @spec resolve(ExGraphQL.Language.Field.t,
                 ExGraphQL.Execution.t) :: {:ok, map} | {:error, any}
-  def resolve(%{name: name} = ast_node, %{errors: errors, variables: variables, strategy: :serial, resolution: %{parent_type: parent_type, target: target}} = execution) do
+  def resolve(%{name: name} = ast_node, %{errors: errors, strategy: :serial, resolution: %{parent_type: parent_type, target: target}} = execution) do
     field = Type.field(parent_type, ast_node.name)
     if field do
-      arguments = Execution.Arguments.build(ast_node.arguments, field.args, variables)
       case field do
         %{resolve: nil} ->
           target |> Map.get(name |> String.to_atom) |> result(ast_node, field, execution)
         %{resolve: resolver} ->
-          resolver.(arguments, execution)
-          |> process_raw_result(ast_node, field, execution)
+          {args, exe} = Execution.Arguments.build(ast_node.arguments, field.args, execution)
+          resolver.(args, exe)
+          |> process_raw_result(ast_node, field, exe)
       end
     else
       error_info = %{name: ast_node.name, role: :field, value: "Not present in schema"}

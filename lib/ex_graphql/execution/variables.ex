@@ -4,7 +4,7 @@ defmodule ExGraphQL.Execution.Variables do
   alias ExGraphQL.Language
   alias ExGraphQL.Execution
 
-  @spec build(Type.Schema.t, [Language.VariableDefinition.t], %{binary => any}) :: %{binary => any}
+  @spec build(Execution.t, [Language.VariableDefinition.t], %{binary => any}) :: %{values: %{binary => any}, errors: [Execution.error_t]}
   def build(execution, variable_definitions, provided_variables) do
     variable_definitions
     |> parse(execution, provided_variables |> Execution.stringify_keys, %{errors: [], values: %{}})
