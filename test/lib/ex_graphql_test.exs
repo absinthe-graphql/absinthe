@@ -52,6 +52,17 @@ defmodule ExGraphQLTest do
 
   end
 
+  it "checks for extra arguments" do
+    query = """
+    {
+      thing(id: "foo", extra: "dunno") {
+        name
+      }
+    }
+    """
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: "Argument `extra': Not present in schema"}]}} = run(query)
+  end
+
   it "returns nested objects" do
     query = """
     query GimmeFooWithOtherThing {

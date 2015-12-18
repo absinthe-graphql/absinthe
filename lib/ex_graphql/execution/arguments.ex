@@ -14,8 +14,9 @@ defmodule ExGraphQL.Execution.Arguments do
   """
   @spec build(Language.Field.t, %{atom => Type.Argument.t}, Execution.t) :: {:ok, {%{atom => any}, Execution.t}} | {:error, [binary], Execution.t}
   def build(ast_field, schema_arguments, execution) do
-    {values, missing, execution_to_return} = schema_arguments
+    {values, missing, post_execution} = schema_arguments
     |> Enum.reduce({%{}, [], execution}, &(parse(&1, ast_field, &2)))
+    execution_to_return = report_extra_arguments(ast_field, schema_arguments |> Map.keys |> Enum.map(&to_string/1), post_execution)
     case missing do
       [] -> {:ok, values, execution_to_return}
       _ -> {:error, missing, execution_to_return}
@@ -58,6 +59,25 @@ defmodule ExGraphQL.Execution.Arguments do
       missing,
       next_execution
     }
+  end
+
+  # Add errors for any additional arguments not present in the schema
+  @spec report_extra_arguments(Language.Field.t, [binary], Execution.t) :: Execution.t
+  defp report_extra_arguments(ast_field, schema_argument_names, execution) do
+    ast_field.arguments
+    |> Enum.reduce(execution, fn ast_arg, acc ->
+      if Enum.member?(schema_argument_names, ast_arg.name) do
+        acc
+      else
+        error_info = %{
+          name: ast_arg.name,
+          role: :argument,
+          value: "Not present in schema"
+        }
+        error = Execution.format_error(acc, error_info, ast_arg)
+        %{acc | errors: [error | acc.errors]}
+      end
+    end)
   end
 
   @spec lookup_argument(Language.Field.t, atom) :: Language.Argument.t | nil
