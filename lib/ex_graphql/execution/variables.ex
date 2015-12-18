@@ -4,22 +4,26 @@ defmodule ExGraphQL.Execution.Variables do
   alias ExGraphQL.Language
   alias ExGraphQL.Execution
 
-  @spec build(Execution.t, [Language.VariableDefinition.t], %{binary => any}) :: %{values: %{binary => any}, errors: [Execution.error_t]}
-  def build(execution, variable_definitions, provided_variables) do
-    variable_definitions
-    |> parse(execution, provided_variables |> Execution.stringify_keys, %{errors: [], values: %{}})
+  @spec build([Language.VariableDefinition.t], Execution.t) :: {%{binary => any}, Execution.t}
+  def build(definitions, %{variables: variables} = execution) do
+    definitions
+    |> parse(execution, Execution.stringify_keys(variables))
   end
 
-  defp parse([], _execution, _provided_variables, acc) do
+  defp parse(definitions, execution, provided) do
+    do_parse(definitions, provided, {%{}, execution})
+  end
+
+  defp do_parse([] = _definitions, _provided, acc) do
     acc
   end
-  defp parse([definition|rest], %{schema: schema} = execution, provided_variables, %{errors: errors, values: values} = acc) do
+  defp do_parse([definition|rest], provided, {values, %{schema: schema} = execution}) do
     variable_name = definition.variable.name
     %{name: type_name} = unwrapped_definition_type = definition.type |> Language.unwrap
     variable_type = Type.Schema.type_from_ast(schema, definition.type)
     if variable_type do
       default_value = default(definition.default_value)
-      provided_value = provided_variables[variable_name]
+      provided_value = provided |> Map.get(variable_name |> to_string)
       value = provided_value || default_value
       if Type.valid_input?(variable_type, value) do
         coerced = if is_nil(value) do
@@ -28,9 +32,13 @@ defmodule ExGraphQL.Execution.Variables do
           type = variable_type |> Type.unwrap
           type.parse_value.(value)
         end
-        parse(
-          rest, execution, provided_variables,
-          %{acc | values: values |> Map.put(variable_name, coerced)}
+        do_parse(
+          rest,
+          provided,
+          {
+            values |> Map.put(variable_name, coerced),
+            execution
+          }
         )
       else
         err = if is_nil(value) do
@@ -44,9 +52,13 @@ defmodule ExGraphQL.Execution.Variables do
           value: err
         }
         error = Execution.format_error(execution, error_info, unwrapped_definition_type)
-        parse(
-          rest, execution, provided_variables,
-          %{acc | errors: [error|errors]}
+        do_parse(
+          rest,
+          provided,
+          {
+            values,
+            %{execution | errors: [error | execution.errors]}
+          }
         )
       end
     else
@@ -57,8 +69,12 @@ defmodule ExGraphQL.Execution.Variables do
       }
       error = Execution.format_error(execution, error_info, unwrapped_definition_type)
       parse(
-        rest, execution, provided_variables,
-        %{acc | errors: [error|errors]}
+        rest,
+        provided,
+        {
+          values,
+          %{execution | errors: [error | execution.errors]}
+        }
       )
     end
   end

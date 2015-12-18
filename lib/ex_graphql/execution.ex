@@ -165,11 +165,9 @@ defmodule ExGraphQL.Execution do
     {:error, "Multiple operations available, but no operation_name provided"}
   end
 
-  def set_variables(%{selected_operation: selected_op, variables: variables} = execution) do
-    case Execution.Variables.build(execution, selected_op.variable_definitions, variables) do
-      %{values: values, errors: new_errors} ->
-        %{execution | variables: values, errors: new_errors ++ execution.errors}
-    end
+  def set_variables(%{selected_operation: %{variable_definitions: definitions}} = execution) do
+    {values, next_execution} = Execution.Variables.build(definitions, execution)
+    %{next_execution | variables: values}
   end
 
 end
