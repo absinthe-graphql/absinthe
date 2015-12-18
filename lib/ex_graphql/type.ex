@@ -129,6 +129,11 @@ defmodule ExGraphQL.Type do
   def nullable(%Type.NonNull{of_type: nullable}), do: nullable
   def nullable(term), do: term
 
+  @doc "Determine if a type is non null"
+  @spec non_null?(t) :: boolean
+  def non_null?(%Type.NonNull{}), do: true
+  def non_null?(_), do: false
+
   # NAMED TYPES
 
   @named_type_modules [Type.Scalar, Type.ObjectType, Type.InterfaceType, Type.Union, Type.Enum, Type.InputObjectType]

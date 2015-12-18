@@ -45,6 +45,13 @@ defmodule ExGraphQLTest do
     assert {:ok, %{data: %{"widget" => %{"name" => "Foo"}}, errors: []}} = run(query)
   end
 
+  it "checks for required arguments" do
+    query = "{ thing { name } }"
+    assert {:ok, %{data: %{}, errors: [%{message: "Field `thing': 1 required argument (`id') not provided"},
+                                       %{message: "Argument `id' (String): Not provided"}]}} = run(query)
+
+  end
+
   it "returns nested objects" do
     query = """
     query GimmeFooWithOtherThing {

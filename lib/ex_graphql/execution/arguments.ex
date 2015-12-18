@@ -4,6 +4,7 @@ defmodule ExGraphQL.Execution.Arguments do
   Handles the logic around building and validating argument values for a field.
   """
 
+  alias ExGraphQL.Execution
   alias ExGraphQL.Type
   alias ExGraphQL.Language
 
@@ -11,30 +12,50 @@ defmodule ExGraphQL.Execution.Arguments do
   Build an arguments map from the argument definitions in the schema, using the
   argument values from the query document.
   """
-  @spec build(Language.Field.t, %{atom => Type.Argument.t}, Execution.t) :: {%{atom => any}, Execution.t}
+  @spec build(Language.Field.t, %{atom => Type.Argument.t}, Execution.t) :: {:ok, {%{atom => any}, Execution.t}} | {:error, [binary], Execution.t}
   def build(ast_field, schema_arguments, execution) do
-    schema_arguments
-    |> Enum.reduce({%{}, execution}, &(parse(&1, ast_field, &2)))
+    {values, missing, execution_to_return} = schema_arguments
+    |> Enum.reduce({%{}, [], execution}, &(parse(&1, ast_field, &2)))
+    case missing do
+      [] -> {:ok, values, execution_to_return}
+      _ -> {:error, missing, execution_to_return}
+    end
   end
 
   # Parse the argument value from the query document field
-  @spec parse({atom, Type.Argument.t}, Language.Field.t, {map, Execution.t}) :: {map, Execution.t}
+  @spec parse({atom, Type.Argument.t}, Language.Field.t, {map, [binary], Execution.t}) :: {map, [binary], Execution.t}
   defp parse({name, definition} = schema_argument, ast_field, acc) do
     ast_field
     |> lookup_argument(name)
-    |> do_parse(definition, acc)
+    |> do_parse(definition, ast_field, acc)
   end
 
   # No argument found in the query document field
-  @spec do_parse(Language.Argument.t | nil, Type.Argument.t, {map, Execution.t}) :: {map, Execution.t}
-  defp do_parse(nil, _definition, acc) do
-    acc
+  @spec do_parse(Language.Argument.t | nil, Type.Argument.t, Language.Field.t, {map, [binary], Execution.t}) :: {map, [binary], Execution.t}
+  defp do_parse(nil, definition, ast_field, {values, missing, execution} = acc) do
+    if Type.non_null?(definition.type) do
+      internal_type = definition.type |> Type.unwrap
+      error_info = %{
+        name: definition.name |> to_string,
+        role: :argument,
+        value: &"Argument `#{&1}' (#{internal_type.name}): Not provided"
+      }
+      error = Execution.format_error(execution, error_info, ast_field)
+      {
+        values,
+        [to_string(definition.name) | missing],
+        %{execution | errors: [error | execution.errors]}
+      }
+    else
+      acc
+    end
   end
-  defp do_parse(ast_argument, definition, {values, execution}) do
+  defp do_parse(ast_argument, definition, _ast_field, {values, missing, execution}) do
     value_to_coerce = ast_argument.value || execution.variables[ast_argument.name] || definition.default_value
     {coerced_value, next_execution} = coerce(definition.type, value_to_coerce, execution)
     {
       values |> Map.put(ast_argument.name |> String.to_existing_atom, coerced_value),
+      missing,
       next_execution
     }
   end
