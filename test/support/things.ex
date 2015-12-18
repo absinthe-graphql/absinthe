@@ -14,6 +14,15 @@ defmodule Things do
               :not_expected
             end
           ],
+          number: [
+            type: Type.Scalar.string,
+            args: args(
+              val: [type: non_null(Type.Scalar.integer)]
+            ),
+            resolve: fn
+              %{val: v} -> v |> to_string
+            end
+          ],
           thingByContext: [
             type: thing_type,
             resolve: fn

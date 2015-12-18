@@ -25,7 +25,7 @@ defmodule ExGraphQL.Execution.Arguments do
 
   # Parse the argument value from the query document field
   @spec parse({atom, Type.Argument.t}, Language.Field.t, {map, [binary], Execution.t}) :: {map, [binary], Execution.t}
-  defp parse({name, definition} = schema_argument, ast_field, acc) do
+  defp parse({name, definition}, ast_field, acc) do
     ast_field
     |> lookup_argument(name)
     |> do_parse(definition, ast_field, acc)
