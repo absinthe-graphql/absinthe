@@ -9,7 +9,7 @@ defmodule ExGraphQLTest do
       }
     }
     """
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: []}} = ExGraphQL.run(Things.schema, query)
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: []}} = run(query)
   end
 
   it "can identify a bad field" do
@@ -21,17 +21,17 @@ defmodule ExGraphQLTest do
       }
     }
     """
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: "Field `bad': Not present in schema", locations: [%{line: 4, column: 0}]}]}} = ExGraphQL.run(Things.schema, query)
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: "Field `bad': Not present in schema", locations: [%{line: 4, column: 0}]}]}} = run(query)
   end
 
-  it "gives nice errors for bad resolutions" do
+  it "warns of unknown fields" do
     query = """
     {
       bad_resolution
     }
     """
     assert {:ok, %{data: %{},
-                   errors: [%{message: "Field `bad_resolution': Did not resolve to match {:ok, _} or {:error, _}", locations: _}]}} = ExGraphQL.run(Things.schema, query)
+                   errors: [%{message: "Field `bad_resolution': Did not resolve to match {:ok, _} or {:error, _}", locations: _}]}} = run(query)
   end
 
   it "returns the correct results for an alias" do
@@ -42,7 +42,7 @@ defmodule ExGraphQLTest do
       }
     }
     """
-    assert {:ok, %{data: %{"widget" => %{"name" => "Foo"}}, errors: []}} = ExGraphQL.run(Things.schema, query)
+    assert {:ok, %{data: %{"widget" => %{"name" => "Foo"}}, errors: []}} = run(query)
   end
 
   it "returns nested objects" do
@@ -56,7 +56,7 @@ defmodule ExGraphQLTest do
       }
     }
     """
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo", "other_thing" => %{"name" => "Bar"}}}, errors: []}} = ExGraphQL.run(Things.schema, query)
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo", "other_thing" => %{"name" => "Bar"}}}, errors: []}} = run(query)
   end
 
   it "can provide context" do
@@ -67,8 +67,8 @@ defmodule ExGraphQLTest do
         }
       }
     """
-    assert {:ok, %{data: %{"thingByContext" => %{"name" => "Bar"}}, errors: []}} = ExGraphQL.run(Things.schema, query, context: %{thing: "bar"})
-    assert {:ok, %{data: %{}, errors: [%{message: "Field `thingByContext': No :id context provided"}]}} = ExGraphQL.run(Things.schema, query)
+    assert {:ok, %{data: %{"thingByContext" => %{"name" => "Bar"}}, errors: []}} = run(query, context: %{thing: "bar"})
+    assert {:ok, %{data: %{}, errors: [%{message: "Field `thingByContext': No :id context provided"}]}} = run(query)
   end
 
   it "can use variables" do
@@ -79,7 +79,7 @@ defmodule ExGraphQLTest do
       }
     }
     """
-    result = ExGraphQL.run(Things.schema, query, variables: %{"thingId" => "bar"})
+    result = run(query, variables: %{"thingId" => "bar"})
     assert {:ok, %{data: %{"thing" => %{"name" => "Bar"}}, errors: []}} = result
   end
 
@@ -91,8 +91,12 @@ defmodule ExGraphQLTest do
         }
       }
     """
-    result = ExGraphQL.run(Things.schema, query, variables: %{thingId: "bar"})
+    result = run(query, variables: %{thingId: "bar"})
     assert {:ok, %{data: %{"thing" => %{"name" => "Bar"}}, errors: [%{message: "Variable `other' (String): Not provided"}]}} = result
+  end
+
+  defp run(query, options \\ []) do
+    ExGraphQL.run(Things.schema, query, options)
   end
 
 end
