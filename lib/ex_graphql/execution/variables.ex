@@ -37,22 +37,17 @@ defmodule ExGraphQL.Execution.Variables do
   # No schema type was found
   @spec do_parse(atom, Language.VariableDefinition.t, Language.NamedType.t, Type.input_t, {map, Execution.t}) :: {map, Execution.t}
   defp do_parse(name, _definition, ast_type, nil, {values, execution}) do
-    error_info = %{
-      name: name |> to_string,
-      role: :variable,
-      value: "Type (#{ast_type.name}) not present in schema"
-    }
-    error = Execution.format_error(execution, error_info, ast_type)
-    {values, %{execution | errors: [error | execution.errors]}}
+    exe = execution
+    |> Execution.put_error(:variable, name, "Type (#{ast_type.name}) not present in schema", at: ast_type )
+    {values, exe}
   end
   defp do_parse(name, definition, ast_type, schema_type, {_, execution} = acc) do
     default_value = default(definition.default_value)
     provided_value = execution.variables |> Map.get(name |> to_string)
     value = provided_value || default_value
-    if Type.valid_input?(schema_type, value) do
-      valid(name, value, schema_type, acc)
-    else
-      invalid(name, value, ast_type, schema_type, acc)
+    case Type.valid_input?(schema_type, value) do
+      true -> valid(name, value, schema_type, acc)
+      false -> invalid(name, value, ast_type, schema_type, acc)
     end
   end
 
@@ -68,16 +63,9 @@ defmodule ExGraphQL.Execution.Variables do
   # Accumulate an error for an invalid variable
   @spec invalid(atom, any, Language.NamedType.t, Type.input_t, {map, Execution.t}) :: {map, Execution.t}
   defp invalid(name, value, ast_type, _schema_type, {values, execution}) do
-    error_info = %{
-      name: name |> to_string,
-      role: :variable,
-      value: error_message(ast_type, value)
-    }
-    error = Execution.format_error(execution, error_info, ast_type)
-    {
-      values,
-      %{execution | errors: [error | execution.errors]}
-    }
+    exe = execution
+    |> Execution.put_error(:variable, name, error_message(ast_type, value), at: ast_type)
+    {values, exe}
   end
 
   # Define the error message for an invalid variable

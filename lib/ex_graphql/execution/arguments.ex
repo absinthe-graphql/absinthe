@@ -36,17 +36,9 @@ defmodule ExGraphQL.Execution.Arguments do
   defp do_parse(nil, definition, ast_field, {values, missing, execution} = acc) do
     if Type.non_null?(definition.type) do
       internal_type = definition.type |> Type.unwrap
-      error_info = %{
-        name: definition.name |> to_string,
-        role: :argument,
-        value: &"Argument `#{&1}' (#{internal_type.name}): Not provided"
-      }
-      error = Execution.format_error(execution, error_info, ast_field)
-      {
-        values,
-        [to_string(definition.name) | missing],
-        %{execution | errors: [error | execution.errors]}
-      }
+      exe = execution
+      |> Execution.put_error(:argument, definition.name, &"Argument `#{&1}' (#{internal_type.name}): Not provided", at: ast_field)
+      {values, [to_string(definition.name) | missing], exe}
     else
       acc
     end
@@ -69,13 +61,8 @@ defmodule ExGraphQL.Execution.Arguments do
       if Enum.member?(schema_argument_names, ast_arg.name) do
         acc
       else
-        error_info = %{
-          name: ast_arg.name,
-          role: :argument,
-          value: "Not present in schema"
-        }
-        error = Execution.format_error(acc, error_info, ast_arg)
-        %{acc | errors: [error | acc.errors]}
+        execution
+        |> Execution.put_error(:argument, ast_arg.name, "Not present in schema", at: ast_arg)
       end
     end)
   end

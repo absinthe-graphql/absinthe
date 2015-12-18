@@ -2,6 +2,7 @@ defmodule ExGraphQL.Execution do
 
   alias ExGraphQL.Language
   alias ExGraphQL.Type
+  alias ExGraphQL.Flag
 
   alias __MODULE__
 
@@ -61,7 +62,30 @@ defmodule ExGraphQL.Execution do
 
   @default_column_number 0
 
-  @spec format_error(atom, error_info_t, Language.t) :: error_t
+  @doc """
+  Add an error to an execution.
+
+  ## Examples
+
+    iex> execution |> put_error(:field, "myField", "is not good!", at: ast_node)
+
+  """
+  @spec put_error(t, Adapter.role_t, binary | atom, binary | function, Keyword.t) :: t
+  def put_error(exception, role, name, message, options) do
+    %{at: ast_node} = options |> Enum.into(%{})
+    error = format_error(
+      exception,
+      %{
+        name: name |> to_string,
+        role: role,
+        value: message
+      },
+      ast_node
+    )
+    %{exception | errors: [error | exception.errors]}
+  end
+
+  @spec format_error(t, error_info_t, Language.t) :: error_t
   def format_error(%{adapter: adapter}, error_info, %{loc: %{start_line: line}}) do
     adapter.format_error(error_info, [%{line: line, column: @default_column_number}])
   end
@@ -139,8 +163,10 @@ defmodule ExGraphQL.Execution do
     {:ok, nil}
   end
   def selected_operation(%{operations: ops, operation_name: nil}) when map_size(ops) == 1 do
-    op = ops |> Map.values |> List.first
-    {:ok, op}
+    ops
+    |> Map.values
+    |> List.first
+    |> Flag.as(:ok)
   end
   def selected_operation(%{operations: ops, operation_name: name}) when not is_nil(name) do
     case Map.get(ops, name) do

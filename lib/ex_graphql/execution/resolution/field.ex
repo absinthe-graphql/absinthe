@@ -3,6 +3,7 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
   alias ExGraphQL.Execution
   alias ExGraphQL.Execution.Resolution
   alias ExGraphQL.Type
+  alias ExGraphQL.Flag
 
   @spec resolve(ExGraphQL.Language.Field.t,
                 ExGraphQL.Execution.t) :: {:ok, map} | {:error, any}
@@ -18,22 +19,32 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
               resolver.(args, exe)
               |> process_raw_result(ast_node, field, exe)
             {:error, missing, exe} ->
-              count = length(missing)
-              msg = if count == 1, do: "1 required argument", else: "#{count} required arguments"
-              listing = missing |> Enum.map(&"`#{&1}'") |> Enum.join(", ")
-              error_info = %{
-                name: name |> to_string,
-                role: :field,
-                value: msg <> " (" <> listing <> ") not provided"
-              }
-              error = Execution.format_error(exe, error_info, ast_node)
-              {:skip, %{exe | errors: [error | exe.errors]}}
+              exe
+              |> Execution.put_error(:field, name, describe_missing(missing), at: ast_node)
+              |> Flag.as(:skip)
           end
       end
     else
-      error_info = %{name: ast_node.name, role: :field, value: "Not present in schema"}
-      error = Execution.format_error(execution, error_info, ast_node)
-      {:skip, %{execution | errors: [error|errors]}}
+      execution
+      |> Execution.put_error(:field, ast_node.name, "Not present in schema", at: ast_node)
+      |> Flag.as(:skip)
+    end
+  end
+
+  # Generate a detailed error message for a list of missing arguments
+  @spec describe_missing([binary]) :: binary
+  defp describe_missing(missing) do
+    {msg, listing} = do_describe_missing(missing)
+    msg <> " (" <> listing <> ") not provided"
+  end
+
+  # Determine the error message parts
+  @spec do_describe_missing([binary]) :: {binary, binary}
+  defp do_describe_missing(missing) do
+    quote_it = &"`#{&1}'"
+    case missing do
+      [item] -> {"1 required argument", quote_it.(item)}
+      _ -> {"#{length(missing)}", missing |> Enum.map(quote_it) |> Enum.join(", ")}
     end
   end
 
@@ -41,23 +52,18 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
     value
     |> result(ast_node, field, execution)
   end
-  defp process_raw_result({:error, error}, ast_node, _field, execution) do
-    new_errors = error
+  defp process_raw_result({:error, errors}, ast_node, _field, execution) do
+    errors
     |> List.wrap
-    |> Enum.map(fn (value) ->
-      error_info = %{name: ast_node.name, role: :field, value: value}
-      Execution.format_error(execution, error_info, ast_node)
+    |> Enum.reduce(execution, fn
+      value, exe -> Execution.put_error(exe, :field, ast_node.name, value, at: ast_node)
     end)
-    {:skip, %{execution | errors: new_errors ++ execution.errors }}
+    |> Flag.as(:skip)
   end
   defp process_raw_result(_other, ast_node, _field, execution) do
-    error_info = %{
-      name: ast_node.name,
-      role: :field,
-      value: "Did not resolve to match {:ok, _} or {:error, _}"
-    }
-    error = Execution.format_error(execution, error_info, ast_node)
-    {:skip, %{execution | errors: [error|execution.errors]}}
+    execution
+    |> Execution.put_error(:field, ast_node.name, "Did not resolve to match {:ok, _} or {:error, _}", at: ast_node)
+    |> Flag.as(:skip)
   end
 
   defp result(nil, _ast_node, _field, execution) do
