@@ -142,7 +142,7 @@ defmodule ExGraphQL.Adapters.LanguageConventionsTest do
       }
     }
     """
-    assert {:ok, %{data: %{"fieldTrip" => %{"name" => "Museum", "locationName" => "Portland"}}, errors: []}} = run(query)
+    assert {:ok, %{data: %{"fieldTrips" => [%{"name" => "Museum", "locationName" => "Portland"}]}, errors: []}} = run(query)
   end
 
   it "can do a simple query with an adapted variable" do
