@@ -182,11 +182,19 @@ defmodule ExGraphQL.Type do
   def valid_input?(%Type.NonNull{}, nil) do
     false
   end
+  def valid_input?(%Type.NonNull{of_type: internal_type}, value) do
+    valid_input?(internal_type, value)
+  end
   def valid_input?(_type, nil) do
     true
   end
-  def valid_input?(_type, _value) do
-    # TODO: Actually check validity
+  def valid_input?(%{parse: parse}, value) do
+    case parse.(value) do
+      {:ok, _} -> true
+      :error -> false
+    end
+  end
+  def valid_input?(_) do
     true
   end
 

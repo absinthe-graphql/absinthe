@@ -18,9 +18,10 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
             {:ok, args, exe} ->
               resolver.(args, exe)
               |> process_raw_result(ast_node, field, exe)
-            {:error, missing, exe} ->
+            {:error, {missing, invalid}, exe} ->
               exe
-              |> Execution.put_error(:field, name, describe_missing(missing), at: ast_node)
+              |> skip_as(:missing, missing, name, ast_node)
+              |> skip_as(:invalid, invalid, name, ast_node)
               |> Flag.as(:skip)
           end
       end
@@ -31,20 +32,32 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
     end
   end
 
+  defp skip_as(execution, _reason, [], _name, _ast_node) do
+    execution
+  end
+  defp skip_as(execution, reason, collected, name, ast_node) do
+    execution
+    |> Execution.put_error(:field, name, describe(collected, reason), at: ast_node)
+  end
+
+  @reasons %{missing: %{prefix: "required argument", suffix: "not provided"},
+             invalid: %{prefix: "badly formed argument", suffix: "provided"}}
+
   # Generate a detailed error message for a list of missing arguments
-  @spec describe_missing([binary]) :: binary
-  defp describe_missing(missing) do
-    {msg, listing} = do_describe_missing(missing)
-    msg <> " (" <> listing <> ") not provided"
+  @spec describe([binary], atom) :: binary
+  defp describe(collected, reason) do
+    {msg, listing} = do_describe(collected, reason)
+    msg <> " (" <> listing <> ") " <> @reasons[reason].suffix
   end
 
   # Determine the error message parts
-  @spec do_describe_missing([binary]) :: {binary, binary}
-  defp do_describe_missing(missing) do
+  @spec do_describe([binary], :atom) :: {binary, binary}
+  defp do_describe(collected, reason) do
     quote_it = &"`#{&1}'"
-    case missing do
-      [item] -> {"1 required argument", quote_it.(item)}
-      _ -> {"#{length(missing)}", missing |> Enum.map(quote_it) |> Enum.join(", ")}
+    prefix = @reasons[reason].prefix
+    case collected do
+      [item] -> {"1 #{prefix}", quote_it.(item)}
+      _ -> {"#{length(collected)} #{prefix}s", collected |> Enum.map(quote_it) |> Enum.join(", ")}
     end
   end
 

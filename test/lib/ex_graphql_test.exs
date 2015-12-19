@@ -70,10 +70,11 @@ defmodule ExGraphQLTest do
       number(val: "AAA")
     }
     """
-    assert {:ok, %{data: %{}, errors: [%{message: "Field `number': 1 badly formed argument (`id') provided"},
+    assert {:ok, %{data: %{}, errors: [%{message: "Field `number': 1 badly formed argument (`val') provided"},
                                        %{message: "Argument `val' (Int): Invalid value provided"}]}} = run(query)
   end
 
+  @tag :focus
   it "returns nested objects" do
     query = """
     query GimmeFooWithOtherThing {

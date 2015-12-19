@@ -46,8 +46,10 @@ defmodule ExGraphQL.Execution.Variables do
     provided_value = execution.variables |> Map.get(name |> to_string)
     value = provided_value || default_value
     case Type.valid_input?(schema_type, value) do
-      true -> valid(name, value, schema_type, acc)
-      false -> invalid(name, value, ast_type, schema_type, acc)
+      true ->
+        valid(name, value, schema_type, acc)
+      false ->
+        invalid(name, value, ast_type, schema_type, acc)
     end
   end
 
@@ -84,8 +86,11 @@ defmodule ExGraphQL.Execution.Variables do
     nil
   end
   defp coerce(value, schema_type) do
-    %{parse_value: parser} = schema_type |> Type.unwrap
-    parser.(value)
+    %{parse: parser} = schema_type |> Type.unwrap
+    case parser.(value) do
+      {:ok, coerced} -> coerced
+      :error -> nil
+    end
   end
 
   # Extract the default value, if any
