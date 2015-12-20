@@ -130,19 +130,19 @@ defmodule ExGraphQL.Execution.Arguments do
             name_to_report = full_value_name |> dotted_name
             unwrapped_type = schema_field.type |> Type.unwrap
             {
-              full_value_name,
+              acc_value_name,
               acc_values,
               {[name_to_report | acc_missing], invalid},
               acc_execution
               |> Execution.put_error(:argument, name_to_report, &"Argument `#{&1}' (#{unwrapped_type.name}): Not provided", at: ast_argument)
             }
           else
-            {full_value_name, acc_values, {acc_missing, acc_invalid}, acc_execution}
+            {acc_value_name, acc_values, {acc_missing, acc_invalid}, acc_execution}
           end
         %{value: value} ->
           {result_values, {result_missing, result_invalid}, next_execution} = add_argument_value(schema_field.type, value, ast_argument, full_value_name, {acc_values, {acc_missing, acc_invalid}, acc_execution})
           {
-            full_value_name,
+            acc_value_name,
             result_values,
             {result_missing, result_invalid},
             next_execution
