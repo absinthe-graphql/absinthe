@@ -45,9 +45,20 @@ defmodule ExGraphQL.Execution.Arguments do
       acc
     end
   end
-  defp do_add_argument(ast_argument, definition, _ast_field, {_, _, execution} = acc) do
+  defp do_add_argument(ast_argument, definition, _ast_field, {values, tracking, execution} = acc) do
+    execution_with_deprecation = execution |> add_argument_deprecation(definition, ast_argument)
     value_to_coerce = ast_argument.value || execution.variables[ast_argument.name] || definition.default_value
-    add_argument_value(definition.type, value_to_coerce, ast_argument, [ast_argument.name], acc)
+    add_argument_value(definition.type, value_to_coerce, ast_argument, [ast_argument.name], {values, tracking, execution_with_deprecation})
+  end
+
+  defp add_argument_deprecation(execution, %{deprecation: nil}, _ast_node) do
+    execution
+  end
+  defp add_argument_deprecation(execution, %{name: name, type: input_type, deprecation: %{reason: reason}}, ast_node) do
+    internal_type = input_type |> Type.unwrap
+    details = if reason, do: "; #{reason}", else: ""
+    execution
+    |> Execution.put_error(:argument, name, &"Argument `#{&1}' (#{internal_type.name}): Deprecated#{details}", at: ast_node)
   end
 
   # Coerce an input value into an input type, tracking errors

@@ -82,10 +82,10 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
     |> Flag.as(:skip)
   end
 
-  def add_field_deprecation(execution, %{deprecation: nil}, _ast_node) do
+  defp add_field_deprecation(execution, %{deprecation: nil}, _ast_node) do
     execution
   end
-  def add_field_deprecation(execution, %{name: name, deprecation: %{reason: reason}}, ast_node) do
+  defp add_field_deprecation(execution, %{name: name, deprecation: %{reason: reason}}, ast_node) do
     details = if reason, do: "; #{reason}", else: ""
     execution
     |> Execution.put_error(:field, name, "Deprecated" <> details, at: ast_node)
