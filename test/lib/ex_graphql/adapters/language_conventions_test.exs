@@ -133,6 +133,7 @@ defmodule ExGraphQL.Adapters.LanguageConventionsTest do
     assert {:ok, %{data: %{"fieldTrip" => %{"name" => "Museum", "locationName" => "Portland"}}, errors: []}} = run(query)
   end
 
+  @tag :focus
   it "can do a query with an object argument" do
     query = """
     query GimmeMuseum {

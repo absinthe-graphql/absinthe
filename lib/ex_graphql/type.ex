@@ -129,6 +129,11 @@ defmodule ExGraphQL.Type do
   def nullable(%Type.NonNull{of_type: nullable}), do: nullable
   def nullable(term), do: term
 
+  @doc "Determine if a type is non null"
+  @spec non_null?(t) :: boolean
+  def non_null?(%Type.NonNull{}), do: true
+  def non_null?(_), do: false
+
   # NAMED TYPES
 
   @named_type_modules [Type.Scalar, Type.ObjectType, Type.InterfaceType, Type.Union, Type.Enum, Type.InputObjectType]
@@ -177,11 +182,19 @@ defmodule ExGraphQL.Type do
   def valid_input?(%Type.NonNull{}, nil) do
     false
   end
+  def valid_input?(%Type.NonNull{of_type: internal_type}, value) do
+    valid_input?(internal_type, value)
+  end
   def valid_input?(_type, nil) do
     true
   end
-  def valid_input?(_type, _value) do
-    # TODO: Actually check validity
+  def valid_input?(%{parse: parse}, value) do
+    case parse.(value) do
+      {:ok, _} -> true
+      :error -> false
+    end
+  end
+  def valid_input?(_) do
     true
   end
 

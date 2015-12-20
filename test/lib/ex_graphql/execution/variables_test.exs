@@ -20,22 +20,15 @@ defmodule ExGraphQL.Execution.VariablesTest do
     }
     """
 
-  def variables(query_document, provided \\ %{}) do
+  def parse(query_document, provided \\ %{}) do
     # Parse
     {:ok, document} = ExGraphQL.parse(query_document)
     # Get schema
     schema = StarWars.Schema.schema
     # Prepare execution context
-    execution = %Execution{schema: schema, document: document}
-    |> Execution.categorize_definitions
-    |> Execution.add_configured_adapter
-    {:ok, selected_op} = Execution.selected_operation(execution)
-    # Build variable map
-    Execution.Variables.build(
-      execution,
-      selected_op.variable_definitions,
-      provided
-    )
+    {:ok, execution} = %Execution{schema: schema, document: document, variables: provided}
+    |> Execution.prepare
+    execution
   end
 
   describe "a required variable" do
@@ -44,7 +37,7 @@ defmodule ExGraphQL.Execution.VariablesTest do
 
       it "returns a value" do
         provided = %{"id" => "2000"}
-        assert %{values: %{"id" => "2000"}, errors: []} = @id_required |> variables(provided)
+        assert %{variables: %{"id" => "2000"}, errors: []} = @id_required |> parse(provided)
       end
 
     end
@@ -52,7 +45,7 @@ defmodule ExGraphQL.Execution.VariablesTest do
     context "when not provided" do
 
       it "returns an error" do
-        assert %{values: %{}, errors: [%{message: "Variable `id' (String): Not provided"}]} = @id_required |> variables
+        assert %{variables: %{}, errors: [%{message: "Variable `id' (String): Not provided"}]} = @id_required |> parse
       end
 
     end
@@ -63,11 +56,11 @@ defmodule ExGraphQL.Execution.VariablesTest do
 
     it "when provided" do
       provided = %{"id" => "2000"}
-      assert %{values: %{"id" => "2000"}, errors: []} = @with_default |> variables(provided)
+      assert %{variables: %{"id" => "2000"}, errors: []} = @with_default |> parse(provided)
     end
 
     it "when not provided" do
-      assert %{values: %{"id" => @default}, errors: []} = @with_default |> variables
+      assert %{variables: %{"id" => @default}, errors: []} = @with_default |> parse
     end
 
   end

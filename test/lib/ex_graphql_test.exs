@@ -1,89 +1,5 @@
 defmodule ExGraphQLTest do
   use ExSpec, async: true
-  use ExGraphQL.Type
-  alias ExGraphQL.Type
-
-  it "can run without validation" do
-    schema = StarWars.Schema.schema
-    query = """
-      query HeroNameQuery {
-        hero {
-          name
-        }
-      }
-    """
-    # This does not actually resolve data yet
-    assert {:ok, %{data: %{"hero" => %{"name" => "R2-D2"}}, errors: []}} = ExGraphQL.run(schema, query, validate: false)
-  end
-
-  defp thing_type do
-    %Type.ObjectType{
-      name: "Thing",
-      description: "A thing",
-      fields: fields(
-        id: [
-          type: %Type.NonNull{of_type: Type.Scalar.string},
-          description: "The ID of the thing"
-        ],
-        name: [
-          type: Type.Scalar.string,
-          description: "The name of the thing"
-        ],
-        other_thing: [
-          type: thing_type,
-          resolve: fn (_, %{resolution: %{target: %{id: id}}}) ->
-            case id do
-              "foo" -> {:ok, things |> Map.get("bar")}
-              "bar" -> {:ok, things |> Map.get("foo")}
-            end
-          end
-        ]
-      )
-    }
-  end
-
-  defp things do
-    %{
-      "foo" => %{id: "foo", name: "Foo"},
-      "bar" => %{id: "bar", name: "Bar"}
-     }
-  end
-
-  defp simple_schema do
-    %Type.Schema{
-      query: %Type.ObjectType{
-        name: "RootQuery",
-        fields: fields(
-          bad_resolution: [
-            type: thing_type,
-            resolve: fn(_, _) ->
-              :not_expected
-            end
-          ],
-          thingByContext: [
-            type: thing_type,
-            resolve: fn
-              (_, %{context: %{thing: id}}) -> {:ok, things |> Map.get(id)}
-              (_, _) -> {:error, "No :id context provided"}
-            end
-          ],
-          thing: [
-            type: thing_type,
-            args: args(
-              id: [
-                description: "id of the thing",
-                type: %Type.NonNull{of_type: Type.Scalar.string}
-              ]
-            ),
-            resolve: fn
-              (%{id: id}, _) ->
-                {:ok, things |> Map.get(id)}
-            end
-          ]
-        )
-      }
-    }
-  end
 
   it "can do a simple query" do
     query = """
@@ -93,7 +9,7 @@ defmodule ExGraphQLTest do
       }
     }
     """
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: []}} = ExGraphQL.run(simple_schema, query, validate: false)
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: []}} = run(query)
   end
 
   it "can identify a bad field" do
@@ -105,17 +21,17 @@ defmodule ExGraphQLTest do
       }
     }
     """
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: "Field `bad': Not present in schema", locations: [%{line: 4, column: 0}]}]}} = ExGraphQL.run(simple_schema, query, validate: false)
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: "Field `bad': Not present in schema", locations: [%{line: 4, column: 0}]}]}} = run(query)
   end
 
-  it "gives nice errors for bad resolutions" do
+  it "warns of unknown fields" do
     query = """
     {
       bad_resolution
     }
     """
     assert {:ok, %{data: %{},
-                   errors: [%{message: "Field `bad_resolution': Did not resolve to match {:ok, _} or {:error, _}", locations: _}]}} = ExGraphQL.run(simple_schema, query, validate: false)
+                   errors: [%{message: "Field `bad_resolution': Did not resolve to match {:ok, _} or {:error, _}", locations: _}]}} = run(query)
   end
 
   it "returns the correct results for an alias" do
@@ -126,7 +42,35 @@ defmodule ExGraphQLTest do
       }
     }
     """
-    assert {:ok, %{data: %{"widget" => %{"name" => "Foo"}}, errors: []}} = ExGraphQL.run(simple_schema, query, validate: false)
+    assert {:ok, %{data: %{"widget" => %{"name" => "Foo"}}, errors: []}} = run(query)
+  end
+
+  it "checks for required arguments" do
+    query = "{ thing { name } }"
+    assert {:ok, %{data: %{}, errors: [%{message: "Field `thing': 1 required argument (`id') not provided"},
+                                       %{message: "Argument `id' (String): Not provided"}]}} = run(query)
+
+  end
+
+  it "checks for extra arguments" do
+    query = """
+    {
+      thing(id: "foo", extra: "dunno") {
+        name
+      }
+    }
+    """
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: "Argument `extra': Not present in schema"}]}} = run(query)
+  end
+
+  it "checks for badly formed arguments" do
+    query = """
+    {
+      number(val: "AAA")
+    }
+    """
+    assert {:ok, %{data: %{}, errors: [%{message: "Field `number': 1 badly formed argument (`val') provided"},
+                                       %{message: "Argument `val' (Int): Invalid value provided"}]}} = run(query)
   end
 
   it "returns nested objects" do
@@ -140,7 +84,7 @@ defmodule ExGraphQLTest do
       }
     }
     """
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo", "other_thing" => %{"name" => "Bar"}}}, errors: []}} = ExGraphQL.run(simple_schema, query, validate: false)
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo", "other_thing" => %{"name" => "Bar"}}}, errors: []}} = run(query)
   end
 
   it "can provide context" do
@@ -151,8 +95,8 @@ defmodule ExGraphQLTest do
         }
       }
     """
-    assert {:ok, %{data: %{"thingByContext" => %{"name" => "Bar"}}, errors: []}} = ExGraphQL.run(simple_schema, query, validate: false, context: %{thing: "bar"})
-    assert {:ok, %{data: %{}, errors: [%{message: "Field `thingByContext': No :id context provided"}]}} = ExGraphQL.run(simple_schema, query, validate: false)
+    assert {:ok, %{data: %{"thingByContext" => %{"name" => "Bar"}}, errors: []}} = run(query, context: %{thing: "bar"})
+    assert {:ok, %{data: %{}, errors: [%{message: "Field `thingByContext': No :id context provided"}]}} = run(query)
   end
 
   it "can use variables" do
@@ -163,8 +107,34 @@ defmodule ExGraphQLTest do
       }
     }
     """
-    result = ExGraphQL.run(simple_schema, query, validate: false, variables: %{"thingId" => "bar"})
+    result = run(query, variables: %{"thingId" => "bar"})
     assert {:ok, %{data: %{"thing" => %{"name" => "Bar"}}, errors: []}} = result
+  end
+
+  it "can use input objects" do
+    query = """
+    mutation UpdateThingValue {
+      thing: updateThing(id: "foo", thing: {value: 100}) {
+        name
+        value
+      }
+    }
+    """
+    result = run(query)
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo", "value" => 100}}, errors: []}} = result
+  end
+
+  it "checks for badly formed nested arguments" do
+    query = """
+    mutation UpdateThingValueBadly {
+      thing: updateThing(id: "foo", thing: {value: "BAD"}) {
+        name
+        value
+      }
+    }
+    """
+    assert {:ok, %{data: %{}, errors: [%{message: "Field `updateThing': 1 badly formed argument (`thing.value') provided"},
+                                       %{message: "Argument `thing.value' (Int): Invalid value provided"}]}} = run(query)
   end
 
   it "reports missing, required variable values" do
@@ -175,8 +145,12 @@ defmodule ExGraphQLTest do
         }
       }
     """
-    result = ExGraphQL.run(simple_schema, query, validate: false, variables: %{thingId: "bar"})
+    result = run(query, variables: %{thingId: "bar"})
     assert {:ok, %{data: %{"thing" => %{"name" => "Bar"}}, errors: [%{message: "Variable `other' (String): Not provided"}]}} = result
+  end
+
+  defp run(query, options \\ []) do
+    ExGraphQL.run(Things.schema, query, options)
   end
 
 end

@@ -87,16 +87,16 @@ Field -> Name Directives SelectionSet : build_ast_node('Field', #{'name' => extr
 Field -> Name Arguments SelectionSet : build_ast_node('Field', #{'name' => extract_binary('$1'), 'arguments' => '$2', 'selection_set' => '$3'}, #{'start_line' => extract_line('$1')}).
 Field -> Name Arguments Directives : build_ast_node('Field', #{'name' => extract_binary('$1'), 'arguments' => '$2', 'directives' => '$3'}, #{'start_line' => extract_line('$1')}).
 Field -> Name Arguments Directives SelectionSet : build_ast_node('Field', #{'name' => extract_binary('$1'), 'arguments' => '$2', 'directives' => '$3', 'selection_set' => '$4'}, #{'start_line' => extract_line('$1')}).
-Field -> Alias Name : build_ast_node('Field', #{'alias' => '$1', 'name' => extract_binary('$2')}, #{'start_line' => extract_line('$1')}).
-Field -> Alias Name Arguments : build_ast_node('Field', #{'alias' => '$1', 'name' => extract_binary('$2'), 'arguments' => '$3'}, #{'start_line' => extract_line('$1')}).
-Field -> Alias Name SelectionSet : build_ast_node('Field', #{'alias' => '$1', 'name' => extract_binary('$2'), 'selection_set' => '$3'}, #{'start_line' => extract_line('$1')}).
-Field -> Alias Name Arguments SelectionSet : build_ast_node('Field', #{'alias' => '$1', 'name' => extract_binary('$2'), 'arguments' => '$3', 'selection_set' => '$4'}, #{'start_line' => extract_line('$1')}).
-Field -> Alias Name Directives : build_ast_node('Field', #{'alias' => '$1', 'name' => extract_binary('$2'), 'directives' => '$3'}, #{'start_line' => extract_line('$1')}).
-Field -> Alias Name Arguments Directives : build_ast_node('Field', #{'alias' => '$1', 'name' => extract_binary('$2'), 'arguments' => '$3', 'directives' => '$4'}, #{'start_line' => extract_line('$1')}).
-Field -> Alias Name Directives SelectionSet : build_ast_node('Field', #{'alias' => '$1', 'name' => extract_binary('$2'), 'directives' => '$3', 'selection_set' => '$4'}, #{'start_line' => extract_line('$1')}).
-Field -> Alias Name Arguments Directives SelectionSet : build_ast_node('Field', #{'alias' => '$1', 'name' => extract_binary('$2'), 'arguments' => '$3', 'directives' => '$4', 'selection_set' => '$5'}, #{'start_line' => extract_line('$1')}).
+Field -> Alias Name : build_ast_node('Field', #{'alias' => extract_binary('$1'), 'name' => extract_binary('$2')}, #{'start_line' => extract_line('$1')}).
+Field -> Alias Name Arguments : build_ast_node('Field', #{'alias' => extract_binary('$1'), 'name' => extract_binary('$2'), 'arguments' => '$3'}, #{'start_line' => extract_line('$1')}).
+Field -> Alias Name SelectionSet : build_ast_node('Field', #{'alias' => extract_binary('$1'), 'name' => extract_binary('$2'), 'selection_set' => '$3'}, #{'start_line' => extract_line('$1')}).
+Field -> Alias Name Arguments SelectionSet : build_ast_node('Field', #{'alias' => extract_binary('$1'), 'name' => extract_binary('$2'), 'arguments' => '$3', 'selection_set' => '$4'}, #{'start_line' => extract_line('$1')}).
+Field -> Alias Name Directives : build_ast_node('Field', #{'alias' => extract_binary('$1'), 'name' => extract_binary('$2'), 'directives' => '$3'}, #{'start_line' => extract_line('$1')}).
+Field -> Alias Name Arguments Directives : build_ast_node('Field', #{'alias' => extract_binary('$1'), 'name' => extract_binary('$2'), 'arguments' => '$3', 'directives' => '$4'}, #{'start_line' => extract_line('$1')}).
+Field -> Alias Name Directives SelectionSet : build_ast_node('Field', #{'alias' => extract_binary('$1'), 'name' => extract_binary('$2'), 'directives' => '$3', 'selection_set' => '$4'}, #{'start_line' => extract_line('$1')}).
+Field -> Alias Name Arguments Directives SelectionSet : build_ast_node('Field', #{'alias' => extract_binary('$1'), 'name' => extract_binary('$2'), 'arguments' => '$3', 'directives' => '$4', 'selection_set' => '$5'}, #{'start_line' => extract_line('$1')}).
 
-Alias -> Name ':' : extract_binary('$1').
+Alias -> Name ':' : '$1'.
 
 Arguments -> '(' ArgumentList ')' : '$2'.
 ArgumentList -> Argument : ['$1'].

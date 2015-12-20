@@ -2,6 +2,7 @@ defmodule ExGraphQL.Execution do
 
   alias ExGraphQL.Language
   alias ExGraphQL.Type
+  alias ExGraphQL.Flag
 
   alias __MODULE__
 
@@ -17,8 +18,8 @@ defmodule ExGraphQL.Execution do
   @typedoc "The canonical result representation of an execution"
   @type result_t :: %{data: %{binary => any}, errors: [error_t]}
 
-  @type t :: %{schema: Type.Schema.t, document: Language.Document.t, variables: map, validate: boolean, selected_operation: ExGraphQL.Type.ObjectType.t, operation_name: atom, errors: [error_t], categorized: boolean, strategy: atom, adapter: atom, resolution: Execution.Resolution.t}
-  defstruct schema: nil, document: nil, variables: %{}, fragments: %{}, operations: %{}, validate: true, selected_operation: nil, operation_name: nil, errors: [], categorized: false, strategy: nil, adapter: nil, resolution: nil
+  @type t :: %{schema: Type.Schema.t, document: Language.Document.t, variables: map, selected_operation: ExGraphQL.Type.ObjectType.t, operation_name: atom, errors: [error_t], categorized: boolean, strategy: atom, adapter: atom, resolution: Execution.Resolution.t}
+  defstruct schema: nil, document: nil, variables: %{}, fragments: %{}, operations: %{}, selected_operation: nil, operation_name: nil, errors: [], categorized: false, strategy: nil, adapter: nil, resolution: nil
 
   def run(execution, options \\ []) do
     raw = execution |> Map.merge(options |> Enum.into(%{}))
@@ -34,12 +35,8 @@ defmodule ExGraphQL.Execution do
     |> add_configured_adapter
     |> adapt
     |> categorize_definitions
-    case selected_operation(defined) do
-      {:ok, operation} ->
-        %{defined | selected_operation: operation}
-        |> set_variables
-        |> validate
-      other -> other
+    with {:ok, operation} <- selected_operation(defined) do
+      set_variables(%{defined | selected_operation: operation})
     end
   end
 
@@ -65,7 +62,30 @@ defmodule ExGraphQL.Execution do
 
   @default_column_number 0
 
-  @spec format_error(atom, error_info_t, Language.t) :: error_t
+  @doc """
+  Add an error to an execution.
+
+  ## Examples
+
+    iex> execution |> put_error(:field, "myField", "is not good!", at: ast_node)
+
+  """
+  @spec put_error(t, Adapter.role_t, binary | atom, binary | function, Keyword.t) :: t
+  def put_error(exception, role, name, message, options) do
+    %{at: ast_node} = options |> Enum.into(%{})
+    error = format_error(
+      exception,
+      %{
+        name: name |> to_string,
+        role: role,
+        value: message
+      },
+      ast_node
+    )
+    %{exception | errors: [error | exception.errors]}
+  end
+
+  @spec format_error(t, error_info_t, Language.t) :: error_t
   def format_error(%{adapter: adapter}, error_info, %{loc: %{start_line: line}}) do
     adapter.format_error(error_info, [%{line: line, column: @default_column_number}])
   end
@@ -133,15 +153,6 @@ defmodule ExGraphQL.Execution do
     categorize_definitions(%{execution | fragments: fragments |> Map.put(name, definition)}, rest)
   end
 
-  @doc "Validate an execution"
-  @spec validate(t) :: {:ok, t} | {:error, binary}
-  def validate(%{validate: true}) do
-    {:error, "Validation is not currently supported"}
-  end
-  def validate(execution) do
-    {:ok, execution}
-  end
-
   def selected_operation(%{categorized: false}) do
     {:error, "Call Execution.categorize_definitions first"}
   end
@@ -152,8 +163,10 @@ defmodule ExGraphQL.Execution do
     {:ok, nil}
   end
   def selected_operation(%{operations: ops, operation_name: nil}) when map_size(ops) == 1 do
-    op = ops |> Map.values |> List.first
-    {:ok, op}
+    ops
+    |> Map.values
+    |> List.first
+    |> Flag.as(:ok)
   end
   def selected_operation(%{operations: ops, operation_name: name}) when not is_nil(name) do
     case Map.get(ops, name) do
@@ -165,11 +178,11 @@ defmodule ExGraphQL.Execution do
     {:error, "Multiple operations available, but no operation_name provided"}
   end
 
-  def set_variables(%{selected_operation: selected_op, variables: variables} = execution) do
-    case Execution.Variables.build(execution, selected_op.variable_definitions, variables) do
-      %{values: values, errors: new_errors} ->
-        %{execution | variables: values, errors: new_errors ++ execution.errors}
-    end
+  # Set the variables on the execution struct
+  @spec set_variables(Execution.t) :: Execution.t
+  defp set_variables(execution) do
+    {values, next_execution} = Execution.Variables.build(execution)
+    {:ok, %{next_execution | variables: values}}
   end
 
 end

@@ -3,6 +3,7 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
   alias ExGraphQL.Execution
   alias ExGraphQL.Execution.Resolution
   alias ExGraphQL.Type
+  alias ExGraphQL.Flag
 
   @spec resolve(ExGraphQL.Language.Field.t,
                 ExGraphQL.Execution.t) :: {:ok, map} | {:error, any}
@@ -13,14 +14,50 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
         %{resolve: nil} ->
           target |> Map.get(name |> String.to_atom) |> result(ast_node, field, execution)
         %{resolve: resolver} ->
-          {args, exe} = Execution.Arguments.build(ast_node.arguments, field.args, execution)
-          resolver.(args, exe)
-          |> process_raw_result(ast_node, field, exe)
+          case Execution.Arguments.build(ast_node, field.args, execution) do
+            {:ok, args, exe} ->
+              resolver.(args, exe)
+              |> process_raw_result(ast_node, field, exe)
+            {:error, {missing, invalid}, exe} ->
+              exe
+              |> skip_as(:missing, missing, name, ast_node)
+              |> skip_as(:invalid, invalid, name, ast_node)
+              |> Flag.as(:skip)
+          end
       end
     else
-      error_info = %{name: ast_node.name, role: :field, value: "Not present in schema"}
-      error = Execution.format_error(execution, error_info, ast_node)
-      {:skip, %{execution | errors: [error|errors]}}
+      execution
+      |> Execution.put_error(:field, ast_node.name, "Not present in schema", at: ast_node)
+      |> Flag.as(:skip)
+    end
+  end
+
+  defp skip_as(execution, _reason, [], _name, _ast_node) do
+    execution
+  end
+  defp skip_as(execution, reason, collected, name, ast_node) do
+    execution
+    |> Execution.put_error(:field, name, describe(collected, reason), at: ast_node)
+  end
+
+  @reasons %{missing: %{prefix: "required argument", suffix: "not provided"},
+             invalid: %{prefix: "badly formed argument", suffix: "provided"}}
+
+  # Generate a detailed error message for a list of missing arguments
+  @spec describe([binary], atom) :: binary
+  defp describe(collected, reason) do
+    {msg, listing} = do_describe(collected, reason)
+    msg <> " (" <> listing <> ") " <> @reasons[reason].suffix
+  end
+
+  # Determine the error message parts
+  @spec do_describe([binary], :atom) :: {binary, binary}
+  defp do_describe(collected, reason) do
+    quote_it = &"`#{&1}'"
+    prefix = @reasons[reason].prefix
+    case collected do
+      [item] -> {"1 #{prefix}", quote_it.(item)}
+      _ -> {"#{length(collected)} #{prefix}s", collected |> Enum.map(quote_it) |> Enum.join(", ")}
     end
   end
 
@@ -28,23 +65,18 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
     value
     |> result(ast_node, field, execution)
   end
-  defp process_raw_result({:error, error}, ast_node, _field, execution) do
-    new_errors = error
+  defp process_raw_result({:error, errors}, ast_node, _field, execution) do
+    errors
     |> List.wrap
-    |> Enum.map(fn (value) ->
-      error_info = %{name: ast_node.name, role: :field, value: value}
-      Execution.format_error(execution, error_info, ast_node)
+    |> Enum.reduce(execution, fn
+      value, exe -> Execution.put_error(exe, :field, ast_node.name, value, at: ast_node)
     end)
-    {:skip, %{execution | errors: new_errors ++ execution.errors }}
+    |> Flag.as(:skip)
   end
   defp process_raw_result(_other, ast_node, _field, execution) do
-    error_info = %{
-      name: ast_node.name,
-      role: :field,
-      value: "Did not resolve to match {:ok, _} or {:error, _}"
-    }
-    error = Execution.format_error(execution, error_info, ast_node)
-    {:skip, %{execution | errors: [error|execution.errors]}}
+    execution
+    |> Execution.put_error(:field, ast_node.name, "Did not resolve to match {:ok, _} or {:error, _}", at: ast_node)
+    |> Flag.as(:skip)
   end
 
   defp result(nil, _ast_node, _field, execution) do
