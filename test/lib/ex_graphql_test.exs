@@ -124,6 +124,32 @@ defmodule ExGraphQLTest do
     assert {:ok, %{data: %{"thing" => %{"name" => "Foo", "value" => 100}}, errors: []}} = result
   end
 
+  it "can receive deprecation notices (without a reason) for a field" do
+    query = """
+    query DeprecatedThing {
+      thing: deprecated_thing(id: "foo") {
+        name
+      }
+    }
+    """
+    result = run(query)
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
+                   errors: [%{message: "Field `deprecated_thing': Deprecated"}]}} = result
+  end
+
+  it "can receive deprecation notices (with a reason) for a field" do
+    query = """
+      query DeprecatedThingWithReason {
+        thing: deprecated_thing_with_reason(id: "foo") {
+          name
+        }
+      }
+    """
+    result = run(query)
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
+                   errors: [%{message: "Field `deprecated_thing_with_reason': Deprecated; use `thing' instead"}]}} = result
+  end
+
   it "checks for badly formed nested arguments" do
     query = """
     mutation UpdateThingValueBadly {

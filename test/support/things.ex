@@ -75,8 +75,25 @@ defmodule Things do
                 description: "id of the thing",
                 type: non_null(Type.Scalar.string)
               ]
-            )
-          ])
+            ),
+            resolve: fn
+              (%{id: id}, _) ->
+                {:ok, things |> Map.get(id)}
+            end
+          ]),
+          deprecated_thing_with_reason: deprecate([
+            type: thing_type,
+            args: args(
+              id: [
+                description: "id of the thing",
+                type: non_null(Type.Scalar.string)
+              ]
+            ),
+            resolve: fn
+              (%{id: id}, _) ->
+                {:ok, things |> Map.get(id)}
+            end
+          ], "use `thing' instead")
         )
       }
     }

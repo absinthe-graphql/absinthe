@@ -62,21 +62,33 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
   end
 
   defp process_raw_result({:ok, value}, ast_node, field, execution) do
+    exe_with_deprecation = add_field_deprecation(execution, field, ast_node)
     value
-    |> result(ast_node, field, execution)
+    |> result(ast_node, field, exe_with_deprecation)
   end
-  defp process_raw_result({:error, errors}, ast_node, _field, execution) do
+  defp process_raw_result({:error, errors}, ast_node, field, execution) do
     errors
     |> List.wrap
     |> Enum.reduce(execution, fn
       value, exe -> Execution.put_error(exe, :field, ast_node.name, value, at: ast_node)
     end)
+    |> add_field_deprecation(field, ast_node)
     |> Flag.as(:skip)
   end
-  defp process_raw_result(_other, ast_node, _field, execution) do
+  defp process_raw_result(_other, ast_node, field, execution) do
     execution
+    |> add_field_deprecation(field, ast_node)
     |> Execution.put_error(:field, ast_node.name, "Did not resolve to match {:ok, _} or {:error, _}", at: ast_node)
     |> Flag.as(:skip)
+  end
+
+  def add_field_deprecation(execution, %{deprecation: nil}, _ast_node) do
+    execution
+  end
+  def add_field_deprecation(execution, %{name: name, deprecation: %{reason: reason}}, ast_node) do
+    details = if reason, do: "; #{reason}", else: ""
+    execution
+    |> Execution.put_error(:field, name, "Deprecated" <> details, at: ast_node)
   end
 
   defp result(nil, _ast_node, _field, execution) do
