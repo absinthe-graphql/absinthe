@@ -117,7 +117,7 @@ defmodule ExGraphQL.Type.Scalar do
     :error
   end
 
-  @spec parse_string(any) :: {:ok, string} | :error
+  @spec parse_string(any) :: {:ok, binary} | :error
   defp parse_string(value) do
     try do
       {:ok, to_string(value)}

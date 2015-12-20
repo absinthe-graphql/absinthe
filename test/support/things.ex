@@ -52,14 +52,31 @@ defmodule Things do
             args: args(
               id: [
                 description: "id of the thing",
-                type: %Type.NonNull{of_type: Type.Scalar.string}
-              ]
+                type: non_null(Type.Scalar.string)
+              ],
+              deprecated_arg: deprecate([
+                description: "This is a deprecated arg",
+                type: Type.Scalar.string
+              ]),
+              deprecated_non_null_arg: deprecate([
+                description: "This is a deprecated arg",
+                type: non_null(Type.Scalar.string)
+              ])
             ),
             resolve: fn
               (%{id: id}, _) ->
                 {:ok, things |> Map.get(id)}
             end
-          ]
+          ],
+          deprecated_thing: deprecate([
+            type: thing_type,
+            args: args(
+              id: [
+                description: "id of the thing",
+                type: non_null(Type.Scalar.string)
+              ]
+            )
+          ])
         )
       }
     }

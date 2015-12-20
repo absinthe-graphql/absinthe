@@ -4,6 +4,7 @@ defmodule ExGraphQL.Execution.Arguments do
   Handles the logic around building and validating argument values for a field.
   """
 
+  alias ExGraphQL.Validation
   alias ExGraphQL.Execution
   alias ExGraphQL.Type
   alias ExGraphQL.Language
@@ -35,7 +36,7 @@ defmodule ExGraphQL.Execution.Arguments do
   # No argument found in the query document field
   @spec do_add_argument(Language.Argument.t | nil, Type.Argument.t, Language.Field.t, {map, {[binary], [binary]}, Execution.t}) :: {map, [binary], Execution.t}
   defp do_add_argument(nil, definition, ast_field, {values, {missing, invalid}, execution} = acc) do
-    if Type.non_null?(definition.type) do
+    if Validation.RequiredInput.required?(definition) do
       internal_type = definition.type |> Type.unwrap
       exe = execution
       |> Execution.put_error(:argument, definition.name, &"Argument `#{&1}' (#{internal_type.name}): Not provided", at: ast_field)
@@ -44,7 +45,7 @@ defmodule ExGraphQL.Execution.Arguments do
       acc
     end
   end
-  defp do_add_argument(ast_argument, definition, _ast_field, {values, {missing, invalid}, execution} = acc) do
+  defp do_add_argument(ast_argument, definition, _ast_field, {_, _, execution} = acc) do
     value_to_coerce = ast_argument.value || execution.variables[ast_argument.name] || definition.default_value
     add_argument_value(definition.type, value_to_coerce, ast_argument, [ast_argument.name], acc)
   end
@@ -55,7 +56,7 @@ defmodule ExGraphQL.Execution.Arguments do
   # Nil value
   defp add_argument_value(input_type, nil, ast_argument, [value_name|_] = full_value_name, {values, {missing, invalid}, execution}) do
 
-    if Type.non_null?(input_type) do
+    if Validation.RequiredInput.required?(input_type) do
       name_to_report = full_value_name |> dotted_name
       internal_type = input_type |> Type.unwrap
       exe = execution
@@ -88,7 +89,7 @@ defmodule ExGraphQL.Execution.Arguments do
     do_add_argument_value(type, internal_value, ast_argument, names, acc)
   end
   # Bare scalar value found
-  defp do_add_argument_value(%Type.Scalar{name: type_name, parse: parser} = t, internal_value, ast_argument, [value_name | _] = full_value_name, {values, {missing, invalid}, execution}) do
+  defp do_add_argument_value(%Type.Scalar{name: type_name, parse: parser}, internal_value, ast_argument, [value_name | _] = full_value_name, {values, {missing, invalid}, execution}) do
     case parser.(internal_value) do
       {:ok, coerced_value} ->
         {values |> Map.put(value_name |> String.to_existing_atom, coerced_value), {missing, invalid}, execution}
@@ -119,13 +120,13 @@ defmodule ExGraphQL.Execution.Arguments do
   defp do_add_argument_value(%Type.InputObjectType{fields: thunked_schema_fields}, %{fields: input_fields}, ast_argument, [value_name | _] = names, {values, {missing, invalid}, execution}) do
     schema_fields = thunked_schema_fields |> Type.unthunk
     {_, object_values, {new_missing, new_invalid}, execution_to_return} = schema_fields
-    |> Enum.reduce({names, %{}, {missing, invalid}, execution}, fn ({name, schema_field}, {acc_value_name, acc_values, {acc_missing, acc_invalid}, acc_execution} = acc) ->
+    |> Enum.reduce({names, %{}, {missing, invalid}, execution}, fn ({name, schema_field}, {acc_value_name, acc_values, {acc_missing, acc_invalid}, acc_execution}) ->
       input_field = input_fields |> Enum.find(&(&1.name == name |> to_string))
       full_value_name = [name |> to_string | acc_value_name]
       case input_field do
         nil ->
           # No input value
-          if Type.non_null?(schema_field.type) do
+          if Validation.RequiredInput.required?(schema_field.type) do
             name_to_report = full_value_name |> dotted_name
             unwrapped_type = schema_field.type |> Type.unwrap
             {

@@ -10,6 +10,16 @@ defmodule ExGraphQL.Type.Definitions do
     end
   end
 
+  @doc """
+  Deprecate a field or argument with an optional reason
+  """
+  @spec deprecate(Keyword.t) :: Keyword.t
+  @spec deprecate(Keyword.t, binary) :: Keyword.t
+  def deprecate(node, reason \\ nil) do
+    node
+    |> Keyword.put(:deprecation, %Type.Deprecation{reason: reason})
+  end
+
   def non_null(type) do
     %Type.NonNull{of_type: type}
   end

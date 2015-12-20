@@ -7,7 +7,7 @@ defimpl ExGraphQL.Execution.Resolution, for: ExGraphQL.Language.Field do
 
   @spec resolve(ExGraphQL.Language.Field.t,
                 ExGraphQL.Execution.t) :: {:ok, map} | {:error, any}
-  def resolve(%{name: name} = ast_node, %{errors: errors, strategy: :serial, resolution: %{parent_type: parent_type, target: target}} = execution) do
+  def resolve(%{name: name} = ast_node, %{strategy: :serial, resolution: %{parent_type: parent_type, target: target}} = execution) do
     field = Type.field(parent_type, ast_node.name)
     if field do
       case field do
