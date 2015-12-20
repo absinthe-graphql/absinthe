@@ -150,6 +150,58 @@ defmodule ExGraphQLTest do
                    errors: [%{message: "Field `deprecated_thing_with_reason': Deprecated; use `thing' instead"}]}} = result
   end
 
+  it "can receive deprecation notices (without a reason) for an argument" do
+    query = """
+      query ThingByDeprecatedArg {
+        thing(id: "foo", deprecated_arg: "dep") {
+          name
+        }
+      }
+    """
+    result = run(query)
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
+                   errors: [%{message: "Argument `deprecated_arg' (String): Deprecated"}]}} = result
+  end
+
+  it "can receive deprecation notices (with a reason) for an argument" do
+    query = """
+      query ThingByDeprecatedArgWithReason {
+        thing(id: "foo", deprecated_arg_with_reason: "dep") {
+          name
+        }
+      }
+    """
+    result = run(query)
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
+                   errors: [%{message: "Argument `deprecated_arg_with_reason' (String): Deprecated; reason"}]}} = result
+  end
+
+  it "can receive deprecation notices (without a reason) for a non-null argument" do
+    query = """
+      query ThingByDeprecatedNonNullArg {
+        thing(id: "foo", deprecated_non_null_arg: "dep") {
+          name
+        }
+      }
+    """
+    result = run(query)
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
+                   errors: [%{message: "Argument `deprecated_non_null_arg' (String): Deprecated"}]}} = result
+  end
+
+  it "can receive deprecation notices (with a reason) for a non-null argument" do
+    query = """
+      query ThingByDeprecatedNonNullArgWithReason {
+        thing(id: "foo", deprecated_non_null_arg_with_reason: "dep") {
+          name
+        }
+      }
+    """
+    result = run(query)
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
+                   errors: [%{message: "Argument `deprecated_non_null_arg_with_reason' (String): Deprecated; reason"}]}} = result
+  end
+
   it "checks for badly formed nested arguments" do
     query = """
     mutation UpdateThingValueBadly {

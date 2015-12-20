@@ -59,9 +59,17 @@ defmodule Things do
                 type: Type.Scalar.string
               ]),
               deprecated_non_null_arg: deprecate([
-                description: "This is a deprecated arg",
+                description: "This is a non-null deprecated arg",
                 type: non_null(Type.Scalar.string)
-              ])
+              ]),
+              deprecated_arg_with_reason: deprecate([
+                description: "This is a deprecated arg with a reason",
+                type: Type.Scalar.string
+              ], "reason"),
+              deprecated_non_null_arg_with_reason: deprecate([
+                description: "This is a non-null deprecated arg with a reasor",
+                type: non_null(Type.Scalar.string)
+              ], "reason"),
             ),
             resolve: fn
               (%{id: id}, _) ->
@@ -104,7 +112,11 @@ defmodule Things do
       name: "Thing Input Type",
       description: "A thing as input",
       fields: fields(
-        value: [type: Type.Scalar.integer]
+        value: [type: Type.Scalar.integer],
+        deprecated_field: deprecate([type: Type.Scalar.string]),
+        deprecated_field_with_reason: deprecate([type: Type.Scalar.string], "reason"),
+        deprecated_non_null_field: deprecate([type: non_null(Type.Scalar.string)]),
+        deprecated_non_null_field_with_reason: deprecate([type: Type.Scalar.string], "reason")
       )
     }
   end
