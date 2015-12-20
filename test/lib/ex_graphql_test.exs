@@ -111,6 +111,32 @@ defmodule ExGraphQLTest do
     assert {:ok, %{data: %{"thing" => %{"name" => "Bar"}}, errors: []}} = result
   end
 
+  it "can use input objects" do
+    query = """
+    mutation UpdateThingValue {
+      thing: updateThing(id: "foo", thing: {value: 100}) {
+        name
+        value
+      }
+    }
+    """
+    result = run(query)
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo", "value" => 100}}, errors: []}} = result
+  end
+
+  it "checks for badly formed nested arguments" do
+    query = """
+    mutation UpdateThingValueBadly {
+      thing: updateThing(id: "foo", thing: {value: "BAD"}) {
+        name
+        value
+      }
+    }
+    """
+    assert {:ok, %{data: %{}, errors: [%{message: "Field `updateThing': 1 badly formed argument (`thing.value') provided"},
+                                       %{message: "Argument `thing.value' (Int): Invalid value provided"}]}} = run(query)
+  end
+
   it "reports missing, required variable values" do
     query = """
       query GimmeThingByVariable($thingId: String!, $other: String!) {

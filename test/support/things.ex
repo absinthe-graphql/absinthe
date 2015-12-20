@@ -5,6 +5,23 @@ defmodule Things do
 
   def schema do
     %Type.Schema{
+      mutation: %Type.ObjectType{
+        name: "RootMutation",
+        fields: fields(
+          updateThing: [
+            type: thing_type,
+            args: args(
+              id: [type: non_null(Type.Scalar.string)],
+              thing: [type: non_null(input_thing_type)]
+            ),
+            resolve: fn
+              %{id: id, thing: %{value: val}}, _ ->
+                found = things |> Map.get(id)
+                {:ok, %{found | value: val}}
+            end
+          ]
+        )
+      },
       query: %Type.ObjectType{
         name: "RootQuery",
         fields: fields(
@@ -48,6 +65,16 @@ defmodule Things do
     }
   end
 
+  defp input_thing_type do
+    %Type.InputObjectType{
+      name: "Thing Input Type",
+      description: "A thing as input",
+      fields: fields(
+        value: [type: Type.Scalar.integer]
+      )
+    }
+  end
+
   defp thing_type do
     %Type.ObjectType{
       name: "Thing",
@@ -60,6 +87,10 @@ defmodule Things do
         name: [
           type: Type.Scalar.string,
           description: "The name of the thing"
+        ],
+        value: [
+          type: Type.Scalar.integer,
+          description: "The value of the thing"
         ],
         other_thing: [
           type: thing_type,
@@ -76,8 +107,8 @@ defmodule Things do
 
   defp things do
     %{
-      "foo" => %{id: "foo", name: "Foo"},
-      "bar" => %{id: "bar", name: "Bar"}
+      "foo" => %{id: "foo", name: "Foo", value: 4},
+      "bar" => %{id: "bar", name: "Bar", value: 5}
      }
   end
 
