@@ -46,105 +46,110 @@ defmodule ExGraphQL.Execution.Arguments do
   end
   defp do_add_argument(ast_argument, definition, _ast_field, {values, {missing, invalid}, execution} = acc) do
     value_to_coerce = ast_argument.value || execution.variables[ast_argument.name] || definition.default_value
-    add_argument_value(definition.type, value_to_coerce, ast_argument, acc)
+    add_argument_value(definition.type, value_to_coerce, ast_argument, [ast_argument.name], acc)
   end
 
   # Coerce an input value into an input type, tracking errors
-  @spec add_argument_value(Type.input_t, any, Language.Argument.t, Execution.t) :: {any, Execution.t}
+  @spec add_argument_value(Type.input_t, any, Language.Argument.t, [binary], Execution.t) :: {any, Execution.t}
 
   # Nil value
-  defp add_argument_value(input_type, nil, ast_argument, {values, {missing, invalid}, execution}) do
+  defp add_argument_value(input_type, nil, ast_argument, [value_name|_] = full_value_name, {values, {missing, invalid}, execution}) do
+
     if Type.non_null?(input_type) do
+      name_to_report = full_value_name |> dotted_name
       internal_type = input_type |> Type.unwrap
       exe = execution
-      |> Execution.put_error(:argument, ast_argument.name, &"Argument `#{&1}' (#{internal_type.name}): Not provided", at: ast_argument)
-      {values, {[ast_argument.name | missing], invalid}, exe}
+      |> Execution.put_error(:argument, name_to_report, &"Argument `#{&1}' (#{internal_type.name}): Not provided", at: ast_argument)
+      {values, {[name_to_report | missing], invalid}, exe}
     else
       {
-        values |> Map.put(ast_argument.name |> String.to_existing_atom, nil),
+        values |> Map.put(value_name |> String.to_existing_atom, nil),
         {missing, invalid},
         execution
       }
     end
   end
   # Non-nil value
-  defp add_argument_value(input_type, input_value, ast_argument, acc) do
+  defp add_argument_value(input_type, input_value, ast_argument, names, acc) do
     input_type
     |> Type.unwrap
-    |> do_add_argument_value(input_value, ast_argument, acc)
+    |> do_add_argument_value(input_value, ast_argument, names, acc)
   end
   # Scalar value (inside a wrapping type) found
-  defp do_add_argument_value(%Type.Scalar{} = definition_type, %{value: internal_value}, ast_argument, acc) do
-    do_add_argument_value(definition_type, internal_value, ast_argument, acc)
+  defp do_add_argument_value(%Type.Scalar{} = definition_type, %{value: internal_value}, ast_argument, names, acc) do
+    do_add_argument_value(definition_type, internal_value, ast_argument, names, acc)
   end
   # Variable value found
-  defp do_add_argument_value(definition_type, %Language.Variable{name: name}, ast_argument, {_, _, execution} = acc) do
-    add_argument_value(definition_type, execution.variables[name], ast_argument, acc)
+  defp do_add_argument_value(definition_type, %Language.Variable{name: name}, ast_argument, names, {_, _, execution} = acc) do
+    add_argument_value(definition_type, execution.variables[name], ast_argument, names, acc)
   end
   # Wrapped scalar value found
-  defp do_add_argument_value(%Type.Scalar{} = type, %{value: internal_value}, ast_argument, acc) do
-    do_add_argument_value(type, internal_value, ast_argument, acc)
+  defp do_add_argument_value(%Type.Scalar{} = type, %{value: internal_value}, ast_argument, names, acc) do
+    do_add_argument_value(type, internal_value, ast_argument, names, acc)
   end
   # Bare scalar value found
-  defp do_add_argument_value(%Type.Scalar{name: type_name, parse: parser} = t, internal_value, ast_argument, {values, {missing, invalid}, execution}) do
+  defp do_add_argument_value(%Type.Scalar{name: type_name, parse: parser} = t, internal_value, ast_argument, [value_name | _] = full_value_name, {values, {missing, invalid}, execution}) do
     case parser.(internal_value) do
       {:ok, coerced_value} ->
-        {values |> Map.put(ast_argument.name |> String.to_existing_atom, coerced_value), {missing, invalid}, execution}
+        {values |> Map.put(value_name |> String.to_existing_atom, coerced_value), {missing, invalid}, execution}
       :error ->
+        name_to_report = full_value_name |> dotted_name
         {
           values,
-          {missing, [ast_argument.name | invalid]},
-          execution |> Execution.put_error(:argument, ast_argument.name, &"Argument `#{&1}' (#{type_name}): Invalid value provided", at: ast_argument)
+          {missing, [name_to_report | invalid]},
+          execution |> Execution.put_error(:argument, name_to_report, &"Argument `#{&1}' (#{type_name}): Invalid value provided", at: ast_argument)
         }
     end
   end
   # Enum value found
-  defp do_add_argument_value(%Type.Enum{values: enum_values}, %{value: raw_value}, ast_argument, {values, {missing, invalid}, execution}) do
+  defp do_add_argument_value(%Type.Enum{values: enum_values}, %{value: raw_value}, ast_argument, [value_name | _] = full_value_name, {values, {missing, invalid}, execution}) do
     case enum_values |> Map.get(raw_value) do
       nil ->
+        name_to_report = full_value_name |> dotted_name
         {
           values,
-          {missing, [ast_argument.name | invalid]},
-          execution |> Execution.put_error(:argument, ast_argument.name, &"Argument `#{&1}' (Enum): Invalid value", at: ast_argument)
+          {missing, [name_to_report | invalid]},
+          execution |> Execution.put_error(:argument, name_to_report, &"Argument `#{&1}' (Enum): Invalid value", at: ast_argument)
         }
       value ->
-        {values |> Map.put(ast_argument.name |> String.to_existing_atom, value), {missing, invalid}, execution}
+        {values |> Map.put(value_name |> String.to_existing_atom, value), {missing, invalid}, execution}
     end
   end
   # Input object value found
-  defp do_add_argument_value(%Type.InputObjectType{fields: thunked_schema_fields}, %{fields: input_fields}, ast_argument, {values, {missing, invalid}, execution}) do
+  defp do_add_argument_value(%Type.InputObjectType{fields: thunked_schema_fields}, %{fields: input_fields}, ast_argument, [value_name | _] = names, {values, {missing, invalid}, execution}) do
     schema_fields = thunked_schema_fields |> Type.unthunk
     {_, object_values, {new_missing, new_invalid}, execution_to_return} = schema_fields
-    |> Enum.reduce({[ast_argument.name], %{}, {missing, invalid}, execution}, fn ({name, schema_field}, {names, acc_values, {acc_missing, acc_invalid}, acc_execution} = acc) ->
+    |> Enum.reduce({names, %{}, {missing, invalid}, execution}, fn ({name, schema_field}, {acc_value_name, acc_values, {acc_missing, acc_invalid}, acc_execution} = acc) ->
       input_field = input_fields |> Enum.find(&(&1.name == name |> to_string))
-      full_name = names ++ [name |> to_string]
+      full_value_name = [name |> to_string | acc_value_name]
       case input_field do
         nil ->
           # No input value
           if Type.non_null?(schema_field.type) do
+            name_to_report = full_value_name |> dotted_name
             unwrapped_type = schema_field.type |> Type.unwrap
             {
-              full_name,
+              full_value_name,
               acc_values,
-              {[input_field.name |> to_string | acc_missing], invalid},
+              {[name_to_report | acc_missing], invalid},
               acc_execution
-              |> Execution.put_error(:argument, full_name |> Enum.join("."), &"Argument `#{&1}' (#{unwrapped_type.name}): Not provided", at: ast_argument)
+              |> Execution.put_error(:argument, name_to_report, &"Argument `#{&1}' (#{unwrapped_type.name}): Not provided", at: ast_argument)
             }
           else
-            {full_name, acc_values, {acc_missing, acc_invalid}, acc_execution}
+            {full_value_name, acc_values, {acc_missing, acc_invalid}, acc_execution}
           end
         %{value: value} ->
-          {result_values, {result_missing, result_invalid}, next_execution} = add_argument_value(schema_field.type, value, ast_argument, {acc_values, {acc_missing, acc_invalid}, acc_execution})
+          {result_values, {result_missing, result_invalid}, next_execution} = add_argument_value(schema_field.type, value, ast_argument, full_value_name, {acc_values, {acc_missing, acc_invalid}, acc_execution})
           {
-            full_name,
-            acc_values |> Map.put(name, value),
-            {acc_missing, acc_invalid},
-            acc_execution
+            full_value_name,
+            result_values,
+            {result_missing, result_invalid},
+            next_execution
           }
       end
     end)
     {
-      values |> Map.put(ast_argument.name |> String.to_existing_atom, object_values),
+      values |> Map.put(value_name |> String.to_existing_atom, object_values),
       {new_missing, new_invalid},
       execution_to_return
     }
@@ -169,6 +174,11 @@ defmodule ExGraphQL.Execution.Arguments do
     argument_name = name |> to_string
     ast_field.arguments
     |> Enum.find(&(&1.name == argument_name))
+  end
+
+  @spec dotted_name([binary]) :: binary
+  defp dotted_name(names) do
+    names |> Enum.reverse |> Enum.join(".")
   end
 
 end

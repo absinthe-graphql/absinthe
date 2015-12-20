@@ -6,7 +6,6 @@ defmodule ExGraphQL.Type.DefinitionTest do
   use ExGraphQL.Type
   alias ExGraphQL.Type
 
-  @tag :focus
   it "defines a query only schema" do
 
     blog_schema = %ExGraphQL.Type.Schema{query: Fixtures.blog_query}

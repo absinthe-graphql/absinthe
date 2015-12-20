@@ -63,7 +63,6 @@ defmodule ExGraphQLTest do
     assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: "Argument `extra': Not present in schema"}]}} = run(query)
   end
 
-  @tag :focus
   it "checks for badly formed arguments" do
     query = """
     {
@@ -74,7 +73,6 @@ defmodule ExGraphQLTest do
                                        %{message: "Argument `val' (Int): Invalid value provided"}]}} = run(query)
   end
 
-  @tag :focus
   it "returns nested objects" do
     query = """
     query GimmeFooWithOtherThing {
