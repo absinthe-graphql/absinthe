@@ -5,11 +5,11 @@ defmodule ExGraphQL.Flag do
 
   ## Examples
 
-    iex> :thing |> as(:ok)
-    {:ok, :thing}
+      iex> :thing |> as(:ok)
+      {:ok, :thing}
 
-    iex> :thing |> as(:error)
-    {:error, :thing}
+      iex> :thing |> as(:error)
+      {:error, :thing}
 
   """
   @spec as(any, atom) :: {atom, any}

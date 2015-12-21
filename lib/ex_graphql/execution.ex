@@ -67,7 +67,7 @@ defmodule ExGraphQL.Execution do
 
   ## Examples
 
-    iex> execution |> put_error(:field, "myField", "is not good!", at: ast_node)
+      iex> execution |> put_error(:field, "myField", "is not good!", at: ast_node)
 
   """
   @spec put_error(t, Adapter.role_t, binary | atom, binary | function, Keyword.t) :: t
