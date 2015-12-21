@@ -31,7 +31,7 @@ defmodule ExGraphQL.Type.Scalar do
             values as specified by
             [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
             """ |> String.replace("\n", " "),
-            serialize: &parse_float/1,
+            serialize: &(&1),
             parse: parse_with([ExGraphQL.Language.IntValue,
                                ExGraphQL.Language.FloatValue], &parse_float/1)}
   end
@@ -72,7 +72,7 @@ defmodule ExGraphQL.Type.Scalar do
             description: """
             The `Boolean` scalar type represents `true` or `false`.
             """ |> String.replace("\n", " "),
-            serialize: &parse_boolean/1,
+            serialize: &(&1),
             parse: parse_with([ExGraphQL.Language.BooleanValue],
                               &parse_boolean/1)}
   end
