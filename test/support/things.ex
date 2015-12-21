@@ -8,7 +8,7 @@ defmodule Things do
       mutation: %Type.ObjectType{
         name: "RootMutation",
         fields: fields(
-          updateThing: [
+          update_thing: [
             type: thing_type,
             args: args(
               id: [type: non_null(Type.Scalar.string)],
@@ -18,6 +18,9 @@ defmodule Things do
               %{id: id, thing: %{value: val}}, _ ->
                 found = things |> Map.get(id)
                 {:ok, %{found | value: val}}
+              %{id: id, thing: fields}, _ ->
+                found = things |> Map.get(id)
+                {:ok, found |> Map.merge(fields)}
             end
           ]
         )
@@ -65,11 +68,11 @@ defmodule Things do
               deprecated_arg_with_reason: deprecate([
                 description: "This is a deprecated arg with a reason",
                 type: Type.Scalar.string
-              ], "reason"),
+              ], reason: "reason"),
               deprecated_non_null_arg_with_reason: deprecate([
                 description: "This is a non-null deprecated arg with a reasor",
                 type: non_null(Type.Scalar.string)
-              ], "reason"),
+              ], reason: "reason"),
             ),
             resolve: fn
               (%{id: id}, _) ->
@@ -101,7 +104,7 @@ defmodule Things do
               (%{id: id}, _) ->
                 {:ok, things |> Map.get(id)}
             end
-          ], "use `thing' instead")
+          ], reason: "use `thing' instead")
         )
       }
     }
@@ -114,9 +117,9 @@ defmodule Things do
       fields: fields(
         value: [type: Type.Scalar.integer],
         deprecated_field: deprecate([type: Type.Scalar.string]),
-        deprecated_field_with_reason: deprecate([type: Type.Scalar.string], "reason"),
+        deprecated_field_with_reason: deprecate([type: Type.Scalar.string], reason: "reason"),
         deprecated_non_null_field: deprecate([type: non_null(Type.Scalar.string)]),
-        deprecated_non_null_field_with_reason: deprecate([type: Type.Scalar.string], "reason")
+        deprecated_non_null_field_with_reason: deprecate([type: Type.Scalar.string], reason: "reason")
       )
     }
   end

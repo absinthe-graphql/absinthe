@@ -46,15 +46,15 @@ defmodule ExGraphQL.Execution.Arguments do
     end
   end
   defp do_add_argument(ast_argument, definition, _ast_field, {values, tracking, execution} = acc) do
-    execution_with_deprecation = execution |> add_argument_deprecation(definition, ast_argument)
+    execution_with_deprecation = execution |> add_argument_deprecation(ast_argument.name, definition, ast_argument)
     value_to_coerce = ast_argument.value || execution.variables[ast_argument.name] || definition.default_value
     add_argument_value(definition.type, value_to_coerce, ast_argument, [ast_argument.name], {values, tracking, execution_with_deprecation})
   end
 
-  defp add_argument_deprecation(execution, %{deprecation: nil}, _ast_node) do
+  defp add_argument_deprecation(execution, name, %{deprecation: nil}, _ast_node) do
     execution
   end
-  defp add_argument_deprecation(execution, %{name: name, type: input_type, deprecation: %{reason: reason}}, ast_node) do
+  defp add_argument_deprecation(execution, name, %{type: input_type, deprecation: %{reason: reason}}, ast_node) do
     internal_type = input_type |> Type.unwrap
     details = if reason, do: "; #{reason}", else: ""
     execution
@@ -66,7 +66,6 @@ defmodule ExGraphQL.Execution.Arguments do
 
   # Nil value
   defp add_argument_value(input_type, nil, ast_argument, [value_name|_] = full_value_name, {values, {missing, invalid}, execution}) do
-
     if Validation.RequiredInput.required?(input_type) do
       name_to_report = full_value_name |> dotted_name
       internal_type = input_type |> Type.unwrap
@@ -137,7 +136,7 @@ defmodule ExGraphQL.Execution.Arguments do
       case input_field do
         nil ->
           # No input value
-          if Validation.RequiredInput.required?(schema_field.type) do
+          if Validation.RequiredInput.required?(schema_field) do
             name_to_report = full_value_name |> dotted_name
             unwrapped_type = schema_field.type |> Type.unwrap
             {
@@ -156,7 +155,7 @@ defmodule ExGraphQL.Execution.Arguments do
             acc_value_name,
             result_values,
             {result_missing, result_invalid},
-            next_execution
+            next_execution |> add_argument_deprecation(full_value_name |> dotted_name, schema_field, ast_argument)
           }
       end
     end)

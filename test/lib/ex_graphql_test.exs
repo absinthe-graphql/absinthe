@@ -114,7 +114,7 @@ defmodule ExGraphQLTest do
   it "can use input objects" do
     query = """
     mutation UpdateThingValue {
-      thing: updateThing(id: "foo", thing: {value: 100}) {
+      thing: update_thing(id: "foo", thing: {value: 100}) {
         name
         value
       }
@@ -124,94 +124,16 @@ defmodule ExGraphQLTest do
     assert {:ok, %{data: %{"thing" => %{"name" => "Foo", "value" => 100}}, errors: []}} = result
   end
 
-  it "can receive deprecation notices (without a reason) for a field" do
-    query = """
-    query DeprecatedThing {
-      thing: deprecated_thing(id: "foo") {
-        name
-      }
-    }
-    """
-    result = run(query)
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
-                   errors: [%{message: "Field `deprecated_thing': Deprecated"}]}} = result
-  end
-
-  it "can receive deprecation notices (with a reason) for a field" do
-    query = """
-      query DeprecatedThingWithReason {
-        thing: deprecated_thing_with_reason(id: "foo") {
-          name
-        }
-      }
-    """
-    result = run(query)
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
-                   errors: [%{message: "Field `deprecated_thing_with_reason': Deprecated; use `thing' instead"}]}} = result
-  end
-
-  it "can receive deprecation notices (without a reason) for an argument" do
-    query = """
-      query ThingByDeprecatedArg {
-        thing(id: "foo", deprecated_arg: "dep") {
-          name
-        }
-      }
-    """
-    result = run(query)
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
-                   errors: [%{message: "Argument `deprecated_arg' (String): Deprecated"}]}} = result
-  end
-
-  it "can receive deprecation notices (with a reason) for an argument" do
-    query = """
-      query ThingByDeprecatedArgWithReason {
-        thing(id: "foo", deprecated_arg_with_reason: "dep") {
-          name
-        }
-      }
-    """
-    result = run(query)
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
-                   errors: [%{message: "Argument `deprecated_arg_with_reason' (String): Deprecated; reason"}]}} = result
-  end
-
-  it "can receive deprecation notices (without a reason) for a non-null argument" do
-    query = """
-      query ThingByDeprecatedNonNullArg {
-        thing(id: "foo", deprecated_non_null_arg: "dep") {
-          name
-        }
-      }
-    """
-    result = run(query)
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
-                   errors: [%{message: "Argument `deprecated_non_null_arg' (String): Deprecated"}]}} = result
-  end
-
-  it "can receive deprecation notices (with a reason) for a non-null argument" do
-    query = """
-      query ThingByDeprecatedNonNullArgWithReason {
-        thing(id: "foo", deprecated_non_null_arg_with_reason: "dep") {
-          name
-        }
-      }
-    """
-    result = run(query)
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
-                   errors: [%{message: "Argument `deprecated_non_null_arg_with_reason' (String): Deprecated; reason"}]}} = result
-  end
-
   it "checks for badly formed nested arguments" do
     query = """
     mutation UpdateThingValueBadly {
-      thing: updateThing(id: "foo", thing: {value: "BAD"}) {
+      thing: update_thing(id: "foo", thing: {value: "BAD"}) {
         name
         value
       }
     }
     """
-    assert {:ok, %{data: %{}, errors: [%{message: "Field `updateThing': 1 badly formed argument (`thing.value') provided"},
+    assert {:ok, %{data: %{}, errors: [%{message: "Field `update_thing': 1 badly formed argument (`thing.value') provided"},
                                        %{message: "Argument `thing.value' (Int): Invalid value provided"}]}} = run(query)
   end
 
