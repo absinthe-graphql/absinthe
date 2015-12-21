@@ -18,7 +18,7 @@ defmodule ExGraphQL.Type.Scalar do
             represented in JSON as double-precision floating point numbers specified
             by [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
             """ |> String.replace("\n", " "),
-            serialize: &parse_int/1,
+            serialize: &(&1),
             parse: parse_with([ExGraphQL.Language.IntValue], &parse_int/1)}
   end
 
@@ -45,7 +45,7 @@ defmodule ExGraphQL.Type.Scalar do
             character sequences. The String type is most often used by GraphQL to
             represent free-form human-readable text.
             """ |> String.replace("\n", " "),
-            serialize: &parse_string/1,
+            serialize: &to_string/1,
             parse: parse_with([ExGraphQL.Language.StringValue], &parse_string/1)}
   end
 
