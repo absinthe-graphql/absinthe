@@ -1,14 +1,24 @@
-defmodule ExGraphQL.Mixfile do
+defmodule Absinthe.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :ex_graphql,
-     version: "0.0.1",
-     elixir: "~> 1.1",
+    [app: :absinthe,
+     version: "0.1.0",
+     elixir: "~> 1.2.0-dev",
      elixirc_paths: elixirc_paths(Mix.env),
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
+     package: package,
+     docs: [extras: ["README.md", "CONTRIBUTING.md"], main: "README"],
      deps: deps]
+  end
+
+  defp package do
+    [description: "A GraphQL implementation for Elixir",
+     files: ["lib", "mix.exs", "README*"],
+     maintainers: ["Bruce Williams"],
+     licenses: ["Apache2"],
+     links: %{github: "https://github.com/CargoSense/absinthe"}]
   end
 
   # Specifies which paths to compile per environment.
@@ -32,6 +42,10 @@ defmodule ExGraphQL.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:ex_spec, "~> 1.0.0", only: :test}]
+    [
+      {:ex_spec, "~> 1.0.0", only: :test},
+      {:ex_doc, "~> 0.11.0", only: :dev},
+      {:earmark, "~> 0.1.19", only: :dev}
+    ]
   end
 end
