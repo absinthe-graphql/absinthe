@@ -18,7 +18,7 @@ defmodule Absinthe.Type.Scalar do
             represented in JSON as double-precision floating point numbers specified
             by [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
             """ |> String.replace("\n", " "),
-            serialize: &parse_int/1,
+            serialize: &(&1),
             parse: parse_with([Absinthe.Language.IntValue], &parse_int/1)}
   end
 
@@ -31,7 +31,7 @@ defmodule Absinthe.Type.Scalar do
             values as specified by
             [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
             """ |> String.replace("\n", " "),
-            serialize: &parse_float/1,
+            serialize: &(&1),
             parse: parse_with([Absinthe.Language.IntValue,
                                Absinthe.Language.FloatValue], &parse_float/1)}
   end
@@ -45,7 +45,7 @@ defmodule Absinthe.Type.Scalar do
             character sequences. The String type is most often used by GraphQL to
             represent free-form human-readable text.
             """ |> String.replace("\n", " "),
-            serialize: &parse_string/1,
+            serialize: &to_string/1,
             parse: parse_with([Absinthe.Language.StringValue], &parse_string/1)}
   end
 
@@ -72,7 +72,7 @@ defmodule Absinthe.Type.Scalar do
             description: """
             The `Boolean` scalar type represents `true` or `false`.
             """ |> String.replace("\n", " "),
-            serialize: &parse_boolean/1,
+            serialize: &(&1),
             parse: parse_with([Absinthe.Language.BooleanValue],
                               &parse_boolean/1)}
   end
