@@ -1,7 +1,7 @@
 defmodule Things do
 
-  use ExGraphQL.Type
-  alias ExGraphQL.Type
+  use Absinthe.Type
+  alias Absinthe.Type
 
   def schema do
     %Type.Schema{

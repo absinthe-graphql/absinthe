@@ -1,4 +1,4 @@
-Code.require_file("test/lib/ex_graphql/type/fixtures.exs")
+Code.require_file("test/lib/absinthe/type/fixtures.exs")
 
-ExUnit.configure(exclude: [pending: true])
+ExUnit.configure(exclude: [pending: true, specification: true])
 ExUnit.start()

@@ -1,5 +1,6 @@
 defmodule Specification.Response.ErrorsTest do
   use ExSpec, async: true
+  use SpecificationVerification
 
   @graphql_spec "#sec-Errors"
 

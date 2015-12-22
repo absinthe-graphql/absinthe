@@ -1,5 +1,6 @@
 defmodule Specification.TypeSystem.DirectivesTest do
   use ExSpec, async: true
+  use SpecificationVerification
 
   @graphql_spec "#sec-Type-System.Directives"
 

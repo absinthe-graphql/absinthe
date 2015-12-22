@@ -1,5 +1,6 @@
 defmodule Specification.Response.ResponseFormatTest do
   use ExSpec, async: true
+  use SpecificationVerification
 
   @graphql_spec "#sec-Response-Format"
 

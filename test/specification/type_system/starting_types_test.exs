@@ -1,5 +1,6 @@
 defmodule Specification.TypeSystem.StartingTypesTest do
   use ExSpec, async: true
+  use SpecificationVerification
 
   @graphql_spec "#sec-Starting-types"
 

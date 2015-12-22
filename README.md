@@ -247,9 +247,12 @@ functions.
 Explained using the following scale:
 
 * *Missing*: Sorry, nothing done yet!
-* *Partial*: Some work done. May be used in a limited, experimental fashion, but some basic features may be missing.
-* *Functional*: Functional for most uses, but more advanced features may be missing, and only loosely adheres to [parts of] the specification.
-* *Complete*: Work completed. Please report any mismatches against the specification.
+* *Partial*: Some work done. May be used in a limited, experimental fashion, but
+  some basic features may be missing.
+* *Functional*: Functional for most uses, but more advanced features may be
+  missing, and only loosely adheres to [parts of] the specification.
+* *Complete*: Work completed. Please report any mismatches against the
+  specification.
 
 I welcome issues and pull requests; please see [CONTRIBUTING](./CONTRIBUTING).
 
@@ -262,7 +265,8 @@ I welcome issues and pull requests; please see [CONTRIBUTING](./CONTRIBUTING).
 | Execution     | Functional     | [GraphQL Specification, Section 6](https://facebook.github.io/graphql/#sec-Execution)     |
 | Response      | Functional     | [GraphQL Specification, Section 7](https://facebook.github.io/graphql/#sec-Response)      |
 
-See [ROADMAP](./ROADMAP.html) for more details on current status, shortcomings, and plans.
+For a list of specific planned features and version targets, see the
+[milestone list](https://github.com/CargoSense/ex_graphql/milestones).
 
 ## License
 
