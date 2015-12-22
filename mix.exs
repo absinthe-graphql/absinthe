@@ -9,7 +9,7 @@ defmodule ExGraphQL.Mixfile do
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      package: package,
-     docs: [extras: ["README.md", "STATUS.md", "ROADMAP.md", "CONTRIBUTING.md"], main: "README"],
+     docs: [extras: ["README.md", "ROADMAP.md", "CONTRIBUTING.md"], main: "README"],
      deps: deps]
   end
 

@@ -45,8 +45,8 @@ defmodule ExGraphQL do
     end
   end
 
-  @spec run(ExGraphQL.Type.Schema.t, binary | ExGraphQL.Language.Source.t | ExGraphQL.Language.Document.t, Keyword.t) :: {:ok, map} | {:error, any}
-  def run(schema, %ExGraphQL.Language.Document{} = document, options) do
+  @spec run(binary | ExGraphQL.Language.Source.t | ExGraphQL.Language.Document.t, ExGraphQL.Type.Schema.t, Keyword.t) :: {:ok, map} | {:error, any}
+  def run(%ExGraphQL.Language.Document{} = document, schema, options) do
     case execute(schema, document, options) do
       {:ok, result} ->
         {:ok, result}
@@ -54,28 +54,28 @@ defmodule ExGraphQL do
         other
     end
   end
-  def run(schema, input, options) do
+  def run(input, schema, options) do
     case parse(input) do
       {:ok, document} ->
-        run(schema, document, options)
+        run(document, schema, options)
       other ->
         other
     end
   end
 
-  @spec run(ExGraphQL.Type.Schema.t, binary | ExGraphQL.Language.Source.t | ExGraphQL.Language.Document.t) :: {:ok, map} | {:error, any}
-  def run(schema, input), do: run(schema, input, [])
+  @spec run(binary | ExGraphQL.Language.Source.t | ExGraphQL.Language.Document.t, ExGraphQL.Type.Schema.t) :: {:ok, map} | {:error, any}
+  def run(input, schema), do: run(input, schema, [])
 
-  @spec run!(ExGraphQL.Type.Schema.t, binary | ExGraphQL.Language.Source.t | ExGraphQL.Language.Document.t, Keyword.t) :: map
-  def run!(schema, input, options) do
-    case run(schema, input, options) do
+  @spec run!(binary | ExGraphQL.Language.Source.t | ExGraphQL.Language.Document.t, ExGraphQL.Type.Schema.t, Keyword.t) :: map
+  def run!(input, schema, options) do
+    case run(input, schema, options) do
       {:ok, result} -> result
       {:error, err} -> raise ExecutionError, message: err
     end
   end
 
-  @spec run!(ExGraphQL.Type.Schema.t, binary | ExGraphQL.Language.Source.t | ExGraphQL.Language.Document.t) :: map
-  def run!(schema, input), do: run!(schema, input, [])
+  @spec run!(binary | ExGraphQL.Language.Source.t | ExGraphQL.Language.Document.t, ExGraphQL.Type.Schema.t) :: map
+  def run!(input, schema), do: run!(input, schema, [])
 
   #
   # EXECUTION

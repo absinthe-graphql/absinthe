@@ -164,7 +164,8 @@ defmodule ExGraphQL.Execution.DeprecationTest do
   end
 
   defp run(query, options \\ []) do
-    ExGraphQL.run(Things.schema, query, options)
+    query
+    |> ExGraphQL.run(Things.schema, options)
   end
 
 end

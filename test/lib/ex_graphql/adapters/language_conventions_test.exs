@@ -200,7 +200,7 @@ defmodule ExGraphQL.Adapters.LanguageConventionsTest do
     run(query_document, %{})
   end
   defp run(query_document, variables) do
-    ExGraphQL.run(simple_schema, query_document,
+    ExGraphQL.run(query_document, simple_schema,
                   validate: false, variables: variables, adapter: LanguageConventions)
   end
 
