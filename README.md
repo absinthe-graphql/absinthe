@@ -19,6 +19,8 @@ For more information on status, see
   (See [Custom Types](#Custom-Types), below.)
 - Argument and input object field deprecation. (See [Deprecation](#Deprecation),
   below.)
+- Errors with source line numbers. (Someday, column numbers; the Leex lexer
+  doesn't support them yet.)
 - An flexible adapter mechanism to translate between different naming
   conventions (eg, `snake_case` and `camelCase`) in schema vs the client.
   (See [Adapters](#Adapters), below.).
