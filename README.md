@@ -11,11 +11,14 @@ For more information on status, see
 
 ## Working Features
 
-- Basic query document execution and validation
+- Basic query document execution and argument/field validation. (Note Validation
+  is currently done during Execution, rather than as a separate phase. This will
+  change in the next minor release.)
 - Variables, including defaulting and `!` requirements.
 - Full support for extending types, including scalars.
   (See [Custom Types](#Custom-Types), below.)
-- Argument and input object field deprecation.
+- Argument and input object field deprecation. (See [Deprecation](#Deprecation),
+  below.)
 - An flexible adapter mechanism to translate between different naming
   conventions (eg, `snake_case` and `camelCase`) in schema vs the client.
   (See [Adapters](#Adapters), below.).
@@ -28,7 +31,8 @@ Support for:
 - Directives
 - Interfaces
 
-See [Specification Implementation](#Specification-Implementation), below.
+See [Specification Implementation](#Specification-Implementation) for more
+information.
 
 ## Alternatives
 
