@@ -4,17 +4,17 @@ defmodule ExGraphQL.Execution.VariablesTest do
   alias ExGraphQL.Execution
 
   @id_required """
-    query FetchHumanQuery($id: String!) {
-      human(id: $id) {
+    query FetchThingQuery($id: String!) {
+      thing(id: $id) {
         name
       }
     }
     """
 
-  @default "1000"
+  @default "foo"
   @with_default """
-    query FetchHumanQuery($id: String = "#{@default}") {
-      human(id: $id) {
+    query FetchThingQuery($id: String = "#{@default}") {
+      thing(id: $id) {
         name
       }
     }
@@ -24,7 +24,7 @@ defmodule ExGraphQL.Execution.VariablesTest do
     # Parse
     {:ok, document} = ExGraphQL.parse(query_document)
     # Get schema
-    schema = StarWars.Schema.schema
+    schema = Things.schema
     # Prepare execution context
     {:ok, execution} = %Execution{schema: schema, document: document, variables: provided}
     |> Execution.prepare
@@ -36,8 +36,8 @@ defmodule ExGraphQL.Execution.VariablesTest do
     context "when provided" do
 
       it "returns a value" do
-        provided = %{"id" => "2000"}
-        assert %{variables: %{"id" => "2000"}, errors: []} = @id_required |> parse(provided)
+        provided = %{"id" => "foo"}
+        assert %{variables: %{"id" => "foo"}, errors: []} = @id_required |> parse(provided)
       end
 
     end
@@ -55,8 +55,8 @@ defmodule ExGraphQL.Execution.VariablesTest do
   describe "a defaulted variable" do
 
     it "when provided" do
-      provided = %{"id" => "2000"}
-      assert %{variables: %{"id" => "2000"}, errors: []} = @with_default |> parse(provided)
+      provided = %{"id" => "bar"}
+      assert %{variables: %{"id" => "bar"}, errors: []} = @with_default |> parse(provided)
     end
 
     it "when not provided" do
