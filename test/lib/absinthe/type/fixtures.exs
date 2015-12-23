@@ -1,95 +1,99 @@
 defmodule Absinthe.Type.Fixtures do
 
-  use Absinthe.Type
+  use Absinthe.Schema
   alias Absinthe.Type
 
-  def blog_image do
+  @absinthe :type
+  def image do
     %Type.ObjectType{
-      name: "Image",
       fields: fields(
-        url: [type: Type.Scalar.string],
-        width: [type: Type.Scalar.integer],
-        height: [type: Type.Scalar.integer]
+        url: [type: :string],
+        width: [type: :int],
+        height: [type: :int]
       )
     }
   end
 
-  def blog_author do
+  @absinthe :type
+  def author do
     %Type.ObjectType{
-      name: "Author",
       fields: fields(
-        id: [type: Type.Scalar.string],
-        name: [type: Type.Scalar.string],
-        recent_article: [type: blog_article],
+        id: [type: :id],
+        name: [type: :string],
+        recent_article: [type: :article],
         pic: [
-          type: blog_image,
+          type: :image,
           args: args(
-            width: [type: Type.Scalar.integer],
-            height: [type: Type.Scalar.integer]
+            width: [type: :int],
+            height: [type: :int]
           )
         ]
       )
     }
   end
 
-  def blog_article do
+  @absinthe :type
+  def article do
     %Type.ObjectType{
-      name: "Article",
       fields: fields(
-        id: [type: Type.Scalar.string],
-        is_published: [type: Type.Scalar.string],
-        author: [type: blog_author],
-        title: [type: Type.Scalar.string],
-        body: [type: Type.Scalar.string]
+        id: [type: :string],
+        is_published: [type: :string],
+        author: [type: :author],
+        title: [type: :string],
+        body: [type: :string]
       )
     }
   end
 
-  def blog_query do
+  def query do
     %Type.ObjectType{
       name: "Query",
       fields: fields(
         article: [
-          type: blog_article,
+          type: :article,
           args: args(
-            id: [type: Type.Scalar.string]
+            id: [type: :string]
           )
         ],
-        feed: [type: %Type.List{of_type: blog_article}]
+        feed: [type: list_of(:article)]
       )
     }
   end
 
-  def blog_mutation do
+  def mutation do
     %Type.ObjectType{
       name: "Mutation",
       fields: fields(
-        write_article: [type: blog_article]
+        write_article: [type: :article]
       )
     }
   end
 
+  @absinthe :type
   def object_type do
     %Type.ObjectType{
-      name: "Object",
       is_type_of: fn -> true end
     }
   end
 
+  @absinthe :type
   def interface_type do
-    %Type.InterfaceType{name: "Interface"}
+    %Type.InterfaceType{}
   end
 
+  @absinthe :type
   def union_type do
-    %Type.Union{name: "Union", types: [object_type]}
+    %Type.Union{types: [object_type]}
   end
 
+  @absinthe :type
   def enum_type do
-    %Type.Enum{name: "Enum", values: %{foo: %{}}}
+    %Type.Enum{values: %{foo: %{}}}
   end
 
+  @absinthe :type
   def input_object_type do
-    %Type.InputObjectType{name: "InputObject"}
+    %Type.InputObjectType{}
   end
 
 end

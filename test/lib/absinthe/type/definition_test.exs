@@ -2,13 +2,17 @@ defmodule Absinthe.Type.DefinitionTest do
   use ExSpec, async: true
 
   alias Absinthe.Type.Fixtures
-
-  use Absinthe.Type
   alias Absinthe.Type
+
+  defmodule QuerySchema do
+    use Absinthe.Schema
+
+    def query, do: Fixtures.blog_query
+  end
 
   it "defines a query only schema" do
 
-    blog_schema = %Absinthe.Type.Schema{query: Fixtures.blog_query}
+    blog_schema = QuerySchema.schema
 
     assert blog_schema.query == Fixtures.blog_query
 
@@ -21,7 +25,7 @@ defmodule Absinthe.Type.DefinitionTest do
     title_field = Type.ObjectType.field(article_field.type, :title)
     assert title_field
     assert title_field.name == "title"
-    assert title_field.type == Absinthe.Type.Scalar.string
+    assert title_field.type == Type.Scalar.string
     assert title_field.type.name == "String"
 
     author_field = Type.ObjectType.field(article_field.type, :author)
@@ -36,9 +40,16 @@ defmodule Absinthe.Type.DefinitionTest do
 
   end
 
+  defmodule MutationSchema do
+    use Absinthe.Schema
+
+    def query, do: Fixtures.blog_query
+    def mutation, do: Fixtures.blog_mutation
+  end
+
+
   it "defines a mutation schema" do
-    blog_schema = %Absinthe.Type.Schema{query: Fixtures.blog_query,
-                                         mutation: Fixtures.blog_mutation}
+    blog_schema = MutationSchema.schema
     assert blog_schema.mutation == Fixtures.blog_mutation
 
     write_mutation = Type.ObjectType.field(Fixtures.blog_mutation, :write_article)

@@ -2,12 +2,14 @@ defmodule Absinthe.Type.Scalar do
 
   alias __MODULE__
   alias Absinthe.Flag
+  alias Absinthe.Type.Definitions
 
   @type t :: %{name: binary, description: binary, serialize: (value_t -> any), parse: (any -> {:ok, value_t} | :error)}
   @type value_t :: any
 
   defstruct name: nil, description: nil, serialize: nil, parse: nil
 
+  @absinthe :type
   @graphql_spec "https://facebook.github.io/graphql/#sec-Int"
   @spec integer :: t
   def integer do
@@ -22,6 +24,7 @@ defmodule Absinthe.Type.Scalar do
             parse: parse_with([Absinthe.Language.IntValue], &parse_int/1)}
   end
 
+  @absinthe :type
   @graphql_spec "https://facebook.github.io/graphql/#sec-Float"
   @spec float :: t
   def float do
@@ -36,6 +39,7 @@ defmodule Absinthe.Type.Scalar do
                                Absinthe.Language.FloatValue], &parse_float/1)}
   end
 
+  @absinthe :type
   @graphql_spec "https://facebook.github.io/graphql/#sec-String"
   @spec string :: t
   def string do
@@ -49,6 +53,7 @@ defmodule Absinthe.Type.Scalar do
             parse: parse_with([Absinthe.Language.StringValue], &parse_string/1)}
   end
 
+  @absinthe :type
   @graphql_spec "https://facebook.github.io/graphql/#sec-ID"
   @spec id :: t
   def id do
@@ -65,6 +70,7 @@ defmodule Absinthe.Type.Scalar do
                                Absinthe.Language.StringValue], &(&1))}
   end
 
+  @absinthe :type
   @graphql_spec "https://facebook.github.io/graphql/#sec-Boolean"
   @spec boolean :: t
   def boolean do

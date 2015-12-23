@@ -2,12 +2,6 @@ defmodule Absinthe.Type do
 
   alias __MODULE__
 
-  defmacro __using__(_) do
-    quote do
-      import unquote(__MODULE__).Definitions
-    end
-  end
-
   # ALL TYPES
 
   @type_modules [Type.Scalar, Type.ObjectType, Type.InterfaceType, Type.Union, Type.Enum, Type.InputObjectType, Type.List, Type.NonNull]

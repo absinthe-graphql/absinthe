@@ -30,7 +30,7 @@ defmodule Absinthe.Execution.Variables do
   defp parse(definition, {_, execution} = acc) do
     name = definition.variable.name
     ast_type = definition.type |> Language.unwrap
-    schema_type = Type.Schema.type_from_ast(execution.schema, definition.type)
+    schema_type = Schema.type_from_ast(execution.schema, definition.type)
     do_parse(name, definition, ast_type, schema_type, acc)
   end
 
