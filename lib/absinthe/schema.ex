@@ -22,7 +22,7 @@ defmodule Absinthe.Schema do
           other -> true
         end)
         |> Enum.into(%{})
-        |> Map.merge(%{source_module: unquote(__MODULE__)})
+        |> Map.merge(%{source_module: __MODULE__})
         struct(unquote(__MODULE__), contents)
         |> unquote(__MODULE__).prepare
       end
@@ -49,19 +49,23 @@ defmodule Absinthe.Schema do
 
   alias Absinthe.Type
   alias Absinthe.Language
+  alias __MODULE__
 
   @type t :: %{query: Type.ObjectType.t | nil,
                mutation: Type.ObjectType.t | nil,
                subscription: Type.ObjectType.t | nil,
                source_module: atom,
-               type_map: map}
+               types_available: map,
+               types_used: map}
 
-  defstruct query: nil, mutation: nil, subscription: nil, type_map: %{}
+  defstruct query: nil, mutation: nil, subscription: nil, source_module: nil, types_available: %{}, types_used: %{}
 
   @doc "Add types (but only do it once; if any have been found, this is just an identity function)"
   @spec prepare(t) :: t
-  def prepare(%{type_map: type_map} = schema) when map_size(type_map) == 0 do
-    %{schema | type_map: Type.TypeMap.build(schema)}
+  def prepare(%{types_used: types_used} = schema) when map_size(types_used) == 0 do
+    schema_with_types_available = %{schema | types_available: Type.available_types([schema.source_module])}
+    types_used = Schema.TypesUsed.calculate(schema_with_types_available)
+    %{schema_with_types_available | types_used: types_used}
   end
   def prepare(schema) do
     schema
@@ -81,9 +85,22 @@ defmodule Absinthe.Schema do
     end
   end
   def type_from_ast(schema, ast_type) do
-    schema.type_map[ast_type.name]
+    schema.types_used
+    |> Map.values
+    |> Enum.find(:name, fn
+      %{name: name} ->
+        name == ast_type.name
+    end)
   end
 
+  defimpl Absinthe.Traversal.Node do
+
+    def children(node, _) do
+      [node.query, node.mutation, node.subscription]
+      |> Enum.reject(&is_nil/1)
+    end
+
+  end
 
 
 end

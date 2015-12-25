@@ -1,9 +1,9 @@
 defmodule Absinthe.Language.SelectionSet do
   defstruct selections: [], loc: %{start: nil}
 
-  defimpl Absinthe.Language.Node do
+  defimpl Absinthe.Traversal.Node do
 
-    def children(node), do: node.selections
+    def children(node, _schema), do: node.selections
 
   end
 

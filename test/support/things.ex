@@ -43,7 +43,7 @@ defmodule Things do
         number: [
           type: :string,
           args: args(
-            val: [type: non_null(:int)]
+            val: [type: non_null(:integer)]
           ),
           resolve: fn
             %{val: v} -> v |> to_string
@@ -120,7 +120,7 @@ defmodule Things do
     %Type.InputObjectType{
       description: "A thing as input",
       fields: fields(
-        value: [type: :int],
+        value: [type: :integer],
         deprecated_field: deprecate([type: :string]),
         deprecated_field_with_reason: deprecate([type: :string], reason: "reason"),
         deprecated_non_null_field: deprecate([type: non_null(:string)]),
@@ -143,7 +143,7 @@ defmodule Things do
           description: "The name of the thing"
         ],
         value: [
-          type: :int,
+          type: :integer,
           description: "The value of the thing"
         ],
         other_thing: [

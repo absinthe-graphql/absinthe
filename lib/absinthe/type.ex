@@ -9,10 +9,37 @@ defmodule Absinthe.Type do
   @typedoc "These are all of the possible kinds of types."
   @type t :: Type.Scalar.t | Type.ObjectType.t | Type.FieldDefinition.t | Type.InterfaceType.t | Type.Union.t | Type.Enum.t | Type.InputObjectType.t | Type.List.t | Type.NonNull.t
 
+  @typedoc "A type identifier"
+  @type identifier_t :: atom
+
   @doc "Determine if a struct matches one of the types"
   @spec type?(any) :: boolean
   def type?(%{__struct__: mod}) when mod in @type_modules, do: true
   def type?(_), do: false
+
+  defp absinthe_types(mod) do
+    try do
+      mod.absinthe_types
+    rescue
+      UndefinedFunctionError -> %{}
+    end
+  end
+
+  @spec available_types([atom]) :: %{atom => t}
+  def available_types(additional) do
+    @type_modules ++ additional
+    |> Enum.map(&absinthe_types/1)
+    |> Enum.reduce(%{}, fn
+      mapping, acc ->
+        merge_available_types!(acc, mapping)
+    end)
+  end
+
+  defp merge_available_types!(a, b) do
+    Map.merge(a, b, fn
+      k, _, _ -> raise "Absinthe Type #{k} already defined"
+    end)
+  end
 
   # INPUT TYPES
 

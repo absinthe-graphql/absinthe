@@ -51,7 +51,7 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
   end
 
   defp can_apply_fragment?(%{type_condition: type_condition}, %{resolution: %{type: type}, schema: schema}) do
-    child_type = schema.type_map[type_condition]
+    child_type = schema.types_used[type_condition]
     Execution.resolve_type(nil, child_type, type)
   end
 

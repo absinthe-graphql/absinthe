@@ -2,7 +2,7 @@ defmodule Absinthe.Type.Scalar do
 
   alias __MODULE__
   alias Absinthe.Flag
-  alias Absinthe.Type.Definitions
+  use Absinthe.Type.Definitions
 
   @type t :: %{name: binary, description: binary, serialize: (value_t -> any), parse: (any -> {:ok, value_t} | :error)}
   @type value_t :: any

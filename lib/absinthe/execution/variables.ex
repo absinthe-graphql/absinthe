@@ -8,6 +8,7 @@ defmodule Absinthe.Execution.Variables do
   alias Absinthe.Type
   alias Absinthe.Language
   alias Absinthe.Execution
+  alias Absinthe.Schema
 
   @doc """
   Build a variables map from the variable definitions in the selected operation
