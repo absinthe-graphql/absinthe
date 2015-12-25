@@ -6,24 +6,27 @@ defmodule Absinthe.Schema.TypesUsed do
 
   @type acc_t :: {%{atom => Type.t}, %{atom => Type.t}}
 
-  def calculate(%{source_module: source_module, types_available: types_available} = schema) do
-    case Traversal.reduce(schema, schema, {types_available, %{}}, &collect_types/3) do
-      {_, result} -> result
+  def calculate(%{type_module: type_module, types_available: types_available} = schema) do
+    case Traversal.reduce(schema, schema, {types_available, [], %{}}, &collect_types/3) do
+      {_, errors, _} when length(errors) > 0 ->
+        raise "Errors occurred processing types used: " <> Enum.join(errors, " / ")
+      {_, _, result} ->
+        result
     end
   end
 
   # TODO: Support abstract types
   @spec collect_types(Traversal.Node.t, Schema.t, acc_t) :: Traversal.instruction_t
-  defp collect_types(%{type: possibly_wrapped_type}, schema, {avail, collect} = acc) do
+  defp collect_types(%{type: possibly_wrapped_type}, schema, {avail, errors, collect} = acc) do
     type = possibly_wrapped_type |> Type.unwrap
     case {collect[type], avail[type]} do
       # Invalid
       {nil, nil} ->
-        avail_names = avail |> Map.values |> Enum.join(", ")
-        {:error, "Missing type #{type}; not found in #{avail_names}"}
+        avail_names = avail |> Map.keys |> Enum.join(", ")
+        {:prune, {avail, ["Missing type #{type}; not found in #{avail_names}"|errors], collect}}
       # Not yet collected
       {nil, found} ->
-        {:ok, {avail, collect |> Map.put(type, found)}}
+        {:ok, {avail, errors, collect |> Map.put(type, found)}}
       # Already collected
       {found, _} ->
         {:prune, acc}

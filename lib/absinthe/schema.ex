@@ -22,7 +22,7 @@ defmodule Absinthe.Schema do
           other -> true
         end)
         |> Enum.into(%{})
-        |> Map.merge(%{source_module: __MODULE__})
+        |> Map.merge(%{type_module: __MODULE__})
         struct(unquote(__MODULE__), contents)
         |> unquote(__MODULE__).prepare
       end
@@ -54,21 +54,37 @@ defmodule Absinthe.Schema do
   @type t :: %{query: Type.ObjectType.t | nil,
                mutation: Type.ObjectType.t | nil,
                subscription: Type.ObjectType.t | nil,
-               source_module: atom,
+               type_module: atom,
                types_available: map,
                types_used: map}
 
-  defstruct query: nil, mutation: nil, subscription: nil, source_module: nil, types_available: %{}, types_used: %{}
+  defstruct query: nil, mutation: nil, subscription: nil, type_module: nil, types_available: %{}, types_used: %{}
 
   @doc "Add types (but only do it once; if any have been found, this is just an identity function)"
   @spec prepare(t) :: t
   def prepare(%{types_used: types_used} = schema) when map_size(types_used) == 0 do
-    schema_with_types_available = %{schema | types_available: Type.available_types([schema.source_module])}
+    schema_with_types_available = %{schema | types_available: Type.available_types([schema.type_module])}
     types_used = Schema.TypesUsed.calculate(schema_with_types_available)
     %{schema_with_types_available | types_used: types_used}
   end
   def prepare(schema) do
     schema
+  end
+
+  @doc "Lookup a type that in used by/available to a schema"
+  @spec lookup_type(t, :used | :available, Type.wrapping_t | Type.t | Type.identifier_t) :: Type.t | nil
+  def lookup_type(schema, set, type) when is_map(type) do
+    if Type.wrapped?(type) do
+      lookup_type(schema, set, type |> Type.unwrap)
+    else
+      type
+    end
+  end
+  def lookup_type(schema, :used, identifier) do
+    schema.types_used[identifier]
+  end
+  def lookup_type(schema, :available, identifier) do
+    schema.types_available[identifier]
   end
 
   @spec type_from_ast(t, Language.type_reference_t) :: Absinthe.Type.t | nil

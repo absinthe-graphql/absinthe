@@ -2,8 +2,8 @@ defmodule Absinthe.Type.ObjectType do
 
   alias Absinthe.Type
 
-  @type t :: %{name: binary, description: binary, fields: map, interfaces: [Absinthe.Type.Interface.t], is_type_of: ((any) -> boolean)}
-  defstruct name: nil, description: nil, fields: nil, interfaces: [], is_type_of: nil
+  @type t :: %{name: binary, description: binary, fields: map, interfaces: [Absinthe.Type.Interface.t], is_type_of: ((any) -> boolean), type_module: atom}
+  defstruct name: nil, description: nil, fields: nil, interfaces: [], is_type_of: nil, type_module: nil
 
   def field(%{fields: fields}, field_name) do
     fields

@@ -7,16 +7,16 @@ defmodule Absinthe.Type.DefinitionTest do
   defmodule QuerySchema do
     use Absinthe.Schema
 
-    def query, do: Fixtures.blog_query
+    def query, do: Fixtures.query
   end
 
   it "defines a query only schema" do
 
     blog_schema = QuerySchema.schema
 
-    assert blog_schema.query == Fixtures.blog_query
+    assert blog_schema.query == Fixtures.query
 
-    article_field = Type.ObjectType.field(Fixtures.blog_query, :article)
+    article_field = Type.ObjectType.field(Fixtures.query, :article)
     assert article_field
     assert article_field.type == Fixtures.blog_article
     assert article_field.type.name == "Article"
@@ -43,8 +43,8 @@ defmodule Absinthe.Type.DefinitionTest do
   defmodule MutationSchema do
     use Absinthe.Schema
 
-    def query, do: Fixtures.blog_query
-    def mutation, do: Fixtures.blog_mutation
+    def query, do: Fixtures.query
+    def mutation, do: Fixtures.mutation
   end
 
 

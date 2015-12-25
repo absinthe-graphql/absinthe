@@ -1,8 +1,12 @@
 defmodule Absinthe.Traversal do
 
+  @moduledoc """
+  Graph/Tree traversal utilities for dealing with ASTs and schemas using the
+  `Absinthe.Traversal.Node` protocol.
+  """
+
   alias Absinthe.Schema
   alias Absinthe.Traversal.Node
-
 
   @typedoc """
   Instructions defining behavior during traversal
@@ -27,6 +31,8 @@ defmodule Absinthe.Traversal do
     end
   end
 
+  # Traverse a node's children
+  @spec reduce(Node.t, Schema.t, any, (Node.t -> instruction_t)) :: any
   defp reduce_children(node, schema, initial, node_evalator) do
     Enum.reduce(Node.children(node, schema), initial, fn
       child, acc ->

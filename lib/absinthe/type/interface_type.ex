@@ -1,6 +1,6 @@
 defmodule Absinthe.Type.InterfaceType do
-  @type t :: %{name: binary, description: binary, fields: map, resolve_type: ((any, Absinthe.Type.ResolveInfo.t) -> Absinthe.Type.ObjectType.t), types: [Absinthe.Type.t]}
-  defstruct name: nil, description: nil, fields: nil, resolve_type: nil, types: []
+  @type t :: %{name: binary, description: binary, fields: map, resolve_type: ((any, Absinthe.Type.ResolveInfo.t) -> Absinthe.Type.ObjectType.t), types: [Absinthe.Type.t], type_module: atom}
+  defstruct name: nil, description: nil, fields: nil, resolve_type: nil, types: [], type_module: nil
 
   def resolve_type(%{resolve_type: nil} = interface, candidate) do
     default_resolver(interface, candidate)

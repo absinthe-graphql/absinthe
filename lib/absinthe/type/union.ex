@@ -3,7 +3,8 @@ defmodule Absinthe.Type.Union do
   @type t :: %{name: binary,
                description: binary,
                resolve_type: ((t, any) -> Absinthe.Type.ObjectType.t),
-              types: [Absinthe.Type.t]}
+               types: [Absinthe.Type.t],
+               type_module: atom}
 
   defstruct name: nil, description: nil, resolve_type: nil, types: []
 

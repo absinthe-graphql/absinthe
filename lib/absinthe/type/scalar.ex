@@ -4,10 +4,10 @@ defmodule Absinthe.Type.Scalar do
   alias Absinthe.Flag
   use Absinthe.Type.Definitions
 
-  @type t :: %{name: binary, description: binary, serialize: (value_t -> any), parse: (any -> {:ok, value_t} | :error)}
+  @type t :: %{name: binary, description: binary, serialize: (value_t -> any), parse: (any -> {:ok, value_t} | :error), type_module: atom}
   @type value_t :: any
 
-  defstruct name: nil, description: nil, serialize: nil, parse: nil
+  defstruct name: nil, description: nil, serialize: nil, parse: nil, type_module: nil
 
   @absinthe :type
   @graphql_spec "https://facebook.github.io/graphql/#sec-Int"

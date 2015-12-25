@@ -62,13 +62,7 @@ defmodule Absinthe.Adapters.LanguageConventionsTest do
             args: args(
               location: [
                 description: "nested location object",
-                type: %Type.InputObjectType{
-                  name: "Location",
-                  description: "A location",
-                  fields: fields(
-                    name: [type: non_null(:string)],
-                  )
-                }
+                type: :input_location
               ],
               location_name: [
                 description: "The location of the field trip",
@@ -80,6 +74,17 @@ defmodule Absinthe.Adapters.LanguageConventionsTest do
               %{location: %{name: name}}, _ -> {:ok, find_trips(name)}
             end
           ]
+        )
+      }
+    end
+
+    @absinthe :type
+    def input_location do
+      %Type.InputObjectType{
+        name: "Location",
+        description: "A location",
+        fields: fields(
+          name: [type: non_null(:string)],
         )
       }
     end

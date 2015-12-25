@@ -32,8 +32,9 @@ defmodule Absinthe.Type.Definitions do
         @absinthe_types
         |> Enum.into(%{}, fn {identifier, fn_name} ->
           ready = apply(__MODULE__, fn_name, [])
-          |> Absinthe.Type.Definitions.name_type_from_identifier(identifier)
-          {identifier, ready}
+          |> Absinthe.Type.Definitions.set_default_name(identifier)
+          tagged = %{ready | type_module: __MODULE__}
+          {identifier, tagged}
         end)
       end
     end
@@ -43,11 +44,11 @@ defmodule Absinthe.Type.Definitions do
   Add a name field to a type (using the absinthe type identifier)
   unless it's already been defined.
   """
-  @spec name_type_from_identifier(Type.t, atom) :: Type.t
-  def name_type_from_identifier(%{name: nil} = type, identifier) do
+  @spec set_default_name(Type.t, atom) :: Type.t
+  def set_default_name(%{name: nil} = type, identifier) do
     %{type | name: identifier |> to_string |> Macro.camelize}
   end
-  def name_type_from_identifier(%{name: _} = type, _identifier) do
+  def set_default_name(%{name: _} = type, _identifier) do
     type
   end
 
