@@ -1,5 +1,6 @@
 defmodule Absinthe.Schema.TypesUsed do
 
+  alias Absinthe.Schema
   alias Absinthe.Traversal
   alias Absinthe.Type
 
@@ -12,7 +13,8 @@ defmodule Absinthe.Schema.TypesUsed do
   end
 
   # TODO: Support abstract types
-  defp collect_types(%{type: possibly_wrapped_type} = target, schema, {avail, collect} = acc) do
+  @spec collect_types(Traversal.Node.t, Schema.t, acc_t) :: Traversal.instruction_t
+  defp collect_types(%{type: possibly_wrapped_type}, schema, {avail, collect} = acc) do
     type = possibly_wrapped_type |> Type.unwrap
     case {collect[type], avail[type]} do
       # Invalid
