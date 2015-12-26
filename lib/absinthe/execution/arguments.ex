@@ -46,11 +46,17 @@ defmodule Absinthe.Execution.Arguments do
       acc
     end
   end
-  defp do_add_argument(ast_argument, definition, _ast_field, {values, tracking, execution} = acc) do
+  defp do_add_argument(ast_argument, definition, _ast_field, {values, {missing, invalid} = tracking, execution} = acc) do
     execution_with_deprecation = execution |> add_argument_deprecation(ast_argument.name, definition, ast_argument)
     value_to_coerce = ast_argument.value || execution.variables[ast_argument.name] || definition.default_value
     input_type = Schema.lookup_type(execution.schema, definition.type)
-    add_argument_value(input_type, value_to_coerce, ast_argument, [ast_argument.name], {values, tracking, execution_with_deprecation})
+    if input_type do
+      add_argument_value(input_type, value_to_coerce, ast_argument, [ast_argument.name], {values, tracking, execution_with_deprecation})
+    else
+      exe = execution
+      |> Execution.put_error(:argument, ast_argument.name, &"Argument `#{&1}' (#{definition.type |> Type.unwrap}): Unknown type", at: ast_argument)
+      {values, {missing, [ast_argument.name | invalid]}, exe}
+    end
   end
 
   defp add_argument_deprecation(execution, name, %{deprecation: nil}, _ast_node) do
