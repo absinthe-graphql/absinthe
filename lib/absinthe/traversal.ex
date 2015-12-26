@@ -10,7 +10,7 @@ defmodule Absinthe.Traversal do
 
   @typedoc """
   Instructions defining behavior during traversal
-  * `{:ok, value}`: The value of the node is `value`, and traversal should continue to children
+  * `{:ok, value, schema}`: The value of the node is `value`, and traversal should continue to children (using `schema`)
   * `{:prune, value}`: The value of the node is `value` and traversal should NOT continue to children
   * `{:error, message}`: Bad stuff happened, explained by `message`
   """
@@ -22,8 +22,8 @@ defmodule Absinthe.Traversal do
   @spec reduce(Node.t, Schema.t, any, (Node.t -> instruction_t)) :: any
   def reduce(node, schema, initial_value, node_evalator) do
     case node_evalator.(node, schema, initial_value) do
-      {:ok, value} ->
-        reduce_children(node, schema, value, node_evalator)
+      {:ok, value, schema_for_children} ->
+        reduce_children(node, schema_for_children, value, node_evalator)
       {:prune, value} ->
         value
       {:error, _} = err ->

@@ -1,4 +1,8 @@
 defmodule Absinthe.Type.InputObjectType do
-  @type t :: %{name: binary, description: binary, fields: map | (() -> map), type_module: atom}
-  defstruct name: nil, description: nil, fields: %{}, type_module: nil
+
+  alias Absinthe.Type
+
+  @type t :: %{name: binary, description: binary, fields: map | (() -> map), reference: Type.Reference.t}
+  defstruct name: nil, description: nil, fields: %{}, reference: nil
+
 end

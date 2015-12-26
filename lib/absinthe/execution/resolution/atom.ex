@@ -5,13 +5,14 @@ defimpl Absinthe.Execution.Resolution, for: Atom do
   it is an identifier referencing a type.
   """
 
+  alias Absinthe.Schema
   alias Absinthe.Type
   alias Absinthe.Execution
   alias Absinthe.Execution.Resolution
 
   @spec resolve(Type.identifier_t, Execution.t) :: {:ok, map} | {:error, any}
-  def resolve(identifier, %{schema: %{types_used: types_used}} = execution) do
-    case types_used[identifier] do
+  def resolve(identifier, execution) do
+    case Schema.lookup_type(execution.schema, identifier) do
       nil ->
         {:skip, execution}
       found_type ->

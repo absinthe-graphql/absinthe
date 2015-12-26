@@ -38,7 +38,7 @@ defmodule Absinthe.Execution.Arguments do
   @spec do_add_argument(Language.Argument.t | nil, Type.Argument.t, Language.Field.t, {map, {[binary], [binary]}, Execution.t}) :: {map, [binary], Execution.t}
   defp do_add_argument(nil, definition, ast_field, {values, {missing, invalid}, execution} = acc) do
     if Validation.RequiredInput.required?(definition) do
-      internal_type = Schema.lookup_type(execution.schema, :used, definition.type)
+      internal_type = Schema.lookup_type(execution.schema, definition.type)
       exe = execution
       |> Execution.put_error(:argument, definition.name, &"Argument `#{&1}' (#{internal_type.name}): Not provided", at: ast_field)
       {values, {[to_string(definition.name) | missing], invalid}, exe}
@@ -49,7 +49,7 @@ defmodule Absinthe.Execution.Arguments do
   defp do_add_argument(ast_argument, definition, _ast_field, {values, tracking, execution} = acc) do
     execution_with_deprecation = execution |> add_argument_deprecation(ast_argument.name, definition, ast_argument)
     value_to_coerce = ast_argument.value || execution.variables[ast_argument.name] || definition.default_value
-    input_type = Schema.lookup_type(execution.schema, :available, definition.type)
+    input_type = Schema.lookup_type(execution.schema, definition.type)
     add_argument_value(input_type, value_to_coerce, ast_argument, [ast_argument.name], {values, tracking, execution_with_deprecation})
   end
 
@@ -57,7 +57,7 @@ defmodule Absinthe.Execution.Arguments do
     execution
   end
   defp add_argument_deprecation(execution, name, %{type: identifier, deprecation: %{reason: reason}}, ast_node) do
-    internal_type = Schema.lookup_type(execution.schema, :available, identifier)
+    internal_type = Schema.lookup_type(execution.schema, identifier)
     details = if reason, do: "; #{reason}", else: ""
     execution
     |> Execution.put_error(:argument, name, &"Argument `#{&1}' (#{internal_type.name}): Deprecated#{details}", at: ast_node)
@@ -70,7 +70,7 @@ defmodule Absinthe.Execution.Arguments do
   defp add_argument_value(input_type, nil, ast_argument, [value_name|_] = full_value_name, {values, {missing, invalid}, execution}) do
     if Validation.RequiredInput.required?(input_type) do
       name_to_report = full_value_name |> dotted_name
-      internal_type = Schema.lookup_type(execution.schema, :available, input_type)
+      internal_type = Schema.lookup_type(execution.schema, input_type)
       exe = execution
       |> Execution.put_error(:argument, name_to_report, &"Argument `#{&1}' (#{internal_type.name}): Not provided", at: ast_argument)
       {values, {[name_to_report | missing], invalid}, exe}
@@ -84,7 +84,7 @@ defmodule Absinthe.Execution.Arguments do
   end
   # Non-nil value
   defp add_argument_value(type, input_value, ast_argument, names, {_, _, execution} = acc) do
-    Schema.lookup_type(execution.schema, :available, type)
+    Schema.lookup_type(execution.schema, type)
     |> do_add_argument_value(input_value, ast_argument, names, acc)
   end
   # Scalar value (inside a wrapping type) found
@@ -139,7 +139,7 @@ defmodule Absinthe.Execution.Arguments do
           # No input value
           if Validation.RequiredInput.required?(schema_field) do
             name_to_report = full_value_name |> dotted_name
-            unwrapped_type = Schema.lookup_type(acc_execution.schema, :available, schema_field.type)
+            unwrapped_type = Schema.lookup_type(acc_execution.schema, schema_field.type)
             {
               acc_value_name,
               acc_values,
@@ -151,7 +151,7 @@ defmodule Absinthe.Execution.Arguments do
             {acc_value_name, acc_values, {acc_missing, acc_invalid}, acc_execution}
           end
         %{value: value} ->
-          field_type = Schema.lookup_type(acc_execution.schema, :used, schema_field.type)
+          field_type = Schema.lookup_type(acc_execution.schema, schema_field.type)
           {result_values, {result_missing, result_invalid}, next_execution} = add_argument_value(field_type, value, ast_argument, full_value_name, {acc_values, {acc_missing, acc_invalid}, acc_execution})
           {
             acc_value_name,

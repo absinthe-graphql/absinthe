@@ -33,7 +33,7 @@ defmodule Absinthe.Type.Definitions do
         |> Enum.into(%{}, fn {identifier, fn_name} ->
           ready = apply(__MODULE__, fn_name, [])
           |> Absinthe.Type.Definitions.set_default_name(identifier)
-          tagged = %{ready | type_module: __MODULE__}
+          tagged = %{ready | reference: %Absinthe.Type.Reference{module: __MODULE__, identifier: identifier, name: ready.name}}
           {identifier, tagged}
         end)
       end

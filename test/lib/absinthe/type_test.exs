@@ -73,13 +73,13 @@ defmodule Absinthe.TypeTest do
   describe "type_map" do
 
     it "includes the types referenced" do
-      type_map = MyApp.schema.types_used
+      type_map = MyApp.schema.types
       assert type_map[:string] == Type.Scalar.absinthe_types[:string]
       assert type_map[:id] == Type.Scalar.absinthe_types[:id]
     end
 
     it "includes built-in types not referenced" do
-      type_map = MyApp.schema.types_available
+      type_map = MyApp.schema.types
       assert type_map[:boolean] == Type.Scalar.absinthe_types[:boolean]
     end
 

@@ -1,12 +1,14 @@
 defmodule Absinthe.Type.Union do
 
+  alias Absinthe.Type
+
   @type t :: %{name: binary,
                description: binary,
                resolve_type: ((t, any) -> Absinthe.Type.ObjectType.t),
                types: [Absinthe.Type.t],
-               type_module: atom}
+               reference: Type.Reference.t}
 
-  defstruct name: nil, description: nil, resolve_type: nil, types: []
+  defstruct name: nil, description: nil, resolve_type: nil, types: [], reference: nil
 
   def member?(%{types: types}, type) do
     types

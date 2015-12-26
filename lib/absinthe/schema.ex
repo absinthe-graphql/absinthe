@@ -1,6 +1,7 @@
 defmodule Absinthe.Schema do
 
-  defmacro __using__(_) do
+  defmacro __using__(options) do
+    type_modules = options |> Keyword.get(:type_modules, [])
     quote do
       @behaviour unquote(__MODULE__)
 
@@ -22,7 +23,7 @@ defmodule Absinthe.Schema do
           other -> true
         end)
         |> Enum.into(%{})
-        |> Map.merge(%{type_module: __MODULE__})
+        |> Map.merge(%{type_modules: [__MODULE__] ++ unquote(type_modules)})
         struct(unquote(__MODULE__), contents)
         |> unquote(__MODULE__).prepare
       end
@@ -32,59 +33,58 @@ defmodule Absinthe.Schema do
     end
   end
 
+  @typep required_object_t :: Absinthe.Type.ObjectType.t
+  @typep optional_object_t :: Absinthe.Type.ObjectType.t | nil
+
   @doc """
   Define the query root type
   """
-  @callback query :: Absinthe.Type.ObjectType.t
+  @callback query :: required_object_t
 
   @doc """
   Define the mutation root type
   """
-  @callback mutation :: Absinthe.Type.ObjectType.t | nil
+  @callback mutation :: optional_object_t
 
   @doc """
   Define the subscription root type
   """
-  @callback subscription :: Absinthe.Type.ObjectType.t | nil
+  @callback subscription :: optional_object_t
 
   alias Absinthe.Type
   alias Absinthe.Language
   alias __MODULE__
 
-  @type t :: %{query: Type.ObjectType.t | nil,
-               mutation: Type.ObjectType.t | nil,
-               subscription: Type.ObjectType.t | nil,
-               type_module: atom,
-               types_available: map,
-               types_used: map}
+  @type t :: %{query: required_object_t,
+               mutation: optional_object_t,
+               subscription: optional_object_t,
+               type_modules: [atom],
+               types: Schema.Types.typemap_t,
+               errors: [binary]}
 
-  defstruct query: nil, mutation: nil, subscription: nil, type_module: nil, types_available: %{}, types_used: %{}
+  defstruct query: nil, mutation: nil, subscription: nil, type_modules: [], types: %{}, errors: []
 
   @doc "Add types (but only do it once; if any have been found, this is just an identity function)"
   @spec prepare(t) :: t
-  def prepare(%{types_used: types_used} = schema) when map_size(types_used) == 0 do
-    schema_with_types_available = %{schema | types_available: Type.available_types([schema.type_module])}
-    types_used = Schema.TypesUsed.calculate(schema_with_types_available)
-    %{schema_with_types_available | types_used: types_used}
+  def prepare(%{types: types} = schema) when map_size(types) == 0 do
+    schema
+    |> Schema.Types.setup
   end
   def prepare(schema) do
     schema
   end
 
   @doc "Lookup a type that in used by/available to a schema"
-  @spec lookup_type(t, :used | :available, Type.wrapping_t | Type.t | Type.identifier_t) :: Type.t | nil
-  def lookup_type(schema, set, type) when is_map(type) do
+  @spec lookup_type(t, Type.wrapping_t | Type.t | Type.identifier_t) :: Type.t | nil
+  def lookup_type(schema, type) when is_map(type) do
     if Type.wrapped?(type) do
-      lookup_type(schema, set, type |> Type.unwrap)
+      lookup_type(schema, type |> Type.unwrap)
     else
       type
     end
   end
-  def lookup_type(schema, :used, identifier) do
-    schema.types_used[identifier]
-  end
-  def lookup_type(schema, :available, identifier) do
-    schema.types_available[identifier]
+  def lookup_type(schema, identifier) do
+    schema.types[identifier]
   end
 
   @spec type_from_ast(t, Language.type_reference_t) :: Absinthe.Type.t | nil
@@ -101,7 +101,7 @@ defmodule Absinthe.Schema do
     end
   end
   def type_from_ast(schema, ast_type) do
-    schema.types_used
+    schema.types
     |> Map.values
     |> Enum.find(:name, fn
       %{name: name} ->

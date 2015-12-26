@@ -8,8 +8,8 @@ defmodule Absinthe.Type.Fixtures do
     %Type.ObjectType{
       fields: fields(
         url: [type: :string],
-        width: [type: :int],
-        height: [type: :int]
+        width: [type: :integer],
+        height: [type: :integer]
       )
     }
   end
@@ -24,8 +24,8 @@ defmodule Absinthe.Type.Fixtures do
         pic: [
           type: :image,
           args: args(
-            width: [type: :int],
-            height: [type: :int]
+            width: [type: :integer],
+            height: [type: :integer]
           )
         ]
       )
