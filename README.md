@@ -102,7 +102,7 @@ defmodule MyApp do
   end
 
   @absinthe :type
-  defp item do
+  def item do
     %Type.ObjectType{
       description: "An item",
       fields: fields(
