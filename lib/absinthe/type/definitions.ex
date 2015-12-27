@@ -11,7 +11,7 @@ defmodule Absinthe.Type.Definitions do
     end
   end
 
-  def __on_definition__(env, kind, name, args, guards, body) do
+  def __on_definition__(env, kind, name, _args, _guards, _body) do
     absinthe_attr = Module.get_attribute(env.module, :absinthe)
     Module.put_attribute(env.module, :absinthe, nil)
     if absinthe_attr do

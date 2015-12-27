@@ -5,7 +5,7 @@ defmodule Absinthe.Schema.Types do
   alias Absinthe.Type
 
   @type typemap_t :: %{atom => Type.t}
-  @typep acc_t :: {[atom], typemap_t, [binary], typemap_t}
+  @typep acc_t :: {typemap_t, typemap_t, [binary]}
 
   alias Absinthe.Type
 
@@ -16,10 +16,10 @@ defmodule Absinthe.Schema.Types do
     type_modules = @builtin_type_modules ++ extra_modules
     types_available = type_modules |> types_from_modules
     initial_collected = @builtin_type_modules |> types_from_modules
-    case Traversal.reduce(schema, schema, {type_modules, types_available, [], initial_collected}, &collect_types/3) do
-      {_, _, errors, _} when length(errors) > 0 ->
+    case Traversal.reduce(schema, schema, {types_available, initial_collected, []}, &collect_types/3) do
+      {_, _, errors} when length(errors) > 0 ->
         %{schema | errors: schema.errors ++ errors}
-      {_, _, _, result} ->
+      {_, result, _} ->
         %{schema | types: result}
       other ->
         other
@@ -27,29 +27,29 @@ defmodule Absinthe.Schema.Types do
   end
 
   # TODO: Support abstract types
-  @spec collect_types(Traversal.Node.t, Schema.t, acc_t) :: Traversal.instruction_t
-  defp collect_types(%{__struct__: str, type: possibly_wrapped_type} = node, traversal, {type_modules, avail, errors, collect} = acc) do
+  @spec collect_types(Traversal.Node.t, Traversal.t, acc_t) :: Traversal.instruction_t
+  defp collect_types(%{type: possibly_wrapped_type}, traversal, {avail, collect, errors} = acc) do
     type = possibly_wrapped_type |> Type.unwrap
     case {collect[type], avail[type]} do
       # Invalid
       {nil, nil} ->
         avail_names = avail |> Map.keys |> Enum.join(", ")
-        {:prune, {avail, ["Missing type #{type}; not found in #{avail_names}"|errors], collect}, traversal}
+        {:prune, {avail, collect, ["Missing type #{type}; not found in #{avail_names}" | errors]}, traversal}
       # Not yet collected
       {nil, found} ->
         new_collected = collect |> Map.put(type, found)
         {
           :ok,
-          {type_modules, avail, errors, new_collected},
-          %{traversal | schema: %{traversal.schema | types: new_collected}}
+          {avail, new_collected, errors},
+          %{traversal | context: %{traversal.context | types: new_collected}}
         }
       # Already collected
-      {found, _} ->
+      _ ->
         # No-op
         {:ok, acc, traversal}
     end
   end
-  defp collect_types(node, traversal, acc) do
+  defp collect_types(_node, traversal, acc) do
     {:ok, acc, traversal}
   end
 
@@ -59,11 +59,6 @@ defmodule Absinthe.Schema.Types do
     rescue
       UndefinedFunctionError -> %{}
     end
-  end
-
-  defp extra_type_modules do
-    Application.get_env(:absinthe, :type_modules, [])
-    |> List.wrap
   end
 
   @spec types_from_modules([atom]) :: typemap_t

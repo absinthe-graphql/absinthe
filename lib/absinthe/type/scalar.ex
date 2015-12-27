@@ -120,7 +120,7 @@ defmodule Absinthe.Type.Scalar do
   defp parse_float(value) when is_binary(value) do
     with {value, _} <- Float.parse(value), do: {:ok, value}
   end
-  defp parse_float(value) do
+  defp parse_float(_value) do
     :error
   end
 
@@ -145,7 +145,7 @@ defmodule Absinthe.Type.Scalar do
   @spec parse_with([atom], (any -> value_t)) :: (any -> {:ok, value_t} | :error)
   defp parse_with(node_types, coercion) do
     fn
-      %{__struct__: node_type, value: value} ->
+      %{value: value} = node ->
         if Enum.is_member?(node_types, node) do
           coercion.(value)
         else

@@ -1,8 +1,6 @@
 defmodule Absinthe.Type.TypesTest do
   use ExSpec, async: true
 
-  alias Absinthe.Schema
-
   it "finds custom types" do
     types = Things.schema.types |> Map.keys
 

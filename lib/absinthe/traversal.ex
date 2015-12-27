@@ -9,13 +9,13 @@ defmodule Absinthe.Traversal do
   alias Absinthe.Schema
   alias Absinthe.Traversal.Node
 
-  @type t :: %{schema: Schema.t, seen: [Node.t], path: [Node.t]}
-  defstruct schema: nil, seen: [], path: []
+  @type t :: %{context: any, seen: [Node.t], path: [Node.t]}
+  defstruct context: nil, seen: [], path: []
 
   @typedoc """
   Instructions defining behavior during traversal
-  * `{:ok, value, schema}`: The value of the node is `value`, and traversal should continue to children (using `schema`)
-  * `{:prune, value}`: The value of the node is `value` and traversal should NOT continue to children
+  * `{:ok, value, traversal}`: The value of the node is `value`, and traversal should continue to children (using `traversal`)
+  * `{:prune, value, traversal}`: The value of the node is `value` and traversal should NOT continue to children, but to siblings (using `traversal`)
   * `{:error, message}`: Bad stuff happened, explained by `message`
   """
   @type instruction_t :: {:ok, any} | {:prune, any} | {:error, any}
@@ -23,9 +23,9 @@ defmodule Absinthe.Traversal do
   @doc """
   Traverse, reducing nodes using a given function to evaluate their value.
   """
-  @spec reduce(Node.t, Schema.tt, any, (Node.t -> instruction_t)) :: any
-  def reduce(node, schema, initial_value, node_evaluator) do
-    {result, traversal} = do_reduce(node, %Traversal{schema: schema}, initial_value, node_evaluator)
+  @spec reduce(Node.t, any, any, (Node.t -> instruction_t)) :: any
+  def reduce(node, context, initial_value, node_evaluator) do
+    {result, traversal} = do_reduce(node, %Traversal{context: context}, initial_value, node_evaluator)
     result
   end
 

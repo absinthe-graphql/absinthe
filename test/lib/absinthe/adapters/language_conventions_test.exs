@@ -21,7 +21,6 @@ defmodule Absinthe.Adapters.LanguageConventionsTest do
 
     use Absinthe.Schema
     alias Absinthe.Type
-    alias Absinthe.Adapters.LanguageConventionsTest
 
     @db %{
       "museum" => %{id: "museum", name: "Museum", location_name: "Portland"},
