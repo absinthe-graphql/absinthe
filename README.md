@@ -106,8 +106,8 @@ defmodule MyApp do
     %Type.ObjectType{
       description: "An item",
       fields: fields(
-        id: [type: Type.Scalar.id],
-        name: [type: Type.Scalar.string]
+        id: [type: :id],
+        name: [type: :string]
       )
     }
   end
