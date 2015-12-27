@@ -1,4 +1,4 @@
-defmodule Absinthe.Type.DefinitionTest do
+defmodule Absinthe.Type.TypesTest do
   use ExSpec, async: true
 
   alias Absinthe.Schema

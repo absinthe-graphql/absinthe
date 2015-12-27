@@ -38,12 +38,12 @@ defmodule Absinthe.Type.FieldDefinition do
   end
 
   defimpl Absinthe.Traversal.Node do
-    def children(node, schema) do
-      found = Schema.lookup_type(schema, node.type)
+    def children(node, traversal) do
+      found = Schema.lookup_type(traversal.schema, node.type)
       if found do
         [found | node.args |> Map.values]
       else
-        type_names = schema.types |> Map.keys |> Enum.join(", ")
+        type_names = traversal.schema.types |> Map.keys |> Enum.join(", ")
         raise "Unknown Absinthe type for field `#{node.name}': (#{node.type |> Type.unwrap} not in available types, #{type_names})"
       end
     end

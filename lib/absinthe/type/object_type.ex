@@ -12,7 +12,7 @@ defmodule Absinthe.Type.ObjectType do
   end
 
   defimpl Absinthe.Traversal.Node do
-    def children(node, _schema) do
+    def children(node, _traversal) do
       node.fields
       |> Type.unthunk
       |> Map.values

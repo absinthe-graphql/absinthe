@@ -22,34 +22,36 @@ defmodule Absinthe.Schema.Types do
         %{schema | errors: schema.errors ++ errors}
       {_, _, _, result} ->
         %{schema | types: result}
+      other ->
+        other
     end
   end
 
   # TODO: Support abstract types
   @spec collect_types(Traversal.Node.t, Schema.t, acc_t) :: Traversal.instruction_t
-  defp collect_types(%{__struct__: str, type: possibly_wrapped_type} = node, schema, {type_modules, avail, errors, collect} = acc) do
+  defp collect_types(%{__struct__: str, type: possibly_wrapped_type} = node, traversal, {type_modules, avail, errors, collect} = acc) do
     type = possibly_wrapped_type |> Type.unwrap
     case {collect[type], avail[type]} do
       # Invalid
       {nil, nil} ->
         avail_names = avail |> Map.keys |> Enum.join(", ")
-        {:prune, {avail, ["Missing type #{type}; not found in #{avail_names}"|errors], collect}}
+        {:prune, {avail, ["Missing type #{type}; not found in #{avail_names}"|errors], collect}, traversal}
       # Not yet collected
       {nil, found} ->
         new_collected = collect |> Map.put(type, found)
         {
           :ok,
           {type_modules, avail, errors, new_collected},
-          %{schema | types: new_collected}
+          %{traversal | schema: %{traversal.schema | types: new_collected}}
         }
       # Already collected
       {found, _} ->
         # TODO: Pruning prevents arguments from being added to the type map
-        {:prune, acc}
+        {:prune, acc, traversal}
     end
   end
-  defp collect_types(node, schema, acc) do
-    {:ok, acc, schema}
+  defp collect_types(node, traversal, acc) do
+    {:ok, acc, traversal}
   end
 
   defp absinthe_types(mod) do
