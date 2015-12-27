@@ -46,8 +46,8 @@ defmodule Absinthe.Schema.Types do
         }
       # Already collected
       {found, _} ->
-        # TODO: Pruning prevents arguments from being added to the type map
-        {:prune, acc, traversal}
+        # No-op
+        {:ok, acc, traversal}
     end
   end
   defp collect_types(node, traversal, acc) do
