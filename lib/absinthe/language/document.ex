@@ -1,6 +1,6 @@
 defmodule Absinthe.Language.Document do
 
-  @type t :: %{definitions: [Absinthe.Language.Node.t], loc: Absinthe.Language.loc_t}
+  @type t :: %{definitions: [Absinthe.Traversal.Node.t], loc: Absinthe.Language.loc_t}
   defstruct definitions: [], loc: %{start: nil}
 
   @spec fragments_by_name(Absinthe.Language.Document.t) :: %{binary => Absinthe.Language.FragmentDefinition.t}
@@ -16,8 +16,8 @@ defmodule Absinthe.Language.Document do
     end)
   end
 
-  defimpl Absinthe.Language.Node do
-    def children(%{definitions: definitions}), do: definitions
+  defimpl Absinthe.Traversal.Node do
+    def children(%{definitions: definitions}, _schema), do: definitions
   end
 
 end

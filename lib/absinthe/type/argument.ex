@@ -4,7 +4,7 @@ defmodule Absinthe.Type.Argument do
   alias Absinthe.Type
 
   @type t :: %{name: binary,
-               type: Type.input_t,
+               type: Type.identifier_t,
                default_value: any,
                deprecation: Type.Deprecation.t | nil,
                description: binary | nil}

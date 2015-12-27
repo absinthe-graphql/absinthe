@@ -137,6 +137,7 @@ defmodule AbsintheTest do
                                        %{message: "Argument `thing.value' (Int): Invalid value provided"}]}} = run(query)
   end
 
+  @tag :focus
   it "reports missing, required variable values" do
     query = """
       query GimmeThingByVariable($thingId: String!, $other: String!) {

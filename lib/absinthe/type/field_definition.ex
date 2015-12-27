@@ -2,11 +2,13 @@ defmodule Absinthe.Type.FieldDefinition do
 
   alias __MODULE__
 
+  alias Absinthe.Type
   alias Absinthe.Type.Deprecation
+  alias Absinthe.Schema
 
   @type t :: %{name: binary,
                description: binary | nil,
-               type: Absinthe.Type.output_t,
+               type: Type.identifier_t,
                deprecation: Deprecation.t | nil,
                args: %{(binary | atom) => Absinthe.Type.Argument.t} | nil,
                resolve: ((any, %{binary => any} | nil, Absinthe.Type.ResolveInfo.t | nil) -> Absinthe.Type.output_t) | nil}
@@ -33,6 +35,18 @@ defmodule Absinthe.Type.FieldDefinition do
       false
     end
 
+  end
+
+  defimpl Absinthe.Traversal.Node do
+    def children(node, traversal) do
+      found = Schema.lookup_type(traversal.schema, node.type)
+      if found do
+        [found | node.args |> Map.values]
+      else
+        type_names = traversal.schema.types |> Map.keys |> Enum.join(", ")
+        raise "Unknown Absinthe type for field `#{node.name}': (#{node.type |> Type.unwrap} not in available types, #{type_names})"
+      end
+    end
   end
 
 end

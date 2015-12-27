@@ -45,7 +45,7 @@ defmodule Absinthe do
     end
   end
 
-  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Type.Schema.t, Keyword.t) :: {:ok, map} | {:error, any}
+  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, Keyword.t) :: {:ok, map} | {:error, any}
   def run(%Absinthe.Language.Document{} = document, schema, options) do
     case execute(schema, document, options) do
       {:ok, result} ->
@@ -63,10 +63,10 @@ defmodule Absinthe do
     end
   end
 
-  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Type.Schema.t) :: {:ok, map} | {:error, any}
+  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t) :: {:ok, map} | {:error, any}
   def run(input, schema), do: run(input, schema, [])
 
-  @spec run!(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Type.Schema.t, Keyword.t) :: map
+  @spec run!(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, Keyword.t) :: map
   def run!(input, schema, options) do
     case run(input, schema, options) do
       {:ok, result} -> result
@@ -74,7 +74,7 @@ defmodule Absinthe do
     end
   end
 
-  @spec run!(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Type.Schema.t) :: map
+  @spec run!(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t) :: map
   def run!(input, schema), do: run!(input, schema, [])
 
   #

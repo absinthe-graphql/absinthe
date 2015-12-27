@@ -1,8 +1,6 @@
 defmodule Absinthe.Adapters.LanguageConventionsTest do
   use ExSpec, async: true
 
-  use Absinthe.Type
-  alias Absinthe.Type
   alias Absinthe.Adapters.LanguageConventions
 
   it "converts external camelcase field names to underscore" do
@@ -19,90 +17,56 @@ defmodule Absinthe.Adapters.LanguageConventionsTest do
     assert "fooBar" = LanguageConventions.to_external_name("foo_bar", :variable)
   end
 
-  defp field_trip_type do
-    %Type.ObjectType{
-      name: "FieldTrip",
-      description: "A field_trip",
-      fields: fields(
-        id: [
-          type: %Type.NonNull{of_type: Type.Scalar.string},
-          description: "The ID of the field trip"
-        ],
-        name: [
-          type: Type.Scalar.string,
-          description: "The name of field trip is located"
-        ],
-        location_name: [
-          type: Type.Scalar.string,
-          description: "The place the field trip is located"
-        ],
-        other_field_trip: [
-          type: field_trip_type,
-          resolve: fn (_, %{resolution: %{target: %{id: id}}}) ->
-            case id do
-              "museum" -> {:ok, field_trips |> Map.get("opera_house")}
-              "opera_house" -> {:ok, field_trips |> Map.get("museum")}
-            end
-          end
-        ]
-      )
-    }
-  end
+  defmodule Simple do
 
-  defp field_trips do
-    %{
+    use Absinthe.Schema
+    alias Absinthe.Type
+    alias Absinthe.Adapters.LanguageConventionsTest
+
+    @db %{
       "museum" => %{id: "museum", name: "Museum", location_name: "Portland"},
       "opera_house" => %{id: "opera_house", name: "Opera House", location_name: "Sydney"}
-     }
-  end
+    }
 
-  defp simple_schema do
-    %Type.Schema{
-      query: %Type.ObjectType{
-        name: "RootQuery",
+    def query do
+      %Type.ObjectType{
         fields: fields(
           bad_resolution: [
-            type: field_trip_type,
+            type: :field_trip,
             resolve: fn(_, _) ->
               :not_expected
             end
           ],
           field_trip_by_context: [
-            type: field_trip_type,
+            type: :field_trip,
             resolve: fn
-              (_, %{context: %{field_trip: id}}) -> {:ok, field_trips |> Map.get(id)}
+              (_, %{context: %{field_trip: id}}) -> {:ok, @db |> Map.get(id)}
               (_, _) -> {:error, "No :id context provided"}
             end
           ],
           field_trip: [
-            type: field_trip_type,
+            type: :field_trip,
             args: args(
               id: [
                 description: "id of the field trip",
-                type: non_null(Type.Scalar.string)
+                type: non_null(:string)
               ]
             ),
             resolve: fn
               (%{id: id}, _) ->
-                {:ok, field_trips |> Map.get(id)}
+                {:ok, @db |> Map.get(id)}
             end
           ],
           field_trips: [
-            type: list_of(field_trip_type),
+            type: list_of(:field_trip),
             args: args(
               location: [
                 description: "nested location object",
-                type: %Type.InputObjectType{
-                  name: "Location",
-                  description: "A location",
-                  fields: fields(
-                    name: [type: non_null(Type.Scalar.string)],
-                  )
-                }
+                type: :input_location
               ],
               location_name: [
                 description: "The location of the field trip",
-                type: Type.Scalar.string
+                type: :string
               ]
             ),
             resolve: fn
@@ -112,13 +76,55 @@ defmodule Absinthe.Adapters.LanguageConventionsTest do
           ]
         )
       }
-    }
-  end
-
-  defp find_trips(name) do
-    for {_, %{location_name: location} = ft} <- field_trips, location == name, into: []  do
-      ft
     end
+
+    @absinthe :type
+    def input_location do
+      %Type.InputObjectType{
+        name: "Location",
+        description: "A location",
+        fields: fields(
+          name: [type: non_null(:string)],
+        )
+      }
+    end
+
+    @absinthe :type
+    def field_trip do
+      %Type.ObjectType{
+        description: "A field_trip",
+        fields: fields(
+          id: [
+            type: non_null(:string),
+            description: "The ID of the field trip"
+          ],
+          name: [
+            type: :string,
+            description: "The name of field trip is located"
+          ],
+          location_name: [
+            type: :string,
+            description: "The place the field trip is located"
+          ],
+          other_field_trip: [
+            type: :field_trip,
+            resolve: fn (_, %{resolution: %{target: %{id: id}}}) ->
+              case id do
+                "museum" -> {:ok, @db |> Map.get("opera_house")}
+                "opera_house" -> {:ok, @db |> Map.get("museum")}
+              end
+            end
+          ]
+        )
+      }
+    end
+
+    defp find_trips(name) do
+      for {_, %{location_name: location} = ft} <- @db, location == name, into: []  do
+        ft
+      end
+    end
+
   end
 
   it "can do a simple query" do
@@ -200,7 +206,7 @@ defmodule Absinthe.Adapters.LanguageConventionsTest do
     run(query_document, %{})
   end
   defp run(query_document, variables) do
-    Absinthe.run(query_document, simple_schema,
+    Absinthe.run(query_document, Simple.schema,
                   validate: false, variables: variables, adapter: LanguageConventions)
   end
 

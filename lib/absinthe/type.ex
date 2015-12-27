@@ -2,18 +2,15 @@ defmodule Absinthe.Type do
 
   alias __MODULE__
 
-  defmacro __using__(_) do
-    quote do
-      import unquote(__MODULE__).Definitions
-    end
-  end
-
   # ALL TYPES
 
   @type_modules [Type.Scalar, Type.ObjectType, Type.InterfaceType, Type.Union, Type.Enum, Type.InputObjectType, Type.List, Type.NonNull]
 
   @typedoc "These are all of the possible kinds of types."
   @type t :: Type.Scalar.t | Type.ObjectType.t | Type.FieldDefinition.t | Type.InterfaceType.t | Type.Union.t | Type.Enum.t | Type.InputObjectType.t | Type.List.t | Type.NonNull.t
+
+  @typedoc "A type identifier"
+  @type identifier_t :: atom
 
   @doc "Determine if a struct matches one of the types"
   @spec type?(any) :: boolean
@@ -171,12 +168,6 @@ defmodule Absinthe.Type do
   def unwrap(%{of_type: t}), do: t
   def unwrap(type), do: type
 
-  @doc "Unwrap a value from a thunk"
-  @spec unthunk((() -> any)) :: any
-  @spec unthunk(any) :: any
-  def unthunk(thunk) when is_function(thunk), do: thunk.()
-  def unthunk(thunk), do: thunk
-
   # VALID TYPE
 
   def valid_input?(%Type.NonNull{}, nil) do
@@ -201,7 +192,6 @@ defmodule Absinthe.Type do
   # TODO: Support __typename, __schema, and __type for introspection
   def field(type, name) do
     type.fields
-    |> unthunk
     |> Map.get(name |> String.to_atom)
   end
 
