@@ -168,12 +168,6 @@ defmodule Absinthe.Type do
   def unwrap(%{of_type: t}), do: t
   def unwrap(type), do: type
 
-  @doc "Unwrap a value from a thunk"
-  @spec unthunk((() -> any)) :: any
-  @spec unthunk(any) :: any
-  def unthunk(thunk) when is_function(thunk), do: thunk.()
-  def unthunk(thunk), do: thunk
-
   # VALID TYPE
 
   def valid_input?(%Type.NonNull{}, nil) do
@@ -198,7 +192,6 @@ defmodule Absinthe.Type do
   # TODO: Support __typename, __schema, and __type for introspection
   def field(type, name) do
     type.fields
-    |> unthunk
     |> Map.get(name |> String.to_atom)
   end
 

@@ -15,7 +15,6 @@ defmodule Absinthe.Schema.Types do
   def setup(%{type_modules: extra_modules} = schema) do
     type_modules = @builtin_type_modules ++ extra_modules
     types_available = type_modules |> types_from_modules
-    #IO.inspect(extras: extra_modules |> types_from_modules, extras: extra_modules, manual: extra_modules |> Enum.map(&absinthe_types/1))
     initial_collected = @builtin_type_modules |> types_from_modules
     case Traversal.reduce(schema, schema, {type_modules, types_available, [], initial_collected}, &collect_types/3) do
       {_, _, errors, _} when length(errors) > 0 ->

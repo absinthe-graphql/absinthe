@@ -52,15 +52,6 @@ defmodule Absinthe.Type.Definitions do
     type
   end
 
-  defmacro fields(definitions) do
-    quote do
-      fn ->
-        named(Absinthe.Type.FieldDefinition, unquote(definitions))
-      end
-    end
-  end
-
-
   @doc """
   Deprecate a field or argument with an optional reason
   """
@@ -83,7 +74,12 @@ defmodule Absinthe.Type.Definitions do
     named(Absinthe.Type.Argument, definitions)
   end
 
-  def named(mod, definitions) do
+  def fields(definitions) do
+    named(Absinthe.Type.FieldDefinition, definitions)
+  end
+
+  @doc false
+  defp named(mod, definitions) do
     definitions
     |> Enum.into(%{}, fn ({identifier, definition}) ->
       {
