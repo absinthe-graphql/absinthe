@@ -75,9 +75,8 @@ First, define a schema:
 ```elixir
 defmodule MyApp do
 
-  # Gives us `fields`, `args`, `non_null`, `list_of`, `deprecate`,
-  # and other utilities.
-  use Absinthe.Type
+  use Absinthe.Schema
+
   alias Absinthe.Type
 
   # Example data
@@ -86,28 +85,25 @@ defmodule MyApp do
     "bar" => %{id: "bar", name: "Bar"}
   }
 
-  def schema do
-    %Type.Schema{
-      query: %Type.ObjectType{
-        fields: fields(
-          item: [
-            type: item_type,
-            args: args(
-              id: [type: non_null(Type.Scalar.id)]
-            ),
-            resolve: fn %{id: item_id}, _ ->
-              {:ok, @items[item_id]}
-            end
-          ]
-        )
-      }
+  def query do
+    %Type.ObjectType{
+      fields: fields(
+        item: [
+          type: :item
+          args: args(
+            id: [type: non_null(:id)]
+          ),
+          resolve: fn %{id: item_id}, _ ->
+            {:ok, @items[item_id]}
+          end
+        ]
+      )
     }
   end
 
-  # Defines an Item's shape and its available fields
-  defp item_type do
+  @absinthe :type
+  defp item do
     %Type.ObjectType{
-      name: "Item",
       description: "An item",
       fields: fields(
         id: [type: Type.Scalar.id],
@@ -119,7 +115,21 @@ defmodule MyApp do
 end
 ```
 
-Now, use Absinthe to execute a query document:
+Note the `@absinthe :type` that defines the value of the `item` function as a
+type (and note how `:item` is used as the `type` value for the `item` field in
+the query above).
+
+Some notes on defining types:
+
+* By default, they will have the same atom identifier (eg, `:item`) as the
+  defining function. This can be overridden, eg, `@absinthe type: :my_custom_name`
+* The `name` field of the type is optional; if not provided, it will be given a
+  TitleCase version of the type identifier (in this case, for example, it's
+  automatically set to `"Item"`.
+* You can define additional scalar types (including coercion logic); see
+  [Defining Custom Types](#Defining-Custom-Types), below.
+
+Now, you can use Absinthe to execute a query document:
 
 ```elixir
 """
@@ -161,24 +171,22 @@ Use the `deprecate` function on an argument definition (or input object field),
 passing an optional `reason`:
 
 ```elixir
-def schema do
-  %Type.Schema{
-    query: %Type.ObjectType{
-      name: "RootQuery",
-      fields: fields(
-        item: [
-          type: item_type,
-          args: args(
-            id: [type: non_null(Type.Scalar.id)],
-            oldId: deprecate([type: non_null(Type.Scalar.string)],
-                             reason: "It's old.")
-          ),
-          resolve: fn %{id: item_id}, _ ->
-            {:ok, @items[item_id]}
-          end
-        ]
-      )
-    }
+def query do
+  %Type.ObjectType{
+    name: "RootQuery",
+    fields: fields(
+      item: [
+        type: :item
+        args: args(
+          id: [type: non_null(:id)],
+          oldId: deprecate([type: non_null(:string)],
+                           reason: "It's old.")
+        ),
+        resolve: fn %{id: item_id}, _ ->
+          {:ok, @items[item_id]}
+        end
+      ]
+    )
   }
 end
 ```
@@ -198,9 +206,10 @@ Absinthe supports defining custom scalar types, just like the built-in types.
 Here's an example of how to support a time scalar to/from ISOz format:
 
 ```elixir
-defp time_type do
+@absinthe type: :iso_z
+defp iso_z_type do
   %Type.Scalar{
-    name: "Time",
+    name: "ISOz",
     description: "ISOz time",
     parse: &Timex.DateFormat.parse(&1, "{ISOz}"),
     serialize: &Timex.DateFormat.format!(&1, "{ISOz}")
@@ -208,7 +217,8 @@ defp time_type do
 end
 ```
 
-Now `time_type` can be used for any argument or field.
+Now `:iso_z` can be used in your schema and variables can use
+`ISOz` in query documents.
 
 ## Adapters
 
