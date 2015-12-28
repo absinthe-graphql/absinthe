@@ -2,28 +2,34 @@
 
 A [GraphQL](https://facebook.github.io/graphql/) implementation for Elixir.
 
+## Experimental!
+
 Please note that this is an initial release, and while functional enough to
 build basic APIs (we are using it in a production system), it should be
 considered experimental. (Notably, it does not yet work with Relay.)
 
-For more information on status, see
-[Specification Implementation](#Specification-Implementation), below.
+For more information on status, see "Specification Implementation," below.
 
-## Working Features
+## Goal
+
+Absinthe's goal is full implementation of the specification--in as an
+idiomatic, flexible, and comfortable way possible.
+
+### Working Features
 
 - Basic query document execution and argument/field validation. (Note Validation
   is currently done during Execution, rather than as a separate phase. This will
   change in the next minor release.)
 - Variables, including defaulting and `!` requirements.
 - Full support for extending types, including scalars.
-  (See [Custom Types](#Custom-Types), below.)
-- Argument and input object field deprecation. (See [Deprecation](#Deprecation),
+  (See "Custom Types," below.)
+- Argument and input object field deprecation. (See "Deprecation,"
   below.)
 - Errors with source line numbers. (Someday, column numbers; the Leex lexer
   doesn't support them yet.)
 - An flexible adapter mechanism to translate between different naming
   conventions (eg, `snake_case` and `camelCase`) in schema vs the client.
-  (See [Adapters](#Adapters), below.).
+  (See "Adapters," below.).
 
 ### Notably Missing
 
@@ -32,11 +38,9 @@ Support for:
 - Fragments and fragment spreads
 - Directives
 - Interfaces
+- Comprehensive test suite against the specification (in progress under `test/specification`)
 
-See [Specification Implementation](#Specification-Implementation) for more
-information.
-
-## Alternatives
+### Alternatives
 
 You may also want to look at building from or using one of the following
 alternatives.
@@ -64,16 +68,25 @@ For a grounding in GraphQL, I recommend you read through the following articles:
 * The [GraphQL Introduction](https://facebook.github.io/react/blog/2015/05/01/graphql-introduction.html) and [GraphQL: A data query language](https://code.facebook.com/posts/1691455094417024/graphql-a-data-query-language/) posts from Facebook.
 * The [Your First GraphQL Server](https://medium.com/@clayallsopp/your-first-graphql-server-3c766ab4f0a2#.m78ybemas) Medium post by Clay Allsopp. (Note this uses the [JavaScript GraphQL reference implementation](https://github.com/graphql/graphql-js).)
 * Other blog posts that pop up. GraphQL is young!
-* For the ambitious, the draft [GraphQL Specification](https://facebook.github.io/graphql/). Absinthe's goal is full implementation of the specification--in as an idiomatic, flexible, and comfortable way possible. The specification is linked extensively here and in the Absinthe source.
+* For the ambitious, the draft [GraphQL Specification](https://facebook.github.io/graphql/).
 
 You may also be interested in how GraphQL is used by [Relay](https://facebook.github.io/relay/), a "JavaScript frameword for building data-driven React applications."
 
 ## Basic Usage
 
-First, define a schema:
+A GraphQL API starts by building a schema. Using Absinthe, schemas are normal
+modules that use `Absinthe.Schema` and adhere to its behavior (ie, define at
+least `query`).
+
+For this example, we'll build a simple schema that allows users to look-up an
+`item` by `id`, a required, non-null field of type `:id` (which is a built-in
+type, just like `:string`, `:integer`, `:float`, and `:boolean`).
+
+(You may want to refer to the [Absinthe API documentation](http://hexdocs.pm/absinthe)
+for more detailed information as you look this over.)
 
 ```elixir
-defmodule MyApp do
+defmodule MyApp.Schema do
 
   use Absinthe.Schema
 
@@ -101,55 +114,72 @@ defmodule MyApp do
     }
   end
 
-  @absinthe :type
-  def item do
-    %Type.ObjectType{
-      description: "An item",
-      fields: fields(
-        id: [type: :id],
-        name: [type: :string]
-      )
-    }
-  end
-
 end
 ```
 
-Note the `@absinthe :type` that defines the value of the `item` function as a
-type (and note how `:item` is used as the `type` value for the `item` field in
-the query above).
+Some functions used here that are worth mentioning, pulled in automatically from
+`Absinthe.Type.Definitions` by `use Absinthe.Schema`:
+
+* `args()` and `fields()` are utility functions that reduce clutter in your
+  schema (by building maps of nicely-named `%Type.Argument{}` and
+  `%Type.FieldDefinition{}` structs, respectively, for you).
+* `non_null()`: Used to add a non-null constraint to an argument. In this
+  example, we are requiring an `id` to be provided to resolve the `item` field.
+
+You'll notice we mention another type here: `:item`.
+
+We haven't defined that yet; let's do it. In the same `MyApp.Schema` module:
+
+```elixir
+@absinthe :type
+def item do
+  %Type.ObjectType{
+    description: "An item",
+    fields: fields(
+      id: [type: :id],
+      name: [type: :string]
+    )
+  }
+end
+```
 
 Some notes on defining types:
 
 * By default, they will have the same atom identifier (eg, `:item`) as the
   defining function. This can be overridden, eg, `@absinthe type: :my_custom_name`
-* The `name` field of the type is optional; if not provided, it will be given a
-  TitleCase version of the type identifier (in this case, for example, it's
-  automatically set to `"Item"`.
+* The `name` field of the `Type.ObjectType` struct is optional; if not provided,
+  it will be automatically set to a TitleCase version of the type identifier
+  (in this case, it's set to `"Item"`).
 * You can define additional scalar types (including coercion logic); see
-  [Defining Custom Types](#Defining-Custom-Types), below.
+  "Custom Types," below.
 
-Now, you can use Absinthe to execute a query document:
+See [the documentation for Absinthe.Type.Definitions](http://hexdocs.pm/absinthe/Absinthe.Type.Definitions.html)
+for more information.
+
+Now, you can use Absinthe to execute a query document. Let's get the
+item with ID `"foo"`:
 
 ```elixir
 """
 {
-  item(id: "") {
+  item(id: "foo") {
     name
   }
 }
 """
-|> Absinthe.run(MyApp.schema)
+|> Absinthe.run(MyApp.Schema)
 
 # Result
 {:ok, %{data: %{"item" => %{"name" => "Foo"}}}}
 ```
 
-You may want to look at the tests for more examples.
+We can also use a variable:
 
 ## Variables
 
-To support variables, simply pass in a `variables` option to `run`:
+To support variables, simply define them for your query document [as the specification expects](https://facebook.github.io/graphql/#sec-Language.Query-Document.Variables),
+and pass in a `variables` option (eg, query parameters passed along with the
+request) to `run`:
 
 ```elixir
 """
@@ -159,7 +189,7 @@ query GetItem($id: ID!) {
   }
 }
 """
-|> Absinthe.run(MyApp.schema, variables: %{id: "bar"})
+|> Absinthe.run(MyApp.Schema, variables: %{id: "bar"})
 
 # Result
 {:ok, %{data: %{"item" => %{"name" => "Bar"}}}}
@@ -191,14 +221,15 @@ def query do
 end
 ```
 
-`resolve` functions must accept 2 arguments: a map of GraphQL arguments and a
+`resolve` functions must accept 2 arguments: a map of arguments and a
 special `%Absinthe.Execution{}` struct that provides the full execution context
 (useful for advanced purposes). `resolve` functions must return a `{:ok, result}`
 or `{:error, "Error to report"}` tuple.
 
-Note: At the current time, Absinthe reports any deprecated argument or input
-object field used in the `errors` entry of the response. Non null is ignored
-when validating deprecated arguments and input object fields.
+Note: At the current time, Absinthe reports any deprecated argument or
+deprecated input object field used in the `errors` entry of the response. Non
+null constraints are ignored when validating deprecated arguments and input
+object fields.
 
 ## Custom Types
 
@@ -246,7 +277,7 @@ config :absinthe,
 Or, you can provide it as an option to `Absinthe.run/3`:
 
 ```elixir
-Absinthe.run(query, MyApp.schema,
+Absinthe.run(query, MyApp.Schema,
              adapter: Absinthe.Adapters.LanguageConventions)
 ```
 
@@ -260,7 +291,9 @@ functions.
 
 ## Specification Implementation
 
-Explained using the following scale:
+Absinthe is currently targeting the [GraphQL Working Draft](https://facebook.github.io/graphql), dated October 2015.
+
+Here's the basic status, using the following scale:
 
 * *Missing*: Sorry, nothing done yet!
 * *Partial*: Some work done. May be used in a limited, experimental fashion, but
@@ -269,8 +302,6 @@ Explained using the following scale:
   missing, and only loosely adheres to [parts of] the specification.
 * *Complete*: Work completed. Please report any mismatches against the
   specification.
-
-I welcome issues and pull requests; please see [CONTRIBUTING](./CONTRIBUTING).
 
 | Section       | Implementation | Reference                                                                                 |
 | ------------: | :------------- | :---------------------------------------------------------------------------------------- |
@@ -281,8 +312,12 @@ I welcome issues and pull requests; please see [CONTRIBUTING](./CONTRIBUTING).
 | Execution     | Functional     | [GraphQL Specification, Section 6](https://facebook.github.io/graphql/#sec-Execution)     |
 | Response      | Functional     | [GraphQL Specification, Section 7](https://facebook.github.io/graphql/#sec-Response)      |
 
+### Roadmap & Contributions
+
 For a list of specific planned features and version targets, see the
 [milestone list](https://github.com/CargoSense/ex_graphql/milestones).
+
+We welcome issues and pull requests; please see CONTRIBUTING.
 
 ## License
 
