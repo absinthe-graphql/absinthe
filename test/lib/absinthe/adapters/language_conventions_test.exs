@@ -1,7 +1,7 @@
-defmodule Absinthe.Adapters.LanguageConventionsTest do
+defmodule Absinthe.Adapter.LanguageConventionsTest do
   use ExSpec, async: true
 
-  alias Absinthe.Adapters.LanguageConventions
+  alias Absinthe.Adapter.LanguageConventions
 
   it "converts external camelcase field names to underscore" do
     assert "foo_bar" = LanguageConventions.to_internal_name("fooBar", :field)

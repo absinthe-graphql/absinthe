@@ -1,4 +1,7 @@
 defmodule Absinthe.Language.OperationDefinition do
+
+  @moduledoc false
+
   defstruct operation: nil, name: nil, variable_definitions: [], directives: [], selection_set: nil, loc: %{start: nil}
 
   defimpl Absinthe.Traversal.Node do

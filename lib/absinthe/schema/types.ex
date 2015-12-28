@@ -1,5 +1,7 @@
 defmodule Absinthe.Schema.Types do
 
+  @moduledoc false
+
   alias Absinthe.Schema
   alias Absinthe.Traversal
   alias Absinthe.Type
@@ -11,6 +13,8 @@ defmodule Absinthe.Schema.Types do
 
   @builtin_type_modules [Type.Scalar]
 
+  # Discover the types available to and defined for a schema
+  @doc false
   @spec setup(Schema.t) :: Schema.t
   def setup(%{type_modules: extra_modules} = schema) do
     type_modules = @builtin_type_modules ++ extra_modules
@@ -53,6 +57,8 @@ defmodule Absinthe.Schema.Types do
     {:ok, acc, traversal}
   end
 
+  # Gracefully attempt to get the absinthe types
+  # on a given type module
   defp absinthe_types(mod) do
     try do
       mod.absinthe_types
@@ -61,8 +67,9 @@ defmodule Absinthe.Schema.Types do
     end
   end
 
+  # Extract a mapping of all the types in a set of modules
   @spec types_from_modules([atom]) :: typemap_t
-  def types_from_modules(modules) do
+  defp types_from_modules(modules) do
     modules
     |> Enum.map(&absinthe_types/1)
     |> Enum.reduce(%{}, fn

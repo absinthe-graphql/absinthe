@@ -1,17 +1,38 @@
 defmodule Absinthe do
 
+  @moduledoc """
+  This is documentation for the Absinthe project.
+
+  The following packages are useful in fully building out a GraphQL
+  API:
+
+  * [Ecto](http://hexdocs.pm/ecto) - a language integrated query and
+  database wrapper.
+  * [Phoenix](http://hexdocs.pm/phoenix) - the Phoenix web framework.
+  * [Plug](http://hexdocs.pm/plug) - a specification and conveniences
+  for composable modules in between web applications.
+    * An Absinthe-specific package for Plug is on our roadmap.
+  """
+
   defmodule ExecutionError do
+    @moduledoc """
+    An error during execution.
+    """
     defexception message: "execution failed"
   end
 
   defmodule SyntaxError do
+    @moduledoc """
+    An error during parsing.
+    """
     defexception line: nil, errors: "Syntax error"
-
     def message(exception) do
       "#{exception.errors} on line #{exception.line}"
     end
   end
 
+
+  @doc false
   @spec tokenize(binary) :: {:ok, [tuple]} | {:error, binary}
   def tokenize(input) do
     case :absinthe_lexer.string(input |> to_char_list) do
@@ -20,6 +41,7 @@ defmodule Absinthe do
     end
   end
 
+  @doc false
   @spec parse(binary) :: {:ok, Absinthe.Language.Document.t} | {:error, tuple}
   @spec parse(Absinthe.Language.Source.t) :: {:ok, Absinthe.Language.Document.t} | {:error, tuple}
   def parse(input) when is_binary(input) do
@@ -33,6 +55,7 @@ defmodule Absinthe do
     end
   end
 
+  @doc false
   @spec parse!(binary) :: Absinthe.Language.Document.t
   @spec parse!(Absinthe.Language.Source.t) :: Absinthe.Language.Document.t
   def parse!(input) when is_binary(input) do
@@ -45,7 +68,16 @@ defmodule Absinthe do
     end
   end
 
-  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, atom | Absinthe.Schema.t, Keyword.t) :: {:ok, map} | {:error, any}
+  @doc """
+  Evaluates a query document against a schema, with options.
+
+  ## Options
+
+  * `:adapter` - The name of the adapter to use. See the `Absinthe.Adapter` behaviour and the `Absinthe.Adapter.Passthrough` and `Absinthe.Adapter.LanguageConventions` modules that implement it. (`Absinthe.Adapter.Passthrough` is the default value for this option.)
+  * `:operation_name` - If more than one operation is present in the provided query document, this must be provided to select which operation to execute.
+  * `:variables` - A map of provided variable values to be used when filling in arguments in the provided query document.
+  """
+  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, atom | Absinthe.Schema.t, Keyword.t) :: {:ok, Absinthe.Execution.result_t} | {:error, any}
   def run(%Absinthe.Language.Document{} = document, schema, options) do
     case execute(schema, document, options) do
       {:ok, result} ->
@@ -63,10 +95,18 @@ defmodule Absinthe do
     end
   end
 
-  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, atom | Absinthe.Schema.t) :: {:ok, map} | {:error, any}
+  @doc "Evaluates a query document against a schema, without options."
+  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, atom | Absinthe.Schema.t) :: {:ok, Absinthe.Execution.result_t} | {:error, any}
   def run(input, schema), do: run(input, schema, [])
 
-  @spec run!(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, atom | Absinthe.Schema.t, Keyword.t) :: map
+  @doc """
+  Evaluates a query document against a schema, with options, raising an `Absinthe.ExecutionError` if a problem occurs
+
+  ## Options
+
+  See `run/3` for the available options.
+  """
+  @spec run!(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, atom | Absinthe.Schema.t, Keyword.t) :: Absinthe.Execution.result_t
   def run!(input, schema, options) do
     case run(input, schema, options) do
       {:ok, result} -> result
@@ -74,8 +114,10 @@ defmodule Absinthe do
     end
   end
 
-  @spec run!(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, atom | Absinthe.Schema.t) :: map
+  @doc "Evaluates a query document against a schema, with options, raising an `Absinthe.ExecutionError` if a problem occurs."
+  @spec run!(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, atom | Absinthe.Schema.t) :: Absinthe.Execution.result_t
   def run!(input, schema), do: run!(input, schema, [])
+
 
   @spec find_schema(Absinthe.Schema.t | atom) :: Absinthe.Schema.t
   defp find_schema(schema_module) when is_atom(schema_module), do: schema_module.schema

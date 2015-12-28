@@ -1,8 +1,7 @@
 defmodule Absinthe.Execution.Arguments do
+  # Handles the logic around building and validating argument values for a field.
 
-  @moduledoc """
-  Handles the logic around building and validating argument values for a field.
-  """
+  @moduledoc false
 
   alias Absinthe.Validation
   alias Absinthe.Execution
@@ -10,10 +9,9 @@ defmodule Absinthe.Execution.Arguments do
   alias Absinthe.Language
   alias Absinthe.Schema
 
-  @doc """
-  Build an arguments map from the argument definitions in the schema, using the
-  argument values from the query document.
-  """
+  # Build an arguments map from the argument definitions in the schema, using the
+  # argument values from the query document.
+  @doc false
   @spec build(Language.Field.t, %{atom => Type.Argument.t}, Execution.t) :: {:ok, {%{atom => any}, Execution.t}} | {:error, {[binary], [binary]}, Execution.t}
   def build(ast_field, schema_arguments, execution) do
     initial = {%{}, {[], []}, execution}

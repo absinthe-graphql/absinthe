@@ -1,5 +1,7 @@
 defmodule Absinthe.Language.Field do
 
+  @moduledoc false
+
   @type t :: %{alias: nil | binary, name: binary,
                arguments: [Absinthe.Language.Argument.t],
                directives: [Absinthe.Language.Directive.t],

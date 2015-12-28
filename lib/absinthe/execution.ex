@@ -1,5 +1,7 @@
 defmodule Absinthe.Execution do
 
+  @moduledoc false
+
   alias Absinthe.Language
   alias Absinthe.Type
   alias Absinthe.Flag
@@ -16,11 +18,12 @@ defmodule Absinthe.Execution do
   @type error_t :: %{message: binary, locations: [error_location_t]}
 
   @typedoc "The canonical result representation of an execution"
-  @type result_t :: %{data: %{binary => any}, errors: [error_t]}
+  @type result_t :: %{data: %{binary => any}, errors: [error_t]} | %{data: %{binary => any}} | %{errors: [error_t]}
 
-  @type t :: %{schema: Schema.t, document: Language.Document.t, variables: map, selected_operation: Absinthe.Type.ObjectType.t, operation_name: atom, errors: [error_t], categorized: boolean, strategy: atom, adapter: atom, resolution: Execution.Resolution.t}
+  @type t :: %{schema: Schema.t, document: Language.Document.t, variables: map, selected_operation: Absinthe.Type.ObjectType.t, operation_name: binary, errors: [error_t], categorized: boolean, strategy: atom, adapter: atom, resolution: Execution.Resolution.t}
   defstruct schema: nil, document: nil, variables: %{}, fragments: %{}, operations: %{}, selected_operation: nil, operation_name: nil, errors: [], categorized: false, strategy: nil, adapter: nil, resolution: nil
 
+  @doc false
   def run(execution, options \\ []) do
     raw = execution |> Map.merge(options |> Enum.into(%{}))
     case prepare(raw) do
@@ -29,6 +32,7 @@ defmodule Absinthe.Execution do
     end
   end
 
+  @doc false
   @spec prepare(t) :: t
   def prepare(execution) do
     defined = execution
@@ -40,9 +44,10 @@ defmodule Absinthe.Execution do
     end
   end
 
-  @default_adapter Absinthe.Adapters.Passthrough
+  @default_adapter Absinthe.Adapter.Passthrough
 
-  @doc "Add the configured adapter to an execution"
+  # Add the configured adapter to an execution
+  @doc false
   @spec add_configured_adapter(t) :: t
   def add_configured_adapter(%{adapter: nil} = execution) do
     %{execution | adapter: configured_adapter}
@@ -62,14 +67,11 @@ defmodule Absinthe.Execution do
 
   @default_column_number 0
 
-  @doc """
-  Add an error to an execution.
-
-  ## Examples
-
-      iex> execution |> put_error(:field, "myField", "is not good!", at: ast_node)
-
-  """
+  # Add an error to an execution.
+  #
+  #     iex> execution |> put_error(:field, "myField", "is not good!", at: ast_node)
+  #
+  @doc false
   @spec put_error(t, Adapter.role_t, binary | atom, binary | function, Keyword.t) :: t
   def put_error(exception, role, name, message, options) do
     %{at: ast_node} = options |> Enum.into(%{})
@@ -85,17 +87,20 @@ defmodule Absinthe.Execution do
     %{exception | errors: [error | exception.errors]}
   end
 
+  @doc false
   @spec format_error(t, error_info_t, Language.t) :: error_t
   def format_error(%{adapter: adapter}, error_info, %{loc: %{start_line: line}}) do
     adapter.format_error(error_info, [%{line: line, column: @default_column_number}])
   end
 
+  # Format an error, without using the adapter (useful when reporting on types and other unadapted names)
+  @doc false
   @spec format_error(binary, Language.t) :: error_t
-  @doc "Format an error, without using the adapter (useful when reporting on types and other unadapted names)"
   def format_error(message, %{loc: %{start_line: line}}) do
     %{message: message, locations: [%{line: line, column: @default_column_number}]}
   end
 
+  @doc false
   @spec resolve_type(t, t, t) :: t | nil
   def resolve_type(target, nil = _child_type, %Type.Union{} = parent_type) do
     parent_type
@@ -118,6 +123,9 @@ defmodule Absinthe.Execution do
     nil
   end
 
+  # Stringify keys in an arbitrarily deep structure with maps
+  @doc false
+  @spec stringify_keys(any) :: any
   def stringify_keys(node) when is_map(node) do
     for {key, val} <- node, into: %{}, do: {key |> to_string, stringify_keys(val)}
   end
@@ -137,7 +145,8 @@ defmodule Absinthe.Execution do
     end
   end
 
-  @doc "Categorize definitions in the execution document as operations or fragments"
+  # Categorize definitions in the execution document as operations or fragments
+  @doc false
   @spec categorize_definitions(t) :: t
   def categorize_definitions(%{document: %Language.Document{definitions: definitions}} = execution) do
     categorize_definitions(%{execution | operations: %{}, fragments: %{}, categorized: true}, definitions)
@@ -153,6 +162,8 @@ defmodule Absinthe.Execution do
     categorize_definitions(%{execution | fragments: fragments |> Map.put(name, definition)}, rest)
   end
 
+  @doc false
+  @spec selected_operation(t) :: {:ok, Absinthe.Type.ObjectType.t | nil} | {:error, binary}
   def selected_operation(%{categorized: false}) do
     {:error, "Call Execution.categorize_definitions first"}
   end

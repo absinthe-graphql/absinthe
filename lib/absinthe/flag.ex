@@ -1,17 +1,16 @@
 defmodule Absinthe.Flag do
 
-  @doc """
-  Create a "flagged" tuple, supporting easy creating via |> pipes.
+  @moduledoc false
 
-  ## Examples
-
-      iex> :thing |> as(:ok)
-      {:ok, :thing}
-
-      iex> :thing |> as(:error)
-      {:error, :thing}
-
-  """
+  # Create a "flagged" tuple, supporting easy creating via |> pipes.
+  #
+  #     iex> :thing |> as(:ok)
+  #     {:ok, :thing}
+  #
+  #     iex> :thing |> as(:error)
+  #     {:error, :thing}
+  #
+  @doc false
   @spec as(any, atom) :: {atom, any}
   def as(value, flag) do
     {flag, value}

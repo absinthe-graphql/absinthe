@@ -1,11 +1,13 @@
 defmodule Absinthe.Execution.Runner do
-  @moduledoc """
-  Determines the root object to resolve, then runs the correct strategy.
-  """
+  # Determines the root object to resolve, then runs the correct strategy.
+
+  @moduledoc false
 
   alias Absinthe.Execution
   alias Absinthe.Execution.Resolution
 
+  @doc false
+  @spec run(Execution.t) :: {:ok, Execution.result_t} | {:error, any}
   def run(%{selected_operation: nil}) do
     {:ok, %{}}
   end

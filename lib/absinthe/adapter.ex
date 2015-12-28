@@ -94,17 +94,13 @@ defmodule Absinthe.Adapter do
   """
   @callback dump_results(Absinthe.Execution.result_t) :: any
 
-  @typedoc "The lexical role of a name within the document/schema"
+  @typedoc "The lexical role of a name within the document/schema."
   @type role_t :: :operation | :field | :argument | :result
 
-  @doc """
-  Convert a name from an external name to an internal name
-  """
+  @doc "Convert a name from an external name to an internal name."
   @callback to_internal_name(binary, role_t) :: binary
 
-  @doc """
-  Convert a name from an internal name to an external name
-  """
+  @doc "Convert a name from an internal name to an external name."
   @callback to_external_name(binary, role_t) :: binary
 
   @doc """
@@ -113,10 +109,10 @@ defmodule Absinthe.Adapter do
 
   ## Examples
 
-      iex> format_error(%{name: "foo", value: &"missing value '\#{&1}'"}, [%{line: 2, column: 4}])
+      iex> format_error(%{name: "foo", role: :field, value: &"missing value '\#{&1}'"}, [%{line: 2, column: 4}])
       %{message: "missing value 'foo'", locations: [%{line: 2, column: 4}]}
 
-      iex> format_error(%{name: "foo", value: "missing value"}, [%{line: 2, column: 4}])
+      iex> format_error(%{name: "foo", role: :field, value: "missing value"}, [%{line: 2, column: 4}])
       %{message: "Field 'foo': missing value", locations: [%{line: 2, column: 4}]}
 
   """

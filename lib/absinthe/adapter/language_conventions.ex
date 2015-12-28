@@ -1,4 +1,4 @@
-defmodule Absinthe.Adapters.LanguageConventions do
+defmodule Absinthe.Adapter.LanguageConventions do
   use Absinthe.Adapter
 
   @moduledoc """
@@ -9,12 +9,12 @@ defmodule Absinthe.Adapters.LanguageConventions do
 
   For example, this document:
 
-    {
-      myUser: createUser(userId: 2) {
-        firstName
-        lastName
+      {
+        myUser: createUser(userId: 2) {
+          firstName
+          lastName
+        }
       }
-    }
 
   Would map to an internal schema that used the following names:
 
