@@ -45,7 +45,7 @@ defmodule Absinthe do
     end
   end
 
-  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, Keyword.t) :: {:ok, map} | {:error, any}
+  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, atom | Absinthe.Schema.t, Keyword.t) :: {:ok, map} | {:error, any}
   def run(%Absinthe.Language.Document{} = document, schema, options) do
     case execute(schema, document, options) do
       {:ok, result} ->
@@ -63,10 +63,10 @@ defmodule Absinthe do
     end
   end
 
-  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t) :: {:ok, map} | {:error, any}
+  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, atom | Absinthe.Schema.t) :: {:ok, map} | {:error, any}
   def run(input, schema), do: run(input, schema, [])
 
-  @spec run!(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, Keyword.t) :: map
+  @spec run!(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, atom | Absinthe.Schema.t, Keyword.t) :: map
   def run!(input, schema, options) do
     case run(input, schema, options) do
       {:ok, result} -> result
@@ -74,14 +74,20 @@ defmodule Absinthe do
     end
   end
 
-  @spec run!(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t) :: map
+  @spec run!(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, atom | Absinthe.Schema.t) :: map
   def run!(input, schema), do: run!(input, schema, [])
+
+  @spec find_schema(Absinthe.Schema.t | atom) :: Absinthe.Schema.t
+  defp find_schema(schema_module) when is_atom(schema_module), do: schema_module.schema
+  defp find_schema(schema), do: schema
 
   #
   # EXECUTION
   #
 
-  defp execute(schema, document, options) do
+  @spec execute(Absinthe.Schema.t | atom, Absinthe.Language.Document.t, Keyword.t) :: Absinthe.Execution.result_t
+  defp execute(schema_ref, document, options) do
+    schema = find_schema(schema_ref)
     %Absinthe.Execution{schema: schema, document: document}
     |> Absinthe.Execution.run(options)
   end

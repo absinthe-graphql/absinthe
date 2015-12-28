@@ -152,7 +152,7 @@ defmodule AbsintheTest do
 
   defp run(query, options \\ []) do
     query
-    |> Absinthe.run(Things.schema, options)
+    |> Absinthe.run(Things, options)
   end
 
 end
