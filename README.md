@@ -261,9 +261,9 @@ use conventions most natural to them.
 
 Absinthe ships with two adapters:
 
-* `Absinthe.Adapters.Passthrough`, which is a no-op adapter and makes no
+* `Absinthe.Adapter.Passthrough`, which is a no-op adapter and makes no
   modifications. (This is the default.)
-* `Absinthe.Adapters.LanguageConventions`, which expects schemas to be defined
+* `Absinthe.Adapter.LanguageConventions`, which expects schemas to be defined
   in `snake_case` (the standard Elixir convention), translating to/from `camelCase`
   for incoming query documents and outgoing results.
 
@@ -271,14 +271,14 @@ To set the adapter, you can set an application configuration value:
 
 ```elixir
 config :absinthe,
-  adapter: Absinthe.Adapters.LanguageConventions
+  adapter: Absinthe.Adapter.LanguageConventions
 ```
 
 Or, you can provide it as an option to `Absinthe.run/3`:
 
 ```elixir
 Absinthe.run(query, MyApp.Schema,
-             adapter: Absinthe.Adapters.LanguageConventions)
+             adapter: Absinthe.Adapter.LanguageConventions)
 ```
 
 Notably, this means you're able to switch adapters on case-by-case basis.
