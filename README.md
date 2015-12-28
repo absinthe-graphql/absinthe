@@ -8,7 +8,7 @@ Please note that this is an initial release, and while functional enough to
 build basic APIs (we are using it in a production system), it should be
 considered experimental. (Notably, it does not yet work with Relay.)
 
-For more information on status, see "Specification Implementation," below.
+For more information on status, see [Specification Implementation](README.md#Specification-Implementation), below.
 
 ## Goal
 
@@ -22,14 +22,14 @@ idiomatic, flexible, and comfortable way possible.
   change in the next minor release.)
 - Variables, including defaulting and `!` requirements.
 - Full support for extending types, including scalars.
-  (See "Custom Types," below.)
-- Argument and input object field deprecation. (See "Deprecation,"
+  (See [Custom Types](README.md#Custom-Types), below.)
+- Argument and input object field deprecation. (See [Deprecation](README.md#Deprecation),
   below.)
 - Errors with source line numbers. (Someday, column numbers; the Leex lexer
   doesn't support them yet.)
 - An flexible adapter mechanism to translate between different naming
   conventions (eg, `snake_case` and `camelCase`) in schema vs the client.
-  (See "Adapters," below.).
+  (See [Adapters](README.md#Adapters), below.).
 
 ### Notably Missing
 
@@ -151,7 +151,7 @@ Some notes on defining types:
   it will be automatically set to a TitleCase version of the type identifier
   (in this case, it's set to `"Item"`).
 * You can define additional scalar types (including coercion logic); see
-  "Custom Types," below.
+  [Custom Types](README.md#Custom-Types), below.
 
 See [the documentation for Absinthe.Type.Definitions](http://hexdocs.pm/absinthe/Absinthe.Type.Definitions.html)
 for more information.
