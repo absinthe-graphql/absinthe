@@ -5,6 +5,8 @@ defmodule Absinthe.Type.FieldDefinition do
 
   Usually these are defined using the `Absinthe.Type.Definitions.fields/1`
   convenience function.
+
+  See the `t` type below for details and examples of how to define a field.
   """
 
   alias __MODULE__
@@ -20,7 +22,7 @@ defmodule Absinthe.Type.FieldDefinition do
   the `Absinthe.Type.Definitions.fields/1` convenience function.
   * `:description` - Description of a field, useful for introspection.
   * `:deprecation` - Deprecation information for a field, usually
-     set-up using the `Absinthe.Type.Definitions.deprecate/1` convenience
+     set-up using the `Absinthe.Type.Definitions.deprecate/2` convenience
      function.
   * `:type` - The type the value of the field should resolve to
   * `:args` - The arguments of the field, usually created by using the

@@ -238,7 +238,7 @@ Here's an example of how to support a time scalar to/from ISOz format:
 
 ```elixir
 @absinthe type: :iso_z
-defp iso_z_type do
+def iso_z_type do
   %Type.Scalar{
     name: "ISOz",
     description: "ISOz time",

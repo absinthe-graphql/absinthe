@@ -76,24 +76,4 @@ defmodule Absinthe.Type.Fixtures do
     }
   end
 
-  @absinthe :type
-  def interface_type do
-    %Type.InterfaceType{}
-  end
-
-  @absinthe :type
-  def union_type do
-    %Type.Union{types: [object_type]}
-  end
-
-  @absinthe :type
-  def enum_type do
-    %Type.Enum{values: %{foo: %{}}}
-  end
-
-  @absinthe :type
-  def input_object_type do
-    %Type.InputObjectType{}
-  end
-
 end

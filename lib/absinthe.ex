@@ -1,10 +1,15 @@
 defmodule Absinthe do
 
   @moduledoc """
-  This is documentation for the Absinthe project.
+  Documentation for the Absinthe package, a toolkit for building GraphQL
+  APIs with Elixir.
 
-  The following packages are useful in fully building out a GraphQL
-  API:
+  Absinthe aims to handle authoring GraphQL API schemas -- then supporting
+  their introspection, validation, and execution according to the
+[GraphQL specification](https://facebook.github.io/graphql/).
+
+  Here are some additional projects you're likely to use in conjunction with
+  Absinthe to launch an API:
 
   * [Ecto](http://hexdocs.pm/ecto) - a language integrated query and
   database wrapper.
@@ -12,6 +17,12 @@ defmodule Absinthe do
   * [Plug](http://hexdocs.pm/plug) - a specification and conveniences
   for composable modules in between web applications.
     * An Absinthe-specific package for Plug is on our roadmap.
+  * [Poison](http://hexdocs.pm/poison) - JSON serialization
+
+  ## Basic Usage
+
+  See the documentation for `Absinthe.Schema` and `run/3`.
+
   """
 
   defmodule ExecutionError do
@@ -30,7 +41,6 @@ defmodule Absinthe do
       "#{exception.errors} on line #{exception.line}"
     end
   end
-
 
   @doc false
   @spec tokenize(binary) :: {:ok, [tuple]} | {:error, binary}
@@ -76,6 +86,41 @@ defmodule Absinthe do
   * `:adapter` - The name of the adapter to use. See the `Absinthe.Adapter` behaviour and the `Absinthe.Adapter.Passthrough` and `Absinthe.Adapter.LanguageConventions` modules that implement it. (`Absinthe.Adapter.Passthrough` is the default value for this option.)
   * `:operation_name` - If more than one operation is present in the provided query document, this must be provided to select which operation to execute.
   * `:variables` - A map of provided variable values to be used when filling in arguments in the provided query document.
+
+  ## Examples
+
+  ```
+  \"""
+  {
+    item(id: "123") {
+      name
+    }
+  }
+  \"""
+  |> Absinthe.run(App.Schema)
+  ```
+
+  Results are returned in a tuple, and are maps with `:data` and/or `:errors` keys, suitable for serialization
+  back to the client.
+
+  ```
+  {:ok, %{data: %{"name" => "Foo"}}}
+  ```
+
+  You can also provide values for variables defined in the query document
+  (supporting, eg, values passed as query string parameters):
+
+  ```
+  \"""
+  query GetItemById($id: ID) {
+    item(id: $id) {
+      name
+    }
+  }
+  \"""
+  |> Absinthe.run(App.Schema, variables: %{id: params[:item_id]})
+  ```
+
   """
   @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, atom | Absinthe.Schema.t, Keyword.t) :: {:ok, Absinthe.Execution.result_t} | {:error, any}
   def run(%Absinthe.Language.Document{} = document, schema, options) do

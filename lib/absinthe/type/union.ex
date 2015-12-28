@@ -1,7 +1,11 @@
 defmodule Absinthe.Type.Union do
 
+  # TODO: Unionn are not yet fully supported
+  @moduledoc false
+
   alias Absinthe.Type
 
+  @typedoc false
   @type t :: %{name: binary,
                description: binary,
                resolve_type: ((t, any) -> Absinthe.Type.ObjectType.t),
@@ -10,11 +14,13 @@ defmodule Absinthe.Type.Union do
 
   defstruct name: nil, description: nil, resolve_type: nil, types: [], reference: nil
 
+  @doc false
   def member?(%{types: types}, type) do
     types
     |> Enum.member?(type)
   end
 
+  @doc false
   def resolve_type(%{resolve_type: nil} = union, candidate) do
     default_resolver(union, candidate)
   end
@@ -22,6 +28,7 @@ defmodule Absinthe.Type.Union do
     resolver.(union, candidate)
   end
 
+  @doc false
   defp default_resolver(%{types: types}, %{name: name}) do
     types
     |> Enum.find(&(&1.name == name))
