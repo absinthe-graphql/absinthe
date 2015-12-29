@@ -15,7 +15,7 @@ For more information on status, see [Specification Implementation](./README.md#s
 
 ## Goal
 
-Absinthe's goal is full implementation of the specification--in as an
+Absinthe's goal is full implementation of the specification--in as
 idiomatic, flexible, and comfortable way possible.
 
 ### Working Features

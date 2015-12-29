@@ -13,10 +13,7 @@ defmodule Absinthe.Mixfile do
      package: package,
      docs: [source_ref: "v#{@version}", main: "Absinthe"],
      deps: deps,
-     description: """
-     A toolkit for building GraphQL APIs using common
-     Elixir conventions.
-     """
+     description: "A GraphQL API toolkit for Elixir"
     ]
   end
 
