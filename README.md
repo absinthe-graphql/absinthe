@@ -85,7 +85,7 @@ For this example, we'll build a simple schema that allows users to look-up an
 `item` by `id`, a required, non-null field of type `:id` (which is a built-in
 type, just like `:string`, `:integer`, `:float`, and `:boolean`).
 
-(You may want to refer to the [Absinthe API documentation](http://hexdocs.pm/absinthe)
+(You may want to refer to the [Absinthe API documentation](http://hexdocs.pm/absinthe/0.1.0/)
 for more detailed information as you look this over.)
 
 ```elixir
