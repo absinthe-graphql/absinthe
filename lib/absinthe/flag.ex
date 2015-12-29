@@ -2,7 +2,7 @@ defmodule Absinthe.Flag do
 
   @moduledoc false
 
-  # Create a "flagged" tuple, supporting easy creating via |> pipes.
+  # Create a "flagged" tuple, supporting easy creation via |> pipes.
   #
   #     iex> :thing |> as(:ok)
   #     {:ok, :thing}
