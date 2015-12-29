@@ -222,6 +222,35 @@ defmodule Absinthe.Schema do
     end)
   end
 
+  @doc """
+  Verify that a schema is correctly formed
+
+  ## Examples
+
+  `:ok` is returned if the schema is free of errors:
+
+  ```
+  :ok = Absinthe.Schema.verify(App.GoodSchema)
+  ```
+
+  Otherwise the errors are returned in a tuple:
+
+  ```
+  {:error, errors} = Absinthe.Schema.verify(App.BadSchema)
+  ```
+
+  """
+  @spec verify(atom | t) :: :ok | {:error, [binary]}
+  def verify(name) when is_atom(name) do
+    verify(name.schema)
+  end
+  def verify(%{errors: errors}) when length(errors) > 0 do
+    {:error, errors}
+  end
+  def verify(_) do
+    :ok
+  end
+
   defimpl Absinthe.Traversal.Node do
 
     def children(node, _) do
