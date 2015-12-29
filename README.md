@@ -2,6 +2,9 @@
 
 A [GraphQL](https://facebook.github.io/graphql/) implementation for Elixir.
 
+[![Build Status](https://secure.travis-ci.org/CargoSense/absinthe.svg?branch=master
+"Build Status")](https://travis-ci.org/CargoSense/absinthe)
+
 ## Experimental!
 
 Please note that this is an initial release, and while functional enough to
