@@ -137,7 +137,6 @@ defmodule AbsintheTest do
                             %{message: "Argument `thing.value' (Int): Invalid value provided"}]}}, run(query)
   end
 
-  @tag :focus
   it "reports missing, required variable values" do
     query = """
       query GimmeThingByVariable($thingId: String!, $other: String!) {
@@ -148,6 +147,16 @@ defmodule AbsintheTest do
     """
     result = run(query, variables: %{thingId: "bar"})
     assert_result {:ok, %{data: %{"thing" => %{"name" => "Bar"}}, errors: [%{locations: [%{column: 0, line: 1}], message: "Variable `other' (String): Not provided"}]}}, result
+  end
+
+  it "reports parser errors" do
+    query = """
+      {
+        thing(id: "foo") {}{ name }
+      }
+    """
+    result = run(query)
+    assert_result {:ok, %{errors: [%{message: "syntax error before: '}'"}]}}, result
   end
 
   defp run(query, options \\ []) do

@@ -153,7 +153,8 @@ defmodule Absinthe do
   def tokenize(input) do
     case :absinthe_lexer.string(input |> to_char_list) do
       {:ok, tokens, _line_count} -> {:ok, tokens}
-      other -> other
+      other ->
+        other
     end
   end
 
@@ -211,9 +212,18 @@ defmodule Absinthe do
     case parse(input) do
       {:ok, document} ->
         run(document, schema, options)
+      {:error, {_, :absinthe_parser, _} = err} ->
+        {:ok, parser_error_result(err)}
       other ->
         other
     end
+  end
+
+  # Build an error result from a parser error
+  @spec parser_error_result({integer, :absinthe_parser, [char_list]) :: Execution.result_t
+  defp parser_error_result({line, :absinthe_parser, msgs}) do
+    message = msgs |> Enum.map(&to_string/1) |> Enum.join("")
+    %{errors: [%{message: message, locations: [%{line: line, column: 0}]}]}
   end
 
   @doc """

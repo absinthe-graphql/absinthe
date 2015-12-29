@@ -3,8 +3,8 @@ defmodule AssertResult do
   import ExUnit.Assertions
 
   def assert_result({lflag, lhs}, {rflag, rhs}) do
-    assert lflag == rflag
     assert clean(lhs) == clean(rhs)
+    assert lflag == rflag
   end
 
   defp clean(%{errors: errors} = result) do
