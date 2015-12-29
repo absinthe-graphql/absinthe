@@ -1,5 +1,8 @@
 defmodule Absinthe.Type.InterfaceType do
 
+  # TODO: Interfaces are not yet fully supported
+  @moduledoc false
+
   alias Absinthe.Type
 
   @type t :: %{name: binary, description: binary, fields: map, resolve_type: ((any, Absinthe.Type.ResolveInfo.t) -> Absinthe.Type.ObjectType.t), types: [Absinthe.Type.t], reference: Type.Reference.t}

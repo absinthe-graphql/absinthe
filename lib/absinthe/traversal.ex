@@ -1,9 +1,8 @@
 defmodule Absinthe.Traversal do
+  # Graph traversal utilities for dealing with ASTs and schemas using the
+  # `Absinthe.Traversal.Node` protocol.
 
-  @moduledoc """
-  Graph/Tree traversal utilities for dealing with ASTs and schemas using the
-  `Absinthe.Traversal.Node` protocol.
-  """
+  @moduledoc false
 
   alias __MODULE__
   alias Absinthe.Schema
@@ -12,17 +11,17 @@ defmodule Absinthe.Traversal do
   @type t :: %{context: any, seen: [Node.t], path: [Node.t]}
   defstruct context: nil, seen: [], path: []
 
-  @typedoc """
-  Instructions defining behavior during traversal
-  * `{:ok, value, traversal}`: The value of the node is `value`, and traversal should continue to children (using `traversal`)
-  * `{:prune, value, traversal}`: The value of the node is `value` and traversal should NOT continue to children, but to siblings (using `traversal`)
-  * `{:error, message}`: Bad stuff happened, explained by `message`
-  """
+  # Instructions defining behavior during traversal
+  # * `{:ok, value, traversal}`: The value of the node is `value`, and traversal
+  #   should continue to children (using `traversal`)
+  # * `{:prune, value, traversal}`: The value of the node is `value` and
+  #   traversal should NOT continue to children, but to siblings (using
+  #   `traversal`)
+  # * `{:error, message}`: Bad stuff happened, explained by `message`
   @type instruction_t :: {:ok, any} | {:prune, any} | {:error, any}
 
-  @doc """
-  Traverse, reducing nodes using a given function to evaluate their value.
-  """
+  # Traverse, reducing nodes using a given function to evaluate their value.
+  @doc false
   @spec reduce(Node.t, any, any, (Node.t -> instruction_t)) :: any
   def reduce(node, context, initial_value, node_evaluator) do
     {result, traversal} = do_reduce(node, %Traversal{context: context}, initial_value, node_evaluator)

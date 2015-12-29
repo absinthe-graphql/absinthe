@@ -1,23 +1,30 @@
 defmodule Absinthe.Mixfile do
   use Mix.Project
 
+  @version "0.1.0"
+
   def project do
     [app: :absinthe,
-     version: "0.1.0",
+     version: @version,
      elixir: "~> 1.2.0-dev",
      elixirc_paths: elixirc_paths(Mix.env),
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      package: package,
-     docs: [extras: ["README.md", "CONTRIBUTING.md"], main: "README"],
-     deps: deps]
+     docs: [source_ref: "v#{@version}", main: "Absinthe"],
+     deps: deps,
+     description: """
+     A toolkit for building GraphQL APIs using common
+     Elixir conventions.
+     """
+    ]
   end
 
   defp package do
-    [description: "A GraphQL implementation for Elixir",
+    [description: "GraphQL for Elixir",
      files: ["lib", "mix.exs", "README*"],
      maintainers: ["Bruce Williams"],
-     licenses: ["Apache2"],
+     licenses: ["BSD"],
      links: %{github: "https://github.com/CargoSense/absinthe"}]
   end
 

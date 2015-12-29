@@ -1,4 +1,4 @@
-defmodule Absinthe.Adapters.LanguageConventions do
+defmodule Absinthe.Adapter.LanguageConventions do
   use Absinthe.Adapter
 
   @moduledoc """
@@ -9,12 +9,12 @@ defmodule Absinthe.Adapters.LanguageConventions do
 
   For example, this document:
 
-    {
-      myUser: createUser(userId: 2) {
-        firstName
-        lastName
+      {
+        myUser: createUser(userId: 2) {
+          firstName
+          lastName
+        }
       }
-    }
 
   Would map to an internal schema that used the following names:
 
@@ -41,6 +41,7 @@ defmodule Absinthe.Adapters.LanguageConventions do
   document (eg, camelCase).
   """
 
+  @doc "Converts a camelCase to snake_case"
   def to_internal_name(nil, _role) do
     nil
   end
@@ -49,6 +50,7 @@ defmodule Absinthe.Adapters.LanguageConventions do
     |> Macro.underscore
   end
 
+  @doc "Converts a snake_case name to camelCase"
   def to_external_name(nil, _role) do
     nil
   end
@@ -57,6 +59,7 @@ defmodule Absinthe.Adapters.LanguageConventions do
     |> camelize_lower
   end
 
+  @spec camelize_lower(binary) :: binary
   defp camelize_lower(underscored) do
     [first, rest] = underscored
     |> Macro.camelize

@@ -1,5 +1,7 @@
 defmodule Absinthe.Type do
 
+  @moduledoc false
+
   alias __MODULE__
 
   # ALL TYPES

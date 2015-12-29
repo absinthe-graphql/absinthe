@@ -1,5 +1,7 @@
 defmodule Absinthe.Language.InlineFragment do
 
+  @moduledoc false
+
   @type t :: t
   defstruct type_condition: nil, directives: [], selection_set: nil, loc: %{start: nil}
 

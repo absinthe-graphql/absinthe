@@ -1,19 +1,17 @@
 defmodule Absinthe.Execution.Variables do
+  # Handles the logic around building and validating variable values for an
+  # execution.
 
-  @moduledoc """
-  Handles the logic around building and validating variable values for an
-  execution.
-  """
+  @moduledoc false
 
   alias Absinthe.Type
   alias Absinthe.Language
   alias Absinthe.Execution
   alias Absinthe.Schema
 
-  @doc """
-  Build a variables map from the variable definitions in the selected operation
-  and the variable values provided to the execution.
-  """
+  # Build a variables map from the variable definitions in the selected operation
+  # and the variable values provided to the execution.
+  @doc false
   @spec build(Execution.t) :: {%{binary => any}, Execution.t}
   def build(execution) do
     execution.selected_operation.variable_definitions
