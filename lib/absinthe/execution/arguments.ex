@@ -172,7 +172,7 @@ defmodule Absinthe.Execution.Arguments do
   end
   # TODO: When a definition can't be found, we should add some type of
   # validation error
-  defp do_add_argument_value(nil, value, ast_argument, names, acc) do
+  defp do_add_argument_value(nil, _value, _ast_argument, _names, acc) do
     acc
   end
 
