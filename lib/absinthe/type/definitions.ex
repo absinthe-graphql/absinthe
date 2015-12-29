@@ -71,11 +71,13 @@ defmodule Absinthe.Type.Definitions do
 
   You can also provide a reason:
 
+  ```
   args(
     age: deprecate([type: :integer, description: "The person's age"],
                    reason: "None of your business!")
     # ...
   )
+  ```
 
   Some usage information for deprecations:
 
@@ -103,8 +105,6 @@ defmodule Absinthe.Type.Definitions do
 
   @doc """
   Define a set of arguments.
-
-  Each value defines an argument.
 
   ## Examples
 
@@ -139,7 +139,7 @@ defmodule Absinthe.Type.Definitions do
 
   ## Options
 
-  For information on the options available for an argument, see `Absinthe.Type.Argument.t`.
+  For information on the options available for an argument, see `Absinthe.Type.Argument`.
 
   """
   @spec args([{atom, Keyword.t}]) :: %{atom => Type.Argument.t}
@@ -190,7 +190,7 @@ defmodule Absinthe.Type.Definitions do
 
   ## Options
 
-  For information on the options available for a field, see `Absinthe.Type.FieldDefintion.t`.
+  For information on the options available for a field, see `Absinthe.Type.FieldDefintion`.
 
   """
   @spec fields([{atom, Keyword.t}]) :: %{atom => Type.FieldDefinition.t}

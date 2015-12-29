@@ -1,7 +1,7 @@
 defmodule Absinthe.Type.FieldDefinition do
 
   @moduledoc """
-  The definition of a field.
+  Used to define a field.
 
   Usually these are defined using the `Absinthe.Type.Definitions.fields/1`
   convenience function.

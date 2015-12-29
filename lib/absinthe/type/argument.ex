@@ -1,7 +1,7 @@
 defmodule Absinthe.Type.Argument do
 
   @moduledoc """
-  The definition for an argument.
+  Used to define an argument.
 
   Usually these are defined using the `Absinthe.Type.Definitions.args/1`
   convenience function.
