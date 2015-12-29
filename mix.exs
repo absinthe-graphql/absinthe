@@ -12,13 +12,12 @@ defmodule Absinthe.Mixfile do
      start_permanent: Mix.env == :prod,
      package: package,
      docs: [source_ref: "v#{@version}", main: "Absinthe"],
-     deps: deps,
-     description: "A GraphQL API toolkit for Elixir"
+     deps: deps
     ]
   end
 
   defp package do
-    [description: "GraphQL for Elixir",
+    [description: "An experimental GraphQL API toolkit",
      files: ["lib", "mix.exs", "README*"],
      maintainers: ["Bruce Williams"],
      licenses: ["BSD"],
