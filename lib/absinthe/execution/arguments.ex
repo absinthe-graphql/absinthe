@@ -170,6 +170,11 @@ defmodule Absinthe.Execution.Arguments do
       execution_to_return
     }
   end
+  # TODO: When a definition can't be found, we should add some type of
+  # validation error
+  defp do_add_argument_value(nil, value, ast_argument, names, acc) do
+    acc
+  end
 
   # Add errors for any additional arguments not present in the schema
   @spec report_extra_arguments(Language.Field.t, [binary], Execution.t) :: Execution.t
