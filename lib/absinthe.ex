@@ -220,7 +220,7 @@ defmodule Absinthe do
   end
 
   # Build an error result from a parser error
-  @spec parser_error_result({integer, :absinthe_parser, [char_list]) :: Execution.result_t
+  @spec parser_error_result({integer, :absinthe_parser, [char_list]}) :: Execution.result_t
   defp parser_error_result({line, :absinthe_parser, msgs}) do
     message = msgs |> Enum.map(&to_string/1) |> Enum.join("")
     %{errors: [%{message: message, locations: [%{line: line, column: 0}]}]}
