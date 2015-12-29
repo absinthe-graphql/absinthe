@@ -118,6 +118,7 @@ defmodule Absinthe do
   }
   \"""
   |> Absinthe.run(App.Schema, variables: %{id: params[:item_id]})
+  ```
 
   The result, if `params[:item_id]` was `"foo"`, would be the same:
 

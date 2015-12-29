@@ -1,5 +1,98 @@
 defmodule Absinthe.Schema do
 
+  @moduledoc """
+  Define a GraphQL schema.
+
+  ## Basic Usage
+
+  To define a schema, `use Absinthe.Schema` within
+  a module. This marks your module as adhering to the
+  `Absinthe.Schema` behaviour, and sets up some macros
+  and utility functions for your use:
+
+  ```
+  defmodule App.Schema do
+
+    use Absinthe.Schema
+
+    # ... define it here!
+
+  end
+  ```
+
+  Now, define a `query` function (and optionally, `mutation`
+  and `subscription`) functions. These should return the _root_
+  objects for each of those operations.
+
+  We'll define a `query` that has one field, `item`, to support
+  querying for an item record by its ID:
+
+  ```
+  # Just for the example. You're probably using Ecto or
+  # something much more interesting than a module attribute-based
+  # database!
+  @fake_db %{
+    "foo" => %{id: "foo", name: "Foo", value: 4},
+    "bar" => %{id: "bar", name: "Bar", value: 5}
+  }
+
+  def query do
+    %Absinthe.Type.ObjectType{
+      fields: fields(
+        item: [
+          type: :item,
+          description: "Get an item by ID",
+          args: args(
+            id: [type: :id, description: "The ID of the item"]
+          ),
+          resolve: fn %{id: id}, _ ->
+            {:ok, Map.get(@fake_db, id)}
+          end
+        ]
+      )
+    }
+  end
+  ```
+
+  We use `Absinthe.Type.Definitions.fields/1` and
+  `Absinthe.Type.Definitions.args/1` here, available automatically because
+  of the `use Absinthe.Schema` at the top of our module. These are
+  convenience functions that ease compact, readable definitions for fields
+  and arguments.
+
+  For more information on object types (especially how the `resolve`
+  function works above), see `Absinthe.Type.ObjectType`.
+
+  You may also notice we've declared that the resolved value of the field
+  to be of `type: :item`. We now need to define exactly what an `:item` is,
+  and what fields it contains.
+
+  Thankfully another `Absinthe.Type.Definitions` utility can be used to do this
+  easily, and inside our schema module. We just need to set the `@absinthe`
+  module attribute before a function that returns an object type:
+
+  ```
+  @absinthe :type
+  def item do
+    %Absinthe.Type.ObjectType{
+      description: "A valuable item",
+      fields: fields(
+        id: [type: :id],
+        name: [type: :string, description: "The item's name"],
+        value: [type: :integer, description: "Recently appraised value"]
+      )
+    }
+  end
+  ```
+
+  (You can read more about building custom types and the available
+  convenience functions in `Absinthe.Type.Definitions` --
+  and check out `Absinthe.Type.Scalar`, where the built-in types like
+  `:integer`, `:id`, and `:string` are defined.)
+
+  Our schema is now ready to be executed (using, eg, `Absinthe.run/2`).
+  """
+
   defmacro __using__(options) do
     type_modules = options |> Keyword.get(:type_modules, [])
     quote do
@@ -12,6 +105,13 @@ defmodule Absinthe.Schema do
       defoverridable [mutation: 0,
                       subscription: 0]
 
+      @doc """
+      Build the configured schema struct.
+
+      This uses functions implementing the callbacks for
+      the `Abinthe.Schema` behaviour. You should never
+      need to create a schema struct manually.
+      """
       def schema do
         contents = [
           query: query,
@@ -33,38 +133,49 @@ defmodule Absinthe.Schema do
     end
   end
 
-  @typep required_object_t :: Absinthe.Type.ObjectType.t
-  @typep optional_object_t :: Absinthe.Type.ObjectType.t | nil
+  @doc """
+  (Required) Define the query root type.
+
+  Should be an `Absinthe.Type.ObjectType` struct.
+  """
+  @callback query :: Absinthe.Type.ObjectType.t
 
   @doc """
-  Define the query root type
+  (Optional) Define the mutation root type.
+
+  Should be an `Absinthe.Type.ObjectType` struct.
   """
-  @callback query :: required_object_t
+  @callback mutation :: nil | Absinthe.Type.ObjectType.t
 
   @doc """
-  Define the mutation root type
-  """
-  @callback mutation :: optional_object_t
+  (Optional) Define the subscription root type.
 
-  @doc """
-  Define the subscription root type
+  Should be an `Absinthe.Type.ObjectType` struct.
   """
-  @callback subscription :: optional_object_t
+  @callback subscription :: nil | Absinthe.Type.ObjectType.t
 
   alias Absinthe.Type
   alias Absinthe.Language
   alias __MODULE__
 
-  @type t :: %{query: required_object_t,
-               mutation: optional_object_t,
-               subscription: optional_object_t,
+  @typedoc """
+  A struct containing the defined schema details.
+
+  Don't create these structs yourself. Just define
+  the necessary `Absinthe.Schema` callbacks and
+  use `schema/0`
+  """
+  @type t :: %{query: Absinthe.Type.ObjectType.t,
+               mutation: nil | Absinthe.Type.ObjectType.t,
+               subscription: nil | Absinthe.Type.ObjectType.t,
                type_modules: [atom],
                types: Schema.Types.typemap_t,
                errors: [binary]}
 
   defstruct query: nil, mutation: nil, subscription: nil, type_modules: [], types: %{}, errors: []
 
-  @doc "Add types (but only do it once; if any have been found, this is just an identity function)"
+  # Add types (but only do it once; if any have been found, this is just an identity function)
+  @doc false
   @spec prepare(t) :: t
   def prepare(%{types: types} = schema) when map_size(types) == 0 do
     schema
@@ -74,7 +185,8 @@ defmodule Absinthe.Schema do
     schema
   end
 
-  @doc "Lookup a type that in used by/available to a schema"
+  # Lookup a type that in used by/available to a schema
+  @doc false
   @spec lookup_type(t, Type.wrapping_t | Type.t | Type.identifier_t) :: Type.t | nil
   def lookup_type(schema, type) when is_map(type) do
     if Type.wrapped?(type) do
@@ -87,6 +199,7 @@ defmodule Absinthe.Schema do
     schema.types[identifier]
   end
 
+  @doc false
   @spec type_from_ast(t, Language.type_reference_t) :: Absinthe.Type.t | nil
   def type_from_ast(schema, %Language.NonNullType{type: inner_type}) do
     case type_from_ast(schema, inner_type) do
