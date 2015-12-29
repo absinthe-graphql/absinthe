@@ -142,9 +142,9 @@ defmodule Absinthe do
     @moduledoc """
     An error during parsing.
     """
-    defexception line: nil, errors: "Syntax error"
+    defexception location: nil, msg: ""
     def message(exception) do
-      "#{exception.errors} on line #{exception.line}"
+      "#{exception.msg} on line #{exception.location.line}"
     end
   end
 
@@ -167,7 +167,13 @@ defmodule Absinthe do
   def parse(input) do
     case input.body |> tokenize do
       {:ok, []} -> {:ok, %Absinthe.Language.Document{}}
-      {:ok, tokens} -> :absinthe_parser.parse(tokens)
+      {:ok, tokens} ->
+        case :absinthe_parser.parse(tokens) do
+          {:ok, _} = result ->
+            result
+          {:error, raw_error} ->
+            {:error, format_parser_error(raw_error)}
+        end
       other -> other
     end
   end
@@ -181,7 +187,7 @@ defmodule Absinthe do
   def parse!(input) do
     case parse(input) do
       {:ok, result} -> result
-      {:error, {line_number, _, errs}} -> raise SyntaxError, source: input, line_number: line_number, error: errs
+      {:error, err} -> raise SyntaxError, source: input, msg: err.message, location: err.locations[0]
     end
   end
 
@@ -212,18 +218,20 @@ defmodule Absinthe do
     case parse(input) do
       {:ok, document} ->
         run(document, schema, options)
-      {:error, {_, :absinthe_parser, _} = err} ->
-        {:ok, parser_error_result(err)}
+      {:error, err} ->
+        {:ok, %{errors: [err]}}
       other ->
         other
     end
   end
 
-  # Build an error result from a parser error
-  @spec parser_error_result({integer, :absinthe_parser, [char_list]}) :: Execution.result_t
-  defp parser_error_result({line, :absinthe_parser, msgs}) do
+  # TODO: Support modification by adapter
+  # Convert a raw parser error into an `Execution.error_t`
+  @doc false
+  @spec format_parser_error({integer, :absinthe_parser, [char_list]}) :: Execution.error_t
+  defp format_parser_error({line, :absinthe_parser, msgs}) do
     message = msgs |> Enum.map(&to_string/1) |> Enum.join("")
-    %{errors: [%{message: message, locations: [%{line: line, column: 0}]}]}
+    %{message: message, locations: [%{line: line, column: 0}]}
   end
 
   @doc """

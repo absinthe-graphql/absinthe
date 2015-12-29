@@ -149,7 +149,16 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"thing" => %{"name" => "Bar"}}, errors: [%{locations: [%{column: 0, line: 1}], message: "Variable `other' (String): Not provided"}]}}, result
   end
 
-  it "reports parser errors" do
+  it "reports parser errors from parse" do
+    query = """
+      {
+        thing(id: "foo") {}{ name }
+      }
+    """
+    assert {:error, %{message: "syntax error before: '}'", locations: _}} = Absinthe.parse(query)
+  end
+
+  it "reports parser errors from run" do
     query = """
       {
         thing(id: "foo") {}{ name }
