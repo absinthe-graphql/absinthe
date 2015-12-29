@@ -13,7 +13,7 @@ defmodule Absinthe.Execution.Runner do
   end
   def run(%{selected_operation: %{operation: op_type} = operation} = execution) do
     case safe_execute(op_type, operation, execution) do
-      {:ok, value, %{errors: errors}} -> {:ok, %{data: value, errors: errors}}
+      {:ok, value, %{errors: errors}} -> {:ok, %{data: value, errors: errors} |> collapse}
       other -> other
     end
   end
@@ -41,6 +41,22 @@ defmodule Absinthe.Execution.Runner do
   end
   defp execute(op_type, _operation, _execution) do
     {:error, "No execution strategy for: #{op_type}"}
+  end
+
+  # Remove unused `data` and `errors` entries from a result
+  @spec collapse(Execution.result_t) :: Execution.result_t
+  defp collapse(%{data: data} = result) when map_size(data) == 0 do
+    result
+    |> Map.delete(:data)
+    |> collapse
+  end
+  defp collapse(%{errors: []} = result) do
+    result
+    |> Map.delete(:errors)
+    |> collapse
+  end
+  defp collapse(result) do
+    result
   end
 
 end

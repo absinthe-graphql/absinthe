@@ -1,5 +1,6 @@
 defmodule AbsintheTest do
   use ExSpec, async: true
+  import AssertResult
 
   it "can do a simple query" do
     query = """
@@ -9,7 +10,7 @@ defmodule AbsintheTest do
       }
     }
     """
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: []}} = run(query)
+    assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}}}, run(query)
   end
 
   it "can identify a bad field" do
@@ -21,7 +22,7 @@ defmodule AbsintheTest do
       }
     }
     """
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: "Field `bad': Not present in schema", locations: [%{line: 4, column: 0}]}]}} = run(query)
+    assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: "Field `bad': Not present in schema", locations: [%{line: 4, column: 0}]}]}}, run(query)
   end
 
   it "warns of unknown fields" do
@@ -30,8 +31,7 @@ defmodule AbsintheTest do
       bad_resolution
     }
     """
-    assert {:ok, %{data: %{},
-                   errors: [%{message: "Field `bad_resolution': Did not resolve to match {:ok, _} or {:error, _}", locations: _}]}} = run(query)
+    assert {:ok, %{errors: [%{message: "Field `bad_resolution': Did not resolve to match {:ok, _} or {:error, _}", locations: _}]}} = run(query)
   end
 
   it "returns the correct results for an alias" do
@@ -42,13 +42,13 @@ defmodule AbsintheTest do
       }
     }
     """
-    assert {:ok, %{data: %{"widget" => %{"name" => "Foo"}}, errors: []}} = run(query)
+    assert_result {:ok, %{data: %{"widget" => %{"name" => "Foo"}}}}, run(query)
   end
 
   it "checks for required arguments" do
     query = "{ thing { name } }"
-    assert {:ok, %{data: %{}, errors: [%{message: "Field `thing': 1 required argument (`id') not provided"},
-                                       %{message: "Argument `id' (String): Not provided"}]}} = run(query)
+    assert_result {:ok, %{errors: [%{message: "Field `thing': 1 required argument (`id') not provided", locations: [%{column: 0, line: 1}]},
+                            %{message: "Argument `id' (String): Not provided", locations: [%{column: 0, line: 1}]}]}}, run(query)
 
   end
 
@@ -60,7 +60,7 @@ defmodule AbsintheTest do
       }
     }
     """
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: "Argument `extra': Not present in schema"}]}} = run(query)
+    assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: "Argument `extra': Not present in schema"}]}}, run(query)
   end
 
   it "checks for badly formed arguments" do
@@ -69,8 +69,8 @@ defmodule AbsintheTest do
       number(val: "AAA")
     }
     """
-    assert {:ok, %{data: %{}, errors: [%{message: "Field `number': 1 badly formed argument (`val') provided"},
-                                       %{message: "Argument `val' (Int): Invalid value provided"}]}} = run(query)
+    assert_result {:ok, %{errors: [%{message: "Field `number': 1 badly formed argument (`val') provided"},
+                                   %{message: "Argument `val' (Int): Invalid value provided"}]}}, run(query)
   end
 
   it "returns nested objects" do
@@ -84,7 +84,7 @@ defmodule AbsintheTest do
       }
     }
     """
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo", "other_thing" => %{"name" => "Bar"}}}, errors: []}} = run(query)
+    assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo", "other_thing" => %{"name" => "Bar"}}}}}, run(query)
   end
 
   it "can provide context" do
@@ -95,8 +95,8 @@ defmodule AbsintheTest do
         }
       }
     """
-    assert {:ok, %{data: %{"thingByContext" => %{"name" => "Bar"}}, errors: []}} = run(query, context: %{thing: "bar"})
-    assert {:ok, %{data: %{}, errors: [%{message: "Field `thingByContext': No :id context provided"}]}} = run(query)
+    assert_result {:ok, %{data: %{"thingByContext" => %{"name" => "Bar"}}}}, run(query, context: %{thing: "bar"})
+    assert_result {:ok, %{errors: [%{message: "Field `thingByContext': No :id context provided"}]}}, run(query)
   end
 
   it "can use variables" do
@@ -108,7 +108,7 @@ defmodule AbsintheTest do
     }
     """
     result = run(query, variables: %{"thingId" => "bar"})
-    assert {:ok, %{data: %{"thing" => %{"name" => "Bar"}}, errors: []}} = result
+    assert_result {:ok, %{data: %{"thing" => %{"name" => "Bar"}}}}, result
   end
 
   it "can use input objects" do
@@ -121,7 +121,7 @@ defmodule AbsintheTest do
     }
     """
     result = run(query)
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo", "value" => 100}}, errors: []}} = result
+    assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo", "value" => 100}}}}, result
   end
 
   it "checks for badly formed nested arguments" do
@@ -133,8 +133,8 @@ defmodule AbsintheTest do
       }
     }
     """
-    assert {:ok, %{data: %{}, errors: [%{message: "Field `update_thing': 1 badly formed argument (`thing.value') provided"},
-                                       %{message: "Argument `thing.value' (Int): Invalid value provided"}]}} = run(query)
+    assert_result {:ok, %{errors: [%{message: "Field `update_thing': 1 badly formed argument (`thing.value') provided"},
+                            %{message: "Argument `thing.value' (Int): Invalid value provided"}]}}, run(query)
   end
 
   @tag :focus
@@ -147,7 +147,7 @@ defmodule AbsintheTest do
       }
     """
     result = run(query, variables: %{thingId: "bar"})
-    assert {:ok, %{data: %{"thing" => %{"name" => "Bar"}}, errors: [%{message: "Variable `other' (String): Not provided"}]}} = result
+    assert_result {:ok, %{data: %{"thing" => %{"name" => "Bar"}}, errors: [%{locations: [%{column: 0, line: 1}], message: "Variable `other' (String): Not provided"}]}}, result
   end
 
   defp run(query, options \\ []) do

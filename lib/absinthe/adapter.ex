@@ -79,8 +79,11 @@ defmodule Absinthe.Adapter do
         nil
       end
 
-      def dump_results(%{data: data, errors: _} = results) do
+      def dump_results(%{data: data} = results) do
         %{results | data: do_dump_results(data)}
+      end
+      def dump_results(results) do
+        results
       end
 
       # Rename a result data value and traverse children

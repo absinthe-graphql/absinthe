@@ -1,6 +1,8 @@
 defmodule Absinthe.Execution.DeprecationTest do
   use ExSpec, async: true
 
+  import AssertResult
+
   describe "for arguments" do
 
     describe "provided flat" do
@@ -16,8 +18,8 @@ defmodule Absinthe.Execution.DeprecationTest do
             }
           """
           result = run(query)
-          assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
-                         errors: [%{message: "Argument `deprecated_arg' (String): Deprecated"}]}} = result
+          assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
+                         errors: [%{message: "Argument `deprecated_arg' (String): Deprecated"}]}}, result
         end
 
         it "shows a deprecation notice with a reason" do
@@ -29,8 +31,8 @@ defmodule Absinthe.Execution.DeprecationTest do
             }
           """
           result = run(query)
-          assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
-                         errors: [%{message: "Argument `deprecated_arg_with_reason' (String): Deprecated; reason"}]}} = result
+          assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
+                         errors: [%{message: "Argument `deprecated_arg_with_reason' (String): Deprecated; reason"}]}}, result
         end
 
       end
@@ -46,8 +48,8 @@ defmodule Absinthe.Execution.DeprecationTest do
             }
           """
           result = run(query)
-          assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
-                         errors: [%{message: "Argument `deprecated_non_null_arg' (String): Deprecated"}]}} = result
+          assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
+                         errors: [%{locations: [%{column: 0, line: 2}], message: "Argument `deprecated_non_null_arg' (String): Deprecated"}]}}, result
         end
 
         it "shows a deprecation notice with a reason" do
@@ -59,8 +61,8 @@ defmodule Absinthe.Execution.DeprecationTest do
             }
           """
           result = run(query)
-          assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
-                         errors: [%{message: "Argument `deprecated_non_null_arg_with_reason' (String): Deprecated; reason"}]}} = result
+          assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
+                         errors: [%{message: "Argument `deprecated_non_null_arg_with_reason' (String): Deprecated; reason"}]}}, result
         end
 
       end
@@ -80,8 +82,8 @@ defmodule Absinthe.Execution.DeprecationTest do
             }
           """
           result = run(query)
-          assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
-                         errors: [%{message: "Argument `thing.deprecated_field' (String): Deprecated"}]}} = result
+          assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
+                         errors: [%{message: "Argument `thing.deprecated_field' (String): Deprecated"}]}}, result
         end
 
         it "shows a deprecation notice with a reason" do
@@ -93,8 +95,8 @@ defmodule Absinthe.Execution.DeprecationTest do
             }
           """
           result = run(query)
-          assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
-                         errors: [%{message: "Argument `thing.deprecated_field_with_reason' (String): Deprecated; reason"}]}} = result
+          assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
+                         errors: [%{message: "Argument `thing.deprecated_field_with_reason' (String): Deprecated; reason"}]}}, result
         end
 
       end
@@ -110,8 +112,8 @@ defmodule Absinthe.Execution.DeprecationTest do
             }
           """
           result = run(query)
-          assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
-                         errors: [%{message: "Argument `thing.deprecated_non_null_field' (String): Deprecated"}]}} = result
+          assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
+                         errors: [%{message: "Argument `thing.deprecated_non_null_field' (String): Deprecated"}]}}, result
         end
 
         it "shows a deprecation notice with a reason" do
@@ -123,8 +125,8 @@ defmodule Absinthe.Execution.DeprecationTest do
             }
           """
           result = run(query)
-          assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
-                         errors: [%{message: "Argument `thing.deprecated_non_null_field_with_reason' (String): Deprecated; reason"}]}} = result
+          assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
+                         errors: [%{message: "Argument `thing.deprecated_non_null_field_with_reason' (String): Deprecated; reason"}]}}, result
         end
 
       end
@@ -144,8 +146,8 @@ defmodule Absinthe.Execution.DeprecationTest do
         }
       """
       result = run(query)
-      assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
-                     errors: [%{message: "Field `deprecated_thing': Deprecated"}]}} = result
+      assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
+                     errors: [%{message: "Field `deprecated_thing': Deprecated"}]}}, result
     end
 
     it "shows a deprecation notice with a reason" do
@@ -157,8 +159,8 @@ defmodule Absinthe.Execution.DeprecationTest do
         }
       """
       result = run(query)
-      assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
-                     errors: [%{message: "Field `deprecated_thing_with_reason': Deprecated; use `thing' instead"}]}} = result
+      assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}},
+                     errors: [%{message: "Field `deprecated_thing_with_reason': Deprecated; use `thing' instead"}]}}, result
     end
 
   end

@@ -135,7 +135,7 @@ defmodule Absinthe.Adapter.LanguageConventionsTest do
       }
     }
     """
-    assert {:ok, %{data: %{"fieldTrip" => %{"name" => "Museum", "locationName" => "Portland"}}, errors: []}} = run(query)
+    assert {:ok, %{data: %{"fieldTrip" => %{"name" => "Museum", "locationName" => "Portland"}}}} == run(query)
   end
 
   @tag :focus
@@ -148,7 +148,7 @@ defmodule Absinthe.Adapter.LanguageConventionsTest do
       }
     }
     """
-    assert {:ok, %{data: %{"fieldTrips" => [%{"name" => "Museum", "locationName" => "Portland"}]}, errors: []}} = run(query)
+    assert {:ok, %{data: %{"fieldTrips" => [%{"name" => "Museum", "locationName" => "Portland"}]}}} == run(query)
   end
 
   it "can do a simple query with an adapted variable" do
@@ -160,7 +160,7 @@ defmodule Absinthe.Adapter.LanguageConventionsTest do
         }
       }
     """
-    assert {:ok, %{data: %{"fieldTrip" => %{"name" => "Museum", "locationName" => "Portland"}}, errors: []}} = run(query, %{myId: "museum"})
+    assert {:ok, %{data: %{"fieldTrip" => %{"name" => "Museum", "locationName" => "Portland"}}}} == run(query, %{myId: "museum"})
   end
 
   it "can do a simple query with an adapted argument" do
@@ -172,7 +172,7 @@ defmodule Absinthe.Adapter.LanguageConventionsTest do
         }
       }
     """
-    assert {:ok, %{data: %{"fieldTrips" => [%{"name" => "Museum", "locationName" => "Portland"}]}, errors: []}} = run(query)
+    assert {:ok, %{data: %{"fieldTrips" => [%{"name" => "Museum", "locationName" => "Portland"}]}}} == run(query)
   end
 
 
@@ -185,7 +185,7 @@ defmodule Absinthe.Adapter.LanguageConventionsTest do
         }
       }
     """
-    assert {:ok, %{data: %{"thePlace" => %{"name" => "Museum", "locationName" => "Portland"}}, errors: []}} = run(query)
+    assert {:ok, %{data: %{"thePlace" => %{"name" => "Museum", "locationName" => "Portland"}}}} == run(query)
   end
 
 
@@ -198,7 +198,7 @@ defmodule Absinthe.Adapter.LanguageConventionsTest do
       }
     }
     """
-    assert {:ok, %{data: %{"fieldTrip" => %{"name" => "Museum"}}, errors: [%{message: "Field `badField': Not present in schema", locations: [%{line: 4, column: 0}]}]}} = run(query)
+    assert {:ok, %{data: %{"fieldTrip" => %{"name" => "Museum"}}, errors: [%{message: "Field `badField': Not present in schema", locations: [%{line: 4, column: 0}]}]}} == run(query)
   end
 
   defp run(query_document) do

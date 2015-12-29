@@ -37,7 +37,7 @@ defmodule Absinthe.Execution.VariablesTest do
 
       it "returns a value" do
         provided = %{"id" => "foo"}
-        assert %{variables: %{"id" => "foo"}, errors: []} = @id_required |> parse(provided)
+        assert %{variables: %{"id" => "foo"}} = @id_required |> parse(provided)
       end
 
     end
@@ -56,11 +56,11 @@ defmodule Absinthe.Execution.VariablesTest do
 
     it "when provided" do
       provided = %{"id" => "bar"}
-      assert %{variables: %{"id" => "bar"}, errors: []} = @with_default |> parse(provided)
+      assert %{variables: %{"id" => "bar"}} = @with_default |> parse(provided)
     end
 
     it "when not provided" do
-      assert %{variables: %{"id" => @default}, errors: []} = @with_default |> parse
+      assert %{variables: %{"id" => @default}} = @with_default |> parse
     end
 
   end
