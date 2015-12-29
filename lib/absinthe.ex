@@ -271,4 +271,19 @@ defmodule Absinthe do
     |> Absinthe.Execution.run(options)
   end
 
+  # TODO: Do separate validation phase here
+  @doc """
+  Validate a document.
+
+  Note this is currently a stub that merely returns `:ok`,
+  as validation and execution are currently conflated.
+
+  Track https://github.com/CargoSense/absinthe/issues/17 for
+  progress.
+  """
+  @spec validate(Language.Document.t, atom | Schema.t) :: :ok
+  def validate(doc, schema) do
+    :ok
+  end
+
 end
