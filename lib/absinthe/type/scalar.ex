@@ -118,7 +118,7 @@ defmodule Absinthe.Type.Scalar do
             """ |> String.replace("\n", " "),
             serialize: &to_string/1,
             parse: parse_with([Absinthe.Language.IntValue,
-                               Absinthe.Language.StringValue], &(&1))}
+                               Absinthe.Language.StringValue], &parse_string/1)}
   end
 
   @absinthe :type
