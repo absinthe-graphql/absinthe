@@ -29,7 +29,7 @@ idiomatic, flexible, and comfortable way possible.
   is currently done during Execution, rather than as a separate phase. This will be
   [changed soon](https://github.com/CargoSense/absinthe/issues/17), even if this
   doesn't appreciably affect the functionality of APIs written with Absinthe.)
-- Support for Plug, via [AbsinthePlug](http://hex.pm/projects/absinthe_plug).
+- Support for Plug, via [absinthe_plug](http://hex.pm/projects/absinthe_plug).
 - Variables, including defaulting and `!` requirements.
 - Errors with source line numbers. (Someday, column numbers; the Leex lexer
   doesn't support them yet.)
@@ -172,9 +172,9 @@ for more information.
 
 Now, you can use Absinthe to execute a query document. Keep in mind that for
 HTTP, you'll probably want to use
-[AbsinthePlug](http://hex.pm/projects/absinthe_plug) instead of executing
+[absinthe_plug](http://hex.pm/projects/absinthe_plug) instead of executing
 GraphQL query documents yourself. Absinthe doesn't know or care about HTTP,
-but AbsinthePlug does -- and handles the vagaries of interacting with HTTP
+but absinthe_plug does -- and handles the vagaries of interacting with HTTP
 GraphQL clients so you don't have to.
 
 If you _were_ executing query documents yourself (lets assume for a local tool),
@@ -199,7 +199,7 @@ Query documents also support variables:
 ## Variables
 
 To support variables, simply define them for your query document [as the specification expects](https://facebook.github.io/graphql/#sec-Language.Query-Document.Variables),
-and pass in a `variables` option (eg, [AbsinthePlug](http://hex.pm/projects/absinthe_plug) handles providing these directly from query parameters or the POST body) to `run`:
+and pass in a `variables` option (eg, [absinthe_plug](http://hex.pm/projects/absinthe_plug) handles providing these directly from query parameters or the POST body) to `run`:
 
 ```elixir
 """
