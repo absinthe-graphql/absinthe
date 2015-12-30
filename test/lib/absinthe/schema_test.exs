@@ -5,9 +5,9 @@ defmodule Absinthe.SchemaTest do
 
     describe "given a good schema" do
 
-      it 'returns :ok' do
-        assert :ok == Absinthe.Schema.verify(Things)
-        assert :ok == Absinthe.Schema.verify(Things.schema)
+      it 'returns :ok with the schema' do
+        assert {:ok, %Absinthe.Schema{}} = Absinthe.Schema.verify(Things)
+        assert {:ok, %Absinthe.Schema{}} = Absinthe.Schema.verify(Things.schema)
       end
 
     end

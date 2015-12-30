@@ -227,10 +227,10 @@ defmodule Absinthe.Schema do
 
   ## Examples
 
-  `:ok` is returned if the schema is free of errors:
+  `{:ok, schema}` is returned if the schema is free of errors:
 
   ```
-  :ok = Absinthe.Schema.verify(App.GoodSchema)
+  {:ok, schema} = Absinthe.Schema.verify(App.GoodSchema)
   ```
 
   Otherwise the errors are returned in a tuple:
@@ -240,15 +240,15 @@ defmodule Absinthe.Schema do
   ```
 
   """
-  @spec verify(atom | t) :: :ok | {:error, [binary]}
+  @spec verify(atom | t) :: {:ok, t}  | {:error, [binary]}
   def verify(name) when is_atom(name) do
     verify(name.schema)
   end
-  def verify(%{errors: errors}) when length(errors) > 0 do
+  def verify(%Schema{errors: errors} = schema) when length(errors) > 0 do
     {:error, errors}
   end
-  def verify(_) do
-    :ok
+  def verify(%Schema{} = schema) do
+    {:ok, schema}
   end
 
   defimpl Absinthe.Traversal.Node do
