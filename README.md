@@ -318,7 +318,7 @@ Here's the basic status, using the following scale:
 ### Roadmap & Contributions
 
 For a list of specific planned features and version targets, see the
-[milestone list](https://github.com/CargoSense/ex_graphql/milestones).
+[milestone list](https://github.com/CargoSense/absinthe/milestones).
 
 We welcome issues and pull requests; please see CONTRIBUTING.
 
