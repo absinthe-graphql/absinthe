@@ -188,6 +188,16 @@ defmodule AbsintheTest do
     assert Absinthe.run(query, Absinthe.IdTestSchema, %{})
   end
 
+  it "should wrap all lexer errors" do
+    query = """
+    {
+      item(this-won't-parse)
+    }
+    """
+
+    assert {:error, %{locations: _}} = Absinthe.parse(query)
+  end
+
   defp run(query, options \\ []) do
     query
     |> Absinthe.run(Things, options)
