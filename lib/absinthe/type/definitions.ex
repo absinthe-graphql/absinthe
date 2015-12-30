@@ -171,7 +171,7 @@ defmodule Absinthe.Type.Definitions do
 
   ```
   %{
-    item: %Absinthe.Type.FieldDefinition{
+    item: %Absinthe.Type.Field{
       name: "item",
       description: "Get an item by ID"
       type: :string,
@@ -193,9 +193,9 @@ defmodule Absinthe.Type.Definitions do
   For information on the options available for a field, see `Absinthe.Type.FieldDefintion`.
 
   """
-  @spec fields([{atom, Keyword.t}]) :: %{atom => Type.FieldDefinition.t}
+  @spec fields([{atom, Keyword.t}]) :: %{atom => Type.Field.t}
   def fields(definitions) do
-    named(Type.FieldDefinition, definitions)
+    named(Type.Field, definitions)
   end
 
   @doc false

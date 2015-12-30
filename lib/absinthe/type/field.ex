@@ -1,4 +1,4 @@
-defmodule Absinthe.Type.FieldDefinition do
+defmodule Absinthe.Type.Field do
 
   @moduledoc """
   Used to define a field.
@@ -102,12 +102,12 @@ defmodule Absinthe.Type.FieldDefinition do
     # * If the argumnet is not deprecated, it is required
     #   if its type is non-null
     @doc false
-    @spec required?(FieldDefinition.t) :: boolean
-    def required?(%FieldDefinition{type: type, deprecation: nil}) do
+    @spec required?(Field.t) :: boolean
+    def required?(%Field{type: type, deprecation: nil}) do
       type
       |> Absinthe.Validation.RequiredInput.required?
     end
-    def required?(%FieldDefinition{}) do
+    def required?(%Field{}) do
       false
     end
 

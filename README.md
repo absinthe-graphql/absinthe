@@ -136,7 +136,7 @@ Some functions used here that are worth mentioning, pulled in automatically from
 
 * `args()` and `fields()` are utility functions that reduce clutter in your
   schema (by building maps of nicely-named `%Type.Argument{}` and
-  `%Type.FieldDefinition{}` structs, respectively, for you).
+  `%Type.Field{}` structs, respectively, for you).
 * `non_null()`: Used to add a non-null constraint to an argument. In this
   example, we are requiring an `id` to be provided to resolve the `item` field.
 

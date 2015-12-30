@@ -9,7 +9,7 @@ defmodule Absinthe.Type do
   @type_modules [Type.Scalar, Type.Object, Type.Interface, Type.Union, Type.Enum, Type.InputObject, Type.List, Type.NonNull]
 
   @typedoc "These are all of the possible kinds of types."
-  @type t :: Type.Scalar.t | Type.Object.t | Type.FieldDefinition.t | Type.Interface.t | Type.Union.t | Type.Enum.t | Type.InputObject.t | Type.List.t | Type.NonNull.t
+  @type t :: Type.Scalar.t | Type.Object.t | Type.Field.t | Type.Interface.t | Type.Union.t | Type.Enum.t | Type.InputObject.t | Type.List.t | Type.NonNull.t
 
   @typedoc "A type identifier"
   @type identifier_t :: atom

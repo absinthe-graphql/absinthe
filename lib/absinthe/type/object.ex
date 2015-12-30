@@ -81,7 +81,7 @@ defmodule Absinthe.Type.Object do
 
   * `:name` - The name of the object type. Should be a TitleCased `binary`. Set automatically when using `@absinthe :type` from `Absinthe.Type.Definitions`.
   * `:description` - A nice description for introspection.
-  * `:fields` - A map of `Absinthe.Type.FieldDefinition` structs. See `Absinthe.Type.Definitions.fields/1` and
+  * `:fields` - A map of `Absinthe.Type.Field` structs. See `Absinthe.Type.Definitions.fields/1` and
   * `:args` - A map of `Absinthe.Type.Argument` structs. See `Absinthe.Type.Definitions.args/1`.
   * `:parse` - A function used to convert the raw, incoming form of a scalar to the canonical internal format.
 
@@ -92,7 +92,7 @@ defmodule Absinthe.Type.Object do
   defstruct name: nil, description: nil, fields: nil, interfaces: [], is_type_of: nil, reference: nil
 
   @doc false
-  @spec field(t, atom) :: Absinthe.Type.FieldDefinition.t
+  @spec field(t, atom) :: Absinthe.Type.Field.t
   def field(%{fields: fields}, identifier) do
     fields
     |> Map.get(identifier)
