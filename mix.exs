@@ -1,7 +1,7 @@
 defmodule Absinthe.Mixfile do
   use Mix.Project
 
-  @version "0.2.0"
+  @version "0.2.1"
 
   def project do
     [app: :absinthe,
@@ -18,7 +18,7 @@ defmodule Absinthe.Mixfile do
 
   defp package do
     [description: "An experimental GraphQL API toolkit",
-     files: ["lib", "mix.exs", "README*"],
+     files: ["lib", "src", "mix.exs", "README*"],
      maintainers: ["Bruce Williams"],
      licenses: ["BSD"],
      links: %{github: "https://github.com/CargoSense/absinthe"}]
