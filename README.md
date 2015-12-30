@@ -105,7 +105,7 @@ defmodule MyApp.Schema do
     %Type.Object{
       fields: fields(
         item: [
-          type: :item
+          type: :item,
           args: args(
             id: [type: non_null(:id)]
           ),
