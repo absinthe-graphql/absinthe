@@ -20,20 +20,22 @@ idiomatic, flexible, and comfortable way possible.
 
 ### Working Features
 
-- Basic query document execution and argument/field validation. (Note Validation
-  is currently done during Execution, rather than as a separate phase. This will
-  change in the next minor release.)
-- Variables, including defaulting and `!` requirements.
+- A clean, conventional, module-based approach to building schemas.
 - Full support for extending types, including scalars.
   (See [Custom Types](./README.md#custom-types), below.)
 - Argument and input object field deprecation. (See [Deprecation](./README.md#deprecation),
   below.)
+- Basic query document execution and argument/field validation. (Note Validation
+  is currently done during Execution, rather than as a separate phase. This will be
+  [changed soon](https://github.com/CargoSense/absinthe/issues/17), even if this
+  doesn't appreciably affect the functionality of APIs written with Absinthe.)
+- Support for Plug, via [AbsinthePlug](http://hex.pm/projects/absinthe_plug).
+- Variables, including defaulting and `!` requirements.
 - Errors with source line numbers. (Someday, column numbers; the Leex lexer
   doesn't support them yet.)
 - An flexible adapter mechanism to translate between different naming
   conventions (eg, `snake_case` and `camelCase`) in schema vs the client.
-  (See [Adapters](./README.md#adapters), below.).
-- Support for Plug, in [AbsinthePlug](http://hex.pm/projects/absinthe_plug).
+  (See [Adapters](./README.md#adapters), below.)
 
 ### Notably Missing
 
@@ -41,8 +43,8 @@ Support for:
 
 - Fragments and fragment spreads
 - Directives
-- Interfaces
-- Comprehensive test suite against the specification (in progress under `test/specification`)
+- Interfaces and Unions
+- A comprehensive test suite against the specification (in progress under `test/specification`)
 
 ### Alternatives
 
