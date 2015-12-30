@@ -60,7 +60,7 @@ defmodule Absinthe.Type.Definitions do
   ## Examples
 
   Wrap around an argument or a field definition
-  (of a `Absinthe.Type.InputObjectType`) to deprecate it:
+  (of a `Absinthe.Type.InputObject`) to deprecate it:
 
   ```
   args(

@@ -1,4 +1,4 @@
-defmodule Absinthe.Type.ObjectType do
+defmodule Absinthe.Type.Object do
 
   @moduledoc """
   Represents a non-leaf node in a GraphQL tree of information.
@@ -17,7 +17,7 @@ defmodule Absinthe.Type.ObjectType do
   ```
   @absinthe :type
   def person do
-    %Absinthe.Type.ObjectType{
+    %Absinthe.Type.Object{
       fields: fields(
         name: [type: :string],
         age: [type: :integer],
@@ -30,7 +30,7 @@ defmodule Absinthe.Type.ObjectType do
 
   The "Person" type (referred inside Absinthe as `:person`) is an object, with
   fields that use `Absinthe.Type.Scalar` types (namely `:name` and `:age`), and
-  other `Absinthe.Type.ObjectType` types (`:best_friend` and `:pets`, assuming
+  other `Absinthe.Type.Object` types (`:best_friend` and `:pets`, assuming
   `:pet` is an object).
 
   Given we have a query that supports getting a person by name

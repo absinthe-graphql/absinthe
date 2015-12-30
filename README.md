@@ -102,7 +102,7 @@ defmodule MyApp.Schema do
   }
 
   def query do
-    %Type.ObjectType{
+    %Type.Object{
       fields: fields(
         item: [
           type: :item
@@ -136,7 +136,7 @@ We haven't defined that yet; let's do it. In the same `MyApp.Schema` module:
 ```elixir
 @absinthe :type
 def item do
-  %Type.ObjectType{
+  %Type.Object{
     description: "An item",
     fields: fields(
       id: [type: :id],
@@ -150,7 +150,7 @@ Some notes on defining types:
 
 * By default, they will have the same atom identifier (eg, `:item`) as the
   defining function. This can be overridden, eg, `@absinthe type: :my_custom_name`
-* The `name` field of the `Type.ObjectType` struct is optional; if not provided,
+* The `name` field of the `Type.Object` struct is optional; if not provided,
   it will be automatically set to a TitleCase version of the type identifier
   (in this case, it's set to `"Item"`).
 * You can define additional scalar types (including coercion logic); see
@@ -205,7 +205,7 @@ passing an optional `reason`:
 
 ```elixir
 def query do
-  %Type.ObjectType{
+  %Type.Object{
     name: "RootQuery",
     fields: fields(
       item: [

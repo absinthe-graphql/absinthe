@@ -9,7 +9,7 @@ defmodule Things do
   }
 
   def mutation do
-    %Type.ObjectType{
+    %Type.Object{
       name: "RootMutation",
       fields: fields(
         update_thing: [
@@ -32,7 +32,7 @@ defmodule Things do
   end
 
   def query do
-    %Type.ObjectType{
+    %Type.Object{
       fields: fields(
         bad_resolution: [
           type: :thing,
@@ -117,7 +117,7 @@ defmodule Things do
 
   @absinthe :type
   def input_thing do
-    %Type.InputObjectType{
+    %Type.InputObject{
       description: "A thing as input",
       fields: fields(
         value: [type: :integer],
@@ -131,7 +131,7 @@ defmodule Things do
 
   @absinthe :type
   def thing do
-    %Type.ObjectType{
+    %Type.Object{
       description: "A thing",
       fields: fields(
         id: [

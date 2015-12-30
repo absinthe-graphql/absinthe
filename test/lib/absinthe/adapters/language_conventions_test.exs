@@ -28,7 +28,7 @@ defmodule Absinthe.Adapter.LanguageConventionsTest do
     }
 
     def query do
-      %Type.ObjectType{
+      %Type.Object{
         fields: fields(
           bad_resolution: [
             type: :field_trip,
@@ -79,7 +79,7 @@ defmodule Absinthe.Adapter.LanguageConventionsTest do
 
     @absinthe :type
     def input_location do
-      %Type.InputObjectType{
+      %Type.InputObject{
         name: "Location",
         description: "A location",
         fields: fields(
@@ -90,7 +90,7 @@ defmodule Absinthe.Adapter.LanguageConventionsTest do
 
     @absinthe :type
     def field_trip do
-      %Type.ObjectType{
+      %Type.Object{
         description: "A field_trip",
         fields: fields(
           id: [

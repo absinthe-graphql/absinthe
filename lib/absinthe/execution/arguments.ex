@@ -132,7 +132,7 @@ defmodule Absinthe.Execution.Arguments do
     end
   end
   # Input object value found
-  defp do_add_argument_value(%Type.InputObjectType{fields: schema_fields}, %{fields: input_fields}, ast_argument, [value_name | _] = names, {values, {missing, invalid}, execution}) do
+  defp do_add_argument_value(%Type.InputObject{fields: schema_fields}, %{fields: input_fields}, ast_argument, [value_name | _] = names, {values, {missing, invalid}, execution}) do
     {_, object_values, {new_missing, new_invalid}, execution_to_return} = schema_fields
     |> Enum.reduce({names, %{}, {missing, invalid}, execution}, fn ({name, schema_field}, {acc_value_name, acc_values, {acc_missing, acc_invalid}, acc_execution}) ->
       input_field = input_fields |> Enum.find(&(&1.name == name |> to_string))

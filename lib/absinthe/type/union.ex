@@ -8,7 +8,7 @@ defmodule Absinthe.Type.Union do
   @typedoc false
   @type t :: %{name: binary,
                description: binary,
-               resolve_type: ((t, any) -> Absinthe.Type.ObjectType.t),
+               resolve_type: ((t, any) -> Absinthe.Type.Object.t),
                types: [Absinthe.Type.t],
                reference: Type.Reference.t}
 

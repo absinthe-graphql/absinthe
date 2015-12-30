@@ -1,4 +1,4 @@
-defmodule Absinthe.Language.InterfaceTypeDefinition do
+defmodule Absinthe.Language.InterfaceDefinition do
 
   @moduledoc false
 

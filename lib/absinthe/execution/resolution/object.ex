@@ -1,4 +1,4 @@
-defimpl Absinthe.Execution.Resolution, for: Absinthe.Type.ObjectType do
+defimpl Absinthe.Execution.Resolution, for: Absinthe.Type.Object do
 
   alias Absinthe.Execution.Resolution
 

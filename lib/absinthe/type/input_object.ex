@@ -1,4 +1,4 @@
-defmodule Absinthe.Type.InputObjectType do
+defmodule Absinthe.Type.InputObject do
 
   alias Absinthe.Type
 

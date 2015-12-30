@@ -1,8 +1,8 @@
 Nonterminals
   Document
   Definitions Definition OperationDefinition FragmentDefinition TypeDefinition
-  ObjectTypeDefinition InterfaceTypeDefinition UnionTypeDefinition
-  ScalarTypeDefinition EnumTypeDefinition InputObjectTypeDefinition TypeExtensionDefinition
+  ObjectDefinition InterfaceDefinition UnionTypeDefinition
+  ScalarTypeDefinition EnumTypeDefinition InputObjectDefinition TypeExtensionDefinition
   FieldDefinitionList FieldDefinition ImplementsInterfaces ArgumentsDefinition
   InputValueDefinitionList InputValueDefinition UnionMembers
   EnumValueDefinitionList EnumValueDefinition
@@ -147,18 +147,18 @@ ObjectFields -> ObjectField : ['$1'].
 ObjectFields -> ObjectField ObjectFields : ['$1'|'$2'].
 ObjectField -> Name ':' Value : build_ast_node('ObjectField', #{'name' => extract_binary('$1'), 'value' => '$3'}, #{'start_line' => extract_line('$1')}).
 
-TypeDefinition -> ObjectTypeDefinition : '$1'.
-TypeDefinition -> InterfaceTypeDefinition : '$1'.
+TypeDefinition -> ObjectDefinition : '$1'.
+TypeDefinition -> InterfaceDefinition : '$1'.
 TypeDefinition -> UnionTypeDefinition : '$1'.
 TypeDefinition -> ScalarTypeDefinition : '$1'.
 TypeDefinition -> EnumTypeDefinition : '$1'.
-TypeDefinition -> InputObjectTypeDefinition : '$1'.
+TypeDefinition -> InputObjectDefinition : '$1'.
 TypeDefinition -> TypeExtensionDefinition : '$1'.
 
-ObjectTypeDefinition -> 'type' Name '{' FieldDefinitionList '}' :
-  build_ast_node('ObjectTypeDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$5')}).
-ObjectTypeDefinition -> 'type' Name ImplementsInterfaces '{' FieldDefinitionList '}' :
-  build_ast_node('ObjectTypeDefinition', #{'name' => extract_binary('$2'), 'interfaces' => '$3', 'fields' => '$5'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$6')}).
+ObjectDefinition -> 'type' Name '{' FieldDefinitionList '}' :
+  build_ast_node('ObjectDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$5')}).
+ObjectDefinition -> 'type' Name ImplementsInterfaces '{' FieldDefinitionList '}' :
+  build_ast_node('ObjectDefinition', #{'name' => extract_binary('$2'), 'interfaces' => '$3', 'fields' => '$5'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$6')}).
 
 ImplementsInterfaces -> 'implements' NamedTypeList : '$2'.
 
@@ -178,8 +178,8 @@ InputValueDefinitionList -> InputValueDefinition InputValueDefinitionList : ['$1
 InputValueDefinition -> Name ':' Type : build_ast_node('InputValueDefinition', #{'name' => extract_binary('$1'), 'type' => '$3'}, #{'start_line' => extract_line('$1')}).
 InputValueDefinition -> Name ':' Type DefaultValue : build_ast_node('InputValueDefinition', #{'name' => extract_binary('$1'), 'type' => '$3', 'default_value' => '$4'}, #{'start_line' => extract_line('$1')}).
 
-InterfaceTypeDefinition -> 'interface' Name '{' FieldDefinitionList '}' :
-  build_ast_node('InterfaceTypeDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$5')}).
+InterfaceDefinition -> 'interface' Name '{' FieldDefinitionList '}' :
+  build_ast_node('InterfaceDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$5')}).
 
 UnionTypeDefinition -> 'union' Name '=' UnionMembers :
   build_ast_node('UnionTypeDefinition', #{'name' => extract_binary('$2'), 'types' => '$4'}, #{'start_line' => extract_line('$1')}).
@@ -197,10 +197,10 @@ EnumValueDefinitionList -> EnumValueDefinition EnumValueDefinitionList : ['$1'|'
 
 EnumValueDefinition -> EnumValue : '$1'.
 
-InputObjectTypeDefinition -> 'input' Name '{' InputValueDefinitionList '}' :
-  build_ast_node('InputObjectTypeDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, #{'start_line' => extract_line('$2'), 'end_line' => extract_line('$5')}).
+InputObjectDefinition -> 'input' Name '{' InputValueDefinitionList '}' :
+  build_ast_node('InputObjectDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, #{'start_line' => extract_line('$2'), 'end_line' => extract_line('$5')}).
 
-TypeExtensionDefinition -> 'extend' ObjectTypeDefinition :
+TypeExtensionDefinition -> 'extend' ObjectDefinition :
   build_ast_node('TypeExtensionDefinition', #{'definition' => '$2'}, #{'start_line' => extract_line('$1')}).
 
 Erlang code.
