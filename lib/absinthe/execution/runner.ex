@@ -12,17 +12,9 @@ defmodule Absinthe.Execution.Runner do
     {:ok, %{}}
   end
   def run(%{selected_operation: %{operation: op_type} = operation} = execution) do
-    case safe_execute(op_type, operation, execution) do
+    case execute(op_type, operation, execution) do
       {:ok, value, %{errors: errors}} -> {:ok, %{data: value, errors: errors} |> collapse}
       other -> other
-    end
-  end
-
-  defp safe_execute(op_type, operation, execution) do
-    try do
-      execute(op_type, operation, execution)
-    rescue
-      err -> {:error, err}
     end
   end
 
