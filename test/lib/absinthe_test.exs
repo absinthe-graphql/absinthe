@@ -177,6 +177,17 @@ defmodule AbsintheTest do
 
   end
 
+  it "Should return a nice error when the type is invalid" do
+    query = """
+    {
+      item(id: "foo") {
+        name
+      }
+    }
+    """
+    assert Absinthe.run(query, Absinthe.IdTestSchema, %{})
+  end
+
   defp run(query, options \\ []) do
     query
     |> Absinthe.run(Things, options)
