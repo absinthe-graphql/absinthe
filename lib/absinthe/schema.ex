@@ -90,7 +90,38 @@ defmodule Absinthe.Schema do
   and check out `Absinthe.Type.Scalar`, where the built-in types like
   `:integer`, `:id`, and `:string` are defined.)
 
-  Our schema is now ready to be executed (using, eg, `Absinthe.run/2`).
+  We can also load types from other modules using the `:type_modules`
+  option in our `use Absinthe.Schema`, eg:
+
+  ```
+  defmodule App.Schema do
+
+    use Absinthe.Schema, type_modules: [App.Schema.Scalars, App.Schema.Objects]
+
+    # ... schema definition
+
+  end
+  ```
+
+  Our `:item` type above could then move into `App.Schema.Objects`:
+
+  ```
+  defmodule App.Schema.Objects do
+
+    use Absinthe.Type.Definitions
+
+    @absinthe :type
+    def item do
+      # ... type definition
+    end
+
+    # ... other objects!
+
+  end
+  ```
+
+  Our schema is now ready to be executed (using, eg, `Absinthe.run/2` and
+  friends).
   """
 
   defmacro __using__(options) do

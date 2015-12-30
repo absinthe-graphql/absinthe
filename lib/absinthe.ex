@@ -217,6 +217,22 @@ defmodule Absinthe do
     query document, this must be provided to select which operation to execute.
   * `:variables` - A map of provided variable values to be used when filling in
     arguments in the provided query document.
+
+  ## Examples
+
+  ```
+  \"""
+  query GetItemById($id: ID) {
+    item(id: $id) {
+      name
+    }
+  }
+  \"""
+  |> Absinthe.run(App.Schema, variables: %{id: params[:item_id]})
+  ```
+
+  See the `Absinthe` module documentation for more examples.
+
   """
   @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, atom | Absinthe.Schema.t, Keyword.t) :: {:ok, Absinthe.Execution.result_t} | {:error, any}
   def run(%Absinthe.Language.Document{} = document, schema, options) do
@@ -237,6 +253,27 @@ defmodule Absinthe do
         other
     end
   end
+
+  @doc """
+  Evaluates a query document against a schema, without options.
+
+  ## Examples
+
+  ```
+  \"""
+  {
+    item(id: "foo") {
+      name
+    }
+  }
+  \"""
+  |> Absinthe.run(App.Schema)
+  ```
+
+  Also see `Absinthe.run/3`
+  """
+  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, atom | Absinthe.Schema.t) :: {:ok, Absinthe.Execution.result_t} | {:error, any}
+  def run(input, schema), do: run(input, schema, [])
 
   # TODO: Support modification by adapter
   # Convert a raw parser error into an `Execution.error_t`
