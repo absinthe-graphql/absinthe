@@ -8,6 +8,19 @@ defmodule Absinthe do
   their introspection, validation, and execution according to the
 [GraphQL specification](https://facebook.github.io/graphql/).
 
+  ## Building HTTP APIs
+
+  **IMPORTANT**: For HTTP, you'll probably want to use
+  [AbsinthePlug](https://hex.pm/projects/absinthe_plug) instead of executing
+  GraphQL query documents yourself. Absinthe doesn't know or care about HTTP,
+  so keep that in mind while reading through the documentation. While you'll
+  be building schemas just as in the examples here, the actual calls to
+  `Absinthe.run/3` and its friends are best left to
+  [AbsinthePlug](https://hex.pm/projects/absinthe_plug) if you're providing an
+  HTTP API.
+
+  ## Ecosystem
+
   Here are some additional projects you're likely to use in conjunction with
   Absinthe to launch an API:
 
@@ -15,9 +28,8 @@ defmodule Absinthe do
   database wrapper.
   * [Phoenix](http://hexdocs.pm/phoenix) - the Phoenix web framework.
   * [Plug](http://hexdocs.pm/plug) - a specification and conveniences
-  for composable modules in between web applications. (An Absinthe-specific
-  package for Plug and/or Phoenix is on our near-term roadmap.)
-  * [Poison](http://hexdocs.pm/poison) - JSON serialization
+  for composable modules in between web applications.
+  * [Poison](http://hexdocs.pm/poison) - JSON serialization.
 
   ## GraphQL Basics
 
@@ -282,7 +294,7 @@ defmodule Absinthe do
   progress.
   """
   @spec validate(Language.Document.t, atom | Schema.t) :: :ok
-  def validate(doc, schema) do
+  def validate(_doc, _schema) do
     :ok
   end
 
