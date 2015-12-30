@@ -33,6 +33,7 @@ idiomatic, flexible, and comfortable way possible.
 - An flexible adapter mechanism to translate between different naming
   conventions (eg, `snake_case` and `camelCase`) in schema vs the client.
   (See [Adapters](./README.md#adapters), below.).
+- Support for Plug, in [AbsinthePlug](http://hex.pm/projects/absinthe_plug).
 
 ### Notably Missing
 
@@ -48,7 +49,7 @@ Support for:
 You may also want to look at building from or using one of the following
 alternatives.
 
-* https://github.com/joshprice/graphql-elixir, with Plug support:
+* https://github.com/joshprice/graphql-elixir, also with Plug support:
   https://github.com/joshprice/plug_graphql
 * https://github.com/asonge/graphql (Parser-only as of 2015-12)
 
@@ -58,11 +59,19 @@ Install from [Hex.pm](https://hex.pm/packages/absinthe):
 
 ```elixir
 def deps do
-  [{:absinthe, "~> 0.1.0"}]
+  [{:absinthe, "~> 0.2.0"}]
 end
 ```
 
-Note: Absinthe requires Elixir 1.2.0-dev or higher.
+Add it to your `applications` configuration in `mix.exs`, too:
+
+```elixir
+def application do
+  [applications: [:absinthe]]
+end
+```
+
+Note: Absinthe requires Elixir 1.2-dev or higher.
 
 ## Learning GraphQL
 
@@ -159,8 +168,15 @@ Some notes on defining types:
 See [the documentation for Absinthe.Type.Definitions](http://hexdocs.pm/absinthe/Absinthe.Type.Definitions.html)
 for more information.
 
-Now, you can use Absinthe to execute a query document. Let's get the
-item with ID `"foo"`:
+Now, you can use Absinthe to execute a query document. Keep in mind that for
+HTTP, you'll probably want to use
+[AbsinthePlug](http://hex.pm/projects/absinthe_plug) instead of executing
+GraphQL query documents yourself. Absinthe doesn't know or care about HTTP,
+but AbsinthePlug does -- and handles the vagaries of interacting with HTTP
+GraphQL clients so you don't have to.
+
+If you _were_ executing query documents yourself (lets assume for a local tool),
+it would go something like this:
 
 ```elixir
 """
@@ -176,13 +192,12 @@ item with ID `"foo"`:
 {:ok, %{data: %{"item" => %{"name" => "Foo"}}}}
 ```
 
-We can also use a variable:
+Query documents also support variables:
 
 ## Variables
 
 To support variables, simply define them for your query document [as the specification expects](https://facebook.github.io/graphql/#sec-Language.Query-Document.Variables),
-and pass in a `variables` option (eg, query parameters passed along with the
-request) to `run`:
+and pass in a `variables` option (eg, [AbsinthePlug](http://hex.pm/projects/absinthe_plug) handles providing these directly from query parameters or the POST body) to `run`:
 
 ```elixir
 """
