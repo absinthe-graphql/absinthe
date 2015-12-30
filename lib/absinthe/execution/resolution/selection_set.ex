@@ -76,7 +76,7 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
 
   @spec merge_fields(Language.t, Language.t, Execution.t) :: Language.t
   defp merge_fields(_field1, field2, %{schema: _schema}) do
-    # TODO: Merge fields into a new Language.Field.t if the field_type is ObjectType.t
+    # TODO: Merge fields into a new Language.Field.t if the field_type is Object.t
     # field_type = schema |> Schema.field(resolution.type, field2.name).type |> Type.unwrap
     field2
   end

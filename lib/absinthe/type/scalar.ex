@@ -6,7 +6,7 @@ defmodule Absinthe.Type.Scalar do
   GraphQL responses take the form of a hierarchical tree; the leaves on these
   trees are scalars.
 
-  Also see `Absinthe.Type.ObjectType`.
+  Also see `Absinthe.Type.Object`.
 
   ## Built-In Scalars
 

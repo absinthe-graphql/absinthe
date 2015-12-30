@@ -20,7 +20,7 @@ defmodule Absinthe.Execution do
   @typedoc "The canonical result representation of an execution"
   @type result_t :: %{data: %{binary => any}, errors: [error_t]} | %{data: %{binary => any}} | %{errors: [error_t]}
 
-  @type t :: %{schema: Schema.t, document: Language.Document.t, variables: map, selected_operation: Absinthe.Type.ObjectType.t, operation_name: binary, errors: [error_t], categorized: boolean, strategy: atom, adapter: atom, resolution: Execution.Resolution.t}
+  @type t :: %{schema: Schema.t, document: Language.Document.t, variables: map, selected_operation: Absinthe.Type.Object.t, operation_name: binary, errors: [error_t], categorized: boolean, strategy: atom, adapter: atom, resolution: Execution.Resolution.t}
   defstruct schema: nil, document: nil, variables: %{}, fragments: %{}, operations: %{}, selected_operation: nil, operation_name: nil, errors: [], categorized: false, strategy: nil, adapter: nil, resolution: nil
 
   @doc false
@@ -112,9 +112,9 @@ defmodule Absinthe.Execution do
   def resolve_type(_target, %Type.Union{} = child_type, parent_type) do
     child_type |> Type.Union.member?(parent_type) || nil
   end
-  def resolve_type(target, %Type.InterfaceType{} = _child_type, _parent_type) do
+  def resolve_type(target, %Type.Interface{} = _child_type, _parent_type) do
     target
-    |> Type.InterfaceType.resolve_type
+    |> Type.Interface.resolve_type
   end
   def resolve_type(_target, child_type, parent_type) when child_type == parent_type do
     parent_type
@@ -163,7 +163,7 @@ defmodule Absinthe.Execution do
   end
 
   @doc false
-  @spec selected_operation(t) :: {:ok, Absinthe.Type.ObjectType.t | nil} | {:error, binary}
+  @spec selected_operation(t) :: {:ok, Absinthe.Type.Object.t | nil} | {:error, binary}
   def selected_operation(%{categorized: false}) do
     {:error, "Call Execution.categorize_definitions first"}
   end

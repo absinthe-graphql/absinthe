@@ -5,7 +5,7 @@ defmodule Absinthe.Type.Fixtures do
 
   @absinthe :type
   def image do
-    %Type.ObjectType{
+    %Type.Object{
       fields: fields(
         url: [type: :string],
         width: [type: :integer],
@@ -16,7 +16,7 @@ defmodule Absinthe.Type.Fixtures do
 
   @absinthe :type
   def author do
-    %Type.ObjectType{
+    %Type.Object{
       fields: fields(
         id: [type: :id],
         name: [type: :string],
@@ -34,7 +34,7 @@ defmodule Absinthe.Type.Fixtures do
 
   @absinthe :type
   def article do
-    %Type.ObjectType{
+    %Type.Object{
       fields: fields(
         id: [type: :string],
         is_published: [type: :string],
@@ -46,7 +46,7 @@ defmodule Absinthe.Type.Fixtures do
   end
 
   def query do
-    %Type.ObjectType{
+    %Type.Object{
       name: "Query",
       fields: fields(
         article: [
@@ -61,7 +61,7 @@ defmodule Absinthe.Type.Fixtures do
   end
 
   def mutation do
-    %Type.ObjectType{
+    %Type.Object{
       name: "Mutation",
       fields: fields(
         write_article: [type: :article]
@@ -71,7 +71,7 @@ defmodule Absinthe.Type.Fixtures do
 
   @absinthe :type
   def object_type do
-    %Type.ObjectType{
+    %Type.Object{
       is_type_of: fn -> true end
     }
   end

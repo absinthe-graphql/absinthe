@@ -37,7 +37,7 @@ defmodule Absinthe.Schema do
   }
 
   def query do
-    %Absinthe.Type.ObjectType{
+    %Absinthe.Type.Object{
       fields: fields(
         item: [
           type: :item,
@@ -61,7 +61,7 @@ defmodule Absinthe.Schema do
   and arguments.
 
   For more information on object types (especially how the `resolve`
-  function works above), see `Absinthe.Type.ObjectType`.
+  function works above), see `Absinthe.Type.Object`.
 
   You may also notice we've declared that the resolved value of the field
   to be of `type: :item`. We now need to define exactly what an `:item` is,
@@ -74,7 +74,7 @@ defmodule Absinthe.Schema do
   ```
   @absinthe :type
   def item do
-    %Absinthe.Type.ObjectType{
+    %Absinthe.Type.Object{
       description: "A valuable item",
       fields: fields(
         id: [type: :id],
@@ -136,23 +136,23 @@ defmodule Absinthe.Schema do
   @doc """
   (Required) Define the query root type.
 
-  Should be an `Absinthe.Type.ObjectType` struct.
+  Should be an `Absinthe.Type.Object` struct.
   """
-  @callback query :: Absinthe.Type.ObjectType.t
+  @callback query :: Absinthe.Type.Object.t
 
   @doc """
   (Optional) Define the mutation root type.
 
-  Should be an `Absinthe.Type.ObjectType` struct.
+  Should be an `Absinthe.Type.Object` struct.
   """
-  @callback mutation :: nil | Absinthe.Type.ObjectType.t
+  @callback mutation :: nil | Absinthe.Type.Object.t
 
   @doc """
   (Optional) Define the subscription root type.
 
-  Should be an `Absinthe.Type.ObjectType` struct.
+  Should be an `Absinthe.Type.Object` struct.
   """
-  @callback subscription :: nil | Absinthe.Type.ObjectType.t
+  @callback subscription :: nil | Absinthe.Type.Object.t
 
   alias Absinthe.Type
   alias Absinthe.Language
@@ -165,9 +165,9 @@ defmodule Absinthe.Schema do
   the necessary `Absinthe.Schema` callbacks and
   use `schema/0`
   """
-  @type t :: %{query: Absinthe.Type.ObjectType.t,
-               mutation: nil | Absinthe.Type.ObjectType.t,
-               subscription: nil | Absinthe.Type.ObjectType.t,
+  @type t :: %{query: Absinthe.Type.Object.t,
+               mutation: nil | Absinthe.Type.Object.t,
+               subscription: nil | Absinthe.Type.Object.t,
                type_modules: [atom],
                types: Schema.Types.typemap_t,
                errors: [binary]}

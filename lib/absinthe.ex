@@ -51,7 +51,7 @@ defmodule Absinthe do
     }
 
     def query do
-      %Absinthe.Type.ObjectType{
+      %Absinthe.Type.Object{
         fields: fields(
           item: [
             type: :item,
@@ -69,7 +69,7 @@ defmodule Absinthe do
 
     @absinthe :type
     def item do
-      %Absinthe.Type.ObjectType{
+      %Absinthe.Type.Object{
         description: "A valuable item",
         fields: fields(
           id: [type: :id],

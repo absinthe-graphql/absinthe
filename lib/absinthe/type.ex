@@ -6,10 +6,10 @@ defmodule Absinthe.Type do
 
   # ALL TYPES
 
-  @type_modules [Type.Scalar, Type.ObjectType, Type.InterfaceType, Type.Union, Type.Enum, Type.InputObjectType, Type.List, Type.NonNull]
+  @type_modules [Type.Scalar, Type.Object, Type.Interface, Type.Union, Type.Enum, Type.InputObject, Type.List, Type.NonNull]
 
   @typedoc "These are all of the possible kinds of types."
-  @type t :: Type.Scalar.t | Type.ObjectType.t | Type.FieldDefinition.t | Type.InterfaceType.t | Type.Union.t | Type.Enum.t | Type.InputObjectType.t | Type.List.t | Type.NonNull.t
+  @type t :: Type.Scalar.t | Type.Object.t | Type.FieldDefinition.t | Type.Interface.t | Type.Union.t | Type.Enum.t | Type.InputObject.t | Type.List.t | Type.NonNull.t
 
   @typedoc "A type identifier"
   @type identifier_t :: atom
@@ -21,10 +21,10 @@ defmodule Absinthe.Type do
 
   # INPUT TYPES
 
-  @input_type_modules [Type.Scalar, Type.Enum, Type.InputObjectType, Type.List, Type.NonNull]
+  @input_type_modules [Type.Scalar, Type.Enum, Type.InputObject, Type.List, Type.NonNull]
 
   @typedoc "These types may be used as input types for arguments and directives."
-  @type input_t :: Type.Scalar.t | Type.Enum.t | Type.InputObjectType.t | Type.List.t | Type.NonNull.t
+  @type input_t :: Type.Scalar.t | Type.Enum.t | Type.InputObject.t | Type.List.t | Type.NonNull.t
 
   @doc "Determine if a term is an input type"
   @spec input_type?(any) :: boolean
@@ -41,7 +41,7 @@ defmodule Absinthe.Type do
 
   @doc "Determine if a term is an object type"
   @spec object_type?(any) :: boolean
-  def object_type?(%Type.ObjectType{}), do: true
+  def object_type?(%Type.Object{}), do: true
   def object_type?(_), do: false
 
   @doc "Resolve a type for a value from an interface (if necessary)"
@@ -58,10 +58,10 @@ defmodule Absinthe.Type do
 
   # OUTPUT TYPES
 
-  @output_type_modules [Type.Scalar, Type.ObjectType, Type.InterfaceType, Type.Union, Type.Enum]
+  @output_type_modules [Type.Scalar, Type.Object, Type.Interface, Type.Union, Type.Enum]
 
   @typedoc "These types may be used as output types as the result of fields."
-  @type output_t :: Type.Scalar.t | Type.ObjectType.t | Type.InterfaceType.t | Type.Union.t | Type.Enum.t
+  @type output_t :: Type.Scalar.t | Type.Object.t | Type.Interface.t | Type.Union.t | Type.Enum.t
 
   @doc "Determine if a term is an output type"
   @spec output_type?(any) :: boolean
@@ -94,10 +94,10 @@ defmodule Absinthe.Type do
 
   # COMPOSITE TYPES
 
-  @composite_type_modules [Type.ObjectType, Type.InterfaceType, Type.Union]
+  @composite_type_modules [Type.Object, Type.Interface, Type.Union]
 
   @typedoc "These types may describe the parent context of a selection set."
-  @type composite_t :: Type.ObjectType.t | Type.InterfaceType.t | Type.Union.t
+  @type composite_t :: Type.Object.t | Type.Interface.t | Type.Union.t
 
   @doc "Determine if a term is a composite type"
   @spec composite_type?(any) :: boolean
@@ -106,10 +106,10 @@ defmodule Absinthe.Type do
 
   # ABSTRACT TYPES
 
-  @abstract_type_modules [Type.InterfaceType, Type.Union]
+  @abstract_type_modules [Type.Interface, Type.Union]
 
   @typedoc "These types may describe the parent context of a selection set."
-  @type abstract_t :: Type.InterfaceType.t | Type.Union.t
+  @type abstract_t :: Type.Interface.t | Type.Union.t
 
   @doc "Determine if a term is an abstract type"
   @spec abstract?(any) :: boolean
@@ -118,10 +118,10 @@ defmodule Absinthe.Type do
 
   # NULLABLE TYPES
 
-  @nullable_type_modules [Type.Scalar, Type.ObjectType, Type.InterfaceType, Type.Union, Type.Enum, Type.InputObjectType, Type.List]
+  @nullable_type_modules [Type.Scalar, Type.Object, Type.Interface, Type.Union, Type.Enum, Type.InputObject, Type.List]
 
   @typedoc "These types can all accept null as a value."
-  @type nullable_t :: Type.Scalar.t | Type.ObjectType.t | Type.InterfaceType.t | Type.Union.t | Type.Enum.t | Type.InputObjectType.t | Type.List.t
+  @type nullable_t :: Type.Scalar.t | Type.Object.t | Type.Interface.t | Type.Union.t | Type.Enum.t | Type.InputObject.t | Type.List.t
 
   @doc "Unwrap the underlying nullable type or return unmodified"
   @spec nullable(any) :: nullable_t | t # nullable_t is a subset of t, but broken out for clarity
@@ -135,10 +135,10 @@ defmodule Absinthe.Type do
 
   # NAMED TYPES
 
-  @named_type_modules [Type.Scalar, Type.ObjectType, Type.InterfaceType, Type.Union, Type.Enum, Type.InputObjectType]
+  @named_type_modules [Type.Scalar, Type.Object, Type.Interface, Type.Union, Type.Enum, Type.InputObject]
 
   @typedoc "These named types do not include modifiers like Absinthe.Type.List or Absinthe.Type.NonNull."
-  @type named_t :: Type.Scalar.t | Type.ObjectType.t | Type.InterfaceType.t | Type.Union.t | Type.Enum.t | Type.InputObjectType.t
+  @type named_t :: Type.Scalar.t | Type.Object.t | Type.Interface.t | Type.Union.t | Type.Enum.t | Type.InputObject.t
 
   @doc "Determine the underlying named type, if any"
   @spec named_type(any) :: nil | named_t

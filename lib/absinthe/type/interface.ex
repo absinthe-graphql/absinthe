@@ -1,11 +1,11 @@
-defmodule Absinthe.Type.InterfaceType do
+defmodule Absinthe.Type.Interface do
 
   # TODO: Interfaces are not yet fully supported
   @moduledoc false
 
   alias Absinthe.Type
 
-  @type t :: %{name: binary, description: binary, fields: map, resolve_type: ((any, Absinthe.Type.ResolveInfo.t) -> Absinthe.Type.ObjectType.t), types: [Absinthe.Type.t], reference: Type.Reference.t}
+  @type t :: %{name: binary, description: binary, fields: map, resolve_type: ((any, Absinthe.Type.ResolveInfo.t) -> Absinthe.Type.Object.t), types: [Absinthe.Type.t], reference: Type.Reference.t}
   defstruct name: nil, description: nil, fields: nil, resolve_type: nil, types: [], reference: nil
 
   def resolve_type(%{resolve_type: nil} = interface, candidate) do

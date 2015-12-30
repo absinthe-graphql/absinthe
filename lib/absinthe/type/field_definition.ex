@@ -39,11 +39,11 @@ defmodule Absinthe.Type.FieldDefinition do
       {:ok, Map.get(parent_object, field_name)}
 
   This is commonly use when listing the available fields on a
-  `Absinthe.Type.ObjectType` that models a data record. For instance:
+  `Absinthe.Type.Object` that models a data record. For instance:
 
       @absinthe :type
       def person do
-        %Absinthe.Type.ObjectType{
+        %Absinthe.Type.Object{
           description: "A Person"
           fields: fields(
             first_name: [type: :string],
@@ -59,7 +59,7 @@ defmodule Absinthe.Type.FieldDefinition do
   users for a given `location_id`:
 
       def query do
-        %Absinthe.Type.ObjectType{
+        %Absinthe.Type.Object{
           fields: fields(
             users: [
               type: :person,

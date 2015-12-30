@@ -15,7 +15,7 @@ defmodule Absinthe.TypeTest do
     }
 
     def query do
-      %Type.ObjectType{
+      %Type.Object{
         fields: fields(
           item: [
             type: :item,
@@ -32,7 +32,7 @@ defmodule Absinthe.TypeTest do
 
     @absinthe :type
     def item do
-      %Type.ObjectType{
+      %Type.Object{
         description: "A Basic Type",
         fields: fields(
           id: [type: :id],
@@ -43,7 +43,7 @@ defmodule Absinthe.TypeTest do
 
     @absinthe type: :author
     def person do
-      %Type.ObjectType{
+      %Type.Object{
         description: "A Person",
         fields: fields(
           id: [type: :id],
@@ -56,7 +56,7 @@ defmodule Absinthe.TypeTest do
 
     @absinthe :type
     def book do
-      %Type.ObjectType{
+      %Type.Object{
         name: "NonFictionBook",
         description: "A Book",
         fields: fields(
@@ -92,15 +92,15 @@ defmodule Absinthe.TypeTest do
       describe "without a different identifier" do
 
         it 'includes a defined entry' do
-          assert %Type.ObjectType{name: "Item"} = Absinthe.TypeTest.MyApp.absinthe_types[:item]
+          assert %Type.Object{name: "Item"} = Absinthe.TypeTest.MyApp.absinthe_types[:item]
         end
 
         describe "that defines its own name" do
-          assert %Type.ObjectType{name: "NonFictionBook"} = Absinthe.TypeTest.MyApp.absinthe_types[:book]
+          assert %Type.Object{name: "NonFictionBook"} = Absinthe.TypeTest.MyApp.absinthe_types[:book]
         end
 
         describe "that uses a name derived from the identifier" do
-          assert %Type.ObjectType{name: "Item"} = Absinthe.TypeTest.MyApp.absinthe_types[:item]
+          assert %Type.Object{name: "Item"} = Absinthe.TypeTest.MyApp.absinthe_types[:item]
         end
 
       end
@@ -108,7 +108,7 @@ defmodule Absinthe.TypeTest do
       describe "with a different identifier" do
 
         it 'includes a defined entry' do
-          assert %Type.ObjectType{name: "Author"} = Absinthe.TypeTest.MyApp.absinthe_types[:author]
+          assert %Type.Object{name: "Author"} = Absinthe.TypeTest.MyApp.absinthe_types[:author]
         end
 
       end
