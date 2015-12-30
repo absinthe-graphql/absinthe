@@ -8,5 +8,5 @@ defprotocol Absinthe.Traversal.Node do
 end
 
 defimpl Absinthe.Traversal.Node, for: Any do
-  def children(node, _traversal), do: []
+  def children(_node, _traversal), do: []
 end

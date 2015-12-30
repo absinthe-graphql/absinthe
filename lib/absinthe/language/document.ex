@@ -1,8 +1,6 @@
 defmodule Absinthe.Language.Document do
   @moduledoc "The parsed AST representation of a query document"
 
-  alias __MODULE__
-
   @typedoc false
   @type t :: %{definitions: [Absinthe.Traversal.Node.t], loc: Absinthe.Language.loc_t}
   defstruct definitions: [], loc: %{start_line: nil}

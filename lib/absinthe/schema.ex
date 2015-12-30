@@ -275,7 +275,7 @@ defmodule Absinthe.Schema do
   def verify(name) when is_atom(name) do
     verify(name.schema)
   end
-  def verify(%Schema{errors: errors} = schema) when length(errors) > 0 do
+  def verify(%Schema{errors: errors}) when length(errors) > 0 do
     {:error, errors}
   end
   def verify(%Schema{} = schema) do
