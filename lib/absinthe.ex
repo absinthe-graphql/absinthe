@@ -164,9 +164,10 @@ defmodule Absinthe do
   @spec tokenize(binary) :: {:ok, [tuple]} | {:error, binary}
   def tokenize(input) do
     case :absinthe_lexer.string(input |> to_char_list) do
-      {:ok, tokens, _line_count} -> {:ok, tokens}
-      other ->
-        other
+      {:ok, tokens, _line_count} ->
+        {:ok, tokens}
+      {:error, raw_error, _} ->
+        {:error, format_raw_parse_error(raw_error)}
     end
   end
 
@@ -184,7 +185,7 @@ defmodule Absinthe do
           {:ok, _} = result ->
             result
           {:error, raw_error} ->
-            {:error, format_parser_error(raw_error)}
+            {:error, format_raw_parse_error(raw_error)}
         end
       other -> other
     end
@@ -240,9 +241,14 @@ defmodule Absinthe do
   # TODO: Support modification by adapter
   # Convert a raw parser error into an `Execution.error_t`
   @doc false
-  @spec format_parser_error({integer, :absinthe_parser, [char_list]}) :: Execution.error_t
-  defp format_parser_error({line, :absinthe_parser, msgs}) do
+  @spec format_raw_parse_error({integer, :absinthe_parser, [char_list]}) :: Execution.error_t
+  defp format_raw_parse_error({line, :absinthe_parser, msgs}) do
     message = msgs |> Enum.map(&to_string/1) |> Enum.join("")
+    %{message: message, locations: [%{line: line, column: 0}]}
+  end
+  @spec format_raw_parse_error({integer, :absinthe_lexer, {atom, char_list}}) :: Execution.error_t
+  defp format_raw_parse_error({line, :absinthe_lexer, {problem, field}}) do
+    message = "#{problem}: #{field}"
     %{message: message, locations: [%{line: line, column: 0}]}
   end
 
