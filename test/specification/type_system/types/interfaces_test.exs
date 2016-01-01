@@ -16,7 +16,10 @@ defmodule Specification.TypeSystem.Types.InterfacesTest do
           %Type.Object{
             fields: fields(
               foo: [type: :foo],
-              bar: [type: :bar]
+              bar: [type: :bar],
+              named_thing: [
+                type: :named,
+              ]
             )
           }
         end
@@ -27,6 +30,7 @@ defmodule Specification.TypeSystem.Types.InterfacesTest do
             fields: fields(
               name: [type: :string]
             ),
+            is_type_of: fn _ -> true end,
             interfaces: [:named]
           }
         end
@@ -37,6 +41,7 @@ defmodule Specification.TypeSystem.Types.InterfacesTest do
             fields: fields(
               name: [type: :string]
             ),
+            is_type_of: fn _ -> true end,
             interfaces: [:named]
           }
         end
@@ -89,16 +94,43 @@ defmodule Specification.TypeSystem.Types.InterfacesTest do
         def query do
           %Type.Object{
             fields: fields(
-              foo: [type: :foo]
+              foo: [type: :foo],
+              quux: [type: :quux],
+              spam: [type: :spam]
             )
           }
         end
 
+        # Bad implementation
         @absinthe :type
         def foo do
           %Type.Object{
             fields: fields(
               not_name: [type: :string]
+            ),
+            interfaces: [:named],
+            is_type_of: fn _ -> true end
+          }
+        end
+
+        # Not a good interface type
+        @absinthe :type
+        def quux do
+          %Type.Object{
+            fields: fields(
+              not_name: [type: :string]
+            ),
+            interfaces: [:foo],
+            is_type_of: fn _ -> true end
+          }
+        end
+
+        # Doesn't have an is_type_of, and the Interface has no resolve_type
+        @absinthe :type
+        def spam do
+          %Type.Object{
+            fields: fields(
+              name: [type: :string]
             ),
             interfaces: [:named]
           }
@@ -114,8 +146,13 @@ defmodule Specification.TypeSystem.Types.InterfacesTest do
         end
       end
 
-      it "causes a schema error" do
-        assert %{errors: ["The :foo object type does not implement the :named interface type, as declared"]} = BadSchema.schema
+      it "causes schema errors" do
+        %{errors: errors} = BadSchema.schema
+        assert [
+          "The :foo object type does not implement the :named interface type, as declared",
+          "The :quux object type may only implement Interface types, it cannot implement :foo (Object)",
+          "Interface type :named does not provide a `resolve_type` function and implementing type :spam does not provide an `in_type_of` function. There is no way to resolve this implementing type during execution."
+        ] |> Enum.sort == Enum.sort(errors)
       end
     end
   end
