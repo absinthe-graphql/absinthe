@@ -1,6 +1,6 @@
 defmodule Specification.Execution.RequestsTest do
   use ExSpec, async: true
-  use SpecificationVerification
+  @moduletag specification: true, pending: true
 
   @graphql_spec "#sec-Evaluting-requests"
 

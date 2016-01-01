@@ -1,4 +1,4 @@
-defmodule Absinthe.Type.TypesTest do
+defmodule Absinthe.Type.TypeMapTest do
   use ExSpec, async: true
 
   it "finds custom types" do

@@ -200,17 +200,19 @@ defmodule Absinthe.Schema do
                mutation: nil | Absinthe.Type.Object.t,
                subscription: nil | Absinthe.Type.Object.t,
                type_modules: [atom],
-               types: Schema.Types.typemap_t,
+               types: Schema.TypeMap.t,
+               interfaces: Schema.InterfaceMap.t,
                errors: [binary]}
 
-  defstruct query: nil, mutation: nil, subscription: nil, type_modules: [], types: %{}, errors: []
+  defstruct query: nil, mutation: nil, subscription: nil, type_modules: [], types: %{}, interfaces: %{}, errors: []
 
   # Add types (but only do it once; if any have been found, this is just an identity function)
   @doc false
   @spec prepare(t) :: t
   def prepare(%{types: types} = schema) when map_size(types) == 0 do
     schema
-    |> Schema.Types.setup
+    |> Schema.TypeMap.setup
+    |> Schema.InterfaceMap.setup
   end
   def prepare(schema) do
     schema

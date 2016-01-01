@@ -1,6 +1,6 @@
 defmodule Specification.TypeSystem.Types.EnumsTest do
   use ExSpec, async: true
-  use SpecificationVerification
+  @moduletag specification: true, pending: true
 
   @graphql_spec "#sec-Enums"
 
