@@ -321,7 +321,7 @@ defmodule Absinthe do
 
   @spec execute(Absinthe.Schema.t | atom, Absinthe.Language.Document.t, Keyword.t) :: Absinthe.Execution.result_t
   defp execute(schema_ref, document, options) do
-    schema = find_schema(schema_ref)
+    {:ok, schema} = find_schema(schema_ref) |> Absinthe.Schema.verify
     %Absinthe.Execution{schema: schema, document: document}
     |> Absinthe.Execution.run(options)
   end

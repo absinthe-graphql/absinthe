@@ -1,5 +1,7 @@
 defmodule Specification.TypeSystem.Types.InterfacesTest do
   use ExSpec, async: true
+  import AssertResult
+
   @moduletag :specification
 
   @graphql_spec "#sec-Interfaces"
@@ -53,6 +55,7 @@ defmodule Specification.TypeSystem.Types.InterfacesTest do
             fields: fields(
               name: [type: :string]
             ),
+            is_type_of: fn _ -> true end,
             interfaces: [:named]
           }
         end
@@ -75,13 +78,101 @@ defmodule Specification.TypeSystem.Types.InterfacesTest do
         schema = GoodSchema.schema
         assert :foo in schema.interfaces[:named]
         assert :bar in schema.interfaces[:named]
+        # Not directly in the schema, but because it's
+        # an available type and there's a field that
+        # defines the interface as a type
+        assert :baz in schema.interfaces[:named]
       end
 
-      it "does not captures the relationships not in the schema" do
-        schema = GoodSchema.schema
-        assert not :baz in schema.interfaces[:named]
+      defmodule ContactSchema do
+        use Absinthe.Schema
+        alias Absinthe.Type
+
+        def query do
+          %Type.Object{
+            fields: fields(
+              contact: [
+                type: :contact,
+                resolve: fn
+                  _, _ ->
+                    {:ok, %{entity: %{name: "Bruce", age: 35}}}
+                end
+              ],
+            )
+          }
+        end
+
+        @absinthe :type
+        def named_entity do
+          %Type.Interface{
+            fields: fields(
+              name: [type: :string]
+            ),
+            resolve_type: fn
+              %{age: _} -> :person
+              %{employee_count: _} -> :business
+            end
+          }
+        end
+
+        @absinthe :type
+        def person do
+          %Type.Object{
+            fields: fields(
+              name: [type: :string],
+              age: [type: :integer]
+            ),
+            interfaces: [:named_entity]
+          }
+        end
+
+        @absinthe :type
+        def business do
+          %Type.Object{
+            fields: fields(
+              name: [type: :string],
+              employee_count: [type: :integer]
+            ),
+            interfaces: [:named_entity]
+          }
+        end
+
+        @absinthe :type
+        def contact do
+          %Type.Object{
+            fields: fields(
+              entity: [type: :named_entity],
+              phone_number: [type: :string],
+              address: [type: :string]
+            )
+          }
+        end
+
       end
 
+      describe "with the interface as a field type" do
+
+        it "is a valid schema" do
+          assert {:ok, _} = Absinthe.Schema.verify(ContactSchema.schema)
+        end
+
+        it "can select fields from the interface" do
+          result = """
+          { contact { entity { name } } }
+          """ |> Absinthe.run(ContactSchema)
+          assert_result {:ok, %{data: %{"contact" => %{"entity" => %{"name" => "Bruce"}}}}}, result
+        end
+
+        it "can't select fields from an implementing type without 'on'" do
+          result = """
+          { contact { entity { name age } } }
+          """ |> Absinthe.run(ContactSchema)
+          assert_result {:ok, %{data: %{"contact" => %{"entity" => %{"name" => "Bruce"}}},
+                                errors: [%{message: "Field `age': Not present in schema"}]}}, result
+        end
+
+
+      end
 
     end
 
@@ -146,7 +237,8 @@ defmodule Specification.TypeSystem.Types.InterfacesTest do
         end
       end
 
-      it "causes schema errors" do
+      it "reports schema errors" do
+
         %{errors: errors} = BadSchema.schema
         assert [
           "The :foo object type does not implement the :named interface type, as declared",

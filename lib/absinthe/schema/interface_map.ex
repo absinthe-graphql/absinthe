@@ -56,7 +56,7 @@ defmodule Absinthe.Schema.InterfaceMap do
   end
 
   defp check_resolvers({mapping, errors} = acc, identifier, %{is_type_of: nil}, iface, %{resolve_type: nil}) do
-    err = "Interface type :#{iface} does not provide a `resolve_type` function and implementing type :#{identifier} does not provide an `in_type_of` function. There is no way to resolve this implementing type during execution."
+    err = "Interface type :#{iface} does not provide a `resolve_type` function and implementing type :#{identifier} does not provide an `is_type_of` function. There is no way to resolve this implementing type during execution."
     {mapping, [err | errors]}
   end
   defp check_resolvers(acc, _identifier, _type_struct, _iface, _iface_type_struct) do

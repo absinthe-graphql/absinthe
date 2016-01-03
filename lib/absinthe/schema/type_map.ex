@@ -24,7 +24,8 @@ defmodule Absinthe.Schema.TypeMap do
       {_, _, errors} when length(errors) > 0 ->
         %{schema | errors: schema.errors ++ errors}
       {_, result, _} ->
-        %{schema | types: result}
+        all = result |> add_from_interfaces(types_available)
+        %{schema | types: all}
       other ->
         other
     end
@@ -81,6 +82,29 @@ defmodule Absinthe.Schema.TypeMap do
     |> Enum.reduce(%{}, fn
       mapping, acc ->
         acc |> Map.merge(mapping)
+    end)
+  end
+
+  @spec add_from_interfaces(t, t) :: t
+  def add_from_interfaces(result, avail) do
+    avail
+    |> Enum.reduce(result, fn
+      {name, %{interfaces: ifaces} = type}, acc ->
+        if result[name] do
+          acc
+        else
+          ifaces
+          |> Enum.reduce(acc, fn
+            iface, iface_acc ->
+            if iface_acc[iface] && !iface_acc[type] do
+              iface_acc |> Map.merge(%{name => type})
+            else
+              iface_acc
+            end
+          end)
+        end
+      _, acc ->
+        acc
     end)
   end
 
