@@ -4,6 +4,8 @@ defmodule Absinthe.Type do
 
   alias __MODULE__
 
+  alias Absinthe.Introspection
+
   # ALL TYPES
 
   @type_modules [Type.Scalar, Type.Object, Type.Interface, Type.Union, Type.Enum, Type.InputObject, Type.List, Type.NonNull]
@@ -191,7 +193,9 @@ defmodule Absinthe.Type do
     true
   end
 
-  # TODO: Support __typename, __schema, and __type for introspection
+  def field(type, "__" <> meta_name) do
+    Introspection.Field.meta(meta_name)
+  end
   def field(type, name) do
     type.fields
     |> Map.get(name |> String.to_atom)

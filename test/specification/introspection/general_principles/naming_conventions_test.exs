@@ -1,4 +1,4 @@
-defmodule Absinthe.Specification.Introspection.NamingConventionsTest do
+defmodule Absinthe.Specification.Introspection.GeneralPrinciples.NamingConventionsTest do
   use ExSpec, async: true
 
   describe "custom types" do
