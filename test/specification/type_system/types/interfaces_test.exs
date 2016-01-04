@@ -152,6 +152,7 @@ defmodule Specification.TypeSystem.Types.InterfacesTest do
 
       describe "with the interface as a field type" do
 
+        @tag :iface
         it "is a valid schema" do
           assert {:ok, _} = Absinthe.Schema.verify(ContactSchema.schema)
         end
@@ -243,7 +244,7 @@ defmodule Specification.TypeSystem.Types.InterfacesTest do
         assert [
           "The :foo object type does not implement the :named interface type, as declared",
           "The :quux object type may only implement Interface types, it cannot implement :foo (Object)",
-          "Interface type :named does not provide a `resolve_type` function and implementing type :spam does not provide an `in_type_of` function. There is no way to resolve this implementing type during execution."
+          "Interface type :named does not provide a `resolve_type` function and implementing type :spam does not provide an `is_type_of` function. There is no way to resolve this implementing type during execution."
         ] |> Enum.sort == Enum.sort(errors)
       end
     end

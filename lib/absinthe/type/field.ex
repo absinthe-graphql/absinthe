@@ -15,6 +15,8 @@ defmodule Absinthe.Type.Field do
   alias Absinthe.Type.Deprecation
   alias Absinthe.Schema
 
+  use Type.Fetch
+
   @typedoc """
   The configuration for a field
 
