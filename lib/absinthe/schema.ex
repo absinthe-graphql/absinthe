@@ -213,6 +213,7 @@ defmodule Absinthe.Schema do
     schema
     |> Schema.TypeMap.setup
     |> Schema.InterfaceMap.setup
+    |> Schema.Verification.setup
   end
   def prepare(schema) do
     schema
