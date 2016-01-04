@@ -177,15 +177,30 @@ defmodule AbsintheTest do
 
   end
 
-  it "Should return a nice error when the type is invalid" do
-    query = """
+  it "Should be retrievable using the ID type as a string" do
+    result = """
     {
       item(id: "foo") {
+        id
         name
       }
     }
     """
-    assert Absinthe.run(query, Absinthe.IdTestSchema, %{})
+    |> Absinthe.run(Absinthe.IdTestSchema)
+    assert_result {:ok, %{data: %{"item" => %{"id" => "foo", "name" => "Foo"}}}}, result
+  end
+
+  it "Should be retrievable using the ID type as a bare value" do
+    result = """
+    {
+      item(id: foo) {
+        id
+        name
+      }
+    }
+    """
+    |> Absinthe.run(Absinthe.IdTestSchema)
+    assert_result {:ok, %{data: %{"item" => %{"id" => "foo", "name" => "Foo"}}}}, result
   end
 
   it "should wrap all lexer errors" do
