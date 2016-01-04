@@ -1,7 +1,5 @@
 defmodule Absinthe.Introspection.Field do
 
-  alias __MODULE__
-
   alias Absinthe.Type
 
   # TODO: Support __schema, and __type

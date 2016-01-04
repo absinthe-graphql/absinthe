@@ -248,7 +248,7 @@ defmodule Absinthe.Schema do
     end
   end
   def type_from_ast(schema, ast_type) do
-    schema.types
+    schema.types.by_identifier
     |> Map.values
     |> Enum.find(:name, fn
       %{name: name} ->

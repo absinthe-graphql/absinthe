@@ -193,7 +193,7 @@ defmodule Absinthe.Type do
     true
   end
 
-  def field(type, "__" <> meta_name) do
+  def field(_type, "__" <> meta_name) do
     Introspection.Field.meta(meta_name)
   end
   def field(type, name) do

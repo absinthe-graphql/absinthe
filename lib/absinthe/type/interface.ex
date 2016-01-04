@@ -75,7 +75,7 @@ defmodule Absinthe.Type.Interface do
 
 
   @spec resolve_type(Type.Interface.t, any, Execution.t) :: Type.t | nil
-  def resolve_type(%{name: name, resolve_type: nil, reference: %{identifier: ident}}, obj, %{schema: schema}) do
+  def resolve_type(%{resolve_type: nil, reference: %{identifier: ident}}, obj, %{schema: schema}) do
     implementors = schema.interfaces[ident]
     Enum.find(implementors, fn
       %{is_type_of: nil} ->
@@ -84,7 +84,7 @@ defmodule Absinthe.Type.Interface do
         type.is_type_of.(obj)
     end)
   end
-  def resolve_type(%{resolve_type: resolver, reference: %{identifier: ident}}, obj, %{schema: schema} = exe) do
+  def resolve_type(%{resolve_type: resolver}, obj, %{schema: schema} = exe) do
     case resolver.(obj, exe) do
       nil ->
         nil

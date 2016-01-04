@@ -2,7 +2,6 @@ defmodule Absinthe.Schema.Verification do
 
   alias Absinthe.Traversal
   alias Absinthe.Schema
-  alias Absinthe.Type
 
   @spec setup(Schema.t) :: Schema.t
   def setup(schema) do
