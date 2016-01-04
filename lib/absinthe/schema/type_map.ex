@@ -1,4 +1,4 @@
-defmodule Absinthe.Schema.Types do
+defmodule Absinthe.Schema.TypeMap do
 
   @moduledoc false
 
@@ -6,8 +6,8 @@ defmodule Absinthe.Schema.Types do
   alias Absinthe.Traversal
   alias Absinthe.Type
 
-  @type typemap_t :: %{atom => Type.t}
-  @typep acc_t :: {typemap_t, typemap_t, [binary]}
+  @type t :: %{atom => Type.t}
+  @typep acc_t :: {t, t, [binary]}
 
   alias Absinthe.Type
 
@@ -24,7 +24,8 @@ defmodule Absinthe.Schema.Types do
       {_, _, errors} when length(errors) > 0 ->
         %{schema | errors: schema.errors ++ errors}
       {_, result, _} ->
-        %{schema | types: result}
+        all = result |> add_from_interfaces(types_available)
+        %{schema | types: all}
       other ->
         other
     end
@@ -53,6 +54,12 @@ defmodule Absinthe.Schema.Types do
         {:ok, acc, traversal}
     end
   end
+  # Bare type; likely the name of an interface.
+  # Wrap it just like a type entry and process, reusing the
+  # logic above
+  defp collect_types(node, traversal, acc)  when is_atom(node) do
+    collect_types(%{type: node}, traversal, acc)
+  end
   defp collect_types(_node, traversal, acc) do
     {:ok, acc, traversal}
   end
@@ -68,13 +75,36 @@ defmodule Absinthe.Schema.Types do
   end
 
   # Extract a mapping of all the types in a set of modules
-  @spec types_from_modules([atom]) :: typemap_t
+  @spec types_from_modules([atom]) :: t
   defp types_from_modules(modules) do
     modules
     |> Enum.map(&absinthe_types/1)
     |> Enum.reduce(%{}, fn
       mapping, acc ->
         acc |> Map.merge(mapping)
+    end)
+  end
+
+  @spec add_from_interfaces(t, t) :: t
+  def add_from_interfaces(result, avail) do
+    avail
+    |> Enum.reduce(result, fn
+      {name, %{interfaces: ifaces} = type}, acc ->
+        if result[name] do
+          acc
+        else
+          ifaces
+          |> Enum.reduce(acc, fn
+            iface, iface_acc ->
+            if iface_acc[iface] && !iface_acc[type] do
+              iface_acc |> Map.merge(%{name => type})
+            else
+              iface_acc
+            end
+          end)
+        end
+      _, acc ->
+        acc
     end)
   end
 

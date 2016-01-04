@@ -31,6 +31,8 @@ idiomatic, flexible, and comfortable way possible.
   doesn't appreciably affect the functionality of APIs written with Absinthe.)
 - Support for Plug, via [absinthe_plug](http://hex.pm/projects/absinthe_plug).
 - Variables, including defaulting and `!` requirements.
+- Interface validation/resolution. (Note: Fragment spreads with `on` are not yet
+  implemented. See [Notably Missing](./README.md#notably-missing) below.)
 - Errors with source line numbers. (Someday, column numbers; the Leex lexer
   doesn't support them yet.)
 - An flexible adapter mechanism to translate between different naming
@@ -43,7 +45,7 @@ Support for:
 
 - Fragments and fragment spreads
 - Directives
-- Interfaces and Unions
+- Unions
 - A comprehensive test suite against the specification (in progress under `test/specification`)
 
 ### Alternatives

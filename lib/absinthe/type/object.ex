@@ -84,9 +84,10 @@ defmodule Absinthe.Type.Object do
   * `:fields` - A map of `Absinthe.Type.Field` structs. See `Absinthe.Type.Definitions.fields/1` and
   * `:args` - A map of `Absinthe.Type.Argument` structs. See `Absinthe.Type.Definitions.args/1`.
   * `:parse` - A function used to convert the raw, incoming form of a scalar to the canonical internal format.
+  * `:interfaces` - A list of interfaces that this type guarantees to implement. See `Absinthe.Type.Interface`.
+  * `:is_type_of` - A function used to identify whether a resolved object belongs to this defined type. For use with `:interfaces` entry and `Absinthe.Type.Interface`.
 
-  The `:is_type_of` and `:reference` keys are for internal use, and `:interfaces` is on the roadmap to support GraphQL Interface types.
-
+  The `:reference` key is for internal use.
   """
   @type t :: %{name: binary, description: binary, fields: map, interfaces: [Absinthe.Type.Interface.t], is_type_of: ((any) -> boolean), reference: Type.Reference.t}
   defstruct name: nil, description: nil, fields: nil, interfaces: [], is_type_of: nil, reference: nil
@@ -100,8 +101,7 @@ defmodule Absinthe.Type.Object do
 
   defimpl Absinthe.Traversal.Node do
     def children(node, _traversal) do
-      node.fields
-      |> Map.values
+      Map.values(node.fields) ++ node.interfaces
     end
   end
 

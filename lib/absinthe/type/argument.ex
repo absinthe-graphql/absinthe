@@ -10,6 +10,8 @@ defmodule Absinthe.Type.Argument do
   alias __MODULE__
   alias Absinthe.Type
 
+  use Type.Fetch
+
   @typedoc """
   Argument configuration
 
