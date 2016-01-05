@@ -27,13 +27,7 @@ defmodule Absinthe.Introspection.Types do
               type: :boolean,
               default_value: false
             ]
-          ),
-          resolve: fn
-            %{fields: fields}, _ ->
-              {:ok, fields}
-            _, _ ->
-              {:ok, []}
-          end
+          )
         ],
         interfaces: [type: list_of(:__type)],
         possible_types: [types: list_of(:__type)],

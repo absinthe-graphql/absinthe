@@ -36,7 +36,7 @@ defmodule Absinthe.Specification.Introspection.Schema.ScalarTest do
       }
       """
       |> Absinthe.run(MySchema)
-      assert_result {:ok, %{data: %{"__Type" => %{"name" => Type.Scalar.string.name, "description" => Type.Scalar.string.description, "kind" => "SCALAR", "fields" => []}}}}, result
+      assert_result {:ok, %{data: %{"__Type" => %{"name" => Type.Scalar.string.name, "description" => Type.Scalar.string.description, "kind" => "SCALAR", "fields" => nil}}}}, result
     end
   end
 
