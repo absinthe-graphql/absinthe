@@ -3,6 +3,7 @@ defmodule Absinthe.Introspection.Types do
   @moduledoc false
 
   use Absinthe.Type.Definitions
+  alias Absinthe.Flag
   alias Absinthe.Type
 
   @absinthe :type
@@ -27,7 +28,16 @@ defmodule Absinthe.Introspection.Types do
               type: :boolean,
               default_value: false
             ]
-          )
+          ),
+          resolve: fn
+            %{include_deprecated: show_deprecated}, %{resolution: %{target: target}} ->
+              target.fields
+              |> Enum.filter(fn
+                %{deprecation: is_deprecated} ->
+                  !!is_deprecated == !!show_deprecated
+              end)
+              |> Flag.as(:ok)
+          end
         ],
         interfaces: [type: list_of(:__type)],
         possible_types: [types: list_of(:__type)],
@@ -46,6 +56,15 @@ defmodule Absinthe.Introspection.Types do
     }
   end
 
-  # TODO __type, __enumvalue, __inputvalue,
+  @absinthe :type
+  def __field do
+    %Type.Object{
+      fields: fields(
+        name: [type: :string]
+      )
+    }
+  end
+
+  # TODO __enumvalue, __inputvalue,
 
 end

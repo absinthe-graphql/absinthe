@@ -43,7 +43,8 @@ defmodule ContactSchema do
     %Type.Object{
       fields: fields(
         name: [type: :string],
-        age: [type: :integer]
+        age: [type: :integer],
+        address: deprecate([type: :string], reason: "change of privacy policy")
       ),
       interfaces: [:named_entity]
     }

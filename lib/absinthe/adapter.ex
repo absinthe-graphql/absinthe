@@ -163,7 +163,7 @@ defmodule Absinthe.Adapter do
   @callback dump_results(Absinthe.Execution.result_t) :: any
 
   @typedoc "The lexical role of a name within the document/schema."
-  @type role_t :: :operation | :field | :argument | :result
+  @type role_t :: :operation | :field | :argument | :result | :type
 
   @doc """
   Convert a name from an external name to an internal name.
@@ -206,12 +206,16 @@ defmodule Absinthe.Adapter do
   Here's what the default implementation does:
 
       iex> format_error(%{name: "foo", role: :field, value: &"missing value '\#{&1}'"}, [%{line: 2, column: 4}])
-      %{message: "missing value 'foo'", locations: [%{line: 2, column: 4}]}
+      %{message: "missing value `foo'", locations: [%{line: 2, column: 4}]}
 
       iex> format_error(%{name: "foo", role: :field, value: "missing value"}, [%{line: 2, column: 4}])
-      %{message: "Field 'foo': missing value", locations: [%{line: 2, column: 4}]}
+      %{message: "Field `foo': missing value", locations: [%{line: 2, column: 4}]}
+
+      # Without locations
+      iex> format_error(%{name: "foo", role: :field, value: "missing value"})
+      %{message: "Field `foo': missing value"}
 
   """
   @callback format_error(Execution.error_info_t, [Execution.error_location_t]) :: Execution.error_t
-
+  @callback format_error(Execution.error_info_t) :: Execution.error_t
 end
