@@ -1,13 +1,13 @@
 defmodule Absinthe.Introspection.Field do
 
+  use Absinthe.Type.Definitions
   alias Absinthe.Type
 
-  # TODO: Support __schema, and __type
   def meta("typename") do
     %Type.Field{
       name: "__typename",
       type: :string,
-      description: "Introspection: The name of the object type currently being queried.",
+      description: "The name of the object type currently being queried.",
       resolve: fn
         _, %{resolution: %{parent_type: %Type.Object{} = type}} ->
           {:ok, type.name}
@@ -21,5 +21,24 @@ defmodule Absinthe.Introspection.Field do
       end
     }
   end
+
+  def meta("Type") do
+    %Type.Field{
+      name: "__Type",
+      type: :__type,
+      description: "Represents scalars, interfaces, object types, unions, enums in the system",
+      args: args(
+        name: [
+          type: non_null(:string),
+          describe: "The name of the type to introspect"
+        ],
+      ),
+      resolve: fn
+        %{name: name}, %{schema: schema} ->
+          {:ok, schema.types.by_name[name]}
+      end
+    }
+  end
+
 
 end

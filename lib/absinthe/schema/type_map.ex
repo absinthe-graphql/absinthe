@@ -15,8 +15,12 @@ defmodule Absinthe.Schema.TypeMap do
 
   alias __MODULE__
   alias Absinthe.Type
+  alias Absinthe.Introspection
 
-  @builtin_type_modules [Type.Scalar]
+  @builtin_type_modules [
+    Type.Scalar,
+    Introspection.Types
+  ]
 
   @behaviour Access
   def get_and_update(type_map, key, fun) do
@@ -29,10 +33,11 @@ defmodule Absinthe.Schema.TypeMap do
   # Discover the types available to and defined for a schema
   @doc false
   @spec setup(Schema.t) :: Schema.t
-  def setup(%{type_modules: extra_modules} = schema) do
+  def setup(%{type_modules: extra_modules} = schema_without_types) do
     type_modules = @builtin_type_modules ++ extra_modules
     types_available = type_modules |> types_from_modules
     initial_collected = @builtin_type_modules |> types_from_modules
+    schema = %{schema_without_types | types: %TypeMap{by_identifier: initial_collected}}
     case Traversal.reduce(schema, schema, {types_available, initial_collected, []}, &collect_types/3) do
       {_, _, errors} when length(errors) > 0 ->
         %{schema | errors: schema.errors ++ errors}

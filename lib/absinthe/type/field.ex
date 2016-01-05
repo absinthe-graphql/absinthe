@@ -121,7 +121,7 @@ defmodule Absinthe.Type.Field do
       if found do
         [found | node.args |> Map.values]
       else
-        type_names = traversal.context.types |> Map.keys |> Enum.join(", ")
+        type_names = traversal.context.types.by_identifier |> Map.keys |> Enum.join(", ")
         raise "Unknown Absinthe type for field `#{node.name}': (#{node.type |> Type.unwrap} not in available types, #{type_names})"
       end
     end

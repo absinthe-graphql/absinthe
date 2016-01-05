@@ -204,19 +204,15 @@ defmodule Absinthe.Schema do
                interfaces: Schema.InterfaceMap.t,
                errors: [binary]}
 
-  defstruct query: nil, mutation: nil, subscription: nil, type_modules: [], types: %{}, interfaces: %{}, errors: []
+  defstruct query: nil, mutation: nil, subscription: nil, type_modules: [], types: nil, interfaces: %{}, errors: []
 
-  # Add types (but only do it once; if any have been found, this is just an identity function)
   @doc false
   @spec prepare(t) :: t
-  def prepare(%{types: types} = schema) when map_size(types) == 0 do
+  def prepare(schema) do
     schema
     |> Schema.TypeMap.setup
     |> Schema.InterfaceMap.setup
     |> Schema.Verification.setup
-  end
-  def prepare(schema) do
-    schema
   end
 
   # Lookup a type that in used by/available to a schema
@@ -293,6 +289,5 @@ defmodule Absinthe.Schema do
     end
 
   end
-
 
 end
