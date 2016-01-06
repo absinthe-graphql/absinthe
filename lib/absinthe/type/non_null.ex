@@ -22,6 +22,8 @@ defmodule Absinthe.Type.NonNull do
   ```
   """
 
+  use Absinthe.Introspection.Kind
+
   @typedoc """
   A defined non-null type.
 

@@ -67,6 +67,8 @@ defmodule Absinthe.Type.Interface do
 
   """
 
+  use Absinthe.Introspection.Kind
+
   alias Absinthe.Type
   alias Absinthe.Execution
 

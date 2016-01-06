@@ -19,6 +19,8 @@ defmodule Absinthe.Type.List do
   ```
   """
 
+  use Absinthe.Introspection.Kind
+
   @typedoc "
   A defined list type.
 

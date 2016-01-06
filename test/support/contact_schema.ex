@@ -41,6 +41,7 @@ defmodule ContactSchema do
   @absinthe :type
   def person do
     %Type.Object{
+      description: "A person",
       fields: fields(
         name: [type: :string],
         age: [type: :integer],

@@ -1,7 +1,9 @@
 defmodule Absinthe.Type.Union do
 
-  # TODO: Unionn are not yet fully supported
+  # TODO: Unions are not yet fully supported
   @moduledoc false
+
+  use Absinthe.Introspection.Kind
 
   alias Absinthe.Type
 

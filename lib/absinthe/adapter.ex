@@ -125,9 +125,15 @@ defmodule Absinthe.Adapter do
         |> format_error(locations)
       end
 
+      def format_error(%{value: value} = error_info) do
+        %{error_info | value: inspect(value)}
+        |> format_error([])
+      end
+
       defoverridable [load_document: 1,
                       dump_results: 1,
                       format_error: 2,
+                      format_error: 1,
                       to_internal_name: 2,
                       to_external_name: 2]
 

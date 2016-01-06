@@ -15,8 +15,8 @@ defmodule Absinthe.Introspection.Types do
         kind: [
           type: :string,
           resolve: fn
-            _, %{resolution: %{target: %Type.Scalar{}}} ->
-              {:ok, "SCALAR"}
+            _, %{resolution: %{target: %{__struct__: type}}} ->
+              {:ok, type.kind}
           end
         ],
         name: [type: :string],
@@ -30,16 +30,34 @@ defmodule Absinthe.Introspection.Types do
             ]
           ),
           resolve: fn
-            %{include_deprecated: show_deprecated}, %{resolution: %{target: target}} ->
-              target.fields
-              |> Enum.filter(fn
-                %{deprecation: is_deprecated} ->
-                  !!is_deprecated == !!show_deprecated
+            %{include_deprecated: show_deprecated}, %{resolution: %{target: %{fields: fields}}} ->
+              fields
+              |> Enum.flat_map(fn
+                {_, %{deprecation: is_deprecated} = field} ->
+                  if !is_deprecated || (is_deprecated && show_deprecated) do
+                    [field]
+                  else
+                    []
+                  end
               end)
               |> Flag.as(:ok)
+            _, _ ->
+              {:ok, nil}
           end
         ],
-        interfaces: [type: list_of(:__type)],
+        interfaces: [
+          type: list_of(:__type),
+          resolve: fn
+            _, %{schema: schema, resolution: %{target: %{interfaces: interfaces}}} ->
+              structs = interfaces
+              |> Enum.map(fn
+                ident -> schema.types[ident]
+              end)
+              {:ok, structs}
+            _, _ ->
+              {:ok, nil}
+          end
+        ],
         possible_types: [types: list_of(:__type)],
         enum_values: [
           type: list_of(:__enumvalue),
