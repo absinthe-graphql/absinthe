@@ -64,6 +64,10 @@ defmodule Absinthe.Introspection.Types do
             _, %{schema: schema, resolution: %{target: %Type.Union{types: types}}} ->
               structs = types |> Enum.map(fn name -> schema.types[name] end)
               {:ok, structs}
+            _, %{schema: schema, resolution: %{target: %Type.Interface{reference: %{identifier: ident}}}} ->
+              implementors = schema.interfaces[ident]
+              structs = implementors |> Enum.map(fn name -> schema.types[name] end)
+              {:ok, structs}
             _, _ ->
               {:ok, nil}
           end

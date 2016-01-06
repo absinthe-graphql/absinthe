@@ -2,7 +2,7 @@ defmodule Absinthe.Specification.Introspection.Schema.UnionTest do
   use ExSpec, async: true
   import AssertResult
 
-  describe "introspection of an object type" do
+  describe "introspection of a union type" do
 
     it "can use __Type and get possible types" do
       result = """

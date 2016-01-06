@@ -35,6 +35,7 @@ defmodule ContactSchema do
   @absinthe :type
   def named_entity do
     %Type.Interface{
+      description: "A named entity",
       fields: fields(
         name: [type: :string]
       ),
