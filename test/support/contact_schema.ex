@@ -21,6 +21,13 @@ defmodule ContactSchema do
               {:ok, %{entity: @bruce}}
           end
         ],
+        first_search_result: [
+          type: :search_result,
+          resolve: fn
+            _, _ ->
+              {:ok, @bruce}
+          end
+        ]
       )
     }
   end
@@ -59,6 +66,14 @@ defmodule ContactSchema do
         employee_count: [type: :integer]
       ),
       interfaces: [:named_entity]
+    }
+  end
+
+  @absinthe :type
+  def search_result do
+    %Type.Union{
+      description: "A search result",
+      types: [:business, :person]
     }
   end
 

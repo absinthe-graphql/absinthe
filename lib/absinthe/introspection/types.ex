@@ -58,7 +58,16 @@ defmodule Absinthe.Introspection.Types do
               {:ok, nil}
           end
         ],
-        possible_types: [types: list_of(:__type)],
+        possible_types: [
+          type: list_of(:__type),
+          resolve: fn
+            _, %{schema: schema, resolution: %{target: %Type.Union{types: types}}} ->
+              structs = types |> Enum.map(fn name -> schema.types[name] end)
+              {:ok, structs}
+            _, _ ->
+              {:ok, nil}
+          end
+        ],
         enum_values: [
           type: list_of(:__enumvalue),
           args: args(
