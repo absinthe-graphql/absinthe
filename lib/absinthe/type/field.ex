@@ -30,6 +30,7 @@ defmodule Absinthe.Type.Field do
   * `:args` - The arguments of the field, usually created by using the
     `Absinthe.Type.Definitions.args/1` convenience function.
   * `resolve` - The resolution function. See below for more information.
+  * `default_value` - The default value of a field. Note this is not used during resolution; only fields that are part of an `Absinthe.Type.InputObject` should set this value.
 
   ## Resolution Functions
 
@@ -89,10 +90,11 @@ defmodule Absinthe.Type.Field do
                description: binary | nil,
                type: Type.identifier_t,
                deprecation: Deprecation.t | nil,
+               default_value: any,
                args: %{(binary | atom) => Absinthe.Type.Argument.t} | nil,
                resolve: ((any, %{binary => any} | nil, Absinthe.Type.ResolveInfo.t | nil) -> Absinthe.Type.output_t) | nil}
 
-  defstruct name: nil, description: nil, type: nil, deprecation: nil, args: %{}, resolve: nil
+  defstruct name: nil, description: nil, type: nil, deprecation: nil, args: %{}, resolve: nil, default_value: nil
 
   defimpl Absinthe.Validation.RequiredInput do
 

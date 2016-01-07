@@ -32,6 +32,35 @@ defmodule ContactSchema do
     }
   end
 
+  def mutation do
+    %Type.Object{
+      fields: fields(
+        person: [
+          type: :person,
+          args: args(
+            profile: [type: :profile_input]
+          ),
+          resolve: fn
+            %{profile: profile} ->
+              # Return it like it's a person
+              {:ok, profile}
+          end
+        ]
+      )
+    }
+  end
+
+  @absinthe :type
+  def profile_input do
+    %Type.InputObject{
+      description: "The basic details for a person",
+      fields: fields(
+        name: [type: :string, description: "The person's name", default_value: "Janet"],
+        age: [type: :integer, description: "The person's age", default_value: 43]
+      )
+    }
+  end
+
   @absinthe :type
   def named_entity do
     %Type.Interface{

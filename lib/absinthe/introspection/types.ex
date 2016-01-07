@@ -81,7 +81,16 @@ defmodule Absinthe.Introspection.Types do
             ]
           )
         ],
-        input_fields: [type: list_of(:__inputvalue)],
+        input_fields: [
+          type: list_of(:__inputvalue),
+          resolve: fn
+            _, %{resolution: %{target: %Type.InputObject{fields: fields} = obj}} ->
+              structs = fields |> Map.values
+              {:ok, structs}
+            _, _ ->
+              {:ok, nil}
+          end
+        ],
         of_type: [type: :__type]
       )
     }
@@ -96,6 +105,34 @@ defmodule Absinthe.Introspection.Types do
     }
   end
 
-  # TODO __enumvalue, __inputvalue,
+  @absinthe :type
+  def __inputvalue do
+    %Type.Object{
+      fields: fields(
+        name: [type: :string],
+        description: [type: :string],
+        type: [
+          type: :__type,
+          resolve: fn
+            _, %{schema: schema, resolution: %{target: %{type: ident}}} ->
+              type = Absinthe.Schema.lookup_type(schema, ident)
+              {:ok, type}
+          end
+        ],
+        default_value: [
+          type: :string,
+          resolve: fn
+            _, %{resolution: %{target: %{default_value: value} = t}} ->
+              {:ok, value |> to_string}
+            _, %{resolution: %{target: target}} ->
+              {:ok, nil}
+          end
+        ]
+      )
+    }
+  end
+
+
+  # TODO __enumvalue
 
 end
