@@ -100,7 +100,45 @@ defmodule Absinthe.Introspection.Types do
   def __field do
     %Type.Object{
       fields: fields(
-        name: [type: :string]
+        name: [type: :string],
+        description: [type: :string],
+        args: [
+          type: :__inputvalue,
+          resolve: fn
+            _, %{resolution: %{target: target}} ->
+              structs = target.args |> Map.values
+              {:ok, structs}
+          end
+        ],
+        type: [
+          type: :__type,
+          resolve: fn
+            _, %{schema: schema, resolution: %{target: target}} ->
+              case target.type do
+                type when is_atom(type) ->
+                  Absinthe.Schema.lookup_type(schema, target.type)
+                type ->
+                  type
+              end
+              |> Flag.as(:ok)
+          end
+        ],
+        is_deprecated: [
+          type: :boolean,
+          resolve: fn
+            _, %{resolution: %{target: %{deprecation: nil}}} ->
+              {:ok, false}
+            _, _ ->
+              {:ok, true}
+          end
+        ],
+        deprecation_reason: [
+          type: :string,
+          resolve: fn
+            _, %{resolution: %{target: target}} ->
+              {:ok, target[:deprecation][:reason]}
+          end
+        ]
       )
     }
   end

@@ -3,6 +3,10 @@ defmodule ContactSchema do
   alias Absinthe.Type
 
   @bruce %{name: "Bruce", age: 35}
+  @others [
+    %{name: "Joe", age: 21},
+    %{name: "Jill", age: 43}
+  ]
 
   def query do
     %Type.Object{
@@ -82,7 +86,14 @@ defmodule ContactSchema do
       fields: fields(
         name: [type: :string],
         age: [type: :integer],
-        address: deprecate([type: :string], reason: "change of privacy policy")
+        address: deprecate([type: :string], reason: "change of privacy policy"),
+        others: [
+          type: list_of(:person),
+          resolve: fn
+            _, _ ->
+              {:ok, @others}
+          end
+        ]
       ),
       interfaces: [:named_entity]
     }
