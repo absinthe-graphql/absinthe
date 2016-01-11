@@ -4,10 +4,10 @@ defmodule Absinthe.Specification.Introspection.Schema.InterfaceTest do
 
   describe "introspection of an interface type" do
 
-    it "can use __Type and get possible types" do
+    it "can use __type and get possible types" do
       result = """
       {
-        __Type(name: "NamedEntity") {
+        __type(name: "NamedEntity") {
           kind
           name
           description
@@ -18,7 +18,7 @@ defmodule Absinthe.Specification.Introspection.Schema.InterfaceTest do
       }
       """
       |> Absinthe.run(ContactSchema)
-      assert_result {:ok, %{data: %{"__Type" => %{"name" => "NamedEntity", "description" => "A named entity", "kind" => "INTERFACE", "possible_types" => [%{"name" => "Person"}, %{"name" => "Business"}]}}}}, result
+      assert_result {:ok, %{data: %{"__type" => %{"name" => "NamedEntity", "description" => "A named entity", "kind" => "INTERFACE", "possible_types" => [%{"name" => "Person"}, %{"name" => "Business"}]}}}}, result
     end
 
   end

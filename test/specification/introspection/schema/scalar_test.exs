@@ -23,10 +23,10 @@ defmodule Absinthe.Specification.Introspection.Schema.ScalarTest do
   end
 
   describe "introspection of a scalar type" do
-    it "can use __Type" do
+    it "can use __type" do
       result = """
       {
-        __Type(name: "String") {
+        __type(name: "String") {
           kind
           name
           description,
@@ -35,7 +35,7 @@ defmodule Absinthe.Specification.Introspection.Schema.ScalarTest do
       }
       """
       |> Absinthe.run(MySchema)
-      assert_result {:ok, %{data: %{"__Type" => %{"name" => Type.Scalar.string.name, "description" => Type.Scalar.string.description, "kind" => "SCALAR", "fields" => nil}}}}, result
+      assert_result {:ok, %{data: %{"__type" => %{"name" => Type.Scalar.string.name, "description" => Type.Scalar.string.description, "kind" => "SCALAR", "fields" => nil}}}}, result
     end
   end
 

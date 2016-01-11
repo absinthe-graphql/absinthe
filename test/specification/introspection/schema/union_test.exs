@@ -4,10 +4,10 @@ defmodule Absinthe.Specification.Introspection.Schema.UnionTest do
 
   describe "introspection of a union type" do
 
-    it "can use __Type and get possible types" do
+    it "can use __type and get possible types" do
       result = """
       {
-        __Type(name: "SearchResult") {
+        __type(name: "SearchResult") {
           kind
           name
           description
@@ -18,7 +18,7 @@ defmodule Absinthe.Specification.Introspection.Schema.UnionTest do
       }
       """
       |> Absinthe.run(ContactSchema)
-      assert_result {:ok, %{data: %{"__Type" => %{"name" => "SearchResult", "description" => "A search result", "kind" => "UNION", "possible_types" => [%{"name" => "Person"}, %{"name" => "Business"}]}}}}, result
+      assert_result {:ok, %{data: %{"__type" => %{"name" => "SearchResult", "description" => "A search result", "kind" => "UNION", "possible_types" => [%{"name" => "Person"}, %{"name" => "Business"}]}}}}, result
     end
 
   end

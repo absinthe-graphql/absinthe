@@ -4,10 +4,10 @@ defmodule Absinthe.Specification.Introspection.Schema.ListTest do
 
   describe "introspection of an object type that includes a list" do
 
-    it "can use __Type and see fields with the wrapping list types" do
+    it "can use __type and see fields with the wrapping list types" do
       result = """
       {
-        __Type(name: "Person") {
+        __type(name: "Person") {
           fields(include_deprecated: true) {
             name
             type {
@@ -25,7 +25,7 @@ defmodule Absinthe.Specification.Introspection.Schema.ListTest do
       |> Absinthe.run(ContactSchema)
       assert_result {:ok,
                      %{data:
-                       %{"__Type" => %{
+                       %{"__type" => %{
                           "fields" => [%{"name" => "others",
                                          "type" => %{"kind" => "LIST", "name" => nil,
                                                      "of_type" => %{"kind" => "OBJECT", "name" => "Person"}}},

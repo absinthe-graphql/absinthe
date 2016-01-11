@@ -22,7 +22,7 @@ defmodule Absinthe.Introspection.Field do
     }
   end
 
-  def meta("Type") do
+  def meta("type") do
     %Type.Field{
       name: "__Type",
       type: :__type,

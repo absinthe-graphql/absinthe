@@ -4,10 +4,10 @@ defmodule Absinthe.Specification.Introspection.Schema.ObjectTest do
 
   describe "introspection of an object type" do
 
-    it "can use __Type and ignore deprecated fields" do
+    it "can use __type and ignore deprecated fields" do
       result = """
       {
-        __Type(name: "Person") {
+        __type(name: "Person") {
           kind
           name
           description
@@ -18,13 +18,13 @@ defmodule Absinthe.Specification.Introspection.Schema.ObjectTest do
       }
       """
       |> Absinthe.run(ContactSchema)
-      assert_result {:ok, %{data: %{"__Type" => %{"name" => "Person", "description" => "A person", "kind" => "OBJECT", "fields" => [%{"name" => "others"}, %{"name" => "name"}, %{"name" => "age"}]}}}}, result
+      assert_result {:ok, %{data: %{"__type" => %{"name" => "Person", "description" => "A person", "kind" => "OBJECT", "fields" => [%{"name" => "others"}, %{"name" => "name"}, %{"name" => "age"}]}}}}, result
     end
 
-    it "can use __Type and include deprecated fields" do
+    it "can use __type and include deprecated fields" do
       result = """
       {
-        __Type(name: "Person") {
+        __type(name: "Person") {
           kind
           name
           description
@@ -37,7 +37,7 @@ defmodule Absinthe.Specification.Introspection.Schema.ObjectTest do
       }
       """
       |> Absinthe.run(ContactSchema)
-      assert_result {:ok, %{data: %{"__Type" => %{"kind" => "OBJECT",
+      assert_result {:ok, %{data: %{"__type" => %{"kind" => "OBJECT",
                                                   "name" => "Person",
                                                   "description" => "A person",
                                                   "fields" => [%{"name" => "others", "is_deprecated" => false, "deprecation_reason" => nil},
@@ -46,10 +46,10 @@ defmodule Absinthe.Specification.Introspection.Schema.ObjectTest do
                                                                %{"name" => "address", "is_deprecated" => true, "deprecation_reason" => "change of privacy policy"}]}}}}, result
     end
 
-    it "can use __Type to view interfaces" do
+    it "can use __type to view interfaces" do
       result = """
       {
-        __Type(name: "Person") {
+        __type(name: "Person") {
           interfaces {
             name
           }
@@ -57,7 +57,7 @@ defmodule Absinthe.Specification.Introspection.Schema.ObjectTest do
       }
       """
       |> Absinthe.run(ContactSchema)
-      assert_result {:ok, %{data: %{"__Type" => %{"interfaces" => [%{"name" => "NamedEntity"}]}}}}, result
+      assert_result {:ok, %{data: %{"__type" => %{"interfaces" => [%{"name" => "NamedEntity"}]}}}}, result
     end
 
   end
