@@ -1,4 +1,4 @@
-defmodule Absinthe.Specification.Introspection.GeneralPrinciples.TypeNameTest do
+defmodule Absinthe.Specification.Introspection.General.TypeNameTest do
   use ExSpec, async: true
   import AssertResult
 

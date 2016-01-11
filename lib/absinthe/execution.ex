@@ -44,7 +44,7 @@ defmodule Absinthe.Execution do
     end
   end
 
-  @default_adapter Absinthe.Adapter.Passthrough
+  @default_adapter Absinthe.Adapter.LanguageConventions
 
   # Add the configured adapter to an execution
   @doc false

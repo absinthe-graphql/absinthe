@@ -11,24 +11,25 @@ defmodule Absinthe.Adapter do
 
   Absinthe ships with two adapters:
 
-  * `Absinthe.Adapter.Passthrough`, which is a no-op adapter and makes no
-    modifications. (This is the default.)
   * `Absinthe.Adapter.LanguageConventions`, which expects schemas to be defined
     in `snake_case` (the standard Elixir convention), translating to/from `camelCase`
-    for incoming query documents and outgoing results.
+    for incoming query documents and outgoing results. (This is the default as of v0.3.)
+  * `Absinthe.Adapter.Passthrough`, which is a no-op adapter and makes no
+    modifications. (Note at the current time this does not support introspection
+    if you're using camelized conventions).
 
-  To set the adapter, you can set an application configuration value:
+  To set an adapter, you can set an application configuration value:
 
   ```
   config :absinthe,
-    adapter: Absinthe.Adapter.LanguageConventions
+    adapter: Absinthe.Adapter.TheAdapterName
   ```
 
   Or, you can provide it as an option to `Absinthe.run/3`:
 
   ```
     Absinthe.run(query, MyApp.Schema,
-             adapter: Absinthe.Adapter.LanguageConventions)
+             adapter: Absinthe.Adapter.TheAdapterName)
   ```
 
   Notably, this means you're able to switch adapters on case-by-case basis.
@@ -47,6 +48,9 @@ defmodule Absinthe.Adapter do
 
   Check out `Absinthe.Adapter.LanguageConventions` for a good example.
 
+  Note that types that are defined external to your application (including
+  the introspection types) may not be compatible if you're using a different
+  adapter.
   """
 
   alias Absinthe.Execution
@@ -59,24 +63,42 @@ defmodule Absinthe.Adapter do
       alias Absinthe.Language
 
       def load_document(%{definitions: definitions} = node) do
-        %{node | definitions: definitions |> Enum.map(&load_ast_node/1)}
+        %{node |
+          definitions: definitions |> Enum.map(&load_ast_node/1)}
       end
 
       # Rename a AST node and traverse children
-      defp load_ast_node(%Language.OperationDefinition{name: name, selection_set: selection_set} = node) do
-        %{node | name: name |> to_internal_name(:operation), selection_set: load_ast_node(selection_set)}
+      defp load_ast_node(%Language.OperationDefinition{} = node) do
+        %{node |
+          name: node.name |> to_internal_name(:operation),
+          selection_set: load_ast_node(node.selection_set)}
       end
-      defp load_ast_node(%Language.SelectionSet{selections: selections} = node) do
-        %{node | selections: selections |> Enum.map(&load_ast_node/1)}
+      defp load_ast_node(%Language.SelectionSet{} = node) do
+        %{node |
+          selections: node.selections |> Enum.map(&load_ast_node/1)}
       end
-      defp load_ast_node(%Language.Field{arguments: args, name: name, selection_set: selection_set} = node) do
-        %{node | name: name |> to_internal_name(:field), selection_set: load_ast_node(selection_set), arguments: args |> Enum.map(&load_ast_node/1)}
+      defp load_ast_node(%Language.Field{} = node) do
+        %{node |
+          name: node.name |> to_internal_name(:field),
+          selection_set: load_ast_node(node.selection_set),
+          arguments: node.arguments |> Enum.map(&load_ast_node/1)}
       end
-      defp load_ast_node(%Language.Argument{name: name} = node) do
-        %{node | name: name |> to_internal_name(:argument)}
+      defp load_ast_node(%Language.ObjectValue{} = node) do
+        %{node |
+          fields: node.fields |> Enum.map(&load_ast_node/1)}
       end
-      defp load_ast_node(nil) do
-        nil
+      defp load_ast_node(%Language.ObjectField{} = node) do
+        %{node |
+          name: node.name |> to_internal_name(:field),
+          value: load_ast_node(node.value)}
+      end
+      defp load_ast_node(%Language.Argument{} = node) do
+        %{node |
+          name: node.name |> to_internal_name(:argument),
+          value: load_ast_node(node.value)}
+      end
+      defp load_ast_node(other) do
+        other
       end
 
       def dump_results(%{data: data} = results) do

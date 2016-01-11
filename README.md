@@ -32,7 +32,8 @@ idiomatic, flexible, and comfortable way possible.
 - Support for Plug, via [absinthe_plug](http://hex.pm/projects/absinthe_plug).
 - Variables, including defaulting and `!` requirements.
 - Interface validation/resolution. (Note: Fragment spreads with `on` are not yet
-  implemented. See [Notably Missing](./README.md#notably-missing) below.)
+implemented. See [Notably Missing](./README.md#notably-missing) below.)
+- Introspection of most types. (See details in the [PR](https://github.com/CargoSense/absinthe/pull/26).)
 - Errors with source line numbers. (Someday, column numbers; the Leex lexer
   doesn't support them yet.)
 - An flexible adapter mechanism to translate between different naming
@@ -46,7 +47,6 @@ Support for:
 - Fragments and fragment spreads
 - Directives
 - Unions
-- A comprehensive test suite against the specification (in progress under `test/specification`)
 
 ### Alternatives
 
@@ -63,7 +63,7 @@ Install from [Hex.pm](https://hex.pm/packages/absinthe):
 
 ```elixir
 def deps do
-  [{:absinthe, "~> 0.2.0"}]
+  [{:absinthe, "~> 0.3.0"}]
 end
 ```
 
@@ -273,6 +273,15 @@ end
 Now `:iso_z` can be used in your schema and variables can use
 `ISOz` in query documents.
 
+## Introspection
+
+You can introspect your schema using `__schema`, `__type`, and `__typename`,
+as [described in the specification](https://facebook.github.io/graphql/#sec-Introspection).
+
+See [the PR](https://github.com/CargoSense/absinthe/pull/26) for details on
+limitations (notably enum values, union types, and directives cannot currently
+be introspected).
+
 ## Adapters
 
 Absinthe supports an adapter mechanism that allows developers to define their
@@ -283,24 +292,24 @@ use conventions most natural to them.
 
 Absinthe ships with two adapters:
 
-* `Absinthe.Adapter.Passthrough`, which is a no-op adapter and makes no
-  modifications. (This is the default.)
 * `Absinthe.Adapter.LanguageConventions`, which expects schemas to be defined
   in `snake_case` (the standard Elixir convention), translating to/from `camelCase`
-  for incoming query documents and outgoing results.
+  for incoming query documents and outgoing results. (This is the default as of v0.3.)
+* `Absinthe.Adapter.Passthrough`, which is a no-op adapter and makes no
+  modifications.
 
 To set the adapter, you can set an application configuration value:
 
 ```elixir
 config :absinthe,
-  adapter: Absinthe.Adapter.LanguageConventions
+  adapter: Absinthe.Adapter.TheAdapterName
 ```
 
 Or, you can provide it as an option to `Absinthe.run/3`:
 
 ```elixir
 Absinthe.run(query, MyApp.Schema,
-             adapter: Absinthe.Adapter.LanguageConventions)
+             adapter: Absinthe.Adapter.TheAdapterName)
 ```
 
 Notably, this means you're able to switch adapters on case-by-case basis.
@@ -310,6 +319,10 @@ adapters for different clients.
 A custom adapter module must merely implement the `Absinthe.Adapter` protocol,
 in many cases with `use Absinthe.Adapter` and only overriding the desired
 functions.
+
+Note that types that are defined external to your application (including
+the introspection types) may not be compatible if you're using a different
+adapter.
 
 ## Specification Implementation
 
@@ -329,7 +342,7 @@ Here's the basic status, using the following scale:
 | ------------: | :------------- | :---------------------------------------------------------------------------------------- |
 | Language      | Functional     | [GraphQL Specification, Section 2](https://facebook.github.io/graphql/#sec-Language)      |
 | Type System   | Functional     | [GraphQL Specification, Section 3](https://facebook.github.io/graphql/#sec-Type-System)   |
-| Introspection | Missing        | [GraphQL Specification, Section 4](https://facebook.github.io/graphql/#sec-Introspection) |
+| Introspection | Functional     | [GraphQL Specification, Section 4](https://facebook.github.io/graphql/#sec-Introspection) |
 | Validation    | Partial        | [GraphQL Specification, Section 5](https://facebook.github.io/graphql/#sec-Validation)    |
 | Execution     | Functional     | [GraphQL Specification, Section 6](https://facebook.github.io/graphql/#sec-Execution)     |
 | Response      | Functional     | [GraphQL Specification, Section 7](https://facebook.github.io/graphql/#sec-Response)      |

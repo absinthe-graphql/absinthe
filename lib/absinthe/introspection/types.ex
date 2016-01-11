@@ -7,6 +7,57 @@ defmodule Absinthe.Introspection.Types do
   alias Absinthe.Type
 
   @absinthe :type
+  def __schema do
+    %Type.Object{
+      name: "__Type",
+      description: "Represents a schema",
+      fields: fields(
+        types: [
+          type: list_of(:__type),
+          resolve: fn
+            _, %{schema: schema} ->
+              schema.types.by_identifier
+              |> Map.values
+              |> Enum.filter(&(!match?("__" <> _, &1.name)))
+              |> Flag.as(:ok)
+          end
+        ],
+        query_type: [
+          type: :__type,
+          resolve: fn
+            _, %{schema: schema} ->
+              {:ok, schema.query}
+          end
+        ],
+        mutation_type: [
+          type: :__type,
+          resolve: fn
+            _, %{schema: schema} ->
+              {:ok, schema.mutation}
+          end
+        ],
+        directives: [type: list_of(:__directive)]
+      )
+    }
+  end
+
+  @absinthe :type
+  def __directive do
+    %Type.Object{
+      name: "__Directive",
+      description: "Represents a directive",
+      fields: fields(
+        name: [type: :string],
+        description: [type: :string],
+        args: [type: list_of(:__inputvalue)],
+        on_operation: [type: :boolean],
+        on_fragment: [type: :boolean],
+        on_field: [type: :boolean]
+      )
+    }
+  end
+
+  @absinthe :type
   def __type do
     %Type.Object{
       name: "__Type",
@@ -108,6 +159,7 @@ defmodule Absinthe.Introspection.Types do
   @absinthe :type
   def __field do
     %Type.Object{
+      name: "__Field",
       fields: fields(
         name: [type: :string],
         description: [type: :string],
@@ -157,6 +209,7 @@ defmodule Absinthe.Introspection.Types do
   @absinthe :type
   def __inputvalue do
     %Type.Object{
+      name: "__InputValue",
       fields: fields(
         name: [type: :string],
         description: [type: :string],

@@ -49,7 +49,7 @@ defmodule Things do
             %{val: v} -> v |> to_string
           end
         ],
-        thingByContext: [
+        thing_by_context: [
           type: :thing,
           resolve: fn
             (_, %{context: %{thing: id}}) -> {:ok, @db |> Map.get(id)}

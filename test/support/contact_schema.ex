@@ -10,6 +10,7 @@ defmodule ContactSchema do
 
   def query do
     %Type.Object{
+      name: "RootQueryType",
       fields: fields(
         person: [
           type: :person,
@@ -50,6 +51,7 @@ defmodule ContactSchema do
 
   def mutation do
     %Type.Object{
+      name: "RootMutationType",
       fields: fields(
         person: [
           type: :person,

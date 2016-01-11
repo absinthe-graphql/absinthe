@@ -1,6 +1,8 @@
-defmodule Absinthe.Specification.Introspection.Schema.ListTest do
+defmodule Absinthe.Specification.Introspection.Type.ListTest do
   use ExSpec, async: true
   import AssertResult
+
+  @moduletag :specification
 
   describe "introspection of an object type that includes a list" do
 
@@ -13,7 +15,7 @@ defmodule Absinthe.Specification.Introspection.Schema.ListTest do
             type {
               kind
               name
-              of_type {
+              ofType {
                 kind
                 name
               }
@@ -28,13 +30,13 @@ defmodule Absinthe.Specification.Introspection.Schema.ListTest do
                        %{"__type" => %{
                           "fields" => [%{"name" => "others",
                                          "type" => %{"kind" => "LIST", "name" => nil,
-                                                     "of_type" => %{"kind" => "OBJECT", "name" => "Person"}}},
+                                                     "ofType" => %{"kind" => "OBJECT", "name" => "Person"}}},
                                        %{"name" => "name",
-                                         "type" => %{"kind" => "SCALAR", "name" => "String", "of_type" => nil}},
+                                         "type" => %{"kind" => "SCALAR", "name" => "String", "ofType" => nil}},
                                        %{"name" => "age",
-                                         "type" => %{"kind" => "SCALAR", "name" => "Int", "of_type" => nil}},
+                                         "type" => %{"kind" => "SCALAR", "name" => "Int", "ofType" => nil}},
                                        %{"name" => "address",
-                                         "type" => %{"kind" => "SCALAR", "name" => "String", "of_type" => nil}}]}}}}, result
+                                         "type" => %{"kind" => "SCALAR", "name" => "String", "ofType" => nil}}]}}}}, result
     end
 
   end

@@ -1,8 +1,10 @@
-defmodule Absinthe.Specification.Introspection.Schema.ScalarTest do
+defmodule Absinthe.Specification.Introspection.Type.ScalarTest do
   use ExSpec, async: true
   import AssertResult
 
   alias Absinthe.Type
+
+  @moduletag :specification
 
   defmodule MySchema do
     use Absinthe.Schema

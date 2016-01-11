@@ -1,5 +1,7 @@
 defmodule Absinthe.Introspection.Field do
 
+  @moduledoc false
+
   use Absinthe.Type.Definitions
   alias Absinthe.Type
 
@@ -24,7 +26,7 @@ defmodule Absinthe.Introspection.Field do
 
   def meta("type") do
     %Type.Field{
-      name: "__Type",
+      name: "__type",
       type: :__type,
       description: "Represents scalars, interfaces, object types, unions, enums in the system",
       args: args(
@@ -40,5 +42,16 @@ defmodule Absinthe.Introspection.Field do
     }
   end
 
+  def meta("schema") do
+    %Type.Field{
+      name: "__schema",
+      type: :__schema,
+      description: "Represents the schema",
+      resolve: fn
+        _, %{schema: schema} ->
+          {:ok, schema}
+      end
+    }
+  end
 
 end

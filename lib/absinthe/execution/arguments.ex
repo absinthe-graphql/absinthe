@@ -66,7 +66,7 @@ defmodule Absinthe.Execution.Arguments do
     end
   end
 
-  defp add_argument_deprecation(execution, _name, %{deprecation: nil}, _ast_node) do
+  defp add_argument_deprecation(execution, name, %{deprecation: nil}, _ast_node) do
     execution
   end
   defp add_argument_deprecation(execution, name, %{type: identifier, deprecation: %{reason: reason}}, ast_node) do

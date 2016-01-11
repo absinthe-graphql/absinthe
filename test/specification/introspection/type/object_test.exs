@@ -1,6 +1,8 @@
-defmodule Absinthe.Specification.Introspection.Schema.ObjectTest do
+defmodule Absinthe.Specification.Introspection.Type.ObjectTest do
   use ExSpec, async: true
   import AssertResult
+
+  @moduletag :specification
 
   describe "introspection of an object type" do
 
@@ -28,10 +30,10 @@ defmodule Absinthe.Specification.Introspection.Schema.ObjectTest do
           kind
           name
           description
-          fields(include_deprecated: true) {
+          fields(includeDeprecated: true) {
             name
-            is_deprecated
-            deprecation_reason
+            isDeprecated
+            deprecationReason
           }
         }
       }
@@ -40,10 +42,10 @@ defmodule Absinthe.Specification.Introspection.Schema.ObjectTest do
       assert_result {:ok, %{data: %{"__type" => %{"kind" => "OBJECT",
                                                   "name" => "Person",
                                                   "description" => "A person",
-                                                  "fields" => [%{"name" => "others", "is_deprecated" => false, "deprecation_reason" => nil},
-                                                               %{"name" => "name", "is_deprecated" => false, "deprecation_reason" => nil},
-                                                               %{"name" => "age", "is_deprecated" => false, "deprecation_reason" => nil},
-                                                               %{"name" => "address", "is_deprecated" => true, "deprecation_reason" => "change of privacy policy"}]}}}}, result
+                                                  "fields" => [%{"name" => "others", "isDeprecated" => false, "deprecationReason" => nil},
+                                                               %{"name" => "name", "isDeprecated" => false, "deprecationReason" => nil},
+                                                               %{"name" => "age", "isDeprecated" => false, "deprecationReason" => nil},
+                                                               %{"name" => "address", "isDeprecated" => true, "deprecationReason" => "change of privacy policy"}]}}}}, result
     end
 
     it "can use __type to view interfaces" do
