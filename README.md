@@ -282,7 +282,7 @@ as [described in the specification](https://facebook.github.io/graphql/#sec-Intr
 
 Seeing the names of the types in the schema:
 
-```
+```elixir
 """
 {
   __schema {
