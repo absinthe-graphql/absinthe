@@ -164,13 +164,15 @@ defmodule Absinthe.Introspection.Types do
           type: :__type,
           resolve: fn
             _, %{schema: schema, resolution: %{target: %{type: ident}}} ->
-              type = Absinthe.Schema.lookup_type(schema, ident)
+              type = Absinthe.Schema.lookup_type(schema, ident, unwrap: false)
               {:ok, type}
           end
         ],
         default_value: [
           type: :string,
           resolve: fn
+            _, %{resolution: %{target: %{default_value: nil} = t}} ->
+              {:ok, nil}
             _, %{resolution: %{target: %{default_value: value} = t}} ->
               {:ok, value |> to_string}
             _, %{resolution: %{target: target}} ->

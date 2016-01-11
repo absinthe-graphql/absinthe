@@ -15,7 +15,12 @@ defmodule Absinthe.Specification.Introspection.Schema.InputObjectTest do
             name
             description
             type {
+              kind
               name
+              of_type {
+                kind
+                name
+              }
             }
             default_value
           }
@@ -23,7 +28,7 @@ defmodule Absinthe.Specification.Introspection.Schema.InputObjectTest do
       }
       """
       |> Absinthe.run(ContactSchema)
-      assert_result {:ok, %{data: %{"__Type" => %{"name" => "ProfileInput", "description" => "The basic details for a person", "kind" => "INPUT_OBJECT", "input_fields" => [%{"name" => "name", "description" => "The person's name", "type" => %{"name" => "String"}, "default_value" => "Janet"}, %{"name" => "age", "description" => "The person's age", "type" => %{"name" => "Int"}, "default_value" => "43"}]}}}}, result
+      assert_result {:ok, %{data: %{"__Type" => %{"name" => "ProfileInput", "description" => "The basic details for a person", "kind" => "INPUT_OBJECT", "input_fields" => [%{"name" => "name", "description" => "The person's name", "type" => %{"name" => "String", "kind" => "SCALAR", "of_type" => nil}, "default_value" => "Janet"}, %{"default_value" => nil, "description" => nil, "name" => "code", "type" => %{"kind" => "NON_NULL", "name" => nil, "of_type" => %{"kind" => "SCALAR", "name" => "String"}}}, %{"name" => "age", "description" => "The person's age", "type" => %{"name" => "Int", "kind" => "SCALAR", "of_type" => nil}, "default_value" => "43"}]}}}}, result
     end
 
   end

@@ -31,6 +31,18 @@ defmodule ContactSchema do
             _, _ ->
               {:ok, @bruce}
           end
+        ],
+        profile: [
+          type: :person,
+          args: args(
+            name: [type: non_null(:string)]
+          ),
+          resolve: fn
+            %{name: "Bruce"}, _ ->
+              {:ok, @bruce}
+            _, _ ->
+              {:ok, nil}
+          end
         ]
       )
     }
@@ -59,6 +71,7 @@ defmodule ContactSchema do
     %Type.InputObject{
       description: "The basic details for a person",
       fields: fields(
+        code: [type: non_null(:string)],
         name: [type: :string, description: "The person's name", default_value: "Janet"],
         age: [type: :integer, description: "The person's age", default_value: 43]
       )
