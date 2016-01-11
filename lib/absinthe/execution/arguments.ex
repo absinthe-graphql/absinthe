@@ -33,20 +33,29 @@ defmodule Absinthe.Execution.Arguments do
   end
 
   # No argument found in the query document field
-  @spec do_add_argument(Language.Argument.t | nil, Type.Argument.t, Language.Field.t, {map, {[binary], [binary]}, Execution.t}) :: {map, [binary], Execution.t}
+  @spec do_add_argument(Language.Argument.t | nil, Type.Argument.t, Language.Field.t, {map, {[binary], [binary]}, Execution.t}) :: {map, {[binary], [binary]}, Execution.t}
   defp do_add_argument(nil, definition, ast_field, {values, {missing, invalid}, execution} = acc) do
-    if Validation.RequiredInput.required?(definition) do
-      internal_type = Schema.lookup_type(execution.schema, definition.type)
-      exe = execution
-      |> Execution.put_error(:argument, definition.name, &"Argument `#{&1}' (#{internal_type.name}): Not provided", at: ast_field)
-      {values, {[to_string(definition.name) | missing], invalid}, exe}
-    else
-      acc
+    cond do
+      Validation.RequiredInput.required?(definition) ->
+        internal_type = Schema.lookup_type(execution.schema, definition.type)
+        exe = execution
+        |> Execution.put_error(:argument, definition.name, &"Argument `#{&1}' (#{internal_type.name}): Not provided", at: ast_field)
+        {values, {[to_string(definition.name) | missing], invalid}, exe}
+      definition.default_value != nil ->
+        input_type = Schema.lookup_type(execution.schema, definition.type)
+        {
+          values |> Map.put(definition.name |> String.to_atom, definition.default_value),
+          {missing, invalid},
+          execution
+        }
+      true ->
+        acc
     end
   end
   defp do_add_argument(ast_argument, definition, _ast_field, {values, {missing, invalid} = tracking, execution}) do
     execution_with_deprecation = execution |> add_argument_deprecation(ast_argument.name, definition, ast_argument)
     value_to_coerce = ast_argument.value || execution.variables[ast_argument.name] || definition.default_value
+
     input_type = Schema.lookup_type(execution.schema, definition.type)
     if input_type do
       add_argument_value(input_type, value_to_coerce, ast_argument, [ast_argument.name], {values, tracking, execution_with_deprecation})
@@ -57,7 +66,7 @@ defmodule Absinthe.Execution.Arguments do
     end
   end
 
-  defp add_argument_deprecation(execution, _name, %{deprecation: nil}, _ast_node) do
+  defp add_argument_deprecation(execution, name, %{deprecation: nil}, _ast_node) do
     execution
   end
   defp add_argument_deprecation(execution, name, %{type: identifier, deprecation: %{reason: reason}}, ast_node) do

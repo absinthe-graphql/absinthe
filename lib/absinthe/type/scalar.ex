@@ -36,10 +36,12 @@ defmodule Absinthe.Type.Scalar do
   ```
   """
 
+  use Absinthe.Introspection.Kind
+  use Absinthe.Type.Definitions
+
   alias __MODULE__
   alias Absinthe.Flag
   alias Absinthe.Type
-  use Absinthe.Type.Definitions
 
   @typedoc """
   A defined scalar type.

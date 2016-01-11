@@ -72,6 +72,7 @@ defmodule Absinthe.Type.Object do
   """
 
   alias Absinthe.Type
+  use Absinthe.Introspection.Kind
 
   @typedoc """
   A defined object type.

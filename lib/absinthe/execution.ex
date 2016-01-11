@@ -44,7 +44,7 @@ defmodule Absinthe.Execution do
     end
   end
 
-  @default_adapter Absinthe.Adapter.Passthrough
+  @default_adapter Absinthe.Adapter.LanguageConventions
 
   # Add the configured adapter to an execution
   @doc false
@@ -73,10 +73,10 @@ defmodule Absinthe.Execution do
   #
   @doc false
   @spec put_error(t, Adapter.role_t, binary | atom, binary | function, Keyword.t) :: t
-  def put_error(exception, role, name, message, options) do
+  def put_error(execution, role, name, message, options) do
     %{at: ast_node} = options |> Enum.into(%{})
     error = format_error(
-      exception,
+      execution,
       %{
         name: name |> to_string,
         role: role,
@@ -84,7 +84,7 @@ defmodule Absinthe.Execution do
       },
       ast_node
     )
-    %{exception | errors: [error | exception.errors]}
+    %{execution | errors: [error | execution.errors]}
   end
 
   @doc false
@@ -92,6 +92,10 @@ defmodule Absinthe.Execution do
   def format_error(%{adapter: adapter}, error_info, %{loc: %{start_line: line}}) do
     adapter.format_error(error_info, [%{line: line, column: @default_column_number}])
   end
+  def format_error(%{adapter: adapter}, error_info, nil) do
+    adapter.format_error(error_info)
+  end
+
 
   # Format an error, without using the adapter (useful when reporting on types and other unadapted names)
   @doc false

@@ -28,10 +28,10 @@ defmodule AbsintheTest do
   it "warns of unknown fields" do
     query = """
     {
-      bad_resolution
+      badResolution
     }
     """
-    assert {:ok, %{errors: [%{message: "Field `bad_resolution': Did not resolve to match {:ok, _} or {:error, _}", locations: _}]}} = run(query)
+    assert {:ok, %{errors: [%{message: "Field `badResolution': Did not resolve to match {:ok, _} or {:error, _}", locations: _}]}} = run(query)
   end
 
   it "returns the correct results for an alias" do
@@ -78,13 +78,13 @@ defmodule AbsintheTest do
     query GimmeFooWithOtherThing {
       thing(id: "foo") {
         name
-        other_thing {
+        otherThing {
           name
         }
       }
     }
     """
-    assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo", "other_thing" => %{"name" => "Bar"}}}}}, run(query)
+    assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo", "otherThing" => %{"name" => "Bar"}}}}}, run(query)
   end
 
   it "can provide context" do
@@ -127,13 +127,13 @@ defmodule AbsintheTest do
   it "checks for badly formed nested arguments" do
     query = """
     mutation UpdateThingValueBadly {
-      thing: update_thing(id: "foo", thing: {value: "BAD"}) {
+      thing: updateThing(id: "foo", thing: {value: "BAD"}) {
         name
         value
       }
     }
     """
-    assert_result {:ok, %{errors: [%{message: "Field `update_thing': 1 badly formed argument (`thing.value') provided"},
+    assert_result {:ok, %{errors: [%{message: "Field `updateThing': 1 badly formed argument (`thing.value') provided"},
                             %{message: "Argument `thing.value' (Int): Invalid value provided"}]}}, run(query)
   end
 

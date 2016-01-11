@@ -204,32 +204,33 @@ defmodule Absinthe.Schema do
                interfaces: Schema.InterfaceMap.t,
                errors: [binary]}
 
-  defstruct query: nil, mutation: nil, subscription: nil, type_modules: [], types: %{}, interfaces: %{}, errors: []
+  defstruct query: nil, mutation: nil, subscription: nil, type_modules: [], types: nil, interfaces: %{}, errors: []
 
-  # Add types (but only do it once; if any have been found, this is just an identity function)
   @doc false
   @spec prepare(t) :: t
-  def prepare(%{types: types} = schema) when map_size(types) == 0 do
+  def prepare(schema) do
     schema
     |> Schema.TypeMap.setup
     |> Schema.InterfaceMap.setup
-  end
-  def prepare(schema) do
-    schema
+    |> Schema.Verification.setup
   end
 
   # Lookup a type that in used by/available to a schema
   @doc false
-  @spec lookup_type(t, Type.wrapping_t | Type.t | Type.identifier_t) :: Type.t | nil
-  def lookup_type(schema, type) when is_map(type) do
-    if Type.wrapped?(type) do
-      lookup_type(schema, type |> Type.unwrap)
-    else
-      type
+  @spec lookup_type(t, Type.wrapping_t | Type.t | Type.identifier_t, Keyword.t) :: Type.t | nil
+  def lookup_type(schema, type, options \\ [unwrap: true]) do
+    cond do
+      Type.wrapped?(type) ->
+        if Keyword.get(options, :unwrap) do
+          lookup_type(schema, type |> Type.unwrap)
+        else
+          type
+        end
+      is_atom(type) ->
+        schema.types[type]
+      true ->
+        type
     end
-  end
-  def lookup_type(schema, identifier) do
-    schema.types[identifier]
   end
 
   @doc false
@@ -247,7 +248,7 @@ defmodule Absinthe.Schema do
     end
   end
   def type_from_ast(schema, ast_type) do
-    schema.types
+    schema.types.by_identifier
     |> Map.values
     |> Enum.find(:name, fn
       %{name: name} ->
@@ -292,6 +293,5 @@ defmodule Absinthe.Schema do
     end
 
   end
-
 
 end

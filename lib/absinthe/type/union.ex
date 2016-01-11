@@ -1,16 +1,17 @@
 defmodule Absinthe.Type.Union do
 
-  # TODO: Unionn are not yet fully supported
+  # TODO: Unions are not yet fully supported
   @moduledoc false
+
+  use Absinthe.Introspection.Kind
 
   alias Absinthe.Type
 
   @typedoc false
   @type t :: %{name: binary,
                description: binary,
-               resolve_type: ((t, any) -> Absinthe.Type.Object.t),
                types: [Absinthe.Type.t],
-               reference: Type.Reference.t}
+               resolve_type: ((any, Absinthe.Execution.t) -> atom | nil), reference: Type.Reference.t}
 
   defstruct name: nil, description: nil, resolve_type: nil, types: [], reference: nil
 
@@ -20,21 +21,22 @@ defmodule Absinthe.Type.Union do
     |> Enum.member?(type)
   end
 
-  @doc false
-  def resolve_type(%{resolve_type: nil} = union, candidate) do
-    default_resolver(union, candidate)
+  @spec resolve_type(t, any, Execution.t) :: Type.t | nil
+  def resolve_type(%{resolve_type: nil, types: types}, obj, _exe) do
+    Enum.find(types, fn
+      %{is_type_of: nil} ->
+        false
+      type ->
+        type.is_type_of.(obj)
+    end)
   end
-  def resolve_type(%{resolve_type: resolver} = union, candidate) do
-    resolver.(union, candidate)
-  end
-
-  @doc false
-  defp default_resolver(%{types: types}, %{name: name}) do
-    types
-    |> Enum.find(&(&1.name == name))
-  end
-  defp default_resolver(_, _) do
-    nil
+  def resolve_type(%{resolve_type: resolver}, obj, %{schema: schema} = exe) do
+    case resolver.(obj, exe) do
+      nil ->
+        nil
+      ident when is_atom(ident) ->
+        schema.types[ident]
+    end
   end
 
 end
