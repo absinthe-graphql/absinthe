@@ -217,16 +217,20 @@ defmodule Absinthe.Schema do
 
   # Lookup a type that in used by/available to a schema
   @doc false
-  @spec lookup_type(t, Type.wrapping_t | Type.t | Type.identifier_t) :: Type.t | nil
-  def lookup_type(schema, type) when is_map(type) do
-    if Type.wrapped?(type) do
-      lookup_type(schema, type |> Type.unwrap)
-    else
-      type
+  @spec lookup_type(t, Type.wrapping_t | Type.t | Type.identifier_t, Keyword.t) :: Type.t | nil
+  def lookup_type(schema, type, options \\ [unwrap: true]) do
+    cond do
+      Type.wrapped?(type) ->
+        if Keyword.get(options, :unwrap) do
+          lookup_type(schema, type |> Type.unwrap)
+        else
+          type
+        end
+      is_atom(type) ->
+        schema.types[type]
+      true ->
+        type
     end
-  end
-  def lookup_type(schema, identifier) do
-    schema.types[identifier]
   end
 
   @doc false

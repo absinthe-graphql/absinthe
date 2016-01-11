@@ -25,7 +25,6 @@ defmodule Absinthe.Specification.Introspection.GeneralPrinciples.TypeNameTest do
   end
 
   describe "when querying against a union" do
-    @tag :pending
     it "returns the name of the object type currently being queried" do
     end
   end

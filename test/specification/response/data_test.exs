@@ -7,7 +7,7 @@ defmodule Specification.Response.DataTest do
   describe "the data entry in the response" do
 
     describe "if the operation was a query" do
-      @tag :specification
+
       it "will be an object of the schema's query root type"
     end
 

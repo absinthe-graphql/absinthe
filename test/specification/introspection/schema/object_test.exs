@@ -18,10 +18,9 @@ defmodule Absinthe.Specification.Introspection.Schema.ObjectTest do
       }
       """
       |> Absinthe.run(ContactSchema)
-      assert_result {:ok, %{data: %{"__Type" => %{"name" => "Person", "description" => "A person", "kind" => "OBJECT", "fields" => [%{"name" => "name"}, %{"name" => "age"}]}}}}, result
+      assert_result {:ok, %{data: %{"__Type" => %{"name" => "Person", "description" => "A person", "kind" => "OBJECT", "fields" => [%{"name" => "others"}, %{"name" => "name"}, %{"name" => "age"}]}}}}, result
     end
 
-    @tag :type
     it "can use __Type and include deprecated fields" do
       result = """
       {
@@ -31,17 +30,20 @@ defmodule Absinthe.Specification.Introspection.Schema.ObjectTest do
           description
           fields(include_deprecated: true) {
             name
-            type {
-              kind
-              name
-              of_type
-            }
+            is_deprecated
+            deprecation_reason
           }
         }
       }
       """
       |> Absinthe.run(ContactSchema)
-      assert_result {:ok, %{data: %{"__Type" => %{"name" => "Person", "description" => "A person", "kind" => "OBJECT", "fields" => [%{"name" => "others", "type" => %{"name" => nil, "kind" => "LIST"}}, %{"name" => "name", "type" => %{"name" => "String", "kind" => "SCALAR"}}, %{"name" => "age", "type" => %{"name" => "Int", "kind" => "SCALAR"}}, %{"name" => "address", "type" => %{"name" => "String", "kind" => "SCALAR"}}]}}}}, result
+      assert_result {:ok, %{data: %{"__Type" => %{"kind" => "OBJECT",
+                                                  "name" => "Person",
+                                                  "description" => "A person",
+                                                  "fields" => [%{"name" => "others", "is_deprecated" => false, "deprecation_reason" => nil},
+                                                               %{"name" => "name", "is_deprecated" => false, "deprecation_reason" => nil},
+                                                               %{"name" => "age", "is_deprecated" => false, "deprecation_reason" => nil},
+                                                               %{"name" => "address", "is_deprecated" => true, "deprecation_reason" => "change of privacy policy"}]}}}}, result
     end
 
     it "can use __Type to view interfaces" do

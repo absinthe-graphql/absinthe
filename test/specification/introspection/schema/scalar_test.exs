@@ -23,7 +23,6 @@ defmodule Absinthe.Specification.Introspection.Schema.ScalarTest do
   end
 
   describe "introspection of a scalar type" do
-    @tag :tester
     it "can use __Type" do
       result = """
       {

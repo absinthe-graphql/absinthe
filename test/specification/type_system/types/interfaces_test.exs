@@ -86,7 +86,6 @@ defmodule Specification.TypeSystem.Types.InterfacesTest do
 
       describe "with the interface as a field type" do
 
-        @tag :iface
         it "is a valid schema" do
           assert {:ok, _} = Absinthe.Schema.verify(ContactSchema.schema)
         end

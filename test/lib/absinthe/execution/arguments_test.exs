@@ -32,7 +32,6 @@ defmodule Absinthe.Execution.ArgumentsTest do
 
   describe "boolean arguments" do
 
-    @tag :boolean
     it "are passed as arguments to resolution functions correctly" do
       assert_result {:ok, %{data: %{"something" => "YES"}}}, "{ something(flag: true) }" |> Absinthe.run(Schema)
       assert_result {:ok, %{data: %{"something" => "NO"}}}, "{ something(flag: false) }" |> Absinthe.run(Schema)

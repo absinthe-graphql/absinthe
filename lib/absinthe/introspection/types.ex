@@ -91,7 +91,16 @@ defmodule Absinthe.Introspection.Types do
               {:ok, nil}
           end
         ],
-        of_type: [type: :__type]
+        of_type: [
+          type: :__type,
+          resolve: fn
+            _, %{schema: schema, resolution: %{target: %{of_type: type}}} ->
+              Absinthe.Schema.lookup_type(schema, type, unwrap: false)
+              |> Flag.as(:ok)
+            _, _ ->
+              {:ok, nil}
+          end
+        ]
       )
     }
   end
@@ -135,8 +144,10 @@ defmodule Absinthe.Introspection.Types do
         deprecation_reason: [
           type: :string,
           resolve: fn
-            _, %{resolution: %{target: target}} ->
-              {:ok, target[:deprecation][:reason]}
+            _, %{resolution: %{target: %{deprecation: nil}}} ->
+              {:ok, nil}
+            _, %{resolution: %{target: %{deprecation: dep}}} ->
+              {:ok, dep.reason}
           end
         ]
       )
