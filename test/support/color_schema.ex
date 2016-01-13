@@ -36,11 +36,12 @@ defmodule ColorSchema do
   @absinthe :type
   def channel do
     %Type.Enum{
+      description: "A color channel",
       values: values([
-        red: [value: :r],
-        green: [value: :g],
-        blue: [value: :b],
-        puce: deprecate([value: :p], reason: "it's ugly")
+        red: [description: "The color red", value: :r],
+        green: [description: "The color green", value: :g],
+        blue: [description: "The color blue", value: :b],
+        puce: deprecate([description: "The color puce", value: :p], reason: "it's ugly")
       ])
     }
   end

@@ -130,7 +130,22 @@ defmodule Absinthe.Introspection.Types do
               type: :boolean,
               default_value: false
             ]
-          )
+          ),
+          resolve: fn
+            %{include_deprecated: show_deprecated}, %{resolution: %{target: %Type.Enum{values: values}}} ->
+              values
+            |> Enum.flat_map(fn
+              {_, %{deprecation: is_deprecated} = value} ->
+              if !is_deprecated || (is_deprecated && show_deprecated) do
+                [value]
+              else
+                []
+              end
+            end)
+            |> Flag.as(:ok)
+            _, _ ->
+              {:ok, nil}
+          end
         ],
         input_fields: [
           type: list_of(:__inputvalue),
@@ -236,7 +251,33 @@ defmodule Absinthe.Introspection.Types do
     }
   end
 
-
-  # TODO __enumvalue
+  @absinthe :type
+  def __enumvalue do
+    %Type.Object{
+      name: "__EnumValue",
+      fields: fields(
+        name: [type: :string],
+        description: [type: :string],
+        is_deprecated: [
+          type: :boolean,
+          resolve: fn
+            _, %{resolution: %{target: %{deprecation: nil}}} ->
+              {:ok, false}
+            _, _ ->
+              {:ok, true}
+          end
+        ],
+        deprecation_reason: [
+          type: :string,
+          resolve: fn
+            _, %{resolution: %{target: %{deprecation: nil}}} ->
+              {:ok, nil}
+            _, %{resolution: %{target: %{deprecation: dep}}} ->
+              {:ok, dep.reason}
+          end
+        ]
+      )
+    }
+  end
 
 end
