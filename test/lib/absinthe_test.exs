@@ -252,7 +252,14 @@ defmodule AbsintheTest do
       }
     """
 
-    it 'can be parsed' do
+    it 'can be parsed as stored by name' do
+      {:ok, doc} = Absinthe.parse(@simple_fragment)
+      assert %{definitions: [%Absinthe.Language.OperationDefinition{},
+                             %Absinthe.Language.Fragment{name: "NamedPerson"} = fragment]} = doc
+      assert doc.fragments["NamedPerson"] == fragment
+    end
+
+    it 'returns the correct result' do
       {:ok, doc} = Absinthe.parse(@simple_fragment)
       assert %{definitions: [%Absinthe.Language.OperationDefinition{},
                              %Absinthe.Language.Fragment{name: "NamedPerson"}]} = doc
