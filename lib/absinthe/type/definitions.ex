@@ -274,6 +274,7 @@ defmodule Absinthe.Type.Definitions do
       pair ->
         pair
     end)
+    |> Enum.into(%{})
   end
 
   # Normalize shorthand lists of atoms to the keyword list that `values` expects

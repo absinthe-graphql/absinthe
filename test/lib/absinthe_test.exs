@@ -213,6 +213,27 @@ defmodule AbsintheTest do
     assert {:error, %{locations: _}} = Absinthe.parse(query)
   end
 
+  it "should resolve using enums" do
+    result = """
+      {
+        red: info(channel: "red") {
+          name
+          value
+        },
+        green: info(channel: "green") {
+          name
+          value
+        },
+        blue: info(channel: "blue") {
+          name
+          value
+        }
+      }
+    """
+    |> Absinthe.run(ColorSchema)
+    assert_result {:ok, %{data: %{"red" => %{"name" => "RED", "value" => 100}, "green" => %{"name" => "GREEN", "value" => 200}, "blue" => %{"name" => "BLUE", "value" => 300}}}}, result
+  end
+
   defp run(query, options \\ []) do
     query
     |> Absinthe.run(Things, options)

@@ -66,7 +66,7 @@ defmodule Absinthe.Execution.Arguments do
     end
   end
 
-  defp add_argument_deprecation(execution, name, %{deprecation: nil}, _ast_node) do
+  defp add_argument_deprecation(execution, _name, %{deprecation: nil}, _ast_node) do
     execution
   end
   defp add_argument_deprecation(execution, name, %{type: identifier, deprecation: %{reason: reason}}, ast_node) do
@@ -127,8 +127,8 @@ defmodule Absinthe.Execution.Arguments do
     end
   end
   # Enum value found
-  defp do_add_argument_value(%Type.Enum{values: enum_values}, %{value: raw_value}, ast_argument, [value_name | _] = full_value_name, {values, {missing, invalid}, execution}) do
-    case enum_values |> Map.get(raw_value) do
+  defp do_add_argument_value(%Type.Enum{} = enum, %{value: raw_value}, ast_argument, [value_name | _] = full_value_name, {values, {missing, invalid}, execution}) do
+    case Type.Enum.parse(enum, raw_value) do
       nil ->
         name_to_report = full_value_name |> dotted_name
         {
@@ -136,8 +136,8 @@ defmodule Absinthe.Execution.Arguments do
           {missing, [name_to_report | invalid]},
           execution |> Execution.put_error(:argument, name_to_report, &"Argument `#{&1}' (Enum): Invalid value", at: ast_argument)
         }
-      value ->
-        {values |> Map.put(value_name |> String.to_existing_atom, value), {missing, invalid}, execution}
+      internal_value ->
+        {values |> Map.put(value_name |> String.to_existing_atom, internal_value), {missing, invalid}, execution}
     end
   end
   # Input object value found
