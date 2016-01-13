@@ -198,6 +198,77 @@ defmodule Absinthe.Type.Definitions do
     named(Type.Field, definitions)
   end
 
+  @doc """
+  Define a set of enum values.
+
+  Each value defines an enum value.
+
+  ## Examples
+
+  The following:
+
+  ```
+  values(
+    red: [
+      description: "Color Red",
+      value: :r
+    ],
+    green: [
+      description: "Color Green",
+      value: :g
+    ],
+    blue: [
+      description: "Color Blue",
+      value: :b
+    ],
+    alpha: deprecate([
+      description: "Alpha Channel",
+      value: :a
+    ], reason: "We no longer support opacity settings")
+  )
+  ```
+
+  Is equivalent to:
+
+  ```
+  %{
+    red: %Type.Enum.Value{
+      name: "red",
+      description: "Color Red",
+      value: :r
+    },
+    green: %Type.Enum.Value{
+      name: "green",
+      description: "Color Greed",
+      value: :g
+    },
+    blue: %Type.Enum.Value{
+      name: "blue",
+      description: "Color Blue",
+      value: :b
+    },
+    alpha: %Type.Enum.Value{
+      name: "alpha",
+      description: "Alpha Channel",
+      value: :a,
+      deprecation: %Type.Deprecation{reason: "We no longer support opacity settings"}
+    }
+  }
+  ```
+
+  Note the use of `deprecate/2` which is a convenience function to deprecate a
+  value (or field or argument).
+
+  ## Options
+
+  For information on the options available for an enum value, see `Absinthe.Type.Enum.Value`.
+
+  """
+  @spec values([{atom, Keyword.t}]) :: %{atom => Type.Enum.Value.t}
+  def values(definitions) do
+    named(Type.Enum.Value, definitions)
+  end
+
   @doc false
   defp named(mod, definitions) do
     definitions
