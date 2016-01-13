@@ -239,7 +239,7 @@ defmodule Absinthe.Type.Definitions do
     },
     green: %Type.Enum.Value{
       name: "green",
-      description: "Color Greed",
+      description: "Color Green",
       value: :g
     },
     blue: %Type.Enum.Value{
@@ -261,12 +261,29 @@ defmodule Absinthe.Type.Definitions do
 
   ## Options
 
-  For information on the options available for an enum value, see `Absinthe.Type.Enum.Value`.
-
+  For information on the options available for an enum value, see
+  `Absinthe.Type.Enum` and `Absinthe.Type.Enum.Value`.
   """
-  @spec values([{atom, Keyword.t}]) :: %{atom => Type.Enum.Value.t}
-  def values(definitions) do
+  @spec values([atom] | [{atom, Keyword.t}]) :: %{atom => Type.Enum.Value.t}
+  def values(raw_definitions) do
+    definitions = normalize_values(raw_definitions)
     named(Type.Enum.Value, definitions)
+    |> Enum.map(fn
+      {ident, %{value: nil} = type} when is_atom(ident) ->
+        {ident, %{type | value: ident}}
+      pair ->
+        pair
+    end)
+  end
+
+  # Normalize shorthand lists of atoms to the keyword list that `values` expects
+  @spec normalize_values([atom] | [{atom, Keyword.t}]) :: [{atom, Keyword.t}]
+  defp normalize_values(raw) do
+    if Keyword.keyword?(raw) do
+      raw
+    else
+      raw |> Enum.map(&({&1, []}))
+    end
   end
 
   @doc false
