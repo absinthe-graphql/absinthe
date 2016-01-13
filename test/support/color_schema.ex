@@ -5,13 +5,15 @@ defmodule ColorSchema do
   @names %{
     r: "RED",
     g: "GREEN",
-    b: "BLUE"
+    b: "BLUE",
+    p: "PUCE"
   }
 
   @values %{
     r: 100,
     g: 200,
-    b: 300
+    b: 300,
+    p: -100
   }
 
   def query do
@@ -20,7 +22,7 @@ defmodule ColorSchema do
         info: [
           type: :channel_info,
           args: args(
-            channel: [type: non_null(:channel)]
+            channel: [type: non_null(:channel)],
           ),
           resolve: fn
             %{channel: channel}, _ ->
@@ -37,7 +39,8 @@ defmodule ColorSchema do
       values: values([
         red: [value: :r],
         green: [value: :g],
-        blue: [value: :b]
+        blue: [value: :b],
+        puce: deprecate([value: :p], reason: "it's ugly")
       ])
     }
   end

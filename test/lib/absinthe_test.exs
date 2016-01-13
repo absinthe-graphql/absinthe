@@ -219,19 +219,24 @@ defmodule AbsintheTest do
         red: info(channel: "red") {
           name
           value
-        },
+        }
         green: info(channel: "green") {
           name
           value
-        },
+        }
         blue: info(channel: "blue") {
+          name
+          value
+        }
+        puce: info(channel: "puce") {
           name
           value
         }
       }
     """
     |> Absinthe.run(ColorSchema)
-    assert_result {:ok, %{data: %{"red" => %{"name" => "RED", "value" => 100}, "green" => %{"name" => "GREEN", "value" => 200}, "blue" => %{"name" => "BLUE", "value" => 300}}}}, result
+    assert_result {:ok, %{data: %{"red" => %{"name" => "RED", "value" => 100}, "green" => %{"name" => "GREEN", "value" => 200}, "blue" => %{"name" => "BLUE", "value" => 300}, "puce" => %{"name" => "PUCE", "value" => -100}},
+                          errors: [%{message: "Argument `channel' (Channel): Enum value \"puce\" deprecated; it's ugly"}]}}, result
   end
 
   defp run(query, options \\ []) do

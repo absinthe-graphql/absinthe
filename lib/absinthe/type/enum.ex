@@ -99,7 +99,7 @@ defmodule Absinthe.Type.Enum do
   end
 
   @spec get_value(t, Keyword.t) :: Type.Enum.Value.t | nil
-  defp get_value(enum, options \\ []) do
+  def get_value(enum, options \\ []) do
     do_get_value(enum, options |> Enum.into(%{}))
   end
 
