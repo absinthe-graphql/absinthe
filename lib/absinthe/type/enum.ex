@@ -69,12 +69,22 @@ defmodule Absinthe.Type.Enum do
 
   alias Absinthe.Type
 
+  @typedoc """
+  A defined enum type.
+
+  Should be defined using `@absinthe :type` from `Absinthe.Type.Definitions`.
+
+  * `:name` - The name of the enum type. Should be a TitleCased `binary`. Set automatically when using `@absinthe :type` from `Absinthe.Type.Definitions`.
+  * `:description` - A nice description for introspection.
+  * `:values` - The enum valuesn, usually provided using the `Absinthe.Type.Definitions.values/1` convenience function.
+
+  The `:reference` key is for internal use.
+  """
   @type t :: %{name: binary, description: binary, values: %{binary => Type.Enum.Value.t}, reference: Type.Reference.t}
   defstruct name: nil, description: nil, values: %{}, reference: nil
 
-  @doc """
-  Get the internal representation of an enum value
-  """
+  # Get the internal representation of an enum value
+  @doc false
   @spec parse(t, any) :: any
   def parse(enum, external_value) do
     case get_value(enum, name: external_value) do
@@ -85,9 +95,8 @@ defmodule Absinthe.Type.Enum do
     end
   end
 
-  @doc """
-  Get the external representation of an enum value
-  """
+  # Get the external representation of an enum value
+  @doc false
   @spec serialize(t, any) :: binary
   def serialize(enum, internal_value) do
     case get_value(enum, value: internal_value) do
@@ -98,6 +107,7 @@ defmodule Absinthe.Type.Enum do
     end
   end
 
+  @doc false
   @spec get_value(t, Keyword.t) :: Type.Enum.Value.t | nil
   def get_value(enum, options \\ []) do
     do_get_value(enum, options |> Enum.into(%{}))

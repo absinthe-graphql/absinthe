@@ -373,7 +373,7 @@ and/or [NonNull](https://facebook.github.io/graphql/#sec-Non-null).)
 ### Limitations
 
 See [the PR](https://github.com/CargoSense/absinthe/pull/26) for details on
-limitations (notably enum values, union types, and directives cannot currently
+limitations (notably union types and directives cannot currently
 be introspected).
 
 ## Adapters
