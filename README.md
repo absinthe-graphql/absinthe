@@ -33,7 +33,7 @@ idiomatic, flexible, and comfortable way possible.
 - Variables, including defaulting and `!` requirements.
 - Interface validation/resolution. (Note: Fragment spreads with `on` are not yet
 implemented. See [Notably Missing](./README.md#notably-missing) below.)
-- Introspection of most types. (See details in the [PR](https://github.com/CargoSense/absinthe/pull/26).)
+- [Introspection](../README.md#introspection) of most types.
 - Errors with source line numbers. (Someday, column numbers; the Leex lexer
   doesn't support them yet.)
 - An flexible adapter mechanism to translate between different naming
@@ -63,7 +63,7 @@ Install from [Hex.pm](https://hex.pm/packages/absinthe):
 
 ```elixir
 def deps do
-  [{:absinthe, "~> 0.3.0"}]
+  [{:absinthe, "~> 0.4.0"}]
 end
 ```
 
