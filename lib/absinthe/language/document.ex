@@ -18,12 +18,12 @@ defmodule Absinthe.Language.Document do
   end
 
   @doc false
-  @spec fragments_by_name(Absinthe.Language.Document.t) :: %{binary => Absinthe.Language.FragmentDefinition.t}
+  @spec fragments_by_name(Absinthe.Language.Document.t) :: %{binary => Absinthe.Language.Fragment.t}
   def fragments_by_name(%{definitions: definitions}) do
     definitions
     |> Enum.reduce(%{}, fn (statement, memo) ->
       case statement do
-        %Absinthe.Language.FragmentDefinition{} ->
+        %Absinthe.Language.Fragment{} ->
           memo |> Map.put(statement.name, statement)
         _ ->
           memo

@@ -239,6 +239,27 @@ defmodule AbsintheTest do
                           errors: [%{message: "Argument `channel' (Channel): Enum value \"puce\" deprecated; it's ugly"}]}}, result
   end
 
+  describe "fragments" do
+
+    @simple_fragment """
+      query Q {
+        person {
+          ...NamedPerson
+        }
+      }
+      fragment NamedPerson on Person {
+        name
+      }
+    """
+
+    it 'can be parsed' do
+      {:ok, doc} = Absinthe.parse(@simple_fragment)
+      assert %{definitions: [%Absinthe.Language.OperationDefinition{},
+                             %Absinthe.Language.Fragment{name: "NamedPerson"}]} = doc
+    end
+
+  end
+
   defp run(query, options \\ []) do
     query
     |> Absinthe.run(Things, options)
