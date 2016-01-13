@@ -1,5 +1,7 @@
 defmodule Absinthe.Schema.Verification do
 
+  @moduledoc false
+
   alias Absinthe.Traversal
   alias Absinthe.Schema
 

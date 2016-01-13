@@ -66,7 +66,7 @@ defmodule Absinthe.Execution.Arguments do
     end
   end
 
-  defp add_argument_deprecation(execution, name, %{deprecation: nil}, _ast_node) do
+  defp add_argument_deprecation(execution, _name, %{deprecation: nil}, _ast_node) do
     execution
   end
   defp add_argument_deprecation(execution, name, %{type: identifier, deprecation: %{reason: reason}}, ast_node) do
@@ -127,8 +127,8 @@ defmodule Absinthe.Execution.Arguments do
     end
   end
   # Enum value found
-  defp do_add_argument_value(%Type.Enum{values: enum_values}, %{value: raw_value}, ast_argument, [value_name | _] = full_value_name, {values, {missing, invalid}, execution}) do
-    case enum_values |> Map.get(raw_value) do
+  defp do_add_argument_value(%Type.Enum{} = enum, %{value: raw_value} = definition, ast_argument, [value_name | _] = full_value_name, {values, {missing, invalid}, execution}) do
+    case Type.Enum.get_value(enum, name: raw_value |> to_string) do
       nil ->
         name_to_report = full_value_name |> dotted_name
         {
@@ -136,8 +136,9 @@ defmodule Absinthe.Execution.Arguments do
           {missing, [name_to_report | invalid]},
           execution |> Execution.put_error(:argument, name_to_report, &"Argument `#{&1}' (Enum): Invalid value", at: ast_argument)
         }
-      value ->
-        {values |> Map.put(value_name |> String.to_existing_atom, value), {missing, invalid}, execution}
+      enum_value ->
+        execution_with_deprecation = execution |> add_enum_value_deprecation(ast_argument.name, enum, enum_value, ast_argument)
+        {values |> Map.put(value_name |> String.to_existing_atom, enum_value.value), {missing, invalid}, execution_with_deprecation}
     end
   end
   # Input object value found
@@ -183,6 +184,15 @@ defmodule Absinthe.Execution.Arguments do
   # validation error
   defp do_add_argument_value(nil, _value, _ast_argument, _names, acc) do
     acc
+  end
+
+  defp add_enum_value_deprecation(execution, _name, _enum, %{deprecation: nil}, _ast_node) do
+    execution
+  end
+  defp add_enum_value_deprecation(execution, name, %{name: enum_type_name}, %{name: enum_value, deprecation: %{reason: reason}}, ast_node) do
+    details = if reason, do: "; #{reason}", else: ""
+    execution
+    |> Execution.put_error(:argument, name, &"Argument `#{&1}' (#{enum_type_name}): Enum value \"#{enum_value}\" deprecated#{details}", at: ast_node)
   end
 
   # Add errors for any additional arguments not present in the schema

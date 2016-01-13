@@ -68,4 +68,92 @@ defmodule Absinthe.Type.DefinitionTest do
     assert schema_type.name == "Article"
   end
 
+  defmodule EnumSchema do
+    use Absinthe.Schema
+    alias Absinthe.Type
+
+    def query do
+      %Type.Object{
+        fields: fields(
+          channel: [
+            description: "The active color channel"
+          ]
+        )
+      }
+    end
+
+    @absinthe :type
+    def color_channel do
+      %Absinthe.Type.Enum{
+        description: "The selected color channel",
+        values: values(
+          red: [
+            description: "Color Red",
+            value: :r
+          ],
+          green: [
+            description: "Color Green",
+            value: :g
+          ],
+          blue: [
+            description: "Color Blue",
+            value: :b
+          ],
+          alpha: deprecate([
+            description: "Alpha Channel",
+            value: :a
+          ], reason: "We no longer support opacity settings")
+        )
+      }
+    end
+
+    @absinthe :type
+    def color_channel2 do
+      %Absinthe.Type.Enum{
+        description: "The selected color channel",
+        values: values(
+          red: [
+            description: "Color Red"
+          ],
+          green: [
+            description: "Color Green"
+          ],
+          blue: [
+            description: "Color Blue"
+          ],
+          alpha: deprecate([
+            description: "Alpha Channel"
+          ], reason: "We no longer support opacity settings")
+        )
+      }
+    end
+
+    @absinthe :type
+    def color_channel3 do
+      %Absinthe.Type.Enum{
+        description: "The selected color channel",
+        values: values([:red, :green, :blue, :alpha])
+      }
+    end
+
+  end
+
+  describe "enums" do
+    it "can be defined by a map with defined values" do
+      type = EnumSchema.absinthe_types[:color_channel]
+      assert %Type.Enum{} = type
+      assert %Type.Enum.Value{name: "red", value: :r} = type.values[:red]
+    end
+    it "can be defined by a map without defined values" do
+      type = EnumSchema.absinthe_types[:color_channel2]
+      assert %Type.Enum{} = type
+      assert %Type.Enum.Value{name: "red", value: :red} = type.values[:red]
+    end
+    it "can be defined by a shorthand list of atoms" do
+      type = EnumSchema.absinthe_types[:color_channel3]
+      assert %Type.Enum{} = type
+      assert %Type.Enum.Value{name: "red", value: :red} = type.values[:red]
+    end
+  end
+
 end

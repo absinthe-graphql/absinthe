@@ -198,6 +198,95 @@ defmodule Absinthe.Type.Definitions do
     named(Type.Field, definitions)
   end
 
+  @doc """
+  Define a set of enum values.
+
+  Each value defines an enum value.
+
+  ## Examples
+
+  The following:
+
+  ```
+  values(
+    red: [
+      description: "Color Red",
+      value: :r
+    ],
+    green: [
+      description: "Color Green",
+      value: :g
+    ],
+    blue: [
+      description: "Color Blue",
+      value: :b
+    ],
+    alpha: deprecate([
+      description: "Alpha Channel",
+      value: :a
+    ], reason: "We no longer support opacity settings")
+  )
+  ```
+
+  Is equivalent to:
+
+  ```
+  %{
+    red: %Type.Enum.Value{
+      name: "red",
+      description: "Color Red",
+      value: :r
+    },
+    green: %Type.Enum.Value{
+      name: "green",
+      description: "Color Green",
+      value: :g
+    },
+    blue: %Type.Enum.Value{
+      name: "blue",
+      description: "Color Blue",
+      value: :b
+    },
+    alpha: %Type.Enum.Value{
+      name: "alpha",
+      description: "Alpha Channel",
+      value: :a,
+      deprecation: %Type.Deprecation{reason: "We no longer support opacity settings"}
+    }
+  }
+  ```
+
+  Note the use of `deprecate/2` which is a convenience function to deprecate a
+  value (or field or argument).
+
+  ## Options
+
+  For information on the options available for an enum value, see
+  `Absinthe.Type.Enum` and `Absinthe.Type.Enum.Value`.
+  """
+  @spec values([atom] | [{atom, Keyword.t}]) :: %{atom => Type.Enum.Value.t}
+  def values(raw_definitions) do
+    definitions = normalize_values(raw_definitions)
+    named(Type.Enum.Value, definitions)
+    |> Enum.map(fn
+      {ident, %{value: nil} = type} when is_atom(ident) ->
+        {ident, %{type | value: ident}}
+      pair ->
+        pair
+    end)
+    |> Enum.into(%{})
+  end
+
+  # Normalize shorthand lists of atoms to the keyword list that `values` expects
+  @spec normalize_values([atom] | [{atom, Keyword.t}]) :: [{atom, Keyword.t}]
+  defp normalize_values(raw) do
+    if Keyword.keyword?(raw) do
+      raw
+    else
+      raw |> Enum.map(&({&1, []}))
+    end
+  end
+
   @doc false
   defp named(mod, definitions) do
     definitions
