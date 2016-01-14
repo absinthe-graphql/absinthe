@@ -15,8 +15,10 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
     |> Enum.reduce({%{}, execution}, fn ({name, ast_node}, {acc, exe}) ->
       field_resolution = %Resolution{parent_type: parent_type, target: target}
       case resolve_field(ast_node, %{exe | resolution: field_resolution}) do
-        {:ok, value, changed_execution} -> {acc |> Map.put(name, value), changed_execution}
-        {:skip, changed_execution} -> {acc, changed_execution}
+        {:ok, value, changed_execution} ->
+          {acc |> Map.put(name, value), changed_execution}
+        {:skip, changed_execution} ->
+          {acc, changed_execution}
       end
     end)
     {:ok, result, execution_to_return}
@@ -61,7 +63,7 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
     end)
   end
 
-  defp can_apply_fragment?(%{type_condition: type_condition}, %{resolution: %{type: type}, schema: schema}) do
+  defp can_apply_fragment?(%{name: name, type_condition: type_condition}, %{resolution: %{type: type}, schema: schema}) do
     this_type = Schema.lookup_type(schema, type)
     child_type = Schema.lookup_type(schema, type_condition)
     Execution.resolve_type(nil, child_type, this_type)

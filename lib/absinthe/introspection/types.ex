@@ -179,7 +179,7 @@ defmodule Absinthe.Introspection.Types do
         name: [type: :string],
         description: [type: :string],
         args: [
-          type: :__inputvalue,
+          type: list_of(:__inputvalue),
           resolve: fn
             _, %{resolution: %{target: target}} ->
               structs = target.args |> Map.values
