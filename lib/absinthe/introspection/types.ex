@@ -36,7 +36,13 @@ defmodule Absinthe.Introspection.Types do
               {:ok, schema.mutation}
           end
         ],
-        directives: [type: list_of(:__directive)]
+        directives: [
+          type: list_of(:__directive),
+          resolve: fn
+            _, _ ->
+              {:ok, []} # TODO
+          end
+        ]
       )
     }
   end
