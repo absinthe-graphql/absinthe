@@ -264,6 +264,24 @@ defmodule AbsintheTest do
       }
     """
 
+    @introspection_fragment """
+    query Q {
+      __type(name: "ProfileInput") {
+        name
+        kind
+        fields {
+          name
+        }
+        ...Inputs
+      }
+    }
+
+    fragment Inputs on __Type {
+      inputFields { name }
+    }
+
+    """
+
     it "can be parsed" do
       {:ok, doc} = Absinthe.parse(@simple_fragment)
       assert %{definitions: [%Absinthe.Language.OperationDefinition{},
@@ -272,6 +290,10 @@ defmodule AbsintheTest do
 
     it "returns the correct result" do
       assert_result {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}}, Absinthe.run(@simple_fragment, ContactSchema)
+    end
+
+    it "returns the correct result using fragments for introspection" do
+      assert_result {:ok, %{data: %{"__type" => %{"name" => "ProfileInput", "kind" => "INPUT_OBJECT", "fields" => nil, "inputFields" => [%{"name" => "code"}, %{"name" => "name"}, %{"name" => "age"}]}}}}, Absinthe.run(@introspection_fragment, ContactSchema)
     end
 
     it "ignores fragments that can't be applied" do

@@ -87,7 +87,7 @@ defmodule Absinthe.Introspection.Types do
             ]
           ),
           resolve: fn
-            %{include_deprecated: show_deprecated}, %{resolution: %{target: %{fields: fields}}} ->
+            %{include_deprecated: show_deprecated}, %{resolution: %{target: %Type.Object{fields: fields}}} ->
               fields
               |> Enum.flat_map(fn
                 {_, %{deprecation: is_deprecated} = field} ->
@@ -156,10 +156,10 @@ defmodule Absinthe.Introspection.Types do
         input_fields: [
           type: list_of(:__inputvalue),
           resolve: fn
-            _, %{resolution: %{target: %Type.InputObject{fields: fields}}} ->
+            _, %{resolution: %{target: %Type.InputObject{fields: fields} = target}} ->
               structs = fields |> Map.values
               {:ok, structs}
-            _, _ ->
+            _, %{resolution: %{target: target}} ->
               {:ok, nil}
           end
         ],

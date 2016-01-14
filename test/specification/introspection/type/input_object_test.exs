@@ -31,6 +31,7 @@ defmodule Absinthe.Specification.Introspection.Type.InputObjectTest do
       """
       |> Absinthe.run(ContactSchema)
       assert_result {:ok, %{data: %{"__type" => %{"name" => "ProfileInput", "description" => "The basic details for a person", "kind" => "INPUT_OBJECT", "inputFields" => [%{"name" => "name", "description" => "The person's name", "type" => %{"name" => "String", "kind" => "SCALAR", "ofType" => nil}, "defaultValue" => "Janet"}, %{"defaultValue" => nil, "description" => nil, "name" => "code", "type" => %{"kind" => "NON_NULL", "name" => nil, "ofType" => %{"kind" => "SCALAR", "name" => "String"}}}, %{"name" => "age", "description" => "The person's age", "type" => %{"name" => "Int", "kind" => "SCALAR", "ofType" => nil}, "defaultValue" => "43"}]}}}}, result
+      assert !match?({:ok, %{data: %{"__type" => %{"fields" => _}}}}, result)
     end
 
   end
