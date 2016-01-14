@@ -4,8 +4,8 @@ defmodule Absinthe.Language.Document do
   alias Absinthe.Language
 
   @typedoc false
-  @type t :: %{definitions: [Absinthe.Traversal.Node.t], fragments: %{binary => Absinthe.Language.Fragment.t}, loc: Absinthe.Language.loc_t}
-  defstruct definitions: [], fragments: %{}, loc: %{start_line: nil}
+  @type t :: %{definitions: [Absinthe.Traversal.Node.t], loc: Absinthe.Language.loc_t}
+  defstruct definitions: [], loc: %{start_line: nil}
 
   @doc "Extract a named operation definition from a document"
   @spec get_operation(t, binary) :: nil | Absinthe.Language.OperationDefinition.t
@@ -18,13 +18,6 @@ defmodule Absinthe.Language.Document do
       _ ->
         false
     end)
-  end
-
-  # Prepare document for use.
-  @doc false
-  @spec prepare(t) :: t
-  def prepare(document) do
-    %{document | fragments: fragments_by_name(document)}
   end
 
   @doc false

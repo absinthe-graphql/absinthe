@@ -183,7 +183,7 @@ defmodule Absinthe do
       {:ok, tokens} ->
         case :absinthe_parser.parse(tokens) do
           {:ok, doc} = result ->
-            {:ok, Absinthe.Language.Document.prepare(doc)}
+            result
           {:error, raw_error} ->
             {:error, format_raw_parse_error(raw_error)}
         end

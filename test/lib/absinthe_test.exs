@@ -252,18 +252,32 @@ defmodule AbsintheTest do
       }
     """
 
-    it 'can be parsed as stored by name' do
+    @unapplied_fragment """
+      query Q {
+        person {
+          name
+          ...NamedBusiness
+        }
+      }
+      fragment NamedBusiness on Business {
+        employee_count
+      }
+    """
+
+    it "can be parsed" do
       {:ok, doc} = Absinthe.parse(@simple_fragment)
       assert %{definitions: [%Absinthe.Language.OperationDefinition{},
                              %Absinthe.Language.Fragment{name: "NamedPerson"} = fragment]} = doc
-      assert doc.fragments["NamedPerson"] == fragment
     end
 
-    it 'returns the correct result' do
-      {:ok, doc} = Absinthe.parse(@simple_fragment)
-      assert %{definitions: [%Absinthe.Language.OperationDefinition{},
-                             %Absinthe.Language.Fragment{name: "NamedPerson"}]} = doc
+    it "returns the correct result" do
+      assert_result {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}}, Absinthe.run(@simple_fragment, ContactSchema)
     end
+
+    it "ignores fragments that can't be applied" do
+      assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@unapplied_fragment, ContactSchema)
+    end
+
 
   end
 
