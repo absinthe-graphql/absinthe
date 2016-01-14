@@ -99,7 +99,7 @@ defmodule Absinthe.Introspection.Types do
               end)
               |> Flag.as(:ok)
             _, _ ->
-              {:ok, []}
+              {:ok, nil}
           end
         ],
         interfaces: [
@@ -112,7 +112,7 @@ defmodule Absinthe.Introspection.Types do
               end)
               {:ok, structs}
             _, _ ->
-              {:ok, []}
+              {:ok, nil}
           end
         ],
         possible_types: [
@@ -126,7 +126,7 @@ defmodule Absinthe.Introspection.Types do
               structs = implementors |> Enum.map(fn name -> schema.types[name] end)
               {:ok, structs}
             _, _ ->
-              {:ok, []}
+              {:ok, nil}
           end
         ],
         enum_values: [
@@ -150,7 +150,7 @@ defmodule Absinthe.Introspection.Types do
             end)
             |> Flag.as(:ok)
             _, _ ->
-              {:ok, []}
+              {:ok, nil}
           end
         ],
         input_fields: [
@@ -160,7 +160,7 @@ defmodule Absinthe.Introspection.Types do
               structs = fields |> Map.values
               {:ok, structs}
             _, _ ->
-              {:ok, []}
+              {:ok, nil}
           end
         ],
         of_type: [
