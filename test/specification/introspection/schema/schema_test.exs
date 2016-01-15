@@ -12,7 +12,7 @@ defmodule Absinthe.Specification.Introspection.Schema.SchemaTest do
         ContactSchema
       )
       names = types |> Enum.map(&(&1["name"])) |> Enum.sort
-      expected = ~w(Int ID String Boolean Float Contact Person Business ProfileInput SearchResult NamedEntity) |> Enum.sort
+      expected = ~w(Int ID String Boolean Float Contact Person Business ProfileInput SearchResult NamedEntity RootMutationType RootQueryType) |> Enum.sort
       assert expected == names
     end
 

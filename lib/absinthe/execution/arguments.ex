@@ -127,7 +127,7 @@ defmodule Absinthe.Execution.Arguments do
     end
   end
   # Enum value found
-  defp do_add_argument_value(%Type.Enum{} = enum, %{value: raw_value} = definition, ast_argument, [value_name | _] = full_value_name, {values, {missing, invalid}, execution}) do
+  defp do_add_argument_value(%Type.Enum{} = enum, %{value: raw_value}, ast_argument, [value_name | _] = full_value_name, {values, {missing, invalid}, execution}) do
     case Type.Enum.get_value(enum, name: raw_value |> to_string) do
       nil ->
         name_to_report = full_value_name |> dotted_name

@@ -33,6 +33,14 @@ defmodule Absinthe.TypeTest do
 
     end
 
+    it "defines a query type" do
+      assert ContactSchema.absinthe_types[:query].name == "RootQueryType"
+    end
+
+    it "defines a mutation type" do
+      assert ContactSchema.absinthe_types[:mutation].name == "RootMutationType"
+    end
+
   end
 
 end

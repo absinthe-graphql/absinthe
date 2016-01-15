@@ -15,8 +15,10 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
     |> Enum.reduce({%{}, execution}, fn ({name, ast_node}, {acc, exe}) ->
       field_resolution = %Resolution{parent_type: parent_type, target: target}
       case resolve_field(ast_node, %{exe | resolution: field_resolution}) do
-        {:ok, value, changed_execution} -> {acc |> Map.put(name, value), changed_execution}
-        {:skip, changed_execution} -> {acc, changed_execution}
+        {:ok, value, changed_execution} ->
+          {acc |> Map.put(name, value), changed_execution}
+        {:skip, changed_execution} ->
+          {acc, changed_execution}
       end
     end)
     {:ok, result, execution_to_return}
@@ -29,20 +31,19 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
   end
   defp flatten(%Language.InlineFragment{} = ast_node, execution) do
     if directives_pass?(ast_node, execution) && can_apply_fragment?(ast_node, execution) do
-      ast_node.selection_set.selections
-      |> Enum.reduce(%{}, fn (selection, acc) ->
-        flatten(selection, execution)
-        |> Enum.reduce(acc, fn ({_name, selection}, acc_for_selection) ->
-          merge_into_result(acc_for_selection, selection, execution)
-        end)
-      end)
+      flatten_fragment(ast_node, execution)
     else
       %{}
     end
   end
-  defp flatten(%Language.FragmentSpread{name: name} = ast_node, %{fragments: fragments} = execution) do
+  defp flatten(%Language.FragmentSpread{} = ast_node, %{fragments: fragments} = execution) do
     if directives_pass?(ast_node, execution) do
-      flatten(fragments[name], execution)
+      fragment = fragments[ast_node.name]
+      if can_apply_fragment?(fragment, execution) do
+        flatten_fragment(fragment, execution)
+      else
+        %{}
+      end
     else
       %{}
     end
@@ -52,13 +53,24 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
     %{}
   end
 
+  defp flatten_fragment(fragment, execution) do
+    fragment.selection_set.selections
+    |> Enum.reduce(%{}, fn (selection, acc) ->
+      flatten(selection, execution)
+      |> Enum.reduce(acc, fn ({_name, selection}, acc_for_selection) ->
+        merge_into_result(acc_for_selection, selection, execution)
+      end)
+    end)
+  end
+
   defp can_apply_fragment?(%{type_condition: type_condition}, %{resolution: %{type: type}, schema: schema}) do
+    this_type = Schema.lookup_type(schema, type)
     child_type = Schema.lookup_type(schema, type_condition)
-    Execution.resolve_type(nil, child_type, type)
+    Execution.resolve_type(nil, child_type, this_type)
   end
 
   @spec merge_into_result(map, Language.t, Execution.t) :: map
-  defp merge_into_result(acc, %{alias: alias} = selection, execution) do
+  defp merge_into_result(acc, %{alias: alias} = selection, execution) when not is_nil(alias) do
     acc
     |> do_merge_into_result(%{alias => selection}, execution)
   end

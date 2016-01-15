@@ -1,4 +1,4 @@
-defmodule Absinthe.Language.FragmentDefinition do
+defmodule Absinthe.Language.Fragment do
 
   @moduledoc false
 

@@ -99,4 +99,12 @@ defmodule Absinthe.Introspection do
   and/or [NonNull](https://facebook.github.io/graphql/#sec-Non-null).)
   """
 
+  alias Absinthe.Type
+
+  # Determine if a term is an introspection type
+  @doc false
+  @spec type?(any) :: boolean
+  def type?(%Type.Object{name: "__" <> _}), do: true
+  def type?(_), do: false
+
 end

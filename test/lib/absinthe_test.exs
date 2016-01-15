@@ -239,6 +239,73 @@ defmodule AbsintheTest do
                           errors: [%{message: "Argument `channel' (Channel): Enum value \"puce\" deprecated; it's ugly"}]}}, result
   end
 
+  describe "fragments" do
+
+    @simple_fragment """
+      query Q {
+        person {
+          ...NamedPerson
+        }
+      }
+      fragment NamedPerson on Person {
+        name
+      }
+    """
+
+    @unapplied_fragment """
+      query Q {
+        person {
+          name
+          ...NamedBusiness
+        }
+      }
+      fragment NamedBusiness on Business {
+        employee_count
+      }
+    """
+
+    @introspection_fragment """
+    query Q {
+      __type(name: "ProfileInput") {
+        name
+        kind
+        fields {
+          name
+        }
+        ...Inputs
+      }
+    }
+
+    fragment Inputs on __Type {
+      inputFields { name }
+    }
+
+    """
+
+    it "can be parsed" do
+      {:ok, doc} = Absinthe.parse(@simple_fragment)
+      assert %{definitions: [%Absinthe.Language.OperationDefinition{},
+                             %Absinthe.Language.Fragment{name: "NamedPerson"}]} = doc
+    end
+
+    it "returns the correct result" do
+      assert_result {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}}, Absinthe.run(@simple_fragment, ContactSchema)
+    end
+
+    it "returns the correct result using fragments for introspection" do
+      assert {:ok, %{data: %{"__type" => %{"name" => "ProfileInput", "kind" => "INPUT_OBJECT", "fields" => nil, "inputFields" => input_fields}}}} = Absinthe.run(@introspection_fragment, ContactSchema)
+      correct = [%{"name" => "code"}, %{"name" => "name"}, %{"name" => "age"}]
+      sort = &(&1["name"])
+      assert Enum.sort_by(input_fields, sort) == Enum.sort_by(correct, sort)
+    end
+
+    it "ignores fragments that can't be applied" do
+      assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@unapplied_fragment, ContactSchema)
+    end
+
+
+  end
+
   defp run(query, options \\ []) do
     query
     |> Absinthe.run(Things, options)

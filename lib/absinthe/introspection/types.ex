@@ -36,7 +36,13 @@ defmodule Absinthe.Introspection.Types do
               {:ok, schema.mutation}
           end
         ],
-        directives: [type: list_of(:__directive)]
+        directives: [
+          type: list_of(:__directive),
+          resolve: fn
+            _, _ ->
+              {:ok, []} # TODO
+          end
+        ]
       )
     }
   end
@@ -81,7 +87,7 @@ defmodule Absinthe.Introspection.Types do
             ]
           ),
           resolve: fn
-            %{include_deprecated: show_deprecated}, %{resolution: %{target: %{fields: fields}}} ->
+            %{include_deprecated: show_deprecated}, %{resolution: %{target: %{__struct__: str, fields: fields}}} when str in [Type.Object, Type.Interface] ->
               fields
               |> Enum.flat_map(fn
                 {_, %{deprecation: is_deprecated} = field} ->
@@ -113,7 +119,7 @@ defmodule Absinthe.Introspection.Types do
           type: list_of(:__type),
           resolve: fn
             _, %{schema: schema, resolution: %{target: %Type.Union{types: types}}} ->
-              structs = types |> Enum.map(fn name -> schema.types[name] end)
+              structs = types |> Enum.map(&(Absinthe.Schema.lookup_type(schema, &1)))
               {:ok, structs}
             _, %{schema: schema, resolution: %{target: %Type.Interface{reference: %{identifier: ident}}}} ->
               implementors = schema.interfaces[ident]
@@ -176,10 +182,18 @@ defmodule Absinthe.Introspection.Types do
     %Type.Object{
       name: "__Field",
       fields: fields(
-        name: [type: :string],
+        name: [
+          type: :string,
+          resolve: fn
+            _, %{adapter: adapter, resolution: %{target: target}} ->
+              target.name
+              |> adapter.to_external_name(:field)
+              |> Flag.as(:ok)
+          end
+        ],
         description: [type: :string],
         args: [
-          type: :__inputvalue,
+          type: list_of(:__inputvalue),
           resolve: fn
             _, %{resolution: %{target: target}} ->
               structs = target.args |> Map.values
@@ -226,7 +240,15 @@ defmodule Absinthe.Introspection.Types do
     %Type.Object{
       name: "__InputValue",
       fields: fields(
-        name: [type: :string],
+        name: [
+          type: :string,
+          resolve: fn
+            _, %{adapter: adapter, resolution: %{target: target}} ->
+              target.name
+              |> adapter.to_external_name(:field)
+              |> Flag.as(:ok)
+          end
+        ],
         description: [type: :string],
         type: [
           type: :__type,

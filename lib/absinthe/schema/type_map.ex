@@ -75,8 +75,12 @@ defmodule Absinthe.Schema.TypeMap do
   # Bare type; likely the name of an interface.
   # Wrap it just like a type entry and process, reusing the
   # logic above
-  defp collect_types(node, traversal, acc)  when is_atom(node) do
+  defp collect_types(node, traversal, acc) when is_atom(node) do
     collect_types(%{type: node}, traversal, acc)
+  end
+  defp collect_types(%Type.Object{reference: %{identifier: ident}}, traversal, acc) do
+    # Could be a root item, pretend it's a reference:
+    collect_types(%{type: ident}, traversal, acc)
   end
   defp collect_types(_node, traversal, acc) do
     {:ok, acc, traversal}

@@ -120,11 +120,12 @@ defmodule Absinthe.Execution do
     target
     |> Type.Interface.resolve_type
   end
-  def resolve_type(_target, child_type, parent_type) when child_type == parent_type do
-    parent_type
-  end
-  def resolve_type(_target, _child_type, _parent_type) do
-    nil
+  def resolve_type(_target, child_type, parent_type) do
+    if child_type.name == parent_type.name do
+      parent_type
+    else
+      nil
+    end
   end
 
   # Stringify keys in an arbitrarily deep structure with maps
@@ -162,7 +163,7 @@ defmodule Absinthe.Execution do
   defp categorize_definitions(%{operations: operations} = execution, [%Absinthe.Language.OperationDefinition{name: name} = definition | rest]) do
     categorize_definitions(%{execution | operations: operations |> Map.put(name, definition)}, rest)
   end
-  defp categorize_definitions(%{fragments: fragments} = execution, [%Absinthe.Language.FragmentDefinition{name: name} = definition | rest]) do
+  defp categorize_definitions(%{fragments: fragments} = execution, [%Absinthe.Language.Fragment{name: name} = definition | rest]) do
     categorize_definitions(%{execution | fragments: fragments |> Map.put(name, definition)}, rest)
   end
 

@@ -1,6 +1,6 @@
 Nonterminals
   Document
-  Definitions Definition OperationDefinition FragmentDefinition TypeDefinition
+  Definitions Definition OperationDefinition Fragment TypeDefinition
   ObjectDefinition InterfaceDefinition UnionTypeDefinition
   ScalarTypeDefinition EnumTypeDefinition InputObjectDefinition TypeExtensionDefinition
   FieldDefinitionList FieldDefinition ImplementsInterfaces ArgumentsDefinition
@@ -28,7 +28,7 @@ Definitions -> Definition : ['$1'].
 Definitions -> Definition Definitions : ['$1'|'$2'].
 
 Definition -> OperationDefinition : '$1'.
-Definition -> FragmentDefinition : '$1'.
+Definition -> Fragment : '$1'.
 Definition -> TypeDefinition : '$1'.
 
 OperationType -> 'query' : extract_atom('$1').
@@ -40,8 +40,8 @@ OperationDefinition -> OperationType Name VariableDefinitions SelectionSet : bui
 OperationDefinition -> OperationType Name Directives SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => extract_binary('$2'), 'directives' => '$3', 'selection_set' => '$4'}, #{'start_line' => extract_line('$1')}).
 OperationDefinition -> OperationType Name VariableDefinitions Directives SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => extract_binary('$2'), 'variable_definitions' => '$3', 'directives' => '$4', 'selection_set' => '$5'}, #{'start_line' => extract_line('$1')}).
 
-FragmentDefinition -> 'fragment' FragmentName 'on' TypeCondition SelectionSet : build_ast_node('FragmentDefinition', #{'name' => '$2', 'type_condition' => '$4', 'selection_set' => '$5'}, #{'start_line' => extract_line('$1')}).
-FragmentDefinition -> 'fragment' FragmentName 'on' TypeCondition Directives SelectionSet : build_ast_node('FragmentDefinition', #{'name' => '$2', 'type_condition' => '$4', 'directives' => '$5', 'selection_set' => '$6'}, #{'start_line' => extract_line('$1')}).
+Fragment -> 'fragment' FragmentName 'on' TypeCondition SelectionSet : build_ast_node('Fragment', #{'name' => '$2', 'type_condition' => '$4', 'selection_set' => '$5'}, #{'start_line' => extract_line('$1')}).
+Fragment -> 'fragment' FragmentName 'on' TypeCondition Directives SelectionSet : build_ast_node('Fragment', #{'name' => '$2', 'type_condition' => '$4', 'directives' => '$5', 'selection_set' => '$6'}, #{'start_line' => extract_line('$1')}).
 
 TypeCondition -> NamedType : '$1'.
 

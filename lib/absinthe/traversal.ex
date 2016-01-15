@@ -5,7 +5,6 @@ defmodule Absinthe.Traversal do
   @moduledoc false
 
   alias __MODULE__
-  alias Absinthe.Schema
   alias Absinthe.Traversal.Node
 
   @type t :: %{context: any, seen: [Node.t], path: [Node.t]}
@@ -24,7 +23,7 @@ defmodule Absinthe.Traversal do
   @doc false
   @spec reduce(Node.t, any, any, (Node.t -> instruction_t)) :: any
   def reduce(node, context, initial_value, node_evaluator) do
-    {result, traversal} = do_reduce(node, %Traversal{context: context}, initial_value, node_evaluator)
+    {result, _traversal} = do_reduce(node, %Traversal{context: context}, initial_value, node_evaluator)
     result
   end
 

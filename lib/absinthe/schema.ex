@@ -145,9 +145,9 @@ defmodule Absinthe.Schema do
       """
       def schema do
         contents = [
-          query: query,
-          mutation: mutation,
-          subscription: subscription
+          query: absinthe_types[:query],
+          mutation: absinthe_types[:mutation],
+          subscription: absinthe_types[:subscription]
         ]
         |> Enum.filter(fn
           {_, nil} -> false
