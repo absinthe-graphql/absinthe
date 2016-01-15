@@ -25,6 +25,51 @@ defmodule Absinthe.Type.TypeMapTest do
       assert type_map[:boolean] == Type.Scalar.absinthe_types[:boolean]
     end
 
+    defmodule Schema do
+      use Absinthe.Schema
+      alias Absinthe.Type
+
+      def query do
+        %Type.Object{
+          fields: fields(
+            foo: [
+              type: :string,
+              args: args(
+                contact_input: [type: :contact_input]
+              )
+            ]
+          )
+        }
+      end
+
+      @absinthe :type
+      def contact_input do
+        %Type.InputObject{
+          description: "An input contact",
+          fields: fields(
+            value: [type: non_null(:string)],
+            kind: [type: :phone_or_email]
+          )
+        }
+      end
+
+      @absinthe :type
+      def phone_or_email do
+        %Type.Enum{
+          description: "Either a phone number or email",
+          values: values(
+            phone: [description: "A phone number", value: "phone"],
+            email: [description: "An email address", value: "email"]
+          )
+        }
+      end
+
+    end
+
+    it "has the type in the typemap" do
+      assert Schema.schema.types.by_identifier[:phone_or_email]
+    end
+
   end
 
 end

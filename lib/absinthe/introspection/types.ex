@@ -156,10 +156,10 @@ defmodule Absinthe.Introspection.Types do
         input_fields: [
           type: list_of(:__inputvalue),
           resolve: fn
-            _, %{resolution: %{target: %Type.InputObject{fields: fields} = target}} ->
+            _, %{resolution: %{target: %Type.InputObject{fields: fields}}} ->
               structs = fields |> Map.values
               {:ok, structs}
-            _, %{resolution: %{target: target}} ->
+            _, _ ->
               {:ok, nil}
           end
         ],

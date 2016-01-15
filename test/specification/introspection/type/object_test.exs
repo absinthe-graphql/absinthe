@@ -62,6 +62,70 @@ defmodule Absinthe.Specification.Introspection.Type.ObjectTest do
       assert_result {:ok, %{data: %{"__type" => %{"interfaces" => [%{"name" => "NamedEntity"}]}}}}, result
     end
 
+    defmodule KindSchema do
+      use Absinthe.Schema
+      alias Absinthe.Type
+
+      def query do
+        %Type.Object{
+          fields: fields(
+            foo: [type: :foo]
+          )
+        }
+      end
+
+      @absinthe :type
+      def foo do
+        %Type.Object{
+          fields: fields(
+            name: [type: :string],
+            kind: [type: :string]
+          )
+        }
+      end
+
+    end
+
+    it "can use __type with a field named 'kind'" do
+      result = """
+      {
+        __type(name: "Foo") {
+          name
+          fields {
+            name
+            type {
+              name
+              kind
+            }
+          }
+        }
+      }
+      """
+      |> Absinthe.run(KindSchema)
+      assert {:ok, %{data: %{"__type" => %{"name" => "Foo", "fields" => [%{"name" => "name", "type" => %{"name" => "String", "kind" => "SCALAR"}}, %{"name" => "kind", "type" => %{"name" => "String", "kind" => "SCALAR"}}]}}}} = result
+    end
+
+    it "can use __schema with a field named 'kind'" do
+      result = """
+        {
+          __schema {
+            queryType {
+              fields {
+                name
+                type {
+                  name
+                  kind
+                }
+              }
+            }
+          }
+        }
+      """
+      |> Absinthe.run(KindSchema)
+      assert {:ok, %{data: %{"__schema" => %{"queryType" => %{"fields" => [%{"name" => "foo", "type" => %{"name" => "Foo", "kind" => "OBJECT"}}]}}}}} = result
+    end
+
+
   end
 
 end
