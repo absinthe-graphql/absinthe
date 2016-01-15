@@ -78,6 +78,10 @@ defmodule Absinthe.Schema.TypeMap do
   defp collect_types(node, traversal, acc)  when is_atom(node) do
     collect_types(%{type: node}, traversal, acc)
   end
+  defp collect_types(%Type.Object{name: name, reference: %{identifier: ident}}, traversal, acc) do
+    # Could be a root item, pretend it's a reference:
+    collect_types(%{type: ident}, traversal, acc)
+  end
   defp collect_types(_node, traversal, acc) do
     {:ok, acc, traversal}
   end

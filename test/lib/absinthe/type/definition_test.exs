@@ -19,7 +19,7 @@ defmodule Absinthe.Type.DefinitionTest do
 
     blog_schema = QuerySchema.schema
 
-    assert blog_schema.query == Fixtures.query
+    assert blog_schema.query.name == Fixtures.query.name
 
     article_field = Type.Object.field(Fixtures.query, :article)
     assert article_field
@@ -59,7 +59,7 @@ defmodule Absinthe.Type.DefinitionTest do
 
   it "defines a mutation schema" do
     blog_schema = MutationSchema.schema
-    assert blog_schema.mutation == Fixtures.mutation
+    assert blog_schema.mutation.name == Fixtures.mutation.name
 
     write_mutation = Type.Object.field(Fixtures.mutation, :write_article)
     assert write_mutation

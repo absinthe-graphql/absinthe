@@ -2,6 +2,8 @@ defmodule Absinthe.Type.Definitions do
 
   @moduledoc "Utility functions to define new types"
 
+  @roots [:query, :mutation, :subscription]
+
   alias Absinthe.Type
 
   defmacro __using__(_) do
@@ -16,15 +18,20 @@ defmodule Absinthe.Type.Definitions do
   def __on_definition__(env, kind, name, _args, _guards, _body) do
     absinthe_attr = Module.get_attribute(env.module, :absinthe)
     Module.put_attribute(env.module, :absinthe, nil)
-    if absinthe_attr do
-      case {kind, absinthe_attr} do
-        {:def, :type} ->
-          Module.put_attribute(env.module, :absinthe_types, {name, name})
-        {:def, [{:type, identifier}]} ->
-          Module.put_attribute(env.module, :absinthe_types, {identifier, name})
-        {:defp, _} -> raise  "Absinthe type definition #{name} must be a def, not defp"
-        _ -> raise "Unknown absinthe definition for #{name}"
-      end
+    cond do
+      absinthe_attr ->
+        case {kind, absinthe_attr} do
+          {:def, :type} ->
+            Module.put_attribute(env.module, :absinthe_types, {name, name})
+          {:def, [{:type, identifier}]} ->
+            Module.put_attribute(env.module, :absinthe_types, {identifier, name})
+          {:defp, _} -> raise  "Absinthe type definition #{name} must be a def, not defp"
+          _ -> raise "Unknown absinthe definition for #{name}"
+        end
+      Enum.member?(@roots, name) ->
+        Module.put_attribute(env.module, :absinthe_types, {name, name})
+      true ->
+        nil # skip
     end
   end
 
@@ -47,6 +54,10 @@ defmodule Absinthe.Type.Definitions do
   # unless it's already been defined.
   @doc false
   @spec set_default_name(Type.t, atom) :: Type.t
+  def set_default_name(%{name: nil} = type, identifier) when identifier in @roots do
+    root_name = "Root" <> (identifier |> to_string |> Macro.camelize) <> "Type"
+    %{type | name: root_name}
+  end
   def set_default_name(%{name: nil} = type, identifier) do
     %{type | name: identifier |> to_string |> Macro.camelize}
   end
