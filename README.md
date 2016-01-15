@@ -23,7 +23,8 @@ idiomatic, flexible, and comfortable way possible.
 - A clean, conventional, module-based approach to building schemas.
 - Full support for extending types, including scalars.
   (See [Custom Types](./README.md#custom-types), below.)
-- Argument and input object field deprecation. (See [Deprecation](./README.md#deprecation),
+- Argument, input object field, and enum value deprecation.
+  (See [Deprecation](./README.md#deprecation),
   below.)
 - Basic query document execution and argument/field validation. (Note Validation
   is currently done during Execution, rather than as a separate phase. This will be
@@ -31,9 +32,10 @@ idiomatic, flexible, and comfortable way possible.
   doesn't appreciably affect the functionality of APIs written with Absinthe.)
 - Support for Plug, via [absinthe_plug](http://hex.pm/projects/absinthe_plug).
 - Variables, including defaulting and `!` requirements.
-- Interface validation/resolution. (Note: Fragment spreads with `on` are not yet
-implemented. See [Notably Missing](./README.md#notably-missing) below.)
-- [Introspection](../README.md#introspection) of most types.
+- Interface validation/resolution.
+- Named fragments and fragment spreads
+- [Introspection](../README.md#introspection) (of everything but directives,
+  currently).
 - Errors with source line numbers. (Someday, column numbers; the Leex lexer
   doesn't support them yet.)
 - An flexible adapter mechanism to translate between different naming
@@ -44,9 +46,8 @@ implemented. See [Notably Missing](./README.md#notably-missing) below.)
 
 Support for:
 
-- Fragments and fragment spreads
+- Inline fragments
 - Directives
-- Unions
 
 ### Alternatives
 
@@ -372,9 +373,7 @@ and/or [NonNull](https://facebook.github.io/graphql/#sec-Non-null).)
 
 ### Limitations
 
-See [the PR](https://github.com/CargoSense/absinthe/pull/26) for details on
-limitations (notably union types and directives cannot currently
-be introspected).
+- Directives cannot currently be introspected.
 
 ## Adapters
 
