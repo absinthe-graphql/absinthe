@@ -285,7 +285,7 @@ defmodule AbsintheTest do
     it "can be parsed" do
       {:ok, doc} = Absinthe.parse(@simple_fragment)
       assert %{definitions: [%Absinthe.Language.OperationDefinition{},
-                             %Absinthe.Language.Fragment{name: "NamedPerson"} = fragment]} = doc
+                             %Absinthe.Language.Fragment{name: "NamedPerson"}]} = doc
     end
 
     it "returns the correct result" do
@@ -293,7 +293,10 @@ defmodule AbsintheTest do
     end
 
     it "returns the correct result using fragments for introspection" do
-      assert_result {:ok, %{data: %{"__type" => %{"name" => "ProfileInput", "kind" => "INPUT_OBJECT", "fields" => nil, "inputFields" => [%{"name" => "code"}, %{"name" => "name"}, %{"name" => "age"}]}}}}, Absinthe.run(@introspection_fragment, ContactSchema)
+      assert {:ok, %{data: %{"__type" => %{"name" => "ProfileInput", "kind" => "INPUT_OBJECT", "fields" => nil, "inputFields" => input_fields}}}} = Absinthe.run(@introspection_fragment, ContactSchema)
+      correct = [%{"name" => "code"}, %{"name" => "name"}, %{"name" => "age"}]
+      sort = &(&1["name"])
+      assert Enum.sort_by(input_fields, sort) == Enum.sort_by(correct, sort)
     end
 
     it "ignores fragments that can't be applied" do
