@@ -66,6 +66,7 @@ defmodule Absinthe.Type.TypeMapTest do
 
     end
 
+    @tag :input
     it "has the type in the typemap" do
       assert Schema.schema.types.by_identifier[:phone_or_email]
     end

@@ -50,4 +50,10 @@ defmodule Absinthe.Type.Argument do
 
   end
 
+  defimpl Absinthe.Traversal.Node do
+    def children(node, _traversal) do
+      [node.type]
+    end
+  end
+
 end
