@@ -436,7 +436,7 @@ Here's the basic status, using the following scale:
 | Language      | Functional     | [GraphQL Specification, Section 2](https://facebook.github.io/graphql/#sec-Language)      |
 | Type System   | Functional     | [GraphQL Specification, Section 3](https://facebook.github.io/graphql/#sec-Type-System)   |
 | Introspection | Functional     | [GraphQL Specification, Section 4](https://facebook.github.io/graphql/#sec-Introspection) |
-| Validation    | Partial        | [GraphQL Specification, Section 5](https://facebook.github.io/graphql/#sec-Validation)    |
+| Validation    | Functional     | [GraphQL Specification, Section 5](https://facebook.github.io/graphql/#sec-Validation)    |
 | Execution     | Functional     | [GraphQL Specification, Section 6](https://facebook.github.io/graphql/#sec-Execution)     |
 | Response      | Functional     | [GraphQL Specification, Section 7](https://facebook.github.io/graphql/#sec-Response)      |
 
