@@ -10,15 +10,15 @@ defmodule Absinthe.TypeTest do
       describe "without a different identifier" do
 
         it 'includes a defined entry' do
-          assert %Type.Object{name: "Item"} = FooBarSchema.absinthe_types[:item]
+          assert %Type.Object{name: "Item"} = FooBarSchema.__absinthe_info__(:types)[:item]
         end
 
         describe "that defines its own name" do
-          assert %Type.Object{name: "NonFictionBook"} = FooBarSchema.absinthe_types[:book]
+          assert %Type.Object{name: "NonFictionBook"} = FooBarSchema.__absinthe_info__(:types)[:book]
         end
 
         describe "that uses a name derived from the identifier" do
-          assert %Type.Object{name: "Item"} = FooBarSchema.absinthe_types[:item]
+          assert %Type.Object{name: "Item"} = FooBarSchema.__absinthe_info__(:types)[:item]
         end
 
       end
@@ -26,7 +26,7 @@ defmodule Absinthe.TypeTest do
       describe "with a different identifier" do
 
         it 'includes a defined entry' do
-          assert %Type.Object{name: "Author"} = FooBarSchema.absinthe_types[:author]
+          assert %Type.Object{name: "Author"} = FooBarSchema.__absinthe_info__(:types)[:author]
         end
 
       end
@@ -34,11 +34,11 @@ defmodule Absinthe.TypeTest do
     end
 
     it "defines a query type" do
-      assert ContactSchema.absinthe_types[:query].name == "RootQueryType"
+      assert ContactSchema.__absinthe_info__(:types)[:query].name == "RootQueryType"
     end
 
     it "defines a mutation type" do
-      assert ContactSchema.absinthe_types[:mutation].name == "RootMutationType"
+      assert ContactSchema.__absinthe_info__(:types)[:mutation].name == "RootMutationType"
     end
 
   end

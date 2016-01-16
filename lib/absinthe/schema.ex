@@ -145,9 +145,9 @@ defmodule Absinthe.Schema do
       """
       def schema do
         contents = [
-          query: absinthe_types[:query],
-          mutation: absinthe_types[:mutation],
-          subscription: absinthe_types[:subscription]
+          query: __absinthe_info__(:types)[:query],
+          mutation: __absinthe_info__(:types)[:mutation],
+          subscription: __absinthe_info__(:types)[:subscription]
         ]
         |> Enum.filter(fn
           {_, nil} -> false
@@ -200,11 +200,12 @@ defmodule Absinthe.Schema do
                mutation: nil | Absinthe.Type.Object.t,
                subscription: nil | Absinthe.Type.Object.t,
                type_modules: [atom],
+               directives: %{atom => Absinthe.Type.Directive.t},
                types: Schema.TypeMap.t,
                interfaces: Schema.InterfaceMap.t,
                errors: [binary]}
 
-  defstruct query: nil, mutation: nil, subscription: nil, type_modules: [], types: nil, interfaces: %{}, errors: []
+  defstruct query: nil, mutation: nil, subscription: nil, type_modules: [], directives: nil, types: nil, interfaces: %{}, errors: []
 
   @doc false
   @spec prepare(t) :: t

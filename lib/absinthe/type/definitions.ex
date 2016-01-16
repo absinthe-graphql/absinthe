@@ -9,6 +9,7 @@ defmodule Absinthe.Type.Definitions do
   defmacro __using__(_) do
     quote do
       import unquote(__MODULE__)
+      Module.register_attribute(__MODULE__, :absinthe_directives, accumulate: true)
       Module.register_attribute(__MODULE__, :absinthe_types, accumulate: true)
       @on_definition unquote(__MODULE__)
       @before_compile unquote(__MODULE__)
@@ -25,7 +26,11 @@ defmodule Absinthe.Type.Definitions do
             Module.put_attribute(env.module, :absinthe_types, {name, name})
           {:def, [{:type, identifier}]} ->
             Module.put_attribute(env.module, :absinthe_types, {identifier, name})
-          {:defp, _} -> raise  "Absinthe type definition #{name} must be a def, not defp"
+          {:def, :directive} ->
+            Module.put_attribute(env.module, :absinthe_directives, {name, name})
+          {:def, [{:directive, identifier}]} ->
+            Module.put_attribute(env.module, :absinthe_directives, {identifier, name})
+          {:defp, _} -> raise  "Absinthe definition #{name} must be a def, not defp"
           _ -> raise "Unknown absinthe definition for #{name}"
         end
       Enum.member?(@roots, name) ->
@@ -38,11 +43,20 @@ defmodule Absinthe.Type.Definitions do
   defmacro __before_compile__(_env) do
     quote do
       @doc false
-      def absinthe_types do
+      def __absinthe_info__(:types) do
         @absinthe_types
         |> Enum.into(%{}, fn {identifier, fn_name} ->
           ready = apply(__MODULE__, fn_name, [])
-          |> Absinthe.Type.Definitions.set_default_name(identifier)
+          |> Absinthe.Type.Definitions.set_default_name(identifier, :type)
+          tagged = %{ready | reference: %Absinthe.Type.Reference{module: __MODULE__, identifier: identifier, name: ready.name}}
+          {identifier, tagged}
+        end)
+      end
+      def __absinthe_info__(:directives) do
+        @absinthe_directives
+        |> Enum.into(%{}, fn {identifier, fn_name} ->
+          ready = apply(__MODULE__, fn_name, [])
+          |> Absinthe.Type.Definitions.set_default_name(identifier, :directive)
           tagged = %{ready | reference: %Absinthe.Type.Reference{module: __MODULE__, identifier: identifier, name: ready.name}}
           {identifier, tagged}
         end)
@@ -53,15 +67,18 @@ defmodule Absinthe.Type.Definitions do
   # Add a name field to a type (using the absinthe type identifier)
   # unless it's already been defined.
   @doc false
-  @spec set_default_name(Type.t, atom) :: Type.t
-  def set_default_name(%{name: nil} = type, identifier) when identifier in @roots do
+  @spec set_default_name(Type.t, atom, atom) :: Type.t
+  def set_default_name(%{name: nil} = type, identifier, :type) when identifier in @roots do
     root_name = "Root" <> (identifier |> to_string |> Macro.camelize) <> "Type"
     %{type | name: root_name}
   end
-  def set_default_name(%{name: nil} = type, identifier) do
+  def set_default_name(%{name: nil} = type, identifier, :type) do
     %{type | name: identifier |> to_string |> Macro.camelize}
   end
-  def set_default_name(%{name: _} = type, _identifier) do
+  def set_default_name(%{name: nil} = type, identifier, :directive) do
+    %{type | name: identifier |> to_string}
+  end
+  def set_default_name(%{name: _} = type, _identifier, _any) do
     type
   end
 

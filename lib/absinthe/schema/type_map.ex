@@ -19,6 +19,7 @@ defmodule Absinthe.Schema.TypeMap do
 
   @builtin_type_modules [
     Type.Scalar,
+    Type.Directive,
     Introspection.Types
   ]
 
@@ -37,7 +38,9 @@ defmodule Absinthe.Schema.TypeMap do
     type_modules = @builtin_type_modules ++ extra_modules
     types_available = type_modules |> types_from_modules
     initial_collected = @builtin_type_modules |> types_from_modules
-    schema = %{schema_without_types | types: %TypeMap{by_identifier: initial_collected}}
+    schema = %{schema_without_types |
+               types: %TypeMap{by_identifier: initial_collected},
+               directives: type_modules |> directives_from_modules}
     case Traversal.reduce(schema, schema, {types_available, initial_collected, []}, &collect_types/3) do
       {_, _, errors} when length(errors) > 0 ->
         %{schema | errors: schema.errors ++ errors}
@@ -90,7 +93,7 @@ defmodule Absinthe.Schema.TypeMap do
   # on a given type module
   defp absinthe_types(mod) do
     try do
-      mod.absinthe_types
+      mod.__absinthe_info__(:types)
     rescue
       UndefinedFunctionError -> %{}
     end
@@ -100,7 +103,18 @@ defmodule Absinthe.Schema.TypeMap do
   @spec types_from_modules([atom]) :: ident_map_t
   defp types_from_modules(modules) do
     modules
-    |> Enum.map(&absinthe_types/1)
+    |> Enum.map(&(&1.__absinthe_info__(:types)))
+    |> Enum.reduce(%{}, fn
+      mapping, acc ->
+        acc |> Map.merge(mapping)
+    end)
+  end
+
+  # Extract a mapping of all the defined directives in a set of modules
+  @spec directives_from_modules([atom]) :: ident_map_t
+  defp directives_from_modules(modules) do
+    modules
+    |> Enum.map(&(&1.__absinthe_info__(:directives)))
     |> Enum.reduce(%{}, fn
       mapping, acc ->
         acc |> Map.merge(mapping)
