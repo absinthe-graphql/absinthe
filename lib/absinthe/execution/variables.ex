@@ -41,16 +41,23 @@ defmodule Absinthe.Execution.Variables do
     {values, exe}
   end
   defp do_parse(name, definition, ast_type, schema_type, {_, execution} = acc) do
-    default_value = default(definition.default_value)
-    provided_value = execution.variables |> Map.get(name |> to_string)
-    value = provided_value || default_value
-    case Type.valid_input?(schema_type, value) do
+    value = execution.variables[to_string(name)]
+    provided_value = value_or_default(
+      value,
+      default(definition.default_value)
+    )
+    case Type.valid_input?(schema_type, provided_value) do
       true ->
-        valid(name, value, schema_type, acc)
+        valid(name, provided_value, schema_type, acc)
       false ->
-        invalid(name, value, ast_type, schema_type, acc)
+        invalid(name, provided_value, ast_type, schema_type, acc)
     end
   end
+
+  # Get the value (if non-nil) or the default
+  @spec value_or_default(any, any) :: any
+  defp value_or_default(nil, default_value), do: default_value
+  defp value_or_default(value, _), do: value
 
   # Accumulate the value for a valid variable
   @spec valid(atom, any, Type.input_t, {map, Execution.t}) :: {map, Execution.t}
