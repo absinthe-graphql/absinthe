@@ -5,11 +5,11 @@ A [GraphQL](https://facebook.github.io/graphql/) implementation for Elixir.
 [![Build Status](https://secure.travis-ci.org/CargoSense/absinthe.svg?branch=master
 "Build Status")](https://travis-ci.org/CargoSense/absinthe)
 
-## Experimental!
+Please note that this is a young project and that portions of the specification
+aren't fully implemented yet.
 
-Please note that this is an initial release, and while functional enough to
-build basic APIs (we are using it in a production system), it should be
-considered experimental. (Notably, it does not yet work with Relay.)
+That said, we are using Absinthe in production, and we'd love your input
+and support to make it better.
 
 For more information on status, see [Specification Implementation](./README.md#specification-implementation), below.
 
