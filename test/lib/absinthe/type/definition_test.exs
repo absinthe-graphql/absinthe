@@ -12,7 +12,7 @@ defmodule Absinthe.Type.DefinitionTest do
   end
 
   it "correctly assigns type references" do
-    assert %{reference: %{module: Fixtures, identifier: :article, name: "Article"}} = Fixtures.absinthe_types[:article]
+    assert %{reference: %{module: Fixtures, identifier: :article, name: "Article"}} = Fixtures.__absinthe_info__(:types)[:article]
   end
 
   it "defines a query only schema" do
@@ -25,7 +25,7 @@ defmodule Absinthe.Type.DefinitionTest do
     assert article_field
     assert article_field.name == "article"
     article_schema_type = Schema.lookup_type(blog_schema, article_field.type)
-    assert article_schema_type == Fixtures.absinthe_types[:article]
+    assert article_schema_type == Fixtures.__absinthe_info__(:types)[:article]
     assert article_schema_type.name == "Article"
 
     title_field = Type.Object.field(article_schema_type, :title)
@@ -140,17 +140,17 @@ defmodule Absinthe.Type.DefinitionTest do
 
   describe "enums" do
     it "can be defined by a map with defined values" do
-      type = EnumSchema.absinthe_types[:color_channel]
+      type = EnumSchema.__absinthe_info__(:types)[:color_channel]
       assert %Type.Enum{} = type
       assert %Type.Enum.Value{name: "red", value: :r} = type.values[:red]
     end
     it "can be defined by a map without defined values" do
-      type = EnumSchema.absinthe_types[:color_channel2]
+      type = EnumSchema.__absinthe_info__(:types)[:color_channel2]
       assert %Type.Enum{} = type
       assert %Type.Enum.Value{name: "red", value: :red} = type.values[:red]
     end
     it "can be defined by a shorthand list of atoms" do
-      type = EnumSchema.absinthe_types[:color_channel3]
+      type = EnumSchema.__absinthe_info__(:types)[:color_channel3]
       assert %Type.Enum{} = type
       assert %Type.Enum.Value{name: "red", value: :red} = type.values[:red]
     end

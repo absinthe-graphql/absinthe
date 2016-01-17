@@ -47,7 +47,8 @@ defmodule AbsintheTest do
 
   it "checks for required arguments" do
     query = "{ thing { name } }"
-    assert_result {:ok, %{errors: [%{message: "Field `thing': 1 required argument (`id') not provided", locations: [%{column: 0, line: 1}]},
+    assert_result {:ok, %{data: %{},
+                          errors: [%{message: "Field `thing': 1 required argument (`id') not provided", locations: [%{column: 0, line: 1}]},
                             %{message: "Argument `id' (String): Not provided", locations: [%{column: 0, line: 1}]}]}}, run(query)
 
   end
@@ -69,8 +70,9 @@ defmodule AbsintheTest do
       number(val: "AAA")
     }
     """
-    assert_result {:ok, %{errors: [%{message: "Field `number': 1 badly formed argument (`val') provided"},
-                                   %{message: "Argument `val' (Int): Invalid value provided"}]}}, run(query)
+    assert_result {:ok, %{data: %{},
+                         errors: [%{message: "Field `number': 1 badly formed argument (`val') provided"},
+                                  %{message: "Argument `val' (Int): Invalid value provided"}]}}, run(query)
   end
 
   it "returns nested objects" do
@@ -96,7 +98,8 @@ defmodule AbsintheTest do
       }
     """
     assert_result {:ok, %{data: %{"thingByContext" => %{"name" => "Bar"}}}}, run(query, context: %{thing: "bar"})
-    assert_result {:ok, %{errors: [%{message: "Field `thingByContext': No :id context provided"}]}}, run(query)
+    assert_result {:ok, %{data: %{},
+                          errors: [%{message: "Field `thingByContext': No :id context provided"}]}}, run(query)
   end
 
   it "can use variables" do
@@ -133,8 +136,9 @@ defmodule AbsintheTest do
       }
     }
     """
-    assert_result {:ok, %{errors: [%{message: "Field `updateThing': 1 badly formed argument (`thing.value') provided"},
-                            %{message: "Argument `thing.value' (Int): Invalid value provided"}]}}, run(query)
+    assert_result {:ok, %{data: %{},
+                         errors: [%{message: "Field `updateThing': 1 badly formed argument (`thing.value') provided"},
+                                  %{message: "Argument `thing.value' (Int): Invalid value provided"}]}}, run(query)
   end
 
   it "reports missing, required variable values" do

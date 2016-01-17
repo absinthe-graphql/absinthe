@@ -30,22 +30,28 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
     %{alias_or_name => ast_node}
   end
   defp flatten(%Language.InlineFragment{} = ast_node, execution) do
-    if directives_pass?(ast_node, execution) && can_apply_fragment?(ast_node, execution) do
-      flatten_fragment(ast_node, execution)
-    else
-      %{}
+    case Absinthe.Execution.Directives.check(execution, ast_node) do
+      {:skip, _} = skipping ->
+        %{}
+      {flag, exe} when flag in [:ok, :include] ->
+        if can_apply_fragment?(ast_node, exe) do
+          flatten_fragment(ast_node, exe)
+        else
+          %{}
+        end
     end
   end
   defp flatten(%Language.FragmentSpread{} = ast_node, %{fragments: fragments} = execution) do
-    if directives_pass?(ast_node, execution) do
-      fragment = fragments[ast_node.name]
-      if can_apply_fragment?(fragment, execution) do
-        flatten_fragment(fragment, execution)
-      else
+    case Absinthe.Execution.Directives.check(execution, ast_node) do
+      {:skip, _} = skipping ->
         %{}
-      end
-    else
-      %{}
+      {flag, exe} when flag in [:ok, :include] ->
+        fragment = fragments[ast_node.name]
+        if can_apply_fragment?(fragment, exe) do
+          flatten_fragment(fragment, exe)
+        else
+          %{}
+        end
     end
   end
   # For missing fragments
@@ -94,16 +100,12 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
   end
 
   defp resolve_field(ast_node, execution) do
-    if directives_pass?(ast_node, execution) do
-      Execution.Resolution.resolve(ast_node, execution)
-    else
-      {:skip, execution}
+    case Absinthe.Execution.Directives.check(execution, ast_node) do
+      {:skip, _} = skipping ->
+        skipping
+      {flag, exe} when flag in [:ok, :include] ->
+        Execution.Resolution.resolve(ast_node, exe)
     end
-  end
-
-  # TODO: Actually check directives
-  defp directives_pass?(_ast_node, _execution) do
-    true
   end
 
 end

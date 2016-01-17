@@ -37,11 +37,6 @@ defmodule Absinthe.Execution.Runner do
 
   # Remove unused `data` and `errors` entries from a result
   @spec collapse(Execution.result_t) :: Execution.result_t
-  defp collapse(%{data: data} = result) when map_size(data) == 0 do
-    result
-    |> Map.delete(:data)
-    |> collapse
-  end
   defp collapse(%{errors: []} = result) do
     result
     |> Map.delete(:errors)

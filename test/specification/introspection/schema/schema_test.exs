@@ -26,8 +26,12 @@ defmodule Absinthe.Specification.Introspection.Schema.SchemaTest do
       assert_result {:ok, %{data: %{"__schema" => %{"mutationType" => %{"name" => "RootMutationType", "kind" => "OBJECT"}}}}}, result
     end
 
-    @tag :pending
     it "can use __schema to get the directives" do
+      result = "{ __schema { directives { name args { name type { kind ofType { name kind } } } onOperation onFragment onField } } }" |> Absinthe.run(ContactSchema)
+      assert {:ok, %{data: %{"__schema" => %{"directives" => [
+                                              %{"name" => "skip", "args" => [%{"name" => "if", "type" => %{"kind" => "NON_NULL", "ofType" => %{"name" => "Boolean", "kind" => "SCALAR"}}}], "onOperation" => false, "onFragment" => true, "onField" => true},
+                                              %{"name" => "include", "args" => [%{"name" => "if", "type" => %{"kind" => "NON_NULL", "ofType" => %{"name" => "Boolean", "kind" => "SCALAR"}}}], "onOperation" => false, "onFragment" => true, "onField" => true}
+                                            ]}}}} == result
     end
 
   end

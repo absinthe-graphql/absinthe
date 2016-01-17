@@ -14,15 +14,15 @@ defmodule Absinthe.Type.TypeMapTest do
 
     it "includes the types referenced" do
       type_map = FooBarSchema.schema.types
-      assert type_map[:string] == Type.Scalar.absinthe_types[:string]
-      assert type_map[:id] == Type.Scalar.absinthe_types[:id]
-      assert type_map.by_name["String"] == Type.Scalar.absinthe_types[:string]
-      assert type_map.by_name["ID"] == Type.Scalar.absinthe_types[:id]
+      assert type_map[:string] == Type.Scalar.__absinthe_info__(:types)[:string]
+      assert type_map[:id] == Type.Scalar.__absinthe_info__(:types)[:id]
+      assert type_map.by_name["String"] == Type.Scalar.__absinthe_info__(:types)[:string]
+      assert type_map.by_name["ID"] == Type.Scalar.__absinthe_info__(:types)[:id]
     end
 
     it "includes built-in types not referenced" do
       type_map = FooBarSchema.schema.types
-      assert type_map[:boolean] == Type.Scalar.absinthe_types[:boolean]
+      assert type_map[:boolean] == Type.Scalar.__absinthe_info__(:types)[:boolean]
     end
 
     defmodule Schema do
@@ -66,7 +66,6 @@ defmodule Absinthe.Type.TypeMapTest do
 
     end
 
-    @tag :input
     it "has the type in the typemap" do
       assert Schema.schema.types.by_identifier[:phone_or_email]
     end

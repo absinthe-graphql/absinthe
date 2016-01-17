@@ -4,6 +4,7 @@ defmodule Absinthe.Introspection.Types do
 
   use Absinthe.Type.Definitions
   alias Absinthe.Flag
+  alias Absinthe.Language
   alias Absinthe.Type
 
   @absinthe :type
@@ -39,8 +40,9 @@ defmodule Absinthe.Introspection.Types do
         directives: [
           type: list_of(:__directive),
           resolve: fn
-            _, _ ->
-              {:ok, []} # TODO
+            _, %{schema: schema} ->
+              structs = schema.directives |> Map.values
+              {:ok, structs}
           end
         ]
       )
@@ -55,10 +57,35 @@ defmodule Absinthe.Introspection.Types do
       fields: fields(
         name: [type: :string],
         description: [type: :string],
-        args: [type: list_of(:__inputvalue)],
-        on_operation: [type: :boolean],
-        on_fragment: [type: :boolean],
-        on_field: [type: :boolean]
+        args: [
+          type: list_of(:__inputvalue),
+          resolve: fn
+            _, %{resolution: %{target: target}} ->
+              structs = target.args |> Map.values
+              {:ok, structs}
+          end
+        ],
+        on_operation: [
+          type: :boolean,
+          resolve: fn
+            _, %{resolution: %{target: target}} ->
+              {:ok, Enum.member?(target.on, Language.OperationDefinition)}
+          end
+        ],
+        on_fragment: [
+          type: :boolean,
+          resolve: fn
+            _, %{resolution: %{target: target}} ->
+              {:ok, Enum.member?(target.on, Language.FragmentSpread)}
+          end
+        ],
+        on_field: [
+          type: :boolean,
+          resolve: fn
+            _, %{resolution: %{target: target}} ->
+              {:ok, Enum.member?(target.on, Language.Field)}
+          end
+        ]
       )
     }
   end
