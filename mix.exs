@@ -17,7 +17,7 @@ defmodule Absinthe.Mixfile do
   end
 
   defp package do
-    [description: "An experimental GraphQL API toolkit",
+    [description: "GraphQL for Elixir",
      files: ["lib", "src", "mix.exs", "README*"],
      maintainers: ["Bruce Williams"],
      licenses: ["BSD"],
