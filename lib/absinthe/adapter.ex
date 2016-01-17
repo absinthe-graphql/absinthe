@@ -195,7 +195,7 @@ defmodule Absinthe.Adapter do
   @callback dump_results(Absinthe.Execution.result_t) :: any
 
   @typedoc "The lexical role of a name within the document/schema."
-  @type role_t :: :operation | :field | :argument | :result | :type
+  @type role_t :: :operation | :field | :argument | :result | :type | :directive
 
   @doc """
   Convert a name from an external name to an internal name.

@@ -216,6 +216,15 @@ defmodule Absinthe.Schema do
     |> Schema.Verification.setup
   end
 
+  # Lookup a directive that in used by/available to a schema
+  @doc false
+  @spec lookup_directive(t, binary) :: Type.Directive.t | nil
+  def lookup_directive(schema, name) do
+    schema.directives
+    |> Map.values
+    |> Enum.find(&(&1.name == name))
+  end
+
   # Lookup a type that in used by/available to a schema
   @doc false
   @spec lookup_type(t, Type.wrapping_t | Type.t | Type.identifier_t, Keyword.t) :: Type.t | nil

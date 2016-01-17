@@ -9,28 +9,33 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.Field do
   @spec resolve(Absinthe.Language.Field.t,
                 Absinthe.Execution.t) :: {:ok, map} | {:error, any}
   def resolve(%{name: name} = ast_node, %{strategy: :serial, resolution: %{parent_type: parent_type, target: target}} = execution) do
-    field = Type.field(parent_type, ast_node.name)
-    case field do
-      %{resolve: nil} ->
-        target |> Map.get(name |> String.to_atom) |> result(ast_node, field, execution)
-      %{resolve: resolver} ->
-        case Execution.Arguments.build(ast_node, field.args, execution) do
-          {:ok, args, exe} ->
-            resolver.(args, exe)
-            |> process_raw_result(ast_node, field, exe)
-          {:error, {missing, invalid}, exe} ->
-            exe
-            |> skip_as(:missing, missing, name, ast_node)
-            |> skip_as(:invalid, invalid, name, ast_node)
-            |> Flag.as(:skip)
-        end
-      nil ->
-        if Introspection.type?(parent_type) do
-          {:skip, execution}
-        else
-          execution
-          |> Execution.put_error(:field, ast_node.name, "Not present in schema", at: ast_node)
-          |> Flag.as(:skip)
+    case Absinthe.Execution.Directives.check(execution, ast_node) do
+      {:skip, _} = skipping ->
+        skipping
+      {flag, checked_execution} when flag in [:ok, :include] ->
+        field = Type.field(parent_type, ast_node.name)
+        case field do
+          %{resolve: nil} ->
+            target |> Map.get(name |> String.to_atom) |> result(ast_node, field, checked_execution)
+          %{resolve: resolver} ->
+            case Execution.Arguments.build(ast_node, field.args, checked_execution) do
+              {:ok, args, exe} ->
+                resolver.(args, exe)
+                |> process_raw_result(ast_node, field, exe)
+              {:error, {missing, invalid}, exe} ->
+                exe
+                |> skip_as(:missing, missing, name, ast_node)
+                |> skip_as(:invalid, invalid, name, ast_node)
+                |> Flag.as(:skip)
+            end
+          nil ->
+            if Introspection.type?(parent_type) do
+              {:skip, checked_execution}
+            else
+              checked_execution
+              |> Execution.put_error(:field, ast_node.name, "Not present in schema", at: ast_node)
+              |> Flag.as(:skip)
+            end
         end
     end
   end
