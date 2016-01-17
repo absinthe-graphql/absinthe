@@ -16,12 +16,10 @@ defmodule Absinthe.Execution.Directives do
           definition ->
             case Execution.Arguments.build(ast_directive, definition.args, execution) do
               {:ok, args, checked_execution} ->
-                case Type.Directive.check(definition, ast_node, args) do
-                  true ->
-                    {[definition.reference.identifier|results], checked_execution}
-                  false ->
-                    {results, checked_execution}
-                end
+                {
+                  [Type.Directive.check(definition, ast_node, args) | results],
+                  checked_execution
+                }
               {:error, checked_execution} ->
                 {results, checked_execution}
             end

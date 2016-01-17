@@ -6,10 +6,21 @@ defmodule Specification.TypeSystem.DirectivesTest do
 
   describe "the `@skip` directive" do
     @query_field """
-    query Test($skipPerson: Boolean!) {
+    query Test($skipPerson: Boolean) {
       person @skip(if: $skipPerson) {
         name
       }
+    }
+    """
+    @query_fragment """
+    query Test($skipAge: Boolean) {
+      person {
+        name
+        ...Aging @skip(if: $skipAge)
+      }
+    }
+    fragment Aging on Person {
+      age
     }
     """
     it "is defined" do
@@ -18,15 +29,48 @@ defmodule Specification.TypeSystem.DirectivesTest do
     it "behaves as expected for a field" do
       assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query_field, ContactSchema, variables: %{"skipPerson" => false})
       assert {:ok, %{data: %{}}} == Absinthe.run(@query_field, ContactSchema, variables: %{"skipPerson" => true})
+      assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query_field, ContactSchema)
+    end
+    @tag :frag
+    it "behaves as expected for a fragment" do
+      assert {:ok, %{data: %{"person" => %{"name" => "Bruce", "age" => 35}}}} == Absinthe.run(@query_fragment, ContactSchema, variables: %{"skipAge" => false})
+      assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query_fragment, ContactSchema, variables: %{"skipAge" => true})
+      assert {:ok, %{data: %{"person" => %{"name" => "Bruce", "age" => 35}}}} == Absinthe.run(@query_fragment, ContactSchema)
     end
   end
 
   describe "the `@include` directive" do
+    @query_field """
+    query Test($includePerson: Boolean) {
+      person @include(if: $includePerson) {
+        name
+      }
+    }
+    """
+    @query_fragment """
+    query Test($includeAge: Boolean) {
+      person {
+        name
+        ...Aging @include(if: $includeAge)
+      }
+    }
+    fragment Aging on Person {
+      age
+    }
+    """
     it "is defined" do
       assert ContactSchema.schema.directives[:include]
     end
-    @tag :pending
-    it "behaves as expected"
+    it "behaves as expected for a field" do
+      assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query_field, ContactSchema, variables: %{"includePerson" => true})
+      assert {:ok, %{data: %{}}} == Absinthe.run(@query_field, ContactSchema, variables: %{"includePerson" => false})
+      assert {:ok, %{data: %{}}} == Absinthe.run(@query_field, ContactSchema)
+    end
+    it "behaves as expected for a fragment" do
+      assert {:ok, %{data: %{"person" => %{"name" => "Bruce", "age" => 35}}}} == Absinthe.run(@query_fragment, ContactSchema, variables: %{"includeAge" => true})
+      assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query_fragment, ContactSchema, variables: %{"includeAge" => false})
+      assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query_fragment, ContactSchema)
+    end
   end
 
 end
