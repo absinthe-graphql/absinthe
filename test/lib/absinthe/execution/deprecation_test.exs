@@ -86,7 +86,6 @@ defmodule Absinthe.Execution.DeprecationTest do
                          errors: [%{message: "Argument `thing.deprecatedField' (String): Deprecated"}]}}, result
         end
 
-        @tag :focus
         it "shows a deprecation notice with a reason" do
           query = """
             mutation UpdateThing {
