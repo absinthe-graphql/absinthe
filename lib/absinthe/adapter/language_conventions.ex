@@ -32,8 +32,7 @@ defmodule Absinthe.Adapter.LanguageConventions do
           "myUser" => %{
             "firstName" => "Joe",
             "lastName" => "Black"}
-        },
-        errors: []
+        }
       }
 
   Note variables are a client-facing concern (they may be provided as
