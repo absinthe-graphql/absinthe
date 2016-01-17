@@ -34,8 +34,7 @@ idiomatic, flexible, and comfortable way possible.
 - Variables, including defaulting and `!` requirements.
 - Interface validation/resolution.
 - Named fragments and fragment spreads
-- [Introspection](../README.md#introspection) (of everything but directives,
-  currently).
+- [Introspection](../README.md#introspection)
 - Errors with source line numbers. (Someday, column numbers; the Leex lexer
   doesn't support them yet.)
 - An flexible adapter mechanism to translate between different naming
@@ -47,7 +46,6 @@ idiomatic, flexible, and comfortable way possible.
 Support for:
 
 - Inline fragments
-- Directives
 
 ### Alternatives
 
@@ -370,10 +368,6 @@ Getting the name of the fields for a named type:
 (Note that you may have to nest several depths of `type`/`ofType`, as
 type information includes any wrapping layers of [List](https://facebook.github.io/graphql/#sec-List)
 and/or [NonNull](https://facebook.github.io/graphql/#sec-Non-null).)
-
-### Limitations
-
-- Directives cannot currently be introspected.
 
 ## Adapters
 
