@@ -105,6 +105,12 @@ defmodule Specification.TypeSystem.Types.InterfacesTest do
                                 errors: [%{message: "Field `age': Not present in schema"}]}}, result
         end
 
+        it "can select fields from an implementing type with 'on'" do
+          result = """
+          { contact { entity { name ... on Person { age } } } }
+          """ |> Absinthe.run(ContactSchema)
+          assert_result {:ok, %{data: %{"contact" => %{"entity" => %{"name" => "Bruce", "age" => 35}}}}}, result
+        end
 
       end
 

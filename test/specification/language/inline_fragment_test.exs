@@ -32,10 +32,9 @@ defmodule Absinthe.Specificiation.Language.InlineFragmentTest do
   }
   """
 
-  @tag :inline
   it "adds fields in an interface query" do
     assert {:ok, %{data: %{"contact" => %{"entity" => %{"name" => "Bruce", "age" => 35}}}}} == Absinthe.run(@query, ContactSchema, variables: %{business: false})
-    assert {:ok, %{data: %{"contact" => %{"entity" => %{"name" => "Someplace", "employee_count" => 11}}}}} == Absinthe.run(@query, ContactSchema, variables: %{business: true})
+    assert {:ok, %{data: %{"contact" => %{"entity" => %{"name" => "Someplace", "employeeCount" => 11}}}}} == Absinthe.run(@query, ContactSchema, variables: %{business: true})
   end
 
 end

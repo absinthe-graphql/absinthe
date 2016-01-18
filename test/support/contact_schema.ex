@@ -7,7 +7,7 @@ defmodule ContactSchema do
     %{name: "Joe", age: 21},
     %{name: "Jill", age: 43}
   ]
-  @business %{"name" => "Someplace", "employee_count" => 11}
+  @business %{name: "Someplace", employee_count: 11}
 
   def query do
     %Type.Object{
