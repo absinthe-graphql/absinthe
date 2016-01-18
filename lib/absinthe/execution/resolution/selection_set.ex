@@ -26,6 +26,7 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
             end)
         end
     end)
+    |> IO.inspect
     |> Enum.reduce({%{}, execution}, fn ({field_parent_type, fields}, type_acc) ->
       Enum.reduce(fields, type_acc, fn
         {name, ast_node}, {acc, exe}  ->
@@ -91,13 +92,21 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
   @spec type_for_fragment(Language.FragmentSpread.t | Language.InlineFragment.t, Execution.t) :: Type.t | nil
   defp type_for_fragment(%{type_condition: type_condition}, %{resolution: %{type: type, target: target}, schema: schema} = execution) do
     this_type = Schema.lookup_type(schema, type)
-    condition_type = Schema.lookup_type(schema, type_condition.name)
+    condition_type = if type_condition, do: Schema.lookup_type(schema, type_condition.name)
     case this_type do
       %{__struct__: type_name} when type_name in [Type.Union, Type.Interface] ->
         resolved = type_name.resolve_type(this_type, target, execution)
-        if resolved == condition_type, do: resolved
+        if condition_type do
+          if resolved == condition_type, do: resolved
+        else
+          resolved
+        end
       _ ->
-        if this_type == condition_type, do: this_type
+        if condition_type do
+          if this_type == condition_type, do: this_type
+        else
+          this_type
+        end
     end
   end
 
