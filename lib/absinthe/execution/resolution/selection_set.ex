@@ -19,7 +19,7 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
               _, val1, val2 ->
                 Map.merge(val1, val2)
             end)
-          {concrete_parent_type, result} = all ->
+          {concrete_parent_type, result} ->
             Map.merge(acc, %{concrete_parent_type => result}, fn
               _, val1, val2 ->
                 Map.merge(val1, val2)
@@ -49,18 +49,18 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
 
   defp flatten(%Language.FragmentSpread{} = ast_node, execution) do
     case Absinthe.Execution.Directives.check(execution, ast_node) do
-      {:skip, _} = skipping ->
+      {:skip, _} ->
         %{}
       {flag, exe} when flag in [:ok, :include] ->
-        execution.fragments[ast_node.name]
+        exe.fragments[ast_node.name]
         |> flatten_fragment(execution)
     end
   end
   defp flatten(%Language.InlineFragment{} = ast_node, execution) do
     case Absinthe.Execution.Directives.check(execution, ast_node) do
-      {:skip, _} = skipping ->
+      {:skip, _} ->
         %{}
-      {flag, exe} when flag in [:ok, :include] ->
+      {flag, _exe} when flag in [:ok, :include] ->
         flatten_fragment(ast_node, execution)
     end
   end
@@ -88,14 +88,15 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
     end)
   end
 
-  defp type_for_fragment(%{type_condition: type_condition} = frag, %{resolution: %{type: type, target: target}, schema: schema} = execution) do
+  @spec type_for_fragment(Language.FragmentSpread.t | Language.InlineFragment.t, Execution.t) :: Type.t | nil
+  defp type_for_fragment(%{type_condition: type_condition}, %{resolution: %{type: type, target: target}, schema: schema} = execution) do
     this_type = Schema.lookup_type(schema, type)
     condition_type = Schema.lookup_type(schema, type_condition.name)
     case this_type do
       %{__struct__: type_name} when type_name in [Type.Union, Type.Interface] ->
         resolved = type_name.resolve_type(this_type, target, execution)
         if resolved == condition_type, do: resolved
-      other ->
+      _ ->
         if this_type == condition_type, do: this_type
     end
   end

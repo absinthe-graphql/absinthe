@@ -5,20 +5,25 @@ A [GraphQL](https://facebook.github.io/graphql/) implementation for Elixir.
 [![Build Status](https://secure.travis-ci.org/CargoSense/absinthe.svg?branch=master
 "Build Status")](https://travis-ci.org/CargoSense/absinthe)
 
-Please note that this is a young project and that portions of the specification
-aren't fully implemented yet.
-
-That said, we are using Absinthe in production, and we'd love your input
-and support to make it better.
-
-For more information on status, see [Specification Implementation](./README.md#specification-implementation), below.
-
 ## Goal
 
 Absinthe's goal is full implementation of the specification--in as
 idiomatic, flexible, and comfortable way possible.
 
-### Working Features
+Absinthe is currently targeting the
+[GraphQL Working Draft](https://facebook.github.io/graphql), dated October 2015.
+
+## Status
+
+All major language and type features are implemented. Any divergence from the
+specification should be reported and can be tracked on the
+[issue tracker](https://github.com/CargoSense/absinthe/issues).
+
+Note that validation is currently done during execution, rather than as a
+separate preliminary phase. This will be refactored at a later date and should
+have minimal impact on the API.
+
+## Special Features
 
 - A clean, conventional, module-based approach to building schemas.
 - Full support for extending types, including scalars.
@@ -26,28 +31,18 @@ idiomatic, flexible, and comfortable way possible.
 - Argument, input object field, and enum value deprecation.
   (See [Deprecation](./README.md#deprecation),
   below.)
-- Basic query document execution and argument/field validation. (Note Validation
-  is currently done during Execution, rather than as a separate phase. This will be
-  [changed soon](https://github.com/CargoSense/absinthe/issues/17), even if this
-  doesn't appreciably affect the functionality of APIs written with Absinthe.)
 - Support for Plug, via [absinthe_plug](http://hex.pm/projects/absinthe_plug).
-- Variables, including defaulting and `!` requirements.
-- Interface validation/resolution.
-- Named fragments and fragment spreads
-- [Introspection](../README.md#introspection)
-- Errors with source line numbers. (Someday, column numbers; the Leex lexer
-  doesn't support them yet.)
-- An flexible adapter mechanism to translate between different naming
+- [Introspection](../README.md#introspection), compatible with GraphiQL.
+- A flexible adapter mechanism to translate between different naming
   conventions (eg, `snake_case` and `camelCase`) in schema vs the client.
   (See [Adapters](./README.md#adapters), below.)
 
-### Notably Missing
+## Limitations
 
-Support for:
+Due to a limitation by Leex, the lexer, source column numbers are not
+currently supported in errors.
 
-- Inline fragments
-
-### Alternatives
+## Alternatives
 
 You may also want to look at building from or using one of the following
 alternatives.
@@ -76,14 +71,19 @@ end
 
 Note: Absinthe requires Elixir 1.2-dev or higher.
 
+## Upgrading
+
+See [CHANGELOG](./CHANGELOG.md) for upgrade steps between versions.
+
 ## Learning GraphQL
 
 For a grounding in GraphQL, I recommend you read through the following articles:
 
 * The [GraphQL Introduction](https://facebook.github.io/react/blog/2015/05/01/graphql-introduction.html) and [GraphQL: A data query language](https://code.facebook.com/posts/1691455094417024/graphql-a-data-query-language/) posts from Facebook.
 * The [Your First GraphQL Server](https://medium.com/@clayallsopp/your-first-graphql-server-3c766ab4f0a2#.m78ybemas) Medium post by Clay Allsopp. (Note this uses the [JavaScript GraphQL reference implementation](https://github.com/graphql/graphql-js).)
+* [Learn GraphQL](https://learngraphql.com) by Kadira.
 * Other blog posts that pop up. GraphQL is young!
-* For the ambitious, the draft [GraphQL Specification](https://facebook.github.io/graphql/).
+* For the studious, the draft [GraphQL Specification](https://facebook.github.io/graphql/).
 
 You may also be interested in how GraphQL is used by [Relay](https://facebook.github.io/relay/), a "JavaScript frameword for building data-driven React applications."
 
@@ -104,7 +104,6 @@ for more detailed information as you look this over.)
 defmodule MyApp.Schema do
 
   use Absinthe.Schema
-
   alias Absinthe.Type
 
   # Example data
@@ -413,26 +412,6 @@ adapter.
 
 ## Specification Implementation
 
-Absinthe is currently targeting the [GraphQL Working Draft](https://facebook.github.io/graphql), dated October 2015.
-
-Here's the basic status, using the following scale:
-
-* *Missing*: Sorry, nothing done yet!
-* *Partial*: Some work done. May be used in a limited, experimental fashion, but
-  some basic features may be missing.
-* *Functional*: Functional for most uses, but more advanced features may be
-  missing, and only loosely adheres to [parts of] the specification.
-* *Complete*: Work completed. Please report any mismatches against the
-  specification.
-
-| Section       | Implementation | Reference                                                                                 |
-| ------------: | :------------- | :---------------------------------------------------------------------------------------- |
-| Language      | Functional     | [GraphQL Specification, Section 2](https://facebook.github.io/graphql/#sec-Language)      |
-| Type System   | Functional     | [GraphQL Specification, Section 3](https://facebook.github.io/graphql/#sec-Type-System)   |
-| Introspection | Functional     | [GraphQL Specification, Section 4](https://facebook.github.io/graphql/#sec-Introspection) |
-| Validation    | Functional     | [GraphQL Specification, Section 5](https://facebook.github.io/graphql/#sec-Validation)    |
-| Execution     | Functional     | [GraphQL Specification, Section 6](https://facebook.github.io/graphql/#sec-Execution)     |
-| Response      | Functional     | [GraphQL Specification, Section 7](https://facebook.github.io/graphql/#sec-Response)      |
 
 ### Roadmap & Contributions
 

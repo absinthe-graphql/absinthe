@@ -201,8 +201,4 @@ defmodule Absinthe.Type do
     |> Map.get(name |> String.to_atom)
   end
 
-  def field(abstract_type, name, target) do
-
-  end
-
 end

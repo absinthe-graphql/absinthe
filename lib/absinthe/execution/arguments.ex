@@ -12,7 +12,7 @@ defmodule Absinthe.Execution.Arguments do
   # Build an arguments map from the argument definitions in the schema, using the
   # argument values from the query document.
   @doc false
-  @spec build(Language.Field.t, %{atom => Type.Argument.t}, Execution.t) :: {:ok, {%{atom => any}, Execution.t}} | {:error, {[binary], [binary]}, Execution.t}
+  @spec build(Language.t | Language.t, %{atom => Type.Argument.t}, Execution.t) :: {:ok, {%{atom => any}, Execution.t}} | {:error, {[binary], [binary]}, Execution.t}
   def build(ast_field, schema_arguments, execution) do
     initial = {%{}, {[], []}, execution}
     {values, {missing, invalid}, post_execution} = schema_arguments
@@ -25,7 +25,7 @@ defmodule Absinthe.Execution.Arguments do
   end
 
   # Parse the argument value from the query document field
-  @spec add_argument({atom, Type.Argument.t}, Language.Field.t, {map, {[binary], [binary]}, Execution.t}) :: {map, {[binary], [binary]}, Execution.t}
+  @spec add_argument({atom, Type.Argument.t}, Language.t, {map, {[binary], [binary]}, Execution.t}) :: {map, {[binary], [binary]}, Execution.t}
   defp add_argument({name, definition}, ast_field, acc) do
     ast_field
     |> lookup_argument(name)
@@ -33,7 +33,7 @@ defmodule Absinthe.Execution.Arguments do
   end
 
   # No argument found in the query document field
-  @spec do_add_argument(Language.Argument.t | nil, Type.Argument.t, Language.Field.t, {map, {[binary], [binary]}, Execution.t}) :: {map, {[binary], [binary]}, Execution.t}
+  @spec do_add_argument(Language.Argument.t | nil, Type.Argument.t, Language.t, {map, {[binary], [binary]}, Execution.t}) :: {map, {[binary], [binary]}, Execution.t}
   defp do_add_argument(nil, definition, ast_field, {values, {missing, invalid}, execution} = acc) do
     cond do
       Validation.RequiredInput.required?(definition) ->
@@ -196,7 +196,7 @@ defmodule Absinthe.Execution.Arguments do
   end
 
   # Add errors for any additional arguments not present in the schema
-  @spec report_extra_arguments(Language.Field.t, [binary], Execution.t) :: Execution.t
+  @spec report_extra_arguments(Language.t, [binary], Execution.t) :: Execution.t
   defp report_extra_arguments(ast_field, schema_argument_names, execution) do
     ast_field.arguments
     |> Enum.reduce(execution, fn ast_arg, acc ->
@@ -209,7 +209,7 @@ defmodule Absinthe.Execution.Arguments do
     end)
   end
 
-  @spec lookup_argument(Language.Field.t, atom) :: Language.Argument.t | nil
+  @spec lookup_argument(Language.t, atom) :: Language.Argument.t | nil
   defp lookup_argument(ast_field, name) do
     argument_name = name |> to_string
     ast_field.arguments
