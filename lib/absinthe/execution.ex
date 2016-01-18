@@ -104,30 +104,6 @@ defmodule Absinthe.Execution do
     %{message: message, locations: [%{line: line, column: @default_column_number}]}
   end
 
-  @doc false
-  @spec resolve_type(t, t, t) :: t | nil
-  def resolve_type(target, nil = _child_type, %Type.Union{} = parent_type) do
-    parent_type
-    |> Type.Union.resolve_type(target)
-  end
-  def resolve_type(_target, nil = _child_type, _parent_type) do
-    nil
-  end
-  def resolve_type(_target, %Type.Union{} = child_type, parent_type) do
-    child_type |> Type.Union.member?(parent_type) || nil
-  end
-  def resolve_type(target, %Type.Interface{} = _child_type, _parent_type) do
-    target
-    |> Type.Interface.resolve_type
-  end
-  def resolve_type(_target, child_type, parent_type) do
-    if child_type.name == parent_type.name do
-      parent_type
-    else
-      nil
-    end
-  end
-
   # Stringify keys in an arbitrarily deep structure with maps
   @doc false
   @spec stringify_keys(any) :: any

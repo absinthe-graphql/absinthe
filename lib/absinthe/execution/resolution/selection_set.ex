@@ -4,22 +4,39 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
   alias Absinthe.Execution.Resolution
   alias Absinthe.Language
   alias Absinthe.Schema
+  alias Absinthe.Type
 
   @spec resolve(Language.SelectionSet.t,
                 Execution.t) :: {:ok, map} | {:error, any}
   def resolve(%{selections: selections}, %{resolution: %{type: type, target: target}, strategy: :serial} = execution) do
     parent_type = Schema.lookup_type(execution.schema, type)
     {result, execution_to_return} = selections
-    |> Enum.map(&(flatten(&1, execution)))
-    |> Enum.reduce(&Map.merge/2)
-    |> Enum.reduce({%{}, execution}, fn ({name, ast_node}, {acc, exe}) ->
-      field_resolution = %Resolution{parent_type: parent_type, target: target}
-      case resolve_field(ast_node, %{exe | resolution: field_resolution}) do
-        {:ok, value, changed_execution} ->
-          {acc |> Map.put(name, value), changed_execution}
-        {:skip, changed_execution} ->
-          {acc, changed_execution}
-      end
+    |> Enum.reduce(%{}, fn
+      selection, acc ->
+        case flatten(selection, execution) do
+          %{} = result ->
+            Map.merge(acc, %{parent_type => result}, fn
+              _, val1, val2 ->
+                Map.merge(val1, val2)
+            end)
+          {concrete_parent_type, result} = all ->
+            Map.merge(acc, %{concrete_parent_type => result}, fn
+              _, val1, val2 ->
+                Map.merge(val1, val2)
+            end)
+        end
+    end)
+    |> Enum.reduce({%{}, execution}, fn ({field_parent_type, fields}, type_acc) ->
+      Enum.reduce(fields, type_acc, fn
+        {name, ast_node}, {acc, exe}  ->
+          field_resolution = %Resolution{parent_type: field_parent_type, target: target}
+          case resolve_field(ast_node, %{exe | resolution: field_resolution}) do
+            {:ok, value, changed_execution} ->
+              {acc |> Map.put(name, value), changed_execution}
+            {:skip, changed_execution} ->
+              {acc, changed_execution}
+          end
+      end)
     end)
     {:ok, result, execution_to_return}
   end
@@ -29,37 +46,39 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
     alias_or_name = alias || name
     %{alias_or_name => ast_node}
   end
+
+  defp flatten(%Language.FragmentSpread{} = ast_node, execution) do
+    case Absinthe.Execution.Directives.check(execution, ast_node) do
+      {:skip, _} = skipping ->
+        %{}
+      {flag, exe} when flag in [:ok, :include] ->
+        execution.fragments[ast_node.name]
+        |> flatten_fragment(execution)
+    end
+  end
   defp flatten(%Language.InlineFragment{} = ast_node, execution) do
     case Absinthe.Execution.Directives.check(execution, ast_node) do
       {:skip, _} = skipping ->
         %{}
       {flag, exe} when flag in [:ok, :include] ->
-        if can_apply_fragment?(ast_node, exe) do
-          flatten_fragment(ast_node, exe)
-        else
-          %{}
-        end
+        flatten_fragment(ast_node, execution)
     end
   end
-  defp flatten(%Language.FragmentSpread{} = ast_node, %{fragments: fragments} = execution) do
-    case Absinthe.Execution.Directives.check(execution, ast_node) do
-      {:skip, _} = skipping ->
-        %{}
-      {flag, exe} when flag in [:ok, :include] ->
-        fragment = fragments[ast_node.name]
-        if can_apply_fragment?(fragment, exe) do
-          flatten_fragment(fragment, exe)
-        else
-          %{}
-        end
-    end
-  end
+
   # For missing fragments
   defp flatten(nil = _ast_node, _execution) do
     %{}
   end
 
   defp flatten_fragment(fragment, execution) do
+    case type_for_fragment(fragment, execution) do
+      nil ->
+        %{}
+      type ->
+        {type, do_flatten_fragment(fragment, execution)}
+    end
+  end
+  defp do_flatten_fragment(fragment, execution) do
     fragment.selection_set.selections
     |> Enum.reduce(%{}, fn (selection, acc) ->
       flatten(selection, execution)
@@ -69,10 +88,16 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
     end)
   end
 
-  defp can_apply_fragment?(%{type_condition: type_condition}, %{resolution: %{type: type}, schema: schema}) do
+  defp type_for_fragment(%{type_condition: type_condition} = frag, %{resolution: %{type: type, target: target}, schema: schema} = execution) do
     this_type = Schema.lookup_type(schema, type)
-    child_type = Schema.lookup_type(schema, type_condition)
-    Execution.resolve_type(nil, child_type, this_type)
+    condition_type = Schema.lookup_type(schema, type_condition.name)
+    case this_type do
+      %{__struct__: type_name} when type_name in [Type.Union, Type.Interface] ->
+        resolved = type_name.resolve_type(this_type, target, execution)
+        if resolved == condition_type, do: resolved
+      other ->
+        if this_type == condition_type, do: this_type
+    end
   end
 
   @spec merge_into_result(map, Language.t, Execution.t) :: map

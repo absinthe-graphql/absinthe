@@ -238,6 +238,8 @@ defmodule Absinthe.Schema do
         end
       is_atom(type) ->
         schema.types[type]
+      is_binary(type) ->
+        schema.types.by_name[type]
       true ->
         type
     end

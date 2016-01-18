@@ -7,6 +7,7 @@ defmodule ContactSchema do
     %{name: "Joe", age: 21},
     %{name: "Jill", age: 43}
   ]
+  @business %{name: "Someplace", employee_count: 11}
 
   def query do
     %Type.Object{
@@ -21,9 +22,14 @@ defmodule ContactSchema do
         ],
         contact: [
           type: :contact,
+          args: args(
+            business: [type: :boolean, default_value: false]
+          ),
           resolve: fn
-            _, _ ->
+            %{business: false}, _ ->
               {:ok, %{entity: @bruce}}
+            %{business: true}, _ ->
+              {:ok, %{entity: @business}}
           end
         ],
         first_search_result: [
