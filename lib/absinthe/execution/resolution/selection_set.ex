@@ -4,6 +4,7 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
   alias Absinthe.Execution.Resolution
   alias Absinthe.Language
   alias Absinthe.Schema
+  alias Absinthe.Type
 
   @spec resolve(Language.SelectionSet.t,
                 Execution.t) :: {:ok, map} | {:error, any}
@@ -67,12 +68,18 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
         merge_into_result(acc_for_selection, selection, execution)
       end)
     end)
-  end
+  end -
 
-  defp can_apply_fragment?(%{type_condition: type_condition}, %{resolution: %{type: type}, schema: schema}) do
+  defp can_apply_fragment?(%{type_condition: type_condition} = frag, %{resolution: %{type: type, target: target}, schema: schema} = execution) do
     this_type = Schema.lookup_type(schema, type)
-    child_type = Schema.lookup_type(schema, type_condition)
-    Execution.resolve_type(nil, child_type, this_type)
+    condition_type = Schema.lookup_type(schema, type_condition.name)
+    case this_type do
+      %{__struct__: type_name} when type_name in [Type.Union, Type.Interface] ->
+        resolved = type_name.resolve_type(this_type, target, execution)
+        resolved == condition_type
+      other ->
+        this_type == condition_type
+    end
   end
 
   @spec merge_into_result(map, Language.t, Execution.t) :: map
