@@ -48,10 +48,14 @@ defmodule Absinthe.Schema.TypeMap do
         all = result |> add_from_interfaces(types_available)
         by_name = for {_, type} <- all, into: %{}, do: {type.name, type}
         %{schema | types: struct(TypeMap, by_identifier: all, by_name: by_name)}
+        |> check_duplicates
       other ->
         other
     end
   end
+
+  @spec check_duplicates(Schema.t) :: Schema.t
+  # TODO: Check for duplicates, add errors
 
   @spec collect_types(Traversal.Node.t, Traversal.t, acc_t) :: Traversal.instruction_t
   defp collect_types(%{type: possibly_wrapped_type}, traversal, {avail, collect, errors} = acc) do

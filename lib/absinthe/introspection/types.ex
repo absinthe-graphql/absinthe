@@ -19,7 +19,6 @@ defmodule Absinthe.Introspection.Types do
             _, %{schema: schema} ->
               schema.types.by_identifier
               |> Map.values
-              |> Enum.filter(&(!match?("__" <> _, &1.name)))
               |> Flag.as(:ok)
           end
         ],
