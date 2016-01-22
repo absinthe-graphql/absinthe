@@ -73,7 +73,7 @@ defmodule Specification.TypeSystem.DirectivesTest do
     end
   end
 
-  describe "with anonymous inline fragments" do
+  describe "for inline fragments without type conditions" do
 
     @query """
     query Q($skipAge: Boolean = false) {
@@ -93,5 +93,27 @@ defmodule Specification.TypeSystem.DirectivesTest do
     end
 
   end
+
+  describe "for inline fragments with type conditions" do
+
+    @query """
+    query Q($skipAge: Boolean = false) {
+      person {
+        name
+        ... on Person @skip(if: $skipAge) {
+          age
+        }
+      }
+    }
+    """
+
+    it "works as expected" do
+      assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query, ContactSchema, variables: %{"skipAge" => true})
+      assert {:ok, %{data: %{"person" => %{"name" => "Bruce", "age" => 35}}}} == Absinthe.run(@query, ContactSchema, variables: %{"skipAge" => false})
+      assert {:ok, %{data: %{"person" => %{"name" => "Bruce", "age" => 35}}}} == Absinthe.run(@query, ContactSchema)
+    end
+
+  end
+
 
 end
