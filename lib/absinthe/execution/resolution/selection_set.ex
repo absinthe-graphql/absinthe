@@ -26,7 +26,6 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
             end)
         end
     end)
-    |> IO.inspect
     |> Enum.reduce({%{}, execution}, fn ({field_parent_type, fields}, type_acc) ->
       Enum.reduce(fields, type_acc, fn
         {name, ast_node}, {acc, exe}  ->

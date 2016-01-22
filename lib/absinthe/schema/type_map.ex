@@ -89,16 +89,6 @@ defmodule Absinthe.Schema.TypeMap do
     {:ok, acc, traversal}
   end
 
-  # Gracefully attempt to get the absinthe types
-  # on a given type module
-  defp absinthe_types(mod) do
-    try do
-      mod.__absinthe_info__(:types)
-    rescue
-      UndefinedFunctionError -> %{}
-    end
-  end
-
   # Extract a mapping of all the types in a set of modules
   @spec types_from_modules([atom]) :: ident_map_t
   defp types_from_modules(modules) do

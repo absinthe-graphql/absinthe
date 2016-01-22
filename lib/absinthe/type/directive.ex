@@ -36,7 +36,7 @@ defmodule Absinthe.Type.Directive do
       args: args(
         if: [type: non_null(:boolean), description: "Included when true."]
       ),
-      on: [Language.FragmentSpread, Language.Field],
+      on: [Language.FragmentSpread, Language.Field, Language.InlineFragment],
       instruction: fn
         %{if: true} ->
           :include
@@ -53,7 +53,7 @@ defmodule Absinthe.Type.Directive do
       args: args(
         if: [type: non_null(:boolean), description: "Skipped when true."]
       ),
-      on: [Language.FragmentSpread, Language.Field],
+      on: [Language.FragmentSpread, Language.Field, Language.InlineFragment],
       instruction: fn
         %{if: true} ->
           :skip
