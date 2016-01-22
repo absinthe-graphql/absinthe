@@ -76,6 +76,7 @@ FragmentSpread -> '...' FragmentName Directives : build_ast_node('FragmentSpread
 
 InlineFragment -> '...' 'on' TypeCondition SelectionSet : build_ast_node('InlineFragment', #{'type_condition' => '$3', 'selection_set' => '$4'}, #{'start_line' => extract_line('$1')}).
 InlineFragment -> '...' 'on' TypeCondition Directives SelectionSet : build_ast_node('InlineFragment', #{'type_condition' => '$3', 'directives' => '$4', 'selection_set' => '$5'}, #{'start_line' => extract_line('$1')}).
+InlineFragment -> '...' Directives SelectionSet : build_ast_node('InlineFragment', #{'directives' => '$2', 'selection_set' => '$3'}, #{'start_line' => extract_line('$1')}).
 
 FragmentName -> NameWithoutOn : extract_binary('$1').
 
