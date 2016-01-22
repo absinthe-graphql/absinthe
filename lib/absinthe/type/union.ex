@@ -22,12 +22,13 @@ defmodule Absinthe.Type.Union do
   end
 
   @spec resolve_type(t, any, Execution.t) :: Type.t | nil
-  def resolve_type(%{resolve_type: nil, types: types}, obj, _exe) do
+  def resolve_type(%{resolve_type: nil, types: types}, obj, %{schema: schema}) do
     Enum.find(types, fn
       %{is_type_of: nil} ->
         false
       type ->
-        type.is_type_of.(obj)
+        type_struct = schema.types[type]
+        type_struct.is_type_of.(obj)
     end)
   end
   def resolve_type(%{resolve_type: resolver}, obj, %{schema: schema} = exe) do
