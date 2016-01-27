@@ -20,6 +20,13 @@ defmodule Absinthe.Introspection.Field do
             type ->
               {:ok, type.name}
           end
+        _, %{resolution: %{target: target, parent_type: %Type.Union{} = union}} = exe ->
+          case Type.Union.resolve_type(union, target, exe) do
+            nil ->
+              {:error, "Could not resolve type of concrete " <> union.name}
+            type ->
+              {:ok, type.name}
+          end
       end
     }
   end

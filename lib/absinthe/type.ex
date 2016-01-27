@@ -196,9 +196,11 @@ defmodule Absinthe.Type do
   def field(_type, "__" <> meta_name) do
     Introspection.Field.meta(meta_name)
   end
-  def field(type, name) do
-    type.fields
+  def field(%{fields: fields}, name) do
+    fields
     |> Map.get(name |> String.to_atom)
   end
-
+  def field(_, _name) do
+    nil
+  end
 end

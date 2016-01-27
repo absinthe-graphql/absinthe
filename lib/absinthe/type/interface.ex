@@ -11,8 +11,8 @@ defmodule Absinthe.Type.Interface do
   it guarantees that it defines the same fields and arguments that the
   interface does.
 
-  Because sometimes it's necessary for the interface to determine the
-  implementing type of a resolved object, you must either:
+  Because sometimes it's for the interface to determine the implementing type of
+  a resolved object, you must either:
 
   * Provide a `:resolve_type` function on the interface
   * Provide a `:is_type_of` function on each implementing type

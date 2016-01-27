@@ -135,7 +135,11 @@ defmodule ContactSchema do
   def search_result do
     %Type.Union{
       description: "A search result",
-      types: [:business, :person]
+      types: [:business, :person],
+      resolve_type: fn
+        %{age: _}, _ -> :person
+        %{employee_count: _}, _ -> :business
+      end
     }
   end
 
