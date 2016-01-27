@@ -10,7 +10,7 @@ defmodule Absinthe.Introspection.Types do
   @absinthe :type
   def __schema do
     %Type.Object{
-      name: "__Type",
+      name: "__Schema",
       description: "Represents a schema",
       fields: fields(
         types: [
