@@ -36,26 +36,31 @@ defmodule Absinthe.Schema.TypeMap do
   @spec setup(Schema.t) :: Schema.t
   def setup(%{type_modules: extra_modules} = schema_without_types) do
     type_modules = @builtin_type_modules ++ extra_modules
-    types_available = type_modules |> types_from_modules
-    initial_collected = @builtin_type_modules |> types_from_modules
-    schema = %{schema_without_types |
-               types: %TypeMap{by_identifier: initial_collected},
-               directives: type_modules |> directives_from_modules}
-    case Traversal.reduce(schema, schema, {types_available, initial_collected, []}, &collect_types/3) do
-      {_, _, errors} when length(errors) > 0 ->
-        %{schema | errors: schema.errors ++ errors}
-      {_, result, _} ->
-        all = result |> add_from_interfaces(types_available)
-        by_name = for {_, type} <- all, into: %{}, do: {type.name, type}
-        %{schema | types: struct(TypeMap, by_identifier: all, by_name: by_name)}
-        |> check_duplicates
+    with {:ok, types_available} <- types_from_modules(type_modules),
+         {:ok, initial_collected} <- types_from_modules(@builtin_type_modules) do
+      schema = %{schema_without_types |
+                 types: %TypeMap{by_identifier: initial_collected},
+                 directives: type_modules |> directives_from_modules}
+      case Traversal.reduce(schema, schema, {types_available, initial_collected, []}, &collect_types/3) do
+        {_, _, errors} when length(errors) > 0 ->
+          %{schema | errors: schema.errors ++ errors}
+        {_, result, _} ->
+          all = result |> add_from_interfaces(types_available)
+          by_name = for {_, type} <- all, into: %{}, do: {type.name, type}
+          %{schema | types: struct(TypeMap, by_identifier: all, by_name: by_name)}
+        other ->
+          other
+      end
+    end
+    |> case do
+      {:error, err} ->
+         %{schema_without_types |
+           types: struct(TypeMap, by_identifier: %{}, by_name: %{}),
+           errors: schema_without_types.errors ++ [err]}
       other ->
         other
     end
   end
-
-  @spec check_duplicates(Schema.t) :: Schema.t
-  # TODO: Check for duplicates, add errors
 
   @spec collect_types(Traversal.Node.t, Traversal.t, acc_t) :: Traversal.instruction_t
   defp collect_types(%{type: possibly_wrapped_type}, traversal, {avail, collect, errors} = acc) do
@@ -94,14 +99,59 @@ defmodule Absinthe.Schema.TypeMap do
   end
 
   # Extract a mapping of all the types in a set of modules
-  @spec types_from_modules([atom]) :: ident_map_t
+  @spec types_from_modules([atom]) :: {:ok, ident_map_t} | {:error, binary}
   defp types_from_modules(modules) do
-    modules
-    |> Enum.map(&(&1.__absinthe_info__(:types)))
+    mod_types = for mod <- modules, into: %{}, do: {mod, mod.__absinthe_info__(:types)}
+    with :ok <- check_collision(mod_types) do
+      result = mod_types
+      |> Map.values
+      |> Enum.reduce(%{}, &Map.merge(&1, &2))
+      {:ok, result}
+    end
+  end
+
+  # Get a list of the possible n-length combinations of members of a list
+  @spec combination(integer, [any]) :: [list]
+  defp combination(0, _), do: [[]]
+  defp combination(_, []), do: []
+  defp combination(n, [x|xs]) do
+    (for y <- combination(n - 1, xs), do: [x|y]) ++ combination(n, xs)
+  end
+
+  @spec check_collision(%{atom => %{atom => Absinthe.Type.t}}) :: :ok | {:error, %{atom => [atom]}}
+  defp check_collision(mod_types) do
+    combos = combination(2, mod_types |> Map.keys)
+    with :ok <- do_check_collision(combos, "Type name collisions were found for the following types, in the associated type modules", &(mod_types[&1] |> Map.values |> Enum.map(fn t -> t.name end))),
+         :ok <- do_check_collision(combos, "Type ident collisions were found for the following types, in the associated type modules", &(mod_types[&1] |> Map.keys)) do
+      :ok
+    end
+  end
+
+  # Check collision of items relating to pairs of type modules
+  @spec do_check_collision([list], binary, ((atom) -> [any])) :: :ok | {:error, binary}
+  defp do_check_collision(pairs, error_message, extractor) do
+    pairs
     |> Enum.reduce(%{}, fn
-      mapping, acc ->
-        acc |> Map.merge(mapping)
+      [mod1, mod2], acc ->
+        items1 = extractor.(mod1) |> MapSet.new
+        items2 = extractor.(mod2) |> MapSet.new
+        case MapSet.intersection(items1, items2) |> MapSet.to_list do
+          [] ->
+            acc
+          collision ->
+            collision
+            |> Enum.reduce(acc, fn
+              item, item_acc ->
+                Map.put(item_acc, item, [{mod1, mod2} | Map.get(item_acc, item, [])])
+            end)
+        end
     end)
+    |> case do
+      %{} = a when map_size(a) == 0 ->
+        :ok
+      other ->
+        {:error, error_message <> ": #{inspect other}"}
+    end
   end
 
   # Extract a mapping of all the defined directives in a set of modules

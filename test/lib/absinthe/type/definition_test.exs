@@ -6,13 +6,13 @@ defmodule Absinthe.Type.DefinitionTest do
   alias Absinthe.Type
 
   defmodule QuerySchema do
-    use Absinthe.Schema, type_modules: [Fixtures]
+    use Absinthe.Schema, type_modules: [Fixtures.Types]
 
     def query, do: Fixtures.query
   end
 
   it "correctly assigns type references" do
-    assert %{reference: %{module: Fixtures, identifier: :article, name: "Article"}} = Fixtures.__absinthe_info__(:types)[:article]
+    assert %{reference: %{module: Fixtures.Types, identifier: :article, name: "Article"}} = Fixtures.Types.__absinthe_info__(:types)[:article]
   end
 
   it "defines a query only schema" do
@@ -21,11 +21,13 @@ defmodule Absinthe.Type.DefinitionTest do
 
     assert blog_schema.query.name == Fixtures.query.name
 
+    assert blog_schema.errors == []
+
     article_field = Type.Object.field(Fixtures.query, :article)
     assert article_field
     assert article_field.name == "article"
     article_schema_type = Schema.lookup_type(blog_schema, article_field.type)
-    assert article_schema_type == Fixtures.__absinthe_info__(:types)[:article]
+    assert article_schema_type == Fixtures.Types.__absinthe_info__(:types)[:article]
     assert article_schema_type.name == "Article"
 
     title_field = Type.Object.field(article_schema_type, :title)
@@ -50,15 +52,17 @@ defmodule Absinthe.Type.DefinitionTest do
   end
 
   defmodule MutationSchema do
-    use Absinthe.Schema, type_modules: [Fixtures]
+    use Absinthe.Schema, type_modules: [Fixtures.Types]
 
     def query, do: Fixtures.query
     def mutation, do: Fixtures.mutation
   end
 
-
   it "defines a mutation schema" do
     blog_schema = MutationSchema.schema
+
+    assert blog_schema.errors == []
+
     assert blog_schema.mutation.name == Fixtures.mutation.name
 
     write_mutation = Type.Object.field(Fixtures.mutation, :write_article)
