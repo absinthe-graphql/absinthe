@@ -7,10 +7,13 @@ defmodule Absinthe.Schema.Verification do
   alias Absinthe.Schema
 
   @spec setup(Schema.t) :: Schema.t
-  def setup(schema) do
+  def setup(%{errors: []} = schema) do
     errors = Traversal.reduce(schema, schema, [], &collect_errors/3)
     %{schema | errors: schema.errors ++ errors}
     |> Verification.Unions.check
+  end
+  def setup(schema) do
+    schema
   end
 
   # Don't allow anything named with a __ prefix

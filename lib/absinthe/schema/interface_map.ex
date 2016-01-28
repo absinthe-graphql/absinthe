@@ -13,7 +13,7 @@ defmodule Absinthe.Schema.InterfaceMap do
   # Discover the mappings of interfaces to types that implement them
   @doc false
   @spec setup(Schema.t) :: Schema.t
-  def setup(%{types: types} = schema) do
+  def setup(%{types: types, errors: []} = schema) do
     {mapping, errors} = types
     |> Enum.reduce({%{}, []}, fn
       {_, %{interfaces: _}} = implementor, acc ->
@@ -22,6 +22,9 @@ defmodule Absinthe.Schema.InterfaceMap do
         acc
     end)
     %{schema | interfaces: mapping, errors: schema.errors ++ errors}
+  end
+  def setup(schema) do
+    schema
   end
 
   # Add an entry for an implementor (ind it's interfaces, if necessary)

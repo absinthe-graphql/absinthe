@@ -10,7 +10,7 @@ defmodule Absinthe.Introspection.Types do
   @absinthe :type
   def __schema do
     %Type.Object{
-      name: "__Type",
+      name: "__Schema",
       description: "Represents a schema",
       fields: fields(
         types: [
@@ -19,7 +19,6 @@ defmodule Absinthe.Introspection.Types do
             _, %{schema: schema} ->
               schema.types.by_identifier
               |> Map.values
-              |> Enum.filter(&(!match?("__" <> _, &1.name)))
               |> Flag.as(:ok)
           end
         ],
