@@ -70,7 +70,7 @@ defmodule Absinthe.Type.Field do
                 location_id: [type: non_null(:integer)]
               ),
               resolve: fn
-                %{location_id: id}, _execution ->
+                %{location_id: id}, _ ->
                   {:ok, MyApp.users_for_location_id(id)}
               end
             ]
@@ -82,8 +82,9 @@ defmodule Absinthe.Type.Field do
 
   1. A map of the arguments for the field, filled in with values from the
      provided query document/variables.
-  2. An `Absinthe.Execution` struct, containing the complete execution context
-     (and useful for complex resolutions using the resolved parent object, etc)
+  2. An `Absinthe.Execution.Field` struct, containing the execution environment
+     for the field (and useful for complex resolutions using the resolved source
+     object, etc)
 
   """
   @type t :: %{name: binary,
@@ -92,7 +93,7 @@ defmodule Absinthe.Type.Field do
                deprecation: Deprecation.t | nil,
                default_value: any,
                args: %{(binary | atom) => Absinthe.Type.Argument.t} | nil,
-               resolve: ((any, %{binary => any} | nil, Absinthe.Type.ResolveInfo.t | nil) -> Absinthe.Type.output_t) | nil}
+               resolve: ((%{atom => any}, Absinthe.Execution.Field.t) -> {:ok, any} | {:error, binary}) | nil}
 
   defstruct name: nil, description: nil, type: nil, deprecation: nil, args: %{}, resolve: nil, default_value: nil
 

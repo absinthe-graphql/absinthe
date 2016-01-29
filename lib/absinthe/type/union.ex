@@ -55,7 +55,7 @@ defmodule Absinthe.Type.Union do
   end
 
   @doc false
-  @spec resolve_type(t, any, Execution.t) :: Type.t | nil
+  @spec resolve_type(t, any, Execution.Field.t) :: Type.t | nil
   def resolve_type(%{resolve_type: nil, types: types}, obj, %{schema: schema}) do
     Enum.find(types, fn
       %{is_type_of: nil} ->
@@ -65,8 +65,8 @@ defmodule Absinthe.Type.Union do
         type_struct.is_type_of.(obj)
     end)
   end
-  def resolve_type(%{resolve_type: resolver}, obj, %{schema: schema} = exe) do
-    case resolver.(obj, exe) do
+  def resolve_type(%{resolve_type: resolver}, obj, %{schema: schema} = env) do
+    case resolver.(obj, env) do
       nil ->
         nil
       ident when is_atom(ident) ->

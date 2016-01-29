@@ -11,17 +11,17 @@ defmodule Absinthe.Introspection.Field do
       type: :string,
       description: "The name of the object type currently being queried.",
       resolve: fn
-        _, %{resolution: %{parent_type: %Type.Object{} = type}} ->
+        _, %{parent_type: %Type.Object{} = type} ->
           {:ok, type.name}
-        _, %{resolution: %{target: target, parent_type: %Type.Interface{} = iface}} = exe ->
-          case Type.Interface.resolve_type(iface, target, exe) do
+        _, %{source: source, parent_type: %Type.Interface{} = iface} = env ->
+          case Type.Interface.resolve_type(iface, source, env) do
             nil ->
               {:error, "Could not resolve type of concrete " <> iface.name}
             type ->
               {:ok, type.name}
           end
-        _, %{resolution: %{target: target, parent_type: %Type.Union{} = union}} = exe ->
-          case Type.Union.resolve_type(union, target, exe) do
+        _, %{source: source, parent_type: %Type.Union{} = union} = env ->
+          case Type.Union.resolve_type(union, source, env) do
             nil ->
               {:error, "Could not resolve type of concrete " <> union.name}
             type ->

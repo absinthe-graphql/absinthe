@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.5.0
+
+The following changes are required if you're upgrading from the previous version:
+
+### Resolution Functions
+
+The second argument passed to resolution functions has changed from
+`Absinthe.Execution.t` to a flatter, simpler data structure,
+`Absinthe.Execution.Field.t`. This struct will be a more carefully curated
+selection of metadata and match more closely to values in the JS
+reference implementation.
+
+See the typedoc for information about `Absinthe.Execution.Field.t`, and change
+any advanced resolvers to use this new struct. The most likely change will be
+the use of `source` instead of `resolution.target`.
+
 ## v0.4.0
 
 The following changes are required if you're upgrading from the previous version:
