@@ -4,6 +4,7 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.Field do
   alias Absinthe.Execution.Resolution
   alias Absinthe.Type
   alias Absinthe.Flag
+  alias Absinthe.Language
   alias Absinthe.Introspection
 
   @spec resolve(Absinthe.Language.Field.t,
@@ -16,7 +17,7 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.Field do
       %{resolve: resolver} ->
         case Execution.Arguments.build(ast_node, field.args, execution) do
           {:ok, args, exe} ->
-            resolver.(args, exe)
+            resolver.(args, environment(field, ast_node, execution))
             |> process_raw_result(ast_node, field, exe)
           {:error, {missing, invalid}, exe} ->
             exe
@@ -33,6 +34,22 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.Field do
           |> Flag.as(:skip)
         end
     end
+  end
+
+  # Build a `Absinthe.Execution.Field` struct containing the resolution environment
+  # of the field
+  @spec environment(Type.Field.t, Language.t, Execution.t) :: Execution.Field.t
+  defp environment(field, ast_node, execution) do
+    %Execution.Field{
+      adapter: execution.adapter,
+      ast_node: ast_node,
+      context: execution.context,
+      definition: field,
+      parent_type: execution.resolution.parent_type,
+      root_value: execution.root_value,
+      schema: execution.schema,
+      source: execution.resolution.target
+    }
   end
 
   defp skip_as(execution, _reason, [], _name, _ast_node) do

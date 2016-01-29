@@ -1,5 +1,7 @@
 defprotocol Absinthe.Execution.Resolution do
 
+  @moduledoc false
+
   alias Absinthe.Language
   alias Absinthe.Type
 
