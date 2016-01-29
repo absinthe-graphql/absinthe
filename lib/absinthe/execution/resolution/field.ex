@@ -13,7 +13,13 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.Field do
     field = Type.field(parent_type, ast_node.name)
     case field do
       %{resolve: nil} ->
-        target |> Map.get(name |> String.to_atom) |> result(ast_node, field, execution)
+        case target do
+          %{} ->
+            target |> Map.get(name |> String.to_atom)
+          _ ->
+            nil
+        end
+        |> result(ast_node, field, execution)
       %{resolve: resolver} ->
         case Execution.Arguments.build(ast_node, field.args, execution) do
           {:ok, args, exe} ->
