@@ -307,6 +307,15 @@ defmodule AbsintheTest do
       assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@unapplied_fragment, ContactSchema)
     end
 
+  end
+
+  describe "a root_value" do
+
+    @version "1.4.5"
+    @query "{ version }"
+    it "is used to resolve toplevel fields" do
+      assert {:ok, %{data: %{"version" => @version}}} == run(@query, root_value: %{version: @version})
+    end
 
   end
 

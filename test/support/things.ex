@@ -34,6 +34,7 @@ defmodule Things do
   def query do
     %Type.Object{
       fields: fields(
+        version: [type: :string],
         bad_resolution: [
           type: :thing,
           resolve: fn(_, _) ->
