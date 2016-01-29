@@ -59,30 +59,30 @@ defmodule Absinthe.Introspection.Types do
         args: [
           type: list_of(:__inputvalue),
           resolve: fn
-            _, %{resolution: %{target: target}} ->
-              structs = target.args |> Map.values
+            _, %{source: source} ->
+              structs = source.args |> Map.values
               {:ok, structs}
           end
         ],
         on_operation: [
           type: :boolean,
           resolve: fn
-            _, %{resolution: %{target: target}} ->
-              {:ok, Enum.member?(target.on, Language.OperationDefinition)}
+            _, %{source: source} ->
+              {:ok, Enum.member?(source.on, Language.OperationDefinition)}
           end
         ],
         on_fragment: [
           type: :boolean,
           resolve: fn
-            _, %{resolution: %{target: target}} ->
-              {:ok, Enum.member?(target.on, Language.FragmentSpread)}
+            _, %{source: source} ->
+              {:ok, Enum.member?(source.on, Language.FragmentSpread)}
           end
         ],
         on_field: [
           type: :boolean,
           resolve: fn
-            _, %{resolution: %{target: target}} ->
-              {:ok, Enum.member?(target.on, Language.Field)}
+            _, %{source: source} ->
+              {:ok, Enum.member?(source.on, Language.Field)}
           end
         ]
       )
@@ -98,7 +98,7 @@ defmodule Absinthe.Introspection.Types do
         kind: [
           type: :string,
           resolve: fn
-            _, %{resolution: %{target: %{__struct__: type}}} ->
+            _, %{source: %{__struct__: type}} ->
               {:ok, type.kind}
           end
         ],
@@ -113,7 +113,7 @@ defmodule Absinthe.Introspection.Types do
             ]
           ),
           resolve: fn
-            %{include_deprecated: show_deprecated}, %{resolution: %{target: %{__struct__: str, fields: fields}}} when str in [Type.Object, Type.Interface] ->
+            %{include_deprecated: show_deprecated}, %{source: %{__struct__: str, fields: fields}} when str in [Type.Object, Type.Interface] ->
               fields
               |> Enum.flat_map(fn
                 {_, %{deprecation: is_deprecated} = field} ->
@@ -131,7 +131,7 @@ defmodule Absinthe.Introspection.Types do
         interfaces: [
           type: list_of(:__type),
           resolve: fn
-            _, %{schema: schema, resolution: %{target: %{interfaces: interfaces}}} ->
+            _, %{schema: schema, source: %{interfaces: interfaces}} ->
               structs = interfaces
               |> Enum.map(fn
                 ident -> schema.types[ident]
@@ -144,10 +144,10 @@ defmodule Absinthe.Introspection.Types do
         possible_types: [
           type: list_of(:__type),
           resolve: fn
-            _, %{schema: schema, resolution: %{target: %Type.Union{types: types}}} ->
+            _, %{schema: schema, source: %{types: types}} ->
               structs = types |> Enum.map(&(Absinthe.Schema.lookup_type(schema, &1)))
               {:ok, structs}
-            _, %{schema: schema, resolution: %{target: %Type.Interface{reference: %{identifier: ident}}}} ->
+            _, %{schema: schema, source: %Type.Interface{reference: %{identifier: ident}}} ->
               implementors = schema.interfaces[ident]
               structs = implementors |> Enum.map(fn name -> schema.types[name] end)
               {:ok, structs}
@@ -164,7 +164,7 @@ defmodule Absinthe.Introspection.Types do
             ]
           ),
           resolve: fn
-            %{include_deprecated: show_deprecated}, %{resolution: %{target: %Type.Enum{values: values}}} ->
+            %{include_deprecated: show_deprecated}, %{source: %Type.Enum{values: values}} ->
               values
             |> Enum.flat_map(fn
               {_, %{deprecation: is_deprecated} = value} ->
@@ -182,7 +182,7 @@ defmodule Absinthe.Introspection.Types do
         input_fields: [
           type: list_of(:__inputvalue),
           resolve: fn
-            _, %{resolution: %{target: %Type.InputObject{fields: fields}}} ->
+            _, %{source: %Type.InputObject{fields: fields}} ->
               structs = fields |> Map.values
               {:ok, structs}
             _, _ ->
@@ -192,7 +192,7 @@ defmodule Absinthe.Introspection.Types do
         of_type: [
           type: :__type,
           resolve: fn
-            _, %{schema: schema, resolution: %{target: %{of_type: type}}} ->
+            _, %{schema: schema, source: %{of_type: type}} ->
               Absinthe.Schema.lookup_type(schema, type, unwrap: false)
               |> Flag.as(:ok)
             _, _ ->
@@ -211,8 +211,8 @@ defmodule Absinthe.Introspection.Types do
         name: [
           type: :string,
           resolve: fn
-            _, %{adapter: adapter, resolution: %{target: target}} ->
-              target.name
+            _, %{adapter: adapter, source: source} ->
+              source.name
               |> adapter.to_external_name(:field)
               |> Flag.as(:ok)
           end
@@ -221,18 +221,18 @@ defmodule Absinthe.Introspection.Types do
         args: [
           type: list_of(:__inputvalue),
           resolve: fn
-            _, %{resolution: %{target: target}} ->
-              structs = target.args |> Map.values
+            _, %{source: source} ->
+              structs = source.args |> Map.values
               {:ok, structs}
           end
         ],
         type: [
           type: :__type,
           resolve: fn
-            _, %{schema: schema, resolution: %{target: target}} ->
-              case target.type do
+            _, %{schema: schema, source: source} ->
+              case source.type do
                 type when is_atom(type) ->
-                  Absinthe.Schema.lookup_type(schema, target.type)
+                  Absinthe.Schema.lookup_type(schema, source.type)
                 type ->
                   type
               end
@@ -242,7 +242,7 @@ defmodule Absinthe.Introspection.Types do
         is_deprecated: [
           type: :boolean,
           resolve: fn
-            _, %{resolution: %{target: %{deprecation: nil}}} ->
+            _, %{source: %{deprecation: nil}} ->
               {:ok, false}
             _, _ ->
               {:ok, true}
@@ -251,9 +251,9 @@ defmodule Absinthe.Introspection.Types do
         deprecation_reason: [
           type: :string,
           resolve: fn
-            _, %{resolution: %{target: %{deprecation: nil}}} ->
+            _, %{source: %{deprecation: nil}} ->
               {:ok, nil}
-            _, %{resolution: %{target: %{deprecation: dep}}} ->
+            _, %{source: %{deprecation: dep}} ->
               {:ok, dep.reason}
           end
         ]
@@ -269,8 +269,8 @@ defmodule Absinthe.Introspection.Types do
         name: [
           type: :string,
           resolve: fn
-            _, %{adapter: adapter, resolution: %{target: target}} ->
-              target.name
+            _, %{adapter: adapter, source: source} ->
+              source.name
               |> adapter.to_external_name(:field)
               |> Flag.as(:ok)
           end
@@ -279,7 +279,7 @@ defmodule Absinthe.Introspection.Types do
         type: [
           type: :__type,
           resolve: fn
-            _, %{schema: schema, resolution: %{target: %{type: ident}}} ->
+            _, %{schema: schema, source: %{type: ident}} ->
               type = Absinthe.Schema.lookup_type(schema, ident, unwrap: false)
               {:ok, type}
           end
@@ -287,11 +287,11 @@ defmodule Absinthe.Introspection.Types do
         default_value: [
           type: :string,
           resolve: fn
-            _, %{resolution: %{target: %{default_value: nil}}} ->
+            _, %{source: %{default_value: nil}} ->
               {:ok, nil}
-            _, %{resolution: %{target: %{default_value: value}}} ->
+            _, %{source: %{default_value: value}} ->
               {:ok, value |> to_string}
-            _, %{resolution: %{target: _}} ->
+            _, %{source: _} ->
               {:ok, nil}
           end
         ]
@@ -309,7 +309,7 @@ defmodule Absinthe.Introspection.Types do
         is_deprecated: [
           type: :boolean,
           resolve: fn
-            _, %{resolution: %{target: %{deprecation: nil}}} ->
+            _, %{source: %{deprecation: nil}} ->
               {:ok, false}
             _, _ ->
               {:ok, true}
@@ -318,9 +318,9 @@ defmodule Absinthe.Introspection.Types do
         deprecation_reason: [
           type: :string,
           resolve: fn
-            _, %{resolution: %{target: %{deprecation: nil}}} ->
+            _, %{source: %{deprecation: nil}} ->
               {:ok, nil}
-            _, %{resolution: %{target: %{deprecation: dep}}} ->
+            _, %{source: %{deprecation: dep}} ->
               {:ok, dep.reason}
           end
         ]

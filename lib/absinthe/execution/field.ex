@@ -8,6 +8,7 @@ defmodule Absinthe.Execution.Field do
   @typedoc """
 
   ## Options
+  - `:adapter` - The execution adapter
   - `:ast_node` - The current AST node.
   - `:context` - The context passed to `Absinthe.run`.
   - `:definition` - The current field definition
@@ -15,8 +16,8 @@ defmodule Absinthe.Execution.Field do
   - `:schema` - The current schema.
   - `:source` - The resolved parent object; source of this field.
   """
-  @type t :: %{ast_node: Language.t, context: map, definition: Type.Field.t, root: any, schema: Schema.t, source: any}
+  @type t :: %{adapter: atom, ast_node: Language.t, context: map, definition: Type.Field.t, root: any, schema: Schema.t, source: any}
 
-  defstruct ast_node: nil, context: nil, definition: nil, root: nil, schema: nil, source: nil
+  defstruct adapter: nil, ast_node: nil, context: nil, definition: nil, root: nil, schema: nil, source: nil
 
 end

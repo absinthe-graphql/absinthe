@@ -148,7 +148,7 @@ defmodule Things do
         ],
         other_thing: [
           type: :thing,
-          resolve: fn (_, %{resolution: %{target: %{id: id}}}) ->
+          resolve: fn (_, %{source: %{id: id}}) ->
             case id do
               "foo" -> {:ok, @db |> Map.get("bar")}
               "bar" -> {:ok, @db |> Map.get("foo")}

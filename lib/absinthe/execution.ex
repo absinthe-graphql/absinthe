@@ -20,8 +20,8 @@ defmodule Absinthe.Execution do
   @typedoc "The canonical result representation of an execution"
   @type result_t :: %{data: %{binary => any}, errors: [error_t]} | %{data: %{binary => any}} | %{errors: [error_t]}
 
-  @type t :: %{schema: Schema.t, document: Language.Document.t, variables: map, selected_operation: Absinthe.Type.Object.t, operation_name: binary, errors: [error_t], categorized: boolean, strategy: atom, adapter: atom, resolution: Execution.Resolution.t}
-  defstruct schema: nil, document: nil, variables: %{}, fragments: %{}, operations: %{}, selected_operation: nil, operation_name: nil, errors: [], categorized: false, strategy: nil, adapter: nil, resolution: nil
+  @type t :: %{schema: Schema.t, document: Language.Document.t, variables: map, selected_operation: Absinthe.Type.Object.t, operation_name: binary, errors: [error_t], categorized: boolean, strategy: atom, adapter: atom, resolution: Execution.Resolution.t, context: map, root: any}
+  defstruct schema: nil, document: nil, variables: %{}, fragments: %{}, operations: %{}, selected_operation: nil, operation_name: nil, errors: [], categorized: false, strategy: nil, adapter: nil, resolution: nil, context: %{}, root: nil
 
   @doc false
   def run(execution, options \\ []) do
