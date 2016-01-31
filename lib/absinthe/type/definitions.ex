@@ -318,11 +318,19 @@ defmodule Absinthe.Type.Definitions do
   @doc false
   defp named(mod, definitions) do
     definitions
-    |> Enum.into(%{}, fn ({identifier, definition}) ->
-      {
-        identifier,
-        struct(mod, [{:name, identifier |> to_string} | definition])
-      }
+    |> Enum.into(%{}, fn
+      {identifier, definition} when is_list(definition) ->
+        {
+          identifier,
+          struct(mod, [{:name, identifier |> to_string} | definition])
+        }
+      {identifier, %{__struct__: ^mod, name: nil} = definition} ->
+        {
+          identifier,
+          struct(definition, name: identifier |> to_string)
+        }
+      {identifier, %{__struct__: ^mod}} = pair ->
+        pair
     end)
   end
 
