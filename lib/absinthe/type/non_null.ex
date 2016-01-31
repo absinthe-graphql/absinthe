@@ -23,6 +23,7 @@ defmodule Absinthe.Type.NonNull do
   """
 
   use Absinthe.Introspection.Kind
+  use Absinthe.Type.Fetch
 
   @typedoc """
   A defined non-null type.
