@@ -177,4 +177,13 @@ defmodule Absinthe.Execution do
     {:ok, %{next_execution | variables: values}}
   end
 
+  # Get the concrete type (if necessary) of a possibly abstract type
+  @spec concrete_type(Type.t, any, Execution.t) :: Type.t
+  def concrete_type(%{__struct__: mod} = type, target, execution) when mod in [Type.Interface, Type.Union] do
+    mod.resolve_type(type, target, execution)
+  end
+  def concrete_type(type, _, _) do
+    type
+  end
+
 end

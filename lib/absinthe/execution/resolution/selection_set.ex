@@ -94,7 +94,7 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
     condition_type = if type_condition, do: Schema.lookup_type(schema, type_condition.name)
     case this_type do
       %{__struct__: type_name} when type_name in [Type.Union, Type.Interface] ->
-        resolved = type_name.resolve_type(this_type, target, execution)
+        resolved = Execution.concrete_type(this_type, target, execution)
         if condition_type do
           if resolved == condition_type, do: resolved
         else

@@ -105,10 +105,21 @@ defmodule Absinthe.Type.Interface do
     |> Enum.all?(fn
       {keypath, val} when val != nil ->
         flat = keypath |> List.flatten
-        ignore_implementing_keypath?(flat) || (get_in(type.fields, flat) == val)
+        ignore_implementing_keypath?(flat) || (safe_get_in(type.fields, flat) == val)
       {_keypath, nil} ->
         true
     end)
+  end
+
+  # Try to get a value, ignoring errors
+  @spec safe_get_in(any, list) :: any
+  defp safe_get_in(target, keypath) do
+    try do
+      get_in(target, keypath)
+    rescue
+      FunctionClauseError ->
+        nil
+    end
   end
 
   @ignore [:description]

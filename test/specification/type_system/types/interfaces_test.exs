@@ -90,7 +90,7 @@ defmodule Specification.TypeSystem.Types.InterfacesTest do
           assert {:ok, _} = Absinthe.Schema.verify(ContactSchema.schema)
         end
 
-        it "can select fields from the interface" do
+        it "can select fields that are declared by the interface" do
           result = """
           { contact { entity { name } } }
           """ |> Absinthe.run(ContactSchema)
