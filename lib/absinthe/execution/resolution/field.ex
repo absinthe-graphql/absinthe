@@ -10,7 +10,7 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.Field do
   @spec resolve(Absinthe.Language.Field.t,
                 Absinthe.Execution.t) :: {:ok, map} | {:error, any}
   def resolve(%{name: name} = ast_node, %{strategy: :serial, resolution: %{parent_type: parent_type, target: target}} = execution) do
-    field = Type.field(parent_type, ast_node.name)
+    field = find_field(ast_node, execution)
     case field do
       %{resolve: nil} ->
         case target do
@@ -39,6 +39,25 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.Field do
           |> Execution.put_error(:field, ast_node.name, "Not present in schema", at: ast_node)
           |> Flag.as(:skip)
         end
+    end
+  end
+
+  # Find the current field, keeping in mind rules for abstract types
+  @spec find_field(Language.Field.t, Execution.t) :: Type.t | nil
+  defp find_field(%{name: "__" <> _} = ast_node, execution) do
+    Type.field(execution.resolution.parent_type, ast_node.name)
+  end
+  defp find_field(ast_node, %{resolution: %{target: target, parent_type: parent_type}} = execution) do
+    case parent_type do
+      %Type.Interface{} ->
+        if Type.field(parent_type, ast_node.name) do
+          concrete = Execution.concrete_type(parent_type, target, execution)
+          Type.field(concrete, ast_node.name)
+        end
+      %Type.Union{} ->
+        nil
+      _ ->
+        Type.field(parent_type, ast_node.name)
     end
   end
 
