@@ -18,7 +18,14 @@ defmodule Absinthe.Type.Field do
   use Type.Fetch
 
   @typedoc """
-  The configuration for a field
+  A resolver function.
+
+  See the `Absinthe.Type.Field.t` explanation of `:resolve` for more information.
+  """
+  @type resolver_t :: ((%{atom => any}, Absinthe.Execution.Field.t) -> {:ok, any} | {:error, binary})
+
+  @typedoc """
+  The configuration for a field.
 
   * `:name` - The name of the field, usually assigned automatically by
   the `Absinthe.Type.Definitions.fields/1` convenience function.
@@ -93,7 +100,7 @@ defmodule Absinthe.Type.Field do
                deprecation: Deprecation.t | nil,
                default_value: any,
                args: %{(binary | atom) => Absinthe.Type.Argument.t} | nil,
-               resolve: ((%{atom => any}, Absinthe.Execution.Field.t) -> {:ok, any} | {:error, binary}) | nil}
+               resolve: resolver_t | nil}
 
   defstruct name: nil, description: nil, type: nil, deprecation: nil, args: %{}, resolve: nil, default_value: nil
 
