@@ -154,7 +154,7 @@ defmodule Absinthe.Schema do
           other -> true
         end)
         |> Enum.into(%{})
-        |> Map.merge(%{type_modules: [__MODULE__] ++ unquote(type_modules)})
+        |> Map.merge(%{type_modules: [__MODULE__] ++ unquote(type_modules), reference: %{module: __MODULE__}})
         struct(unquote(__MODULE__), contents)
         |> unquote(__MODULE__).prepare
       end
@@ -203,9 +203,10 @@ defmodule Absinthe.Schema do
                directives: %{atom => Absinthe.Type.Directive.t},
                types: Schema.TypeMap.t,
                interfaces: Schema.InterfaceMap.t,
-               errors: [binary]}
+               errors: [binary],
+               reference: %{module: atom}}
 
-  defstruct query: nil, mutation: nil, subscription: nil, type_modules: [], directives: nil, types: nil, interfaces: %{}, errors: []
+  defstruct query: nil, mutation: nil, subscription: nil, type_modules: [], directives: nil, types: nil, interfaces: %{}, errors: [], reference: nil
 
   @doc false
   @spec prepare(t) :: t
