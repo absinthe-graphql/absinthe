@@ -12,15 +12,21 @@ defmodule Absinthe.Schema.Definition do
   defmacro mutation(attrs) do
   end
 
-  defmacro object(identifier, attrs) do
-    blueprint = Macro.expand(attrs, __CALLER__)
-    Absinthe.Type.Object.build(identifier, blueprint)
+  defmacro object(identifier, blueprint) do
+    Absinthe.Type.Object.build(identifier, expand(blueprint))
   end
 
-  defmacro interface(identifier, attrs) do
+  defmacro interface(identifier, blueprint) do
   end
 
-  defmacro input_object(identifier, attrs) do
+  defmacro input_object(identifier, blueprint) do
+  end
+
+  defp expand(ast) do
+    Macro.postwalk(ast, fn
+      {_, _, _} = node -> Macro.expand(node, __ENV__)
+      node -> node
+    end)
   end
 
 
@@ -54,10 +60,9 @@ defmodule Absinthe.Schema.Definition do
   * They make non-null types nullable.
   * Currently use of a deprecated argument/field causes an error to be added to the `:errors` entry of a result.
   """
-  @spec deprecate(Keyword.t) :: Keyword.t
+  @spec deprecate(Keyword.t, term) :: Keyword.t
   defmacro deprecate(node, options \\ []) do
-    IO.inspect(node, options: options)
-    quote do: node
+    node
   end
 
   @doc "Add a non-null constraint to a type"

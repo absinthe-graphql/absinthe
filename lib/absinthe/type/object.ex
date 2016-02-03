@@ -104,7 +104,7 @@ defmodule Absinthe.Type.Object do
         %unquote(__MODULE__){
           name: unquote(name),
           interfaces: unquote(attrs[:interfaces] || []),
-          fields: unquote_splicing(fields),
+          fields: unquote(fields),
           is_type_of: unquote(attrs[:is_type_of]),
           description: @doc
         }
