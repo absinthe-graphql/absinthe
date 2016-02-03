@@ -1,5 +1,5 @@
 defmodule ContactSchema do
-  use Absinthe.Schema
+  use Absinthe.Schema.Definition
 
   @bruce %{name: "Bruce", age: 35}
   @others [
@@ -9,7 +9,7 @@ defmodule ContactSchema do
   @business %{name: "Someplace", employee_count: 11}
 
   query [
-    fields: fields(
+    fields: [
       person: [
         type: :person,
         resolve: fn
@@ -19,9 +19,9 @@ defmodule ContactSchema do
       ],
       contact: [
         type: :contact,
-        args: args(
+        args: [
           business: [type: :boolean, default_value: false]
-        ),
+        ],
         resolve: fn
           %{business: false}, _ ->
             {:ok, %{entity: @bruce}}
@@ -38,9 +38,9 @@ defmodule ContactSchema do
       ],
       profile: [
         type: :person,
-        args: args(
+        args: [
           name: [type: non_null(:string)]
-        ),
+        ],
         resolve: fn
           %{name: "Bruce"}, _ ->
             {:ok, @bruce}
@@ -48,37 +48,39 @@ defmodule ContactSchema do
             {:ok, nil}
         end
       ]
-    )
+    ]
   ]
 
   mutation [
-    fields: fields(
+    fields: [
       person: [
         type: :person,
-        args: args(
+        args: [
           profile: [type: :profile_input]
-        ),
+        ],
         resolve: fn
           %{profile: profile} ->
             # Return it like it's a person
             {:ok, profile}
         end
       ]
-    )
+    ]
   ]
 
-  input_object :profile_input, "The basic details for a person", [
-    fields: fields(
+  @doc "The basic details for a person."
+  input_object :profile_input, [
+    fields: [
       code: [type: non_null(:string)],
       name: [type: :string, description: "The person's name", default_value: "Janet"],
       age: [type: :integer, description: "The person's age", default_value: 43]
-    )
+    ]
   ]
 
-  interface :named_entity, "A named entity", [
-    fields: fields(
+  @doc "A named entity"
+  interface :named_entity, [
+    fields: [
       name: [type: :string]
-    ),
+    ],
     resolve_type: fn
       %{age: _}, _ ->
         :person
@@ -87,8 +89,9 @@ defmodule ContactSchema do
     end
   ]
 
-  object :person, "A person", [
-    fields: fields(
+  @doc "A person"
+  object :person, [
+    fields: [
       name: [type: :string],
       age: [type: :integer],
       address: deprecate([type: :string], reason: "change of privacy policy"),
@@ -99,19 +102,21 @@ defmodule ContactSchema do
             {:ok, @others}
         end
       ]
-    ),
+    ],
     interfaces: [:named_entity]
   ]
 
-  object :business, "A business", [
-    fields: fields(
+  @doc "A business"
+  object :business, [
+    fields: [
       name: [type: :string],
       employee_count: [type: :integer]
-    ),
+    ],
     interfaces: [:named_entity]
   ]
 
-  union :search_result, "A search result", [
+  @doc "A search result"
+  union :search_result, [
     types: [:business, :person],
     resolve_type: fn
       %{age: _}, _ ->
@@ -122,11 +127,11 @@ defmodule ContactSchema do
   ]
 
   object :contact, [
-    fields: fields(
+    fields: [
       entity: [type: :named_entity],
       phone_number: [type: :string],
       address: [type: :string]
-    )
+    ]
   ]
 
 end

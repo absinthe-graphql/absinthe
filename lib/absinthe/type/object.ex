@@ -1,4 +1,5 @@
 defmodule Absinthe.Type.Object do
+  alias Absinthe.Utils
 
   @moduledoc """
   Represents a non-leaf node in a GraphQL tree of information.
@@ -92,6 +93,42 @@ defmodule Absinthe.Type.Object do
   """
   @type t :: %{name: binary, description: binary, fields: map, interfaces: [Absinthe.Type.Interface.t], is_type_of: ((any) -> boolean), reference: Type.Reference.t}
   defstruct name: nil, description: nil, fields: nil, interfaces: [], is_type_of: nil, reference: nil
+
+  def build([{identifier, name}], attrs) do
+    fields = fields_ast(attrs[:fields])
+    quote do
+      def __absinthe_type__(unquote(name)) do
+        __absinthe_type__(unquote(identifier))
+      end
+      def __absinthe_type__(unquote(identifier)) do
+        %unquote(__MODULE__){
+          name: unquote(name),
+          interfaces: unquote(attrs[:interfaces] || []),
+          fields: unquote_splicing(fields),
+          is_type_of: unquote(attrs[:is_type_of]),
+          description: @doc
+        }
+      end
+    end
+  end
+  def build(identifier, attrs) do
+    build([{identifier, Utils.camelize_lower(Atom.to_string(identifier))}], attrs)
+  end
+
+  defp fields_ast(fields) do
+    ast = for {field_name, field_attrs} <- fields do
+      name = field_name |> Atom.to_string |> Utils.camelize_lower
+      field_data = [name: name] ++ field_attrs
+      field_ast = quote do
+        %Absinthe.Type.Field{
+          unquote_splicing(field_data)
+        }
+      end
+      {field_name, field_ast}
+    end
+
+    quote do: %{unquote_splicing(ast)}
+  end
 
   @doc false
   @spec field(t, atom) :: Absinthe.Type.Field.t
