@@ -1,8 +1,38 @@
 defmodule Absinthe.Schema.Definition do
+  alias Absinthe.Utils
 
   defmacro __using__(opts) do
     quote do
       import unquote(__MODULE__)
+      Module.register_attribute __MODULE__, :absinthe_errors, accumulate: true
+      Module.register_attribute __MODULE__, :absinthe_types, accumulate: true
+      @before_compile unquote(__MODULE__)
+      @after_compile unquote(__MODULE__)
+    end
+  end
+
+  defmacro __before_compile__(_env) do
+    quote do
+
+      def __absinthe_type__(_), do: nil
+
+      @absinthe_type_map Enum.into(@absinthe_types, %{})
+      def __absinthe_types__ do
+        @absinthe_type_map
+      end
+
+      def __absinthe_errors__ do
+        @absinthe_errors
+      end
+    end
+  end
+
+  def __after_compile__(env, _bytecode) do
+    case env.module.__absinthe_errors__ do
+      [] ->
+        nil
+      problems ->
+        raise Absinthe.Schema.Error, problems
     end
   end
 
@@ -13,7 +43,9 @@ defmodule Absinthe.Schema.Definition do
   end
 
   defmacro object(identifier, blueprint) do
-    Absinthe.Type.Object.build(identifier, expand(blueprint))
+    naming = type_naming(identifier)
+    ast = Absinthe.Type.Object.build(naming, expand(blueprint, __CALLER__))
+    define_type(naming, ast)
   end
 
   defmacro interface(identifier, blueprint) do
@@ -22,55 +54,67 @@ defmodule Absinthe.Schema.Definition do
   defmacro input_object(identifier, blueprint) do
   end
 
-  defp expand(ast) do
+  defmacro union(identifier, blueprint) do
+  end
+
+  defp expand(ast, env) do
     Macro.postwalk(ast, fn
-      {_, _, _} = node -> Macro.expand(node, __ENV__)
+      {_, _, _} = node -> Macro.expand(node, env)
       node -> node
     end)
   end
 
+  defp type_naming([{_identifier, _name}] = as_defined) do
+    as_defined
+  end
+  defp type_naming(identifier) do
+    [{identifier, Utils.camelize_lower(Atom.to_string(identifier))}]
+  end
 
-  @doc """
-  Deprecate a field or argument with an optional reason
+  defp define_type([{identifier, name}] = naming, ast) do
+    quote do
+      @absinthe_doc @doc
+      type_status = {
+        Keyword.has_key?(@absinthe_types, unquote(identifier)),
+        Enum.member?(Keyword.values(@absinthe_types), unquote(name))
+      }
+      if match?({true, _}, type_status) do
+        @absinthe_errors %{
+          name: :dup_ident,
+          location: %{file: __ENV__.file, line: __ENV__.line},
+          data: unquote(identifier)
+        }
+      end
+      if match?({_, true}, type_status) do
+        @absinthe_errors %{
+          name: :dup_name,
+          location: %{file: __ENV__.file, line: __ENV__.line},
+          data: unquote(name)
+        }
+      end
+      if match?({false, false}, type_status) do
+        @absinthe_types {unquote(identifier), unquote(name)}
+        def __absinthe_type__(unquote(name)) do
+          unquote(ast)
+        end
+        def __absinthe_type__(unquote(identifier)) do
+          unquote(ast)
+        end
+        def __absinthe_type_ast__(unquote(identifier)) do
+          unquote(Macro.escape(ast))
+        end
+      end
+    end
+  end
 
-  ## Examples
-
-  Wrap around an argument or a field definition
-  (of a `Absinthe.Type.InputObject`) to deprecate it:
-
-  ```
-  args(
-    name: deprecate([type: :string, description: "The person's name"])
-    # ...
-  )
-  ```
-
-  You can also provide a reason:
-
-  ```
-  args(
-    age: deprecate([type: :integer, description: "The person's age"],
-                   reason: "None of your business!")
-    # ...
-  )
-  ```
-
-  Some usage information for deprecations:
-
-  * They make non-null types nullable.
-  * Currently use of a deprecated argument/field causes an error to be added to the `:errors` entry of a result.
-  """
-  @spec deprecate(Keyword.t, term) :: Keyword.t
   defmacro deprecate(node, options \\ []) do
     node
   end
 
-  @doc "Add a non-null constraint to a type"
   defmacro non_null(type) do
     quote do: %Absinthe.Type.NonNull{of_type: unquote(type)}
   end
 
-  @doc "Declare a list of a type"
   defmacro list_of(type) do
     quote do: %Absinthe.Type.List{of_type: unquote(type)}
   end

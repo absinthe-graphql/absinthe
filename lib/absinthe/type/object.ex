@@ -94,25 +94,17 @@ defmodule Absinthe.Type.Object do
   @type t :: %{name: binary, description: binary, fields: map, interfaces: [Absinthe.Type.Interface.t], is_type_of: ((any) -> boolean), reference: Type.Reference.t}
   defstruct name: nil, description: nil, fields: nil, interfaces: [], is_type_of: nil, reference: nil
 
-  def build([{identifier, name}], attrs) do
-    fields = fields_ast(attrs[:fields])
+  def build([{identifier, name}], blueprint) do
+    fields = fields_ast(blueprint[:fields])
     quote do
-      def __absinthe_type__(unquote(name)) do
-        __absinthe_type__(unquote(identifier))
-      end
-      def __absinthe_type__(unquote(identifier)) do
-        %unquote(__MODULE__){
-          name: unquote(name),
-          interfaces: unquote(attrs[:interfaces] || []),
-          fields: unquote(fields),
-          is_type_of: unquote(attrs[:is_type_of]),
-          description: @doc
-        }
-      end
+      %unquote(__MODULE__){
+        name: unquote(name),
+        interfaces: unquote(blueprint[:interfaces] || []),
+        fields: unquote(fields),
+        is_type_of: unquote(blueprint[:is_type_of]),
+        description: @absinthe_doc
+      }
     end
-  end
-  def build(identifier, attrs) do
-    build([{identifier, Utils.camelize_lower(Atom.to_string(identifier))}], attrs)
   end
 
   defp fields_ast(fields) do
