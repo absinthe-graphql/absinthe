@@ -5,8 +5,9 @@ defmodule Absinthe.Schema.Error do
   defexception message: "Invalid schema", problems: []
 
   @titles %{
-    dup_ident: "Duplicate type identifier",
-    dup_name: "Duplicate type name"
+    dup_type_ident: "Duplicate type identifier",
+    dup_type_name: "Duplicate type name",
+    dup_directive: "Duplicate directive",
   }
 
   def exception(problems) do

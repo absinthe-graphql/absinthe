@@ -6,10 +6,9 @@ defmodule Absinthe.Schema.TypeModule do
       import unquote(__MODULE__)
       Module.register_attribute __MODULE__, :absinthe_errors, accumulate: true
       Module.register_attribute __MODULE__, :absinthe_types, accumulate: true
+      Module.register_attribute __MODULE__, :absinthe_directives, accumulate: true
       Module.register_attribute __MODULE__, :absinthe_exports, accumulate: true
       @before_compile unquote(__MODULE__)
-      @after_compile unquote(__MODULE__)
-      @doc nil
     end
   end
 
@@ -17,9 +16,12 @@ defmodule Absinthe.Schema.TypeModule do
     quote do
 
       def __absinthe_type__(_), do: nil
-
       @absinthe_type_map Enum.into(@absinthe_types, %{})
       def __absinthe_types__, do: @absinthe_type_map
+
+      def __absinthe_directive__(_), do: nil
+      @absinthe_directive_map Enum.into(@absinthe_directives, %{})
+      def __absinthe_directives__, do: @absinthe_directive_map
 
       def __absinthe_errors__, do: @absinthe_errors
 
@@ -28,19 +30,16 @@ defmodule Absinthe.Schema.TypeModule do
     end
   end
 
-  def __after_compile__(env, _bytecode) do
-    case env.module.__absinthe_errors__ do
-      [] ->
-        nil
-      problems ->
-        raise Absinthe.Schema.Error, problems
-    end
-  end
-
   defmacro object(identifier, blueprint, opts \\ []) do
     naming = type_naming(identifier)
     ast = Absinthe.Type.Object.build(naming, expand(blueprint, __CALLER__))
     define_type(naming, ast, opts)
+  end
+
+  defmacro directive(identifier, blueprint, opts \\ []) when is_atom(identifier) do
+    naming = [{identifier, Atom.to_string(identifier)}]
+    ast = Absinthe.Type.Directive.build(naming, expand(blueprint, __CALLER__))
+    define_directive(naming, ast, opts)
   end
 
   defmacro scalar(identifier, blueprint) do
@@ -61,7 +60,7 @@ defmodule Absinthe.Schema.TypeModule do
   defmacro import_types(type_module_ast, opts_ast \\ []) do
     opts = Macro.expand(opts_ast, __CALLER__)
     type_module = Macro.expand(type_module_ast, __CALLER__)
-    for {ident, _} = naming <- type_module.__absinthe_types__, into: [] do
+    types = for {ident, _} = naming <- type_module.__absinthe_types__, into: [] do
       if Enum.member?(type_module.__absinthe_exports__, ident) do
         ast = quote do
           unquote(type_module).__absinthe_type__(unquote(ident))
@@ -69,6 +68,15 @@ defmodule Absinthe.Schema.TypeModule do
         define_type([naming], ast, opts)
       end
     end
+    directives = for {ident, _} = naming <- type_module.__absinthe_directives__, into: [] do
+      if Enum.member?(type_module.__absinthe_exports__, ident) do
+        ast = quote do
+          unquote(type_module).__absinthe_directive__(unquote(ident))
+        end
+        define_directive([naming], ast, opts)
+      end
+    end
+    types ++ directives
   end
 
   defp expand(ast, env) do
@@ -87,21 +95,21 @@ defmodule Absinthe.Schema.TypeModule do
 
   defp define_type([{identifier, name}] = naming, ast, opts \\ []) do
     quote do
-      @absinthe_doc @doc
+      @absinthe_doc Module.get_attribute(__MODULE__, :doc)
       type_status = {
         Keyword.has_key?(@absinthe_types, unquote(identifier)),
         Enum.member?(Keyword.values(@absinthe_types), unquote(name))
       }
       if match?({true, _}, type_status) do
         @absinthe_errors %{
-          name: :dup_ident,
+          name: :dup_type_ident,
           location: %{file: __ENV__.file, line: __ENV__.line},
           data: unquote(identifier)
         }
       end
       if match?({_, true}, type_status) do
         @absinthe_errors %{
-          name: :dup_name,
+          name: :dup_type_name,
           location: %{file: __ENV__.file, line: __ENV__.line},
           data: unquote(name)
         }
@@ -120,6 +128,36 @@ defmodule Absinthe.Schema.TypeModule do
       end
     end
   end
+
+  defp define_directive([{identifier, name}] = naming, ast, opts \\ []) do
+    quote do
+      @absinthe_doc Module.get_attribute(__MODULE__, :doc)
+      directive_status = {
+        Keyword.has_key?(@absinthe_directives, unquote(identifier)),
+        Enum.member?(Keyword.values(@absinthe_directives), unquote(name))
+      }
+      if match?({true, _}, directive_status) do
+        @absinthe_errors %{
+          name: :dup_directive,
+          location: %{file: __ENV__.file, line: __ENV__.line},
+          data: unquote(identifier)
+        }
+      end
+      if match?({false, false}, directive_status) do
+        @absinthe_directives {unquote(identifier), unquote(name)}
+        if Keyword.get(unquote(opts), :export, true) do
+          @absinthe_exports unquote(identifier)
+        end
+        def __absinthe_directive__(unquote(name)) do
+          unquote(ast)
+        end
+        def __absinthe_directive__(unquote(identifier)) do
+          unquote(ast)
+        end
+      end
+    end
+  end
+
 
   defmacro deprecate(node, options \\ []) do
     node

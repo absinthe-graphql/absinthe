@@ -7,8 +7,7 @@ defmodule Absinthe.Type.Directive do
   Type system creators will usually not create these directly.
   """
 
-  alias Absinthe.Type
-  alias Absinthe.Language
+  alias Absinthe.Utils
   use Absinthe.Introspection.Kind
 
   @typedoc """
@@ -25,60 +24,35 @@ defmodule Absinthe.Type.Directive do
   @type t :: %{name: binary, description: binary, args: map, on: [atom], instruction: ((map) -> atom), reference: Type.Reference.t}
   defstruct name: nil, description: nil, args: nil, on: [], instruction: nil, reference: nil
 
-  use Absinthe.Type.Definitions
-  alias Absinthe.Type
-  alias Absinthe.Language
 
-  @absinthe :directive
-  def include do
-    %Type.Directive{
-      description: "Directs the executor to include this field or fragment only when the `if` argument is true.",
-      args: args(
-        if: [type: non_null(:boolean), description: "Included when true."]
-      ),
-      on: [Language.FragmentSpread, Language.Field, Language.InlineFragment],
-      instruction: fn
-        %{if: true} ->
-          :include
-        _ ->
-          :skip
-      end
-    }
-  end
-
-  @absinthe :directive
-  def skip do
-    %Type.Directive{
-      description: "Directs the executor to skip this field or fragment when the `if` argument is true.",
-      args: args(
-        if: [type: non_null(:boolean), description: "Skipped when true."]
-      ),
-      on: [Language.FragmentSpread, Language.Field, Language.InlineFragment],
-      instruction: fn
-        %{if: true} ->
-          :skip
-        _ ->
-          :include
-      end
-    }
-  end
-
-  # Whether the directive is active in `place`
-  @doc false
-  @spec on?(t, atom) :: boolean
-  def on?(%{on: places}, place) do
-    Enum.member?(places, place)
-  end
-
-  # Check a directive and return an instruction
-  @doc false
-  @spec check(t, Language.t, map) :: atom
-  def check(definition, %{__struct__: place}, args) do
-    if on?(definition, place) && definition.instruction do
-      definition.instruction.(args)
-    else
-      :ok
+  def build([{identifier, name}], blueprint) do
+    args = args_ast(blueprint[:args])
+    quote do
+      %unquote(__MODULE__){
+        name: unquote(name),
+        args: unquote(args),
+        description: unquote(blueprint[:description]) || @absinthe_doc,
+        on: unquote(blueprint[:on]) || [],
+        instruction: unquote(blueprint[:instruction]),
+        reference: %{module: __MODULE__, identifier: unquote(identifier)}
+      }
     end
   end
+
+  defp args_ast(args) do
+    ast = for {arg_name, arg_attrs} <- args do
+      name = arg_name |> Atom.to_string |> Utils.camelize_lower
+      arg_data = [name: name] ++ arg_attrs
+      arg_ast = quote do
+        %Absinthe.Type.Argument{
+          unquote_splicing(arg_data)
+        }
+      end
+      {arg_name, arg_ast}
+    end
+
+    quote do: %{unquote_splicing(ast)}
+  end
+
 
 end

@@ -45,7 +45,7 @@ defmodule Absinthe.Schema.DefinitionTest do
 
     it "raises an exception" do
       err = assert_raise(Absinthe.Schema.Error, &load_duplicate_identifier_schema/0)
-      assert [%{name: :dup_ident, location: _, data: :person}] = err.problems
+      assert [%{name: :dup_type_ident, location: _, data: :person}] = err.problems
     end
 
   end
@@ -58,7 +58,7 @@ defmodule Absinthe.Schema.DefinitionTest do
 
     it "raises an exception" do
       err = assert_raise(Absinthe.Schema.Error, &load_duplicate_name_schema/0)
-      assert [%{name: :dup_name, location: _, data: "Person"}] = err.problems
+      assert [%{name: :dup_type_name, location: _, data: "Person"}] = err.problems
     end
 
   end
@@ -178,6 +178,20 @@ defmodule Absinthe.Schema.DefinitionTest do
 
     it "can have a custom name" do
       assert "MyRootMutation" == Schema.lookup_type(RootsSchema, :mutation).name
+    end
+
+  end
+
+  describe "directives" do
+
+    @tag :direct
+    it "are loaded as built-ins" do
+      load_schema("valid_schema")
+      assert %{skip: "skip", include: "include"} = ValidSchema.__absinthe_directives__
+      assert ValidSchema.__absinthe_directive__(:skip)
+      assert ValidSchema.__absinthe_directive__("skip") == ValidSchema.__absinthe_directive__(:skip)
+      assert Schema.lookup_directive(ValidSchema, :skip) == ValidSchema.__absinthe_directive__(:skip)
+      assert Schema.lookup_directive(ValidSchema, "skip") == ValidSchema.__absinthe_directive__(:skip)
     end
 
   end

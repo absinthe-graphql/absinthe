@@ -7,6 +7,16 @@ defmodule Absinthe.Schema.Definition do
       use Absinthe.Schema.TypeModule
       import unquote(__MODULE__)
       import_types Absinthe.Type.BuiltIns, export: false
+      @after_compile unquote(__MODULE__)
+    end
+  end
+
+  def __after_compile__(env, _bytecode) do
+    case env.module.__absinthe_errors__ do
+      [] ->
+        nil
+      problems ->
+        raise Absinthe.Schema.Error, problems
     end
   end
 
