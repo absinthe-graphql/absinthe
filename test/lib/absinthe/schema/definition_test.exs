@@ -1,5 +1,6 @@
 defmodule Absinthe.Schema.DefinitionTest do
   use ExSpec, async: true
+  alias Absinthe.Type
 
   def load_schema(name) do
     Code.require_file("test/support/lib/absinthe/schema/#{name}.exs")
@@ -27,6 +28,9 @@ defmodule Absinthe.Schema.DefinitionTest do
         {ident, name} ->
           assert ValidSchema.__absinthe_type__(ident) == ValidSchema.__absinthe_type__(name)
       end)
+      int = ValidSchema.__absinthe_type__(:integer)
+      assert 1 == Type.Scalar.serialize(int, 1)
+      assert {:ok, 1} == Type.Scalar.parse(int, "1.0")
     end
 
   end

@@ -55,6 +55,14 @@ defmodule Absinthe.Type.Scalar do
     end
   end
 
+  def serialize(%{serialize: serializer}, value) do
+    serializer.(value)
+  end
+
+  def parse(%{parse: parser}, value) do
+    parser.(value)
+  end
+
   @typedoc """
   A defined scalar type.
 
