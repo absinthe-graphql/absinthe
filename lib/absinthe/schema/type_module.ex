@@ -37,16 +37,10 @@ defmodule Absinthe.Schema.TypeModule do
     end
   end
 
-  defmacro query(attrs) do
-  end
-
-  defmacro mutation(attrs) do
-  end
-
-  defmacro object(identifier, blueprint) do
+  defmacro object(identifier, blueprint, opts \\ []) do
     naming = type_naming(identifier)
     ast = Absinthe.Type.Object.build(naming, expand(blueprint, __CALLER__))
-    define_type(naming, ast)
+    define_type(naming, ast, opts)
   end
 
   defmacro scalar(identifier, blueprint) do
@@ -122,9 +116,6 @@ defmodule Absinthe.Schema.TypeModule do
         end
         def __absinthe_type__(unquote(identifier)) do
           unquote(ast)
-        end
-        def __absinthe_type_ast__(unquote(identifier)) do
-          unquote(Macro.escape(ast))
         end
       end
     end
