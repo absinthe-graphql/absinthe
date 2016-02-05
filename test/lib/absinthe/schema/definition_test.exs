@@ -16,7 +16,17 @@ defmodule Absinthe.Schema.DefinitionTest do
       obj = ValidSchema.__absinthe_type__(:person)
       assert obj.name == "Person"
       assert obj.description == "A person"
-      assert %{person: "Person"} == ValidSchema.__absinthe_types__
+      assert %{person: "Person"} = ValidSchema.__absinthe_types__
+    end
+
+    it "includes the built-in types" do
+      load_valid_schema
+      assert map_size(Absinthe.Type.BuiltIns.__absinthe_types__) > 0
+      Absinthe.Type.BuiltIns.__absinthe_types__
+      |> Enum.each(fn
+        {ident, name} ->
+          assert ValidSchema.__absinthe_type__(ident) == ValidSchema.__absinthe_type__(name)
+      end)
     end
 
   end
@@ -46,5 +56,38 @@ defmodule Absinthe.Schema.DefinitionTest do
     end
 
   end
+
+  defmodule SourceSchema do
+    use Absinthe.Schema.Definition
+
+    object :foo, [
+      fields: [
+        name: [type: :string]
+      ]
+    ]
+
+  end
+
+  defmodule UserSchema do
+    use Absinthe.Schema.Definition
+
+    import_types SourceSchema
+
+    object :bar, [
+      fields: [
+        name: [type: :string]
+      ]
+    ]
+
+  end
+
+  describe "using import_types" do
+
+    it "adds the types" do
+      assert %{foo: "Foo", bar: "Bar"} = UserSchema.__absinthe_types__
+    end
+
+  end
+
 
 end

@@ -102,7 +102,8 @@ defmodule Absinthe.Type.Object do
         interfaces: unquote(blueprint[:interfaces] || []),
         fields: unquote(fields),
         is_type_of: unquote(blueprint[:is_type_of]),
-        description: @absinthe_doc
+        description: @absinthe_doc,
+        reference: %{module: __MODULE__, identifier: unquote(identifier)}
       }
     end
   end

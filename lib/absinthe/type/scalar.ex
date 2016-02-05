@@ -43,6 +43,18 @@ defmodule Absinthe.Type.Scalar do
   alias Absinthe.Flag
   alias Absinthe.Type
 
+  def build([{identifier, name}], blueprint) do
+    quote do
+      %unquote(__MODULE__){
+        name: unquote(name),
+        parse: unquote(blueprint[:parse]) || &(&1),
+        serialize: unquote(blueprint[:serialize]) || &(&1),
+        description: @absinthe_doc,
+        reference: %{module: __MODULE__, identifier: unquote(identifier)}
+      }
+    end
+  end
+
   @typedoc """
   A defined scalar type.
 
@@ -76,6 +88,7 @@ defmodule Absinthe.Type.Scalar do
             serialize: &(&1),
             parse: parse_with([Absinthe.Language.IntValue], &parse_int/1)}
   end
+
 
   @absinthe :type
   @doc false
