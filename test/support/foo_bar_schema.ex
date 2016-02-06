@@ -1,7 +1,5 @@
 defmodule FooBarSchema do
-
   use Absinthe.Schema
-
   alias Absinthe.Type
 
   @items %{
@@ -9,58 +7,46 @@ defmodule FooBarSchema do
     "bar" => %{id: "bar", name: "Bar"}
   }
 
-  def query do
-    %Type.Object{
-      fields: fields(
-        item: [
-          type: :item,
-          args: args(
-            id: [type: non_null(:id)]
-          ),
-          resolve: fn %{id: item_id}, _ ->
-            {:ok, @items[item_id]}
-          end
-        ]
-      )
-    }
-  end
+  query [
+    fields: [
+      item: [
+        type: :item,
+        args: [
+          id: [type: non_null(:id)]
+        ],
+        resolve: fn %{id: item_id}, _ ->
+          {:ok, @items[item_id]}
+        end
+      ]
+    ]
+  ]
 
-  @absinthe :type
-  def item do
-    %Type.Object{
-      description: "A Basic Type",
-      fields: fields(
-        id: [type: :id],
-        name: [type: :string]
-      )
-    }
-  end
+  @doc "A Basic Type"
+  object :item, [
+    fields: [
+      id: [type: :id],
+      name: [type: :string]
+    ]
+  ]
 
-  @absinthe type: :author
-  def person do
-    %Type.Object{
-      description: "A Person",
-      fields: fields(
-        id: [type: :id],
-        first_name: [type: :string],
-        last_name: [type: :string],
-        books: [type: list_of(:book)]
-      )
-    }
-  end
+  @doc "A Person"
+  object :person, [
+    fields: [
+      id: [type: :id],
+      first_name: [type: :string],
+      last_name: [type: :string],
+      books: [type: list_of(:book)]
+    ]
+  ]
 
-  @absinthe :type
-  def book do
-    %Type.Object{
-      name: "NonFictionBook",
-      description: "A Book",
-      fields: fields(
-        id: [type: :id],
-        title: [type: :string],
-        isbn: [type: :string],
-        authors: [type: list_of(:author)]
-      )
-    }
-  end
+  @doc "A Book"
+  object [book: "NonFictionBook"], [
+    fields: [
+      id: [type: :id],
+      title: [type: :string],
+      isbn: [type: :string],
+      authors: [type: list_of(:author)]
+    ]
+  ]
 
 end

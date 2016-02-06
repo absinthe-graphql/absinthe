@@ -13,7 +13,7 @@ end
 
 defimpl Absinthe.Traversal.Node, for: Atom do
   # Type Reference
-  def children(node, %{context: %Absinthe.Schema{} = schema}) do
+  def children(node, %{context: schema}) do
     case Absinthe.Schema.lookup_type(schema, node) do
       nil ->
         []

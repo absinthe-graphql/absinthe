@@ -64,7 +64,7 @@ defmodule Absinthe.Schema.DefinitionTest do
   end
 
   defmodule SourceSchema do
-    use Absinthe.Schema.Definition
+    use Absinthe.Schema
 
     query [
       fields: [
@@ -86,7 +86,7 @@ defmodule Absinthe.Schema.DefinitionTest do
   end
 
   defmodule UserSchema do
-    use Absinthe.Schema.Definition
+    use Absinthe.Schema
 
     import_types SourceSchema
 
@@ -116,7 +116,7 @@ defmodule Absinthe.Schema.DefinitionTest do
   end
 
   defmodule ThirdSchema do
-    use Absinthe.Schema.Definition
+    use Absinthe.Schema
 
     import_types UserSchema
 
@@ -152,7 +152,7 @@ defmodule Absinthe.Schema.DefinitionTest do
   end
 
   defmodule RootsSchema do
-    use Absinthe.Schema.Definition
+    use Absinthe.Schema
 
     import_types SourceSchema
 

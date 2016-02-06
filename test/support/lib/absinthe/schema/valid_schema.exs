@@ -1,5 +1,5 @@
 defmodule ValidSchema do
-  use Absinthe.Schema.Definition
+  use Absinthe.Schema
 
   @doc "A person"
   object :person, [

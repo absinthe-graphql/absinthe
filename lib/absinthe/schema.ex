@@ -1,4 +1,6 @@
 defmodule Absinthe.Schema do
+  alias Absinthe.Utils
+  import Absinthe.Schema.TypeModule
 
   @moduledoc """
   Define a GraphQL schema.
@@ -20,9 +22,8 @@ defmodule Absinthe.Schema do
   end
   ```
 
-  Now, define a `query` function (and optionally, `mutation`
-  and `subscription`) functions. These should return the _root_
-  objects for each of those operations.
+  Now, define a `query` (and optionally, `mutation`
+  and `subscription`).
 
   We'll define a `query` that has one field, `item`, to support
   querying for an item record by its ID:
@@ -36,29 +37,22 @@ defmodule Absinthe.Schema do
     "bar" => %{id: "bar", name: "Bar", value: 5}
   }
 
-  def query do
-    %Absinthe.Type.Object{
-      fields: fields(
-        item: [
-          type: :item,
-          description: "Get an item by ID",
-          args: args(
-            id: [type: :id, description: "The ID of the item"]
-          ),
-          resolve: fn %{id: id}, _ ->
+  query [
+    fields: [
+      item: [
+        type: :item,
+        description: "Get an item by ID",
+        args: [
+          id: [type: :id, description: "The ID of the item"]
+        ],
+        resolve: fn
+          %{id: id}, _ ->
             {:ok, Map.get(@fake_db, id)}
-          end
-        ]
-      )
-    }
-  end
+        end
+      ]
+    ]
+  ]
   ```
-
-  We use `Absinthe.Type.Definitions.fields/1` and
-  `Absinthe.Type.Definitions.args/1` here, available automatically because
-  of the `use Absinthe.Schema` at the top of our module. These are
-  convenience functions that ease compact, readable definitions for fields
-  and arguments.
 
   For more information on object types (especially how the `resolve`
   function works above), see `Absinthe.Type.Object`.
@@ -67,36 +61,29 @@ defmodule Absinthe.Schema do
   to be of `type: :item`. We now need to define exactly what an `:item` is,
   and what fields it contains.
 
-  Thankfully another `Absinthe.Type.Definitions` utility can be used to do this
-  easily, and inside our schema module. We just need to set the `@absinthe`
-  module attribute before a function that returns an object type:
-
   ```
-  @absinthe :type
-  def item do
-    %Absinthe.Type.Object{
-      description: "A valuable item",
-      fields: fields(
-        id: [type: :id],
-        name: [type: :string, description: "The item's name"],
-        value: [type: :integer, description: "Recently appraised value"]
-      )
-    }
-  end
+  @doc \"""
+  A valuable item
+  \"""
+  object :item, [
+    fields: [
+      id: [type: :id],
+      name: [type: :string, description: "The item's name"],
+      value: [type: :integer, description: "Recently appraised value"]
+    ]
+  ]
   ```
 
-  (You can read more about building custom types and the available
-  convenience functions in `Absinthe.Type.Definitions` --
-  and check out `Absinthe.Type.Scalar`, where the built-in types like
-  `:integer`, `:id`, and `:string` are defined.)
-
-  We can also load types from other modules using the `:type_modules`
-  option in our `use Absinthe.Schema`, eg:
+  We can also load types from other modules using the `import_types`
+  macro:
 
   ```
   defmodule App.Schema do
 
-    use Absinthe.Schema, type_modules: [App.Schema.Scalars, App.Schema.Objects]
+    use Absinthe.Schema
+
+    import_types App.Schema.Scalars
+    import_types App.Schema.Objects
 
     # ... schema definition
 
@@ -108,137 +95,103 @@ defmodule Absinthe.Schema do
   ```
   defmodule App.Schema.Objects do
 
-    use Absinthe.Type.Definitions
+    use Absinthe.Scheme.TypeModule
 
-    @absinthe :type
-    def item do
+    object :item, [
       # ... type definition
-    end
+    ]
 
     # ... other objects!
 
   end
   ```
-
-  Our schema is now ready to be executed (using, eg, `Absinthe.run/2` and
-  friends).
   """
 
-  defmacro __using__(options) do
-    type_modules = options |> Keyword.get(:type_modules, [])
-    quote do
-      @behaviour unquote(__MODULE__)
-
-      def mutation, do: nil
-
-      def subscription, do: nil
-
-      defoverridable [mutation: 0,
-                      subscription: 0]
-
-      @doc """
-      Build the configured schema struct.
-
-      This uses functions implementing the callbacks for
-      the `Abinthe.Schema` behaviour. You should never
-      need to create a schema struct manually.
-      """
-      def schema do
-        contents = [
-          query: __absinthe_info__(:types)[:query],
-          mutation: __absinthe_info__(:types)[:mutation],
-          subscription: __absinthe_info__(:types)[:subscription]
-        ]
-        |> Enum.filter(fn
-          {_, nil} -> false
-          other -> true
-        end)
-        |> Enum.into(%{})
-        |> Map.merge(%{type_modules: [__MODULE__] ++ unquote(type_modules), reference: %{module: __MODULE__}})
-        struct(unquote(__MODULE__), contents)
-        |> unquote(__MODULE__).prepare
-      end
-
-      use Absinthe.Type.Definitions
-
-    end
-  end
-
-  @doc """
-  (Required) Define the query root type.
-
-  Should be an `Absinthe.Type.Object` struct.
+  @typedoc """
+  A module defining a schema.
   """
-  @callback query :: Absinthe.Type.Object.t
-
-  @doc """
-  (Optional) Define the mutation root type.
-
-  Should be an `Absinthe.Type.Object` struct.
-  """
-  @callback mutation :: nil | Absinthe.Type.Object.t
-
-  @doc """
-  (Optional) Define the subscription root type.
-
-  Should be an `Absinthe.Type.Object` struct.
-  """
-  @callback subscription :: nil | Absinthe.Type.Object.t
+  @type t :: atom
 
   alias Absinthe.Type
   alias Absinthe.Language
   alias __MODULE__
 
-  @typedoc """
-  A struct containing the defined schema details.
+  defmacro __using__(opts) do
+    quote do
+      use Absinthe.Schema.TypeModule
+      import unquote(__MODULE__)
+      import_types Absinthe.Type.BuiltIns, export: false
+      @after_compile unquote(__MODULE__)
+    end
+  end
 
-  Don't create these structs yourself. Just define
-  the necessary `Absinthe.Schema` callbacks and
-  use `schema/0`
-  """
-  @type t :: %{query: Absinthe.Type.Object.t,
-               mutation: nil | Absinthe.Type.Object.t,
-               subscription: nil | Absinthe.Type.Object.t,
-               type_modules: [atom],
-               directives: %{atom => Absinthe.Type.Directive.t},
-               types: Schema.TypeMap.t,
-               interfaces: Schema.InterfaceMap.t,
-               errors: [binary],
-               reference: %{module: atom}}
+  def __after_compile__(env, _bytecode) do
+    case env.module.__absinthe_errors__ do
+      [] ->
+        nil
+      problems ->
+        raise Absinthe.Schema.Error, problems
+    end
+  end
 
-  defstruct query: nil, mutation: nil, subscription: nil, type_modules: [], directives: nil, types: nil, interfaces: %{}, errors: [], reference: nil
+  defmacro query(name, blueprint) when is_binary(name) do
+    quote do
+      object [query: unquote(name)], unquote(blueprint), export: false
+    end
+  end
+  defmacro query(blueprint) do
+    quote do
+      query "RootQueryType", unquote(blueprint)
+    end
+  end
 
-  @doc false
-  @spec prepare(t) :: t
-  def prepare(schema) do
-    schema
-    |> Schema.TypeMap.setup
-    |> Schema.InterfaceMap.setup
-    |> Schema.Verification.setup
+  defmacro mutation(name, blueprint) when is_binary(name) do
+    quote do
+      object [mutation: unquote(name)], unquote(blueprint), export: false
+    end
+  end
+  defmacro mutation(blueprint) do
+    quote do
+      mutation "RootMutationType", unquote(blueprint)
+    end
+  end
+
+  defmacro subscription(name, blueprint) when is_binary(name) do
+    quote do
+      object [subscription: unquote(name)], unquote(blueprint), export: false
+    end
+  end
+  defmacro subscription(blueprint) do
+    quote do
+      subscription "RootSubscriptionType", unquote(blueprint)
+    end
   end
 
   # Lookup a directive that in used by/available to a schema
-  @doc false
-  @spec lookup_directive(atom, atom | binary) :: Type.Directive.t | nil
+  @doc """
+  Lookup a directive.
+  """
+  @spec lookup_directive(t, atom | binary) :: Type.Directive.t | nil
   def lookup_directive(schema, name) do
     schema.__absinthe_directive__(name)
   end
 
-  # Lookup a type that in used by/available to a schema
-  @doc false
+  @doc """
+  Lookup a type by name, identifier, or by unwrapping.
+  """
   @spec lookup_type(atom, Type.wrapping_t | Type.t | Type.identifier_t, Keyword.t) :: Type.t | nil
-  def lookup_type(schema_mod, type, options \\ [unwrap: true]) do
+  def lookup_type(schema, type, options \\ [unwrap: true]) do
     cond do
       Type.wrapped?(type) ->
         if Keyword.get(options, :unwrap) do
-          lookup_type(schema_mod, type |> Type.unwrap)
+          lookup_type(schema, type |> Type.unwrap)
         else
           type
         end
       is_atom(type) ->
-        schema_mod.__absinthe_type__(type)
+        schema.__absinthe_type__(type)
       is_binary(type) ->
-        schema_mod.__absinthe_type__(type)
+        schema.__absinthe_type__(type)
       true ->
         type
     end
@@ -259,50 +212,12 @@ defmodule Absinthe.Schema do
     end
   end
   def type_from_ast(schema, ast_type) do
-    schema.types.by_identifier
+    schema.__absinthe_types__
     |> Map.values
     |> Enum.find(:name, fn
       %{name: name} ->
         name == ast_type.name
     end)
-  end
-
-  @doc """
-  Verify that a schema is correctly formed
-
-  ## Examples
-
-  `{:ok, schema}` is returned if the schema is free of errors:
-
-  ```
-  {:ok, schema} = Absinthe.Schema.verify(App.GoodSchema)
-  ```
-
-  Otherwise the errors are returned in a tuple:
-
-  ```
-  {:error, errors} = Absinthe.Schema.verify(App.BadSchema)
-  ```
-
-  """
-  @spec verify(atom | t) :: {:ok, t}  | {:error, [binary]}
-  def verify(name) when is_atom(name) do
-    verify(name.schema)
-  end
-  def verify(%Schema{errors: errors}) when length(errors) > 0 do
-    {:error, errors}
-  end
-  def verify(%Schema{} = schema) do
-    {:ok, schema}
-  end
-
-  defimpl Absinthe.Traversal.Node do
-
-    def children(node, _) do
-      [node.query, node.mutation, node.subscription]
-      |> Enum.reject(&is_nil/1)
-    end
-
   end
 
 end

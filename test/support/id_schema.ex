@@ -1,6 +1,5 @@
 defmodule Absinthe.IdTestSchema do
   use Absinthe.Schema
-  alias Absinthe.Type
 
   # Example data
   @items %{
@@ -8,31 +7,26 @@ defmodule Absinthe.IdTestSchema do
     "bar" => %{id: "bar", name: "Bar"}
   }
 
-  def query do
-    %Type.Object{
-      fields: fields(
-        item: [
-          type: :item,
-          args: args(
-            id: [type: non_null(:id)]
-          ),
-          resolve: fn %{id: item_id}, _ ->
-            {:ok, @items[item_id]}
-          end
-        ]
-      )
-    }
-  end
+  query [
+    fields: [
+      item: [
+        type: :item,
+        args: [
+          id: [type: non_null(:id)]
+        ],
+        resolve: fn %{id: item_id}, _ ->
+          {:ok, @items[item_id]}
+        end
+      ]
+    ]
+  ]
 
-  @absinthe :type
-  def item do
-    %Type.Object{
-      description: "An item",
-      fields: fields(
-        id: [type: :id],
-        name: [type: :string]
-      )
-    }
-  end
+  @doc "An item"
+  object :item, [
+    fields: [
+      id: [type: :id],
+      name: [type: :string]
+    ]
+  ]
 
 end

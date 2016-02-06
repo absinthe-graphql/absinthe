@@ -57,6 +57,9 @@ defmodule Absinthe.Schema.TypeModule do
   defmacro union(identifier, blueprint) do
   end
 
+  defmacro enum(identifier, blueprint) do
+  end
+
   defmacro import_types(type_module_ast, opts_ast \\ []) do
     opts = Macro.expand(opts_ast, __CALLER__)
     type_module = Macro.expand(type_module_ast, __CALLER__)

@@ -1,5 +1,5 @@
 defmodule ContactSchema do
-  use Absinthe.Schema.Definition
+  use Absinthe.Schema
 
   @bruce %{name: "Bruce", age: 35}
   @others [
