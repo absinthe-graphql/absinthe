@@ -126,7 +126,12 @@ defmodule Absinthe.Schema do
   end
 
   def __after_compile__(env, _bytecode) do
-    case env.module.__absinthe_errors__ do
+    [
+      env.module.__absinthe_errors__,
+      Schema.Problems.ReservedNames.from(env.module)
+    ]
+    |> List.flatten
+    |> case do
       [] ->
         nil
       problems ->

@@ -103,7 +103,14 @@ defmodule Absinthe.Type.Object do
         fields: unquote(fields),
         is_type_of: unquote(blueprint[:is_type_of]),
         description: @absinthe_doc,
-        reference: %{module: __MODULE__, identifier: unquote(identifier)}
+        reference: %{
+          module: __MODULE__,
+          identifier: unquote(identifier),
+          location: %{
+            file: __ENV__.file,
+            line: __ENV__.line
+          }
+        }
       }
     end
   end
@@ -122,6 +129,22 @@ defmodule Absinthe.Type.Object do
 
     quote do: %{unquote_splicing(ast)}
   end
+
+  defp args_ast(args) do
+    ast = for {arg_name, arg_attrs} <- args do
+      name = arg_name |> Atom.to_string |> Utils.camelize_lower
+      arg_data = [name: name] ++ arg_attrs
+      arg_ast = quote do
+        %Absinthe.Type.Argument{
+          unquote_splicing(arg_data)
+        }
+      end
+      {arg_name, arg_ast}
+    end
+
+    quote do: %{unquote_splicing(ast)}
+  end
+
 
   @doc false
   @spec field(t, atom) :: Absinthe.Type.Field.t

@@ -5,28 +5,28 @@ defmodule Absinthe.Execution.ArgumentsTest do
 
   defmodule Schema do
     use Absinthe.Schema
-    alias Absinthe.Type
 
-    @res %{true => "YES", false => "NO"}
+    @res %{
+      true => "YES",
+      false => "NO"
+    }
 
-    def query do
-      %Type.Object{
-        fields: fields(
-          something: [
-            type: :string,
-            args: args(
-              flag: [type: :boolean, default_value: false]
-            ),
-            resolve: fn
-              %{flag: val}, _ ->
-                {:ok, @res[val]}
-              _, _ ->
-                {:error, "No value provided for flag argument"}
-            end
-          ]
-        )
-      }
-    end
+    query [
+      fields: [
+        something: [
+          type: :string,
+          args: [
+            flag: [type: :boolean, default_value: false]
+          ],
+          resolve: fn
+            %{flag: val}, _ ->
+              {:ok, @res[val]}
+            _, _ ->
+              {:error, "No value provided for flag argument"}
+          end
+        ]
+      ]
+    ]
 
   end
 
