@@ -83,6 +83,26 @@ defmodule Absinthe.Type.Enum do
   @type t :: %{name: binary, description: binary, values: %{binary => Type.Enum.Value.t}, reference: Type.Reference.t}
   defstruct name: nil, description: nil, values: %{}, reference: nil
 
+
+  def build([{identifier, name}], blueprint) do
+    values = Type.Enum.Value.build_map_ast(blueprint[:values] || [])
+    quote do
+      %unquote(__MODULE__){
+        name: unquote(name),
+        description: @absinthe_doc,
+        values: unquote(values),
+        reference: %{
+          module: __MODULE__,
+          identifier: unquote(identifier),
+          location: %{
+            file: __ENV__.file,
+            line: __ENV__.line
+          }
+        }
+      }
+    end
+  end
+
   # Get the internal representation of an enum value
   @doc false
   @spec parse(t, any) :: any
