@@ -48,6 +48,25 @@ defmodule Absinthe.Type.Union do
 
   defstruct name: nil, description: nil, resolve_type: nil, types: [], reference: nil
 
+  def build([{identifier, name}], blueprint) do
+    quote do
+      %unquote(__MODULE__){
+        name: unquote(name),
+        types: unquote(blueprint[:types]) || [],
+        resolve_type: unquote(blueprint[:resolve_type]),
+        description: @absinthe_doc,
+        reference: %{
+          module: __MODULE__,
+          identifier: unquote(identifier),
+          location: %{
+            file: __ENV__.file,
+            line: __ENV__.line
+          }
+        }
+      }
+    end
+  end
+
   @doc false
   def member?(%{types: types}, type) do
     types
@@ -61,8 +80,14 @@ defmodule Absinthe.Type.Union do
       %{is_type_of: nil} ->
         false
       type ->
-        type_struct = schema.types[type]
-        type_struct.is_type_of.(obj)
+        case schema.__absinthe_type__(type) do
+          nil ->
+            false
+          %{is_type_of: nil} ->
+            false
+          %{is_type_of: check} ->
+            check.(obj)
+        end
     end)
   end
   def resolve_type(%{resolve_type: resolver}, obj, %{schema: schema} = env) do
@@ -70,7 +95,7 @@ defmodule Absinthe.Type.Union do
       nil ->
         nil
       ident when is_atom(ident) ->
-        schema.types[ident]
+        Absinthe.Schema.lookup_type(schema, ident)
     end
   end
 

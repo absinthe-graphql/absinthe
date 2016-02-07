@@ -58,7 +58,10 @@ defmodule Absinthe.Schema.TypeModule do
     define_type(naming, ast, opts)
   end
 
-  defmacro union(identifier, blueprint) do
+  defmacro union(identifier, blueprint, opts \\ []) do
+    naming = type_naming(identifier)
+    ast = Absinthe.Type.Union.build(naming, expand(blueprint, __CALLER__))
+    define_type(naming, ast, opts)
   end
 
   defmacro enum(identifier, blueprint, opts \\ []) do
