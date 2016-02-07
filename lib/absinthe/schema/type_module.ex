@@ -1,5 +1,6 @@
 defmodule Absinthe.Schema.TypeModule do
   alias Absinthe.Utils
+  alias Absinthe.Type
 
   defmacro __using__(opts) do
     quote do
@@ -51,7 +52,10 @@ defmodule Absinthe.Schema.TypeModule do
   defmacro interface(identifier, blueprint) do
   end
 
-  defmacro input_object(identifier, blueprint) do
+  defmacro input_object(identifier, blueprint, opts \\ []) do
+    naming = type_naming(identifier)
+    ast = Absinthe.Type.InputObject.build(naming, expand(blueprint, __CALLER__))
+    define_type(naming, ast, opts)
   end
 
   defmacro union(identifier, blueprint) do
@@ -161,9 +165,10 @@ defmodule Absinthe.Schema.TypeModule do
     end
   end
 
-
   defmacro deprecate(node, options \\ []) do
-    node
+    quote do
+      [unquote_splicing(node), deprecation: %Type.Deprecation{unquote_splicing(options)}]
+    end
   end
 
   defmacro non_null(type) do

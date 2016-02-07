@@ -8,21 +8,13 @@ defmodule Absinthe.SchemaTest do
     Code.require_file("test/support/lib/absinthe/schema/#{name}.exs")
   end
 
-  describe "object" do
+  describe "built-in types" do
 
     def load_valid_schema do
       load_schema("valid_schema")
     end
 
-    it "defines an object" do
-      load_valid_schema
-      obj = ValidSchema.__absinthe_type__(:person)
-      assert obj.name == "Person"
-      assert obj.description == "A person"
-      assert %{person: "Person"} = ValidSchema.__absinthe_types__
-    end
-
-    it "includes the built-in types" do
+    it "are loaded" do
       load_valid_schema
       assert map_size(Absinthe.Type.BuiltIns.__absinthe_types__) > 0
       Absinthe.Type.BuiltIns.__absinthe_types__
@@ -199,21 +191,6 @@ defmodule Absinthe.SchemaTest do
 
     it "have the correct structure" do
       assert %Type.Argument{name: "family_name"} = Schema.lookup_type(RootsSchema, :query).fields.name.args.family_name
-    end
-
-  end
-
-
-  describe "directives" do
-
-    @tag :direct
-    it "are loaded as built-ins" do
-      load_schema("valid_schema")
-      assert %{skip: "skip", include: "include"} = ValidSchema.__absinthe_directives__
-      assert ValidSchema.__absinthe_directive__(:skip)
-      assert ValidSchema.__absinthe_directive__("skip") == ValidSchema.__absinthe_directive__(:skip)
-      assert Schema.lookup_directive(ValidSchema, :skip) == ValidSchema.__absinthe_directive__(:skip)
-      assert Schema.lookup_directive(ValidSchema, "skip") == ValidSchema.__absinthe_directive__(:skip)
     end
 
   end
