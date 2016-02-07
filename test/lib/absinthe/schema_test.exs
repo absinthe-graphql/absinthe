@@ -158,7 +158,12 @@ defmodule Absinthe.SchemaTest do
 
     query [
       fields: [
-        name: [type: :string]
+        name: [
+          type: :string,
+          args: [
+            family_name: [type: :boolean]
+          ]
+        ]
       ]
     ]
 
@@ -181,6 +186,23 @@ defmodule Absinthe.SchemaTest do
     end
 
   end
+
+  describe "fields" do
+
+    it "have the correct structure" do
+      assert %Type.Field{name: "name"} = Schema.lookup_type(RootsSchema, :query).fields.name
+    end
+
+  end
+
+  describe "arguments" do
+
+    it "have the correct structure" do
+      assert %Type.Argument{name: "family_name"} = Schema.lookup_type(RootsSchema, :query).fields.name.args.family_name
+    end
+
+  end
+
 
   describe "directives" do
 

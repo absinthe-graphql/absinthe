@@ -116,7 +116,7 @@ defmodule Absinthe.Schema do
   alias Absinthe.Language
   alias __MODULE__
 
-  defmacro __using__(opts) do
+  defmacro __using__(_opts) do
     quote do
       use Absinthe.Schema.TypeModule
       import unquote(__MODULE__)

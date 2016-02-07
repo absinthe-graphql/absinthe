@@ -95,7 +95,7 @@ defmodule Absinthe.Type.Object do
   defstruct name: nil, description: nil, fields: nil, interfaces: [], is_type_of: nil, reference: nil
 
   def build([{identifier, name}], blueprint) do
-    fields = fields_ast(blueprint[:fields])
+    fields = Type.Field.build_map_ast(blueprint[:fields] || [])
     quote do
       %unquote(__MODULE__){
         name: unquote(name),
@@ -114,37 +114,6 @@ defmodule Absinthe.Type.Object do
       }
     end
   end
-
-  defp fields_ast(fields) do
-    ast = for {field_name, field_attrs} <- fields do
-      name = field_name |> Atom.to_string |> Utils.camelize_lower
-      field_data = [name: name] ++ field_attrs
-      field_ast = quote do
-        %Absinthe.Type.Field{
-          unquote_splicing(field_data)
-        }
-      end
-      {field_name, field_ast}
-    end
-
-    quote do: %{unquote_splicing(ast)}
-  end
-
-  defp args_ast(args) do
-    ast = for {arg_name, arg_attrs} <- args do
-      name = arg_name |> Atom.to_string |> Utils.camelize_lower
-      arg_data = [name: name] ++ arg_attrs
-      arg_ast = quote do
-        %Absinthe.Type.Argument{
-          unquote_splicing(arg_data)
-        }
-      end
-      {arg_name, arg_ast}
-    end
-
-    quote do: %{unquote_splicing(ast)}
-  end
-
 
   @doc false
   @spec field(t, atom) :: Absinthe.Type.Field.t

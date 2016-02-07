@@ -1,4 +1,5 @@
 defmodule Absinthe.Type.Argument do
+  alias Absinthe.Utils
 
   @moduledoc """
   Used to define an argument.
@@ -30,6 +31,32 @@ defmodule Absinthe.Type.Argument do
                description: binary | nil}
 
   defstruct name: nil, description: nil, type: nil, deprecation: nil, default_value: nil
+
+  @doc """
+  Build an AST of the args map for inclusion in other types
+
+  ## Examples
+
+  ```
+  iex> build_map_ast([foo: [type: :string], bar: [type: :integer]])
+  {:%{}, [],
+   [foo: {:%, [],
+    [{:__aliases__, [alias: false], [:Absinthe, :Type, :Argument]},
+     {:%{}, [], [name: "foo", type: :string]}]},
+    bar: {:%, [],
+   [{:__aliases__, [alias: false], [:Absinthe, :Type, :Argument]},
+    {:%{}, [], [name: "bar", type: :integer]}]}]}
+  ```
+  """
+  def build_map_ast(args) do
+    ast = for {arg_name, arg_attrs} <- args do
+      name = arg_name |> Atom.to_string
+      arg_data = [name: name] ++ arg_attrs
+      arg_ast = quote do: %Absinthe.Type.Argument{unquote_splicing(arg_data)}
+      {arg_name, arg_ast}
+    end
+    quote do: %{unquote_splicing(ast)}
+  end
 
   defimpl Absinthe.Validation.RequiredInput do
 

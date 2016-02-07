@@ -1,4 +1,6 @@
 defmodule Absinthe.Type.Field do
+  alias Absinthe.Type
+  alias Absinthe.Utils
 
   @moduledoc """
   Used to define a field.
@@ -103,6 +105,36 @@ defmodule Absinthe.Type.Field do
                resolve: resolver_t | nil}
 
   defstruct name: nil, description: nil, type: nil, deprecation: nil, args: %{}, resolve: nil, default_value: nil
+
+  @doc """
+  Build an AST of the field map for inclusion in other types
+
+  ## Examples
+
+  ```
+  iex> build_map_ast([foo: [type: :string], bar: [type: :integer]])
+  {:%{}, [],
+   [foo: {:%, [],
+     [{:__aliases__, [alias: false], [:Absinthe, :Type, :Field]},
+      {:%{}, [], [name: "Foo", type: :string]}]},
+    bar: {:%, [],
+     [{:__aliases__, [alias: false], [:Absinthe, :Type, :Field]},
+      {:%{}, [], [name: "Bar", type: :integer]}]}]}
+  ```
+  """
+  @spec build_map_ast(Keyword.t) :: %{atom => Absinthe.Type.Field.t}
+  def build_map_ast(fields) do
+    ast = for {field_name, field_attrs} <- fields do
+      name = field_name |> Atom.to_string
+      field_data = [name: name] ++ Keyword.update(field_attrs, :args, [], fn
+        args ->
+          Type.Argument.build_map_ast(args || [])
+      end)
+      field_ast = quote do: %Absinthe.Type.Field{unquote_splicing(field_data)}
+      {field_name, field_ast}
+    end
+    quote do: %{unquote_splicing(ast)}
+  end
 
   defimpl Absinthe.Validation.RequiredInput do
 
