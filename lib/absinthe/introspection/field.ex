@@ -3,6 +3,7 @@ defmodule Absinthe.Introspection.Field do
   @moduledoc false
 
   use Absinthe.Type.Definitions
+  alias Absinthe.Schema
   alias Absinthe.Type
 
   def meta("typename") do
@@ -44,7 +45,7 @@ defmodule Absinthe.Introspection.Field do
       ),
       resolve: fn
         %{name: name}, %{schema: schema} ->
-          {:ok, schema.types.by_name[name]}
+          {:ok, Schema.lookup_type(schema, name)}
       end
     }
   end

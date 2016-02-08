@@ -202,6 +202,27 @@ defmodule Absinthe.Schema do
     end
   end
 
+  @spec types(t) :: [Type.t]
+  def types(schema) do
+    schema.__absinthe_types__
+    |> Enum.keys
+    |> Enum.map(&lookup_type(schema, &1))
+  end
+
+  @spec directives(t) :: [Type.Directive.t]
+  def directives(schema) do
+    schema.__absinthe_directives__
+    |> Enum.keys
+    |> Enum.map(&lookup_directive(schema, &1))
+  end
+
+  @spec implementors(t, atom) :: [Type.Object.t]
+  def implementors(schema, ident) do
+    schema.__absinthe_interface_implementors__
+    |> Map.get(ident, [])
+    |> Enum.map(&lookup_type(schema, &1))
+  end
+
   @doc false
   @spec type_from_ast(t, Language.type_reference_t) :: Absinthe.Type.t | nil
   def type_from_ast(schema, %Language.NonNullType{type: inner_type}) do

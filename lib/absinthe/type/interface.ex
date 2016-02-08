@@ -71,14 +71,34 @@ defmodule Absinthe.Type.Interface do
 
   alias Absinthe.Type
   alias Absinthe.Execution
+  alias Absinthe.Schema
 
   @type t :: %{name: binary, description: binary, fields: map, resolve_type: ((any, Absinthe.Execution.t) -> atom | nil), reference: Type.Reference.t}
   defstruct name: nil, description: nil, fields: nil, resolve_type: nil, reference: nil
 
+  def build([{identifier, name}], blueprint) do
+    fields = Type.Field.build_map_ast(blueprint[:fields] || [])
+    quote do
+      %unquote(__MODULE__){
+        name: unquote(name),
+        fields: unquote(fields),
+        resolve_type: unquote(blueprint[:resolve_type]),
+        description: @absinthe_doc,
+        reference: %{
+          module: __MODULE__,
+          identifier: unquote(identifier),
+          location: %{
+            file: __ENV__.file,
+            line: __ENV__.line
+          }
+        }
+      }
+    end
+  end
 
   @spec resolve_type(Type.Interface.t, any, Execution.Field.t) :: Type.t | nil
   def resolve_type(%{resolve_type: nil, reference: %{identifier: ident}}, obj, %{schema: schema}) do
-    implementors = schema.interfaces[ident]
+    implementors = Schema.implementors(schema, ident)
     Enum.find(implementors, fn
       %{is_type_of: nil} ->
         false
@@ -91,7 +111,7 @@ defmodule Absinthe.Type.Interface do
       nil ->
         nil
       ident when is_atom(ident) ->
-        schema.types[ident]
+        Schema.lookup_type(schema, ident)
     end
   end
 

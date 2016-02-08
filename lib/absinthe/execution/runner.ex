@@ -5,6 +5,7 @@ defmodule Absinthe.Execution.Runner do
 
   alias Absinthe.Execution
   alias Absinthe.Execution.Resolution
+  alias Absinthe.Schema
 
   @doc false
   @spec run(Execution.t) :: {:ok, Execution.result_t} | {:error, any}
@@ -19,20 +20,9 @@ defmodule Absinthe.Execution.Runner do
   end
 
   @spec execute(atom, Absinthe.Language.OperationDefinition.t, Absinthe.Execution.t) :: {:ok, Execution.result_t} | {:error, any}
-  defp execute(:query, operation, %{schema: %{query: query}} = execution) do
-    resolution = %Resolution{target: query}
+  defp execute(op_type, operation, %{schema: schema} = execution) do
+    resolution = %Resolution{target: Absinthe.Schema.lookup_type(schema, op_type)}
     Resolution.resolve(operation, %{execution | strategy: :serial, resolution: resolution})
-  end
-  defp execute(:mutation, operation, %{schema: %{mutation: mutation}} = execution) do
-    resolution = %Resolution{target: mutation}
-    Resolution.resolve(operation, %{execution | strategy: :serial, resolution: resolution})
-  end
-  defp execute(:subscription, operation, %{schema: %{subscription: subscription}} = execution) do
-    resolution = %Resolution{target: subscription}
-    Resolution.resolve(operation, %{execution | strategy: :serial, resolution: resolution})
-  end
-  defp execute(op_type, _operation, _execution) do
-    {:error, "No execution strategy for: #{op_type}"}
   end
 
   # Remove unused `data` and `errors` entries from a result

@@ -9,6 +9,7 @@ defmodule Absinthe.Schema.TypeModule do
       Module.register_attribute __MODULE__, :absinthe_types, accumulate: true
       Module.register_attribute __MODULE__, :absinthe_directives, accumulate: true
       Module.register_attribute __MODULE__, :absinthe_exports, accumulate: true
+      Module.register_attribute __MODULE__, :absinthe_interface_implementors, accumulate: true
       @before_compile unquote(__MODULE__)
     end
   end
@@ -26,6 +27,19 @@ defmodule Absinthe.Schema.TypeModule do
 
       def __absinthe_errors__, do: @absinthe_errors
 
+      @absinthe_interface_implementors_map Enum.reduce(@absinthe_interface_implementors, %{}, fn
+        {iface, obj_ident}, acc ->
+          {_, result} = Map.get_and_update(acc, iface, fn
+            nil ->
+              {nil, [obj_ident]}
+            impls ->
+              {impls, [obj_ident | impls]}
+          end)
+          result
+      end)
+      def __absinthe_interface_implementors__ do
+        @absinthe_interface_implementors_map
+      end
       def __absinthe_exports__, do: @absinthe_exports
 
     end
@@ -33,8 +47,12 @@ defmodule Absinthe.Schema.TypeModule do
 
   defmacro object(identifier, blueprint, opts \\ []) do
     naming = type_naming(identifier)
-    ast = Absinthe.Type.Object.build(naming, expand(blueprint, __CALLER__))
-    define_type(naming, ast, opts)
+    expanded = expand(blueprint, __CALLER__)
+    ast = Absinthe.Type.Object.build(naming, expanded)
+    [
+      define_type(naming, ast, opts),
+      define_interface_mapping(naming, expanded[:interfaces] || [])
+    ]
   end
 
   defmacro directive(identifier, blueprint, opts \\ []) when is_atom(identifier) do
@@ -43,13 +61,17 @@ defmodule Absinthe.Schema.TypeModule do
     define_directive(naming, ast, opts)
   end
 
-  defmacro scalar(identifier, blueprint) do
+  defmacro scalar(identifier, blueprint, opts \\ []) do
     naming = type_naming(identifier)
     ast = Absinthe.Type.Scalar.build(naming, expand(blueprint, __CALLER__))
-    define_type(naming, ast)
+    define_type(naming, ast, opts)
   end
 
-  defmacro interface(identifier, blueprint) do
+  defmacro interface(identifier, blueprint, opts \\ []) do
+    naming = type_naming(identifier)
+    expanded = expand(blueprint, __CALLER__)
+    ast = Absinthe.Type.Interface.build(naming, expanded)
+    define_type(naming, ast, opts)
   end
 
   defmacro input_object(identifier, blueprint, opts \\ []) do
@@ -104,6 +126,16 @@ defmodule Absinthe.Schema.TypeModule do
   end
   defp type_naming(identifier) do
     [{identifier, Utils.camelize_lower(Atom.to_string(identifier))}]
+  end
+
+  defp define_interface_mapping([{identifier, name}] = naming, interfaces) do
+    interfaces
+    |> Enum.map(fn
+      iface ->
+        quote do
+          @absinthe_interface_implementors {unquote(iface), unquote(identifier)}
+        end
+    end)
   end
 
   defp define_type([{identifier, name}] = naming, ast, opts \\ []) do

@@ -234,7 +234,7 @@ defmodule Absinthe do
   See the `Absinthe` module documentation for more examples.
 
   """
-  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, atom | Absinthe.Schema.t, Keyword.t) :: {:ok, Absinthe.Execution.result_t} | {:error, any}
+  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, Keyword.t) :: {:ok, Absinthe.Execution.result_t} | {:error, any}
   def run(%Absinthe.Language.Document{} = document, schema, options) do
     case execute(schema, document, options) do
       {:ok, result} ->
@@ -272,7 +272,7 @@ defmodule Absinthe do
 
   Also see `Absinthe.run/3`
   """
-  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, atom | Absinthe.Schema.t) :: {:ok, Absinthe.Execution.result_t} | {:error, any}
+  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t) :: {:ok, Absinthe.Execution.result_t} | {:error, any}
   def run(input, schema), do: run(input, schema, [])
 
   # TODO: Support modification by adapter
@@ -296,7 +296,7 @@ defmodule Absinthe do
 
   See `run/3` for the available options.
   """
-  @spec run!(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, atom | Absinthe.Schema.t, Keyword.t) :: Absinthe.Execution.result_t
+  @spec run!(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, Keyword.t) :: Absinthe.Execution.result_t
   def run!(input, schema, options) do
     case run(input, schema, options) do
       {:ok, result} -> result
@@ -308,20 +308,15 @@ defmodule Absinthe do
   Evaluates a query document against a schema, with options, raising an
   `Absinthe.SyntaxErorr` or `Absinthe.ExecutionError` if a problem occurs.
   """
-  @spec run!(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, atom | Absinthe.Schema.t) :: Absinthe.Execution.result_t
+  @spec run!(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t) :: Absinthe.Execution.result_t
   def run!(input, schema), do: run!(input, schema, [])
-
-  @spec find_schema(Absinthe.Schema.t | atom) :: Absinthe.Schema.t
-  defp find_schema(schema_module) when is_atom(schema_module), do: schema_module.schema
-  defp find_schema(schema), do: schema
 
   #
   # EXECUTION
   #
 
-  @spec execute(Absinthe.Schema.t | atom, Absinthe.Language.Document.t, Keyword.t) :: Absinthe.Execution.result_t
-  defp execute(schema_ref, document, options) do
-    {:ok, schema} = find_schema(schema_ref) |> Absinthe.Schema.verify
+  @spec execute(Absinthe.Schema.t, Absinthe.Language.Document.t, Keyword.t) :: Absinthe.Execution.result_t
+  defp execute(schema, document, options) do
     %Absinthe.Execution{schema: schema, document: document}
     |> Absinthe.Execution.run(options)
   end

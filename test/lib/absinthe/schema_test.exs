@@ -1,12 +1,9 @@
 defmodule Absinthe.SchemaTest do
   use ExSpec, async: true
+  use SupportSchemas
 
   alias Absinthe.Schema
   alias Absinthe.Type
-
-  def load_schema(name) do
-    Code.require_file("test/support/lib/absinthe/schema/#{name}.exs")
-  end
 
   describe "built-in types" do
 
@@ -31,13 +28,9 @@ defmodule Absinthe.SchemaTest do
 
   describe "using the same identifier" do
 
-    def load_duplicate_identifier_schema do
-      load_schema("schema_with_duplicate_identifiers")
-    end
-
     it "raises an exception" do
-      err = assert_raise(Absinthe.Schema.Error, &load_duplicate_identifier_schema/0)
-      assert [%{name: :dup_type_ident, location: _, data: :person}] = err.problems
+      assert_schema_problems("schema_with_duplicate_identifiers",
+                             [%{name: :dup_type_ident, data: :person}])
     end
 
   end
@@ -49,8 +42,8 @@ defmodule Absinthe.SchemaTest do
     end
 
     it "raises an exception" do
-      err = assert_raise(Absinthe.Schema.Error, &load_duplicate_name_schema/0)
-      assert [%{name: :dup_type_name, location: _, data: "Person"}] = err.problems
+      assert_schema_problems("schema_with_duplicate_names",
+                             [%{name: :dup_type_name, data: "Person"}])
     end
 
   end

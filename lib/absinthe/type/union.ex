@@ -80,7 +80,7 @@ defmodule Absinthe.Type.Union do
       %{is_type_of: nil} ->
         false
       type ->
-        case schema.__absinthe_type__(type) do
+        case Schema.lookup_type(schema, type) do
           nil ->
             false
           %{is_type_of: nil} ->

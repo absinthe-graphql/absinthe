@@ -17,8 +17,7 @@ defmodule Absinthe.Introspection.Types do
           type: list_of(:__type),
           resolve: fn
             _, %{schema: schema} ->
-              schema.types.by_identifier
-              |> Map.values
+              Schema.types(schema)
               |> Flag.as(:ok)
           end
         ],
@@ -26,22 +25,21 @@ defmodule Absinthe.Introspection.Types do
           type: :__type,
           resolve: fn
             _, %{schema: schema} ->
-              {:ok, schema.query}
+              {:ok, Schema.lookup_type(schema, :query)}
           end
         ],
         mutation_type: [
           type: :__type,
           resolve: fn
             _, %{schema: schema} ->
-              {:ok, schema.mutation}
+              {:ok, Schema.lookup_type(schema, :mutation)}
           end
         ],
         directives: [
           type: list_of(:__directive),
           resolve: fn
             _, %{schema: schema} ->
-              structs = schema.directives |> Map.values
-              {:ok, structs}
+              {:ok, Schema.lookup_type(schema, :subscription)}
           end
         ]
       )
@@ -134,7 +132,8 @@ defmodule Absinthe.Introspection.Types do
             _, %{schema: schema, source: %{interfaces: interfaces}} ->
               structs = interfaces
               |> Enum.map(fn
-                ident -> schema.types[ident]
+              ident ->
+                Absinthe.Schema.lookup_type(schema, ident)
               end)
               {:ok, structs}
             _, _ ->
@@ -148,9 +147,7 @@ defmodule Absinthe.Introspection.Types do
               structs = types |> Enum.map(&(Absinthe.Schema.lookup_type(schema, &1)))
               {:ok, structs}
             _, %{schema: schema, source: %Type.Interface{reference: %{identifier: ident}}} ->
-              implementors = schema.interfaces[ident]
-              structs = implementors |> Enum.map(fn name -> schema.types[name] end)
-              {:ok, structs}
+              {:ok, Absinthe.Schema.implementors(schema, ident)}
             _, _ ->
               {:ok, nil}
           end
