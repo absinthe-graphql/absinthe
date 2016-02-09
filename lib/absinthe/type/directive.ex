@@ -34,7 +34,14 @@ defmodule Absinthe.Type.Directive do
         description: unquote(blueprint[:description]) || @absinthe_doc,
         on: unquote(blueprint[:on]) || [],
         instruction: unquote(blueprint[:instruction]),
-        reference: %{module: __MODULE__, identifier: unquote(identifier)}
+        reference: %{
+          module: __MODULE__,
+          identifier: unquote(identifier),
+          location: %{
+            file: __ENV__.file,
+            line: __ENV__.line
+          }
+        }
       }
     end
   end

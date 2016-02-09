@@ -29,8 +29,8 @@ defmodule Absinthe.SchemaTest do
   describe "using the same identifier" do
 
     it "raises an exception" do
-      assert_schema_problems("schema_with_duplicate_identifiers",
-                             [%{name: :dup_type_ident, data: :person}])
+      assert_schema_error("schema_with_duplicate_identifiers",
+                          [%{rule: Absinthe.Schema.Rule.TypeNamesAreUnique, data: %{artifact: "Absinthe type identifier", value: :person}}])
     end
 
   end
@@ -42,8 +42,8 @@ defmodule Absinthe.SchemaTest do
     end
 
     it "raises an exception" do
-      assert_schema_problems("schema_with_duplicate_names",
-                             [%{name: :dup_type_name, data: "Person"}])
+      assert_schema_error("schema_with_duplicate_names",
+                          [%{rule: Absinthe.Schema.Rule.TypeNamesAreUnique, data: %{artifact: "Type name", value: "Person"}}])
     end
 
   end

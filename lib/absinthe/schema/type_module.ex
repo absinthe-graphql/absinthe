@@ -114,8 +114,9 @@ defmodule Absinthe.Schema.TypeModule do
     types ++ directives
   end
 
-  defp expand(ast, env) do
+  def expand(ast, env) do
     Macro.postwalk(ast, fn
+      {:@, _, _} = node -> node
       {_, _, _} = node -> Macro.expand(node, env)
       node -> node
     end)
@@ -147,16 +148,16 @@ defmodule Absinthe.Schema.TypeModule do
       }
       if match?({true, _}, type_status) do
         @absinthe_errors %{
-          name: :dup_type_ident,
+          rule: Absinthe.Schema.Rule.TypeNamesAreUnique,
           location: %{file: __ENV__.file, line: __ENV__.line},
-          data: unquote(identifier)
+          data: %{artifact: "Absinthe type identifier", value: unquote(identifier)}
         }
       end
       if match?({_, true}, type_status) do
         @absinthe_errors %{
-          name: :dup_type_name,
+          rule: Absinthe.Schema.Rule.TypeNamesAreUnique,
           location: %{file: __ENV__.file, line: __ENV__.line},
-          data: unquote(name)
+          data: %{artifact: "Type name", value: unquote(name)}
         }
       end
       if match?({false, false}, type_status) do
@@ -183,9 +184,9 @@ defmodule Absinthe.Schema.TypeModule do
       }
       if match?({true, _}, directive_status) do
         @absinthe_errors %{
-          name: :dup_directive,
+          rule: Absinthe.Schema.Rule.TypeNamesAreUnique,
           location: %{file: __ENV__.file, line: __ENV__.line},
-          data: unquote(identifier)
+          data: %{artifact: "Absinthe directive identifier", value: unquote(identifier)}
         }
       end
       if match?({false, false}, directive_status) do

@@ -128,47 +128,53 @@ defmodule Absinthe.Schema do
   def __after_compile__(env, _bytecode) do
     [
       env.module.__absinthe_errors__,
-      Schema.Problems.ReservedNames.from(env.module)
+      Schema.Rule.check(env.module)
     ]
     |> List.flatten
     |> case do
       [] ->
         nil
-      problems ->
-        raise Absinthe.Schema.Error, problems
+      details ->
+        raise Absinthe.Schema.Error, details
     end
   end
 
   defmacro query(name, blueprint) when is_binary(name) do
+    expanded = expand(blueprint, __CALLER__)
     quote do
-      object [query: unquote(name)], unquote(blueprint), export: false
+      object [query: unquote(name)], unquote(expanded), export: false
     end
   end
   defmacro query(blueprint) do
+    expanded = expand(blueprint, __CALLER__)
     quote do
-      query "RootQueryType", unquote(blueprint)
+      query "RootQueryType", unquote(expanded)
     end
   end
 
   defmacro mutation(name, blueprint) when is_binary(name) do
+    expanded = expand(blueprint, __CALLER__)
     quote do
-      object [mutation: unquote(name)], unquote(blueprint), export: false
+      object [mutation: unquote(name)], unquote(expanded), export: false
     end
   end
   defmacro mutation(blueprint) do
+    expanded = expand(blueprint, __CALLER__)
     quote do
-      mutation "RootMutationType", unquote(blueprint)
+      mutation "RootMutationType", unquote(expanded)
     end
   end
 
   defmacro subscription(name, blueprint) when is_binary(name) do
+    expanded = expand(blueprint, __CALLER__)
     quote do
-      object [subscription: unquote(name)], unquote(blueprint), export: false
+      object [subscription: unquote(name)], unquote(expanded), export: false
     end
   end
   defmacro subscription(blueprint) do
+    expanded = expand(blueprint, __CALLER__)
     quote do
-      subscription "RootSubscriptionType", unquote(blueprint)
+      subscription "RootSubscriptionType", unquote(expanded)
     end
   end
 

@@ -26,6 +26,9 @@ defmodule Absinthe.Type do
   def deprecated?(%{deprecation: nil}), do: false
   def deprecated?(%{deprecation: _}), do: true
 
+  def equal?(%{name: name}, %{name: name}), do: true
+  def equal?(_, _), do: false
+
   # INPUT TYPES
 
   @input_type_modules [Type.Scalar, Type.Enum, Type.InputObject, Type.List, Type.NonNull]

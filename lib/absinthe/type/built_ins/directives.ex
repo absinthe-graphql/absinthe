@@ -36,6 +36,24 @@ defmodule Absinthe.Type.BuiltIns.Directives do
     end
   ]
 
+  @doc """
+  Directs the executor to skip this field or fragment when the `if` argument is true.
+  """
+  directive :myskip, [
+    args: [
+      __myif: [type: non_null(:boolean), description: "Skipped when true."]
+    ],
+    on: [Language.FragmentSpread, Language.Field, Language.InlineFragment],
+    instruction: fn
+      %{if: true} ->
+        :skip
+      _ ->
+        :include
+    end
+  ]
+
+
+
   # Whether the directive is active in `place`
   @doc false
   @spec on?(Type.Directive.t, atom) :: boolean

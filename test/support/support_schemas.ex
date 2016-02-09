@@ -10,24 +10,24 @@ defmodule SupportSchemas do
   end
 
   @doc """
-  Assert problems are found.
+  Assert an error occurs.
 
   ## Examples
 
   ```
-  iex> assert_schema_problems(TheSchema, [%{name: :foo, data: :bar}])
+  iex> assert_schema_error(TheSchema, [%{rule: Absinthe.Schema.Rule.TheRuleHere, data: :bar}])
   ```
   """
-  def assert_schema_problems(schema_name, patterns) do
+  def assert_schema_error(schema_name, patterns) do
     err = assert_raise Absinthe.Schema.Error, fn ->
       load_schema(schema_name)
     end
     patterns
     |> Enum.each(fn
       pattern ->
-        assert Enum.find(err.problems, fn
-          problem ->
-            pattern.name == problem.name && pattern.data == problem.data
+        assert Enum.find(err.details, fn
+          detail ->
+            pattern.rule == detail.rule && pattern.data == detail.data
         end)
     end)
   end

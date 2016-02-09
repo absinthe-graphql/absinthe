@@ -102,6 +102,7 @@ defmodule Absinthe.Type.InterfaceTest do
                               errors: [%{message: "Field `age': Not present in schema"}]}}, result
       end
 
+      @tag :gotit
       it "can select fields from an implementing type with 'on'" do
         result = """
         { contact { entity { name ... on Person { age } } } }
