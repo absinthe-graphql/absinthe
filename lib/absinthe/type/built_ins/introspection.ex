@@ -57,21 +57,21 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         type: :boolean,
         resolve: fn
           _, %{source: source} ->
-            {:ok, Language.OperationDefinition in source.on}
+            {:ok, Enum.member?(source.on, Language.OperationDefinition)}
         end
       ],
       on_fragment: [
         type: :boolean,
         resolve: fn
           _, %{source: source} ->
-            {:ok, Language.FragmentSpread in source.on}
+            {:ok, Enum.member?(source.on, Language.FragmentSpread)}
         end
       ],
       on_field: [
         type: :boolean,
         resolve: fn
           _, %{source: source} ->
-            {:ok, Language.Field in source.on}
+            {:ok, Enum.member?(source.on, Language.Field)}
         end
       ]
     ]

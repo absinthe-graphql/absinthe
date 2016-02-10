@@ -114,10 +114,10 @@ defmodule Absinthe.Schema.TypeModule do
     types ++ directives
   end
 
+  @expand [:list_of, :deprecate, :non_null]
   def expand(ast, env) do
     Macro.postwalk(ast, fn
-      {:@, _, _} = node -> node
-      {_, _, _} = node -> Macro.expand(node, env)
+      {thing, _, _} = node when thing in @expand -> Macro.expand(node, env)
       node -> node
     end)
   end
