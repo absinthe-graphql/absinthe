@@ -29,6 +29,13 @@ defmodule Absinthe.Type do
   def equal?(%{name: name}, %{name: name}), do: true
   def equal?(_, _), do: false
 
+  def built_in?(type) do
+    type.reference.module
+    |> Module.split
+    |> Enum.take(3)
+    |> Module.safe_concat == Absinthe.Type.BuiltIns
+  end
+
   # INPUT TYPES
 
   @input_type_modules [Type.Scalar, Type.Enum, Type.InputObject, Type.List, Type.NonNull]

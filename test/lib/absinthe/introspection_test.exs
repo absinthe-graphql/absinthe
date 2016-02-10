@@ -2,6 +2,9 @@ defmodule Absinthe.IntrospectionTest do
   use ExSpec, async: true
   import AssertResult
 
+  alias Absinthe.Schema
+  alias Absinthe.Type
+
   describe "introspection of an object" do
     it "returns the name of the object type currently being queried" do
       # Without an alias
@@ -356,7 +359,8 @@ defmodule Absinthe.IntrospectionTest do
       }
       """
       |> Absinthe.run(MySchema)
-      assert_result {:ok, %{data: %{"__type" => %{"name" => Type.Scalar.string.name, "description" => Type.Scalar.string.description, "kind" => "SCALAR", "fields" => nil}}}}, result
+      string = Schema.lookup_type(MySchema, :string)
+      assert_result {:ok, %{data: %{"__type" => %{"name" => string.name, "description" => string.description, "kind" => "SCALAR", "fields" => nil}}}}, result
     end
   end
 

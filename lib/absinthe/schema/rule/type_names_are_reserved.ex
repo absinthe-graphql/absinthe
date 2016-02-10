@@ -51,8 +51,12 @@ defmodule Absinthe.Schema.Rule.TypeNamesAreReserved do
   end
 
   defp check_named(schema, type, kind, %{name: "__" <> _} = entity) do
-    [report(type.reference.location,
-            %{artifact: "#{kind} name", value: entity.name})]
+    if Absinthe.Type.built_in?(type) do
+      []
+    else
+      [report(type.reference.location,
+              %{artifact: "#{kind} name", value: entity.name})]
+    end
   end
   defp check_named(_, _, _, _) do
     []

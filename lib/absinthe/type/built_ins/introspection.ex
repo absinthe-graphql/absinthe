@@ -1,6 +1,7 @@
 defmodule Absinthe.Type.BuiltIns.Introspection do
   use Absinthe.Schema.TypeModule
 
+  alias Absinthe.Schema
   alias Absinthe.Flag
   alias Absinthe.Language
   alias Absinthe.Type
