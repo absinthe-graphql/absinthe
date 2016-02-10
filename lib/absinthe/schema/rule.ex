@@ -6,12 +6,6 @@ defmodule Absinthe.Schema.Rule do
     quote do
       @behaviour unquote(__MODULE__)
 
-      def explanation(_error_detail) do
-        @explanation
-      end
-
-      defoverridable [explanation: 1]
-
       def report(location, data) do
         %{
           rule: __MODULE__,
