@@ -29,8 +29,8 @@ defmodule FooBarSchema do
     ]
   ]
 
-  @doc "A Person"
-  object :person, [
+  @doc "An author"
+  object :author, [
     fields: [
       id: [type: :id],
       first_name: [type: :string],

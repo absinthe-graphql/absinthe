@@ -141,7 +141,8 @@ defmodule Absinthe.Schema.TypeModule do
 
   defp define_type([{identifier, name}] = naming, ast, opts \\ []) do
     quote do
-      @absinthe_doc Module.get_attribute(__MODULE__, :doc)
+      doc = Module.get_attribute(__MODULE__, :doc)
+      @absinthe_doc if doc, do: String.strip(doc), else: nil
       type_status = {
         Keyword.has_key?(@absinthe_types, unquote(identifier)),
         Enum.member?(Keyword.values(@absinthe_types), unquote(name))

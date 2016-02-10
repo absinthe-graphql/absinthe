@@ -67,7 +67,7 @@ defmodule ContactSchema do
     ]
   ]
 
-  @doc "The basic details for a person."
+  @doc "The basic details for a person"
   input_object :profile_input, [
     fields: [
       code: [type: non_null(:string)],

@@ -166,7 +166,7 @@ defmodule Absinthe.IntrospectionTest do
       }
       """
       |> Absinthe.run(ContactSchema)
-      assert_result {:ok, %{data: %{"__type" => %{"name" => "NamedEntity", "description" => "A named entity", "kind" => "INTERFACE", "possibleTypes" => [%{"name" => "Person"}, %{"name" => "Business"}]}}}}, result
+      assert_result {:ok, %{data: %{"__type" => %{"name" => "NamedEntity", "description" => "A named entity", "kind" => "INTERFACE", "possibleTypes" => [%{"name" => "Business"}, %{"name" => "Person"}]}}}}, result
     end
 
   end

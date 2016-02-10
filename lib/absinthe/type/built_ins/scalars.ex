@@ -43,7 +43,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   When expected as an input type, any string (such as `"4"`) or integer
   (such as `4`) input value will be accepted as an ID.
   """
-  scalar :id, [
+  scalar [id: "ID"], [
     serialize: &to_string/1,
     parse: parse_with([Absinthe.Language.IntValue,
                        Absinthe.Language.StringValue], &parse_string/1)

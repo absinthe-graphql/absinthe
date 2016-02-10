@@ -80,7 +80,7 @@ defmodule Absinthe.Adapter.LanguageConventionsTest do
     ]
 
     @doc "A location"
-    input_object :location, [
+    input_object :input_location, [
       fields: [
         name: [type: non_null(:string)],
       ]

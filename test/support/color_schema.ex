@@ -18,6 +18,7 @@ defmodule ColorSchema do
   query [
     fields: [
       info: [
+        type: :channel_info,
         args: [
           channel: [type: non_null(:channel)],
         ],
@@ -32,7 +33,7 @@ defmodule ColorSchema do
   @doc """
   A color channel
   """
-  enum :color_channel, [
+  enum :channel, [
     values: [
       red: [description: "The color red", value: :r],
       green: [description: "The color green", value: :g],

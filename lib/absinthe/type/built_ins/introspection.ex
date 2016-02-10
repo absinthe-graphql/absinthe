@@ -35,7 +35,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         type: list_of(:__directive),
         resolve: fn
           _, %{schema: schema} ->
-            {:ok, Schema.lookup_type(schema, :subscription)}
+            {:ok, Schema.directives(schema)}
         end
       ]
     ]
