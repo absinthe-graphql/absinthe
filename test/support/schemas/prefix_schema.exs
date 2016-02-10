@@ -24,4 +24,17 @@ defmodule PrefixSchema do
     ]
   ]
 
+  directive :__mydirective, [
+    args: [
+      __if: [type: non_null(:boolean), description: "Skipped when true."]
+    ],
+    on: [Language.FragmentSpread, Language.Field, Language.InlineFragment],
+    instruction: fn
+      %{if: true} ->
+        :skip
+      _ ->
+        :include
+    end
+  ]
+
 end

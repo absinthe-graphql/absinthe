@@ -200,7 +200,7 @@ defmodule Absinthe.Adapter.LanguageConventionsTest do
     run(query_document, %{})
   end
   defp run(query_document, variables) do
-    Absinthe.run(query_document, Simple.schema,
+    Absinthe.run(query_document, Simple,
                   validate: false, variables: variables, adapter: LanguageConventions)
   end
 

@@ -27,7 +27,7 @@ defmodule Absinthe.Schema.Rule do
   @callback explanation(Absithe.Error.Detail.t) :: binary
 
   @rules [
-    Rule.TypeSystemArtifactsWithTwoLeadingUnderscoresAreReserved
+    Rule.TypeNamesAreReserved
   ]
 
   @spec check(Absinthe.Schema.t) :: [Absinthe.Error.Detail.t]

@@ -218,7 +218,7 @@ defmodule Absinthe.Schema do
   @spec directives(t) :: [Type.Directive.t]
   def directives(schema) do
     schema.__absinthe_directives__
-    |> Enum.keys
+    |> Map.keys
     |> Enum.map(&lookup_directive(schema, &1))
   end
 

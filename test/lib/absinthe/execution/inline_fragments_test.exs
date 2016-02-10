@@ -1,4 +1,4 @@
-defmodule Absinthe.Specificiation.Language.InlineFragmentTest do
+defmodule Absinthe.Execution.InlineFragmentsTest do
   use ExSpec, async: true
 
   @query """
