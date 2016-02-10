@@ -66,23 +66,18 @@ defmodule Absinthe.Specification.Introspection.Type.ObjectTest do
       use Absinthe.Schema
       alias Absinthe.Type
 
-      def query do
-        %Type.Object{
-          fields: fields(
-            foo: [type: :foo]
-          )
-        }
-      end
+      query [
+        fields: [
+          foo: [type: :foo]
+        ]
+      ]
 
-      @absinthe :type
-      def foo do
-        %Type.Object{
-          fields: fields(
-            name: [type: :string],
-            kind: [type: :string]
-          )
-        }
-      end
+      object :foo, [
+        fields: [
+          name: [type: :string],
+          kind: [type: :string]
+        ]
+      ]
 
     end
 

@@ -9,19 +9,18 @@ defmodule Absinthe.Specification.Introspection.Type.ScalarTest do
   defmodule MySchema do
     use Absinthe.Schema
 
-    def query do
-      %Type.Object{
-        fields: fields(
-          greeting: [
-            type: :string,
-            description: "A traditional greeting",
-            resolve: fn
-              _, _ -> {:ok, "Hah!"}
-            end
-          ]
-        )
-      }
-    end
+    query [
+      fields: [
+        greeting: [
+          type: :string,
+          description: "A traditional greeting",
+          resolve: fn
+            _, _ -> {:ok, "Hah!"}
+          end
+        ]
+      ]
+    ]
+
   end
 
   describe "introspection of a scalar type" do

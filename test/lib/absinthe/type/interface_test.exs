@@ -2,6 +2,7 @@ defmodule Absinthe.Type.InterfaceTest do
   use ExSpec, async: true
   import AssertResult
   use SupportSchemas
+  alias Absinthe.Schema.Rule
 
   defmodule TestSchema do
     use Absinthe.Schema
@@ -102,7 +103,6 @@ defmodule Absinthe.Type.InterfaceTest do
                               errors: [%{message: "Field `age': Not present in schema"}]}}, result
       end
 
-      @tag :gotit
       it "can select fields from an implementing type with 'on'" do
         result = """
         { contact { entity { name ... on Person { age } } } }
@@ -117,12 +117,12 @@ defmodule Absinthe.Type.InterfaceTest do
   describe "when it doesn't define those fields" do
 
     it "reports schema errors" do
-      assert_schema_problems(
+      assert_schema_error(
         "bad_interface_schema",
         [
-          %{name: :iface_non_implemented, data: :foo},
-          %{name: :iface_bad, data: :foo},
-          %{name: :iface_resolve_type, data: :named}
+          %{rule: Rule.ObjectMustImplementInterfaces, data: :foo},
+          %{rule: Rule.ObjectInterfacesMustBeValid, data: %{object: :quux, interface: :foo}},
+          %{rule: Rule.InterfacesMustResolveTypes, data: :named}
         ]
       )
     end

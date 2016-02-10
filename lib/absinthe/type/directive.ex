@@ -48,7 +48,7 @@ defmodule Absinthe.Type.Directive do
 
   defp args_ast(args) do
     ast = for {arg_name, arg_attrs} <- args do
-      name = arg_name |> Atom.to_string |> Utils.camelize_lower
+      name = arg_name |> Atom.to_string |> Utils.camelize(lower: true)
       arg_data = [name: name] ++ arg_attrs
       arg_ast = quote do
         %Absinthe.Type.Argument{
@@ -61,5 +61,22 @@ defmodule Absinthe.Type.Directive do
     quote do: %{unquote_splicing(ast)}
   end
 
+  # Whether the directive is active in `place`
+  @doc false
+  @spec on?(t, atom) :: boolean
+  def on?(%{on: places}, place) do
+    Enum.member?(places, place)
+  end
+
+  # Check a directive and return an instruction
+  @doc false
+  @spec check(t, Language.t, map) :: atom
+  def check(definition, %{__struct__: place}, args) do
+    if on?(definition, place) && definition.instruction do
+      definition.instruction.(args)
+    else
+      :ok
+    end
+  end
 
 end

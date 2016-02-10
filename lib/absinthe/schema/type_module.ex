@@ -126,7 +126,7 @@ defmodule Absinthe.Schema.TypeModule do
     as_defined
   end
   defp type_naming(identifier) do
-    [{identifier, Utils.camelize_lower(Atom.to_string(identifier))}]
+    [{identifier, Utils.camelize(Atom.to_string(identifier))}]
   end
 
   defp define_interface_mapping([{identifier, name}] = naming, interfaces) do

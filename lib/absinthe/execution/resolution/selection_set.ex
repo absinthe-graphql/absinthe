@@ -102,7 +102,7 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
         end
       _ ->
         if condition_type do
-          if this_type == condition_type, do: this_type
+          if Type.equal?(this_type, condition_type), do: this_type
         else
           this_type
         end

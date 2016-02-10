@@ -124,9 +124,10 @@ defmodule Absinthe.Type.Field do
   """
   @spec build_map_ast(Keyword.t) :: tuple
   def build_map_ast(fields) do
+    quoted_empty_map = quote do: %{}
     ast = for {field_name, field_attrs} <- fields do
       name = field_name |> Atom.to_string
-      field_data = [name: name] ++ Keyword.update(field_attrs, :args, [], fn
+      field_data = [name: name] ++ Keyword.update(field_attrs, :args, quoted_empty_map, fn
         args ->
           Type.Argument.build_map_ast(args || [])
       end)

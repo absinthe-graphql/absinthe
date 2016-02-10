@@ -211,7 +211,7 @@ defmodule Absinthe.Schema do
   @spec types(t) :: [Type.t]
   def types(schema) do
     schema.__absinthe_types__
-    |> Enum.keys
+    |> Map.keys
     |> Enum.map(&lookup_type(schema, &1))
   end
 
@@ -244,9 +244,8 @@ defmodule Absinthe.Schema do
     end
   end
   def type_from_ast(schema, ast_type) do
-    schema.__absinthe_types__
-    |> Map.values
-    |> Enum.find(:name, fn
+    Schema.types(schema)
+    |> Enum.find(fn
       %{name: name} ->
         name == ast_type.name
     end)
