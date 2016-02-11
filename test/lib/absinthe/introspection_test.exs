@@ -3,7 +3,6 @@ defmodule Absinthe.IntrospectionTest do
   import AssertResult
 
   alias Absinthe.Schema
-  alias Absinthe.Type
 
   describe "introspection of an object" do
     it "returns the name of the object type currently being queried" do
@@ -269,7 +268,6 @@ defmodule Absinthe.IntrospectionTest do
 
     defmodule KindSchema do
       use Absinthe.Schema
-      alias Absinthe.Type
 
       query [
         fields: [
