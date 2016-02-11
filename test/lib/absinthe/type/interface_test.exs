@@ -2,7 +2,9 @@ defmodule Absinthe.Type.InterfaceTest do
   use ExSpec, async: true
   import AssertResult
   use SupportSchemas
+
   alias Absinthe.Schema.Rule
+  alias Absinthe.Schema
 
   defmodule TestSchema do
     use Absinthe.Schema
@@ -82,6 +84,11 @@ defmodule Absinthe.Type.InterfaceTest do
       assert :baz in implementors
     end
 
+    it "can find implementors" do
+      obj = TestSchema.__absinthe_type__(:named)
+      assert length(Schema.implementors(TestSchema, obj)) == 3
+    end
+
   end
 
   describe "an object that implements an interface" do
@@ -120,9 +127,9 @@ defmodule Absinthe.Type.InterfaceTest do
       assert_schema_error(
         "bad_interface_schema",
         [
-          %{rule: Rule.ObjectMustImplementInterfaces, data: :foo},
-          %{rule: Rule.ObjectInterfacesMustBeValid, data: %{object: :quux, interface: :foo}},
-          %{rule: Rule.InterfacesMustResolveTypes, data: :named}
+          %{rule: Rule.ObjectMustImplementInterfaces, data: %{object: "Foo", interface: "Named"}},
+          %{rule: Rule.ObjectInterfacesMustBeValid, data: %{object: "Quux", interface: "Foo"}},
+          %{rule: Rule.InterfacesMustResolveTypes, data: "Named"}
         ]
       )
     end

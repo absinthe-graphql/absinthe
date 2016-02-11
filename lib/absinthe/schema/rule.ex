@@ -21,7 +21,10 @@ defmodule Absinthe.Schema.Rule do
   @callback explanation(Absithe.Error.Detail.t) :: binary
 
   @rules [
-    Rule.TypeNamesAreReserved
+    Rule.TypeNamesAreReserved,
+    Rule.ObjectInterfacesMustBeValid,
+    Rule.ObjectMustImplementInterfaces,
+    Rule.InterfacesMustResolveTypes
   ]
 
   @spec check(Absinthe.Schema.t) :: [Absinthe.Error.Detail.t]

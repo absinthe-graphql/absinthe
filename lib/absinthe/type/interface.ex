@@ -115,6 +115,19 @@ defmodule Absinthe.Type.Interface do
     end
   end
 
+  @doc """
+  Whether the interface (or implementors) are correctly configured to resolve
+  objects.
+  """
+  @spec type_resolvable?(Schema.t, t) :: boolean
+  def type_resolvable?(schema, %{resolve_type: nil} = iface) do
+    Schema.implementors(schema, iface)
+    |> Enum.all?(&(&1.is_type_of))
+  end
+  def type_resolvable?(_, %{resolve_type: _}) do
+    true
+  end
+
   @spec implements?(Type.Interface.t, Type.Object.t) :: boolean
   def implements?(interface, type) do
     # Convert the submap into a list of key-value pairs where each key

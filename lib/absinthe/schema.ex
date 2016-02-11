@@ -223,10 +223,13 @@ defmodule Absinthe.Schema do
   end
 
   @spec implementors(t, atom) :: [Type.Object.t]
-  def implementors(schema, ident) do
+  def implementors(schema, ident) when is_atom(ident) do
     schema.__absinthe_interface_implementors__
     |> Map.get(ident, [])
     |> Enum.map(&lookup_type(schema, &1))
+  end
+  def implementors(schema, %Type.Interface{} = iface) do
+    implementors(schema, iface.reference.identifier)
   end
 
   @doc false
