@@ -70,9 +70,6 @@ defmodule ContactSchema do
     field :age, type: :integer, description: "The person's age", default_value: 43
   end
 
-  field :foo, :bar,
-    :bad
-
   @doc "A named entity"
   interface :named_entity do
     field :name, [type: :string]

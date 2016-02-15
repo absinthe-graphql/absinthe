@@ -1,55 +1,43 @@
 defmodule Absinthe.Type.Fixtures do
   use Absinthe.Schema
 
-  query "Query", [
-    fields: [
-      article: [
-        type: :article,
-        args: [
-          id: [type: :string]
-        ]
-      ],
-      feed: [type: list_of(:article)]
-    ]
-  ]
-
-  mutation "Mutation", [
-    fields: [
-      write_article: [type: :article]
-    ]
-  ]
-
-  object :image, [
-    fields: [
-      url: [type: :string],
-      width: [type: :integer],
-      height: [type: :integer]
-    ]
-  ]
-
-  object :type, [
-    fields: [
-      id: [type: :id],
-      name: [type: :string],
-      recent_article: [type: :article],
-      pic: [
-        type: :image,
-        args: [
-          width: [type: :integer],
-          height: [type: :integer]
-        ]
+  query name: "Query" do
+    field :article,
+      type: :article,
+      args: [
+        id: [type: :string]
       ]
-    ]
-  ]
+    field :feed, list_of(:article)
+  end
 
-  object :article, [
-    fields: [
-      id: [type: :string],
-      is_published: [type: :string],
-      author: [type: :author],
-      title: [type: :string],
-      body: [type: :string]
-    ]
-  ]
+  mutation name: "Mutation" do
+    field :write_article, :article
+  end
+
+  object :image do
+    field :url, :string
+    field :width, :integer
+    field :height, :integer
+  end
+
+  object :type do
+    field :id, :id
+    field :name, :string
+    field :recent_article, :article
+    field :pic,
+      type: :image,
+      args: [
+        width: [type: :integer],
+        height: [type: :integer]
+      ]
+  end
+
+  object :article do
+    field :id, :string
+    field :is_published, :string
+    field :author, :author
+    field :title, :string
+    field :body, :string
+  end
 
 end

@@ -139,42 +139,48 @@ defmodule Absinthe.Schema do
     end
   end
 
-  defmacro query(name, blueprint) when is_binary(name) do
-    expanded = expand(blueprint, __CALLER__)
+  defmacro query(attrs, [do: block]) do
     quote do
-      object [query: unquote(name)], unquote(expanded), export: false
+      object :query, unquote(attrs) do
+        unquote(block)
+      end
     end
   end
-  defmacro query(blueprint) do
-    expanded = expand(blueprint, __CALLER__)
+  defmacro query([do: block]) do
     quote do
-      query "RootQueryType", unquote(expanded)
-    end
-  end
-
-  defmacro mutation(name, blueprint) when is_binary(name) do
-    expanded = expand(blueprint, __CALLER__)
-    quote do
-      object [mutation: unquote(name)], unquote(expanded), export: false
-    end
-  end
-  defmacro mutation(blueprint) do
-    expanded = expand(blueprint, __CALLER__)
-    quote do
-      mutation "RootMutationType", unquote(expanded)
+      object :query do
+        unquote(block)
+      end
     end
   end
 
-  defmacro subscription(name, blueprint) when is_binary(name) do
-    expanded = expand(blueprint, __CALLER__)
+  defmacro mutation(attrs, [do: block]) do
     quote do
-      object [subscription: unquote(name)], unquote(expanded), export: false
+      object :mutation, unquote(attrs) do
+        unquote(block)
+      end
     end
   end
-  defmacro subscription(blueprint) do
-    expanded = expand(blueprint, __CALLER__)
+  defmacro mutation([do: block]) do
     quote do
-      subscription "RootSubscriptionType", unquote(expanded)
+      object :mutation do
+        unquote(block)
+      end
+    end
+  end
+
+  defmacro subscription(attrs, [do: block]) do
+    quote do
+      object :subscription, unquote(attrs) do
+        unquote(block)
+      end
+    end
+  end
+  defmacro subscription([do: block]) do
+    quote do
+      object :subscription do
+        unquote(block)
+      end
     end
   end
 

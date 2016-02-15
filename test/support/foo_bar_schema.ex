@@ -35,7 +35,7 @@ defmodule FooBarSchema do
   end
 
   @doc "A Book"
-  object :book, "NonFictionBook" do
+  object :book, name: "NonFictionBook" do
     field :id, :id
     field :title, :string
     field :isbn, :string

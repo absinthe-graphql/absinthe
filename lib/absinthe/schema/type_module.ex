@@ -29,7 +29,7 @@ defmodule Absinthe.Schema.TypeModule do
 
       @absinthe_interface_implementors_map Enum.reduce(@absinthe_interface_implementors, %{}, fn
         {iface, obj_ident}, acc ->
-          {_, result} = Map.get_and_update(acc, iface, fn
+          {_, result} = Map.get_and_update_(acc, iface, fn
             nil ->
               {nil, [obj_ident]}
             impls ->
@@ -45,52 +45,186 @@ defmodule Absinthe.Schema.TypeModule do
     end
   end
 
-  defmacro object(identifier, blueprint, opts \\ []) do
-    naming = type_naming(identifier)
-    expanded = expand(blueprint, __CALLER__)
-    ast = Absinthe.Type.Object.build(naming, expanded)
-    [
-      define_type(naming, ast, opts),
-      define_interface_mapping(naming, expanded[:interfaces] || [])
-    ]
+  defmacro object(identifier, attrs, [do: block]) do
+    __container__(:object, identifier, attrs, block)
+  end
+  defmacro object(identifier, [do: block]) do
+    __container__(:object, identifier, [], block)
   end
 
-  defmacro directive(identifier, blueprint, opts \\ []) when is_atom(identifier) do
-    naming = [{identifier, Atom.to_string(identifier)}]
-    ast = Absinthe.Type.Directive.build(naming, expand(blueprint, __CALLER__))
-    define_directive(naming, ast, opts)
+  defp __container__(kind, identifier, attrs, block) do
+    quote do
+      IO.inspect(container_location: __MODULE__)
+      Absinthe.Schema.TypeModule.__open_container__(unquote(kind), __MODULE__, unquote(identifier), unquote(attrs))
+      unquote(block)
+      Absinthe.Schema.TypeModule.__close_container__(unquote(kind), __MODULE__, unquote(identifier))
+    end
   end
 
-  defmacro scalar(identifier, blueprint, opts \\ []) do
-    naming = type_naming(identifier)
-    ast = Absinthe.Type.Scalar.build(naming, expand(blueprint, __CALLER__))
-    define_type(naming, ast, opts)
+  @contain :absinthe_container_stack
+
+  def __open_container__(_, mod, identifier, attrs) do
+    stack = __container_stack__(mod)
+    Module.put_attribute(mod, @contain, [attrs | stack])
   end
 
-  defmacro interface(identifier, blueprint, opts \\ []) do
-    naming = type_naming(identifier)
-    expanded = expand(blueprint, __CALLER__)
-    ast = Absinthe.Type.Interface.build(naming, expanded)
-    define_type(naming, ast, opts)
+  def __close_container__(:object, mod, identifier) do
+    [container | rest] = __container_stack__(mod)
+    __container_stack_pop__(mod)
   end
 
-  defmacro input_object(identifier, blueprint, opts \\ []) do
-    naming = type_naming(identifier)
-    ast = Absinthe.Type.InputObject.build(naming, expand(blueprint, __CALLER__))
-    define_type(naming, ast, opts)
+  def __close_container__(:field, mod, identifier) do
+    field_container = __container_stack_pop__(mod)
+    __container_cons__(mod, :fields, {identifier, field_container})
   end
 
-  defmacro union(identifier, blueprint, opts \\ []) do
-    naming = type_naming(identifier)
-    ast = Absinthe.Type.Union.build(naming, expand(blueprint, __CALLER__))
-    define_type(naming, ast, opts)
+  def __container_stack_pop__(mod) do
+    {container, rest} = __container_stack_split__(mod)
+    Module.put_attribute(mod, @contain, rest)
+    container
   end
 
-  defmacro enum(identifier, blueprint, opts \\ []) do
-    naming = type_naming(identifier)
-    ast = Absinthe.Type.Enum.build(naming, expand(blueprint, __CALLER__))
-    define_type(naming, ast, opts)
+  def __container_stack__(mod) do
+    case Module.get_attribute(mod, @contain) do
+      nil ->
+        Module.put_attribute(mod, @contain, [])
+        []
+      value ->
+        value
+    end
   end
+
+  def __container_stack_split__(mod) do
+    [container | rest] = __container_stack__(mod)
+    {container, rest}
+  end
+
+  def __update_container__(mod, fun) do
+    {container, rest} = __container_stack_split__(mod)
+    updated = fun.(container)
+    Module.put_attribute(mod, @contain, [updated | rest])
+  end
+
+  defmacro field(identifier, raw_attrs) do
+    __container__(:field, identifier, normalize_type_attr(attrs), nil)
+  end
+  defmacro field(identifier, [do: block]) do
+    IO.inspect(identifier: identifier)
+    __container__(:field, identifier, [], block)
+  end
+
+  defmacro field(identifier, attrs, [do: block]) do
+    __container__(:field, identifier, normalize_type_attr(attrs), block)
+  end
+  defmacro field(identifier, type, attrs) do
+    spliced_args = quote do
+      [{:type, unquote(type)}, unquote_splicing(attrs)]
+    end
+    __container__(:field, identifier, spliced_args, nil)
+  end
+  defmacro field(identifier, type, attrs, [do: block]) do
+    spliced_args = quote do
+      [{:type, unquote(type)}, unquote_splicing(attrs)]
+    end
+    __container__(:field, identifier, spliced_args, block)
+  end
+
+
+  defp normalize_type_attr(attrs) when is_list(attrs) do
+    attrs
+  end
+  defp normalize_type_attr(type) do
+    [type: type]
+  end
+
+  defmacro arg(identifier, type, attrs) do
+    spliced_args = quote do: [{:type, unquote(type)}, unquote_splicing(attrs)]
+    __arg__(identifier, spliced_args)
+  end
+  defmacro arg(identifier, attrs) do
+    __arg__(identifier, attrs)
+  end
+
+  defp __arg__(identifier, attrs) do
+    quote do
+      Absinthe.Schema.TypeModule.__container_cons__(__MODULE__, :args, unquote(attrs))
+    end
+  end
+
+  defmacro resolve(resolver) do
+    quote do
+      Absinthe.Schema.TypeModule.__container_put__(__MODULE__, :resolve, unquote(resolver))
+    end
+  end
+
+  def __container_put__(mod, key, value) do
+    Absinthe.Schema.TypeModule.__update_container__(mod, fn
+      container ->
+        Keyword.put(container, key, value)
+    end)
+  end
+
+  def __container_cons__(mod, key, value) do
+    Absinthe.Schema.TypeModule.__update_container__(mod, fn
+      container ->
+        {_, updated} = get_and_update_in(container,
+                                       [key],
+                                       &{&1, [value | (&1 || [])]})
+        updated
+    end)
+  end
+
+  defmacro directive(identifier, attrs, [do: block]) do
+  end
+  defmacro directive(identifier, [do: block]) do
+    directive(identifier, [], [do: block])
+  end
+
+  defmacro scalar(identifier, attrs, [do: block]) do
+  end
+  defmacro scalar(identifier, [do: block]) do
+    scalar(identifier, [], [do: block])
+  end
+
+
+  defmacro interface(implemented_identifier) do
+    quote do
+      Absinthe.Schema.TypeModule.__container_cons__(
+        __MODULE__,
+        :interfaces,
+        unquote(implemented_identifier)
+      )
+    end
+  end
+
+  defmacro interface(identifier, attrs, [do: block]) do
+  end
+  defmacro interface(identifier, [do: block]) do
+    interface(identifier, [], [do: block])
+  end
+
+  defmacro input_object(identifier, attrs, [do: block]) do
+  end
+  defmacro input_object(identifier, [do: block]) do
+    input_object(identifier, [], [do: block])
+  end
+
+  defmacro union(identifier, attrs, [do: block]) do
+  end
+  defmacro union(identifier, [do: block]) do
+    input_object(identifier, [], [do: block])
+  end
+
+  defmacro enum(identifier, attrs, [do: block]) do
+  end
+  defmacro enum(identifier, [do: block]) do
+    enum(identifier, [], [do: block])
+  end
+
+
+
+
+
 
   defmacro import_types(type_module_ast, opts_ast \\ []) do
     opts = Macro.expand(opts_ast, __CALLER__)
@@ -114,19 +248,12 @@ defmodule Absinthe.Schema.TypeModule do
     types ++ directives
   end
 
-  @expand [:list_of, :deprecate, :non_null]
-  def expand(ast, env) do
-    Macro.postwalk(ast, fn
-      {thing, _, _} = node when thing in @expand -> Macro.expand(node, env)
-      node -> node
-    end)
-  end
-
-  defp type_naming([{_identifier, _name}] = as_defined) do
-    as_defined
-  end
-  defp type_naming(identifier) do
-    [{identifier, Utils.camelize(Atom.to_string(identifier))}]
+  @spec name_attr(Type.identifier_t, Keyword.t) :: {:name, binary}
+  defp name_attr(identifier, attrs) do
+    {
+      :name,
+      Keyword.get(attrs, :name, Utils.camelize(Atom.to_string(identifier)))
+    }
   end
 
   defp define_interface_mapping([{identifier, name}] = naming, interfaces) do

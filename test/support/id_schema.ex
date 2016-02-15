@@ -21,11 +21,9 @@ defmodule Absinthe.IdTestSchema do
   end
 
   @doc "An item"
-  object :item, [
-    fields: [
-      id: [type: :id],
-      name: [type: :string]
-    ]
-  ]
+  object :item do
+    field :id, :id
+    field :name, :string
+  end
 
 end

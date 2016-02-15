@@ -11,22 +11,21 @@ defmodule Absinthe.Execution.ArgumentsTest do
       false => "NO"
     }
 
-    query [
-      fields: [
-        something: [
-          type: :string,
-          args: [
-            flag: [type: :boolean, default_value: false]
-          ],
-          resolve: fn
-            %{flag: val}, _ ->
-              {:ok, @res[val]}
-            _, _ ->
-              {:error, "No value provided for flag argument"}
-          end
-        ]
-      ]
-    ]
+    query do
+
+      field :something,
+        type: :string,
+        args: [
+          flag: [type: :boolean, default_value: false]
+        ],
+        resolve: fn
+          %{flag: val}, _ ->
+            {:ok, @res[val]}
+          _, _ ->
+            {:error, "No value provided for flag argument"}
+        end
+
+    end
 
   end
 

@@ -26,92 +26,88 @@ defmodule Absinthe.Adapter.LanguageConventionsTest do
       "opera_house" => %{id: "opera_house", name: "Opera House", location_name: "Sydney"}
     }
 
-    query [
-      fields: [
-          bad_resolution: [
-            type: :field_trip,
-            resolve: fn
-              _, _ ->
-                :not_expected
-            end
-          ],
-          field_trip_by_context: [
-            type: :field_trip,
-            resolve: fn
-              _, %{context: %{field_trip: id}} ->
-                {:ok, @db |> Map.get(id)}
-              _, _ ->
-                {:error, "No :id context provided"}
-            end
-          ],
-          field_trip: [
-            type: :field_trip,
-            args: [
-              id: [
-                description: "id of the field trip",
-                type: non_null(:string)
-              ]
-            ],
-            resolve: fn
-              %{id: id}, _ ->
-                {:ok, @db |> Map.get(id)}
-            end
-          ],
-          field_trips: [
-            type: list_of(:field_trip),
-            args: [
-              location: [
-                description: "nested location object",
-                type: :input_location
-              ],
-              location_name: [
-                description: "The location of the field trip",
-                type: :string
-              ]
-            ],
-            resolve: fn
-              %{location_name: name}, _ ->
-                {:ok, find_trips(name)}
-              %{location: %{name: name}}, _ ->
-                {:ok, find_trips(name)}
-            end
+    query do
+
+      field :bad_resolution,
+        type: :field_trip,
+        resolve: fn
+          _, _ ->
+            :not_expected
+        end
+
+      field :field_trip_by_context,
+        type: :field_trip,
+        resolve: fn
+          _, %{context: %{field_trip: id}} ->
+            {:ok, @db |> Map.get(id)}
+          _, _ ->
+            {:error, "No :id context provided"}
+        end
+
+      field :field_trip,
+        type: :field_trip,
+        args: [
+          id: [
+            description: "id of the field trip",
+            type: non_null(:string)
           ]
-      ]
-    ]
+        ],
+        resolve: fn
+          %{id: id}, _ ->
+            {:ok, @db |> Map.get(id)}
+        end
+
+      field :field_trips,
+        type: list_of(:field_trip),
+        args: [
+          location: [
+            description: "nested location object",
+            type: :input_location
+          ],
+          location_name: [
+            description: "The location of the field trip",
+            type: :string
+          ]
+        ],
+        resolve: fn
+          %{location_name: name}, _ ->
+            {:ok, find_trips(name)}
+          %{location: %{name: name}}, _ ->
+            {:ok, find_trips(name)}
+        end
+
+    end
 
     @doc "A location"
-    input_object :input_location, [
-      fields: [
-        name: [type: non_null(:string)],
-      ]
-    ]
+    input_object :input_location do
+      field :name, non_null(:string)
+    end
 
     @doc "A field trip"
-    object :field_trip, [
-      fields: [
-        id: [
-          type: non_null(:string),
-          description: "The ID of the field trip"
-        ],
-        name: [
-          type: :string,
-          description: "The name of field trip is located"
-        ],
-        location_name: [
-          type: :string,
-          description: "The place the field trip is located"
-        ],
-        other_field_trip: [
-          type: :field_trip,
-          resolve: fn
-            _, %{resolution: %{target: %{id: "museum"}}} ->
-              {:ok, @db |> Map.get("opera_house")}
-            _, %{resolution: %{target: %{id: "opera_house"}}} ->
-                {:ok, @db |> Map.get("museum")}
-          end
-        ]
-      ]
-    ]
+    object :field_trip do
+
+      field :id,
+        type: non_null(:string),
+        description: "The ID of the field trip"
+
+      field :name,
+        type: :string,
+        description: "The name of field trip is located"
+
+      field :location_name,
+        type: :string,
+        description: "The place the field trip is located"
+
+      field :other_field_trip,
+        type: :field_trip,
+        resolve: fn
+          _, %{resolution: %{target: %{id: "museum"}}} ->
+            {:ok, @db |> Map.get("opera_house")}
+          _, %{resolution: %{target: %{id: "opera_house"}}} ->
+              {:ok, @db |> Map.get("museum")}
+        end
+
+    end
 
     defp find_trips(name) do
       for {_, %{location_name: location} = ft} <- @db, location == name, into: []  do
