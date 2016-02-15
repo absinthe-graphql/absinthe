@@ -2,39 +2,42 @@ defmodule PrefixSchema do
 
   use Absinthe.Schema
 
-  query [
-    fields: [
-      __mything: [
-        name: "__mything",
-        type: :thing,
-        args: [
-          __myarg: [type: :integer]
-        ],
-        resolve: fn
-          _, _ ->
-            {:ok, %{name: "Test"}}
-        end
-      ]
-    ]
-  ]
+  query do
+    field :foo do
+      arg :bar
+    end
+    field :__mything,
+      name: "__mything",
+      type: :thing,
+      args: [
+        __myarg: [type: :integer]
+      ],
+      resolve: fn
+        _, _ ->
+          {:ok, %{name: "Test"}}
+      end
+  end
 
-  object [__mything: "__MyThing"], [
-    fields: [
-      name: [type: :string]
-    ]
-  ]
+  object :__mything, name: "__MyThing" do
+    field :name, :string
+  end
 
-  directive :__mydirective, [
-    args: [
-      __if: [type: non_null(:boolean), description: "Skipped when true."]
-    ],
-    on: [Language.FragmentSpread, Language.Field, Language.InlineFragment],
-    instruction: fn
+  directive :__mydirective do
+
+    @doc "Skipped when true."
+    arg :__if, non_null(:boolean)
+
+    on Language.FragmentSpread
+    on Language.Field
+    on Language.InlineFragment
+
+    instruction fn
       %{if: true} ->
         :skip
       _ ->
         :include
     end
-  ]
+
+  end
 
 end

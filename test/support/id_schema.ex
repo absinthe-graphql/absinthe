@@ -7,19 +7,18 @@ defmodule Absinthe.IdTestSchema do
     "bar" => %{id: "bar", name: "Bar"}
   }
 
-  query [
-    fields: [
-      item: [
-        type: :item,
-        args: [
-          id: [type: non_null(:id)]
-        ],
-        resolve: fn %{id: item_id}, _ ->
-          {:ok, @items[item_id]}
-        end
-      ]
-    ]
-  ]
+  query do
+
+    field :item,
+      type: :item,
+      args: [
+        id: [type: non_null(:id)]
+      ],
+      resolve: fn %{id: item_id}, _ ->
+        {:ok, @items[item_id]}
+      end
+
+  end
 
   @doc "An item"
   object :item, [

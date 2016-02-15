@@ -2,16 +2,13 @@ defmodule SchemaWithDuplicateNames do
   use Absinthe.Schema
 
   @doc "A person"
-  object :person, [
-    fields: [
-      name: [type: :string]
-    ]
-  ]
+  object :person do
+    field :name, :string
+  end
 
   @doc "A person"
-  object [another_person: "Person"], [
-    fields: [
-      name: [type: :string]
-    ]
-  ]
+  object :another_person, name: "Person" do
+    field :type, :string
+  end
+
 end

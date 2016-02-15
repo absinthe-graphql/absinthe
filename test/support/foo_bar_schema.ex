@@ -7,46 +7,39 @@ defmodule FooBarSchema do
     "bar" => %{id: "bar", name: "Bar"}
   }
 
-  query [
-    fields: [
-      item: [
-        type: :item,
-        args: [
-          id: [type: non_null(:id)]
-        ],
-        resolve: fn %{id: item_id}, _ ->
-          {:ok, @items[item_id]}
-        end
-      ]
-    ]
-  ]
+  query do
+
+    field :item,
+      type: :item,
+      args: [
+        id: [type: non_null(:id)]
+      ],
+      resolve: fn %{id: item_id}, _ ->
+        {:ok, @items[item_id]}
+      end
+
+  end
 
   @doc "A Basic Type"
-  object :item, [
-    fields: [
-      id: [type: :id],
-      name: [type: :string]
-    ]
-  ]
+  object :item do
+    field :id, :id
+    field :name, :string
+  end
 
   @doc "An author"
-  object :author, [
-    fields: [
-      id: [type: :id],
-      first_name: [type: :string],
-      last_name: [type: :string],
-      books: [type: list_of(:book)]
-    ]
-  ]
+  object :author do
+    field :id, :id
+    field :first_name, :string
+    field :last_name, :string
+    field :books, list_of(:book)
+  end
 
   @doc "A Book"
-  object [book: "NonFictionBook"], [
-    fields: [
-      id: [type: :id],
-      title: [type: :string],
-      isbn: [type: :string],
-      authors: [type: list_of(:author)]
-    ]
-  ]
+  object :book, "NonFictionBook" do
+    field :id, :id
+    field :title, :string
+    field :isbn, :string
+    field :authors, list_of(:author)
+  end
 
 end

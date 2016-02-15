@@ -1,44 +1,37 @@
 defmodule BadInterfaceSchema do
   use Absinthe.Schema
 
-  query [
-    fields: [
-      foo: [type: :foo],
-      quux: [type: :quux],
-      spam: [type: :spam]
-    ]
-  ]
+  query do
+    field :foo, :foo
+    field :quux, :quux
+    field :span, :spam
+  end
 
-  object :foo, [
-    fields: [
-      not_name: [type: :string]
-    ],
-    interfaces: [:named],
-    is_type_of: fn _ -> true end
-  ]
+  object :foo do
+    field :not_name, :string
+    interface :named
+    is_type_of fn
+      _ ->
+        true
+    end
+  end
 
-  object :quux, [
-    fields: [
-      not_name: [type: :string]
-    ],
-    interfaces: [:foo],
-    is_type_of: fn
+  object :quux do
+    field :not_name, :string
+    interface :foo
+    is_type_of fn
       _ ->
         true
     end
   ]
 
-   object :spam, [
-     fields: [
-       name: [type: :string]
-     ],
-     interfaces: [:named]
-   ]
+   object :spam do
+     field :name, :string
+     interface :named
+   end
 
-   interface :named, [
-     fields: [
-       name: [type: :string]
-     ]
-   ]
+   interface :named do
+     field :name, :string
+   end
 
 end

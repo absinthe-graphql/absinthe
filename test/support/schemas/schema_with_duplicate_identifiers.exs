@@ -2,16 +2,13 @@ defmodule SchemaWithDuplicateIdentifiers do
   use Absinthe.Schema
 
   @doc "A person"
-  object :person, [
-    fields: [
-      name: [type: :string]
-    ]
-  ]
+  object :person do
+    field :name, :string
+  end
 
   @doc "A person"
-  object [person: "APersonToo]"], [
-    fields: [
-      name: [type: :string]
-    ]
-  ]
+  object :person, name: "APersonToo" do
+    field :name, :string
+  end
+
 end
