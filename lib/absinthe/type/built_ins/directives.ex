@@ -7,34 +7,40 @@ defmodule Absinthe.Type.BuiltIns.Directives do
   @doc """
   Directs the executor to include this field or fragment only when the `if` argument is true."
   """
-  directive :include, [
-    args: [
-      if: [type: non_null(:boolean), description: "Included when true."]
-    ],
-    on: [Language.FragmentSpread, Language.Field, Language.InlineFragment],
-    instruction: fn
+  directive :include do
+
+    @doc "Included when true."
+    arg :if, non_null(:boolean)
+
+    on [Language.FragmentSpread, Language.Field, Language.InlineFragment]
+
+    instruction fn
       %{if: true} ->
         :include
       _ ->
         :skip
     end
-  ]
+
+  end
 
   @doc """
   Directs the executor to skip this field or fragment when the `if` argument is true.
   """
-  directive :skip, [
-    args: [
-      if: [type: non_null(:boolean), description: "Skipped when true."]
-    ],
-    on: [Language.FragmentSpread, Language.Field, Language.InlineFragment],
-    instruction: fn
+  directive :skip do
+
+    @doc "Skipped when true."
+    arg :if, non_null(:boolean)
+
+    on [Language.FragmentSpread, Language.Field, Language.InlineFragment]
+
+    instruction fn
       %{if: true} ->
         :skip
       _ ->
         :include
     end
-  ]
+
+  end
 
   # Whether the directive is active in `place`
   @doc false

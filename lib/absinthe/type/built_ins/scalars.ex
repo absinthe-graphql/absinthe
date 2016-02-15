@@ -9,32 +9,31 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   represented in JSON as double-precision floating point numbers specified
   by [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
   """
-  scalar [integer: "Int"], [
-    serialize: &(&1),
-    parse: parse_with([Absinthe.Language.IntValue], &parse_int/1)
-  ]
+  scalar :integer, name: "Int" do
+    serialize &(&1)
+    parse parse_with([Absinthe.Language.IntValue], &parse_int/1)
+  end
 
   @doc """
   The `Float` scalar type represents signed double-precision fractional
   values as specified by
   [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
   """
-  scalar :float, [
-    serialize: &(&1),
-    parse: parse_with([Absinthe.Language.IntValue,
+  scalar :float do
+    serialize &(&1)
+    parse parse_with([Absinthe.Language.IntValue,
                        Absinthe.Language.FloatValue], &parse_float/1)
-  ]
+  end
 
   @doc """
   The `String` scalar type represents textual data, represented as UTF-8
   character sequences. The String type is most often used by GraphQL to
   represent free-form human-readable text.
   """
-  scalar :string, [
-    serialize: &to_string/1,
-    parse: parse_with([Absinthe.Language.StringValue], &parse_string/1)
-
-  ]
+  scalar :string do
+    serialize &to_string/1
+    parse parse_with([Absinthe.Language.StringValue], &parse_string/1)
+  end
 
   @doc """
   The `ID` scalar type represents a unique identifier, often used to
@@ -43,20 +42,19 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   When expected as an input type, any string (such as `"4"`) or integer
   (such as `4`) input value will be accepted as an ID.
   """
-  scalar [id: "ID"], [
-    serialize: &to_string/1,
-    parse: parse_with([Absinthe.Language.IntValue,
+  scalar :id, name: "ID" do
+    serialize &to_string/1
+    parse parse_with([Absinthe.Language.IntValue,
                        Absinthe.Language.StringValue], &parse_string/1)
-  ]
+  end
 
   @doc """
   The `Boolean` scalar type represents `true` or `false`.
   """
-  scalar :boolean, [
-    serialize: &(&1),
-    parse: parse_with([Absinthe.Language.BooleanValue],
-                      &parse_boolean/1)
-  ]
+  scalar :boolean do
+    serialize &(&1)
+    parse parse_with([Absinthe.Language.BooleanValue], &parse_boolean/1)
+  end
 
   # Integers are only safe when between -(2^53 - 1) and 2^53 - 1 due to being
   # encoded in JavaScript and represented in JSON as double-precision floating
