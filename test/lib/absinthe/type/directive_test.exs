@@ -6,11 +6,9 @@ defmodule Absinthe.Type.DirectiveTest do
   defmodule TestSchema do
     use Absinthe.Schema
 
-    query [
-      fields: [
-        nonce: [type: :string]
-      ]
-    ]
+    query do
+      field :nonce, :string
+    end
 
   end
 

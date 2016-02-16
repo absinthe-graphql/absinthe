@@ -9,60 +9,48 @@ defmodule Absinthe.Type.InterfaceTest do
   defmodule TestSchema do
     use Absinthe.Schema
 
-    query [
-      fields: [
-        foo: [type: :foo],
-        bar: [type: :bar],
-        named_thing: [
-          type: :named,
-        ]
-      ]
-    ]
+    query do
+      field :foo, type: :foo
+      field :bar, type: :bar
+      field :named_thing, :named
+    end
 
-    object :foo, [
-      fields: [
-        name: [type: :string]
-      ],
-      is_type_of: fn
+    object :foo do
+      field :name, :string
+      is_type_of fn
         _ ->
           true
-      end,
-      interfaces: [:named]
-    ]
+      end
+      interface :named
+    end
 
-    object :bar, [
-      fields: [
-        name: [type: :string]
-      ],
-      is_type_of: fn
+    object :bar do
+      field :name, :string
+      is_type_of fn
         _ ->
           true
-      end,
-      interfaces: [:named]
-    ]
+      end
+      interface :named
+    end
 
     # NOT USED IN THE QUERY
-    object :baz, [
-      fields: [
-        name: [type: :string]
-      ],
-      is_type_of: fn
+    object :baz do
+      field :name, :string
+      is_type_of fn
         _ ->
           true
-      end,
-      interfaces: [:named]
-    ]
+      end
+      interfaces [:named]
+    end
 
     @doc "An interface"
-    interface :named, [
-      fields: [
-        name: [type: :string]
-      ],
-      resolve_type: fn
+    interface :named do
+      field :name, :string
+      resolve_type fn
         _, _ ->
           nil # just a value
       end
-    ]
+    end
 
   end
 

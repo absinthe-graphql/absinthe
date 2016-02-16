@@ -139,49 +139,28 @@ defmodule Absinthe.Schema do
     end
   end
 
-  defmacro query(attrs, [do: block]) do
-    quote do
-      object :query, unquote(attrs) do
-        unquote(block)
-      end
-    end
+  defmacro query(raw_attrs, [do: block]) do
+    attrs = Absinthe.Schema.TypeModule.__prepare_attrs__(__CALLER__, raw_attrs)
+    Absinthe.Schema.TypeModule.__container__(:object, :query, attrs, block)
   end
   defmacro query([do: block]) do
-    quote do
-      object :query do
-        unquote(block)
-      end
-    end
+    Absinthe.Schema.TypeModule.__container__(:object, :query, [], block)
   end
 
-  defmacro mutation(attrs, [do: block]) do
-    quote do
-      object :mutation, unquote(attrs) do
-        unquote(block)
-      end
-    end
+  defmacro mutation(raw_attrs, [do: block]) do
+    attrs = Absinthe.Schema.TypeModule.__prepare_attrs__(__CALLER__, raw_attrs)
+    Absinthe.Schema.TypeModule.__container__(:object, :mutation, attrs, block)
   end
   defmacro mutation([do: block]) do
-    quote do
-      object :mutation do
-        unquote(block)
-      end
-    end
+    Absinthe.Schema.TypeModule.__container__(:object, :mutation, [], block)
   end
 
-  defmacro subscription(attrs, [do: block]) do
-    quote do
-      object :subscription, unquote(attrs) do
-        unquote(block)
-      end
-    end
+  defmacro subscription(raw_attrs, [do: block]) do
+    attrs = Absinthe.Schema.TypeModule.__prepare_attrs__(__CALLER__, raw_attrs)
+    Absinthe.Schema.TypeModule.__container__(:object, :subscription, attrs, block)
   end
   defmacro subscription([do: block]) do
-    quote do
-      object :subscription do
-        unquote(block)
-      end
-    end
+    Absinthe.Schema.TypeModule.__container__(:object, :subscription, [], block)
   end
 
   # Lookup a directive that in used by/available to a schema

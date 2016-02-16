@@ -5,18 +5,18 @@ defmodule Absinthe.Type.InputObjectTest do
     use Absinthe.Schema
 
     @doc "A profile"
-    input_object :profile, [
-      fields: [
-        name: [type: :string],
-        profile_picture: [
-          type: :string,
-          args: [
-            width: [type: :integer],
-            height: [type: :integer]
-          ]
+    input_object :profile do
+
+      field :name, :string
+
+      field :profile_picture,
+        type: :string,
+        args: [
+          width: [type: :integer],
+          height: [type: :integer]
         ]
-      ]
-    ]
+
+    end
 
   end
 

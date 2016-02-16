@@ -7,22 +7,24 @@ defmodule Absinthe.Type.DeprecationTest do
     use Absinthe.Schema
 
     @doc "A profile"
-    input_object :profile, [
-      fields: [
-        name: [type: :string],
-        profile_picture: [
-          type: :string,
-          args: [
-            width: [type: :integer],
-            height: [type: :integer],
-            size: deprecate([type: :string], reason: "Not explicit enough"),
-            source: deprecate([type: :string])
-          ]
-        ],
-        email_address: deprecate([type: :string], reason: "privacy"),
-        address: deprecate([type: :string])
-      ]
-    ]
+    input_object :profile do
+
+      field :name, :string
+
+      field :profile_picture,
+        type: :string,
+        args: [
+          width: [type: :integer],
+          height: [type: :integer],
+          size: [type: :string, deprecate: "Not explicit enough"],
+          source: [type: :string, deprecate: true]
+        ]
+
+      field :email_address, :string, deprecate: "privacy"
+
+      field :address, :string, deprecate: true
+
+    end
 
   end
 

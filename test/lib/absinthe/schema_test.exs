@@ -51,22 +51,17 @@ defmodule Absinthe.SchemaTest do
   defmodule SourceSchema do
     use Absinthe.Schema
 
-    query [
-      fields: [
-        foo: [
-          type: :foo,
-          resolve: fn
-            _, _ -> {:ok, %{name: "Fancy Foo!"}}
-          end
-        ]
-      ]
-    ]
+    query do
+      field :foo,
+        type: :foo,
+        resolve: fn
+          _, _ -> {:ok, %{name: "Fancy Foo!"}}
+        end
+    end
 
-    object :foo, [
-      fields: [
-        name: [type: :string]
-      ]
-    ]
+    object :foo do
+      field :name, :string
+    end
 
   end
 
@@ -75,28 +70,24 @@ defmodule Absinthe.SchemaTest do
 
     import_types SourceSchema
 
-    query [
-      fields: [
-        foo: [
-          type: :foo,
-          resolve: fn
-            _, _ -> {:ok, %{name: "A different fancy Foo!"}}
-          end
-        ],
-        bar: [
-          type: :bar,
-          resolve: fn
-            _, _ -> {:ok, %{name: "A plain old bar"}}
-          end
-        ]
-      ]
-    ]
+    query do
+      field :foo,
+        type: :foo,
+        resolve: fn
+          _, _ -> {:ok, %{name: "A different fancy Foo!"}}
+        end
 
-    object :bar, [
-      fields: [
-        name: [type: :string]
-      ]
-    ]
+      field :bar,
+        type: :bar,
+        resolve: fn
+          _, _ -> {:ok, %{name: "A plain old bar"}}
+        end
+
+    end
+
+    object :bar do
+      field :name, :string
+    end
 
   end
 
@@ -105,11 +96,9 @@ defmodule Absinthe.SchemaTest do
 
     import_types UserSchema
 
-    object :baz, [
-      fields: [
-        name: [type: :string]
-      ]
-    ]
+    object :baz do
+      field :name, :string
+    end
 
   end
 
@@ -141,22 +130,20 @@ defmodule Absinthe.SchemaTest do
 
     import_types SourceSchema
 
-    query [
-      fields: [
-        name: [
-          type: :string,
-          args: [
-            family_name: [type: :boolean]
-          ]
-        ]
-      ]
-    ]
+    query do
 
-    mutation "MyRootMutation", [
-      fields: [
-        name: [type: :string]
-      ]
-    ]
+      field :name,
+        type: :string,
+        args: [
+          family_name: [type: :boolean]
+        ]
+
+    end
+
+    mutation name: "MyRootMutation" do
+      field :name, :string
+    end
+
   end
 
 

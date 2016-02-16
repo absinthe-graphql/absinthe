@@ -7,31 +7,27 @@ defmodule Absinthe.Type.UnionTest do
     use Absinthe.Schema
 
     @doc "A person"
-    object :person, [
-      fields: [
-        name: [type: :string],
-        age: [type: :integer]
-      ]
-    ]
+    object :person do
+      field :name, :string
+      field :age, :integer
+    end
 
     @doc "A business"
-    object :business, [
-      fields: [
-        name: [type: :string],
-        employee_count: [type: :integer]
-      ]
-    ]
+    object :business do
+      field :name, :string
+      field :employee_count, :integer
+    end
 
     @doc "A search result"
-    union :search_result, [
-      types: [:person, :business],
-      resolve_type: fn
+    union :search_result do
+      types [:person, :business]
+      resolve_type fn
         %{age: _}, _ ->
           :person
         %{employee_count: _}, _ ->
           :business
       end
-    ]
+    end
 
   end
 

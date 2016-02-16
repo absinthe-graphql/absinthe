@@ -23,7 +23,7 @@ defmodule BadInterfaceSchema do
       _ ->
         true
     end
-  ]
+  end
 
    object :spam do
      field :name, :string

@@ -45,16 +45,8 @@ defmodule Absinthe.Schema.TypeModule do
     end
   end
 
-  defmacro object(identifier, attrs, [do: block]) do
-    __container__(:object, identifier, attrs, block)
-  end
-  defmacro object(identifier, [do: block]) do
-    __container__(:object, identifier, [], block)
-  end
-
-  defp __container__(kind, identifier, attrs, block) do
+  def __container__(kind, identifier, attrs, block) do
     quote do
-      IO.inspect(container_location: __MODULE__)
       Absinthe.Schema.TypeModule.__open_container__(unquote(kind), __MODULE__, unquote(identifier), unquote(attrs))
       unquote(block)
       Absinthe.Schema.TypeModule.__close_container__(unquote(kind), __MODULE__, unquote(identifier))
@@ -62,6 +54,21 @@ defmodule Absinthe.Schema.TypeModule do
   end
 
   @contain :absinthe_container_stack
+
+  def __prepare_attrs__(caller, type, attrs) do
+    __do_prepare_attrs__(caller, [{:type, type} | attrs])
+  end
+  def __prepare_attrs__(caller, attrs) when is_list(attrs) do
+    __do_prepare_attrs__(caller, attrs)
+  end
+  def __prepare_attrs__(caller, type) do
+    __do_prepare_attrs__(caller, [type: type])
+  end
+  defp __do_prepare_attrs__(caller, attrs) do
+    attrs
+    |> Macro.expand(caller)
+    |> Macro.escape
+  end
 
   def __open_container__(_, mod, identifier, attrs) do
     stack = __container_stack__(mod)
@@ -76,6 +83,9 @@ defmodule Absinthe.Schema.TypeModule do
   def __close_container__(:field, mod, identifier) do
     field_container = __container_stack_pop__(mod)
     __container_cons__(mod, :fields, {identifier, field_container})
+  end
+  def __close_container__(_, mod, identifier) do
+    __container_stack_pop__(mod)
   end
 
   def __container_stack_pop__(mod) do
@@ -105,43 +115,41 @@ defmodule Absinthe.Schema.TypeModule do
     Module.put_attribute(mod, @contain, [updated | rest])
   end
 
+
+  defmacro object(identifier, attrs, [do: block]) do
+    __container__(:object, identifier, attrs, block)
+  end
+  defmacro object(identifier, [do: block]) do
+    __container__(:object, identifier, [], block)
+  end
+
   defmacro field(identifier, raw_attrs) do
-    __container__(:field, identifier, normalize_type_attr(attrs), nil)
+    attrs = __prepare_attrs__(__CALLER__, raw_attrs)
+    __container__(:field, identifier, attrs, nil)
   end
   defmacro field(identifier, [do: block]) do
-    IO.inspect(identifier: identifier)
     __container__(:field, identifier, [], block)
   end
 
-  defmacro field(identifier, attrs, [do: block]) do
-    __container__(:field, identifier, normalize_type_attr(attrs), block)
+  defmacro field(identifier, raw_attrs, [do: block]) do
+    attrs = __prepare_attrs__(__CALLER__, raw_attrs)
+    __container__(:field, identifier, attrs, block)
   end
-  defmacro field(identifier, type, attrs) do
-    spliced_args = quote do
-      [{:type, unquote(type)}, unquote_splicing(attrs)]
-    end
-    __container__(:field, identifier, spliced_args, nil)
+  defmacro field(identifier, type, raw_attrs) do
+    attrs = __prepare_attrs__(__CALLER__, type, raw_attrs)
+    __container__(:field, identifier, attrs, nil)
   end
-  defmacro field(identifier, type, attrs, [do: block]) do
-    spliced_args = quote do
-      [{:type, unquote(type)}, unquote_splicing(attrs)]
-    end
-    __container__(:field, identifier, spliced_args, block)
+  defmacro field(identifier, type, raw_attrs, [do: block]) do
+    attrs = __prepare_attrs__(__CALLER__, type, raw_attrs)
+    __container__(:field, identifier, attrs, block)
   end
 
-
-  defp normalize_type_attr(attrs) when is_list(attrs) do
-    attrs
+  defmacro arg(identifier, type, raw_attrs) do
+    attrs = __prepare_attrs__(__CALLER__, type, raw_attrs)
+    __arg__(identifier, attrs)
   end
-  defp normalize_type_attr(type) do
-    [type: type]
-  end
-
-  defmacro arg(identifier, type, attrs) do
-    spliced_args = quote do: [{:type, unquote(type)}, unquote_splicing(attrs)]
-    __arg__(identifier, spliced_args)
-  end
-  defmacro arg(identifier, attrs) do
+  defmacro arg(identifier, raw_attrs) do
+    attrs = __prepare_attrs__(__CALLER__, raw_attrs)
     __arg__(identifier, attrs)
   end
 
@@ -154,6 +162,18 @@ defmodule Absinthe.Schema.TypeModule do
   defmacro resolve(resolver) do
     quote do
       Absinthe.Schema.TypeModule.__container_put__(__MODULE__, :resolve, unquote(resolver))
+    end
+  end
+
+  defmacro is_type_of(fun) do
+    quote do
+      Absinthe.Schema.TypeModule.__container_put__(__MODULE__, :is_type_of, unquote(fun))
+    end
+  end
+
+  defmacro interfaces(ifaces) do
+    quote do
+      Absinthe.Schema.TypeModule.__container_put__(__MODULE__, :interfaces, unquote(ifaces))
     end
   end
 
@@ -215,16 +235,17 @@ defmodule Absinthe.Schema.TypeModule do
     input_object(identifier, [], [do: block])
   end
 
-  defmacro enum(identifier, attrs, [do: block]) do
+  defmacro enum(identifier, raw_attrs, [do: block]) do
+    attrs = __prepare_attrs__(__CALLER__, raw_attrs)
+    __container__(:enum, identifier, attrs, block)
   end
   defmacro enum(identifier, [do: block]) do
-    enum(identifier, [], [do: block])
+    __container__(:enum, identifier, [], nil)
   end
-
-
-
-
-
+  defmacro enum(identifier, raw_attrs) do
+    attrs = __prepare_attrs__(__CALLER__, raw_attrs)
+    __container__(:enum, identifier, attrs, nil)
+  end
 
   defmacro import_types(type_module_ast, opts_ast \\ []) do
     opts = Macro.expand(opts_ast, __CALLER__)

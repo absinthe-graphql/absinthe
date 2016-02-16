@@ -269,18 +269,14 @@ defmodule Absinthe.IntrospectionTest do
     defmodule KindSchema do
       use Absinthe.Schema
 
-      query [
-        fields: [
-          foo: [type: :foo]
-        ]
-      ]
+      query do
+        field :foo, :foo
+      end
 
-      object :foo, [
-        fields: [
-          name: [type: :string],
-          kind: [type: :string]
-        ]
-      ]
+      object :foo do
+        field :name, :string
+        field :kind, :string
+      end
 
     end
 
@@ -330,17 +326,14 @@ defmodule Absinthe.IntrospectionTest do
   defmodule MySchema do
     use Absinthe.Schema
 
-    query [
-      fields: [
-        greeting: [
-          type: :string,
-          description: "A traditional greeting",
-          resolve: fn
-            _, _ -> {:ok, "Hah!"}
-          end
-        ]
-      ]
-    ]
+    query do
+      field :greeting,
+        type: :string,
+        description: "A traditional greeting",
+        resolve: fn
+          _, _ -> {:ok, "Hah!"}
+        end
+    end
 
   end
 
