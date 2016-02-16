@@ -1,5 +1,5 @@
 defmodule Absinthe.Type.BuiltIns.Directives do
-  use Absinthe.Schema.TypeModule
+  use Absinthe.Schema.Notation
 
   alias Absinthe.Type
   alias Absinthe.Language

@@ -1,5 +1,5 @@
 defmodule Absinthe.Type.BuiltIns do
-  use Absinthe.Schema.TypeModule
+  use Absinthe.Schema.Notation
   alias __MODULE__
 
   import_types BuiltIns.Scalars

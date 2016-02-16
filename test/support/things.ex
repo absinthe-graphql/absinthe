@@ -61,22 +61,27 @@ defmodule Things do
           description: "id of the thing",
           type: non_null(:string)
         ],
-        deprecated_arg: deprecate([
+        deprecated_arg: [
           description: "This is a deprecated arg",
-          type: :string
-        ]),
-        deprecated_non_null_arg: deprecate([
+          type: :string,
+          deprecate: true
+
+        ],
+        deprecated_non_null_arg: [
           description: "This is a non-null deprecated arg",
-          type: non_null(:string)
-        ]),
-        deprecated_arg_with_reason: deprecate([
+          type: non_null(:string),
+          deprecate: true
+        ],
+        deprecated_arg_with_reason: [
           description: "This is a deprecated arg with a reason",
-          type: :string
-        ], reason: "reason"),
-        deprecated_non_null_arg_with_reason: deprecate([
+          type: :string,
+          deprecate: "reason"
+        ],
+        deprecated_non_null_arg_with_reason: [
           description: "This is a non-null deprecated arg with a reasor",
-          type: non_null(:string)
-        ], reason: "reason"),
+          type: non_null(:string),
+          deprecate: "reason"
+        ],
       ],
       resolve: fn
         %{id: id}, _ ->

@@ -10,14 +10,15 @@ defmodule Absinthe.TypeTest do
       describe "without a different identifier" do
 
         it 'includes a defined entry' do
+          IO.inspect(FooBarSchema.__absinthe_types__)
           assert %Type.Object{name: "Item"} = FooBarSchema.__absinthe_type__(:item)
         end
 
-        describe "that defines its own name" do
+        it "that defines its own name" do
           assert %Type.Object{name: "NonFictionBook"} = FooBarSchema.__absinthe_type__(:book)
         end
 
-        describe "that uses a name derived from the identifier" do
+        it "that uses a name derived from the identifier" do
           assert %Type.Object{name: "Item"} = FooBarSchema.__absinthe_type__(:item)
         end
 

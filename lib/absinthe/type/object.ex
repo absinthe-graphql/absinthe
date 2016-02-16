@@ -94,11 +94,11 @@ defmodule Absinthe.Type.Object do
   @type t :: %{name: binary, description: binary, fields: map, interfaces: [Absinthe.Type.Interface.t], is_type_of: ((any) -> boolean), reference: Type.Reference.t}
   defstruct name: nil, description: nil, fields: nil, interfaces: [], is_type_of: nil, reference: nil
 
-  def build([{identifier, name}], blueprint) do
+  def build(identifier, blueprint) do
     fields = Type.Field.build_map_ast(blueprint[:fields] || [])
     quote do
       %unquote(__MODULE__){
-        name: unquote(name),
+        name: unquote(blueprint[:name]),
         interfaces: unquote(blueprint[:interfaces] || []),
         fields: unquote(fields),
         is_type_of: unquote(blueprint[:is_type_of]),

@@ -1,5 +1,5 @@
 defmodule Absinthe.Type.BuiltIns.Introspection do
-  use Absinthe.Schema.TypeModule
+  use Absinthe.Schema.Notation
 
   alias Absinthe.Schema
   alias Absinthe.Flag

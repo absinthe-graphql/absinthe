@@ -1,6 +1,6 @@
 defmodule Absinthe.Schema do
   alias Absinthe.Utils
-  import Absinthe.Schema.TypeModule
+  import Absinthe.Schema.Notation
 
   @moduledoc """
   Define a GraphQL schema.
@@ -95,7 +95,7 @@ defmodule Absinthe.Schema do
   ```
   defmodule App.Schema.Objects do
 
-    use Absinthe.Scheme.TypeModule
+    use Absinthe.Scheme.Notation
 
     object :item, [
       # ... type definition
@@ -118,7 +118,7 @@ defmodule Absinthe.Schema do
 
   defmacro __using__(_opts) do
     quote do
-      use Absinthe.Schema.TypeModule
+      use Absinthe.Schema.Notation
       import unquote(__MODULE__)
       import_types Absinthe.Type.BuiltIns, export: false
       @after_compile unquote(__MODULE__)
@@ -140,27 +140,27 @@ defmodule Absinthe.Schema do
   end
 
   defmacro query(raw_attrs, [do: block]) do
-    attrs = Absinthe.Schema.TypeModule.__prepare_attrs__(__CALLER__, raw_attrs)
-    Absinthe.Schema.TypeModule.__container__(:object, :query, attrs, block)
+    attrs = Absinthe.Schema.Notation.__prepare_attrs__(__CALLER__, raw_attrs)
+    Absinthe.Schema.Notation.__scope__(:object, :query, attrs, block)
   end
   defmacro query([do: block]) do
-    Absinthe.Schema.TypeModule.__container__(:object, :query, [], block)
+    Absinthe.Schema.Notation.__scope__(:object, :query, [], block)
   end
 
   defmacro mutation(raw_attrs, [do: block]) do
-    attrs = Absinthe.Schema.TypeModule.__prepare_attrs__(__CALLER__, raw_attrs)
-    Absinthe.Schema.TypeModule.__container__(:object, :mutation, attrs, block)
+    attrs = Absinthe.Schema.Notation.__prepare_attrs__(__CALLER__, raw_attrs)
+    Absinthe.Schema.Notation.__scope__(:object, :mutation, attrs, block)
   end
   defmacro mutation([do: block]) do
-    Absinthe.Schema.TypeModule.__container__(:object, :mutation, [], block)
+    Absinthe.Schema.Notation.__scope__(:object, :mutation, [], block)
   end
 
   defmacro subscription(raw_attrs, [do: block]) do
-    attrs = Absinthe.Schema.TypeModule.__prepare_attrs__(__CALLER__, raw_attrs)
-    Absinthe.Schema.TypeModule.__container__(:object, :subscription, attrs, block)
+    attrs = Absinthe.Schema.Notation.__prepare_attrs__(__CALLER__, raw_attrs)
+    Absinthe.Schema.Notation.__scope__(:object, :subscription, attrs, block)
   end
   defmacro subscription([do: block]) do
-    Absinthe.Schema.TypeModule.__container__(:object, :subscription, [], block)
+    Absinthe.Schema.Notation.__scope__(:object, :subscription, [], block)
   end
 
   # Lookup a directive that in used by/available to a schema

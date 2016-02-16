@@ -1,7 +1,7 @@
 defmodule Absinthe.Type.BuiltIns.Scalars do
   alias Absinthe.Type.Scalar
   alias Absinthe.Flag
-  use Absinthe.Schema.TypeModule
+  use Absinthe.Schema.Notation
 
   @doc """
   The `Int` scalar type represents non-fractional signed whole numeric
