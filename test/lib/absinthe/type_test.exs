@@ -10,7 +10,6 @@ defmodule Absinthe.TypeTest do
       describe "without a different identifier" do
 
         it 'includes a defined entry' do
-          IO.inspect(FooBarSchema.__absinthe_types__)
           assert %Type.Object{name: "Item"} = FooBarSchema.__absinthe_type__(:item)
         end
 

@@ -1,7 +1,7 @@
 defmodule Absinthe.Schema.Notation do
   alias Absinthe.Utils
   alias Absinthe.Type
-  alias Absinthe.Schema.Notation.Scopes
+  alias Absinthe.Schema.Notation.Scope
 
   defmacro __using__(opts) do
     quote do
@@ -46,125 +46,92 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
-  def __scope__(kind, identifier, attrs, block) do
-    quote do
-      Absinthe.Schema.Notation.__open_scope__(unquote(kind), __MODULE__, unquote(identifier), unquote(attrs))
-      unquote(block)
-      Absinthe.Schema.Notation.__close_scope__(unquote(kind), __MODULE__, unquote(identifier))
-    end
+  def __scope__(env, kind, identifier, raw_attrs, block) do
+    attrs = __attrs__(env, raw_attrs)
+    [
+      __open_scope__(kind, env.module, identifier, attrs),
+      block,
+      __close_scope__(kind, env.module, identifier)
+    ]
   end
 
-  def __prepare_attrs__(caller, type, attrs) do
-    __do_prepare_attrs__(caller, [{:type, type} | attrs])
-  end
-  def __prepare_attrs__(caller, attrs) when is_list(attrs) do
-    __do_prepare_attrs__(caller, attrs)
-  end
-  def __prepare_attrs__(caller, type) do
-    __do_prepare_attrs__(caller, [type: type])
-  end
-  defp __do_prepare_attrs__(caller, attrs) do
+  def __attrs__(caller, attrs) do
     attrs
     |> Macro.expand(caller)
     |> Macro.escape
   end
 
-  def __open_scope__(_, mod, identifier, attrs) do
-    Scopes.open(mod, attrs)
+  def __open_scope__(kind, mod, identifier, attrs) do
+    Scope.open(mod, kind, attrs)
+    IO.inspect(open: kind, mod: mod, stack: Scope.on(mod), fallthrough: true)
   end
 
+  @unexported_identifiers ~w(query mutation subscription)a
   def __close_scope__(:object, mod, identifier) do
-    attrs = Scopes.close(mod) |> add_name(identifier)
+    attrs = Scope.close(mod).attrs |> add_name(identifier)
     type_obj = Type.Object.build(identifier, attrs)
+    IO.inspect(close: :object, mod: mod, stack: Scope.on(mod))
+    define_type({identifier, attrs[:name]}, type_obj, export: !Enum.member?(@unexported_identifiers, identifier))
+  end
+
+  def __close_scope__(:input_object, mod, identifier) do
+    attrs = Scope.close(mod).attrs |> add_name(identifier)
+    type_obj = Type.InputObject.build(identifier, attrs)
+    IO.inspect(close: :input_object, mod: mod, stack: Scope.on(mod))
     define_type({identifier, attrs[:name]}, type_obj)
   end
 
   def __close_scope__(:field, mod, identifier) do
-    attrs = Scopes.close(mod) |> add_name(identifier, lower: true)
-    Scopes.put_attribute(mod, :fields, {identifier, attrs}, accumulate: true)
-    nil
+    attrs = Scope.close(mod).attrs |> add_name(identifier, lower: true)
+    Scope.put_attribute(mod, :fields, {identifier, attrs}, accumulate: true)
+    IO.inspect(close: :field, mod: mod, stack: Scope.on(mod))
+    :ok
   end
-  def __close_scope__(_, mod, identifier) do
-    Scopes.close(mod)
-    nil
+
+  def __close_scope__(:arg, mod, identifier) do
+    attrs = Scope.close(mod).attrs |> add_name(identifier, lower: true)
+    Scope.put_attribute(mod, :args, {identifier, attrs}, accumulate: true)
+    IO.inspect(close: :arg, mod: mod, stack: Scope.on(mod))
+    :ok
   end
+
+  def __close_scope__(:scalar, mod, identifier) do
+    attrs = Scope.close(mod).attrs |> add_name(identifier)
+    type_obj = Type.Scalar.build(identifier, attrs)
+    IO.inspect(close: :scalar, mod: mod, stack: Scope.on(mod))
+    define_type({identifier, attrs[:name]}, type_obj, export: !Enum.member?(@unexported_identifiers, identifier))
+  end
+
+  def __close_scope__(kind, mod, identifier) do
+    Scope.close(mod)
+    IO.inspect(close: kind, mod: mod, stack: Scope.on(mod), fallthrough: true)
+    :ok
+  end
+
+  # OBJECT
 
   defmacro object(identifier, attrs, [do: block]) do
-    __scope__(:object, identifier, attrs, block)
+    __scope__(__CALLER__, :object, identifier, attrs, block)
   end
   defmacro object(identifier, [do: block]) do
-    __scope__(:object, identifier, [], block)
+    __scope__(__CALLER__, :object, identifier, [], block)
   end
 
-  defmacro field(identifier, raw_attrs) do
-    attrs = __prepare_attrs__(__CALLER__, raw_attrs)
-    __scope__(:field, identifier, attrs, nil)
-  end
-  defmacro field(identifier, [do: block]) do
-    __scope__(:field, identifier, [], block)
-  end
-
-  defmacro field(identifier, raw_attrs, [do: block]) do
-    attrs = __prepare_attrs__(__CALLER__, raw_attrs)
-    __scope__(:field, identifier, attrs, block)
-  end
-  defmacro field(identifier, type, raw_attrs) do
-    attrs = __prepare_attrs__(__CALLER__, type, raw_attrs)
-    __scope__(:field, identifier, attrs, nil)
-  end
-  defmacro field(identifier, type, raw_attrs, [do: block]) do
-    attrs = __prepare_attrs__(__CALLER__, type, raw_attrs)
-    __scope__(:field, identifier, attrs, block)
-  end
-
-  defmacro arg(identifier, type, raw_attrs) do
-    attrs = __prepare_attrs__(__CALLER__, type, raw_attrs)
-    __arg__(identifier, attrs)
-  end
-  defmacro arg(identifier, raw_attrs) do
-    attrs = __prepare_attrs__(__CALLER__, raw_attrs)
-    __arg__(identifier, attrs)
-  end
-
-  defp __arg__(identifier, attrs) do
+  @doc """
+  Declare implemented interfaces for an object.
+  """
+  defmacro interfaces(ifaces) when is_list(ifaces) do
     quote do
-      Scopes.put_attribute(__MODULE__, :args, unquote(attrs), accumulate: true)
+      Scope.put_attribute(__MODULE__, :interfaces, unquote(ifaces))
     end
   end
 
-  defmacro resolve(resolver) do
-    quote do
-      Scopes.put_attribute(__MODULE__, :resolve, unquote(resolver))
-    end
-  end
-
-  defmacro is_type_of(fun) do
-    quote do
-      Scopes.put_attribute(__MODULE__, :is_type_of, unquote(fun))
-    end
-  end
-
-  defmacro interfaces(ifaces) do
-    quote do
-      Scopes.put_attribute(__MODULE__, :interfaces, unquote(ifaces))
-    end
-  end
-
-  defmacro directive(identifier, attrs, [do: block]) do
-  end
-  defmacro directive(identifier, [do: block]) do
-    directive(identifier, [], [do: block])
-  end
-
-  defmacro scalar(identifier, attrs, [do: block]) do
-  end
-  defmacro scalar(identifier, [do: block]) do
-    scalar(identifier, [], [do: block])
-  end
-
+  @doc """
+  Declare an implemented interface for an object.
+  """
   defmacro interface(implemented_identifier) do
     quote do
-      Scopes.put_attribute(
+      Scope.put_attribute(
         __MODULE__,
         :interfaces,
         unquote(implemented_identifier),
@@ -174,34 +141,145 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defmacro interface(identifier, attrs, [do: block]) do
+    __scope__(__CALLER__, :interface, identifier, attrs, block)
   end
   defmacro interface(identifier, [do: block]) do
-    interface(identifier, [], [do: block])
+    __scope__(__CALLER__, :interface, identifier, [], block)
   end
+
+  # FIELDS
+
+  defmacro field(identifier, attrs) do
+    __scope__(__CALLER__, :field, identifier, attrs, nil)
+  end
+  defmacro field(identifier, [do: block]) do
+    __scope__(__CALLER__, :field, identifier, [], block)
+  end
+
+  defmacro field(identifier, attrs, [do: block]) do
+    __scope__(__CALLER__, :field, identifier, attrs, block)
+  end
+  defmacro field(identifier, type, attrs) do
+    __scope__(__CALLER__, :field, identifier, Keyword.put(attrs, :type, type),  nil)
+  end
+  defmacro field(identifier, type, attrs, [do: block]) do
+    __scope__(__CALLER__, :field, identifier, Keyword.put(attrs, :type, type), block)
+  end
+
+  defmacro resolve(resolver) do
+    quote do
+      Scope.put_attribute(__MODULE__, :resolve, unquote(resolver))
+    end
+  end
+
+  defmacro is_type_of(fun) do
+    quote do
+      Scope.put_attribute(__MODULE__, :is_type_of, unquote(fun))
+    end
+  end
+
+  # ARGS
+
+  defmacro arg(identifier, type, attrs) do
+    __scope__(__CALLER__, :arg, identifier, Keyword.put(attrs, :type, type), nil)
+  end
+  defmacro arg(identifier, attrs) do
+    __scope__(__CALLER__, :arg, identifier, attrs, nil)
+  end
+
+  # SCALARS
+
+  defmacro scalar(identifier, attrs, [do: block]) do
+    __scope__(__CALLER__, :scalar, identifier, attrs, block)
+  end
+  defmacro scalar(identifier, [do: block]) do
+    __scope__(__CALLER__, :scalar, identifier, [], block)
+  end
+  defmacro scalar(identifier, attrs) do
+    __scope__(__CALLER__, :scalar, identifier, attrs, nil)
+  end
+
+  defmacro serialize(raw_fun) do
+    fun = Macro.expand(raw_fun, __CALLER__)
+    quote do
+      IO.puts(parse: Scope.on(__MODULE__))
+      Scope.put_attribute(__MODULE__, :serialize, unquote(Macro.escape(fun)))
+    end
+  end
+
+  defmacro parse(raw_fun) do
+    fun = Macro.expand(raw_fun, __CALLER__)
+    quote do
+      IO.puts(parse: Scope.on(__MODULE__))
+      Scope.put_attribute(__MODULE__, :serialize, unquote(Macro.escape(fun)))
+    end
+  end
+
+  # DIRECTIVES
+
+  defmacro directive(identifier, attrs, [do: block]) do
+    __scope__(__CALLER__, :directive, identifier, attrs, block)
+  end
+  defmacro directive(identifier, [do: block]) do
+    __scope__(__CALLER__, :directive, identifier, [], block)
+  end
+
+  @doc """
+  Declare a directive as operating an a AST node type
+  """
+  defmacro on(ast_node) do
+    quote do
+      Scope.put_attribute(
+        __MODULE__,
+        :on,
+        unquote(ast_node),
+        accumulate: true
+      )
+    end
+  end
+
+  @doc """
+  Calculate the instruction for a directive
+  """
+  defmacro instruction(fun) do
+    fun = Macro.expand(fun, __CALLER__)
+    quote do
+      Scope.put_attribute(__MODULE__, :instruction, unquote(Macro.escape(fun)))
+    end
+  end
+
+
+  # INPUT OBJECTS
 
   defmacro input_object(identifier, attrs, [do: block]) do
+    __scope__(__CALLER__, :input_object, identifier, attrs, block)
   end
   defmacro input_object(identifier, [do: block]) do
-    input_object(identifier, [], [do: block])
+    __scope__(__CALLER__, :input_object, identifier, [], block)
   end
+
+  # UNIONS
 
   defmacro union(identifier, attrs, [do: block]) do
+    __scope__(__CALLER__, :union, identifier, attrs, block)
   end
   defmacro union(identifier, [do: block]) do
-    input_object(identifier, [], [do: block])
+    __scope__(__CALLER__, :union, identifier, [], block)
   end
 
-  defmacro enum(identifier, raw_attrs, [do: block]) do
-    attrs = __prepare_attrs__(__CALLER__, raw_attrs)
-    __scope__(:enum, identifier, attrs, block)
+  # ENUMS
+
+  defmacro enum(identifier, attrs, [do: block]) do
+    __scope__(__CALLER__, :enum, identifier, attrs, block)
   end
   defmacro enum(identifier, [do: block]) do
-    __scope__(:enum, identifier, [], nil)
+    __scope__(__CALLER__, :enum, identifier, [], nil)
   end
-  defmacro enum(identifier, raw_attrs) do
-    attrs = __prepare_attrs__(__CALLER__, raw_attrs)
-    __scope__(:enum, identifier, attrs, nil)
+  defmacro enum(identifier, attrs) do
+    __scope__(__CALLER__, :enum, identifier, attrs, nil)
   end
+
+  # UTILITIES
 
   defmacro import_types(type_module_ast, opts_ast \\ []) do
     opts = Macro.expand(opts_ast, __CALLER__)

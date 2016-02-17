@@ -161,7 +161,9 @@ defmodule Absinthe.SchemaTest do
 
   describe "fields" do
 
+    @tag :fields
     it "have the correct structure" do
+      IO.inspect(Schema.lookup_type(RootsSchema, :query))
       assert %Type.Field{name: "name"} = Schema.lookup_type(RootsSchema, :query).fields.name
     end
 

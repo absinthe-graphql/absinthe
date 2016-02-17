@@ -43,10 +43,10 @@ defmodule Absinthe.Type.Scalar do
   alias Absinthe.Flag
   alias Absinthe.Type
 
-  def build([{identifier, name}], blueprint) do
+  def build(identifier, blueprint) do
     quote do
       %unquote(__MODULE__){
-        name: unquote(name),
+        name: unquote(blueprint[:name]),
         parse: unquote(blueprint[:parse]) || &(&1),
         serialize: unquote(blueprint[:serialize]) || &(&1),
         description: @absinthe_doc,

@@ -9,10 +9,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   represented in JSON as double-precision floating point numbers specified
   by [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
   """
-  scalar :integer, name: "Int" do
-    serialize &(&1)
-    parse parse_with([Absinthe.Language.IntValue], &parse_int/1)
-  end
+  scalar :integer, name: "Int", serialize: &(&1), parse: parse_with([Absinthe.Language.IntValue], &parse_int/1)
 
   @doc """
   The `Float` scalar type represents signed double-precision fractional
@@ -114,17 +111,18 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   end
 
   # Parse, supporting pulling values out of AST nodes
-  @spec parse_with([atom], (any -> Scalar.value_t)) :: (any -> {:ok, Scalar.value_t} | :error)
-  defp parse_with(node_types, coercion) do
-    fn
-      %{value: value} = node ->
-        if Enum.is_member?(node_types, node) do
-          coercion.(value)
-        else
-          nil
-        end
-      other ->
-        coercion.(other)
+  defmacrop parse_with(node_types, coercion) do
+    quote do
+      fn
+        %{value: value} = node ->
+          if Enum.is_member?(unquote(node_types), node) do
+            unquote(coercion).(value)
+         else
+            nil
+         end
+       other ->
+          unquote(coercion).(other)
+      end
     end
   end
 

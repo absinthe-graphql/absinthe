@@ -1,9 +1,13 @@
-defmodule Absinthe.Schema.Notation.Scopes do
+defmodule Absinthe.Schema.Notation.Scope do
 
   @stack :absinthe_notation_scopes
 
-  def open(mod, attrs \\ []) do
-    Module.put_attribute(mod, @stack, [attrs | stack(mod)])
+  defstruct name: nil, attrs: []
+
+  use Absinthe.Type.Fetch
+
+  def open(mod, name, attrs \\ []) do
+    Module.put_attribute(mod, @stack, [%__MODULE__{name: name, attrs: attrs} | on(mod)])
   end
 
   def close(mod) do
@@ -13,20 +17,27 @@ defmodule Absinthe.Schema.Notation.Scopes do
   end
 
   def split(mod) do
-    [scope | rest] = stack(mod)
-    {scope, rest}
+    [current | rest] = on(mod)
+    {current, rest}
+  end
+
+  def current(mod) do
+    {c, _} = split(mod)
+    c
   end
 
   def put_attribute(mod, key, value, opts \\ [accumulate: false]) do
-    if Keyword.get(opts, :accumulate) do
+    IO.inspect(put_attribute: key, mod: mod)
+    if opts[:accumulate] do
       update_current(mod, fn
         scope ->
-          update_in(scope, [key], &[value | (&1 || [])])
+          new_attrs = update_in(scope.attrs, [key], &[value | (&1 || [])])
+          %{scope | attrs: new_attrs}
       end)
     else
       update_current(mod, fn
         scope ->
-          Keyword.put(scope, key, value)
+          %{scope | attrs: Keyword.put(scope.attrs, key, value)}
       end)
     end
   end
@@ -37,7 +48,7 @@ defmodule Absinthe.Schema.Notation.Scopes do
     Module.put_attribute(mod, @stack, [updated | rest])
   end
 
-  defp stack(mod) do
+  def on(mod) do
     case Module.get_attribute(mod, @stack) do
       nil ->
         Module.put_attribute(mod, @stack, [])

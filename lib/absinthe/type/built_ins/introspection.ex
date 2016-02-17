@@ -14,7 +14,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       resolve: fn
         _, %{schema: schema} ->
           Schema.types(schema)
-        |> Flag.as(:ok)
+          |> Flag.as(:ok)
       end
 
     field :query_type,
@@ -52,7 +52,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       resolve: fn
         _, %{source: source} ->
           structs = source.args |> Map.values
-        {:ok, structs}
+          {:ok, structs}
       end
 
     field :on_operation,
@@ -116,11 +116,11 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       resolve: fn
         _, %{schema: schema, source: %{interfaces: interfaces}} ->
           structs = interfaces
-        |> Enum.map(fn
-          ident ->
-            Absinthe.Schema.lookup_type(schema, ident)
-        end)
-        {:ok, structs}
+          |> Enum.map(fn
+            ident ->
+              Absinthe.Schema.lookup_type(schema, ident)
+          end)
+          {:ok, structs}
         _, _ ->
           {:ok, nil}
       end
@@ -130,7 +130,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       resolve: fn
         _, %{schema: schema, source: %{types: types}} ->
           structs = types |> Enum.map(&(Absinthe.Schema.lookup_type(schema, &1)))
-        {:ok, structs}
+          {:ok, structs}
         _, %{schema: schema, source: %Type.Interface{reference: %{identifier: ident}}} ->
           {:ok, Absinthe.Schema.implementors(schema, ident)}
         _, _ ->
@@ -166,7 +166,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       resolve: fn
         _, %{source: %Type.InputObject{fields: fields}} ->
           structs = fields |> Map.values
-        {:ok, structs}
+          {:ok, structs}
         _, _ ->
           {:ok, nil}
       end
@@ -176,7 +176,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       resolve: fn
         _, %{schema: schema, source: %{of_type: type}} ->
           Absinthe.Schema.lookup_type(schema, type, unwrap: false)
-        |> Flag.as(:ok)
+          |> Flag.as(:ok)
         _, _ ->
           {:ok, nil}
       end
