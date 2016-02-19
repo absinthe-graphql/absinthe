@@ -30,7 +30,7 @@ defmodule Absinthe.Schema.Notation do
 
       @absinthe_interface_implementors_map Enum.reduce(@absinthe_interface_implementors, %{}, fn
         {iface, obj_ident}, acc ->
-          {_, result} = Map.get_and_update_(acc, iface, fn
+          {_, result} = Map.get_and_update(acc, iface, fn
             nil ->
               {nil, [obj_ident]}
             impls ->
@@ -102,18 +102,20 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp __close_scope_and_define_type__(type_module, mod, identifier, def_opts \\ []) do
-    quote bind_quoted: [type_module: type_module, mod: mod, identifier: identifier, def_opts: def_opts] do
-      attrs = unquote(__MODULE__).Scope.close(mod).attrs |> unquote(__MODULE__).__with_name__(identifier)
+    scope_module = __MODULE__.Scope
+    quote bind_quoted: [type_module: type_module, mod: mod, identifier: identifier, def_opts: def_opts, module: __MODULE__, scope_module: scope_module] do
+      attrs = scope_module.close(mod).attrs |> module.__with_name__(identifier)
       type_obj = type_module.build(identifier, attrs)
-      definition = unquote(__MODULE__).__define_type__({identifier, attrs[:name]}, type_obj, def_opts)
+      definition = module.__define_type__({identifier, attrs[:name]}, type_obj, def_opts)
       Module.eval_quoted(__ENV__, definition)
     end
   end
 
   defp __close_scope_and_accumulate_attribute__(attr_name, mod, identifier, name_opts \\ [lower: true]) do
-    quote bind_quoted: [attr_name: attr_name, mod: mod, identifier: identifier, name_opts: name_opts] do
-      attrs = Scope.close(mod).attrs |> unquote(__MODULE__).__with_name__(identifier, name_opts)
-      Scope.put_attribute(mod, attr_name, {identifier, attrs}, accumulate: true)
+    scope_module = __MODULE__.Scope
+    quote bind_quoted: [attr_name: attr_name, mod: mod, identifier: identifier, name_opts: name_opts, module: __MODULE__, scope_module: scope_module] do
+      attrs = scope_module.close(mod).attrs |> module.__with_name__(identifier, name_opts)
+      scope_module.put_attribute(mod, attr_name, {identifier, attrs}, accumulate: true)
     end
   end
 
@@ -312,7 +314,7 @@ defmodule Absinthe.Schema.Notation do
 
   @spec __with_name__(Keyword.t, Type.identifier_t) :: Keyword.t
   @spec __with_name__(Keyword.t, Type.identifier_t, Keyword.t) :: Keyword.t
-  defp __with_name__(attrs, identifier, opts \\ []) do
+  def __with_name__(attrs, identifier, opts \\ []) do
     update_in(attrs, [:name], fn
       nil ->
         Utils.camelize(Atom.to_string(identifier), opts)

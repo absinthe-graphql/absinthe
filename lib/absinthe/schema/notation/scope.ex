@@ -6,7 +6,7 @@ defmodule Absinthe.Schema.Notation.Scope do
 
   use Absinthe.Type.Fetch
 
-  def open(mod, name, attrs \\ []) do
+  def open(name, mod, attrs \\ []) do
     Module.put_attribute(mod, @stack, [%__MODULE__{name: name, attrs: attrs} | on(mod)])
   end
 
