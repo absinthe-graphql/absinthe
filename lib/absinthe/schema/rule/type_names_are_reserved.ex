@@ -29,7 +29,7 @@ defmodule Absinthe.Schema.Rule.TypeNamesAreReserved do
 
   defp check_type(schema, %{fields: fields} = type) do
     check_named(schema, type, "type", type) ++
-      Enum.flat_map(type.fields |> Map.values,
+      Enum.flat_map(fields |> Map.values,
                     &check_field(schema, type, &1))
   end
   defp check_type(schema, type) do
@@ -50,7 +50,7 @@ defmodule Absinthe.Schema.Rule.TypeNamesAreReserved do
     check_named(schema, type, "argument", arg)
   end
 
-  defp check_named(schema, type, kind, %{name: "__" <> _} = entity) do
+  defp check_named(_schema, type, kind, %{name: "__" <> _} = entity) do
     if Absinthe.Type.built_in?(type) do
       []
     else

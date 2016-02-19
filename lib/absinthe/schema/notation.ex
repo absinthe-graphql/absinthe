@@ -61,51 +61,60 @@ defmodule Absinthe.Schema.Notation do
     |> Macro.escape
   end
 
+  # OPEN SCOPE HOOK
+
   def __open_scope__(kind, mod, identifier, attrs) do
-    Scope.open(mod, kind, attrs)
-    IO.inspect(open: kind, mod: mod, stack: Scope.on(mod), fallthrough: true)
+    quote do
+      Scope.open(unquote(kind), unquote(mod), unquote(attrs))
+    end
   end
+
+  # CLOSE SCOPE HOOKS
 
   @unexported_identifiers ~w(query mutation subscription)a
   def __close_scope__(:object, mod, identifier) do
-    attrs = Scope.close(mod).attrs |> add_name(identifier)
-    type_obj = Type.Object.build(identifier, attrs)
-    IO.inspect(close: :object, mod: mod, stack: Scope.on(mod))
-    define_type({identifier, attrs[:name]}, type_obj, export: !Enum.member?(@unexported_identifiers, identifier))
+    __close_scope_and_define_type__(
+      Type.Object, mod, identifier,
+      export: !Enum.member?(@unexported_identifiers, identifier)
+    )
   end
 
   def __close_scope__(:input_object, mod, identifier) do
-    attrs = Scope.close(mod).attrs |> add_name(identifier)
-    type_obj = Type.InputObject.build(identifier, attrs)
-    IO.inspect(close: :input_object, mod: mod, stack: Scope.on(mod))
-    define_type({identifier, attrs[:name]}, type_obj)
+    __close_scope_and_define_type__(Type.InputObject, mod, identifier)
   end
 
   def __close_scope__(:field, mod, identifier) do
-    attrs = Scope.close(mod).attrs |> add_name(identifier, lower: true)
-    Scope.put_attribute(mod, :fields, {identifier, attrs}, accumulate: true)
-    IO.inspect(close: :field, mod: mod, stack: Scope.on(mod))
-    :ok
+    __close_scope_and_accumulate_attribute__(:fields, mod, identifier)
   end
 
   def __close_scope__(:arg, mod, identifier) do
-    attrs = Scope.close(mod).attrs |> add_name(identifier, lower: true)
-    Scope.put_attribute(mod, :args, {identifier, attrs}, accumulate: true)
-    IO.inspect(close: :arg, mod: mod, stack: Scope.on(mod))
-    :ok
+    __close_scope_and_accumulate_attribute__(:args, mod, identifier)
   end
 
   def __close_scope__(:scalar, mod, identifier) do
-    attrs = Scope.close(mod).attrs |> add_name(identifier)
-    type_obj = Type.Scalar.build(identifier, attrs)
-    IO.inspect(close: :scalar, mod: mod, stack: Scope.on(mod))
-    define_type({identifier, attrs[:name]}, type_obj, export: !Enum.member?(@unexported_identifiers, identifier))
+    __close_scope_and_define_type__(Type.Scalar, mod, identifier)
   end
 
-  def __close_scope__(kind, mod, identifier) do
-    Scope.close(mod)
-    IO.inspect(close: kind, mod: mod, stack: Scope.on(mod), fallthrough: true)
-    :ok
+  def __close_scope__(_, mod, _) do
+    quote do
+      Scope.close(unquote(mod))
+    end
+  end
+
+  defp __close_scope_and_define_type__(type_module, mod, identifier, def_opts \\ []) do
+    quote bind_quoted: [type_module: type_module, mod: mod, identifier: identifier, def_opts: def_opts] do
+      attrs = unquote(__MODULE__).Scope.close(mod).attrs |> unquote(__MODULE__).__with_name__(identifier)
+      type_obj = type_module.build(identifier, attrs)
+      definition = unquote(__MODULE__).__define_type__({identifier, attrs[:name]}, type_obj, def_opts)
+      Module.eval_quoted(__ENV__, definition)
+    end
+  end
+
+  defp __close_scope_and_accumulate_attribute__(attr_name, mod, identifier, name_opts \\ [lower: true]) do
+    quote bind_quoted: [attr_name: attr_name, mod: mod, identifier: identifier, name_opts: name_opts] do
+      attrs = Scope.close(mod).attrs |> unquote(__MODULE__).__with_name__(identifier, name_opts)
+      Scope.put_attribute(mod, attr_name, {identifier, attrs}, accumulate: true)
+    end
   end
 
   # OBJECT
@@ -149,11 +158,11 @@ defmodule Absinthe.Schema.Notation do
 
   # FIELDS
 
-  defmacro field(identifier, attrs) do
-    __scope__(__CALLER__, :field, identifier, attrs, nil)
-  end
   defmacro field(identifier, [do: block]) do
     __scope__(__CALLER__, :field, identifier, [], block)
+  end
+  defmacro field(identifier, attrs) do
+    __scope__(__CALLER__, :field, identifier, attrs, nil)
   end
 
   defmacro field(identifier, attrs, [do: block]) do
@@ -202,7 +211,6 @@ defmodule Absinthe.Schema.Notation do
   defmacro serialize(raw_fun) do
     fun = Macro.expand(raw_fun, __CALLER__)
     quote do
-      IO.puts(parse: Scope.on(__MODULE__))
       Scope.put_attribute(__MODULE__, :serialize, unquote(Macro.escape(fun)))
     end
   end
@@ -210,7 +218,6 @@ defmodule Absinthe.Schema.Notation do
   defmacro parse(raw_fun) do
     fun = Macro.expand(raw_fun, __CALLER__)
     quote do
-      IO.puts(parse: Scope.on(__MODULE__))
       Scope.put_attribute(__MODULE__, :serialize, unquote(Macro.escape(fun)))
     end
   end
@@ -289,7 +296,7 @@ defmodule Absinthe.Schema.Notation do
         ast = quote do
           unquote(type_module).__absinthe_type__(unquote(ident))
         end
-        define_type(naming, ast, opts)
+        __define_type__(naming, ast, opts)
       end
     end
     directives = for {ident, _} = naming <- type_module.__absinthe_directives__, into: [] do
@@ -303,9 +310,9 @@ defmodule Absinthe.Schema.Notation do
     types ++ directives
   end
 
-  @spec add_name(Keyword.t, Type.identifier_t) :: Keyword.t
-  @spec add_name(Keyword.t, Type.identifier_t, Keyword.t) :: Keyword.t
-  defp add_name(attrs, identifier, opts \\ []) do
+  @spec __with_name__(Keyword.t, Type.identifier_t) :: Keyword.t
+  @spec __with_name__(Keyword.t, Type.identifier_t, Keyword.t) :: Keyword.t
+  defp __with_name__(attrs, identifier, opts \\ []) do
     update_in(attrs, [:name], fn
       nil ->
         Utils.camelize(Atom.to_string(identifier), opts)
@@ -324,7 +331,7 @@ defmodule Absinthe.Schema.Notation do
     end)
   end
 
-  defp define_type({identifier, name}, ast, opts \\ []) do
+  def __define_type__({identifier, name}, ast, opts \\ []) do
     quote do
       doc = Module.get_attribute(__MODULE__, :doc)
       @absinthe_doc if doc, do: String.strip(doc), else: nil
@@ -391,11 +398,15 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defmacro non_null(type) do
-    quote do: %Absinthe.Type.NonNull{of_type: unquote(type)}
+    quote do
+      %Absinthe.Type.NonNull{of_type: unquote(type)}
+    end
   end
 
   defmacro list_of(type) do
-    quote do: %Absinthe.Type.List{of_type: unquote(type)}
+    quote do
+      %Absinthe.Type.List{of_type: unquote(type)}
+    end
   end
 
 end

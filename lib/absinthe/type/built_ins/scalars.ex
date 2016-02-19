@@ -16,11 +16,13 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   values as specified by
   [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
   """
+
   scalar :float do
     serialize &(&1)
     parse parse_with([Absinthe.Language.IntValue,
-                       Absinthe.Language.FloatValue], &parse_float/1)
+                      Absinthe.Language.FloatValue], &parse_float/1)
   end
+
 
   @doc """
   The `String` scalar type represents textual data, represented as UTF-8
