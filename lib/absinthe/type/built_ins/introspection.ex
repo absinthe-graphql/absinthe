@@ -9,13 +9,13 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
   @doc "Represents a schema"
   object :__schema do
 
-    field :types,
-      type: list_of(:__type),
-      resolve: fn
+    field :types, list_of(:__type) do
+      resolve fn
         _, %{schema: schema} ->
           Schema.types(schema)
           |> Flag.as(:ok)
       end
+    end
 
     field :query_type,
       type: :__type,

@@ -119,7 +119,7 @@ defmodule Absinthe.Schema do
   defmacro __using__(_opts) do
     quote do
       use Absinthe.Schema.Notation
-      import unquote(__MODULE__)
+      import unquote(__MODULE__), only: :macros
       import_types Absinthe.Type.BuiltIns, export: false
       @after_compile unquote(__MODULE__)
     end
@@ -141,7 +141,7 @@ defmodule Absinthe.Schema do
 
   @default_query_name "RootQueryType"
   defmacro query(raw_attrs, [do: block]) do
-    attrs = Absinthe.Schema.Notation.__prepare_attrs__(__CALLER__, raw_attrs)
+    attrs = raw_attrs
     |> Keyword.put_new(:name, @default_query_name)
     Absinthe.Schema.Notation.__scope__(__CALLER__, :object, :query, attrs, block)
   end
@@ -151,7 +151,7 @@ defmodule Absinthe.Schema do
 
   @default_mutation_name "RootMutationType"
   defmacro mutation(raw_attrs, [do: block]) do
-    attrs = Absinthe.Schema.Notation.__prepare_attrs__(__CALLER__, raw_attrs)
+    attrs = raw_attrs
     |> Keyword.put_new(:name, @default_mutation_name)
     Absinthe.Schema.Notation.__scope__(__CALLER__, :object, :mutation, attrs, block)
   end
@@ -161,7 +161,7 @@ defmodule Absinthe.Schema do
 
   @default_subscription_name "RootSubscriptionType"
   defmacro subscription(raw_attrs, [do: block]) do
-    attrs = Absinthe.Schema.Notation.__prepare_attrs__(__CALLER__, raw_attrs)
+    attrs = raw_attrs
     |> Keyword.put_new(:name, @default_subscription_name)
     Absinthe.Schema.Notation.__scope__(__CALLER__, :object, :subscription, attrs, block)
   end

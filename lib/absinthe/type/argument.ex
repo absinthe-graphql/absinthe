@@ -52,10 +52,17 @@ defmodule Absinthe.Type.Argument do
     ast = for {arg_name, arg_attrs} <- args do
       name = arg_name |> Atom.to_string
       arg_data = [name: name] ++ arg_attrs
-      arg_ast = quote do: %Absinthe.Type.Argument{unquote_splicing(arg_data)}
+      arg_ast = quote do: %Absinthe.Type.Argument{unquote_splicing(arg_data |> add_deprecation)}
       {arg_name, arg_ast}
     end
     quote do: %{unquote_splicing(ast)}
+  end
+
+  # Convert a `:deprecate` attr to a Type.Deprecation struct
+  defp add_deprecation(attrs) do
+    attrs
+    |> Keyword.put(:deprecation, Type.Deprecation.build(attrs[:deprecate]))
+    |> Keyword.delete(:deprecate)
   end
 
   defimpl Absinthe.Validation.RequiredInput do

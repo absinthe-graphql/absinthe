@@ -5,7 +5,7 @@ defmodule Absinthe.Schema.Notation do
 
   defmacro __using__(opts) do
     quote location: :keep do
-      import unquote(__MODULE__)
+      import unquote(__MODULE__), only: :macros
       Module.register_attribute __MODULE__, :absinthe_errors, accumulate: true
       Module.register_attribute __MODULE__, :absinthe_types, accumulate: true
       Module.register_attribute __MODULE__, :absinthe_directives, accumulate: true
@@ -46,6 +46,11 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
+  def __attrs__(attrs_ast) do
+    attrs_ast
+    |> Macro.escape
+  end
+
   def __scope__(env, kind, identifier, attrs, block) do
     [
       __open_scope__(kind, env.module, identifier, attrs),
@@ -54,16 +59,12 @@ defmodule Absinthe.Schema.Notation do
     ]
   end
 
-  def __attrs__(attrs, env) do
-    attrs
-  end
-
   # OPEN SCOPE HOOKS
 
   def __open_scope__(kind, mod, identifier, raw_attrs) do
+    attrs = __attrs__(raw_attrs)
     quote location: :keep do
-      attrs = unquote(__MODULE__).__attrs__(unquote(raw_attrs), unquote(mod))
-      Scope.open(unquote(kind), unquote(mod), attrs)
+      Scope.open(unquote(kind), unquote(mod), unquote(attrs))
     end
   end
 
@@ -75,6 +76,10 @@ defmodule Absinthe.Schema.Notation do
       Type.Object, mod, identifier,
       export: !Enum.member?(@unexported_identifiers, identifier)
     )
+  end
+
+  def __close_scope__(:interface, mod, identifier) do
+    __close_scope_and_define_type__(Type.Interface, mod, identifier)
   end
 
   def __close_scope__(:input_object, mod, identifier) do
@@ -159,9 +164,9 @@ defmodule Absinthe.Schema.Notation do
     __scope__(__CALLER__, :interface, identifier, [], block)
   end
 
-  defmacro resolve_type(resolver) do
+  defmacro resolve_type(func_ast) do
     quote do
-      Scope.put_attribute(__MODULE__, :resolve_type, unquote(resolver))
+      Scope.put_attribute(__MODULE__, :resolve_type, unquote(Macro.escape(func_ast)))
     end
   end
 
@@ -177,7 +182,6 @@ defmodule Absinthe.Schema.Notation do
     __scope__(__CALLER__, :field, identifier, [type: type], nil)
   end
 
-
   defmacro field(identifier, attrs, [do: block]) when is_list(attrs) do
     __scope__(__CALLER__, :field, identifier, attrs, block)
   end
@@ -191,15 +195,15 @@ defmodule Absinthe.Schema.Notation do
     __scope__(__CALLER__, :field, identifier, Keyword.put(attrs, :type, type), block)
   end
 
-  defmacro resolve(resolver) do
+  defmacro resolve(func_ast) do
     quote do
-      Scope.put_attribute(__MODULE__, :resolve, unquote(resolver))
+      Scope.put_attribute(__MODULE__, :resolve, unquote(Macro.escape(func_ast)))
     end
   end
 
-  defmacro is_type_of(fun) do
+  defmacro is_type_of(func_ast) do
     quote do
-      Scope.put_attribute(__MODULE__, :is_type_of, unquote(fun))
+      Scope.put_attribute(__MODULE__, :is_type_of, unquote(Macro.escape(func_ast)))
     end
   end
 
@@ -227,15 +231,15 @@ defmodule Absinthe.Schema.Notation do
     __scope__(__CALLER__, :scalar, identifier, attrs, nil)
   end
 
-  defmacro serialize(fun) do
+  defmacro serialize(func_ast) do
     quote do
-      Scope.put_attribute(__MODULE__, :serialize, unquote(fun))
+      Scope.put_attribute(__MODULE__, :serialize, unquote(Macro.escape(func_ast)))
     end
   end
 
-  defmacro parse(fun) do
+  defmacro parse(func_ast) do
     quote do
-      Scope.put_attribute(__MODULE__, :serialize, unquote(fun))
+      Scope.put_attribute(__MODULE__, :serialize, unquote(Macro.escape(func_ast)))
     end
   end
 
@@ -288,6 +292,12 @@ defmodule Absinthe.Schema.Notation do
   end
   defmacro union(identifier, [do: block]) do
     __scope__(__CALLER__, :union, identifier, [], block)
+  end
+
+  defmacro types(types) do
+    quote do
+      Scope.put_attribute(__MODULE__, :types, unquote(types))
+    end
   end
 
   # ENUMS

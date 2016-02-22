@@ -4,9 +4,6 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   use Absinthe.Schema.Notation
   import Absinthe.Type.BuiltIns.Scalars.Utils
 
-  parse_with([Absinthe.Language.IntValue,
-              Absinthe.Language.FloatValue], &parse_float/1)
-
   @doc """
   The `Int` scalar type represents non-fractional signed whole numeric
   values. Int can represent values between -(2^53 - 1) and 2^53 - 1 since

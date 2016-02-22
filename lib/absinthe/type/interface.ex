@@ -76,11 +76,11 @@ defmodule Absinthe.Type.Interface do
   @type t :: %{name: binary, description: binary, fields: map, resolve_type: ((any, Absinthe.Execution.t) -> atom | nil), reference: Type.Reference.t}
   defstruct name: nil, description: nil, fields: nil, resolve_type: nil, reference: nil
 
-  def build([{identifier, name}], blueprint) do
+  def build(identifier, blueprint) do
     fields = Type.Field.build_map_ast(blueprint[:fields] || [])
     quote do
       %unquote(__MODULE__){
-        name: unquote(name),
+        name: unquote(blueprint[:name]),
         fields: unquote(fields),
         resolve_type: unquote(blueprint[:resolve_type]),
         description: @absinthe_doc,
