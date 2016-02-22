@@ -2,6 +2,10 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   alias Absinthe.Type.Scalar
   alias Absinthe.Flag
   use Absinthe.Schema.Notation
+  import Absinthe.Type.BuiltIns.Scalars.Utils
+
+  parse_with([Absinthe.Language.IntValue,
+              Absinthe.Language.FloatValue], &parse_float/1)
 
   @doc """
   The `Int` scalar type represents non-fractional signed whole numeric
@@ -9,7 +13,10 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   represented in JSON as double-precision floating point numbers specified
   by [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
   """
-  scalar :integer, name: "Int", serialize: &(&1), parse: parse_with([Absinthe.Language.IntValue], &parse_int/1)
+  scalar :integer, name: "Int" do
+    serialize &(&1)
+    parse parse_with([Absinthe.Language.IntValue], &parse_int/1)
+  end
 
   @doc """
   The `Float` scalar type represents signed double-precision fractional
@@ -82,16 +89,16 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   end
 
   @spec parse_float(integer | float | binary) :: {:ok, float} | :error
-  defp parse_float(value) when is_integer(value) do
+  def parse_float(value) when is_integer(value) do
     {:ok, value * 1.0}
   end
-  defp parse_float(value) when is_float(value) do
+  def parse_float(value) when is_float(value) do
     {:ok, value}
   end
-  defp parse_float(value) when is_binary(value) do
+  def parse_float(value) when is_binary(value) do
     with {value, _} <- Float.parse(value), do: {:ok, value}
   end
-  defp parse_float(_value) do
+  def parse_float(_value) do
     :error
   end
 
@@ -110,22 +117,6 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   end
   defp parse_boolean(value) do
     {:ok, !!value}
-  end
-
-  # Parse, supporting pulling values out of AST nodes
-  defmacrop parse_with(node_types, coercion) do
-    quote do
-      fn
-        %{value: value} = node ->
-          if Enum.is_member?(unquote(node_types), node) do
-            unquote(coercion).(value)
-         else
-            nil
-         end
-       other ->
-          unquote(coercion).(other)
-      end
-    end
   end
 
 end

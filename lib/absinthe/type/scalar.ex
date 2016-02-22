@@ -39,7 +39,6 @@ defmodule Absinthe.Type.Scalar do
   use Absinthe.Introspection.Kind
   use Absinthe.Type.Definitions
 
-  alias __MODULE__
   alias Absinthe.Flag
   alias Absinthe.Type
 
@@ -47,8 +46,8 @@ defmodule Absinthe.Type.Scalar do
     quote do
       %unquote(__MODULE__){
         name: unquote(blueprint[:name]),
-        parse: unquote(blueprint[:parse]) || &(&1),
-        serialize: unquote(blueprint[:serialize]) || &(&1),
+        parse: unquote(blueprint[:parse]),
+        serialize: unquote(blueprint[:serialize]),
         description: @absinthe_doc,
         reference: %{module: __MODULE__, identifier: unquote(identifier)}
       }

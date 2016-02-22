@@ -4,7 +4,7 @@ defmodule Absinthe.Schema.Notation do
   alias Absinthe.Schema.Notation.Scope
 
   defmacro __using__(opts) do
-    quote do
+    quote location: :keep do
       import unquote(__MODULE__)
       Module.register_attribute __MODULE__, :absinthe_errors, accumulate: true
       Module.register_attribute __MODULE__, :absinthe_types, accumulate: true
@@ -16,7 +16,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defmacro __before_compile__(_env) do
-    quote do
+    quote location: :keep do
 
       def __absinthe_type__(_), do: nil
       @absinthe_type_map Enum.into(@absinthe_types, %{})
@@ -46,8 +46,7 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
-  def __scope__(env, kind, identifier, raw_attrs, block) do
-    attrs = __attrs__(env, raw_attrs)
+  def __scope__(env, kind, identifier, attrs, block) do
     [
       __open_scope__(kind, env.module, identifier, attrs),
       block,
@@ -55,17 +54,16 @@ defmodule Absinthe.Schema.Notation do
     ]
   end
 
-  def __attrs__(caller, attrs) do
+  def __attrs__(attrs, env) do
     attrs
-    |> Macro.expand(caller)
-    |> Macro.escape
   end
 
-  # OPEN SCOPE HOOK
+  # OPEN SCOPE HOOKS
 
-  def __open_scope__(kind, mod, identifier, attrs) do
-    quote do
-      Scope.open(unquote(kind), unquote(mod), unquote(attrs))
+  def __open_scope__(kind, mod, identifier, raw_attrs) do
+    quote location: :keep do
+      attrs = unquote(__MODULE__).__attrs__(unquote(raw_attrs), unquote(mod))
+      Scope.open(unquote(kind), unquote(mod), attrs)
     end
   end
 
@@ -96,7 +94,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def __close_scope__(_, mod, _) do
-    quote do
+    quote location: :keep do
       Scope.close(unquote(mod))
     end
   end
@@ -106,8 +104,9 @@ defmodule Absinthe.Schema.Notation do
     quote bind_quoted: [type_module: type_module, mod: mod, identifier: identifier, def_opts: def_opts, module: __MODULE__, scope_module: scope_module] do
       attrs = scope_module.close(mod).attrs |> module.__with_name__(identifier)
       type_obj = type_module.build(identifier, attrs)
-      definition = module.__define_type__({identifier, attrs[:name]}, type_obj, def_opts)
-      Module.eval_quoted(__ENV__, definition)
+      Module.eval_quoted(__ENV__, [
+        module.__define_type__({identifier, attrs[:name]}, type_obj, def_opts)
+      ])
     end
   end
 
@@ -151,6 +150,8 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
+  # INTERFACES
+
   defmacro interface(identifier, attrs, [do: block]) do
     __scope__(__CALLER__, :interface, identifier, attrs, block)
   end
@@ -158,17 +159,30 @@ defmodule Absinthe.Schema.Notation do
     __scope__(__CALLER__, :interface, identifier, [], block)
   end
 
+  defmacro resolve_type(resolver) do
+    quote do
+      Scope.put_attribute(__MODULE__, :resolve_type, unquote(resolver))
+    end
+  end
+
   # FIELDS
 
   defmacro field(identifier, [do: block]) do
     __scope__(__CALLER__, :field, identifier, [], block)
   end
-  defmacro field(identifier, attrs) do
+  defmacro field(identifier, attrs) when is_list(attrs) do
     __scope__(__CALLER__, :field, identifier, attrs, nil)
   end
+  defmacro field(identifier, type) do
+    __scope__(__CALLER__, :field, identifier, [type: type], nil)
+  end
 
-  defmacro field(identifier, attrs, [do: block]) do
+
+  defmacro field(identifier, attrs, [do: block]) when is_list(attrs) do
     __scope__(__CALLER__, :field, identifier, attrs, block)
+  end
+  defmacro field(identifier, type, [do: block]) do
+    __scope__(__CALLER__, :field, identifier, [type: type], block)
   end
   defmacro field(identifier, type, attrs) do
     __scope__(__CALLER__, :field, identifier, Keyword.put(attrs, :type, type),  nil)
@@ -194,8 +208,11 @@ defmodule Absinthe.Schema.Notation do
   defmacro arg(identifier, type, attrs) do
     __scope__(__CALLER__, :arg, identifier, Keyword.put(attrs, :type, type), nil)
   end
-  defmacro arg(identifier, attrs) do
+  defmacro arg(identifier, attrs) when is_list(attrs) do
     __scope__(__CALLER__, :arg, identifier, attrs, nil)
+  end
+  defmacro arg(identifier, type) do
+    __scope__(__CALLER__, :arg, identifier, [type: type], nil)
   end
 
   # SCALARS
@@ -210,17 +227,15 @@ defmodule Absinthe.Schema.Notation do
     __scope__(__CALLER__, :scalar, identifier, attrs, nil)
   end
 
-  defmacro serialize(raw_fun) do
-    fun = Macro.expand(raw_fun, __CALLER__)
+  defmacro serialize(fun) do
     quote do
-      Scope.put_attribute(__MODULE__, :serialize, unquote(Macro.escape(fun)))
+      Scope.put_attribute(__MODULE__, :serialize, unquote(fun))
     end
   end
 
-  defmacro parse(raw_fun) do
-    fun = Macro.expand(raw_fun, __CALLER__)
+  defmacro parse(fun) do
     quote do
-      Scope.put_attribute(__MODULE__, :serialize, unquote(Macro.escape(fun)))
+      Scope.put_attribute(__MODULE__, :serialize, unquote(fun))
     end
   end
 
@@ -251,9 +266,8 @@ defmodule Absinthe.Schema.Notation do
   Calculate the instruction for a directive
   """
   defmacro instruction(fun) do
-    fun = Macro.expand(fun, __CALLER__)
     quote do
-      Scope.put_attribute(__MODULE__, :instruction, unquote(Macro.escape(fun)))
+      Scope.put_attribute(__MODULE__, :instruction, unquote(fun))
     end
   end
 
@@ -306,7 +320,7 @@ defmodule Absinthe.Schema.Notation do
         ast = quote do
           unquote(type_module).__absinthe_directive__(unquote(ident))
         end
-        define_directive([naming], ast, opts)
+        __define_directive__([naming], ast, opts)
       end
     end
     types ++ directives
@@ -334,7 +348,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def __define_type__({identifier, name}, ast, opts \\ []) do
-    quote do
+    quote location: :keep do
       doc = Module.get_attribute(__MODULE__, :doc)
       @absinthe_doc if doc, do: String.strip(doc), else: nil
       type_status = {
@@ -370,8 +384,8 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
-  defp define_directive([{identifier, name}] = naming, ast, opts \\ []) do
-    quote do
+  defp __define_directive__([{identifier, name}] = naming, ast, opts \\ []) do
+    quote location: :keep do
       @absinthe_doc Module.get_attribute(__MODULE__, :doc)
       directive_status = {
         Keyword.has_key?(@absinthe_directives, unquote(identifier)),

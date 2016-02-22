@@ -96,7 +96,6 @@ defmodule Absinthe.Type.Object do
 
   def build(identifier, blueprint) do
     fields = Type.Field.build_map_ast(blueprint[:fields] || [])
-    IO.inspect(before: blueprint[:fields], fields: fields)
     quote do
       %unquote(__MODULE__){
         name: unquote(blueprint[:name]),

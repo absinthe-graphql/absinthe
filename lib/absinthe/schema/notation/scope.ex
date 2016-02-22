@@ -27,7 +27,6 @@ defmodule Absinthe.Schema.Notation.Scope do
   end
 
   def put_attribute(mod, key, value, opts \\ [accumulate: false]) do
-    IO.inspect(put_attribute: key, mod: mod)
     if opts[:accumulate] do
       update_current(mod, fn
         scope ->
