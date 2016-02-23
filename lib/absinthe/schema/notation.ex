@@ -4,7 +4,7 @@ defmodule Absinthe.Schema.Notation do
   alias Absinthe.Schema.Notation.Scope
 
   defmacro __using__(_opts) do
-    quote location: :keep do
+    quote do
       import unquote(__MODULE__), only: :macros
       Module.register_attribute __MODULE__, :absinthe_errors, accumulate: true
       Module.register_attribute __MODULE__, :absinthe_types, accumulate: true
@@ -16,7 +16,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defmacro __before_compile__(_env) do
-    quote location: :keep do
+    quote do
 
       def __absinthe_type__(_), do: nil
 
@@ -76,7 +76,7 @@ defmodule Absinthe.Schema.Notation do
 
   def __open_scope__(kind, mod, _identifier, raw_attrs) do
     attrs = __attrs__(raw_attrs)
-    quote location: :keep, bind_quoted: [kind: kind, mod: mod, attrs: attrs, notation: __MODULE__] do
+    quote bind_quoted: [kind: kind, mod: mod, attrs: attrs, notation: __MODULE__] do
       Scope.open(kind, mod, attrs |> notation.add_description_from_module_attribute(mod))
     end
   end
@@ -124,7 +124,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def __close_scope__(_, mod, _) do
-    quote location: :keep do
+    quote do
       Scope.close(unquote(mod))
     end
   end
@@ -417,7 +417,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def __define_type__({identifier, name}, ast, opts \\ []) do
-    quote location: :keep do
+    quote do
       type_status = {
         Keyword.has_key?(@absinthe_types, unquote(identifier)),
         Enum.member?(Keyword.values(@absinthe_types), unquote(name))
@@ -452,7 +452,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def __define_directive__({identifier, name}, ast, opts \\ []) do
-    quote location: :keep do
+    quote do
       directive_status = {
         Keyword.has_key?(@absinthe_directives, unquote(identifier)),
         Enum.member?(Keyword.values(@absinthe_directives), unquote(name))

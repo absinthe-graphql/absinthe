@@ -1,4 +1,5 @@
 defmodule Absinthe.Type.Scalar do
+  alias Absinthe.Flag
 
   @moduledoc """
   Represents a primitive value.
