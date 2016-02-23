@@ -118,7 +118,7 @@ defmodule Absinthe.Schema.Notation do
   defp __close_scope_and_define_directive__(mod, identifier, def_opts \\ []) do
     scope_module = __MODULE__.Scope
     quote bind_quoted: [mod: mod, identifier: identifier, module: __MODULE__, scope_module: scope_module, def_opts: def_opts] do
-      attrs = scope_module.close(mod).attrs |> module.__with_name__(identifier, lower: true)
+      attrs = scope_module.close(mod).attrs |> module.__with_name__(identifier)
       type_obj = Absinthe.Type.Directive.build(identifier, attrs)
       Module.eval_quoted(__ENV__, [
         module.__define_directive__({identifier, attrs[:name]}, type_obj, def_opts)
@@ -129,7 +129,7 @@ defmodule Absinthe.Schema.Notation do
   defp __close_scope_and_define_type__(type_module, mod, identifier, def_opts \\ []) do
     scope_module = __MODULE__.Scope
     quote bind_quoted: [type_module: type_module, mod: mod, identifier: identifier, module: __MODULE__, scope_module: scope_module, def_opts: def_opts] do
-      attrs = scope_module.close(mod).attrs |> module.__with_name__(identifier)
+      attrs = scope_module.close(mod).attrs |> module.__with_name__(identifier, title: true)
       type_obj = type_module.build(identifier, attrs)
       Module.eval_quoted(__ENV__, [
           module.__define_type__({identifier, attrs[:name]}, type_obj, def_opts),
@@ -138,10 +138,10 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
-  defp __close_scope_and_accumulate_attribute__(attr_name, mod, identifier, name_opts \\ [lower: true]) do
+  defp __close_scope_and_accumulate_attribute__(attr_name, mod, identifier) do
     scope_module = __MODULE__.Scope
-    quote bind_quoted: [attr_name: attr_name, mod: mod, identifier: identifier, name_opts: name_opts, module: __MODULE__, scope_module: scope_module] do
-      attrs = scope_module.close(mod).attrs |> module.__with_name__(identifier, name_opts)
+    quote bind_quoted: [attr_name: attr_name, mod: mod, identifier: identifier, module: __MODULE__, scope_module: scope_module] do
+      attrs = scope_module.close(mod).attrs |> module.__with_name__(identifier)
       scope_module.put_attribute(mod, attr_name, {identifier, attrs}, accumulate: true)
     end
   end
@@ -376,11 +376,20 @@ defmodule Absinthe.Schema.Notation do
   @spec __with_name__(Keyword.t, Type.identifier_t, Keyword.t) :: Keyword.t
   def __with_name__(attrs, identifier, opts \\ []) do
     update_in(attrs, [:name], fn
-      nil ->
-        Utils.camelize(Atom.to_string(identifier), opts)
       value ->
-        value
+        default_name(identifier, value, opts)
     end)
+  end
+
+  defp default_name(identifier, nil, opts) do
+    if opts[:title] do
+      identifier |> Atom.to_string |> Utils.camelize
+    else
+      identifier |> Atom.to_string
+    end
+  end
+  defp default_name(_, name, _) do
+    name
   end
 
   def __register_interface_implementor__(identifier, interfaces) do

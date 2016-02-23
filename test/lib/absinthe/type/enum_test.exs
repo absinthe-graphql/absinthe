@@ -58,7 +58,6 @@ defmodule Absinthe.Type.EnumTest do
       assert %Type.Enum{} = type
       assert %Type.Enum.Value{name: "red", value: :r} = type.values[:red]
     end
-    @tag :value
     it "can be defined by a map without defined values" do
       type = TestSchema.__absinthe_type__(:color_channel2)
       assert %Type.Enum{} = type

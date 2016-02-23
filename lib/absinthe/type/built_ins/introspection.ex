@@ -97,15 +97,15 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       resolve fn
         %{include_deprecated: show_deprecated}, %{source: %{__struct__: str, fields: fields}} when str in [Type.Object, Type.Interface] ->
           fields
-        |> Enum.flat_map(fn
-          {_, %{deprecation: is_deprecated} = field} ->
-          if !is_deprecated || (is_deprecated && show_deprecated) do
-            [field]
-          else
-            []
-          end
-        end)
-        |> Flag.as(:ok)
+          |> Enum.flat_map(fn
+            {_, %{deprecation: is_deprecated} = field} ->
+            if !is_deprecated || (is_deprecated && show_deprecated) do
+              [field]
+            else
+              []
+            end
+          end)
+          |> Flag.as(:ok)
         _, _ ->
           {:ok, nil}
       end
