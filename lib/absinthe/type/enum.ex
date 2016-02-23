@@ -84,11 +84,11 @@ defmodule Absinthe.Type.Enum do
   defstruct name: nil, description: nil, values: %{}, reference: nil
 
 
-  def build([{identifier, name}], blueprint) do
+  def build(identifier, blueprint) do
     values = Type.Enum.Value.build_map_ast(blueprint[:values] || [])
     quote do
       %unquote(__MODULE__){
-        name: unquote(name),
+        name: unquote(blueprint[:name]),
         description: @absinthe_doc,
         values: unquote(values),
         reference: %{

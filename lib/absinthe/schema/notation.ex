@@ -30,13 +30,12 @@ defmodule Absinthe.Schema.Notation do
 
       @absinthe_interface_implementors_map Enum.reduce(@absinthe_interface_implementors, %{}, fn
         {iface, obj_ident}, acc ->
-          {_, result} = Map.get_and_update(acc, iface, fn
+          update_in(acc, [iface], fn
             nil ->
-              {nil, [obj_ident]}
+              [obj_ident]
             impls ->
-              {impls, [obj_ident | impls]}
+              [obj_ident | impls]
           end)
-          result
       end)
       def __absinthe_interface_implementors__ do
         @absinthe_interface_implementors_map
@@ -69,6 +68,10 @@ defmodule Absinthe.Schema.Notation do
   end
 
   # CLOSE SCOPE HOOKS
+
+  def __close_scope__(:enum, mod, identifier) do
+    __close_scope_and_define_type__(Type.Enum, mod, identifier)
+  end
 
   @unexported_identifiers ~w(query mutation subscription)a
   def __close_scope__(:object, mod, identifier) do
@@ -129,7 +132,8 @@ defmodule Absinthe.Schema.Notation do
       attrs = scope_module.close(mod).attrs |> module.__with_name__(identifier)
       type_obj = type_module.build(identifier, attrs)
       Module.eval_quoted(__ENV__, [
-        module.__define_type__({identifier, attrs[:name]}, type_obj, def_opts)
+          module.__define_type__({identifier, attrs[:name]}, type_obj, def_opts),
+          (if attrs[:interfaces], do: module.__register_interface_implementor__(identifier, attrs[:interfaces]))
       ])
     end
   end
@@ -366,7 +370,7 @@ defmodule Absinthe.Schema.Notation do
     end)
   end
 
-  def __define_interface_mapping__(identifier, interfaces) do
+  def __register_interface_implementor__(identifier, interfaces) do
     interfaces
     |> Enum.map(fn
       iface ->
