@@ -4,7 +4,7 @@ defmodule PrefixSchema do
 
   query do
     field :foo do
-      arg :bar
+      arg :bar, :string
     end
     field :__mything,
       name: "__mything",

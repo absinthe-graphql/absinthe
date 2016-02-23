@@ -82,6 +82,10 @@ defmodule Absinthe.Schema.Notation do
     __close_scope_and_define_type__(Type.Interface, mod, identifier)
   end
 
+  def __close_scope__(:union, mod, identifier) do
+    __close_scope_and_define_type__(Type.Union, mod, identifier)
+  end
+
   def __close_scope__(:input_object, mod, identifier) do
     __close_scope_and_define_type__(Type.InputObject, mod, identifier)
   end
@@ -98,15 +102,30 @@ defmodule Absinthe.Schema.Notation do
     __close_scope_and_define_type__(Type.Scalar, mod, identifier)
   end
 
+  def __close_scope__(:directive, mod, identifier) do
+    __close_scope_and_define_directive__(mod, identifier)
+  end
+
   def __close_scope__(_, mod, _) do
     quote location: :keep do
       Scope.close(unquote(mod))
     end
   end
 
+  defp __close_scope_and_define_directive__(mod, identifier, def_opts \\ []) do
+    scope_module = __MODULE__.Scope
+    quote bind_quoted: [mod: mod, identifier: identifier, module: __MODULE__, scope_module: scope_module, def_opts: def_opts] do
+      attrs = scope_module.close(mod).attrs |> module.__with_name__(identifier, lower: true)
+      type_obj = Absinthe.Type.Directive.build(identifier, attrs)
+      Module.eval_quoted(__ENV__, [
+        module.__define_directive__({identifier, attrs[:name]}, type_obj, def_opts)
+      ])
+    end
+  end
+
   defp __close_scope_and_define_type__(type_module, mod, identifier, def_opts \\ []) do
     scope_module = __MODULE__.Scope
-    quote bind_quoted: [type_module: type_module, mod: mod, identifier: identifier, def_opts: def_opts, module: __MODULE__, scope_module: scope_module] do
+    quote bind_quoted: [type_module: type_module, mod: mod, identifier: identifier, module: __MODULE__, scope_module: scope_module, def_opts: def_opts] do
       attrs = scope_module.close(mod).attrs |> module.__with_name__(identifier)
       type_obj = type_module.build(identifier, attrs)
       Module.eval_quoted(__ENV__, [
@@ -239,7 +258,7 @@ defmodule Absinthe.Schema.Notation do
 
   defmacro parse(func_ast) do
     quote do
-      Scope.put_attribute(__MODULE__, :serialize, unquote(Macro.escape(func_ast)))
+      Scope.put_attribute(__MODULE__, :parse, unquote(Macro.escape(func_ast)))
     end
   end
 
@@ -271,7 +290,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro instruction(fun) do
     quote do
-      Scope.put_attribute(__MODULE__, :instruction, unquote(fun))
+      Scope.put_attribute(__MODULE__, :instruction, unquote(Macro.escape(fun)))
     end
   end
 
@@ -325,12 +344,12 @@ defmodule Absinthe.Schema.Notation do
         __define_type__(naming, ast, opts)
       end
     end
-    directives = for {ident, _} = naming <- type_module.__absinthe_directives__, into: [] do
+    directives = for {ident, name} <- type_module.__absinthe_directives__, into: [] do
       if Enum.member?(type_module.__absinthe_exports__, ident) do
         ast = quote do
           unquote(type_module).__absinthe_directive__(unquote(ident))
         end
-        __define_directive__([naming], ast, opts)
+        __define_directive__({ident, name}, ast, opts)
       end
     end
     types ++ directives
@@ -347,7 +366,7 @@ defmodule Absinthe.Schema.Notation do
     end)
   end
 
-  defp define_interface_mapping([{identifier, name}] = naming, interfaces) do
+  def __define_interface_mapping__(identifier, interfaces) do
     interfaces
     |> Enum.map(fn
       iface ->
@@ -394,7 +413,7 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
-  defp __define_directive__([{identifier, name}] = naming, ast, opts \\ []) do
+  def __define_directive__({identifier, name}, ast, opts \\ []) do
     quote location: :keep do
       @absinthe_doc Module.get_attribute(__MODULE__, :doc)
       directive_status = {

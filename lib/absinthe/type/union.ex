@@ -48,10 +48,10 @@ defmodule Absinthe.Type.Union do
 
   defstruct name: nil, description: nil, resolve_type: nil, types: [], reference: nil
 
-  def build([{identifier, name}], blueprint) do
+  def build(identifier, blueprint) do
     quote do
       %unquote(__MODULE__){
-        name: unquote(name),
+        name: unquote(blueprint[:name]),
         types: unquote(blueprint[:types]) || [],
         resolve_type: unquote(blueprint[:resolve_type]),
         description: @absinthe_doc,

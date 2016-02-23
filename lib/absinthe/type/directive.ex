@@ -25,14 +25,14 @@ defmodule Absinthe.Type.Directive do
   defstruct name: nil, description: nil, args: nil, on: [], instruction: nil, reference: nil
 
 
-  def build([{identifier, name}], blueprint) do
+  def build(identifier, blueprint) do
     args = args_ast(blueprint[:args])
     quote do
       %unquote(__MODULE__){
-        name: unquote(name),
+        name: unquote(blueprint[:name]),
         args: unquote(args),
-        description: unquote(blueprint[:description]) || @absinthe_doc,
-        on: unquote(blueprint[:on]) || [],
+        description: unquote(blueprint[:description] || @absinthe_doc),
+        on: unquote(blueprint[:on] || []),
         instruction: unquote(blueprint[:instruction]),
         reference: %{
           module: __MODULE__,
