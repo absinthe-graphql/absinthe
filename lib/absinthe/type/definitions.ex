@@ -329,7 +329,7 @@ defmodule Absinthe.Type.Definitions do
           identifier,
           struct(definition, name: identifier |> to_string)
         }
-      {identifier, %{__struct__: ^mod}} = pair ->
+      {_identifier, %{__struct__: ^mod}} = pair ->
         pair
     end)
   end

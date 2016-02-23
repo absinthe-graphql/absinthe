@@ -1,5 +1,4 @@
 defmodule Absinthe.Schema do
-  alias Absinthe.Utils
   import Absinthe.Schema.Notation
 
   @moduledoc """

@@ -22,7 +22,7 @@ defmodule SupportSchemas do
     err = assert_raise Absinthe.Schema.Error, fn ->
       load_schema(schema_name)
     end
-    found = patterns
+    patterns
     |> Enum.filter(fn
       pattern ->
         assert Enum.find(err.details, fn

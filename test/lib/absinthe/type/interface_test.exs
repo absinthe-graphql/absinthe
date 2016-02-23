@@ -43,7 +43,7 @@ defmodule Absinthe.Type.InterfaceTest do
       interfaces [:named]
     end
 
-    @doc "An interface"
+    @desc "An interface"
     interface :named do
       field :name, :string
       resolve_type fn

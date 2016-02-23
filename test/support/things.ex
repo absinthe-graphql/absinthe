@@ -1,6 +1,5 @@
 defmodule Things do
   use Absinthe.Schema
-  alias Absinthe.Type
 
   @db %{
     "foo" => %{id: "foo", name: "Foo", value: 4},
@@ -118,7 +117,7 @@ defmodule Things do
 
   end
 
-  @doc "A thing as input"
+  @desc "A thing as input"
   input_object :input_thing do
     field :value, :integer
     field :deprecated_field, :string, deprecate: true
@@ -127,16 +126,16 @@ defmodule Things do
     field :deprecated_non_null_field_with_reason, :string, deprecate: "reason"
   end
 
-  @doc "A thing"
+  @desc "A thing"
   object :thing do
 
-    @doc "The ID of the thing"
+    @desc "The ID of the thing"
     field :id, non_null(:string)
 
-    @doc "The name of the thing"
+    @desc "The name of the thing"
     field :name, :string
 
-    @doc "The value of the thing"
+    @desc "The value of the thing"
     field :value, :integer
 
     field :other_thing,

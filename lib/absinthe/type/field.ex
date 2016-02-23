@@ -1,6 +1,5 @@
 defmodule Absinthe.Type.Field do
   alias Absinthe.Type
-  alias Absinthe.Utils
 
   @moduledoc """
   Used to define a field.

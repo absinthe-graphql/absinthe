@@ -63,14 +63,14 @@ defmodule ContactSchema do
 
   end
 
-  @doc "The basic details for a person"
+  @desc "The basic details for a person"
   input_object :profile_input do
     field :code, type: non_null(:string)
     field :name, type: :string, description: "The person's name", default_value: "Janet"
     field :age, type: :integer, description: "The person's age", default_value: 43
   end
 
-  @doc "A named entity"
+  @desc "A named entity"
   interface :named_entity do
     field :name, [type: :string]
     resolve_type fn
@@ -81,7 +81,7 @@ defmodule ContactSchema do
     end
   end
 
-  @doc "A person"
+  @desc "A person"
   object :person do
     field :name, :string
     field :age, :integer
@@ -95,14 +95,14 @@ defmodule ContactSchema do
     interface :named_entity
   end
 
-  @doc "A business"
+  @desc "A business"
   object :business do
     field :name, :string
     field :employee_count, :integer
     interface :named_entity
   end
 
-  @doc "A search result"
+  @desc "A search result"
   union :search_result do
     types [:business, :person]
     resolve_type fn

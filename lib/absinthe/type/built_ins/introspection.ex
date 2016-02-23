@@ -1,11 +1,6 @@
 defmodule Absinthe.Type.BuiltIns.Introspection do
   use Absinthe.Schema.Notation
 
-  alias Absinthe.Schema
-  alias Absinthe.Flag
-  alias Absinthe.Language
-  alias Absinthe.Type
-
   @doc "Represents a schema"
   object :__schema do
 

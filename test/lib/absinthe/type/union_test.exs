@@ -6,19 +6,19 @@ defmodule Absinthe.Type.UnionTest do
   defmodule TestSchema do
     use Absinthe.Schema
 
-    @doc "A person"
+    @desc "A person"
     object :person do
       field :name, :string
       field :age, :integer
     end
 
-    @doc "A business"
+    @desc "A business"
     object :business do
       field :name, :string
       field :employee_count, :integer
     end
 
-    @doc "A search result"
+    @desc "A search result"
     union :search_result do
       types [:person, :business]
       resolve_type fn

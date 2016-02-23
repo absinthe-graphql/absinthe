@@ -29,7 +29,7 @@ defmodule ColorSchema do
 
   end
 
-  @doc """
+  @desc """
   A color channel
   """
   enum :channel do
@@ -39,7 +39,7 @@ defmodule ColorSchema do
     value :puce, description: "The color puce", as: :p, deprecate: "it's ugly"
   end
 
-  @doc """
+  @desc """
   Info about a channel
   """
   object :channel_info do

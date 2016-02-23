@@ -31,7 +31,7 @@ defmodule Absinthe.Type.Directive do
       %unquote(__MODULE__){
         name: unquote(blueprint[:name]),
         args: unquote(args),
-        description: unquote(blueprint[:description] || @absinthe_doc),
+        description: unquote(blueprint[:description]),
         on: unquote(blueprint[:on] || []),
         instruction: unquote(blueprint[:instruction]),
         reference: %{

@@ -7,46 +7,45 @@ defmodule Absinthe.Type.EnumTest do
     use Absinthe.Schema
 
     query do
-      @doc "The active color channel"
+      @desc "The active color channel"
       field :channel, :color_channel
     end
 
-    @doc "The selected color channel"
+    @desc "The selected color channel"
     enum :color_channel do
 
-      @doc "Color Red"
+      @desc "Color Red"
       value :red, as: :r
 
-      @doc "Color Green"
+      @desc "Color Green"
       value :green, as: :g
 
-      @doc "Color Blue"
+      @desc "Color Blue"
       value :blue, as: :b
 
-      @doc "Alpha Channel"
-      @deprecate "We no longer support opacity settings"
-      value :alpha, as: :a
-
-    end
-
-    @doc "The selected color channel"
-    enum :color_channel2 do
-
-      @doc "Color Red"
-      value :red
-
-      @doc "Color Green"
-      value :green
-
-      @doc "Color Blue"
-      value :blue
-
-      @doc "Alpha Channel"
+      @desc "Alpha Channel"
       value :alpha, as: :a, deprecate: "We no longer support opacity settings"
 
     end
 
-    @doc "The selected color channel"
+    @desc "The selected color channel"
+    enum :color_channel2 do
+
+      @desc "Color Red"
+      value :red
+
+      @desc "Color Green"
+      value :green
+
+      @desc "Color Blue"
+      value :blue
+
+      @desc "Alpha Channel"
+      value :alpha, as: :a, deprecate: "We no longer support opacity settings"
+
+    end
+
+    @desc "The selected color channel"
     enum :color_channel3,
       values: [:red, :green, :blue, :alpha]
 
@@ -56,7 +55,7 @@ defmodule Absinthe.Type.EnumTest do
     it "can be defined by a map with defined values" do
       type = TestSchema.__absinthe_type__(:color_channel)
       assert %Type.Enum{} = type
-      assert %Type.Enum.Value{name: "red", value: :r} = type.values[:red]
+      assert %Type.Enum.Value{name: "red", value: :r, description: "Color Red"} = type.values[:red]
     end
     it "can be defined by a map without defined values" do
       type = TestSchema.__absinthe_type__(:color_channel2)
@@ -66,7 +65,7 @@ defmodule Absinthe.Type.EnumTest do
     it "can be defined by a shorthand list of atoms" do
       type = TestSchema.__absinthe_type__(:color_channel3)
       assert %Type.Enum{} = type
-      assert %Type.Enum.Value{name: "red", value: :red} = type.values[:red]
+      assert %Type.Enum.Value{name: "red", value: :red, description: nil} = type.values[:red]
     end
   end
 

@@ -1,5 +1,4 @@
 defmodule Absinthe.Type.Object do
-  alias Absinthe.Utils
 
   @moduledoc """
   Represents a non-leaf node in a GraphQL tree of information.
@@ -102,7 +101,7 @@ defmodule Absinthe.Type.Object do
         interfaces: unquote(blueprint[:interfaces] || []),
         fields: unquote(fields),
         is_type_of: unquote(blueprint[:is_type_of]),
-        description: @absinthe_doc,
+        description: unquote(blueprint[:description]),
         reference: %{
           module: __MODULE__,
           identifier: unquote(identifier),

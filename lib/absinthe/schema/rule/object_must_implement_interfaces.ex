@@ -55,7 +55,7 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfaces do
         else
           [report(type.reference.location, %{object: type.name, interface: iface_type.name}) | acc]
         end
-      _, acc ->
+      _, _ ->
         # Handles by a different rule
         []
     end)

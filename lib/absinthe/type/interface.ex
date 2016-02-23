@@ -83,7 +83,7 @@ defmodule Absinthe.Type.Interface do
         name: unquote(blueprint[:name]),
         fields: unquote(fields),
         resolve_type: unquote(blueprint[:resolve_type]),
-        description: @absinthe_doc,
+        description: unquote(blueprint[:description]),
         reference: %{
           module: __MODULE__,
           identifier: unquote(identifier),

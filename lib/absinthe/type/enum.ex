@@ -89,7 +89,7 @@ defmodule Absinthe.Type.Enum do
     quote do
       %unquote(__MODULE__){
         name: unquote(blueprint[:name]),
-        description: @absinthe_doc,
+        description: unquote(blueprint[:description]),
         values: unquote(values),
         reference: %{
           module: __MODULE__,

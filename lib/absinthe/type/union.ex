@@ -54,7 +54,7 @@ defmodule Absinthe.Type.Union do
         name: unquote(blueprint[:name]),
         types: unquote(blueprint[:types]) || [],
         resolve_type: unquote(blueprint[:resolve_type]),
-        description: @absinthe_doc,
+        description: unquote(blueprint[:description]),
         reference: %{
           module: __MODULE__,
           identifier: unquote(identifier),

@@ -1,5 +1,4 @@
 defmodule Absinthe.Type.Argument do
-  alias Absinthe.Utils
 
   @moduledoc """
   Used to define an argument.

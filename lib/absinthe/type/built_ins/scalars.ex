@@ -1,8 +1,7 @@
 defmodule Absinthe.Type.BuiltIns.Scalars do
-  alias Absinthe.Type.Scalar
-  alias Absinthe.Flag
   use Absinthe.Schema.Notation
-  import Absinthe.Type.BuiltIns.Scalars.Utils
+
+  alias Absinthe.Flag
 
   @doc """
   The `Int` scalar type represents non-fractional signed whole numeric
@@ -114,6 +113,20 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   end
   defp parse_boolean(value) do
     {:ok, !!value}
+  end
+
+  # Parse, supporting pulling values out of AST nodes
+  defp parse_with(node_types, coercion) do
+    fn
+      %{value: value} = node ->
+      if Enum.is_member?(node_types, node) do
+        coercion.(value)
+      else
+        nil
+      end
+      other ->
+        coercion.(other)
+    end
   end
 
 end

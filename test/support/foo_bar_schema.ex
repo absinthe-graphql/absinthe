@@ -1,6 +1,5 @@
 defmodule FooBarSchema do
   use Absinthe.Schema
-  alias Absinthe.Type
 
   @items %{
     "foo" => %{id: "foo", name: "Foo"},
@@ -20,13 +19,13 @@ defmodule FooBarSchema do
 
   end
 
-  @doc "A Basic Type"
+  @desc "A Basic Type"
   object :item do
     field :id, :id
     field :name, :string
   end
 
-  @doc "An author"
+  @desc "An author"
   object :author do
     field :id, :id
     field :first_name, :string
@@ -34,7 +33,7 @@ defmodule FooBarSchema do
     field :books, list_of(:book)
   end
 
-  @doc "A Book"
+  @desc "A Book"
   object :book, name: "NonFictionBook" do
     field :id, :id
     field :title, :string

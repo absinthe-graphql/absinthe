@@ -26,9 +26,6 @@ defmodule Absinthe.Adapter.LanguageConventionsTest do
       "opera_house" => %{id: "opera_house", name: "Opera House", location_name: "Sydney"}
     }
 
-    defp tester do
-    end
-
     query foo: (fn -> tester end) do
 
       field :bad_resolution,
@@ -81,12 +78,12 @@ defmodule Absinthe.Adapter.LanguageConventionsTest do
 
     end
 
-    @doc "A location"
+    @desc "A location"
     input_object :input_location do
       field :name, non_null(:string)
     end
 
-    @doc "A field trip"
+    @desc "A field trip"
     object :field_trip do
 
       field :id,

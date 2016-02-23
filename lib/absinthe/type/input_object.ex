@@ -14,7 +14,7 @@ defmodule Absinthe.Type.InputObject do
       %unquote(__MODULE__){
         name: unquote(blueprint[:name]),
         fields: unquote(fields),
-        description: @absinthe_doc,
+        description: unquote(blueprint[:description]),
         reference: %{
           module: __MODULE__,
           identifier: unquote(identifier),

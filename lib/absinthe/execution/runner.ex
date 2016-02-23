@@ -5,7 +5,6 @@ defmodule Absinthe.Execution.Runner do
 
   alias Absinthe.Execution
   alias Absinthe.Execution.Resolution
-  alias Absinthe.Schema
 
   @doc false
   @spec run(Execution.t) :: {:ok, Execution.result_t} | {:error, any}

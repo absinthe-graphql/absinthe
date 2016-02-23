@@ -3,7 +3,7 @@ defmodule Absinthe.Schema.Notation do
   alias Absinthe.Type
   alias Absinthe.Schema.Notation.Scope
 
-  defmacro __using__(opts) do
+  defmacro __using__(_opts) do
     quote location: :keep do
       import unquote(__MODULE__), only: :macros
       Module.register_attribute __MODULE__, :absinthe_errors, accumulate: true
@@ -19,10 +19,12 @@ defmodule Absinthe.Schema.Notation do
     quote location: :keep do
 
       def __absinthe_type__(_), do: nil
+
       @absinthe_type_map Enum.into(@absinthe_types, %{})
       def __absinthe_types__, do: @absinthe_type_map
 
       def __absinthe_directive__(_), do: nil
+
       @absinthe_directive_map Enum.into(@absinthe_directives, %{})
       def __absinthe_directives__, do: @absinthe_directive_map
 
@@ -58,12 +60,24 @@ defmodule Absinthe.Schema.Notation do
     ]
   end
 
+  def add_description_from_module_attribute(attrs_ast, mod) do
+    case {attrs_ast[:description], Module.get_attribute(mod, :desc)} do
+      {_, nil} ->
+        attrs_ast
+      {nil, doc} ->
+        Module.put_attribute(mod, :desc, nil)
+        Keyword.put(attrs_ast, :description, String.strip(doc))
+      {_, _} ->
+        attrs_ast
+    end
+  end
+
   # OPEN SCOPE HOOKS
 
-  def __open_scope__(kind, mod, identifier, raw_attrs) do
+  def __open_scope__(kind, mod, _identifier, raw_attrs) do
     attrs = __attrs__(raw_attrs)
-    quote location: :keep do
-      Scope.open(unquote(kind), unquote(mod), unquote(attrs))
+    quote location: :keep, bind_quoted: [kind: kind, mod: mod, attrs: attrs, notation: __MODULE__] do
+      Scope.open(kind, mod, attrs |> notation.add_description_from_module_attribute(mod))
     end
   end
 
@@ -343,8 +357,8 @@ defmodule Absinthe.Schema.Notation do
     attrs = raw_attrs
     |> Keyword.put(:value, Keyword.get(raw_attrs, :as, identifier))
     |> Keyword.delete(:as)
-    quote do
-      Scope.put_attribute(__MODULE__, :values, {unquote(identifier), unquote(attrs)}, accumulate: true)
+    quote bind_quoted: [identifier: identifier, notation: __MODULE__, attrs: attrs]do
+      Scope.put_attribute(__MODULE__, :values, {identifier, attrs |> notation.add_description_from_module_attribute(__MODULE__)}, accumulate: true)
     end
   end
 
@@ -404,8 +418,6 @@ defmodule Absinthe.Schema.Notation do
 
   def __define_type__({identifier, name}, ast, opts \\ []) do
     quote location: :keep do
-      doc = Module.get_attribute(__MODULE__, :doc)
-      @absinthe_doc if doc, do: String.strip(doc), else: nil
       type_status = {
         Keyword.has_key?(@absinthe_types, unquote(identifier)),
         Enum.member?(Keyword.values(@absinthe_types), unquote(name))
@@ -441,7 +453,6 @@ defmodule Absinthe.Schema.Notation do
 
   def __define_directive__({identifier, name}, ast, opts \\ []) do
     quote location: :keep do
-      @absinthe_doc Module.get_attribute(__MODULE__, :doc)
       directive_status = {
         Keyword.has_key?(@absinthe_directives, unquote(identifier)),
         Enum.member?(Keyword.values(@absinthe_directives), unquote(name))

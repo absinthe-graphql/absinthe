@@ -1,7 +1,7 @@
 defmodule ValidSchema do
   use Absinthe.Schema
 
-  @doc "A person"
+  @desc "A person"
   object :person do
     field :name, :string
   end

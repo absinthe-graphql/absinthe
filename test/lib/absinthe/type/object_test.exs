@@ -4,7 +4,7 @@ defmodule Absinthe.Type.ObjectTest do
   defmodule TestSchema do
     use Absinthe.Schema
 
-    @doc "A person"
+    @desc "A person"
     object :person do
 
       field :name, :string
