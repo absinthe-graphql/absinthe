@@ -131,17 +131,10 @@ defmodule Absinthe.Type.Field do
         args ->
           Type.Argument.build_map_ast(args || [])
       end)
-      field_ast = quote do: %Absinthe.Type.Field{unquote_splicing(field_data |> add_deprecation)}
+      field_ast = quote do: %Absinthe.Type.Field{unquote_splicing(field_data |> Absinthe.Type.Deprecation.from_attribute)}
       {field_name, field_ast}
     end
     quote do: %{unquote_splicing(ast)}
-  end
-
-  # Convert a `:deprecate` attr to a Type.Deprecation struct
-  defp add_deprecation(attrs) do
-    attrs
-    |> Keyword.put(:deprecation, Type.Deprecation.build(attrs[:deprecate]))
-    |> Keyword.delete(:deprecate)
   end
 
   defimpl Absinthe.Validation.RequiredInput do

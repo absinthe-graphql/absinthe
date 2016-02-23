@@ -18,4 +18,14 @@ defmodule Absinthe.Type.Deprecation do
     quote do: %unquote(__MODULE__){reason: unquote(reason)}
   end
 
+  @doc """
+  Convert a `:deprecate` attr to a Deprecation struct
+  """
+  @spec from_attribute(Keyword.t) :: Keyword.t
+  def from_attribute(attrs) do
+    attrs
+    |> Keyword.put(:deprecation, build(attrs[:deprecate]))
+    |> Keyword.delete(:deprecate)
+  end
+
 end

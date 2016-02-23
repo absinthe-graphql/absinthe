@@ -280,12 +280,17 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro on(ast_node) do
     quote do
-      Scope.put_attribute(
-        __MODULE__,
-        :on,
-        unquote(ast_node),
-        accumulate: true
-      )
+      unquote(ast_node)
+      |> List.wrap
+      |> Enum.each(fn
+        value ->
+          Scope.put_attribute(
+            __MODULE__,
+            :on,
+            value,
+            accumulate: true
+          )
+      end)
     end
   end
 
@@ -297,7 +302,6 @@ defmodule Absinthe.Schema.Notation do
       Scope.put_attribute(__MODULE__, :instruction, unquote(Macro.escape(fun)))
     end
   end
-
 
   # INPUT OBJECTS
 

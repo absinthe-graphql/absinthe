@@ -32,7 +32,7 @@ defmodule Absinthe.Type.Enum.Value do
     ast = for {value_name, value_attrs} <- normalize(raw_values) do
       name = value_name |> Atom.to_string
       value_data = [name: name] ++ Keyword.put_new(value_attrs, :value, value_name)
-      value_ast = quote do: %Absinthe.Type.Enum.Value{unquote_splicing(value_data)}
+      value_ast = quote do: %Absinthe.Type.Enum.Value{unquote_splicing(value_data |> Absinthe.Type.Deprecation.from_attribute)}
       {value_name, value_ast}
     end
     quote do: %{unquote_splicing(ast)}
