@@ -28,7 +28,6 @@ defmodule Absinthe.Schema.Rule.ObjectInterfacesMustBeValid do
     |> Enum.map(&Schema.lookup_type(schema, &1))
     |> Enum.reduce([], fn
       nil, acc ->
-        IO.inspect(Schema.types(schema) |> Enum.map(&(&1.reference.identifier)))
         raise "No type found in #{inspect ifaces}"
       %Type.Interface{}, acc ->
         acc

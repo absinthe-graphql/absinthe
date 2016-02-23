@@ -333,10 +333,19 @@ defmodule Absinthe.Schema.Notation do
     __scope__(__CALLER__, :enum, identifier, attrs, block)
   end
   defmacro enum(identifier, [do: block]) do
-    __scope__(__CALLER__, :enum, identifier, [], nil)
+    __scope__(__CALLER__, :enum, identifier, [], block)
   end
   defmacro enum(identifier, attrs) do
     __scope__(__CALLER__, :enum, identifier, attrs, nil)
+  end
+
+  defmacro value(identifier, raw_attrs \\ []) do
+    attrs = raw_attrs
+    |> Keyword.put(:value, Keyword.get(raw_attrs, :as, identifier))
+    |> Keyword.delete(:as)
+    quote do
+      Scope.put_attribute(__MODULE__, :values, {unquote(identifier), unquote(attrs)}, accumulate: true)
+    end
   end
 
   # UTILITIES
