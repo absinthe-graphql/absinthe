@@ -1,6 +1,4 @@
 defmodule Absinthe.Type.Scalar do
-  alias Absinthe.Flag
-
   @moduledoc """
   Represents a primitive value.
 
@@ -39,8 +37,6 @@ defmodule Absinthe.Type.Scalar do
 
   use Absinthe.Introspection.Kind
   use Absinthe.Type.Definitions
-
-  alias Absinthe.Type
 
   def build(identifier, blueprint) do
     quote do

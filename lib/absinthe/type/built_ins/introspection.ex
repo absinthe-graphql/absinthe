@@ -1,6 +1,5 @@
 defmodule Absinthe.Type.BuiltIns.Introspection do
   use Absinthe.Schema.Notation
-  alias Absinthe.{Type, Schema, Flag, Language}
 
   @desc "Represents a schema"
   object :__schema do
@@ -8,8 +7,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
     field :types, list_of(:__type) do
       resolve fn
         _, %{schema: schema} ->
-          Schema.types(schema)
-          |> Flag.as(:ok)
+          {:ok, Absinthe.Schema.types(schema)}
       end
     end
 
@@ -17,21 +15,21 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       type: :__type,
       resolve: fn
         _, %{schema: schema} ->
-          {:ok, Schema.lookup_type(schema, :query)}
+          {:ok, Absinthe.Schema.lookup_type(schema, :query)}
       end
 
     field :mutation_type,
       type: :__type,
       resolve: fn
         _, %{schema: schema} ->
-          {:ok, Schema.lookup_type(schema, :mutation)}
+          {:ok, Absinthe.Schema.lookup_type(schema, :mutation)}
       end
 
     field :directives,
       type: list_of(:__directive),
       resolve: fn
         _, %{schema: schema} ->
-          {:ok, Schema.directives(schema)}
+          {:ok, Absinthe.Schema.directives(schema)}
       end
 
   end
@@ -55,21 +53,21 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       type: :boolean,
       resolve: fn
         _, %{source: source} ->
-          {:ok, Enum.member?(source.on, Language.OperationDefinition)}
+          {:ok, Enum.member?(source.on, Absinthe.Language.OperationDefinition)}
       end
 
     field :on_fragment,
       type: :boolean,
       resolve: fn
         _, %{source: source} ->
-          {:ok, Enum.member?(source.on, Language.FragmentSpread)}
+          {:ok, Enum.member?(source.on, Absinthe.Language.FragmentSpread)}
       end
 
     field :on_field,
       type: :boolean,
       resolve: fn
         _, %{source: source} ->
-          {:ok, Enum.member?(source.on, Language.Field)}
+          {:ok, Enum.member?(source.on, Absinthe.Language.Field)}
       end
 
   end
@@ -91,7 +89,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
     field :fields, list_of(:__field) do
       arg :include_deprecated, :boolean, default_value: false
       resolve fn
-        %{include_deprecated: show_deprecated}, %{source: %{__struct__: str, fields: fields}} when str in [Type.Object, Type.Interface] ->
+        %{include_deprecated: show_deprecated}, %{source: %{__struct__: str, fields: fields}} when str in [Absinthe.Type.Object, Absinthe.Type.Interface] ->
           fields
           |> Enum.flat_map(fn
             {_, %{deprecation: is_deprecated} = field} ->
@@ -101,7 +99,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
               []
             end
           end)
-          |> Flag.as(:ok)
+          |> Absinthe.Flag.as(:ok)
         _, _ ->
           {:ok, nil}
       end
@@ -127,7 +125,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         _, %{schema: schema, source: %{types: types}} ->
           structs = types |> Enum.map(&(Absinthe.Schema.lookup_type(schema, &1)))
           {:ok, structs}
-        _, %{schema: schema, source: %Type.Interface{reference: %{identifier: ident}}} ->
+        _, %{schema: schema, source: %Absinthe.Type.Interface{reference: %{identifier: ident}}} ->
           {:ok, Absinthe.Schema.implementors(schema, ident)}
         _, _ ->
           {:ok, nil}
@@ -142,7 +140,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         ]
       ],
       resolve: fn
-        %{include_deprecated: show_deprecated}, %{source: %Type.Enum{values: values}} ->
+        %{include_deprecated: show_deprecated}, %{source: %Absinthe.Type.Enum{values: values}} ->
           values
           |> Enum.flat_map(fn
             {_, %{deprecation: is_deprecated} = value} ->
@@ -152,7 +150,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
                 []
               end
           end)
-          |> Flag.as(:ok)
+          |> Absinthe.Flag.as(:ok)
         _, _ ->
           {:ok, nil}
       end
@@ -160,7 +158,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
     field :input_fields,
       type: list_of(:__inputvalue),
       resolve: fn
-        _, %{source: %Type.InputObject{fields: fields}} ->
+        _, %{source: %Absinthe.Type.InputObject{fields: fields}} ->
           structs = fields |> Map.values
           {:ok, structs}
         _, _ ->
@@ -172,7 +170,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       resolve: fn
         _, %{schema: schema, source: %{of_type: type}} ->
           Absinthe.Schema.lookup_type(schema, type, unwrap: false)
-          |> Flag.as(:ok)
+          |> Absinthe.Flag.as(:ok)
         _, _ ->
           {:ok, nil}
       end
@@ -187,7 +185,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         _, %{adapter: adapter, source: source} ->
           source.name
           |> adapter.to_external_name(:field)
-          |> Flag.as(:ok)
+          |> Absinthe.Flag.as(:ok)
       end
 
     field :description, :string
@@ -209,7 +207,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
             type ->
               type
           end
-          |> Flag.as(:ok)
+          |> Absinthe.Flag.as(:ok)
       end
 
     field :is_deprecated,
@@ -240,7 +238,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         _, %{adapter: adapter, source: source} ->
           source.name
           |> adapter.to_external_name(:field)
-          |> Flag.as(:ok)
+          |> Absinthe.Flag.as(:ok)
       end
 
     field :description, :string
