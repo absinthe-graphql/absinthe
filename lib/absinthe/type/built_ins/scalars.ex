@@ -3,7 +3,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
 
   alias Absinthe.Flag
 
-  @doc """
+  @desc """
   The `Int` scalar type represents non-fractional signed whole numeric
   values. Int can represent values between -(2^53 - 1) and 2^53 - 1 since
   represented in JSON as double-precision floating point numbers specified
@@ -14,7 +14,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     parse parse_with([Absinthe.Language.IntValue], &parse_int/1)
   end
 
-  @doc """
+  @desc """
   The `Float` scalar type represents signed double-precision fractional
   values as specified by
   [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
@@ -27,7 +27,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   end
 
 
-  @doc """
+  @desc """
   The `String` scalar type represents textual data, represented as UTF-8
   character sequences. The String type is most often used by GraphQL to
   represent free-form human-readable text.
@@ -37,7 +37,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     parse parse_with([Absinthe.Language.StringValue], &parse_string/1)
   end
 
-  @doc """
+  @desc """
   The `ID` scalar type represents a unique identifier, often used to
   refetch an object or as key for a cache. The ID type appears in a JSON
   response as a String; however, it is not intended to be human-readable.
@@ -50,7 +50,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
                        Absinthe.Language.StringValue], &parse_string/1)
   end
 
-  @doc """
+  @desc """
   The `Boolean` scalar type represents `true` or `false`.
   """
   scalar :boolean do
