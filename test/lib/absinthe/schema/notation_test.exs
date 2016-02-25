@@ -92,7 +92,7 @@ defmodule Absinthe.Schema.NotationTest do
       """
     end
     it "cannot be toplevel" do
-      assert_notation_error "TypesInvalid", "types [:foo]"
+      assert_notation_error "TypesInvalid", "types [:foo]", "Invalid schema notation: `types` must only be used within `union`"
     end
   end
 
@@ -107,7 +107,7 @@ defmodule Absinthe.Schema.NotationTest do
       """
     end
     it "cannot be toplevel" do
-      assert_notation_error "ValueInvalid", "value :b"
+      assert_notation_error "ValueInvalid", "value :b", "Invalid schema notation: `value` must only be used within `enum`"
     end
   end
 
@@ -124,8 +124,8 @@ defmodule Absinthe.Schema.NotationTest do
   \""")
   ```
   """
-  def assert_notation_error(name, text) do
-    assert_raise(Absinthe.Schema.Notation.Error, fn ->
+  def assert_notation_error(name, text, message) do
+    err = assert_raise(Absinthe.Schema.Notation.Error, message, fn ->
       """
       defmodule MyTestSchema.#{name} do
         use Absinthe.Schema

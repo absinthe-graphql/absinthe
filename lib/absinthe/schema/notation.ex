@@ -47,6 +47,8 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
+  Module.register_attribute(__MODULE__, :placement, accumulate: true)
+
   def __attrs__(attrs_ast) do
     attrs_ast
     |> Macro.escape
@@ -92,39 +94,15 @@ defmodule Absinthe.Schema.Notation do
   def __open_scope__(kind, mod, identifier, raw_attrs) do
     attrs = __attrs__(raw_attrs)
     quote bind_quoted: [kind: kind, identifier: identifier, mod: mod, attrs: attrs, notation: __MODULE__] do
-      if notation.valid_here?(mod, kind) do
-        Scope.open(
-          kind,
-          mod,
-          attrs
-          |> notation.add_description_from_module_attribute(mod)
-          |> notation.add_reference(__ENV__, identifier)
-        )
-      else
-        raise Absinthe.Schema.Notation.Error, kind
-      end
+      notation.check_placement!(mod, kind)
+      Scope.open(
+        kind,
+        mod,
+        attrs
+        |> notation.add_description_from_module_attribute(mod)
+        |> notation.add_reference(__ENV__, identifier)
+      )
     end
-  end
-
-  # TODO: Generalize
-  def valid_here?(mod, :value) do
-    case Scope.current(mod) do
-      %{name: :enum} ->
-        true
-      _ ->
-        false
-    end
-  end
-  def valid_here?(mod, :types) do
-    case Scope.current(mod) do
-      %{name: :union} ->
-        true
-      _ ->
-        false
-    end
-  end
-  def valid_here?(_, _) do
-    true
   end
 
   # CLOSE SCOPE HOOKS
@@ -208,16 +186,14 @@ defmodule Absinthe.Schema.Notation do
 
   def put_attribute(macro_name, key, value, opts \\ [accumulate: false]) do
     quote bind_quoted: [macro_name: macro_name, notation: __MODULE__, key: key, value: value, opts: opts] do
-      if notation.valid_here?(__MODULE__, macro_name) do
-        Scope.put_attribute(__MODULE__, key, value, opts)
-      else
-        raise Absinthe.Schema.Notation.Error, macro_name
-      end
+      notation.check_placement!(__MODULE__, macro_name)
+      Scope.put_attribute(__MODULE__, key, value, opts)
     end
   end
 
   # OBJECT
 
+  @placement {:object, [toplevel: true]}
   defmacro object(identifier, attrs, [do: block]) do
     __scope__(__CALLER__, :object, identifier, attrs, block)
   end
@@ -233,6 +209,8 @@ defmodule Absinthe.Schema.Notation do
       Scope.put_attribute(__MODULE__, :interfaces, unquote(ifaces))
     end
   end
+
+  # TODO: Support different interface checks
 
   @doc """
   Declare an implemented interface for an object.
@@ -265,6 +243,8 @@ defmodule Absinthe.Schema.Notation do
 
   # FIELDS
 
+  @placement {:field, [under: [:object, :input_object, :interface]]}
+
   defmacro field(identifier, [do: block]) do
     __scope__(__CALLER__, :field, identifier, [], block)
   end
@@ -288,12 +268,14 @@ defmodule Absinthe.Schema.Notation do
     __scope__(__CALLER__, :field, identifier, Keyword.put(attrs, :type, type), block)
   end
 
+  @placement {:resolve, [under: [:field]]}
   defmacro resolve(func_ast) do
     quote do
       Scope.put_attribute(__MODULE__, :resolve, unquote(Macro.escape(func_ast)))
     end
   end
 
+  @placement {:is_type_of, [under: [:object]]}
   defmacro is_type_of(func_ast) do
     quote do
       Scope.put_attribute(__MODULE__, :is_type_of, unquote(Macro.escape(func_ast)))
@@ -302,6 +284,7 @@ defmodule Absinthe.Schema.Notation do
 
   # ARGS
 
+  @placement {:arg, [under: [:field, :directive]]}
   defmacro arg(identifier, type, attrs) do
     __scope__(__CALLER__, :arg, identifier, Keyword.put(attrs, :type, type), nil)
   end
@@ -314,6 +297,7 @@ defmodule Absinthe.Schema.Notation do
 
   # SCALARS
 
+  @placement {:scalar, [toplevel: true]}
   defmacro scalar(identifier, attrs, [do: block]) do
     __scope__(__CALLER__, :scalar, identifier, attrs, block)
   end
@@ -324,12 +308,14 @@ defmodule Absinthe.Schema.Notation do
     __scope__(__CALLER__, :scalar, identifier, attrs, nil)
   end
 
+  @placement {:serialize, [under: [:scalar]]}
   defmacro serialize(func_ast) do
     quote do
       Scope.put_attribute(__MODULE__, :serialize, unquote(Macro.escape(func_ast)))
     end
   end
 
+  @placement {:directive, [under: [:scalar]]}
   defmacro parse(func_ast) do
     quote do
       Scope.put_attribute(__MODULE__, :parse, unquote(Macro.escape(func_ast)))
@@ -338,6 +324,7 @@ defmodule Absinthe.Schema.Notation do
 
   # DIRECTIVES
 
+  @placement {:directive, [toplevel: true]}
   defmacro directive(identifier, attrs, [do: block]) do
     __scope__(__CALLER__, :directive, identifier, attrs, block)
   end
@@ -367,6 +354,7 @@ defmodule Absinthe.Schema.Notation do
   @doc """
   Calculate the instruction for a directive
   """
+  @placement {:instruction, [under: :directive]}
   defmacro instruction(fun) do
     quote do
       Scope.put_attribute(__MODULE__, :instruction, unquote(Macro.escape(fun)))
@@ -375,6 +363,7 @@ defmodule Absinthe.Schema.Notation do
 
   # INPUT OBJECTS
 
+  @placement {:input_object, [toplevel: true]}
   defmacro input_object(identifier, attrs, [do: block]) do
     __scope__(__CALLER__, :input_object, identifier, attrs, block)
   end
@@ -384,6 +373,7 @@ defmodule Absinthe.Schema.Notation do
 
   # UNIONS
 
+  @placement {:union, [toplevel: true]}
   defmacro union(identifier, attrs, [do: block]) do
     __scope__(__CALLER__, :union, identifier, attrs, block)
   end
@@ -391,18 +381,17 @@ defmodule Absinthe.Schema.Notation do
     __scope__(__CALLER__, :union, identifier, [], block)
   end
 
+  @placement {:types, [under: [:union]]}
   defmacro types(types) do
     quote bind_quoted: [notation: __MODULE__, types: types] do
-      if notation.valid_here?(__MODULE__, :types) do
-        Scope.put_attribute(__MODULE__, :types, List.wrap(types))
-      else
-        raise Absinthe.Schema.Notation.Error, :types
-      end
+      notation.check_placement!(__MODULE__, :types)
+      Scope.put_attribute(__MODULE__, :types, List.wrap(types))
     end
   end
 
   # ENUMS
 
+  @placement {:enum, [toplevel: true]}
   defmacro enum(identifier, attrs, [do: block]) do
     __scope__(__CALLER__, :enum, identifier, attrs, block)
   end
@@ -413,21 +402,20 @@ defmodule Absinthe.Schema.Notation do
     __scope__(__CALLER__, :enum, identifier, attrs, nil)
   end
 
+  @placement {:value, [under: [:enum]]}
   defmacro value(identifier, raw_attrs \\ []) do
     attrs = raw_attrs
     |> Keyword.put(:value, Keyword.get(raw_attrs, :as, identifier))
     |> Keyword.delete(:as)
     quote bind_quoted: [identifier: identifier, notation: __MODULE__, attrs: attrs] do
-      if notation.valid_here?(__MODULE__, :value) do
-        Scope.put_attribute(__MODULE__, :values, {identifier, attrs |> notation.add_description_from_module_attribute(__MODULE__)}, accumulate: true)
-      else
-        raise Absinthe.Schema.Notation.Error, :value
-      end
+      notation.check_placement!(__MODULE__, :value)
+      Scope.put_attribute(__MODULE__, :values, {identifier, attrs |> notation.add_description_from_module_attribute(__MODULE__)}, accumulate: true)
     end
   end
 
   # UTILITIES
 
+  @placement {:import_types, [toplevel: true]}
   defmacro import_types(type_module_ast, opts_ast \\ []) do
     opts = Macro.expand(opts_ast, __CALLER__)
     type_module = Macro.expand(type_module_ast, __CALLER__)
@@ -553,6 +541,42 @@ defmodule Absinthe.Schema.Notation do
     quote do
       %Absinthe.Type.List{of_type: unquote(type)}
     end
+  end
+
+  def check_placement!(mod, usage) do
+    rules = Keyword.get(@placement, usage, [])
+    |> Enum.into(%{})
+    do_check_placement!(mod, usage, rules)
+  end
+  defp do_check_placement!(mod, usage, %{under: parents} = rules) do
+    case Scope.current(mod) do
+      %{name: name} ->
+        if Enum.member?(parents, name) do
+          do_check_placement!(mod, usage, Map.delete(rules, :under))
+        else
+          raise Absinthe.Schema.Notation.Error, only_within(usage, parents)
+        end
+      _ ->
+        raise Absinthe.Schema.Notation.Error, only_within(usage, parents)
+    end
+  end
+  defp do_check_placement!(mod, usage, %{toplevel: true} = rules) do
+    case Scope.current(mod) do
+      nil ->
+        do_check_placement!(mod, usage, Map.delete(rules, :toplevel))
+      _ ->
+        raise Absinthe.Schema.Notation.Error, "Invalid schema notation: `#{usage}` must only be used toplevel"
+    end
+  end
+  defp do_check_placement!(_, _, rules) when map_size(rules) == 0 do
+    :ok
+  end
+
+  defp only_within(macro, parent) do
+    parts = parent
+    |> Enum.map(&"`#{&1}`")
+    |> Enum.join(", ")
+    "Invalid schema notation: `#{macro}` must only be used within #{parts}"
   end
 
 end
