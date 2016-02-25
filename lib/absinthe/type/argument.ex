@@ -27,9 +27,10 @@ defmodule Absinthe.Type.Argument do
                type: Type.identifier_t,
                default_value: any,
                deprecation: Type.Deprecation.t | nil,
-               description: binary | nil}
+               description: binary | nil,
+               __reference__: Type.Reference.t}
 
-  defstruct name: nil, description: nil, type: nil, deprecation: nil, default_value: nil
+  defstruct name: nil, description: nil, type: nil, deprecation: nil, default_value: nil, __reference__: nil
 
   @doc """
   Build an AST of the args map for inclusion in other types

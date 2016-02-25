@@ -10,12 +10,12 @@ defmodule SupportSchemas do
   end
 
   @doc """
-  Assert an error occurs.
+  Assert a schema error occurs.
 
   ## Examples
 
   ```
-  iex> assert_schema_error(TheSchema, [%{rule: Absinthe.Schema.Rule.TheRuleHere, data: :bar}])
+  iex> assert_schema_error("schema-name", [%{rule: Absinthe.Schema.Rule.TheRuleHere, data: :bar}])
   ```
   """
   def assert_schema_error(schema_name, patterns) do
@@ -31,6 +31,11 @@ defmodule SupportSchemas do
         end), "Could not find error detail pattern #{inspect pattern} in #{inspect err.details}"
     end)
     assert length(patterns) == length(err.details)
+  end
+  def assert_notation_error(name) do
+    assert_raise(Absinthe.Schema.Notation.Error, fn ->
+      load_schema(name)
+    end)
   end
 
 end

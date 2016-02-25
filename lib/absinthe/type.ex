@@ -30,7 +30,7 @@ defmodule Absinthe.Type do
   def equal?(_, _), do: false
 
   def built_in?(type) do
-    type.reference.module
+    type.__reference__.module
     |> Module.split
     |> Enum.take(3)
     |> Module.safe_concat == Absinthe.Type.BuiltIns

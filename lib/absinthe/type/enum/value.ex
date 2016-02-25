@@ -24,8 +24,8 @@ defmodule Absinthe.Type.Enum.Value do
     set-up using the `Absinthe.Type.Definitions.deprecate/2` convenience
     function.
   """
-  @type t :: %{name: binary, description: binary, value: any, deprecation: Type.Deprecation.t | nil}
-  defstruct name: nil, description: nil, value: nil, deprecation: nil
+  @type t :: %{name: binary, description: binary, value: any, deprecation: Type.Deprecation.t | nil, __reference__: Type.Reference.t}
+  defstruct name: nil, description: nil, value: nil, deprecation: nil, __reference__: nil
 
   @spec build_map_ast(Keyword.t) :: %{atom => Absinthe.Type.Enum.Value.t}
   def build_map_ast(raw_values) do

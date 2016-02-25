@@ -78,10 +78,10 @@ defmodule Absinthe.Type.Enum do
   * `:description` - A nice description for introspection.
   * `:values` - The enum valuesn, usually provided using the `Absinthe.Type.Definitions.values/1` convenience function.
 
-  The `:reference` key is for internal use.
+  The `:__reference__` key is for internal use.
   """
-  @type t :: %{name: binary, description: binary, values: %{binary => Type.Enum.Value.t}, reference: Type.Reference.t}
-  defstruct name: nil, description: nil, values: %{}, reference: nil
+  @type t :: %{name: binary, description: binary, values: %{binary => Type.Enum.Value.t}, __reference__: Type.Reference.t}
+  defstruct name: nil, description: nil, values: %{}, __reference__: nil
 
 
   def build(identifier, blueprint) do
@@ -91,7 +91,7 @@ defmodule Absinthe.Type.Enum do
         name: unquote(blueprint[:name]),
         description: unquote(blueprint[:description]),
         values: unquote(values),
-        reference: %{
+        __reference__: %{
           module: __MODULE__,
           identifier: unquote(identifier),
           location: %{

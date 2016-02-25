@@ -39,15 +39,7 @@ defmodule Absinthe.Type.Scalar do
   use Absinthe.Type.Definitions
 
   def build(identifier, blueprint) do
-    quote do
-      %unquote(__MODULE__){
-        name: unquote(blueprint[:name]),
-        parse: unquote(blueprint[:parse]),
-        serialize: unquote(blueprint[:serialize]),
-        description: unquote(blueprint[:description]),
-        reference: %{module: __MODULE__, identifier: unquote(identifier)}
-      }
-    end
+    quote do: %unquote(__MODULE__){unquote_splicing(blueprint)}
   end
 
   def serialize(%{serialize: serializer}, value) do
@@ -68,13 +60,13 @@ defmodule Absinthe.Type.Scalar do
   * `:serialize` - A function used to convert a value to a form suitable for JSON serialization
   * `:parse` - A function used to convert the raw, incoming form of a scalar to the canonical internal format.
 
-  The `:reference` key is for internal use.
+  The `:__reference__` key is for internal use.
 """
-  @type t :: %{name: binary, description: binary, serialize: (value_t -> any), parse: (any -> {:ok, value_t} | :error), reference: Type.Reference.t}
+  @type t :: %{name: binary, description: binary, serialize: (value_t -> any), parse: (any -> {:ok, value_t} | :error), __reference__: Type.Reference.t}
 
   @typedoc "The internal, canonical representation of a scalar value"
   @type value_t :: any
 
-  defstruct name: nil, description: nil, serialize: nil, parse: nil, reference: nil
+  defstruct name: nil, description: nil, serialize: nil, parse: nil, __reference__: nil
 
 end

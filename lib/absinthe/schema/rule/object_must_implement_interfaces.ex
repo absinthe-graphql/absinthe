@@ -53,7 +53,7 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfaces do
         if Type.Interface.implements?(iface_type, type) do
           []
         else
-          [report(type.reference.location, %{object: type.name, interface: iface_type.name}) | acc]
+          [report(type.__reference__.location, %{object: type.name, interface: iface_type.name}) | acc]
         end
       _, _ ->
         # Handles by a different rule

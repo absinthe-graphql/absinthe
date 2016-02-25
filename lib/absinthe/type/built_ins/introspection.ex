@@ -125,7 +125,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         _, %{schema: schema, source: %{types: types}} ->
           structs = types |> Enum.map(&(Absinthe.Schema.lookup_type(schema, &1)))
           {:ok, structs}
-        _, %{schema: schema, source: %Absinthe.Type.Interface{reference: %{identifier: ident}}} ->
+        _, %{schema: schema, source: %Absinthe.Type.Interface{__reference__: %{identifier: ident}}} ->
           {:ok, Absinthe.Schema.implementors(schema, ident)}
         _, _ ->
           {:ok, nil}

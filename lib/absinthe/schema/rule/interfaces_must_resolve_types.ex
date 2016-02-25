@@ -32,7 +32,7 @@ defmodule Absinthe.Schema.Rule.InterfacesMustResolveTypes do
     if Type.Interface.type_resolvable?(schema, type) do
       []
     else
-      [report(type.reference.location, type.name)]
+      [report(type.__reference__.location, type.name)]
     end
   end
   defp check_type(_, _) do

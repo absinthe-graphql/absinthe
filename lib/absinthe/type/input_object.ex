@@ -5,8 +5,8 @@ defmodule Absinthe.Type.InputObject do
 
   alias Absinthe.Type
 
-  @type t :: %{name: binary, description: binary, fields: map | (() -> map), reference: Type.Reference.t}
-  defstruct name: nil, description: nil, fields: %{}, reference: nil
+  @type t :: %{name: binary, description: binary, fields: map | (() -> map), __reference__: Type.Reference.t}
+  defstruct name: nil, description: nil, fields: %{}, __reference__: nil
 
   def build(identifier, blueprint) do
     fields = Type.Field.build_map_ast(blueprint[:fields] || [])
@@ -15,7 +15,7 @@ defmodule Absinthe.Type.InputObject do
         name: unquote(blueprint[:name]),
         fields: unquote(fields),
         description: unquote(blueprint[:description]),
-        reference: %{
+        __reference__: %{
           module: __MODULE__,
           identifier: unquote(identifier),
           location: %{

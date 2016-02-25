@@ -19,10 +19,10 @@ defmodule Absinthe.Type.Directive do
   * `:on` - A list of places the directives can be used (can be `:operation`, `:fragment`, `:field`).
   * `:instruction` - A function that, given an argument, returns an instruction for the correct action to take
 
-  The `:reference` key is for internal use.
+  The `:__reference__` key is for internal use.
   """
-  @type t :: %{name: binary, description: binary, args: map, on: [atom], instruction: ((map) -> atom), reference: Type.Reference.t}
-  defstruct name: nil, description: nil, args: nil, on: [], instruction: nil, reference: nil
+  @type t :: %{name: binary, description: binary, args: map, on: [atom], instruction: ((map) -> atom), __reference__: Type.Reference.t}
+  defstruct name: nil, description: nil, args: nil, on: [], instruction: nil, __reference__: nil
 
 
   def build(identifier, blueprint) do
@@ -34,7 +34,7 @@ defmodule Absinthe.Type.Directive do
         description: unquote(blueprint[:description]),
         on: unquote(blueprint[:on] || []),
         instruction: unquote(blueprint[:instruction]),
-        reference: %{
+        __reference__: %{
           module: __MODULE__,
           identifier: unquote(identifier),
           location: %{

@@ -17,8 +17,12 @@ defmodule Absinthe.Schema.Notation.Scope do
   end
 
   def split(mod) do
-    [current | rest] = on(mod)
-    {current, rest}
+    case on(mod) do
+      [] ->
+        {nil, []}
+      [current | rest] ->
+        {current, rest}
+    end
   end
 
   def current(mod) do

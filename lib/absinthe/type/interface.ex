@@ -63,7 +63,7 @@ defmodule Absinthe.Type.Interface do
 
   The `:resolve_type` function will be passed two arguments; the object whose type needs to be identified, and the `Absinthe.Execution` struct providing the full execution context.
 
-  The `:reference` key is for internal use.
+  The `:__reference__` key is for internal use.
 
   """
 
@@ -73,8 +73,8 @@ defmodule Absinthe.Type.Interface do
   alias Absinthe.Execution
   alias Absinthe.Schema
 
-  @type t :: %{name: binary, description: binary, fields: map, resolve_type: ((any, Absinthe.Execution.t) -> atom | nil), reference: Type.Reference.t}
-  defstruct name: nil, description: nil, fields: nil, resolve_type: nil, reference: nil
+  @type t :: %{name: binary, description: binary, fields: map, resolve_type: ((any, Absinthe.Execution.t) -> atom | nil), __reference__: Type.Reference.t}
+  defstruct name: nil, description: nil, fields: nil, resolve_type: nil, __reference__: nil
 
   def build(identifier, blueprint) do
     fields = Type.Field.build_map_ast(blueprint[:fields] || [])
@@ -84,7 +84,7 @@ defmodule Absinthe.Type.Interface do
         fields: unquote(fields),
         resolve_type: unquote(blueprint[:resolve_type]),
         description: unquote(blueprint[:description]),
-        reference: %{
+        __reference__: %{
           module: __MODULE__,
           identifier: unquote(identifier),
           location: %{
@@ -97,7 +97,7 @@ defmodule Absinthe.Type.Interface do
   end
 
   @spec resolve_type(Type.Interface.t, any, Execution.Field.t) :: Type.t | nil
-  def resolve_type(%{resolve_type: nil, reference: %{identifier: ident}}, obj, %{schema: schema}) do
+  def resolve_type(%{resolve_type: nil, __reference__: %{identifier: ident}}, obj, %{schema: schema}) do
     implementors = Schema.implementors(schema, ident)
     Enum.find(implementors, fn
       %{is_type_of: nil} ->
@@ -155,11 +155,10 @@ defmodule Absinthe.Type.Interface do
     end
   end
 
-  @ignore [:description]
+  @ignore [:description, :__reference__]
   defp ignore_implementing_keypath?(keypath) when is_list(keypath) do
     keypath
-    |> List.last
-    |> ignore_implementing_keypath?
+    |> Enum.any?(&ignore_implementing_keypath?/1)
   end
   defp ignore_implementing_keypath?(keypath) when is_atom(keypath) do
     Enum.member?(@ignore, keypath)

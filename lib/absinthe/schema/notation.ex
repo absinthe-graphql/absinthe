@@ -60,6 +60,21 @@ defmodule Absinthe.Schema.Notation do
     ]
   end
 
+  def add_reference(attrs, env, identifier) do
+    attrs
+    |> Keyword.put(
+      :__reference__,
+      quote bind_quoted: [module: env.module, line: env.line, file: env.file, identifier: identifier], do: %{
+        module: module,
+        identifier: identifier,
+        location: %{
+          file: file,
+          line: line
+        }
+      }
+    )
+  end
+
   def add_description_from_module_attribute(attrs_ast, mod) do
     case {attrs_ast[:description], Module.get_attribute(mod, :desc)} do
       {_, nil} ->
@@ -74,11 +89,42 @@ defmodule Absinthe.Schema.Notation do
 
   # OPEN SCOPE HOOKS
 
-  def __open_scope__(kind, mod, _identifier, raw_attrs) do
+  def __open_scope__(kind, mod, identifier, raw_attrs) do
     attrs = __attrs__(raw_attrs)
-    quote bind_quoted: [kind: kind, mod: mod, attrs: attrs, notation: __MODULE__] do
-      Scope.open(kind, mod, attrs |> notation.add_description_from_module_attribute(mod))
+    quote bind_quoted: [kind: kind, identifier: identifier, mod: mod, attrs: attrs, notation: __MODULE__] do
+      if notation.valid_here?(mod, kind) do
+        Scope.open(
+          kind,
+          mod,
+          attrs
+          |> notation.add_description_from_module_attribute(mod)
+          |> notation.add_reference(__ENV__, identifier)
+        )
+      else
+        raise Absinthe.Schema.Notation.Error, kind
+      end
     end
+  end
+
+  # TODO: Generalize
+  def valid_here?(mod, :value) do
+    case Scope.current(mod) do
+      %{name: :enum} ->
+        true
+      _ ->
+        false
+    end
+  end
+  def valid_here?(mod, :types) do
+    case Scope.current(mod) do
+      %{name: :union} ->
+        true
+      _ ->
+        false
+    end
+  end
+  def valid_here?(_, _) do
+    true
   end
 
   # CLOSE SCOPE HOOKS
@@ -157,6 +203,16 @@ defmodule Absinthe.Schema.Notation do
     quote bind_quoted: [attr_name: attr_name, mod: mod, identifier: identifier, module: __MODULE__, scope_module: scope_module] do
       attrs = scope_module.close(mod).attrs |> module.__with_name__(identifier)
       scope_module.put_attribute(mod, attr_name, {identifier, attrs}, accumulate: true)
+    end
+  end
+
+  def put_attribute(macro_name, key, value, opts \\ [accumulate: false]) do
+    quote bind_quoted: [macro_name: macro_name, notation: __MODULE__, key: key, value: value, opts: opts] do
+      if notation.valid_here?(__MODULE__, macro_name) do
+        Scope.put_attribute(__MODULE__, key, value, opts)
+      else
+        raise Absinthe.Schema.Notation.Error, macro_name
+      end
     end
   end
 
@@ -336,8 +392,12 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defmacro types(types) do
-    quote do
-      Scope.put_attribute(__MODULE__, :types, unquote(types))
+    quote bind_quoted: [notation: __MODULE__, types: types] do
+      if notation.valid_here?(__MODULE__, :types) do
+        Scope.put_attribute(__MODULE__, :types, List.wrap(types))
+      else
+        raise Absinthe.Schema.Notation.Error, :types
+      end
     end
   end
 
@@ -357,8 +417,12 @@ defmodule Absinthe.Schema.Notation do
     attrs = raw_attrs
     |> Keyword.put(:value, Keyword.get(raw_attrs, :as, identifier))
     |> Keyword.delete(:as)
-    quote bind_quoted: [identifier: identifier, notation: __MODULE__, attrs: attrs]do
-      Scope.put_attribute(__MODULE__, :values, {identifier, attrs |> notation.add_description_from_module_attribute(__MODULE__)}, accumulate: true)
+    quote bind_quoted: [identifier: identifier, notation: __MODULE__, attrs: attrs] do
+      if notation.valid_here?(__MODULE__, :value) do
+        Scope.put_attribute(__MODULE__, :values, {identifier, attrs |> notation.add_description_from_module_attribute(__MODULE__)}, accumulate: true)
+      else
+        raise Absinthe.Schema.Notation.Error, :value
+      end
     end
   end
 

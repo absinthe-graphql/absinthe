@@ -26,7 +26,7 @@ defmodule Absinthe.Adapter.LanguageConventionsTest do
       "opera_house" => %{id: "opera_house", name: "Opera House", location_name: "Sydney"}
     }
 
-    query foo: (fn -> tester end) do
+    query do
 
       field :bad_resolution,
         type: :field_trip,

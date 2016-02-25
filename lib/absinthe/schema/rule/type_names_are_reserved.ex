@@ -54,7 +54,7 @@ defmodule Absinthe.Schema.Rule.TypeNamesAreReserved do
     if Absinthe.Type.built_in?(type) do
       []
     else
-      [report(type.reference.location,
+      [report(type.__reference__.location,
               %{artifact: "#{kind} name", value: entity.name})]
     end
   end

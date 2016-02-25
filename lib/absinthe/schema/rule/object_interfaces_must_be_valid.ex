@@ -32,7 +32,7 @@ defmodule Absinthe.Schema.Rule.ObjectInterfacesMustBeValid do
       %Type.Interface{}, acc ->
         acc
       iface_type, acc ->
-        [report(type.reference.location, %{object: type.name, interface: iface_type.name}) | acc]
+        [report(type.__reference__.location, %{object: type.name, interface: iface_type.name}) | acc]
     end)
   end
   defp check_type(_, _) do

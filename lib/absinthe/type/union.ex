@@ -33,7 +33,7 @@ defmodule Absinthe.Type.Union do
 
   The `:resolve_type` function will be passed two arguments; the object whose type needs to be identified, and the `Absinthe.Execution` struct providing the full execution context.
 
-  The `:reference` key is for internal use.
+  The `:__reference__` key is for internal use.
   """
 
   use Absinthe.Introspection.Kind
@@ -44,27 +44,12 @@ defmodule Absinthe.Type.Union do
                description: binary,
                types: [Absinthe.Type.t],
                resolve_type: ((any, Absinthe.Execution.t) -> atom | nil),
-               reference: Type.Reference.t}
+               __reference__: Type.Reference.t}
 
-  defstruct name: nil, description: nil, resolve_type: nil, types: [], reference: nil
+  defstruct name: nil, description: nil, resolve_type: nil, types: [], __reference__: nil
 
-  def build(identifier, blueprint) do
-    quote do
-      %unquote(__MODULE__){
-        name: unquote(blueprint[:name]),
-        types: unquote(blueprint[:types]) || [],
-        resolve_type: unquote(blueprint[:resolve_type]),
-        description: unquote(blueprint[:description]),
-        reference: %{
-          module: __MODULE__,
-          identifier: unquote(identifier),
-          location: %{
-            file: __ENV__.file,
-            line: __ENV__.line
-          }
-        }
-      }
-    end
+  def build(identifier, attrs) do
+    quote do: %unquote(__MODULE__){unquote_splicing(attrs)}
   end
 
   @doc false

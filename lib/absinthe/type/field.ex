@@ -101,9 +101,10 @@ defmodule Absinthe.Type.Field do
                deprecation: Deprecation.t | nil,
                default_value: any,
                args: %{(binary | atom) => Absinthe.Type.Argument.t} | nil,
-               resolve: resolver_t | nil}
+               resolve: resolver_t | nil,
+               __reference__: Type.Reference.t}
 
-  defstruct name: nil, description: nil, type: nil, deprecation: nil, args: %{}, resolve: nil, default_value: nil
+  defstruct name: nil, description: nil, type: nil, deprecation: nil, args: %{}, resolve: nil, default_value: nil, __reference__: nil
 
   @doc """
   Build an AST of the field map for inclusion in other types
