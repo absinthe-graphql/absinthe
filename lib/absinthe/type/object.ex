@@ -93,7 +93,7 @@ defmodule Absinthe.Type.Object do
   @type t :: %{name: binary, description: binary, fields: map, interfaces: [Absinthe.Type.Interface.t], is_type_of: ((any) -> boolean), __reference__: Type.Reference.t}
   defstruct name: nil, description: nil, fields: nil, interfaces: [], is_type_of: nil, __reference__: nil
 
-  def build(identifier, blueprint) do
+  def build(_identifier, blueprint) do
     attrs = blueprint
     |> update_in([:fields], fn
       raw ->

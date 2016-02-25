@@ -38,7 +38,7 @@ defmodule Absinthe.Type.Scalar do
   use Absinthe.Introspection.Kind
   use Absinthe.Type.Definitions
 
-  def build(identifier, blueprint) do
+  def build(_identifier, blueprint) do
     quote do: %unquote(__MODULE__){unquote_splicing(blueprint)}
   end
 

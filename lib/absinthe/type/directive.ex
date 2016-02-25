@@ -26,7 +26,7 @@ defmodule Absinthe.Type.Directive do
 
 
   def build(identifier, blueprint) do
-    args = args_ast(blueprint[:args])
+    args = args_ast(blueprint[:args] || [])
     quote do
       %unquote(__MODULE__){
         name: unquote(blueprint[:name]),

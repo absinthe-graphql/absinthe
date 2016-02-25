@@ -2,84 +2,339 @@ defmodule Absinthe.Schema.NotationTest do
   use ExSpec, async: true
 
   describe "arg" do
-    it "can be under field or directive as an attribute" do
+    it "can be under field as an attribute" do
+      assert_no_notation_error "ArgFieldValid", """
+      object :foo do
+        field :picture, :string do
+          arg :size, :integer
+        end
+      end
+      """
+    end
+    it "can be under directive as an attribute" do
+      assert_no_notation_error "ArgDirectiveValid", """
+      directive :test do
+        arg :if, :boolean
+      end
+      """
+    end
+    it "cannot be toplevel" do
+      assert_notation_error "ArgToplevelInvalid", """
+      arg :name, :string
+      """, "Invalid schema notation: `arg` must only be used within `directive`, `field`"
     end
   end
 
   describe "directive" do
     it "can be toplevel" do
+      assert_no_notation_error "DirectiveValid", """
+      directive :foo do
+      end
+      """
+    end
+    it "cannot be non-toplevel" do
+      assert_notation_error "DirectiveInvalid", """
+      directive :foo do
+        directive :bar do
+        end
+      end
+      """, "Invalid schema notation: `directive` must only be used toplevel"
     end
   end
 
   describe "enum" do
-    it "can be under query or mutation or subscription as a type" do
+    it "can be toplevel" do
+      assert_no_notation_error "EnumValid", """
+      enum :foo do
+      end
+      """
+    end
+    it "cannot be non-toplevel" do
+      assert_notation_error "EnumInvalid", """
+      enum :foo do
+        enum :bar do
+        end
+      end
+      """, "Invalid schema notation: `enum` must only be used toplevel"
     end
   end
 
   describe "field" do
-    it "can be under object and interface as an attribute" do
+    it "can be under object as an attribute" do
+      assert_no_notation_error "FieldObjectValid", """
+      object :bar do
+        field :name, :string
+      end
+      """
+    end
+    it "can be under input_object as an attribute" do
+      assert_no_notation_error "FieldInputObjectValid", """
+      input_object :bar do
+        field :name, :string
+      end
+      """
+    end
+    it "can be under interface as an attribute" do
+      assert_no_notation_error "FieldInterfaceValid", """
+      interface :bar do
+        field :name, :string
+      end
+      """
+    end
+    it "cannot be toplevel" do
+      assert_notation_error "FieldToplevelInvalid", """
+      field :foo, :string
+      """, "Invalid schema notation: `field` must only be used within `input_object`, `interface`, `object`"
     end
   end
 
   describe "input_object" do
-    it "can be under query or mutation or subscription as a type" do
+    it "can be toplevel" do
+      assert_no_notation_error "InputObjectValid", """
+      input_object :foo do
+      end
+      """
+    end
+    it "cannot be non-toplevel" do
+      assert_notation_error "InputObjectInvalid", """
+      input_object :foo do
+        input_object :bar do
+        end
+      end
+      """, "Invalid schema notation: `input_object` must only be used toplevel"
     end
   end
 
   describe "instruction" do
     it "can be under directive as an attribute" do
+      assert_no_notation_error "InstructionValid", """
+      directive :bar do
+        instruction fn -> :ok end
+      end
+      """
+    end
+    it "cannot be toplevel" do
+      assert_notation_error "InstructionToplevelInvalid", """
+      instruction fn -> :ok end
+      """, "Invalid schema notation: `instruction` must only be used within `directive`"
+    end
+    it "cannot be within object" do
+      assert_notation_error "InstructionObjectInvalid", """
+      object :foo do
+        instruction fn -> :ok end
+      end
+      """, "Invalid schema notation: `instruction` must only be used within `directive`"
     end
   end
 
   describe "interface" do
-    it "can be under query or mutation or subscription as a type" do
+    it "can be toplevel" do
+      assert_no_notation_error "InterfaceToplevelValid", """
+      interface :foo do
+        field :name, :string
+        resolve_type fn _, _ -> :bar end
+      end
+      """
     end
     it "can be under object as an attribute" do
+      assert_no_notation_error "InterfaceObjectValid", """
+      interface :foo do
+        field :name, :string
+        resolve_type fn _, _ -> :bar end
+      end
+      object :bar do
+        interface :foo
+        field :name, :string
+      end
+      """
+    end
+    it "cannot be under input_object as an attribute" do
+      assert_notation_error "InterfaceInputObjectInvalid", """
+      interface :foo do
+        field :name, :string
+        resolve_type fn _, _ -> :bar end
+      end
+      input_object :bar do
+        interface :foo
+      end
+      """, "Invalid schema notation: `interface` (as an attribute) must only be used within `object`"
     end
   end
 
   describe "interfaces" do
     it "can be under object as an attribute" do
+      assert_no_notation_error "InterfacesValid", """
+      interface :bar do
+        field :name, :string
+        resolve_type fn _, _ -> :foo end
+      end
+      object :foo do
+        field :name, :string
+        interfaces [:bar]
+      end
+      """
+    end
+    it "cannot be toplevel" do
+      assert_notation_error "InterfacesInvalid", """
+      interface :bar do
+        field :name, :string
+      end
+      interfaces [:bar]
+      """, "Invalid schema notation: `interfaces` must only be used within `object`"
     end
   end
 
   describe "is_type_of" do
     it "can be under object as an attribute" do
+      assert_no_notation_error "IsTypeOfValid", """
+      object :bar do
+        is_type_of fn _, _ -> true end
+      end
+      """
+    end
+    it "cannot be toplevel" do
+      assert_notation_error "IsTypeOfToplevelInvalid", """
+      is_type_of fn _, _ -> true end
+      """, "Invalid schema notation: `is_type_of` must only be used within `object`"
+    end
+    it "cannot be within interface" do
+      assert_notation_error "IsTypeOfInterfaceInvalid", """
+      interface :foo do
+        is_type_of fn _, _ -> :bar end
+      end
+      """, "Invalid schema notation: `is_type_of` must only be used within `object`"
     end
   end
 
   describe "object" do
-    it "can be under query or mutation or subscription as a type" do
+    it "can be toplevel" do
+      assert_no_notation_error "ObjectValid", """
+      object :foo do
+      end
+      """
+    end
+    it "cannot be non-toplevel" do
+      assert_notation_error "ObjectInvalid", """
+      object :foo do
+        object :bar do
+        end
+      end
+      """, "Invalid schema notation: `object` must only be used toplevel"
     end
   end
 
   describe "on" do
     it "can be under directive as an attribute" do
+      assert_no_notation_error "OnValid", """
+      directive :foo do
+        on [Foo, Bar]
+      end
+      """
+    end
+    it "cannot be toplevel" do
+      assert_notation_error "OnInvalid", """
+      on [Foo, Bar]
+      """, "Invalid schema notation: `on` must only be used within `directive`"
     end
   end
 
   describe "parse" do
     it "can be under scalar as an attribute" do
+      assert_no_notation_error "ParseValid", """
+      scalar :foo do
+        parse &(&1)
+      end
+      """
+    end
+    it "cannot be toplevel" do
+      assert_notation_error "ParseInvalid", """
+      parse &(&1)
+      """, "Invalid schema notation: `parse` must only be used within `scalar`"
     end
   end
 
   describe "resolve" do
     it "can be under field as an attribute" do
+      assert_no_notation_error "ResolveValid", """
+      object :bar do
+        field :foo do
+          resolve fn _, _, _ -> {:ok, 1} end
+        end
+      end
+      """
+    end
+    it "cannot be toplevel" do
+      assert_notation_error "ResolveInvalid", """
+      resolve fn _, _ -> {:ok, 1} end
+      """, "Invalid schema notation: `resolve` must only be used within `field`"
+    end
+    it "cannot be within object" do
+      assert_notation_error "ResolveInvalid2", """
+      object :foo do
+        resolve fn _, _ -> {:ok, 1} end
+      end
+      """, "Invalid schema notation: `resolve` must only be used within `field`"
     end
   end
 
   describe "resolve_type" do
-    it "can be under interface or union as an attribute" do
+    it "can be under interface as an attribute" do
+      assert_no_notation_error "ResolveTypeValidInterface", """
+      interface :bar do
+        resolve_type fn _, _ -> :baz end
+      end
+      """
+    end
+    it "can be under union as an attribute" do
+      assert_no_notation_error "ResolveTypeValidUnion", """
+        union :bar do
+          resolve_type fn _, _ -> :baz end
+        end
+      """
+    end
+    it "cannot be toplevel" do
+      assert_notation_error "ResolveTypeInvalidToplevel", """
+      resolve_type fn _, _ -> :bar end
+      """, "Invalid schema notation: `resolve_type` must only be used within `interface`, `union`"
+    end
+    it "cannot be within object" do
+      assert_notation_error "ResolveTypeInvalidObject", """
+      object :foo do
+        resolve_type fn _, _ -> :bar end
+      end
+      """, "Invalid schema notation: `resolve_type` must only be used within `interface`, `union`"
     end
   end
 
   describe "scalar" do
     it "can be toplevel" do
+      assert_no_notation_error "ScalarValid", """
+      scalar :foo do
+      end
+      """
+    end
+    it "cannot be non-toplevel" do
+      assert_notation_error "ScalarInvalid", """
+      scalar :foo do
+        scalar :bar do
+        end
+      end
+      """, "Invalid schema notation: `scalar` must only be used toplevel"
     end
   end
 
   describe "serialize" do
     it "can be under scalar as an attribute" do
+      assert_no_notation_error "SerializeValid", """
+      scalar :foo do
+        serialize &(&1)
+      end
+      """
+    end
+    it "cannot be toplevel" do
+      assert_notation_error "SerializeInvalid", """
+      serialize &(&1)
+      """, "Invalid schema notation: `serialize` must only be used within `scalar`"
     end
   end
 
@@ -125,7 +380,7 @@ defmodule Absinthe.Schema.NotationTest do
   ```
   """
   def assert_notation_error(name, text, message) do
-    err = assert_raise(Absinthe.Schema.Notation.Error, message, fn ->
+    assert_raise(Absinthe.Schema.Notation.Error, message, fn ->
       """
       defmodule MyTestSchema.#{name} do
         use Absinthe.Schema

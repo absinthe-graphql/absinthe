@@ -48,7 +48,7 @@ defmodule Absinthe.Type.Union do
 
   defstruct name: nil, description: nil, resolve_type: nil, types: [], __reference__: nil
 
-  def build(identifier, attrs) do
+  def build(_identifier, attrs) do
     quote do: %unquote(__MODULE__){unquote_splicing(attrs)}
   end
 
