@@ -1,5 +1,109 @@
 # Changelog
 
+## v1.0.0
+
+Our v1.0.0 release offers an entirely new way of build schemas. This new
+approach uses macros -- to simplify the visual complexity of schemas, provide
+more comprehensive feedback on correctness, and increase performance, since we
+can now execute any necessary checks and transformations during compilation.
+
+## Type Definitions
+
+Here's an example of an object definition in the _old_ notation style:
+
+```elixir
+@absinthe :type
+def car do
+  %Absinthe.Type.Object{
+    description: "A car",
+    fields: fields(
+      picture_url: [
+        type: :string,
+        description: "Photo URL"
+        args: args(
+          size: [
+            type: non_null(:string),
+            description: "The size of the photo"
+          ]
+        ),
+        resolve: fn %{size: size}, %{source: car} ->
+          {:ok, "http://images.example.com/cars/#{car.id}-#{size}.jpg"}
+        end
+      ]
+    )
+  }
+end
+```
+
+Here it is in the new style:
+
+```elixir
+@desc "A car"
+object :car do
+
+  @desc "Photo URL"
+  field :picture_url, :string do
+
+    @desc "The size of the photo"
+    arg :size, non_null(:string)
+
+    resolve fn %{size: size}, %{source: car} ->
+      {:ok, "http://images.example.com/cars/#{car.id}-#{size}.jpg"}
+    end
+
+  end
+
+end
+```
+
+In general, attributes of types are now available as nested macros
+(eg, `resolve` above), and attributes that are plural have a singular form
+(eg, previously you passed a `:fields` value and used a `fields/1` convenience
+function; now you use the singular `field` macro to define each individual
+field).
+
+## Type Modules
+
+In the past, this is how you would import types from another module:
+
+```elixir
+defmodule Types do
+  use Absinthe.Type.Definitions
+
+  # ...
+end
+
+defmodule Schema do
+  use Absinthe.Schema, type_modules: [Types]
+
+  # ...
+end
+```
+
+This is how it is done now:
+
+```elixir
+defmodule Types do
+  use Absinthe.Schema.Notation
+
+  # ...
+end
+
+defmodule Schema do
+  use Absinthe.Schema
+
+  import_types Types
+
+  # ...
+end
+```
+
+## More Information
+
+Since much of the moving parts have been changed, please read through the
+documentation generally -- and recommend any specific instructions that you
+think make sense to be included in the changelog.
+
 ## v0.5.0
 
 The following changes are required if you're upgrading from the previous version:
