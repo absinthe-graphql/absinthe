@@ -76,24 +76,9 @@ defmodule Absinthe.Type.Interface do
   @type t :: %{name: binary, description: binary, fields: map, resolve_type: ((any, Absinthe.Execution.t) -> atom | nil), __reference__: Type.Reference.t}
   defstruct name: nil, description: nil, fields: nil, resolve_type: nil, __reference__: nil
 
-  def build(identifier, blueprint) do
-    fields = Type.Field.build_map_ast(blueprint[:fields] || [])
-    quote do
-      %unquote(__MODULE__){
-        name: unquote(blueprint[:name]),
-        fields: unquote(fields),
-        resolve_type: unquote(blueprint[:resolve_type]),
-        description: unquote(blueprint[:description]),
-        __reference__: %{
-          module: __MODULE__,
-          identifier: unquote(identifier),
-          location: %{
-            file: __ENV__.file,
-            line: __ENV__.line
-          }
-        }
-      }
-    end
+  def build(%{attrs: attrs}) do
+    fields = Type.Field.build(attrs[:fields] || [])
+    quote do: %unquote(__MODULE__){unquote_splicing(attrs), field: unquote(fields)}
   end
 
   @spec resolve_type(Type.Interface.t, any, Execution.Field.t) :: Type.t | nil

@@ -38,8 +38,8 @@ defmodule Absinthe.Type.Scalar do
   use Absinthe.Introspection.Kind
   use Absinthe.Type.Definitions
 
-  def build(_identifier, blueprint) do
-    quote do: %unquote(__MODULE__){unquote_splicing(blueprint)}
+  def build(%{attrs: attrs}) do
+    quote do: %unquote(__MODULE__){unquote_splicing(attrs)}
   end
 
   def serialize(%{serialize: serializer}, value) do

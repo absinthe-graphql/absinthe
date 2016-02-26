@@ -48,7 +48,7 @@ defmodule Absinthe.Type.Argument do
     {:%{}, [], [name: "bar", type: :integer]}]}]}
   ```
   """
-  def build_map_ast(args) do
+  def build(args) when is_list(args) do
     ast = for {arg_name, arg_attrs} <- args do
       name = arg_name |> Atom.to_string
       arg_data = [name: name] ++ arg_attrs

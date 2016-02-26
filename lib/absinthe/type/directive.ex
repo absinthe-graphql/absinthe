@@ -24,41 +24,9 @@ defmodule Absinthe.Type.Directive do
   @type t :: %{name: binary, description: binary, args: map, on: [atom], instruction: ((map) -> atom), __reference__: Type.Reference.t}
   defstruct name: nil, description: nil, args: nil, on: [], instruction: nil, __reference__: nil
 
-
-  def build(identifier, blueprint) do
-    args = args_ast(blueprint[:args] || [])
-    quote do
-      %unquote(__MODULE__){
-        name: unquote(blueprint[:name]),
-        args: unquote(args),
-        description: unquote(blueprint[:description]),
-        on: unquote(blueprint[:on] || []),
-        instruction: unquote(blueprint[:instruction]),
-        __reference__: %{
-          module: __MODULE__,
-          identifier: unquote(identifier),
-          location: %{
-            file: __ENV__.file,
-            line: __ENV__.line
-          }
-        }
-      }
-    end
-  end
-
-  defp args_ast(args) do
-    ast = for {arg_name, arg_attrs} <- args do
-      name = arg_name |> Atom.to_string |> Utils.camelize(lower: true)
-      arg_data = [name: name] ++ arg_attrs
-      arg_ast = quote do
-        %Absinthe.Type.Argument{
-          unquote_splicing(arg_data)
-        }
-      end
-      {arg_name, arg_ast}
-    end
-
-    quote do: %{unquote_splicing(ast)}
+  def build(%{attrs: attrs}) do
+    args = Type.Argument.build(attrs[:args] || [])
+    quote do: %unquote(__MODULE__){unquote_splicing(attrs), args: unquote(args)}
   end
 
   # Whether the directive is active in `place`

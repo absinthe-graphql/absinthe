@@ -84,23 +84,9 @@ defmodule Absinthe.Type.Enum do
   defstruct name: nil, description: nil, values: %{}, __reference__: nil
 
 
-  def build(identifier, blueprint) do
-    values = Type.Enum.Value.build_map_ast(blueprint[:values] || [])
-    quote do
-      %unquote(__MODULE__){
-        name: unquote(blueprint[:name]),
-        description: unquote(blueprint[:description]),
-        values: unquote(values),
-        __reference__: %{
-          module: __MODULE__,
-          identifier: unquote(identifier),
-          location: %{
-            file: __ENV__.file,
-            line: __ENV__.line
-          }
-        }
-      }
-    end
+  def build(%{attrs: attrs}) do
+    values = Type.Enum.Value.build(attrs[:values] || [])
+    quote do: %unquote(__MODULE__){unquote_splicing(attrs), values: unquote(values)}
   end
 
   # Get the internal representation of an enum value

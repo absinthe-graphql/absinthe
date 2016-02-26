@@ -2,54 +2,17 @@ defmodule Absinthe.Schema.Notation do
   alias Absinthe.Utils
   alias Absinthe.Type
   alias Absinthe.Schema.Notation.Scope
+  alias Absinthe.Schema.Notation.Definition
 
   defmacro __using__(_opts) do
     quote do
       import unquote(__MODULE__), only: :macros
-      Module.register_attribute __MODULE__, :absinthe_errors, accumulate: true
-      Module.register_attribute __MODULE__, :absinthe_types, accumulate: true
-      Module.register_attribute __MODULE__, :absinthe_directives, accumulate: true
-      Module.register_attribute __MODULE__, :absinthe_exports, accumulate: true
-      Module.register_attribute __MODULE__, :absinthe_interface_implementors, accumulate: true
-      @before_compile unquote(__MODULE__)
-    end
-  end
-
-  defmacro __before_compile__(_env) do
-    quote do
-
-      def __absinthe_type__(_), do: nil
-
-      @absinthe_type_map Enum.into(@absinthe_types, %{})
-      def __absinthe_types__, do: @absinthe_type_map
-
-      def __absinthe_directive__(_), do: nil
-
-      @absinthe_directive_map Enum.into(@absinthe_directives, %{})
-      def __absinthe_directives__, do: @absinthe_directive_map
-
-      def __absinthe_errors__, do: @absinthe_errors
-
-      @absinthe_interface_implementors_map Enum.reduce(@absinthe_interface_implementors, %{}, fn
-        {iface, obj_ident}, acc ->
-          update_in(acc, [iface], fn
-            nil ->
-              [obj_ident]
-            impls ->
-              [obj_ident | impls]
-          end)
-      end)
-      def __absinthe_interface_implementors__ do
-        @absinthe_interface_implementors_map
-      end
-      def __absinthe_exports__, do: @absinthe_exports
-
+      Module.register_attribute __MODULE__, :absinthe_definitions, accumulate: true
+      @before_compile unquote(__MODULE__).Writer
     end
   end
 
   Module.register_attribute(__MODULE__, :placement, accumulate: true)
-
-  @opaque quoted_t :: term
 
   # OBJECT
 
@@ -382,20 +345,18 @@ defmodule Absinthe.Schema.Notation do
   defmacro import_types(type_module_ast, opts_ast \\ []) do
     opts = Macro.expand(opts_ast, __CALLER__)
     type_module = Macro.expand(type_module_ast, __CALLER__)
-    types = for {ident, _} = naming <- type_module.__absinthe_types__, into: [] do
+    types = for {ident, name} = naming <- type_module.__absinthe_types__, into: [] do
       if Enum.member?(type_module.__absinthe_exports__, ident) do
-        ast = quote do
-          unquote(type_module).__absinthe_type__(unquote(ident))
+        quote bind_quoted: [type_module: type_module, ident: ident, name: name] do
+          @absinthe_definitions %Absinthe.Schema.Notation.Definition{category: :type, source: type_module, identifier: ident, attrs: [name: name], file: __ENV__.file, line: __ENV__.line}
         end
-        type_definition(naming, ast, opts)
       end
     end
     directives = for {ident, name} <- type_module.__absinthe_directives__, into: [] do
       if Enum.member?(type_module.__absinthe_exports__, ident) do
-        ast = quote do
-          unquote(type_module).__absinthe_directive__(unquote(ident))
+        quote bind_quoted: [type_module: type_module, ident: ident, name: name] do
+          @absinthe_definitions %Absinthe.Schema.Notation.Definition{category: :directive, source: type_module, identifier: ident, attrs: [name: name], file: __ENV__.file, line: __ENV__.line}
         end
-        directive_definition({ident, name}, ast, opts)
       end
     end
     types ++ directives
@@ -468,16 +429,16 @@ defmodule Absinthe.Schema.Notation do
   # scope, setting any provided attributes.
   defp open_scope(kind, mod, identifier, raw_attrs) do
     attrs = prepare_attrs(raw_attrs)
-    quote bind_quoted: [kind: kind, identifier: identifier, mod: mod, attrs: attrs, notation: __MODULE__] do
-      notation.check_placement!(mod, kind)
-      Scope.open(
-        kind,
-        mod,
-        attrs
-        |> notation.add_description_from_module_attribute(mod)
-        |> notation.add_reference(__ENV__, identifier)
-      )
+    quote bind_quoted: [kind: kind, identifier: identifier, attrs: attrs, notation: __MODULE__] do
+      notation.check_placement!(__MODULE__, kind)
+      Scope.open(kind, __MODULE__, notation.open_scope_attrs(attrs, identifier, __ENV__))
     end
+  end
+
+  def open_scope_attrs(attrs, identifier, env) do
+    attrs
+    |> add_description_from_module_attribute(env.module)
+    |> add_reference(env, identifier)
   end
 
   # CLOSE SCOPE HOOKS
@@ -522,33 +483,26 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
+  def close_scope_with_name(mod, identifier, opts \\ []) do
+    Scope.close(mod).attrs
+    |> add_name(identifier, opts)
+  end
+
   defp close_scope_and_define_directive(mod, identifier, def_opts \\ []) do
-    scope_module = __MODULE__.Scope
-    quote bind_quoted: [mod: mod, identifier: identifier, notation: __MODULE__, scopes: scope_module, def_opts: def_opts] do
-      attrs = scopes.close(mod).attrs |> notation.add_name(identifier)
-      struct_ast = Absinthe.Type.Directive.build(identifier, attrs)
-      Module.eval_quoted(__ENV__, [
-        notation.directive_definition({identifier, attrs[:name]}, struct_ast, def_opts)
-      ])
+    quote bind_quoted: [identifier: identifier, notation: __MODULE__, scopes: Scope, def_opts: def_opts] do
+      @absinthe_definitions %Absinthe.Schema.Notation.Definition{category: :directive, builder: Absinthe.Type.Directive, identifier: identifier, attrs: notation.close_scope_with_name(__MODULE__, identifier), opts: def_opts, file: __ENV__.file, line: __ENV__.line}
     end
   end
 
   defp close_scope_and_define_type(type_module, mod, identifier, def_opts \\ []) do
-    quote bind_quoted: [type_module: type_module, mod: mod, identifier: identifier, notation: __MODULE__, scopes: __MODULE__.Scope, def_opts: def_opts] do
-      attrs = scopes.close(mod).attrs |> notation.add_name(identifier, title: true)
-      struct_ast = type_module.build(identifier, attrs)
-      Module.eval_quoted(__ENV__, [
-        notation.type_definition({identifier, attrs[:name]}, struct_ast, def_opts),
-        (if attrs[:interfaces], do: notation.register_interface_implementor(identifier, attrs[:interfaces]))
-      ])
+    quote bind_quoted: [type_module: type_module, identifier: identifier, notation: __MODULE__, scopes: Scope, def_opts: def_opts] do
+      @absinthe_definitions %Absinthe.Schema.Notation.Definition{category: :type, builder: type_module, identifier: identifier, attrs: notation.close_scope_with_name(__MODULE__, identifier, title: true), opts: def_opts, file: __ENV__.file, line: __ENV__.line}
     end
   end
 
   defp close_scope_and_accumulate_attribute(attr_name, mod, identifier) do
-    scope_module = __MODULE__.Scope
-    quote bind_quoted: [attr_name: attr_name, mod: mod, identifier: identifier, notation: __MODULE__, scopes: scope_module] do
-      attrs = scopes.close(mod).attrs |> notation.add_name(identifier)
-      scopes.put_attribute(mod, attr_name, {identifier, attrs}, accumulate: true)
+    quote bind_quoted: [attr_name: attr_name, identifier: identifier, notation: __MODULE__, scopes: Scope] do
+      scopes.put_attribute(__MODULE__, attr_name, {identifier, notation.close_scope_with_name(__MODULE__, identifier)}, accumulate: true)
     end
   end
 
@@ -571,85 +525,6 @@ defmodule Absinthe.Schema.Notation do
   end
   defp default_name(_, name, _) do
     name
-  end
-
-  @doc false
-  # Register a type identifier as implementing a set of interfaces
-  def register_interface_implementor(identifier, interfaces) do
-    interfaces
-    |> Enum.map(fn
-      iface ->
-        quote do
-          @absinthe_interface_implementors {unquote(iface), unquote(identifier)}
-        end
-    end)
-  end
-
-  @doc false
-  # Build the type definition (or register errors) for a given type
-  def type_definition({identifier, name}, ast, opts \\ []) do
-    quote do
-      type_status = {
-        Keyword.has_key?(@absinthe_types, unquote(identifier)),
-        Enum.member?(Keyword.values(@absinthe_types), unquote(name))
-      }
-      if match?({true, _}, type_status) do
-        @absinthe_errors %{
-          rule: Absinthe.Schema.Rule.TypeNamesAreUnique,
-          location: %{file: __ENV__.file, line: __ENV__.line},
-          data: %{artifact: "Absinthe type identifier", value: unquote(identifier)}
-        }
-      end
-      if match?({_, true}, type_status) do
-        @absinthe_errors %{
-          rule: Absinthe.Schema.Rule.TypeNamesAreUnique,
-          location: %{file: __ENV__.file, line: __ENV__.line},
-          data: %{artifact: "Type name", value: unquote(name)}
-        }
-      end
-      if match?({false, false}, type_status) do
-        @absinthe_types {unquote(identifier), unquote(name)}
-        if Keyword.get(unquote(opts), :export, true) do
-          @absinthe_exports unquote(identifier)
-        end
-        def __absinthe_type__(unquote(name)) do
-          unquote(ast)
-        end
-        def __absinthe_type__(unquote(identifier)) do
-          unquote(ast)
-        end
-      end
-    end
-  end
-
-  @doc false
-  # Build the type definition (or register errors) for a given directive
-  def directive_definition({identifier, name}, ast, opts \\ []) do
-    quote do
-      directive_status = {
-        Keyword.has_key?(@absinthe_directives, unquote(identifier)),
-        Enum.member?(Keyword.values(@absinthe_directives), unquote(name))
-      }
-      if match?({true, _}, directive_status) do
-        @absinthe_errors %{
-          rule: Absinthe.Schema.Rule.TypeNamesAreUnique,
-          location: %{file: __ENV__.file, line: __ENV__.line},
-          data: %{artifact: "Absinthe directive identifier", value: unquote(identifier)}
-        }
-      end
-      if match?({false, false}, directive_status) do
-        @absinthe_directives {unquote(identifier), unquote(name)}
-        if Keyword.get(unquote(opts), :export, true) do
-          @absinthe_exports unquote(identifier)
-        end
-        def __absinthe_directive__(unquote(name)) do
-          unquote(ast)
-        end
-        def __absinthe_directive__(unquote(identifier)) do
-          unquote(ast)
-        end
-      end
-    end
   end
 
   @doc false

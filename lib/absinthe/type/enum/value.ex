@@ -27,8 +27,8 @@ defmodule Absinthe.Type.Enum.Value do
   @type t :: %{name: binary, description: binary, value: any, deprecation: Type.Deprecation.t | nil, __reference__: Type.Reference.t}
   defstruct name: nil, description: nil, value: nil, deprecation: nil, __reference__: nil
 
-  @spec build_map_ast(Keyword.t) :: %{atom => Absinthe.Type.Enum.Value.t}
-  def build_map_ast(raw_values) do
+  @spec build(Keyword.t) :: %{atom => Absinthe.Type.Enum.Value.t}
+  def build(raw_values) when is_list(raw_values) do
     ast = for {value_name, value_attrs} <- normalize(raw_values) do
       name = value_name |> Atom.to_string
       value_data = [name: name] ++ Keyword.put_new(value_attrs, :value, value_name)

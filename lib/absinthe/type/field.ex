@@ -122,8 +122,8 @@ defmodule Absinthe.Type.Field do
       {:%{}, [], [name: "Bar", type: :integer]}]}]}
   ```
   """
-  @spec build_map_ast(Keyword.t) :: tuple
-  def build_map_ast(fields) do
+  @spec build(Keyword.t) :: tuple
+  def build(fields) when is_list(fields) do
     quoted_empty_map = quote do: %{}
     ast = for {field_name, field_attrs} <- fields do
       name = field_name |> Atom.to_string
