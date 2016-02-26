@@ -48,6 +48,9 @@ defmodule Absinthe.Adapter.LanguageConventions do
   def to_internal_name("__" <> camelized_name, role) do
     "__" <> to_internal_name(camelized_name, role)
   end
+  def to_internal_name(camelized_name, :operation) do
+    camelized_name
+  end
   def to_internal_name(camelized_name, _role) do
     camelized_name
     |> Macro.underscore
