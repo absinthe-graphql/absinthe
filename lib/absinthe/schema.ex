@@ -142,30 +142,30 @@ defmodule Absinthe.Schema do
   defmacro query(raw_attrs, [do: block]) do
     attrs = raw_attrs
     |> Keyword.put_new(:name, @default_query_name)
-    Absinthe.Schema.Notation.__scope__(__CALLER__, :object, :query, attrs, block)
+    Absinthe.Schema.Notation.scope(__CALLER__, :object, :query, attrs, block)
   end
   defmacro query([do: block]) do
-    Absinthe.Schema.Notation.__scope__(__CALLER__, :object, :query, [name: @default_query_name], block)
+    Absinthe.Schema.Notation.scope(__CALLER__, :object, :query, [name: @default_query_name], block)
   end
 
   @default_mutation_name "RootMutationType"
   defmacro mutation(raw_attrs, [do: block]) do
     attrs = raw_attrs
     |> Keyword.put_new(:name, @default_mutation_name)
-    Absinthe.Schema.Notation.__scope__(__CALLER__, :object, :mutation, attrs, block)
+    Absinthe.Schema.Notation.scope(__CALLER__, :object, :mutation, attrs, block)
   end
   defmacro mutation([do: block]) do
-    Absinthe.Schema.Notation.__scope__(__CALLER__, :object, :mutation, [name: @default_mutation_name], block)
+    Absinthe.Schema.Notation.scope(__CALLER__, :object, :mutation, [name: @default_mutation_name], block)
   end
 
   @default_subscription_name "RootSubscriptionType"
   defmacro subscription(raw_attrs, [do: block]) do
     attrs = raw_attrs
     |> Keyword.put_new(:name, @default_subscription_name)
-    Absinthe.Schema.Notation.__scope__(__CALLER__, :object, :subscription, attrs, block)
+    Absinthe.Schema.Notation.scope(__CALLER__, :object, :subscription, attrs, block)
   end
   defmacro subscription([do: block]) do
-    Absinthe.Schema.Notation.__scope__(__CALLER__, :object, :subscription, [name: @default_subscription_name], block)
+    Absinthe.Schema.Notation.scope(__CALLER__, :object, :subscription, [name: @default_subscription_name], block)
   end
 
   # Lookup a directive that in used by/available to a schema
