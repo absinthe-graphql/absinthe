@@ -23,7 +23,7 @@ defmodule Absinthe.Type.InputObjectTest do
   describe "input object" do
 
     it "can be defined" do
-      %Absinthe.Type.InputObject{name: "Profile", description: "A profile"} = TestSchema.__absinthe_type__(:profile)
+      assert %Absinthe.Type.InputObject{name: "Profile", description: "A profile"} = TestSchema.__absinthe_type__(:profile)
       assert %{profile: "Profile"} = TestSchema.__absinthe_types__
     end
 

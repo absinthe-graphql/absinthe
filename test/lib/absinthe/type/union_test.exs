@@ -35,7 +35,7 @@ defmodule Absinthe.Type.UnionTest do
 
     it "can be defined" do
       obj = TestSchema.__absinthe_type__(:search_result)
-      %Absinthe.Type.Union{name: "SearchResult", description: "A search result", types: [:person, :business]} = obj
+      assert %Absinthe.Type.Union{name: "SearchResult", description: "A search result", types: [:person, :business]} = obj
       assert obj.resolve_type
     end
 

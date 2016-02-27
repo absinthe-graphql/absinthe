@@ -58,7 +58,7 @@ defmodule Absinthe.Type.InterfaceTest do
 
     it "can be defined" do
       obj = TestSchema.__absinthe_type__(:named)
-      %Absinthe.Type.Interface{name: "Named", description: "An interface"} = obj
+      assert %Absinthe.Type.Interface{name: "Named", description: "An interface"} = obj
       assert obj.resolve_type
     end
 
