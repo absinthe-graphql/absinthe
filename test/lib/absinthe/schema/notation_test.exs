@@ -366,6 +366,21 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
+  describe "description" do
+    it "can be under object as an attribute" do
+      assert_no_notation_error "DescriptionValid", """
+      object :item do
+        description \"""
+        Here's a description
+        \"""
+      end
+      """
+    end
+    it "cannot be toplevel" do
+      assert_notation_error "DescriptionInvalid", ~s(description "test"), "Invalid schema notation: `description` must not be used toplevel"
+    end
+  end
+
   @doc """
   Assert a notation error occurs.
 
