@@ -152,7 +152,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro resolve_type(func_ast) do
     env = __CALLER__
     check_placement!(env.module, :resolve_type)
-    Scope.put_attribute(env.module, :resolve_type, Macro.escape(func_ast))
+    Scope.put_attribute(env.module, :resolve_type, func_ast)
     []
   end
 
@@ -185,7 +185,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro resolve(func_ast) do
     env = __CALLER__
     check_placement!(env.module, :resolve)
-    Scope.put_attribute(env.module, :resolve, Macro.escape(func_ast))
+    Scope.put_attribute(env.module, :resolve, func_ast)
     []
   end
 
@@ -193,7 +193,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro is_type_of(func_ast) do
     env = __CALLER__
     check_placement!(env.module, :is_type_of)
-    Scope.put_attribute(env.module, :is_type_of, Macro.escape(func_ast))
+    Scope.put_attribute(env.module, :is_type_of, func_ast)
     []
   end
 
@@ -227,7 +227,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro serialize(func_ast) do
     env = __CALLER__
     check_placement!(env.module, :serialize)
-    Scope.put_attribute(env.module, :serialize, Macro.escape(func_ast))
+    Scope.put_attribute(env.module, :serialize, func_ast)
     []
   end
 
@@ -235,7 +235,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro parse(func_ast) do
     env = __CALLER__
     check_placement!(env.module, :parse)
-    Scope.put_attribute(env.module, :parse, Macro.escape(func_ast))
+    Scope.put_attribute(env.module, :parse, func_ast)
     []
   end
 
@@ -277,7 +277,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro instruction(func_ast) do
     env = __CALLER__
     check_placement!(env.module, :instruction)
-    Scope.put_attribute(env.module, :instruction, Macro.escape(func_ast))
+    Scope.put_attribute(env.module, :instruction, func_ast)
     []
   end
 
@@ -396,12 +396,6 @@ defmodule Absinthe.Schema.Notation do
 
   # NOTATION UTILITIES
 
-  # Escape attributes for insertion into a quote
-  defp prepare_attrs(attrs_ast) do
-    attrs_ast
-    |> Macro.escape
-  end
-
   @doc false
   # Define a notation scope that will accept attributes
   def scope(env, kind, identifier, attrs, block) do
@@ -454,8 +448,7 @@ defmodule Absinthe.Schema.Notation do
 
   # After verifying it is valid in the current context, open a new notation
   # scope, setting any provided attributes.
-  defp open_scope(kind, env, identifier, raw_attrs) do
-    attrs = prepare_attrs(raw_attrs)
+  defp open_scope(kind, env, identifier, attrs) do
     check_placement!(env.module, kind)
     Scope.open(kind, env.module, open_scope_attrs(attrs, identifier, env))
   end

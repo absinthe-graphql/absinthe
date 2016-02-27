@@ -94,18 +94,18 @@ defmodule Absinthe.Schema.Notation.Writer do
       end,
       info.type_functions,
       quote do
-        def __absinthe_type_(_), do: nil
+        def __absinthe_type__(_), do: nil
       end,
       quote do
         def __absinthe_directives__, do: unquote(directive_map)
       end,
       info.directive_functions,
       quote do
-        def __absinthe_directive_(_), do: nil
+        def __absinthe_directive__(_), do: nil
       end,
       quote do
         def __absinthe_errors__, do: unquote(errors)
-        def __absinthe_interface_implementors, do: unquote(implementors)
+        def __absinthe_interface_implementors__, do: unquote(implementors)
         def __absinthe_exports__, do: unquote(exports)
       end
     ]
