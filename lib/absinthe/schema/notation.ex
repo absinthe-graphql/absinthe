@@ -65,10 +65,10 @@ defmodule Absinthe.Schema.Notation do
   """
   @placement {:interfaces, [under: :object]}
   defmacro interfaces(ifaces) when is_list(ifaces) do
-    quote bind_quoted: [notation: __MODULE__, ifaces: ifaces] do
-      notation.check_placement!(__MODULE__, :interfaces)
-      Scope.put_attribute(__MODULE__, :interfaces, ifaces)
-    end
+    env = __CALLER__
+    check_placement!(env.module, :interfaces)
+    Scope.put_attribute(env.module, :interfaces, ifaces)
+    []
   end
 
   @doc """
@@ -90,15 +90,10 @@ defmodule Absinthe.Schema.Notation do
   """
   @placement {:interface_attribute, [under: :object]}
   defmacro interface(identifier) do
-    quote bind_quoted: [notation: __MODULE__, identifier: identifier] do
-      notation.check_placement!(__MODULE__, :interface_attribute, as: "`interface` (as an attribute)")
-      Scope.put_attribute(
-        __MODULE__,
-        :interfaces,
-        identifier,
-        accumulate: true
-      )
-    end
+    env = __CALLER__
+    check_placement!(env.module, :interface_attribute, as: "`interface` (as an attribute)")
+    Scope.put_attribute(env.module, :interfaces, identifier, accumulate: true)
+    []
   end
 
   # INTERFACES
@@ -155,10 +150,10 @@ defmodule Absinthe.Schema.Notation do
   """
   @placement {:resolve_type, [under: [:interface, :union]]}
   defmacro resolve_type(func_ast) do
-    quote bind_quoted: [notation: __MODULE__, func: Macro.escape(func_ast)] do
-      notation.check_placement!(__MODULE__, :resolve_type)
-      Scope.put_attribute(__MODULE__, :resolve_type, func)
-    end
+    env = __CALLER__
+    check_placement!(env.module, :resolve_type)
+    Scope.put_attribute(env.module, :resolve_type, Macro.escape(func_ast))
+    []
   end
 
   # FIELDS
@@ -173,7 +168,6 @@ defmodule Absinthe.Schema.Notation do
   defmacro field(identifier, type) do
     scope(__CALLER__, :field, identifier, [type: type], nil)
   end
-
   defmacro field(identifier, attrs, [do: block]) when is_list(attrs) do
     scope(__CALLER__, :field, identifier, attrs, block)
   end
@@ -189,18 +183,18 @@ defmodule Absinthe.Schema.Notation do
 
   @placement {:resolve, [under: [:field]]}
   defmacro resolve(func_ast) do
-    quote bind_quoted: [notation: __MODULE__, func: Macro.escape(func_ast)] do
-      notation.check_placement!(__MODULE__, :resolve)
-      Scope.put_attribute(__MODULE__, :resolve, func)
-    end
+    env = __CALLER__
+    check_placement!(env.module, :resolve)
+    Scope.put_attribute(env.module, :resolve, Macro.escape(func_ast))
+    []
   end
 
   @placement {:is_type_of, [under: [:object]]}
   defmacro is_type_of(func_ast) do
-    quote bind_quoted: [notation: __MODULE__, func: Macro.escape(func_ast)] do
-      notation.check_placement!(__MODULE__, :is_type_of)
-      Scope.put_attribute(__MODULE__, :is_type_of, func)
-    end
+    env = __CALLER__
+    check_placement!(env.module, :is_type_of)
+    Scope.put_attribute(env.module, :is_type_of, Macro.escape(func_ast))
+    []
   end
 
   # ARGS
@@ -231,18 +225,18 @@ defmodule Absinthe.Schema.Notation do
 
   @placement {:serialize, [under: [:scalar]]}
   defmacro serialize(func_ast) do
-    quote bind_quoted: [notation: __MODULE__, func: Macro.escape(func_ast)] do
-      notation.check_placement!(__MODULE__, :serialize)
-      Scope.put_attribute(__MODULE__, :serialize, func)
-    end
+    env = __CALLER__
+    check_placement!(env.module, :serialize)
+    Scope.put_attribute(env.module, :serialize, Macro.escape(func_ast))
+    []
   end
 
   @placement {:parse, [under: [:scalar]]}
   defmacro parse(func_ast) do
-    quote bind_quoted: [notation: __MODULE__, func: Macro.escape(func_ast)] do
-      notation.check_placement!(__MODULE__, :parse)
-      Scope.put_attribute(__MODULE__, :parse, func)
-    end
+    env = __CALLER__
+    check_placement!(env.module, :parse)
+    Scope.put_attribute(env.module, :parse, Macro.escape(func_ast))
+    []
   end
 
   # DIRECTIVES
@@ -260,20 +254,20 @@ defmodule Absinthe.Schema.Notation do
   """
   @placement {:on, [under: :directive]}
   defmacro on(ast_node) do
-    quote bind_quoted: [ast_node: ast_node, notation: __MODULE__] do
-      notation.check_placement!(__MODULE__, :on)
-      ast_node
-      |> List.wrap
-      |> Enum.each(fn
-        value ->
-          Scope.put_attribute(
-            __MODULE__,
-            :on,
-            value,
-            accumulate: true
-          )
-      end)
-    end
+    env = __CALLER__
+    check_placement!(env.module, :on)
+    ast_node
+    |> List.wrap
+    |> Enum.each(fn
+      value ->
+        Scope.put_attribute(
+          env.module,
+          :on,
+          value,
+          accumulate: true
+        )
+    end)
+    []
   end
 
   @doc """
@@ -281,10 +275,10 @@ defmodule Absinthe.Schema.Notation do
   """
   @placement {:instruction, [under: :directive]}
   defmacro instruction(func_ast) do
-    quote bind_quoted: [notation: __MODULE__, func: Macro.escape(func_ast)] do
-      notation.check_placement!(__MODULE__, :instruction)
-      Scope.put_attribute(__MODULE__, :instruction, func)
-    end
+    env = __CALLER__
+    check_placement!(env.module, :instruction)
+    Scope.put_attribute(env.module, :instruction, Macro.escape(func_ast))
+    []
   end
 
   # INPUT OBJECTS
@@ -309,10 +303,10 @@ defmodule Absinthe.Schema.Notation do
 
   @placement {:types, [under: [:union]]}
   defmacro types(types) do
-    quote bind_quoted: [notation: __MODULE__, types: types] do
-      notation.check_placement!(__MODULE__, :types)
-      Scope.put_attribute(__MODULE__, :types, List.wrap(types))
-    end
+    env = __CALLER__
+    check_placement!(env.module, :types)
+    Scope.put_attribute(env.module, :types, List.wrap(types))
+    []
   end
 
   # ENUMS
@@ -330,36 +324,60 @@ defmodule Absinthe.Schema.Notation do
 
   @placement {:value, [under: [:enum]]}
   defmacro value(identifier, raw_attrs \\ []) do
+    env = __CALLER__
+    check_placement!(env.module, :value)
+
     attrs = raw_attrs
     |> Keyword.put(:value, Keyword.get(raw_attrs, :as, identifier))
     |> Keyword.delete(:as)
-    quote bind_quoted: [identifier: identifier, notation: __MODULE__, attrs: attrs] do
-      notation.check_placement!(__MODULE__, :value)
-      Scope.put_attribute(__MODULE__, :values, {identifier, attrs |> notation.add_description_from_module_attribute(__MODULE__)}, accumulate: true)
-    end
+    |> add_description_from_module_attribute(env.module)
+
+    env = __CALLER__
+    attrs |> add_description_from_module_attribute(env.module)
+    Scope.put_attribute(env.module, :values, {identifier, attrs}, accumulate: true)
+    []
   end
 
   # IMPORTS
 
   @placement {:import_types, [toplevel: true]}
   defmacro import_types(type_module_ast, opts_ast \\ []) do
-    opts = Macro.expand(opts_ast, __CALLER__)
-    type_module = Macro.expand(type_module_ast, __CALLER__)
-    types = for {ident, name} = naming <- type_module.__absinthe_types__, into: [] do
+    env = __CALLER__
+    opts = Macro.expand(opts_ast, env)
+    type_module = Macro.expand(type_module_ast, env)
+
+    for {ident, name} = naming <- type_module.__absinthe_types__ do
       if Enum.member?(type_module.__absinthe_exports__, ident) do
-        quote bind_quoted: [type_module: type_module, ident: ident, name: name] do
-          @absinthe_definitions %Absinthe.Schema.Notation.Definition{category: :type, source: type_module, identifier: ident, attrs: [name: name], file: __ENV__.file, line: __ENV__.line}
-        end
+        put_definition(env.module, %Absinthe.Schema.Notation.Definition{
+          category: :type,
+          source: type_module,
+          identifier: ident,
+          attrs: [name: name],
+          file: env.file,
+          line: env.line})
       end
     end
-    directives = for {ident, name} <- type_module.__absinthe_directives__, into: [] do
+
+    for {ident, name} <- type_module.__absinthe_directives__ do
       if Enum.member?(type_module.__absinthe_exports__, ident) do
-        quote bind_quoted: [type_module: type_module, ident: ident, name: name] do
-          @absinthe_definitions %Absinthe.Schema.Notation.Definition{category: :directive, source: type_module, identifier: ident, attrs: [name: name], file: __ENV__.file, line: __ENV__.line}
-        end
+        put_definition(env.module, %Absinthe.Schema.Notation.Definition{
+          category: :directive,
+          source: type_module,
+          identifier: ident,
+          attrs: [name: name],
+          file: env.file,
+          line: env.line})
       end
     end
-    types ++ directives
+
+    []
+  end
+
+  defp put_definition(module, definition) do
+    # Why is accumulate true not working here?
+    # does that only work with the @ form?
+    definitions = Module.get_attribute(module, :absinthe_definitions) || []
+    Module.put_attribute(module, :absinthe_definitions, [definition | definitions])
   end
 
   # TYPE UTILITIES
@@ -387,11 +405,20 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Define a notation scope that will accept attributes
   def scope(env, kind, identifier, attrs, block) do
-    [
-      open_scope(kind, env.module, identifier, attrs),
-      block,
-      close_scope(kind, env.module, identifier)
-    ]
+    open_scope(kind, env, identifier, attrs)
+
+    # this is probably too simple for now.
+    block |> expand(env)
+
+    close_scope(kind, env, identifier)
+    []
+  end
+
+  defp expand(ast, env) do
+    Macro.prewalk(ast, fn
+      {_, _, _} = node -> Macro.expand(node, env)
+      node -> node
+    end)
   end
 
   @doc false
@@ -427,12 +454,10 @@ defmodule Absinthe.Schema.Notation do
 
   # After verifying it is valid in the current context, open a new notation
   # scope, setting any provided attributes.
-  defp open_scope(kind, mod, identifier, raw_attrs) do
+  defp open_scope(kind, env, identifier, raw_attrs) do
     attrs = prepare_attrs(raw_attrs)
-    quote bind_quoted: [kind: kind, identifier: identifier, attrs: attrs, notation: __MODULE__] do
-      notation.check_placement!(__MODULE__, kind)
-      Scope.open(kind, __MODULE__, notation.open_scope_attrs(attrs, identifier, __ENV__))
-    end
+    check_placement!(env.module, kind)
+    Scope.open(kind, env.module, open_scope_attrs(attrs, identifier, env))
   end
 
   def open_scope_attrs(attrs, identifier, env) do
@@ -447,40 +472,38 @@ defmodule Absinthe.Schema.Notation do
 
   # Close the current scope and return the appropriate
   # quoted result for the type of operation.
-  defp close_scope(:enum, mod, identifier) do
-    close_scope_and_define_type(Type.Enum, mod, identifier)
+  defp close_scope(:enum, env, identifier) do
+    close_scope_and_define_type(Type.Enum, env, identifier)
   end
-  defp close_scope(:object, mod, identifier) do
+  defp close_scope(:object, env, identifier) do
     close_scope_and_define_type(
-      Type.Object, mod, identifier,
+      Type.Object, env, identifier,
       export: !Enum.member?(@unexported_identifiers, identifier)
     )
   end
-  defp close_scope(:interface, mod, identifier) do
-    close_scope_and_define_type(Type.Interface, mod, identifier)
+  defp close_scope(:interface, env, identifier) do
+    close_scope_and_define_type(Type.Interface, env, identifier)
   end
-  defp close_scope(:union, mod, identifier) do
-    close_scope_and_define_type(Type.Union, mod, identifier)
+  defp close_scope(:union, env, identifier) do
+    close_scope_and_define_type(Type.Union, env, identifier)
   end
-  defp close_scope(:input_object, mod, identifier) do
-    close_scope_and_define_type(Type.InputObject, mod, identifier)
+  defp close_scope(:input_object, env, identifier) do
+    close_scope_and_define_type(Type.InputObject, env, identifier)
   end
-  defp close_scope(:field, mod, identifier) do
-    close_scope_and_accumulate_attribute(:fields, mod, identifier)
+  defp close_scope(:field, env, identifier) do
+    close_scope_and_accumulate_attribute(:fields, env, identifier)
   end
-  defp close_scope(:arg, mod, identifier) do
-    close_scope_and_accumulate_attribute(:args, mod, identifier)
+  defp close_scope(:arg, env, identifier) do
+    close_scope_and_accumulate_attribute(:args, env, identifier)
   end
-  defp close_scope(:scalar, mod, identifier) do
-    close_scope_and_define_type(Type.Scalar, mod, identifier)
+  defp close_scope(:scalar, env, identifier) do
+    close_scope_and_define_type(Type.Scalar, env, identifier)
   end
-  defp close_scope(:directive, mod, identifier) do
-    close_scope_and_define_directive(mod, identifier)
+  defp close_scope(:directive, env, identifier) do
+    close_scope_and_define_directive(env, identifier)
   end
-  defp close_scope(_, mod, _) do
-    quote do
-      Scope.close(unquote(mod))
-    end
+  defp close_scope(_, env, _) do
+    Scope.close(env)
   end
 
   def close_scope_with_name(mod, identifier, opts \\ []) do
@@ -488,22 +511,35 @@ defmodule Absinthe.Schema.Notation do
     |> add_name(identifier, opts)
   end
 
-  defp close_scope_and_define_directive(mod, identifier, def_opts \\ []) do
-    quote bind_quoted: [identifier: identifier, notation: __MODULE__, scopes: Scope, def_opts: def_opts] do
-      @absinthe_definitions %Absinthe.Schema.Notation.Definition{category: :directive, builder: Absinthe.Type.Directive, identifier: identifier, attrs: notation.close_scope_with_name(__MODULE__, identifier), opts: def_opts, file: __ENV__.file, line: __ENV__.line}
-    end
+  defp close_scope_and_define_directive(env, identifier, def_opts \\ []) do
+    definition = %Absinthe.Schema.Notation.Definition{
+      category: :directive,
+      builder: Absinthe.Type.Directive,
+      identifier: identifier,
+      attrs: close_scope_with_name(env.module, identifier),
+      opts: def_opts,
+      file: env.file,
+      line: env.line
+    }
+    put_definition(env.module, definition)
   end
 
-  defp close_scope_and_define_type(type_module, mod, identifier, def_opts \\ []) do
-    quote bind_quoted: [type_module: type_module, identifier: identifier, notation: __MODULE__, scopes: Scope, def_opts: def_opts] do
-      @absinthe_definitions %Absinthe.Schema.Notation.Definition{category: :type, builder: type_module, identifier: identifier, attrs: notation.close_scope_with_name(__MODULE__, identifier, title: true), opts: def_opts, file: __ENV__.file, line: __ENV__.line}
-    end
+  defp close_scope_and_define_type(type_module, env, identifier, def_opts \\ []) do
+    attrs = close_scope_with_name(env.module, identifier, title: true)
+    definition = %Absinthe.Schema.Notation.Definition{
+      category: :type,
+      builder: type_module,
+      identifier: identifier,
+      attrs: attrs,
+      opts: def_opts,
+      file: env.file,
+      line: env.line
+    }
+    put_definition(env.module, definition)
   end
 
-  defp close_scope_and_accumulate_attribute(attr_name, mod, identifier) do
-    quote bind_quoted: [attr_name: attr_name, identifier: identifier, notation: __MODULE__, scopes: Scope] do
-      scopes.put_attribute(__MODULE__, attr_name, {identifier, notation.close_scope_with_name(__MODULE__, identifier)}, accumulate: true)
-    end
+  defp close_scope_and_accumulate_attribute(attr_name, env, identifier) do
+    Scope.put_attribute(env.module, attr_name, {identifier, close_scope_with_name(env.module, identifier)}, accumulate: true)
   end
 
   @doc false
