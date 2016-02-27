@@ -129,7 +129,7 @@ defmodule Absinthe.Type.Field do
       name = field_name |> Atom.to_string
       field_data = [name: name] ++ Keyword.update(field_attrs, :args, quoted_empty_map, fn
         args ->
-          Type.Argument.build_map_ast(args || [])
+          Type.Argument.build(args || [])
       end)
       field_ast = quote do: %Absinthe.Type.Field{unquote_splicing(field_data |> Absinthe.Type.Deprecation.from_attribute)}
       {field_name, field_ast}

@@ -2,17 +2,21 @@ defmodule Absinthe.Schema.Notation.Writer do
 
   defp type_functions(definition) do
     ast = build(:type, definition)
-    quote bind_quoted: [identifier: definition.identifier, name: definition.attrs[:name], ast: ast] do
-      def __absinthe_type__(identifier), do: ast
-      def __absinthe_type__(name), do: __absinthe_type__(identifier)
+    identifier = definition.identifier
+    name = definition.attrs[:name]
+    quote do
+      def __absinthe_type__(unquote(identifier)), do: unquote(ast)
+      def __absinthe_type__(unquote(name)), do: __absinthe_type__(unquote(identifier))
     end
   end
 
   defp directive_functions(definition) do
     ast = build(:directive, definition)
-    quote bind_quoted: [identifier: definition.identifier, name: definition.attrs[:name], ast: ast] do
-      def __absinthe_directive__(identifier), do: ast
-      def __absinthe_directive__(name), do: __absinthe_directive__(identifier)
+    identifier = definition.identifier
+    name = definition.attrs[:name]
+    quote do
+      def __absinthe_directive__(unquote(identifier)), do: unquote(ast)
+      def __absinthe_directive__(unquote(name)), do: __absinthe_directive__(unquote(identifier))
     end
   end
 
@@ -34,7 +38,6 @@ defmodule Absinthe.Schema.Notation.Writer do
   end
 
   defmacro __before_compile__(env) do
-
     result = %{
       type_map: %{},
       directive_map: %{},
@@ -79,28 +82,33 @@ defmodule Absinthe.Schema.Notation.Writer do
          }
     end)
 
-    [
+    errors        = Macro.escape info.errors
+    exports       = Macro.escape info.exports
+    type_map      = Macro.escape info.type_map
+    implementors  = Macro.escape info.implementors
+    directive_map = Macro.escape info.directive_map
+
+    ast = [
       quote do
-        def __absinthe_types__, do: unquote(info.type_map)
+        def __absinthe_types__, do: unquote(type_map)
       end,
       info.type_functions,
       quote do
         def __absinthe_type_(_), do: nil
       end,
       quote do
-        def __absinthe_directives__, do: unquote(info.directive_map)
+        def __absinthe_directives__, do: unquote(directive_map)
       end,
       info.directive_functions,
       quote do
         def __absinthe_directive_(_), do: nil
       end,
       quote do
-        def __absinthe_errors__, do: unquote(info.errors)
-        def __absinthe_interface_implementors, do: unquote(info.implementors)
-        def __absinthe_exports__, do: unquote(info.exports)
+        def __absinthe_errors__, do: unquote(errors)
+        def __absinthe_interface_implementors, do: unquote(implementors)
+        def __absinthe_exports__, do: unquote(exports)
       end
     ]
-
   end
 
 end
