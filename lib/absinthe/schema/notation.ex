@@ -63,7 +63,6 @@ defmodule Absinthe.Schema.Notation do
 
     block
     |> expand(env)
-    |> IO.inspect
 
     fast_close_scope(kind, env, identifier)
 
@@ -100,7 +99,7 @@ defmodule Absinthe.Schema.Notation do
       file: env.file,
       line: env.line
     }
-    Module.put_attribute(env.module, :absinthe_definitions, definition)
+    Module.put_attribute(env.module, :absinthe_definitions, [definition | Module.get_attribute(env.module, :absinthe_definitions) || []])
   end
 
   defp fast_close_scope_and_accumulate_attribute(attr_name, env, identifier) do
