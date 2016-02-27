@@ -22,8 +22,8 @@ defmodule Absinthe.Schema.Notation.Writer do
 
   # Type import reference
   defp build(:type, %{source: source, builder: nil} = definition) do
-    quote bind_quoted: [source: source, identifier: definition.identifier] do
-      source.__absinthe_type__(identifier)
+    quote do
+      unquote(source).__absinthe_type__(unquote(definition.identifier))
     end
   end
   # Directive import reference

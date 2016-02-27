@@ -48,6 +48,94 @@ defmodule Absinthe.Schema.Notation do
     scope(__CALLER__, :object, identifier, [], block)
   end
 
+  @placement {:object, [toplevel: true]}
+  defmacro fast_object(identifier, attrs, [do: block]) do
+    fast_scope(__CALLER__, :object, identifier, attrs, block)
+  end
+  defmacro fast_object(identifier, [do: block]) do
+    fast_scope(__CALLER__, :object, identifier, [], block)
+  end
+
+  @doc false
+  # Define a notation scope that will accept attributes
+  def fast_scope(env, kind, identifier, attrs, block) do
+    fast_open_scope(kind, env, identifier, attrs)
+
+    block
+    |> expand(env)
+    |> IO.inspect
+
+    fast_close_scope(kind, env, identifier)
+
+    []
+  end
+
+  defp expand(ast, env) do
+     Macro.postwalk(ast, fn
+       {_, _, _} = node -> Macro.expand(node, env)
+       node -> node
+    end)
+  end
+
+
+  @unexported_identifiers ~w(query mutation subscription)a
+  defp fast_close_scope(:object, env, identifier) do
+    fast_close_scope_and_define_type(
+      Type.Object, env, identifier,
+      export: !Enum.member?(@unexported_identifiers, identifier)
+    )
+  end
+  defp fast_close_scope(:field, env, identifier) do
+    fast_close_scope_and_accumulate_attribute(:fields, env, identifier)
+  end
+
+  defp fast_close_scope_and_define_type(type_module, env, identifier, def_opts \\ []) do
+    attrs = close_scope_with_name(env.module, identifier, title: true)
+    definition = %Absinthe.Schema.Notation.Definition{
+      category: :type,
+      builder: type_module,
+      identifier: identifier,
+      attrs: attrs,
+      opts: def_opts,
+      file: env.file,
+      line: env.line
+    }
+    Module.put_attribute(env.module, :absinthe_definitions, definition)
+  end
+
+  defp fast_close_scope_and_accumulate_attribute(attr_name, env, identifier) do
+    Scope.put_attribute(env.module, attr_name, {identifier, close_scope_with_name(env.module, identifier)}, accumulate: true)
+  end
+
+  defp fast_open_scope(kind, env, identifier, raw_attrs) do
+    attrs = prepare_attrs(raw_attrs)
+    # check_placement!(env.module, kind)
+    Scope.open(kind, env.module, open_scope_attrs(attrs, identifier, env))
+  end
+
+  defmacro fast_field(identifier, [do: block]) do
+    fast_scope(__CALLER__, :field, identifier, [], block)
+  end
+  defmacro fast_field(identifier, attrs) when is_list(attrs) do
+    fast_scope(__CALLER__, :field, identifier, attrs, nil)
+  end
+  defmacro fast_field(identifier, type) do
+    fast_scope(__CALLER__, :field, identifier, [type: type], nil)
+  end
+
+  defmacro fast_field(identifier, attrs, [do: block]) when is_list(attrs) do
+    fast_scope(__CALLER__, :field, identifier, attrs, block)
+  end
+  defmacro fast_field(identifier, type, [do: block]) do
+    fast_scope(__CALLER__, :field, identifier, [type: type], block)
+  end
+  defmacro fast_field(identifier, type, attrs) do
+    fast_scope(__CALLER__, :field, identifier, Keyword.put(attrs, :type, type),  nil)
+  end
+  defmacro fast_field(identifier, type, attrs, [do: block]) do
+    fast_scope(__CALLER__, :field, identifier, Keyword.put(attrs, :type, type), block)
+  end
+
   @doc """
   Declare implemented interfaces for an object.
 
