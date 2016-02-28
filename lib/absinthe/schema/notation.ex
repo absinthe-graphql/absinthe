@@ -338,6 +338,19 @@ defmodule Absinthe.Schema.Notation do
     []
   end
 
+  # GENERAL ATTRIBUTES
+
+  @placement {:description, [toplevel: false]}
+  defmacro description(text_block) do
+    text = reformat_description(text_block)
+    quote bind_quoted: [notation: __MODULE__, text: text] do
+      notation.check_placement!(__MODULE__, :description)
+      Scope.put_attribute(__MODULE__, :description, text)
+    end
+  end
+
+  defp reformat_description(text), do: String.strip(text)
+
   # IMPORTS
 
   @placement {:import_types, [toplevel: true]}
@@ -585,6 +598,16 @@ defmodule Absinthe.Schema.Notation do
         raise Absinthe.Schema.Notation.Error, "Invalid schema notation: #{ref} must only be used toplevel"
     end
   end
+  defp do_check_placement!(mod, usage, %{toplevel: false} = rules, opts) do
+    case Scope.current(mod) do
+      nil ->
+        ref = opts[:as] || "`#{usage}`"
+        raise Absinthe.Schema.Notation.Error, "Invalid schema notation: #{ref} must not be used toplevel"
+      _ ->
+        do_check_placement!(mod, usage, Map.delete(rules, :toplevel), opts)
+    end
+  end
+
   defp do_check_placement!(_, _, rules, _) when map_size(rules) == 0 do
     :ok
   end
