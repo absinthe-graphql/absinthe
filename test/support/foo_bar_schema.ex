@@ -19,22 +19,25 @@ defmodule FooBarSchema do
 
   end
 
-  @desc "A Basic Type"
   object :item do
+    description "A Basic Type"
+
     field :id, :id
     field :name, :string
   end
 
-  @desc "An author"
   object :author do
+    description "An author"
+
     field :id, :id
     field :first_name, :string
     field :last_name, :string
     field :books, list_of(:book)
   end
 
-  @desc "A Book"
   object :book, name: "NonFictionBook" do
+    description "A Book"
+
     field :id, :id
     field :title, :string
     field :isbn, :string

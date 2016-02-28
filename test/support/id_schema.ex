@@ -20,8 +20,8 @@ defmodule Absinthe.IdTestSchema do
 
   end
 
-  @desc "An item"
   object :item do
+    description "An item"
     field :id, :id
     field :name, :string
   end

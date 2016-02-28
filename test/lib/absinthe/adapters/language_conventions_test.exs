@@ -78,13 +78,13 @@ defmodule Absinthe.Adapter.LanguageConventionsTest do
 
     end
 
-    @desc "A location"
     input_object :input_location do
+      description "A location"
       field :name, non_null(:string)
     end
 
-    @desc "A field trip"
     object :field_trip do
+      description "A field trip"
 
       field :id,
         type: non_null(:string),

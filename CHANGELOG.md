@@ -38,14 +38,14 @@ end
 Here it is in the new style:
 
 ```elixir
-@desc "A car"
 object :car do
+  description "A car"
 
-  @desc "Photo URL"
   field :picture_url, :string do
+    description "Photo URL"
 
-    @desc "The size of the photo"
     arg :size, non_null(:string)
+    description "The size of the photo"
 
     resolve fn %{size: size}, %{source: car} ->
       {:ok, "http://images.example.com/cars/#{car.id}-#{size}.jpg"}

@@ -1,8 +1,8 @@
 defmodule Absinthe.Type.BuiltIns.Introspection do
   use Absinthe.Schema.Notation
 
-  @desc "Represents a schema"
   object :__schema do
+    description "Represents a schema"
 
     field :types, list_of(:__type) do
       resolve fn
@@ -34,8 +34,8 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
 
   end
 
-  @desc "Represents a directive"
   object :__directive do
+    description "Represents a directive"
 
     field :name, :string
 
@@ -72,8 +72,8 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
 
   end
 
-  @desc "Represents scalars, interfaces, object types, unions, enums in the system"
   object :__type do
+    description "Represents scalars, interfaces, object types, unions, enums in the system"
 
     field :kind,
       type: :string,

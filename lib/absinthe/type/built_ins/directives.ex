@@ -4,13 +4,12 @@ defmodule Absinthe.Type.BuiltIns.Directives do
   alias Absinthe.Type
   alias Absinthe.Language
 
-  @desc """
-  Directs the executor to include this field or fragment only when the `if` argument is true."
-  """
   directive :include do
+    description """
+    Directs the executor to include this field or fragment only when the `if` argument is true."
+    """
 
-    @desc "Included when true."
-    arg :if, non_null(:boolean)
+    arg :if, non_null(:boolean), description: "Included when true."
 
     on [Language.FragmentSpread, Language.Field, Language.InlineFragment]
 
@@ -23,13 +22,12 @@ defmodule Absinthe.Type.BuiltIns.Directives do
 
   end
 
-  @desc """
-  Directs the executor to skip this field or fragment when the `if` argument is true.
-  """
   directive :skip do
+    description """
+    Directs the executor to skip this field or fragment when the `if` argument is true.
+    """
 
-    @desc "Skipped when true."
-    arg :if, non_null(:boolean)
+    arg :if, non_null(:boolean), description: "Skipped when true."
 
     on [Language.FragmentSpread, Language.Field, Language.InlineFragment]
 

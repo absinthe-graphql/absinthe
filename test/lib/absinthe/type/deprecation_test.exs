@@ -6,8 +6,8 @@ defmodule Absinthe.Type.DeprecationTest do
   defmodule TestSchema do
     use Absinthe.Schema
 
-    @desc "A profile"
     input_object :profile do
+      description "A profile"
 
       field :name, :string
 

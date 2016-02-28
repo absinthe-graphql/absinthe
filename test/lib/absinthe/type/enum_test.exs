@@ -7,47 +7,30 @@ defmodule Absinthe.Type.EnumTest do
     use Absinthe.Schema
 
     query do
-      @desc "The active color channel"
-      field :channel, :color_channel
+      field :channel, :color_channel, description: "The active color channel"
     end
 
-    @desc "The selected color channel"
     enum :color_channel do
+      description "The selected color channel"
 
-      @desc "Color Red"
-      value :red, as: :r
-
-      @desc "Color Green"
-      value :green, as: :g
-
-      @desc "Color Blue"
-      value :blue, as: :b
-
-      @desc "Alpha Channel"
-      value :alpha, as: :a, deprecate: "We no longer support opacity settings"
-
+      value :red, as: :r, description: "Color Red"
+      value :green, as: :g, description: "Color Green"
+      value :blue, as: :b, description: "Color Blue"
+      value :alpha, as: :a, deprecate: "We no longer support opacity settings", description: "Alpha Channel"
     end
 
-    @desc "The selected color channel"
     enum :color_channel2 do
+      description "The selected color channel"
 
-      @desc "Color Red"
-      value :red
-
-      @desc "Color Green"
-      value :green
-
-      @desc "Color Blue"
-      value :blue
-
-      @desc "Alpha Channel"
-      value :alpha, as: :a, deprecate: "We no longer support opacity settings"
-
+      value :red, description: "Color Red"
+      value :green, description: "Color Green"
+      value :blue, description: "Color Blue"
+      value :alpha, as: :a, deprecate: "We no longer support opacity settings", description: "Alpha Channel"
     end
 
-    @desc "The selected color channel"
     enum :color_channel3,
-      values: [:red, :green, :blue, :alpha]
+      values: [:red, :green, :blue, :alpha],
+      description: "The selected color channel"
 
   end
 

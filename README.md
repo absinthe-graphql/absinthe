@@ -125,8 +125,8 @@ You'll notice we mention another type here: `:item`.
 We haven't defined that yet; let's do it. In the same `MyApp.Schema` module:
 
 ```elixir
-@desc "An item"
 object :item do
+  description "An item"
   field :id, :id
   field :name, :string
 end
@@ -219,11 +219,11 @@ object :foo, description: "A Foo" do
 end
 ```
 
-By using the `@desc` module attribute before the definition:
+By using the `description` macro inside the definition:
 
 ```elixir
-@desc "A Foo"
 object :foo do
+  description "A Foo"
   # ...
 end
 ```
@@ -234,8 +234,8 @@ Absinthe supports defining custom scalar types, just like the built-in types.
 Here's an example of how to support a time scalar to/from ISOz format:
 
 ```elixir
-@desc "ISOz time"
 scalar :iso_z, name: "ISOz" do
+  description "ISOz time"
   parse &Timex.DateFormat.parse(&1, "{ISOz}")
   serialize &Timex.DateFormat.format!(&1, "{ISOz}")
 end

@@ -1,13 +1,13 @@
 defmodule SchemaWithDuplicateIdentifiers do
   use Absinthe.Schema
 
-  @desc "A person"
   object :person do
+    description "A person"
     field :name, :string
   end
 
-  @desc "A person"
   object :person, name: "APersonToo" do
+    description "A person"
     field :name, :string
   end
 

@@ -330,10 +330,7 @@ defmodule Absinthe.Schema.Notation do
     attrs = raw_attrs
     |> Keyword.put(:value, Keyword.get(raw_attrs, :as, identifier))
     |> Keyword.delete(:as)
-    |> add_description_from_module_attribute(env.module)
 
-    env = __CALLER__
-    attrs |> add_description_from_module_attribute(env.module)
     Scope.put_attribute(env.module, :values, {identifier, attrs}, accumulate: true)
     []
   end
@@ -343,10 +340,9 @@ defmodule Absinthe.Schema.Notation do
   @placement {:description, [toplevel: false]}
   defmacro description(text_block) do
     text = reformat_description(text_block)
-    quote bind_quoted: [notation: __MODULE__, text: text] do
-      notation.check_placement!(__MODULE__, :description)
-      Scope.put_attribute(__MODULE__, :description, text)
-    end
+    check_placement!(__CALLER__.module, :description)
+    Scope.put_attribute(__CALLER__.module, :description, text)
+    []
   end
 
   defp reformat_description(text), do: String.strip(text)
@@ -445,20 +441,6 @@ defmodule Absinthe.Schema.Notation do
     )
   end
 
-  @doc false
-  # Support `@desc` descriptions
-  def add_description_from_module_attribute(attrs_ast, mod) do
-    case {attrs_ast[:description], Module.get_attribute(mod, :desc)} do
-      {_, nil} ->
-        attrs_ast
-      {nil, doc} ->
-        Module.put_attribute(mod, :desc, nil)
-        Keyword.put(attrs_ast, :description, String.strip(doc))
-      {_, _} ->
-        attrs_ast
-    end
-  end
-
   # After verifying it is valid in the current context, open a new notation
   # scope, setting any provided attributes.
   defp open_scope(kind, env, identifier, attrs) do
@@ -468,7 +450,6 @@ defmodule Absinthe.Schema.Notation do
 
   def open_scope_attrs(attrs, identifier, env) do
     attrs
-    |> add_description_from_module_attribute(env.module)
     |> add_reference(env, identifier)
   end
 

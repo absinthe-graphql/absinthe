@@ -117,8 +117,8 @@ defmodule Things do
 
   end
 
-  @desc "A thing as input"
   input_object :input_thing do
+    description "A thing as input"
     field :value, :integer
     field :deprecated_field, :string, deprecate: true
     field :deprecated_field_with_reason, :string, deprecate: "reason"
@@ -126,17 +126,17 @@ defmodule Things do
     field :deprecated_non_null_field_with_reason, :string, deprecate: "reason"
   end
 
-  @desc "A thing"
   object :thing do
+    description "A thing"
 
-    @desc "The ID of the thing"
-    field :id, non_null(:string)
+    field :id, non_null(:string),
+      description: "The ID of the thing"
 
-    @desc "The name of the thing"
-    field :name, :string
+    field :name, :string,
+      description: "The name of the thing"
 
-    @desc "The value of the thing"
-    field :value, :integer
+    field :value, :integer,
+      description: "The value of the thing"
 
     field :other_thing,
       type: :thing,
