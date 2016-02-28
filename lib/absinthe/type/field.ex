@@ -112,7 +112,7 @@ defmodule Absinthe.Type.Field do
   ## Examples
 
   ```
-  iex> build_map_ast([foo: [type: :string], bar: [type: :integer]])
+  iex> build([foo: [type: :string], bar: [type: :integer]])
   {:%{}, [],
    [foo: {:%, [],
      [{:__aliases__, [alias: false], [:Absinthe, :Type, :Field]},
@@ -128,13 +128,23 @@ defmodule Absinthe.Type.Field do
     ast = for {field_name, field_attrs} <- fields do
       name = field_name |> Atom.to_string
       field_data = [name: name] ++ Keyword.update(field_attrs, :args, quoted_empty_map, fn
-        args ->
+        raw_args ->
+          args = for {name, attrs} <- raw_args, do: {name, ensure_reference(attrs, field_attrs[:__reference__])}
           Type.Argument.build(args || [])
       end)
       field_ast = quote do: %Absinthe.Type.Field{unquote_splicing(field_data |> Absinthe.Type.Deprecation.from_attribute)}
       {field_name, field_ast}
     end
     quote do: %{unquote_splicing(ast)}
+  end
+
+  defp ensure_reference(arg_attrs, default_reference) do
+    case Keyword.has_key?(arg_attrs, :__reference__) do
+      true ->
+        arg_attrs
+      false ->
+        Keyword.put(arg_attrs, :__reference__, default_reference)
+    end
   end
 
   defimpl Absinthe.Validation.RequiredInput do

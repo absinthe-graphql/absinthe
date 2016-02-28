@@ -38,7 +38,7 @@ defmodule Absinthe.Type.Argument do
   ## Examples
 
   ```
-  iex> build_map_ast([foo: [type: :string], bar: [type: :integer]])
+  iex> build([foo: [type: :string], bar: [type: :integer]])
   {:%{}, [],
    [foo: {:%, [],
     [{:__aliases__, [alias: false], [:Absinthe, :Type, :Argument]},

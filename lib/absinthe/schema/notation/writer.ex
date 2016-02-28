@@ -37,6 +37,43 @@ defmodule Absinthe.Schema.Notation.Writer do
     builder.build(definition)
   end
 
+  defp directive_name_error(definition) do
+    %{
+      rule: Absinthe.Schema.Rule.TypeNamesAreUnique,
+      location: %{file: definition.file, line: definition.line},
+      data: %{artifact: "Absinthe directive identifier", value: definition.identifier}
+    }
+  end
+
+  defp type_name_error(artifact, value, definition) do
+    %{
+      rule: Absinthe.Schema.Rule.TypeNamesAreUnique,
+      location: %{file: definition.file, line: definition.line},
+      data: %{artifact: artifact, value: value}
+    }
+  end
+
+  defp directive_errors(definition, state) do
+    case Map.has_key?(state.directive_map, definition.identifier) do
+      true ->
+        [directive_name_error(definition)]
+      false ->
+        []
+    end
+  end
+
+  defp type_errors(definition, state) do
+    [
+      if Map.has_key?(state.type_map, definition.identifier) do
+        type_name_error("Absinthe type identifier", definition.identifier, definition)
+      end,
+      if Enum.member?(Map.values(state.type_map), definition.attrs[:name]) do
+        type_name_error("Type name", definition.attrs[:name], definition)
+      end,
+    ]
+    |> Enum.reject(&is_nil/1)
+  end
+
   defmacro __before_compile__(env) do
     result = %{
       type_map: %{},
@@ -55,11 +92,12 @@ defmodule Absinthe.Schema.Notation.Writer do
           directive_map: Map.put(acc.directive_map, definition.identifier, definition.attrs[:name]),
           directive_functions: [directive_functions(definition) | acc.directive_functions],
           # TODO: Handle directive exports differently
-          exports: (if Keyword.get(definition.opts, :export, true) do
+          exports: (if Keyword.get(definition.opts, :export, definition.source != Absinthe.Type.BuiltIns) do
             [definition.identifier | acc.exports]
           else
             acc.exports
           end),
+          errors: directive_errors(definition, acc) ++ acc.errors
          }
       %{category: :type} = definition, acc ->
         %{acc |
@@ -74,11 +112,12 @@ defmodule Absinthe.Schema.Notation.Writer do
                   [definition.identifier | list]
               end)
           end),
-          exports: (if Keyword.get(definition.opts, :export, true) do
+          exports: (if Keyword.get(definition.opts, :export, definition.source != Absinthe.Type.BuiltIns) do
             [definition.identifier | acc.exports]
           else
             acc.exports
-          end)
+          end),
+          errors: type_errors(definition, acc) ++ acc.errors
          }
     end)
 
