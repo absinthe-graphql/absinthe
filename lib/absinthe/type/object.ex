@@ -15,16 +15,11 @@ defmodule Absinthe.Type.Object do
   Given a type defined as the following (see `Absinthe.Type.Definitions`):
 
   ```
-  @absinthe :type
-  def person do
-    %Absinthe.Type.Object{
-      fields: fields(
-        name: [type: :string],
-        age: [type: :integer],
-        best_friend: [type: :person],
-        pets: [type: list_of(:pet)]
-      )
-    }
+  object :person do
+    field :name, :string
+    field :age, :integer
+    field :best_friend, :person
+    field :pets, list_of(:pet)
   end
   ```
 
@@ -83,7 +78,6 @@ defmodule Absinthe.Type.Object do
   * `:name` - The name of the object type. Should be a TitleCased `binary`. Set automatically when using `@absinthe :type` from `Absinthe.Type.Definitions`.
   * `:description` - A nice description for introspection.
   * `:fields` - A map of `Absinthe.Type.Field` structs. See `Absinthe.Type.Definitions.fields/1` and
-  * `:args` - A map of `Absinthe.Type.Argument` structs. See `Absinthe.Type.Definitions.args/1`.
   * `:parse` - A function used to convert the raw, incoming form of a scalar to the canonical internal format.
   * `:interfaces` - A list of interfaces that this type guarantees to implement. See `Absinthe.Type.Interface`.
   * `:is_type_of` - A function used to identify whether a resolved object belongs to this defined type. For use with `:interfaces` entry and `Absinthe.Type.Interface`.

@@ -52,39 +52,30 @@ defmodule Absinthe.Type.Field do
   This is commonly use when listing the available fields on a
   `Absinthe.Type.Object` that models a data record. For instance:
 
-      @absinthe :type
-      def person do
-        %Absinthe.Type.Object{
-          description: "A Person"
-          fields: fields(
-            first_name: [type: :string],
-            last_name: [type: :string],
-          )
-        }
-      end
+  ```
+  object :person do
+    description "A person"
 
+    field :first_name, :string
+    field :last_name, :string
+  end
+  ```
   ### Custom Resolution
 
   When accepting arguments, however, you probably need do use them for
   something. Here's an example of definining a field that looks up a list of
   users for a given `location_id`:
+  ```
+  query do
+    field :users, :person do
+      arg :location_id, non_null(:id)
 
-      def query do
-        %Absinthe.Type.Object{
-          fields: fields(
-            users: [
-              type: :person,
-              args: args(
-                location_id: [type: non_null(:integer)]
-              ),
-              resolve: fn
-                %{location_id: id}, _ ->
-                  {:ok, MyApp.users_for_location_id(id)}
-              end
-            ]
-          )
-        }
+      resolve fn %{location_id: id}, _ ->
+        {:ok, MyApp.users_for_location_id(id)}
       end
+    end
+  end
+  ```
 
   Custom resolution functions are passed two arguments:
 

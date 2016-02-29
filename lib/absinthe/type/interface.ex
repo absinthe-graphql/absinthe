@@ -18,40 +18,27 @@ defmodule Absinthe.Type.Interface do
   * Provide a `:is_type_of` function on each implementing type
 
   ```
-  @absinthe :type
-  def named_entity do
-    %Type.Interface{
-      fields: fields(
-        name: [type: :string]
-      ),
-      resolve_type: fn
-        %{age: _}, _ -> {:ok, :person}
-        %{employee_count: _}, _ -> {:ok, :business}
-        _ -> :error
-      end
-    }
+  interface :named_entity do
+    field :name, :string
+    resolve_type fn
+      %{age: _}, _ -> {:ok, :person}
+      %{employee_count: _}, _ -> {:ok, :business}
+      _ -> :error
+    end
   end
 
-  @absinthe :type
-  def person do
-    %Type.Object{
-      fields: fields(
-        name: [type: :string],
-        age: [type: :string]
-      ),
-      interfaces: [:named_entity]
-    }
+  object :person do
+    field :name, :string
+    field :age, :string
+
+    interface :named_entity
   end
 
-  @absinthe :type
-  def business do
-    %Type.Object{
-      fields: fields(
-        name: [type: :string],
-        employee_count: [type: :integer]
-      ),
-      interfaces: [:named_entity]
-    }
+  object :business do
+    field :name, :string
+    field :employee_count, :integer
+
+    interface :named_entity
   end
   ```
 
