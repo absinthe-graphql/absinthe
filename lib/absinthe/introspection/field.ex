@@ -2,6 +2,8 @@ defmodule Absinthe.Introspection.Field do
 
   @moduledoc false
 
+  use Absinthe.Schema.Notation
+
   alias Absinthe.Schema
   alias Absinthe.Type
 
@@ -36,12 +38,13 @@ defmodule Absinthe.Introspection.Field do
       name: "__type",
       type: :__type,
       description: "Represents scalars, interfaces, object types, unions, enums in the system",
-      args: args(
-        name: [
+      args: %{
+        name: %Type.Argument{
+          name: "name",
           type: non_null(:string),
-          describe: "The name of the type to introspect"
-        ],
-      ),
+          description: "The name of the type to introspect"
+        }
+      },
       resolve: fn
         %{name: name}, %{schema: schema} ->
           {:ok, Schema.lookup_type(schema, name)}
