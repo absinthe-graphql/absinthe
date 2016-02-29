@@ -6,20 +6,23 @@ defmodule Absinthe.Type.UnionTest do
   defmodule TestSchema do
     use Absinthe.Schema
 
-    @desc "A person"
     object :person do
+      description "A person"
+
       field :name, :string
       field :age, :integer
     end
 
-    @desc "A business"
     object :business do
+      description "A business"
+
       field :name, :string
       field :employee_count, :integer
     end
 
-    @desc "A search result"
     union :search_result do
+      description "A search result"
+
       types [:person, :business]
       resolve_type fn
         %{age: _}, _ ->
@@ -35,7 +38,7 @@ defmodule Absinthe.Type.UnionTest do
 
     it "can be defined" do
       obj = TestSchema.__absinthe_type__(:search_result)
-      %Absinthe.Type.Union{name: "SearchResult", description: "A search result", types: [:person, :business]} = obj
+      assert %Absinthe.Type.Union{name: "SearchResult", description: "A search result", types: [:person, :business]} = obj
       assert obj.resolve_type
     end
 

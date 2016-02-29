@@ -4,8 +4,8 @@ defmodule Absinthe.Type.ObjectTest do
   defmodule TestSchema do
     use Absinthe.Schema
 
-    @desc "A person"
     object :person do
+      description "A person"
 
       field :name, :string
 
@@ -23,7 +23,7 @@ defmodule Absinthe.Type.ObjectTest do
   describe "object" do
 
     it "can be defined" do
-      %Absinthe.Type.Object{name: "Person", description: "A person"} = TestSchema.__absinthe_type__(:person)
+      assert %Absinthe.Type.Object{name: "Person", description: "A person"} = TestSchema.__absinthe_type__(:person)
       assert %{person: "Person"} = TestSchema.__absinthe_types__
     end
 

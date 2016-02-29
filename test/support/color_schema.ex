@@ -29,20 +29,23 @@ defmodule ColorSchema do
 
   end
 
-  @desc """
-  A color channel
-  """
   enum :channel do
+    description """
+    A color channel
+    """
+
     value :red, description: "The color red", as: :r
     value :green, description: "The color green", as: :g
     value :blue, description: "The color blue", as: :b
     value :puce, description: "The color puce", as: :p, deprecate: "it's ugly"
   end
 
-  @desc """
-  Info about a channel
-  """
+
   object :channel_info do
+    description """
+    Info about a channel
+    """
+
     field :name, :string
     field :value, :integer
   end

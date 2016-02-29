@@ -24,8 +24,7 @@ defmodule PrefixSchema do
 
   directive :__mydirective do
 
-    @desc "Skipped when true."
-    arg :__if, non_null(:boolean)
+    arg :__if, non_null(:boolean), description: "Skipped when true."
 
     on Language.FragmentSpread
     on Language.Field
