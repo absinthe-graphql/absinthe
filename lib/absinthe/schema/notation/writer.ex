@@ -88,21 +88,23 @@ defmodule Absinthe.Schema.Notation.Writer do
     info = Module.get_attribute(env.module, :absinthe_definitions)
     |> Enum.reduce(result, fn
       %{category: :directive} = definition, acc ->
+        errors = directive_errors(definition, acc)
         %{acc |
           directive_map: Map.put(acc.directive_map, definition.identifier, definition.attrs[:name]),
-          directive_functions: [directive_functions(definition) | acc.directive_functions],
+          directive_functions: (if length(errors) > 0, do: acc.directive_functions, else: [directive_functions(definition) | acc.directive_functions]),
           # TODO: Handle directive exports differently
           exports: (if Keyword.get(definition.opts, :export, definition.source != Absinthe.Type.BuiltIns) do
             [definition.identifier | acc.exports]
           else
             acc.exports
           end),
-          errors: directive_errors(definition, acc) ++ acc.errors
+          errors: errors ++ acc.errors
          }
       %{category: :type} = definition, acc ->
+        errors = type_errors(definition, acc)
         %{acc |
           type_map: Map.put(acc.type_map, definition.identifier, definition.attrs[:name]),
-          type_functions: [type_functions(definition) | acc.type_functions],
+          type_functions: (if length(errors) > 0, do: acc.type_functions, else: [type_functions(definition) | acc.type_functions]),
           implementors: Enum.reduce(List.wrap(definition.attrs[:interfaces]), acc.implementors, fn
             iface, implementors ->
               update_in(implementors, [iface], fn
@@ -117,7 +119,7 @@ defmodule Absinthe.Schema.Notation.Writer do
           else
             acc.exports
           end),
-          errors: type_errors(definition, acc) ++ acc.errors
+          errors: errors ++ acc.errors
          }
     end)
 
