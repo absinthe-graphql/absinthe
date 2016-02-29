@@ -1,6 +1,7 @@
 defmodule Absinthe.Type.BuiltIns.Introspection do
   use Absinthe.Schema.Notation
 
+  @moduledoc false
   object :__schema do
     description "Represents a schema"
 

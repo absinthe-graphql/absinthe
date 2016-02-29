@@ -1,9 +1,7 @@
 defmodule Absinthe.Type.BuiltIns.Directives do
   use Absinthe.Schema.Notation
 
-  @moduledoc """
-  Built in Directives
-  """
+  @moduledoc false
 
   alias Absinthe.Type
   alias Absinthe.Language

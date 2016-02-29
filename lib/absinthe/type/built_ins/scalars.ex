@@ -1,6 +1,8 @@
 defmodule Absinthe.Type.BuiltIns.Scalars do
   use Absinthe.Schema.Notation
 
+  @moduledoc false
+
   alias Absinthe.Flag
 
   scalar :integer, name: "Int" do
