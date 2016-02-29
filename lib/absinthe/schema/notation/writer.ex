@@ -129,7 +129,7 @@ defmodule Absinthe.Schema.Notation.Writer do
     implementors  = Macro.escape info.implementors
     directive_map = Macro.escape info.directive_map
 
-    ast = [
+    [
       quote do
         def __absinthe_types__, do: unquote(type_map)
       end,

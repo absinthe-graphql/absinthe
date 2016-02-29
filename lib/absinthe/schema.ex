@@ -119,7 +119,7 @@ defmodule Absinthe.Schema do
     quote do
       use Absinthe.Schema.Notation
       import unquote(__MODULE__), only: :macros
-      import_types Absinthe.Type.BuiltIns, export: false
+      import_types Absinthe.Type.BuiltIns
       @after_compile unquote(__MODULE__)
     end
   end

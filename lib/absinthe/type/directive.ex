@@ -7,7 +7,7 @@ defmodule Absinthe.Type.Directive do
   Type system creators will usually not create these directly.
   """
 
-  alias Absinthe.{Utils, Type}
+  alias Absinthe.Type
   use Absinthe.Introspection.Kind
 
   @typedoc """

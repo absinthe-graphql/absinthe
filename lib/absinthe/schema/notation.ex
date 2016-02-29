@@ -2,7 +2,6 @@ defmodule Absinthe.Schema.Notation do
   alias Absinthe.Utils
   alias Absinthe.Type
   alias Absinthe.Schema.Notation.Scope
-  alias Absinthe.Schema.Notation.Definition
 
   defmacro __using__(_opts) do
     quote do
@@ -350,12 +349,11 @@ defmodule Absinthe.Schema.Notation do
   # IMPORTS
 
   @placement {:import_types, [toplevel: true]}
-  defmacro import_types(type_module_ast, opts_ast \\ []) do
+  defmacro import_types(type_module_ast) do
     env = __CALLER__
-    opts = Macro.expand(opts_ast, env)
     type_module = Macro.expand(type_module_ast, env)
 
-    for {ident, name} = naming <- type_module.__absinthe_types__ do
+    for {ident, name} <- type_module.__absinthe_types__ do
       if Enum.member?(type_module.__absinthe_exports__, ident) do
         put_definition(env.module, %Absinthe.Schema.Notation.Definition{
           category: :type,
