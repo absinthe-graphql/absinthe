@@ -2,7 +2,6 @@ defmodule Absinthe.Introspection.Field do
 
   @moduledoc false
 
-  use Absinthe.Type.Definitions
   alias Absinthe.Schema
   alias Absinthe.Type
 
