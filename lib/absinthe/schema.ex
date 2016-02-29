@@ -36,21 +36,17 @@ defmodule Absinthe.Schema do
     "bar" => %{id: "bar", name: "Bar", value: 5}
   }
 
-  query [
-    fields: [
-      item: [
-        type: :item,
-        description: "Get an item by ID",
-        args: [
-          id: [type: :id, description: "The ID of the item"]
-        ],
-        resolve: fn
-          %{id: id}, _ ->
-            {:ok, Map.get(@fake_db, id)}
-        end
-      ]
-    ]
-  ]
+  query do
+    field :item, :item do
+      description "Get an item by ID"
+
+      arg :id, type: :id, description: "The ID of the item"
+
+      resolve: fn %{id: id}, _ ->
+        {:ok, Map.get(@fake_db, id)}
+      end
+    end
+  end
   ```
 
   For more information on object types (especially how the `resolve`
@@ -61,16 +57,13 @@ defmodule Absinthe.Schema do
   and what fields it contains.
 
   ```
-  @doc \"""
-  A valuable item
-  \"""
-  object :item, [
-    fields: [
-      id: [type: :id],
-      name: [type: :string, description: "The item's name"],
-      value: [type: :integer, description: "Recently appraised value"]
-    ]
-  ]
+  object :item do
+    description "A valuable Item"
+
+    field :id, :id
+    field :name, :string, description: "The item's name"]
+    field :value, :integer, description: "Recently appraised value"
+  end
   ```
 
   We can also load types from other modules using the `import_types`

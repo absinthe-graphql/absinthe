@@ -1,4 +1,9 @@
 defmodule Absinthe.Schema.Notation do
+
+  @moduledoc """
+  This module contains macros used to build GraphQL types.
+  """
+
   alias Absinthe.Utils
   alias Absinthe.Type
   alias Absinthe.Schema.Notation.Scope
@@ -15,10 +20,15 @@ defmodule Absinthe.Schema.Notation do
 
   # OBJECT
 
+  @placement {:object, [toplevel: true]}
   @doc """
   Define an object type.
 
   Adds an `Absinthe.Type.Object` to your schema.
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
 
   ## Examples
 
@@ -37,21 +47,21 @@ defmodule Absinthe.Schema.Notation do
     # ...
   end
   ```
-
   """
-  @placement {:object, [toplevel: true]}
-  defmacro object(identifier, attrs, [do: block]) do
+  defmacro object(identifier, attrs \\ [], [do: block]) do
     scope(__CALLER__, :object, identifier, attrs, block)
   end
-  defmacro object(identifier, [do: block]) do
-    scope(__CALLER__, :object, identifier, [], block)
-  end
 
+  @placement {:interfaces, [under: :object]}
   @doc """
   Declare implemented interfaces for an object.
 
   See also `interface/1`, which can be used for one interface,
   and `interface/3`, used to define interfaces themselves.
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
 
   ## Examples
 
@@ -62,7 +72,6 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
-  @placement {:interfaces, [under: :object]}
   defmacro interfaces(ifaces) when is_list(ifaces) do
     env = __CALLER__
     check_placement!(env.module, :interfaces)
@@ -97,6 +106,7 @@ defmodule Absinthe.Schema.Notation do
 
   # INTERFACES
 
+  @placement {:interface, [toplevel: :true]}
   @doc """
   Define an interface type.
 
@@ -104,6 +114,10 @@ defmodule Absinthe.Schema.Notation do
 
   Also see `interface/1` and `interfaces/1`, which declare
   that an object implements one or more interfaces.
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
 
   ## Examples
 
@@ -118,20 +132,21 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
-  @placement {:interface, [toplevel: :true]}
-  defmacro interface(identifier, attrs, [do: block]) do
+  defmacro interface(identifier, attrs \\ [], [do: block]) do
     scope(__CALLER__, :interface, identifier, attrs, block)
   end
-  defmacro interface(identifier, [do: block]) do
-    scope(__CALLER__, :interface, identifier, [], block)
-  end
 
+  @placement {:resolve_type, [under: [:interface, :union]]}
   @doc """
   Define a type resolver for a union or interface.
 
   See also:
   * `Absinthe.Type.Interface`
   * `Absinthe.Type.Union`
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
 
   ## Examples
 
@@ -147,7 +162,6 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
-  @placement {:resolve_type, [under: [:interface, :union]]}
   defmacro resolve_type(func_ast) do
     env = __CALLER__
     check_placement!(env.module, :resolve_type)
@@ -156,8 +170,12 @@ defmodule Absinthe.Schema.Notation do
   end
 
   # FIELDS
-
   @placement {:field, [under: [:input_object, :interface, :object]]}
+  @doc """
+  Defines a GraphQL field
+
+  See `field/4`
+  """
   defmacro field(identifier, [do: block]) do
     scope(__CALLER__, :field, identifier, [], block)
   end
@@ -167,6 +185,11 @@ defmodule Absinthe.Schema.Notation do
   defmacro field(identifier, type) do
     scope(__CALLER__, :field, identifier, [type: type], nil)
   end
+  @doc """
+  Defines a GraphQL field
+
+  See `field/4`
+  """
   defmacro field(identifier, attrs, [do: block]) when is_list(attrs) do
     scope(__CALLER__, :field, identifier, attrs, block)
   end
@@ -176,11 +199,83 @@ defmodule Absinthe.Schema.Notation do
   defmacro field(identifier, type, attrs) do
     scope(__CALLER__, :field, identifier, Keyword.put(attrs, :type, type),  nil)
   end
+  @doc """
+  Defines a GraphQL field.
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+
+  `query`, `mutation`, and `subscription` are
+  all objects under the covers, and thus you'll find `field` definitions under
+  those as well.
+
+  ## Examples
+  ```
+  field :id, :id
+  field :age, :integer, description: "How old the item is"
+  field :name, :string do
+    description "The name of the item"
+  end
+  field :location, type: :location
+  ```
+  """
   defmacro field(identifier, type, attrs, [do: block]) do
     scope(__CALLER__, :field, identifier, Keyword.put(attrs, :type, type), block)
   end
 
   @placement {:resolve, [under: [:field]]}
+  @doc """
+  Defines a resolve function for a field
+
+  Specify a 2 arity function to call when resolving a field. You can either hard
+  code a particular anonymous function, or have a function call that returns
+  a 2 arity anonymous function. See examples for more information.
+
+  The first argument to the function are the GraphQL arguments, and the latter
+  is an `Absinthe.Execution.Field` struct. It is where you can access the GraphQL
+  context and other information
+
+  Note that when using a hard coded anonymous function, the function will not
+  capture local variables.
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+
+  ## Examples
+  ```
+  query do
+    field :person, :person do
+      resolve &Person.resolve/2
+    end
+  end
+  ```
+
+  ```
+  query do
+    field :person, :person do
+      resolve fn %{id: id}, _ ->
+        Person.find(id)
+      end
+    end
+  end
+  ```
+
+  ```
+  query do
+    field :person, :person do
+      resolve lookup(:person)
+    end
+  end
+
+  def lookup(:person) do
+    fn %{id: id}, _ ->
+      Person.find(id)
+    end
+  end
+  ```
+  """
   defmacro resolve(func_ast) do
     env = __CALLER__
     check_placement!(env.module, :resolve)
@@ -189,6 +284,13 @@ defmodule Absinthe.Schema.Notation do
   end
 
   @placement {:is_type_of, [under: [:object]]}
+  @doc """
+
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+  """
   defmacro is_type_of(func_ast) do
     env = __CALLER__
     check_placement!(env.module, :is_type_of)
@@ -196,12 +298,33 @@ defmodule Absinthe.Schema.Notation do
     []
   end
 
-  # ARGS
-
   @placement {:arg, [under: [:directive, :field]]}
+  # ARGS
+  @doc """
+  Add an argument.
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+
+  ## Examples
+
+  ```
+  field do
+    arg :size, :integer
+    arg :name, :string, description: "The desired name"
+  end
+  ```
+  """
   defmacro arg(identifier, type, attrs) do
     scope(__CALLER__, :arg, identifier, Keyword.put(attrs, :type, type), nil)
   end
+
+  @doc """
+  Add an argument.
+
+  See `arg/3`
+  """
   defmacro arg(identifier, attrs) when is_list(attrs) do
     scope(__CALLER__, :arg, identifier, attrs, nil)
   end
@@ -212,9 +335,33 @@ defmodule Absinthe.Schema.Notation do
   # SCALARS
 
   @placement {:scalar, [toplevel: true]}
+  @doc """
+  Define a scalar type
+
+  A scalar type requires `parse/1` and `serialize/1` functions.
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+
+  ## Examples
+  ```
+  scalar :time do
+    description "ISOz time"
+    parse &Timex.DateFormat.parse(&1, "{ISOz}")
+    serialize &Timex.DateFormat.format!(&1, "{ISOz}")
+  end
+  ```
+  """
   defmacro scalar(identifier, attrs, [do: block]) do
     scope(__CALLER__, :scalar, identifier, attrs, block)
   end
+
+  @doc """
+  Defines a scalar type
+
+  See `scalar/3`
+  """
   defmacro scalar(identifier, [do: block]) do
     scope(__CALLER__, :scalar, identifier, [], block)
   end
@@ -223,6 +370,16 @@ defmodule Absinthe.Schema.Notation do
   end
 
   @placement {:serialize, [under: [:scalar]]}
+  @doc """
+  Defines a serialization function for a `scalar` type
+
+  The specified `serialize` function is used on outgoing data. It should simply
+  return the desired external representation.
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+  """
   defmacro serialize(func_ast) do
     env = __CALLER__
     check_placement!(env.module, :serialize)
@@ -231,6 +388,18 @@ defmodule Absinthe.Schema.Notation do
   end
 
   @placement {:parse, [under: [:scalar]]}
+  @doc """
+  Defines a parse function for a `scalar` type
+
+  The specified `parse` function is used on incoming data to transform it into
+  an elixir datastructure.
+
+  It should return `{:ok, value}` or `{:error, reason}`
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+  """
   defmacro parse(func_ast) do
     env = __CALLER__
     check_placement!(env.module, :parse)
@@ -241,17 +410,48 @@ defmodule Absinthe.Schema.Notation do
   # DIRECTIVES
 
   @placement {:directive, [toplevel: true]}
-  defmacro directive(identifier, attrs, [do: block]) do
+  @doc """
+  Defines a directive
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+
+  ## Examples
+
+  ```
+  directive :mydirective do
+
+    arg :if, non_null(:boolean), description: "Skipped when true."
+
+    on Language.FragmentSpread
+    on Language.Field
+    on Language.InlineFragment
+
+    instruction fn
+      %{if: true} ->
+        :skip
+      _ ->
+        :include
+    end
+
+  end
+  ```
+  """
+  defmacro directive(identifier, attrs \\ [], [do: block]) do
     scope(__CALLER__, :directive, identifier, attrs, block)
   end
-  defmacro directive(identifier, [do: block]) do
-    scope(__CALLER__, :directive, identifier, [], block)
-  end
 
+  @placement {:on, [under: :directive]}
   @doc """
   Declare a directive as operating an a AST node type
+
+  See `directive/2`
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
   """
-  @placement {:on, [under: :directive]}
   defmacro on(ast_node) do
     env = __CALLER__
     check_placement!(env.module, :on)
@@ -269,10 +469,14 @@ defmodule Absinthe.Schema.Notation do
     []
   end
 
+  @placement {:instruction, [under: :directive]}
   @doc """
   Calculate the instruction for a directive
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
   """
-  @placement {:instruction, [under: :directive]}
   defmacro instruction(func_ast) do
     env = __CALLER__
     check_placement!(env.module, :instruction)
@@ -283,24 +487,65 @@ defmodule Absinthe.Schema.Notation do
   # INPUT OBJECTS
 
   @placement {:input_object, [toplevel: true]}
-  defmacro input_object(identifier, attrs, [do: block]) do
-    scope(__CALLER__, :input_object, identifier, attrs, block)
+  @doc """
+  Defines an input object
+
+  See `Absinthe.Type.InputObject`
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+
+  ## Examples
+  ```
+  input_object :contact_input do
+    field :email, non_null(:string)
   end
-  defmacro input_object(identifier, [do: block]) do
-    scope(__CALLER__, :input_object, identifier, [], block)
+  ```
+  """
+  defmacro input_object(identifier, attrs \\ [], [do: block]) do
+    scope(__CALLER__, :input_object, identifier, attrs, block)
   end
 
   # UNIONS
 
   @placement {:union, [toplevel: true]}
-  defmacro union(identifier, attrs, [do: block]) do
-    scope(__CALLER__, :union, identifier, attrs, block)
+  @doc """
+  Defines a union type
+
+  See `Absinthe.Type.Union`
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+
+  ## Examples
+  ```
+  union :search_result do
+    description "A search result"
+
+    types [:person, :business]
+    resolve_type fn
+      %Person{}, _ -> :person
+      %Business{}, _ -> :business
+    end
   end
-  defmacro union(identifier, [do: block]) do
-    scope(__CALLER__, :union, identifier, [], block)
+  ```
+  """
+  defmacro union(identifier, attrs \\ [], [do: block]) do
+    scope(__CALLER__, :union, identifier, attrs, block)
   end
 
   @placement {:types, [under: [:union]]}
+  @doc """
+  Defines the types possible under a union type
+
+  See `union/3`
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+  """
   defmacro types(types) do
     env = __CALLER__
     check_placement!(env.module, :types)
@@ -311,9 +556,22 @@ defmodule Absinthe.Schema.Notation do
   # ENUMS
 
   @placement {:enum, [toplevel: true]}
+  @doc """
+  Defines an enum type
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+  """
   defmacro enum(identifier, attrs, [do: block]) do
     scope(__CALLER__, :enum, identifier, attrs, block)
   end
+
+  @doc """
+  Defines an enum type
+
+  See `enum/3`
+  """
   defmacro enum(identifier, [do: block]) do
     scope(__CALLER__, :enum, identifier, [], block)
   end
@@ -322,6 +580,15 @@ defmodule Absinthe.Schema.Notation do
   end
 
   @placement {:value, [under: [:enum]]}
+  @doc """
+  Defines a value possible under an enum type
+
+  See `enum/3`
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+  """
   defmacro value(identifier, raw_attrs \\ []) do
     env = __CALLER__
     check_placement!(env.module, :value)
@@ -337,6 +604,15 @@ defmodule Absinthe.Schema.Notation do
   # GENERAL ATTRIBUTES
 
   @placement {:description, [toplevel: false]}
+  @doc """
+  Defines a description
+
+  This macro adds a description to any other macro which takes a block.
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+  """
   defmacro description(text_block) do
     text = reformat_description(text_block)
     check_placement!(__CALLER__.module, :description)
@@ -349,10 +625,32 @@ defmodule Absinthe.Schema.Notation do
   # IMPORTS
 
   @placement {:import_types, [toplevel: true]}
+  @doc """
+  Import types from another module
+
+  Very frequently your schema module will simply have the `query` and `mutation`
+  blocks, and you'll want to break out your other types into other modules. This
+  macro imports those types for use the current module
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+
+  ## Examples
+  ```
+  import_types MyApp.Schema.Types
+  ```
+  """
   defmacro import_types(type_module_ast) do
     env = __CALLER__
-    type_module = Macro.expand(type_module_ast, env)
+    type_module_ast
+    |> Macro.expand(env)
+    |> do_import_types(env)
 
+    []
+  end
+
+  defp do_import_types(type_module, env) when is_atom(type_module) do
     for {ident, name} <- type_module.__absinthe_types__ do
       if Enum.member?(type_module.__absinthe_exports__, ident) do
         put_definition(env.module, %Absinthe.Schema.Notation.Definition{
@@ -376,35 +674,42 @@ defmodule Absinthe.Schema.Notation do
           line: env.line})
       end
     end
-
-    []
   end
+  defp do_import_types(type_module, _) do
+    raise ArgumentError, """
+    #{type_module} is not a module
 
-  defp put_definition(module, definition) do
-    # Why is accumulate true not working here?
-    # does that only work with the @ form?
-    definitions = Module.get_attribute(module, :absinthe_definitions) || []
-    Module.put_attribute(module, :absinthe_definitions, [definition | definitions])
+    This macro must be given a literal module name or a macro which expands to a
+    literal module name. Variables are not supported at this time.
+    """
   end
 
   # TYPE UTILITIES
+  @doc """
+  Marks a type reference as non null
 
+  See `field/3` for examples
+  """
   defmacro non_null(type) do
     quote do
       %Absinthe.Type.NonNull{of_type: unquote(type)}
     end
   end
 
+  @doc """
+  Marks a type reference as a list of the given type
+
+  See `field/3` for examples
+  """
   defmacro list_of(type) do
     quote do
       %Absinthe.Type.List{of_type: unquote(type)}
     end
   end
-
   # NOTATION UTILITIES
 
-  @doc false
   # Define a notation scope that will accept attributes
+  @doc false
   def scope(env, kind, identifier, attrs, block) do
     open_scope(kind, env, identifier, attrs)
 
@@ -443,12 +748,9 @@ defmodule Absinthe.Schema.Notation do
   # scope, setting any provided attributes.
   defp open_scope(kind, env, identifier, attrs) do
     check_placement!(env.module, kind)
-    Scope.open(kind, env.module, open_scope_attrs(attrs, identifier, env))
-  end
+    attrs = attrs |> add_reference(env, identifier)
 
-  def open_scope_attrs(attrs, identifier, env) do
-    attrs
-    |> add_reference(env, identifier)
+    Scope.open(kind, env.module, attrs)
   end
 
   # CLOSE SCOPE HOOKS
@@ -491,7 +793,7 @@ defmodule Absinthe.Schema.Notation do
     Scope.close(env)
   end
 
-  def close_scope_with_name(mod, identifier, opts \\ []) do
+  defp close_scope_with_name(mod, identifier, opts \\ []) do
     Scope.close(mod).attrs
     |> add_name(identifier, opts)
   end
@@ -521,6 +823,13 @@ defmodule Absinthe.Schema.Notation do
       line: env.line
     }
     put_definition(env.module, definition)
+  end
+
+  defp put_definition(module, definition) do
+    # Why is accumulate true not working here?
+    # does that only work with the @ form?
+    definitions = Module.get_attribute(module, :absinthe_definitions) || []
+    Module.put_attribute(module, :absinthe_definitions, [definition | definitions])
   end
 
   defp close_scope_and_accumulate_attribute(attr_name, env, identifier) do

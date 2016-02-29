@@ -1,4 +1,13 @@
 defmodule Absinthe.Type.BuiltIns do
+  @moduledoc """
+  Aggregates build in data types
+
+  It imports types from:
+  - `Absinthe.Type.BuiltIns.Scalars`
+  - `Absinthe.Type.BuiltIns.Directives`
+  - `Absinthe.Type.BuiltIns.Introspection`
+  """
+
   use Absinthe.Schema.Notation
   alias __MODULE__
 

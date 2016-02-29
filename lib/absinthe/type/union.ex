@@ -12,17 +12,14 @@ defmodule Absinthe.Type.Union do
   * Provide a `:is_type_of` function on each possible concrete type
 
   ```
-  @absinthe :type
-  def search_result do
-    %Type.Union{
-      description: "A search result that can be a person or business",
-      types: [:person, :business],
-      resolve_type: fn
-        %{age: _}, _ -> {:ok, :person}
-        %{employee_count: _}, _ -> {:ok, :business}
-        _ -> :error
-      end
-    }
+  union :search_result do
+    description "A search result"
+
+    types [:person, :business]
+    resolve_type fn
+      %Person{}, _ -> :person
+      %Business{}, _ -> :business
+    end
   end
   ```
 

@@ -1,5 +1,7 @@
 defmodule Absinthe.Schema.Rule do
 
+  @moduledoc false
+
   alias __MODULE__
 
   defmacro __using__(_opts) do

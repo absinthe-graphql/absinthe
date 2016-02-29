@@ -1,4 +1,13 @@
 defmodule Absinthe.Type.InputObject do
+  @moduledoc """
+  Defines a GraphQL input object
+
+  Input objects enable nested arguments to queries and mutations.
+
+  ## Example
+
+  
+  """
 
   use Absinthe.Introspection.Kind
   use Absinthe.Type.Fetch

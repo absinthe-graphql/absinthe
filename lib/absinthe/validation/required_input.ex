@@ -1,5 +1,7 @@
 defprotocol Absinthe.Validation.RequiredInput do
 
+  @moduledoc false
+
   @fallback_to_any true
 
   @doc "Whether input from/of a given type is required"

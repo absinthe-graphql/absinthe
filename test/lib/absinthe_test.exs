@@ -172,15 +172,6 @@ defmodule AbsintheTest do
     assert_result {:ok, %{errors: [%{message: "syntax error before: '}'"}]}}, result
   end
 
-  describe "validate/2" do
-
-    it "alwars returns :ok for now" do
-      {:ok, doc} = Absinthe.parse("{ does_not_exist { name } }")
-      assert :ok == Absinthe.validate(doc, Things)
-    end
-
-  end
-
   it "Should be retrievable using the ID type as a string" do
     result = """
     {

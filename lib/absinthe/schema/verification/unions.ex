@@ -1,5 +1,7 @@
 defmodule Absinthe.Schema.Verification.Unions do
 
+  @moduledoc false
+
   alias Absinthe.Schema
   alias Absinthe.Type
 

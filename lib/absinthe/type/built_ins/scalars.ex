@@ -86,16 +86,16 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   end
 
   @spec parse_float(integer | float | binary) :: {:ok, float} | :error
-  def parse_float(value) when is_integer(value) do
+  defp parse_float(value) when is_integer(value) do
     {:ok, value * 1.0}
   end
-  def parse_float(value) when is_float(value) do
+  defp parse_float(value) when is_float(value) do
     {:ok, value}
   end
-  def parse_float(value) when is_binary(value) do
+  defp parse_float(value) when is_binary(value) do
     with {value, _} <- Float.parse(value), do: {:ok, value}
   end
-  def parse_float(_value) do
+  defp parse_float(_value) do
     :error
   end
 

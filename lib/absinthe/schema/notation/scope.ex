@@ -1,5 +1,7 @@
 defmodule Absinthe.Schema.Notation.Scope do
 
+  @moduledoc false
+
   @stack :absinthe_notation_scopes
 
   defstruct name: nil, attrs: []

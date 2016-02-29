@@ -1,5 +1,5 @@
 defmodule Absinthe.Language.Document do
-  @moduledoc "The parsed AST representation of a query document"
+  @moduledoc false
 
   alias Absinthe.Language
 

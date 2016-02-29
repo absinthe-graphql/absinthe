@@ -1,7 +1,9 @@
 defmodule Absinthe.Schema.Rule.TypeNamesAreUnique do
   use Absinthe.Schema.Rule
 
-  @moduledoc """
+  @moduledoc false
+
+  @description """
   References to types must be unique.
 
   > All types within a GraphQL schema must have unique names. No two provided
@@ -16,7 +18,7 @@ defmodule Absinthe.Schema.Rule.TypeNamesAreUnique do
     """
     #{artifact} #{inspect name} is not unique.
 
-    #{@moduledoc}
+    #{@description}
     """
   end
 

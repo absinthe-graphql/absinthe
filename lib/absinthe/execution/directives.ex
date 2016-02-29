@@ -1,5 +1,7 @@
 defmodule Absinthe.Execution.Directives do
 
+  @moduledoc false
+
   alias Absinthe.Execution
   alias Absinthe.Schema
   alias Absinthe.Type

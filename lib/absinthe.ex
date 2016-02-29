@@ -47,6 +47,8 @@ defmodule Absinthe do
   The first thing you need to do is define a schema, we do this
   by using `Absinthe.Schema`.
 
+  For details on the macros available to build a schema, see `Absinthe.Schema.Notation`
+
   Here we'll build a basic schema that defines one query field; a
   way to retrieve the data for an `item`, given an `id`. Users of
   the API can then decide what fields of the `item` they'd like
@@ -54,7 +56,6 @@ defmodule Absinthe do
 
   ```
   defmodule App.Schema do
-
     use Absinthe.Schema
 
     @fake_db %{
@@ -62,35 +63,25 @@ defmodule Absinthe do
       "bar" => %{id: "bar", name: "Bar", value: 5}
     }
 
-    def query do
-      %Absinthe.Type.Object{
-        fields: fields(
-          item: [
-            type: :item,
-            description: "Get an item by ID",
-            args: args(
-              id: [type: :id, description: "The ID of the item"]
-            ),
-            resolve: fn %{id: id}, _ ->
-              {:ok, Map.get(@fake_db, id)}
-            end
-          ]
-        )
-      }
+    query do
+      field :item, type: :item do
+        description "Get an item by ID"
+
+        arg :id, :id, description: "The ID of the item"
+
+        resolve fn %{id: id}, _ ->
+          {:ok, Map.get(@fake_db, id)}
+        end
+      end
     end
 
-    @absinthe :type
-    def item do
-      %Absinthe.Type.Object{
-        description: "A valuable item",
-        fields: fields(
-          id: [type: :id],
-          name: [type: :string, description: "The item's name"],
-          value: [type: :integer, description: "Recently appraised value"]
-        )
-      }
-    end
+    object :item do
+      description "A valuable item"
 
+      field :id, :id
+      field :name, :string, description: "The item's name"
+      field :value, :integer, description: "Recently appraised value"
+    end
   end
   ```
 
@@ -234,6 +225,7 @@ defmodule Absinthe do
   See the `Absinthe` module documentation for more examples.
 
   """
+  def run(doc, schema, options \\ [])
   @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, Keyword.t) :: {:ok, Absinthe.Execution.result_t} | {:error, any}
   def run(%Absinthe.Language.Document{} = document, schema, options) do
     case execute(schema, document, options) do
@@ -253,27 +245,6 @@ defmodule Absinthe do
         other
     end
   end
-
-  @doc """
-  Evaluates a query document against a schema, without options.
-
-  ## Examples
-
-  ```
-  \"""
-  {
-    item(id: "foo") {
-      name
-    }
-  }
-  \"""
-  |> Absinthe.run(App.Schema)
-  ```
-
-  Also see `Absinthe.run/3`
-  """
-  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t) :: {:ok, Absinthe.Execution.result_t} | {:error, any}
-  def run(input, schema), do: run(input, schema, [])
 
   # TODO: Support modification by adapter
   # Convert a raw parser error into an `Execution.error_t`
@@ -297,19 +268,12 @@ defmodule Absinthe do
   See `run/3` for the available options.
   """
   @spec run!(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, Keyword.t) :: Absinthe.Execution.result_t
-  def run!(input, schema, options) do
+  def run!(input, schema, options \\ []) do
     case run(input, schema, options) do
       {:ok, result} -> result
       {:error, err} -> raise ExecutionError, message: err
     end
   end
-
-  @doc """
-  Evaluates a query document against a schema, with options, raising an
-  `Absinthe.SyntaxErorr` or `Absinthe.ExecutionError` if a problem occurs.
-  """
-  @spec run!(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t) :: Absinthe.Execution.result_t
-  def run!(input, schema), do: run!(input, schema, [])
 
   #
   # EXECUTION
@@ -319,21 +283,6 @@ defmodule Absinthe do
   defp execute(schema, document, options) do
     %Absinthe.Execution{schema: schema, document: document}
     |> Absinthe.Execution.run(options)
-  end
-
-  # TODO: Do separate validation phase here
-  @doc """
-  Validate a document.
-
-  Note this is currently a stub that merely returns `:ok`,
-  as validation and execution are currently conflated.
-
-  Track https://github.com/CargoSense/absinthe/issues/17 for
-  progress.
-  """
-  @spec validate(Language.Document.t, atom | Schema.t) :: :ok
-  def validate(_doc, _schema) do
-    :ok
   end
 
 end

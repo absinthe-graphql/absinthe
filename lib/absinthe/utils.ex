@@ -31,6 +31,7 @@ defmodule Absinthe.Utils do
   ```
   """
   @spec camelize(binary, Keyword.t) :: binary
+  def camelize(word, opts \\ [])
   def camelize("__" <> word, opts) do
     "__" <> camelize(word, opts)
   end
@@ -44,12 +45,34 @@ defmodule Absinthe.Utils do
     end
   end
 
-  @doc """
-  Camelize a word, respecting underscore prefixes.
+  @doc false
+  def placement_docs([{_, placement} | _]) do
+    placement
+    |> do_placement_docs
+  end
+  defp do_placement_docs([toplevel: true]) do
+    """
+    Top level in module.
+    """
+  end
+  defp do_placement_docs([toplevel: false]) do
+    """
+    Allowed under any block. Not allowed to be top level
+    """
+  end
 
-  See `camelize/2`.
-  """
-  @spec camelize(binary) :: binary
-  def camelize(word), do: camelize(word, [])
+  defp do_placement_docs([under: under]) when is_list(under) do
+    under = under
+    |> Enum.sort_by(&(&1))
+    |> Enum.map(&"`#{&1}`")
+    |> Enum.join(" ")
+    """
+    Allowed under: #{under}
+    """
+  end
+
+  defp do_placement_docs([under: under]) do
+    do_placement_docs([under: [under]])
+  end
 
 end
