@@ -1,66 +1,47 @@
 defmodule FooBarSchema do
-
   use Absinthe.Schema
-
-  alias Absinthe.Type
 
   @items %{
     "foo" => %{id: "foo", name: "Foo"},
     "bar" => %{id: "bar", name: "Bar"}
   }
 
-  def query do
-    %Type.Object{
-      fields: fields(
-        item: [
-          type: :item,
-          args: args(
-            id: [type: non_null(:id)]
-          ),
-          resolve: fn %{id: item_id}, _ ->
-            {:ok, @items[item_id]}
-          end
-        ]
-      )
-    }
+  query do
+
+    field :item,
+      type: :item,
+      args: [
+        id: [type: non_null(:id)]
+      ],
+      resolve: fn %{id: item_id}, _ ->
+        {:ok, @items[item_id]}
+      end
+
   end
 
-  @absinthe :type
-  def item do
-    %Type.Object{
-      description: "A Basic Type",
-      fields: fields(
-        id: [type: :id],
-        name: [type: :string]
-      )
-    }
+  object :item do
+    description "A Basic Type"
+
+    field :id, :id
+    field :name, :string
   end
 
-  @absinthe type: :author
-  def person do
-    %Type.Object{
-      description: "A Person",
-      fields: fields(
-        id: [type: :id],
-        first_name: [type: :string],
-        last_name: [type: :string],
-        books: [type: list_of(:book)]
-      )
-    }
+  object :author do
+    description "An author"
+
+    field :id, :id
+    field :first_name, :string
+    field :last_name, :string
+    field :books, list_of(:book)
   end
 
-  @absinthe :type
-  def book do
-    %Type.Object{
-      name: "NonFictionBook",
-      description: "A Book",
-      fields: fields(
-        id: [type: :id],
-        title: [type: :string],
-        isbn: [type: :string],
-        authors: [type: list_of(:author)]
-      )
-    }
+  object :book, name: "NonFictionBook" do
+    description "A Book"
+
+    field :id, :id
+    field :title, :string
+    field :isbn, :string
+    field :authors, list_of(:author)
   end
 
 end

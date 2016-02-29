@@ -96,13 +96,13 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
       %{__struct__: type_name} when type_name in [Type.Union, Type.Interface] ->
         resolved = Execution.concrete_type(this_type, target, execution)
         if condition_type do
-          if resolved == condition_type, do: resolved
+          if Type.equal?(resolved, condition_type), do: resolved
         else
           resolved
         end
       _ ->
         if condition_type do
-          if this_type == condition_type, do: this_type
+          if Type.equal?(this_type, condition_type), do: this_type
         else
           this_type
         end

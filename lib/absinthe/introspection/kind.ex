@@ -2,7 +2,7 @@ defmodule Absinthe.Introspection.Kind do
 
   @moduledoc false
 
-  defmacro __using__(opts) do
+  defmacro __using__(_opts) do
     quote do
       @behaviour unquote(__MODULE__)
       def kind do

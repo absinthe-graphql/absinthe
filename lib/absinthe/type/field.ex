@@ -1,4 +1,5 @@
 defmodule Absinthe.Type.Field do
+  alias Absinthe.Type
 
   @moduledoc """
   Used to define a field.
@@ -100,9 +101,51 @@ defmodule Absinthe.Type.Field do
                deprecation: Deprecation.t | nil,
                default_value: any,
                args: %{(binary | atom) => Absinthe.Type.Argument.t} | nil,
-               resolve: resolver_t | nil}
+               resolve: resolver_t | nil,
+               __reference__: Type.Reference.t}
 
-  defstruct name: nil, description: nil, type: nil, deprecation: nil, args: %{}, resolve: nil, default_value: nil
+  defstruct name: nil, description: nil, type: nil, deprecation: nil, args: %{}, resolve: nil, default_value: nil, __reference__: nil
+
+  @doc """
+  Build an AST of the field map for inclusion in other types
+
+  ## Examples
+
+  ```
+  iex> build([foo: [type: :string], bar: [type: :integer]])
+  {:%{}, [],
+   [foo: {:%, [],
+     [{:__aliases__, [alias: false], [:Absinthe, :Type, :Field]},
+      {:%{}, [], [name: "Foo", type: :string]}]},
+    bar: {:%, [],
+     [{:__aliases__, [alias: false], [:Absinthe, :Type, :Field]},
+      {:%{}, [], [name: "Bar", type: :integer]}]}]}
+  ```
+  """
+  @spec build(Keyword.t) :: tuple
+  def build(fields) when is_list(fields) do
+    quoted_empty_map = quote do: %{}
+    ast = for {field_name, field_attrs} <- fields do
+      name = field_name |> Atom.to_string
+      field_data = [name: name] ++ Keyword.update(field_attrs, :args, quoted_empty_map, fn
+        raw_args ->
+          args = for {name, attrs} <- raw_args, do: {name, ensure_reference(attrs, field_attrs[:__reference__])}
+          Type.Argument.build(args || [])
+      end)
+      field_ast = quote do: %Absinthe.Type.Field{unquote_splicing(field_data |> Absinthe.Type.Deprecation.from_attribute)}
+      {field_name, field_ast}
+    end
+    quote do: %{unquote_splicing(ast)}
+  end
+
+  defp ensure_reference(arg_attrs, default_reference) do
+    case Keyword.has_key?(arg_attrs, :__reference__) do
+      true ->
+        arg_attrs
+      false ->
+        Keyword.put(arg_attrs, :__reference__, default_reference)
+    end
+  end
 
   defimpl Absinthe.Validation.RequiredInput do
 

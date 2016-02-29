@@ -63,7 +63,7 @@ defmodule Absinthe.Type.Interface do
 
   The `:resolve_type` function will be passed two arguments; the object whose type needs to be identified, and the `Absinthe.Execution` struct providing the full execution context.
 
-  The `:reference` key is for internal use.
+  The `:__reference__` key is for internal use.
 
   """
 
@@ -71,14 +71,19 @@ defmodule Absinthe.Type.Interface do
 
   alias Absinthe.Type
   alias Absinthe.Execution
+  alias Absinthe.Schema
 
-  @type t :: %{name: binary, description: binary, fields: map, resolve_type: ((any, Absinthe.Execution.t) -> atom | nil), reference: Type.Reference.t}
-  defstruct name: nil, description: nil, fields: nil, resolve_type: nil, reference: nil
+  @type t :: %{name: binary, description: binary, fields: map, resolve_type: ((any, Absinthe.Execution.t) -> atom | nil), __reference__: Type.Reference.t}
+  defstruct name: nil, description: nil, fields: nil, resolve_type: nil, __reference__: nil
 
+  def build(%{attrs: attrs}) do
+    fields = Type.Field.build(attrs[:fields] || [])
+    quote do: %unquote(__MODULE__){unquote_splicing(attrs), fields: unquote(fields)}
+  end
 
   @spec resolve_type(Type.Interface.t, any, Execution.Field.t) :: Type.t | nil
-  def resolve_type(%{resolve_type: nil, reference: %{identifier: ident}}, obj, %{schema: schema}) do
-    implementors = schema.interfaces[ident]
+  def resolve_type(%{resolve_type: nil, __reference__: %{identifier: ident}}, obj, %{schema: schema}) do
+    implementors = Schema.implementors(schema, ident)
     Enum.find(implementors, fn
       %{is_type_of: nil} ->
         false
@@ -91,8 +96,21 @@ defmodule Absinthe.Type.Interface do
       nil ->
         nil
       ident when is_atom(ident) ->
-        schema.types[ident]
+        Schema.lookup_type(schema, ident)
     end
+  end
+
+  @doc """
+  Whether the interface (or implementors) are correctly configured to resolve
+  objects.
+  """
+  @spec type_resolvable?(Schema.t, t) :: boolean
+  def type_resolvable?(schema, %{resolve_type: nil} = iface) do
+    Schema.implementors(schema, iface)
+    |> Enum.all?(&(&1.is_type_of))
+  end
+  def type_resolvable?(_, %{resolve_type: _}) do
+    true
   end
 
   @spec implements?(Type.Interface.t, Type.Object.t) :: boolean
@@ -122,11 +140,10 @@ defmodule Absinthe.Type.Interface do
     end
   end
 
-  @ignore [:description]
+  @ignore [:description, :__reference__]
   defp ignore_implementing_keypath?(keypath) when is_list(keypath) do
     keypath
-    |> List.last
-    |> ignore_implementing_keypath?
+    |> Enum.any?(&ignore_implementing_keypath?/1)
   end
   defp ignore_implementing_keypath?(keypath) when is_atom(keypath) do
     Enum.member?(@ignore, keypath)

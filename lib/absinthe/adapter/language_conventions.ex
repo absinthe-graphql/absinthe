@@ -1,5 +1,6 @@
 defmodule Absinthe.Adapter.LanguageConventions do
   use Absinthe.Adapter
+  alias Absinthe.Utils
 
   @moduledoc """
   This defines an adapter that supports GraphQL query documents in their
@@ -47,6 +48,9 @@ defmodule Absinthe.Adapter.LanguageConventions do
   def to_internal_name("__" <> camelized_name, role) do
     "__" <> to_internal_name(camelized_name, role)
   end
+  def to_internal_name(camelized_name, :operation) do
+    camelized_name
+  end
   def to_internal_name(camelized_name, _role) do
     camelized_name
     |> Macro.underscore
@@ -61,15 +65,7 @@ defmodule Absinthe.Adapter.LanguageConventions do
   end
   def to_external_name(underscored_name, _role) do
     underscored_name
-    |> camelize_lower
-  end
-
-  @spec camelize_lower(binary) :: binary
-  defp camelize_lower(underscored) do
-    [first, rest] = underscored
-    |> Macro.camelize
-    |> String.split("", parts: 2)
-    String.downcase(first) <> rest
+    |> Utils.camelize(lower: true)
   end
 
 end

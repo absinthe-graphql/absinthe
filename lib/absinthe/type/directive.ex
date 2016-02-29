@@ -8,7 +8,6 @@ defmodule Absinthe.Type.Directive do
   """
 
   alias Absinthe.Type
-  alias Absinthe.Language
   use Absinthe.Introspection.Kind
 
   @typedoc """
@@ -20,47 +19,32 @@ defmodule Absinthe.Type.Directive do
   * `:on` - A list of places the directives can be used (can be `:operation`, `:fragment`, `:field`).
   * `:instruction` - A function that, given an argument, returns an instruction for the correct action to take
 
-  The `:reference` key is for internal use.
+  The `:__reference__` key is for internal use.
   """
-  @type t :: %{name: binary, description: binary, args: map, on: [atom], instruction: ((map) -> atom), reference: Type.Reference.t}
-  defstruct name: nil, description: nil, args: nil, on: [], instruction: nil, reference: nil
+  @type t :: %{name: binary, description: binary, args: map, on: [atom], instruction: ((map) -> atom), __reference__: Type.Reference.t}
+  defstruct name: nil, description: nil, args: nil, on: [], instruction: nil, __reference__: nil
 
-  use Absinthe.Type.Definitions
-  alias Absinthe.Type
-  alias Absinthe.Language
+  def build(%{attrs: attrs}) do
+    args = attrs
+    |> Keyword.get(:args, [])
+    |> Enum.map(fn
+      {name, attrs} ->
+        {name, ensure_reference(attrs, attrs[:__reference__])}
+    end)
+    |> Type.Argument.build
 
-  @absinthe :directive
-  def include do
-    %Type.Directive{
-      description: "Directs the executor to include this field or fragment only when the `if` argument is true.",
-      args: args(
-        if: [type: non_null(:boolean), description: "Included when true."]
-      ),
-      on: [Language.FragmentSpread, Language.Field, Language.InlineFragment],
-      instruction: fn
-        %{if: true} ->
-          :include
-        _ ->
-          :skip
-      end
-    }
+    attrs = Keyword.put(attrs, :args, args)
+
+    quote do: %unquote(__MODULE__){unquote_splicing(attrs)}
   end
 
-  @absinthe :directive
-  def skip do
-    %Type.Directive{
-      description: "Directs the executor to skip this field or fragment when the `if` argument is true.",
-      args: args(
-        if: [type: non_null(:boolean), description: "Skipped when true."]
-      ),
-      on: [Language.FragmentSpread, Language.Field, Language.InlineFragment],
-      instruction: fn
-        %{if: true} ->
-          :skip
-        _ ->
-          :include
-      end
-    }
+  defp ensure_reference(arg_attrs, default_reference) do
+    case Keyword.has_key?(arg_attrs, :__reference__) do
+      true ->
+        arg_attrs
+      false ->
+        Keyword.put(arg_attrs, :__reference__, default_reference)
+    end
   end
 
   # Whether the directive is active in `place`

@@ -48,7 +48,7 @@ defmodule Absinthe.Type.Definitions do
         |> Enum.into(%{}, fn {identifier, fn_name} ->
           ready = apply(__MODULE__, fn_name, [])
           |> Absinthe.Type.Definitions.set_default_name(identifier, :type)
-          tagged = %{ready | reference: %Absinthe.Type.Reference{module: __MODULE__, identifier: identifier, name: ready.name}}
+          tagged = %{ready | __reference__: %Absinthe.Type.Reference{module: __MODULE__, identifier: identifier, name: ready.name}}
           {identifier, tagged}
         end)
       end
@@ -57,7 +57,7 @@ defmodule Absinthe.Type.Definitions do
         |> Enum.into(%{}, fn {identifier, fn_name} ->
           ready = apply(__MODULE__, fn_name, [])
           |> Absinthe.Type.Definitions.set_default_name(identifier, :directive)
-          tagged = %{ready | reference: %Absinthe.Type.Reference{module: __MODULE__, identifier: identifier, name: ready.name}}
+          tagged = %{ready | __reference__: %Absinthe.Type.Reference{module: __MODULE__, identifier: identifier, name: ready.name}}
           {identifier, tagged}
         end)
       end
@@ -329,7 +329,7 @@ defmodule Absinthe.Type.Definitions do
           identifier,
           struct(definition, name: identifier |> to_string)
         }
-      {identifier, %{__struct__: ^mod}} = pair ->
+      {_identifier, %{__struct__: ^mod}} = pair ->
         pair
     end)
   end

@@ -1,55 +1,42 @@
 # Absinthe
 
-A [GraphQL](https://facebook.github.io/graphql/) implementation for Elixir.
+[GraphQL](https://facebook.github.io/graphql/) implementation for Elixir.
 
 [![Build Status](https://secure.travis-ci.org/CargoSense/absinthe.svg?branch=master
 "Build Status")](https://travis-ci.org/CargoSense/absinthe)
 
-## Goal
+Goals:
 
-Absinthe's goal is full implementation of the specification--in as
-idiomatic, flexible, and comfortable way possible.
+- Complete implementation of the [GraphQL Working Draft](https://facebook.github.io/graphql), dated October 2015
+- An idiomatic, readable, and comfortable API for Elixir developers
+- Detailed error messages and documentation
+- A focus on robustness and production-level performance
 
-Absinthe is currently targeting the
-[GraphQL Working Draft](https://facebook.github.io/graphql), dated October 2015.
+## Features
 
-## Status
+- Parser
+  - All AST types
+  - Fragments and type conditions
+  - Line number reporting
+  - ~~Column number reporting~~ (Not currently available due to Leex tokenizer constraint)
+- Schema definition
+  - All types (eg, Object, Input Object, Enum, Union, Interface, Scalar)
+  - Circular type references
+  - Support for [custom scalars](./README.md#custom-types)
+  - Support for custom directives
+  - Field, argument, and enum value [deprecation](./README.md#deprecation)
+  - Compile-time schema validation
+- [Introspection](../README.md#introspection), compatible with GraphiQL
+- Query execution
+  - General
+  - Named fragments, inline fragments, and fragment spreads with type conditions
+  - `@skip` and `@include` directives
+  - [Adapter](./README.md#adapters) mechanism to support conversion between camelCase query documents
+    and snake_cased schema definition.
 
-All major language and type features are implemented. Any divergence from the
-specification should be reported and can be tracked on the
-[issue tracker](https://github.com/CargoSense/absinthe/issues).
+## Related Projects
 
-Note that validation is currently done during execution, rather than as a
-separate preliminary phase. This will be refactored at a later date and should
-have minimal impact on the API.
-
-## Special Features
-
-- A clean, conventional, module-based approach to building schemas.
-- Full support for extending types, including scalars.
-  (See [Custom Types](./README.md#custom-types), below.)
-- Argument, input object field, and enum value deprecation.
-  (See [Deprecation](./README.md#deprecation),
-  below.)
-- Support for Plug, via [absinthe_plug](http://hex.pm/projects/absinthe_plug).
-- [Introspection](../README.md#introspection), compatible with GraphiQL.
-- A flexible adapter mechanism to translate between different naming
-  conventions (eg, `snake_case` and `camelCase`) in schema vs the client.
-  (See [Adapters](./README.md#adapters), below.)
-
-## Limitations
-
-Due to a limitation by Leex, the lexer, source column numbers are not
-currently supported in errors.
-
-## Alternatives
-
-You may also want to look at building from or using one of the following
-alternatives.
-
-* https://github.com/joshprice/graphql-elixir, also with Plug support:
-  https://github.com/joshprice/plug_graphql
-* https://github.com/asonge/graphql (Parser-only as of 2015-12)
+- [absinthe_plug](http://hex.pm/projects/absinthe_plug)
 
 ## Installation
 
@@ -57,7 +44,7 @@ Install from [Hex.pm](https://hex.pm/packages/absinthe):
 
 ```elixir
 def deps do
-  [{:absinthe, "~> 0.5.0"}]
+  [{:absinthe, "~> 1.0.0-alpha1"}]
 end
 ```
 
@@ -69,7 +56,7 @@ def application do
 end
 ```
 
-Note: Absinthe requires Elixir 1.2-dev or higher.
+Note: Absinthe requires Elixir 1.2 or higher.
 
 ## Upgrading
 
@@ -90,21 +77,19 @@ You may also be interested in how GraphQL is used by [Relay](https://facebook.gi
 ## Basic Usage
 
 A GraphQL API starts by building a schema. Using Absinthe, schemas are normal
-modules that use `Absinthe.Schema` and adhere to its behavior (ie, define at
-least `query`).
+modules that use `Absinthe.Schema`.
 
 For this example, we'll build a simple schema that allows users to look-up an
 `item` by `id`, a required, non-null field of type `:id` (which is a built-in
 type, just like `:string`, `:integer`, `:float`, and `:boolean`).
 
-(You may want to refer to the [Absinthe API documentation](http://hexdocs.pm/absinthe/0.1.0/)
+(You may want to refer to the [Absinthe API documentation](http://hexdocs.pm/absinthe/)
 for more detailed information as you look this over.)
 
 ```elixir
 defmodule MyApp.Schema do
 
   use Absinthe.Schema
-  alias Absinthe.Type
 
   # Example data
   @items %{
@@ -112,32 +97,27 @@ defmodule MyApp.Schema do
     "bar" => %{id: "bar", name: "Bar"}
   }
 
-  def query do
-    %Type.Object{
-      fields: fields(
-        item: [
-          type: :item,
-          args: args(
-            id: [type: non_null(:id)]
-          ),
-          resolve: fn %{id: item_id}, _ ->
-            {:ok, @items[item_id]}
-          end
-        ]
-      )
-    }
+  query do
+    field :item, :item do
+      arg :id, non_null(:id)
+      resolve fn %{id: item_id}, _ ->
+        {:ok, @items[item_id]}
+      end
+    end
   end
 
 end
 ```
 
-Some functions used here that are worth mentioning, pulled in automatically from
-`Absinthe.Type.Definitions` by `use Absinthe.Schema`:
+Some macros and functions used here that are worth mentioning, pulled in automatically from
+`Absinthe.Schema.Notation` by `use Absinthe.Schema`:
 
-* `args()` and `fields()` are utility functions that reduce clutter in your
-  schema (by building maps of nicely-named `%Type.Argument{}` and
-  `%Type.Field{}` structs, respectively, for you).
-* `non_null()`: Used to add a non-null constraint to an argument. In this
+- `query` - Defines the root query object. It's like using `object` but with
+   nice defaults. There is a matching `mutation` macro as well.
+- `field` - Defines a field in the enclosing `object`, `input_object`, or `interface`.
+- `arg` - Defines an argument in the enclosing `field` or `directive`.
+- `resolve` - Sets the resolve function for the enclosing `field`.
+* `non_null`: Used to add a non-null constraint to an argument. In this
   example, we are requiring an `id` to be provided to resolve the `item` field.
 
 You'll notice we mention another type here: `:item`.
@@ -145,29 +125,14 @@ You'll notice we mention another type here: `:item`.
 We haven't defined that yet; let's do it. In the same `MyApp.Schema` module:
 
 ```elixir
-@absinthe :type
-def item do
-  %Type.Object{
-    description: "An item",
-    fields: fields(
-      id: [type: :id],
-      name: [type: :string]
-    )
-  }
+object :item do
+  description "An item"
+  field :id, :id
+  field :name, :string
 end
 ```
 
-Some notes on defining types:
-
-* By default, they will have the same atom identifier (eg, `:item`) as the
-  defining function. This can be overridden, eg, `@absinthe type: :my_custom_name`
-* The `name` field of the `Type.Object` struct is optional; if not provided,
-  it will be automatically set to a TitleCase version of the type identifier
-  (in this case, it's set to `"Item"`).
-* You can define additional scalar types (including coercion logic); see
-  [Custom Types](./README.md#custom-types), below.
-
-See [the documentation for Absinthe.Type.Definitions](http://hexdocs.pm/absinthe/Absinthe.Type.Definitions.html)
+See [the documentation for Absinthe.Schema.Notation](http://hexdocs.pm/absinthe/Absinthe.Schema.Notation.html)
 for more information.
 
 Now, you can use Absinthe to execute a query document. Keep in mind that for
@@ -217,39 +182,51 @@ query GetItem($id: ID!) {
 
 ## Deprecation
 
-Use the `deprecate` function on an argument definition (or input object field),
-passing an optional `reason`:
+Use the `deprecate` option when defining any field, argument, or enum value.
+
+- Provide a binary value to give a deprecation reason
+- Provide `true` to just mark it as deprecated
+
+An example:
 
 ```elixir
-def query do
-  %Type.Object{
-    name: "RootQuery",
-    fields: fields(
-      item: [
-        type: :item
-        args: args(
-          id: [type: non_null(:id)],
-          oldId: deprecate([type: non_null(:string)],
-                           reason: "It's old.")
-        ),
-        resolve: fn %{id: item_id}, _ ->
-          {:ok, @items[item_id]}
-        end
-      ]
-    )
-  }
+query do
+  field :item, :item do
+    arg :id, non_null(:id)
+    arg :oldId, non_null(:string), deprecate: "It's old."
+    resolve fn %{id: item_id}, _ ->
+      {:ok, @items[item_id]}
+    end
+  end
 end
 ```
-
-`resolve` functions must accept 2 arguments: a map of arguments and a
-special `%Absinthe.Execution{}` struct that provides the full execution context
-(useful for advanced purposes). `resolve` functions must return a `{:ok, result}`
-or `{:error, "Error to report"}` tuple.
 
 Note: At the current time, Absinthe reports any deprecated argument or
 deprecated input object field used in the `errors` entry of the response. Non
 null constraints are ignored when validating deprecated arguments and input
 object fields.
+
+## Descriptions
+
+Descriptions for types, directives, field, arguments, etc can be provided one of
+two ways:
+
+By passing a `:description` option to the definition:
+
+```elixir
+object :foo, description: "A Foo" do
+  # ...
+end
+```
+
+By using the `description` macro inside the definition:
+
+```elixir
+object :foo do
+  description "A Foo"
+  # ...
+end
+```
 
 ## Custom Types
 
@@ -257,14 +234,10 @@ Absinthe supports defining custom scalar types, just like the built-in types.
 Here's an example of how to support a time scalar to/from ISOz format:
 
 ```elixir
-@absinthe type: :iso_z
-def iso_z_type do
-  %Type.Scalar{
-    name: "ISOz",
-    description: "ISOz time",
-    parse: &Timex.DateFormat.parse(&1, "{ISOz}"),
-    serialize: &Timex.DateFormat.format!(&1, "{ISOz}")
-  }
+scalar :iso_z, name: "ISOz" do
+  description "ISOz time"
+  parse &Timex.DateFormat.parse(&1, "{ISOz}")
+  serialize &Timex.DateFormat.format!(&1, "{ISOz}")
 end
 ```
 
@@ -409,9 +382,6 @@ functions.
 Note that types that are defined external to your application (including
 the introspection types) may not be compatible if you're using a different
 adapter.
-
-## Specification Implementation
-
 
 ### Roadmap & Contributions
 

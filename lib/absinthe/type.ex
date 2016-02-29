@@ -21,6 +21,21 @@ defmodule Absinthe.Type do
   def type?(%{__struct__: mod}) when mod in @type_modules, do: true
   def type?(_), do: false
 
+  @doc "Determine whether a field/argument is deprecated"
+  @spec deprecated?(Type.Field.t | Type.Argument.t) :: boolean
+  def deprecated?(%{deprecation: nil}), do: false
+  def deprecated?(%{deprecation: _}), do: true
+
+  def equal?(%{name: name}, %{name: name}), do: true
+  def equal?(_, _), do: false
+
+  def built_in?(type) do
+    type.__reference__.module
+    |> Module.split
+    |> Enum.take(3)
+    |> Module.safe_concat == Absinthe.Type.BuiltIns
+  end
+
   # INPUT TYPES
 
   @input_type_modules [Type.Scalar, Type.Enum, Type.InputObject, Type.List, Type.NonNull]

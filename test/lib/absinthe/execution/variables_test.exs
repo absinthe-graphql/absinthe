@@ -24,7 +24,7 @@ defmodule Absinthe.Execution.VariablesTest do
     # Parse
     {:ok, document} = Absinthe.parse(query_document)
     # Get schema
-    schema = Things.schema
+    schema = Things
     # Prepare execution context
     {:ok, execution} = %Execution{schema: schema, document: document, variables: provided}
     |> Execution.prepare

@@ -24,7 +24,7 @@ defmodule Absinthe.Schema.Verification.Unions do
   defp check_resolvers(_union, [], schema) do
     schema
   end
-  defp check_resolvers(%{resolve_type: nil, reference: %{identifier: ident}} = union, [concrete_type_ident | rest], schema) do
+  defp check_resolvers(%{resolve_type: nil, __reference__: %{identifier: ident}} = union, [concrete_type_ident | rest], schema) do
     case schema.types[concrete_type_ident] do
       nil ->
         err = "Could not find concrete type :#{concrete_type_ident} for union type :#{ident}"

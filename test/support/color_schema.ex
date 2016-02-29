@@ -1,6 +1,5 @@
 defmodule ColorSchema do
   use Absinthe.Schema
-  alias Absinthe.Type
 
   @names %{
     r: "RED",
@@ -16,44 +15,39 @@ defmodule ColorSchema do
     p: -100
   }
 
-  def query do
-    %Type.Object{
-      fields: fields(
-        info: [
-          type: :channel_info,
-          args: args(
-            channel: [type: non_null(:channel)],
-          ),
-          resolve: fn
-            %{channel: channel}, _ ->
-              {:ok, %{name: @names[channel], value: @values[channel]}}
-          end
-        ]
-      )
-    }
+  query do
+
+    field :info,
+      type: :channel_info,
+      args: [
+        channel: [type: non_null(:channel)],
+      ],
+      resolve: fn
+        %{channel: channel}, _ ->
+          {:ok, %{name: @names[channel], value: @values[channel]}}
+      end
+
   end
 
-  @absinthe :type
-  def channel do
-    %Type.Enum{
-      description: "A color channel",
-      values: values([
-        red: [description: "The color red", value: :r],
-        green: [description: "The color green", value: :g],
-        blue: [description: "The color blue", value: :b],
-        puce: deprecate([description: "The color puce", value: :p], reason: "it's ugly")
-      ])
-    }
+  enum :channel do
+    description """
+    A color channel
+    """
+
+    value :red, description: "The color red", as: :r
+    value :green, description: "The color green", as: :g
+    value :blue, description: "The color blue", as: :b
+    value :puce, description: "The color puce", as: :p, deprecate: "it's ugly"
   end
 
-  @absinthe :type
-  def channel_info do
-    %Type.Object{
-      fields: fields(
-        name: [type: :string],
-        value: [type: :integer]
-      )
-    }
+
+  object :channel_info do
+    description """
+    Info about a channel
+    """
+
+    field :name, :string
+    field :value, :integer
   end
 
 end

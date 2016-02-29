@@ -88,10 +88,15 @@ defmodule Absinthe.Type.Object do
   * `:interfaces` - A list of interfaces that this type guarantees to implement. See `Absinthe.Type.Interface`.
   * `:is_type_of` - A function used to identify whether a resolved object belongs to this defined type. For use with `:interfaces` entry and `Absinthe.Type.Interface`.
 
-  The `:reference` key is for internal use.
+  The `:__reference__` key is for internal use.
   """
-  @type t :: %{name: binary, description: binary, fields: map, interfaces: [Absinthe.Type.Interface.t], is_type_of: ((any) -> boolean), reference: Type.Reference.t}
-  defstruct name: nil, description: nil, fields: nil, interfaces: [], is_type_of: nil, reference: nil
+  @type t :: %{name: binary, description: binary, fields: map, interfaces: [Absinthe.Type.Interface.t], is_type_of: ((any) -> boolean), __reference__: Type.Reference.t}
+  defstruct name: nil, description: nil, fields: nil, interfaces: [], is_type_of: nil, __reference__: nil
+
+  def build(%{attrs: attrs}) do
+    fields = Type.Field.build(attrs[:fields] || [])
+    quote do: %unquote(__MODULE__){unquote_splicing(attrs), fields: unquote(fields)}
+  end
 
   @doc false
   @spec field(t, atom) :: Absinthe.Type.Field.t

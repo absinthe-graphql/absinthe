@@ -33,7 +33,7 @@ defmodule Absinthe.Type.Union do
 
   The `:resolve_type` function will be passed two arguments; the object whose type needs to be identified, and the `Absinthe.Execution` struct providing the full execution context.
 
-  The `:reference` key is for internal use.
+  The `:__reference__` key is for internal use.
   """
 
   use Absinthe.Introspection.Kind
@@ -44,9 +44,13 @@ defmodule Absinthe.Type.Union do
                description: binary,
                types: [Absinthe.Type.t],
                resolve_type: ((any, Absinthe.Execution.t) -> atom | nil),
-               reference: Type.Reference.t}
+               __reference__: Type.Reference.t}
 
-  defstruct name: nil, description: nil, resolve_type: nil, types: [], reference: nil
+  defstruct name: nil, description: nil, resolve_type: nil, types: [], __reference__: nil
+
+  def build(%{attrs: attrs}) do
+    quote do: %unquote(__MODULE__){unquote_splicing(attrs)}
+  end
 
   @doc false
   def member?(%{types: types}, type) do
@@ -61,8 +65,14 @@ defmodule Absinthe.Type.Union do
       %{is_type_of: nil} ->
         false
       type ->
-        type_struct = schema.types[type]
-        type_struct.is_type_of.(obj)
+        case Schema.lookup_type(schema, type) do
+          nil ->
+            false
+          %{is_type_of: nil} ->
+            false
+          %{is_type_of: check} ->
+            check.(obj)
+        end
     end)
   end
   def resolve_type(%{resolve_type: resolver}, obj, %{schema: schema} = env) do
@@ -70,7 +80,7 @@ defmodule Absinthe.Type.Union do
       nil ->
         nil
       ident when is_atom(ident) ->
-        schema.types[ident]
+        Absinthe.Schema.lookup_type(schema, ident)
     end
   end
 
