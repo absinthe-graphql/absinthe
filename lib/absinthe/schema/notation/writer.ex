@@ -108,6 +108,10 @@ defmodule Absinthe.Schema.Notation.Writer do
   end
 
   defp build_info(env) do
+    descriptions = env.module
+    |> Module.get_attribute(:absinthe_descriptions)
+    |> Enum.into(%{})
+
     info = %{
       type_map: %{},
       directive_map: %{},
@@ -120,7 +124,19 @@ defmodule Absinthe.Schema.Notation.Writer do
 
     env.module
     |> Module.get_attribute(:absinthe_definitions)
+    |> Enum.map(&update_description(&1, descriptions))
     |> Enum.reduce(info, &do_build_info/2)
+  end
+
+  defp update_description(definition, descriptions) do
+    if definition.attrs[:description] do
+      definition
+    else
+      case Map.get(descriptions, definition.identifier) do
+        nil -> definition
+        desc -> Map.update!(definition, :attrs, &Keyword.put(&1, :description, desc))
+      end
+    end
   end
 
   defp do_build_info(%{category: :directive} = definition, info) do

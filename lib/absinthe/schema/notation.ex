@@ -12,11 +12,20 @@ defmodule Absinthe.Schema.Notation do
     quote do
       import unquote(__MODULE__), only: :macros
       Module.register_attribute __MODULE__, :absinthe_definitions, accumulate: true
+      Module.register_attribute(__MODULE__, :absinthe_descriptions, accumulate: true)
       @before_compile unquote(__MODULE__).Writer
+      @desc nil
     end
   end
 
   Module.register_attribute(__MODULE__, :placement, accumulate: true)
+
+  defp handle_desc(identifier) do
+    quote do
+      @absinthe_descriptions {unquote(identifier), @desc}
+      @desc nil
+    end
+  end
 
   # OBJECT
 
@@ -50,6 +59,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro object(identifier, attrs \\ [], [do: block]) do
     scope(__CALLER__, :object, identifier, attrs, block)
+    handle_desc(identifier)
   end
 
   @placement {:interfaces, [under: :object]}
@@ -134,6 +144,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro interface(identifier, attrs \\ [], [do: block]) do
     scope(__CALLER__, :interface, identifier, attrs, block)
+    handle_desc(identifier)
   end
 
   @placement {:resolve_type, [under: [:interface, :union]]}
@@ -355,6 +366,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro scalar(identifier, attrs, [do: block]) do
     scope(__CALLER__, :scalar, identifier, attrs, block)
+    handle_desc(identifier)
   end
 
   @doc """
@@ -364,9 +376,11 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro scalar(identifier, [do: block]) do
     scope(__CALLER__, :scalar, identifier, [], block)
+    handle_desc(identifier)
   end
   defmacro scalar(identifier, attrs) do
     scope(__CALLER__, :scalar, identifier, attrs, nil)
+    handle_desc(identifier)
   end
 
   @placement {:serialize, [under: [:scalar]]}
@@ -440,6 +454,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro directive(identifier, attrs \\ [], [do: block]) do
     scope(__CALLER__, :directive, identifier, attrs, block)
+    handle_desc(identifier)
   end
 
   @placement {:on, [under: :directive]}
@@ -505,6 +520,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro input_object(identifier, attrs \\ [], [do: block]) do
     scope(__CALLER__, :input_object, identifier, attrs, block)
+    handle_desc(identifier)
   end
 
   # UNIONS
@@ -534,6 +550,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro union(identifier, attrs \\ [], [do: block]) do
     scope(__CALLER__, :union, identifier, attrs, block)
+    handle_desc(identifier)
   end
 
   @placement {:types, [under: [:union]]}
@@ -565,6 +582,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro enum(identifier, attrs, [do: block]) do
     scope(__CALLER__, :enum, identifier, attrs, block)
+    handle_desc(identifier)
   end
 
   @doc """
@@ -574,9 +592,11 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro enum(identifier, [do: block]) do
     scope(__CALLER__, :enum, identifier, [], block)
+    handle_desc(identifier)
   end
   defmacro enum(identifier, attrs) do
     scope(__CALLER__, :enum, identifier, attrs, nil)
+    handle_desc(identifier)
   end
 
   @placement {:value, [under: [:enum]]}
@@ -596,6 +616,7 @@ defmodule Absinthe.Schema.Notation do
     attrs = raw_attrs
     |> Keyword.put(:value, Keyword.get(raw_attrs, :as, identifier))
     |> Keyword.delete(:as)
+    |> add_description(env)
 
     Scope.put_attribute(env.module, :values, {identifier, attrs}, accumulate: true)
     []
@@ -722,6 +743,8 @@ defmodule Absinthe.Schema.Notation do
 
   defp expand(ast, env) do
     Macro.prewalk(ast, fn
+      {:@, _, [{:desc, _, [desc]}]} ->
+        Module.put_attribute(env.module, :__absinthe_desc__, desc)
       {_, _, _} = node -> Macro.expand(node, env)
       node -> node
     end)
@@ -733,14 +756,14 @@ defmodule Absinthe.Schema.Notation do
     attrs
     |> Keyword.put(
       :__reference__,
-      quote bind_quoted: [module: env.module, line: env.line, file: env.file, identifier: identifier], do: %{
-        module: module,
+      Macro.escape(%{
+        module: env.module,
         identifier: identifier,
         location: %{
-          file: file,
-          line: line
+          file: env.file,
+          line: env.line
         }
-      }
+      })
     )
   end
 
@@ -748,9 +771,23 @@ defmodule Absinthe.Schema.Notation do
   # scope, setting any provided attributes.
   defp open_scope(kind, env, identifier, attrs) do
     check_placement!(env.module, kind)
-    attrs = attrs |> add_reference(env, identifier)
+
+    attrs = attrs
+    |> add_reference(env, identifier)
+    |> add_description(env)
 
     Scope.open(kind, env.module, attrs)
+  end
+
+  defp add_description(attrs, env) do
+    case Module.get_attribute(env.module, :__absinthe_desc__) do
+      nil ->
+        attrs
+
+      desc ->
+        Module.put_attribute(env.module, :__absinthe_desc__, nil)
+        Keyword.put(attrs, :description, reformat_description(desc))
+    end
   end
 
   # CLOSE SCOPE HOOKS
