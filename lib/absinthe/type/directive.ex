@@ -13,9 +13,9 @@ defmodule Absinthe.Type.Directive do
   @typedoc """
   A defined directive.
 
-  * `:name` - The name of the directivee. Should be a lowercase `binary`. Set automatically when using `@absinthe :directive` from `Absinthe.Type.Definitions`.
+  * `:name` - The name of the directivee. Should be a lowercase `binary`. Set automatically.
   * `:description` - A nice description for introspection.
-  * `:args` - A map of `Absinthe.Type.Argument` structs. See `Absinthe.Type.Definitions.args/1`.
+  * `:args` - A map of `Absinthe.Type.Argument` structs. See `Absinthe.Schema.Definition.arg/1`.
   * `:on` - A list of places the directives can be used (can be `:operation`, `:fragment`, `:field`).
   * `:instruction` - A function that, given an argument, returns an instruction for the correct action to take
 

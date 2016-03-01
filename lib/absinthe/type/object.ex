@@ -12,9 +12,10 @@ defmodule Absinthe.Type.Object do
 
   ## Examples
 
-  Given a type defined as the following (see `Absinthe.Type.Definitions`):
+  Given a type defined as the following (see `Absinthe.Schema.Definition.object`):
 
   ```
+  @desc "A person"
   object :person do
     field :name, :string
     field :age, :integer
@@ -73,12 +74,11 @@ defmodule Absinthe.Type.Object do
   A defined object type.
 
   Note new object types (with the exception of the root-level `query`, `mutation`, and `subscription`)
-  should be defined using `@absinthe :type` from `Absinthe.Type.Definitions`.
+  should be defined using `Absinthe.Schema.Notation.object/3`.
 
-  * `:name` - The name of the object type. Should be a TitleCased `binary`. Set automatically when using `@absinthe :type` from `Absinthe.Type.Definitions`.
+  * `:name` - The name of the object type. Should be a TitleCased `binary`. Set automatically.
   * `:description` - A nice description for introspection.
-  * `:fields` - A map of `Absinthe.Type.Field` structs. See `Absinthe.Type.Definitions.fields/1` and
-  * `:parse` - A function used to convert the raw, incoming form of a scalar to the canonical internal format.
+  * `:fields` - A map of `Absinthe.Type.Field` structs. Usually built via `Absinthe.Schema.Notation.field/1`.
   * `:interfaces` - A list of interfaces that this type guarantees to implement. See `Absinthe.Type.Interface`.
   * `:is_type_of` - A function used to identify whether a resolved object belongs to this defined type. For use with `:interfaces` entry and `Absinthe.Type.Interface`.
 

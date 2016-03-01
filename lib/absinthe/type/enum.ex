@@ -8,12 +8,11 @@ defmodule Absinthe.Type.Enum do
 
   ## Examples
 
-  Given a type defined as the following (see `Absinthe.Type.Definitions`):
+  Given a type defined as the following (see `Absinthe.Schema.Definition`):
 
   ```
+  @desc "The selected color channel"
   enum :color_channel do
-    description "The selected color channel"
-
     value :red, as: :r, description: "Color Red"
     value :green, as: :g, description: "Color Green"
     value :blue, as: :b, description: "Color Blue"
@@ -60,11 +59,11 @@ defmodule Absinthe.Type.Enum do
   @typedoc """
   A defined enum type.
 
-  Should be defined using `@absinthe :type` from `Absinthe.Type.Definitions`.
+  Should be defined using `Absinthe.Schema.Definition.enum/2`.
 
-  * `:name` - The name of the enum type. Should be a TitleCased `binary`. Set automatically when using `@absinthe :type` from `Absinthe.Type.Definitions`.
+  * `:name` - The name of the enum type. Should be a TitleCased `binary`. Set automatically.
   * `:description` - A nice description for introspection.
-  * `:values` - The enum valuesn, usually provided using the `Absinthe.Type.Definitions.values/1` convenience function.
+  * `:values` - The enum valuesn, usually provided using the `Absinthe.Schema.Notation.values/1` or `Absinthe.Schema.Notation.value/1` macro.
 
   The `:__reference__` key is for internal use.
   """

@@ -3,7 +3,7 @@ defmodule Absinthe.Type.Enum.Value do
   @moduledoc """
   A possible value for an enum.
 
-  See `Absinthe.Type.Enum` and `Absinthe.Type.Definitions.values/1`.
+  See `Absinthe.Type.Enum` and `Absinthe.Schema.Definition.value/1`.
   """
 
   alias Absinthe.Type
@@ -11,7 +11,7 @@ defmodule Absinthe.Type.Enum.Value do
   @typedoc """
   A defined enum value entry.
 
-  Generally defined using `Absinthe.Type.Definitions.values/1` as
+  Generally defined using `Absinthe.Schema.Definition.value/1` as
   part of a schema.
 
   * `:name` - The name of the value. This is also the incoming, external
@@ -21,7 +21,7 @@ defmodule Absinthe.Type.Enum.Value do
     provided as the argument value to resolve functions.
     to `resolve` functions
   * `:deprecation` - Deprecation information for a value, usually
-    set-up using the `Absinthe.Type.Definitions.deprecate/2` convenience
+    set-up using the `Absinthe.Schema.Definition.deprecate/2` convenience
     function.
   """
   @type t :: %{name: binary, description: binary, value: any, deprecation: Type.Deprecation.t | nil, __reference__: Type.Reference.t}

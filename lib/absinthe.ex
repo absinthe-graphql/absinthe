@@ -208,6 +208,7 @@ defmodule Absinthe do
     query document, this must be provided to select which operation to execute.
   * `:variables` - A map of provided variable values to be used when filling in
     arguments in the provided query document.
+  * `:context` -> A map of the execution context.
 
   ## Examples
 

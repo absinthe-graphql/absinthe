@@ -60,11 +60,13 @@ defmodule Absinthe.Schema do
   and what fields it contains.
 
   ```
+  @desc "A valuable Item"
   object :item do
-    description "A valuable Item"
-
     field :id, :id
-    field :name, :string, description: "The item's name"
+
+    @desc "The item's name"
+    field :name, :string,
+
     field :value, :integer, description: "Recently appraised value"
   end
   ```

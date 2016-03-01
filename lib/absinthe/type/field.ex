@@ -4,8 +4,7 @@ defmodule Absinthe.Type.Field do
   @moduledoc """
   Used to define a field.
 
-  Usually these are defined using the `Absinthe.Type.Definitions.fields/1`
-  convenience function.
+  Usually these are defined using `Absinthe.Schema.Notation.field/1`
 
   See the `t` type below for details and examples of how to define a field.
   """
@@ -29,16 +28,14 @@ defmodule Absinthe.Type.Field do
   The configuration for a field.
 
   * `:name` - The name of the field, usually assigned automatically by
-  the `Absinthe.Type.Definitions.fields/1` convenience function.
+  the `Absinthe.Schema.Notation.field/1`.
   * `:description` - Description of a field, useful for introspection.
   * `:deprecation` - Deprecation information for a field, usually
-     set-up using the `Absinthe.Type.Definitions.deprecate/2` convenience
-     function.
+     set-up using `Absinthe.Schema.Notation.deprecate/1`.
   * `:type` - The type the value of the field should resolve to
-  * `:args` - The arguments of the field, usually created by using the
-    `Absinthe.Type.Definitions.args/1` convenience function.
-  * `resolve` - The resolution function. See below for more information.
-  * `default_value` - The default value of a field. Note this is not used during resolution; only fields that are part of an `Absinthe.Type.InputObject` should set this value.
+  * `:args` - The arguments of the field, usually created by using `Absinthe.Schema.Notation.arg/2`.
+  * `:resolve` - The resolution function. See below for more information.
+  * `:default_value` - The default value of a field. Note this is not used during resolution; only fields that are part of an `Absinthe.Type.InputObject` should set this value.
 
   ## Resolution Functions
 

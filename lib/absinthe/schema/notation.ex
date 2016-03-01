@@ -241,13 +241,15 @@ defmodule Absinthe.Schema.Notation do
   @doc """
   Defines a resolve function for a field
 
-  Specify a 2 arity function to call when resolving a field. You can either hard
-  code a particular anonymous function, or have a function call that returns
-  a 2 arity anonymous function. See examples for more information.
+  Specify a 2 arity function to call when resolving a field. Resolve functions
+  must return either `{:ok, term}` or `{:error, binary | [binary, ...]}`.
+
+  You can either hard code a particular anonymous function, or have a function
+  call that returns a 2 arity anonymous function. See examples for more information.
 
   The first argument to the function are the GraphQL arguments, and the latter
   is an `Absinthe.Execution.Field` struct. It is where you can access the GraphQL
-  context and other information
+  context and other execution data.
 
   Note that when using a hard coded anonymous function, the function will not
   capture local variables.

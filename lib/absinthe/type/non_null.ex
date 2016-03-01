@@ -14,8 +14,7 @@ defmodule Absinthe.Type.NonNull do
   type: %Absinthe.Type.NonNull{of_type: :item}
   ```
 
-  But normally this would be done using the `Absinthe.Type.Definitions.non_null/1`
-  convenience function:
+  But normally this would be done using `Absinthe.Schema.Notation.non_null/1`.
 
   ```
   type: non_null(:item)

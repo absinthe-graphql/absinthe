@@ -11,8 +11,7 @@ defmodule Absinthe.Type.List do
   type: %Absinthe.Type.List{of_type: :item}
   ```
 
-  But normally this would be done using the `Absinthe.Type.Definitions.list_of/1`
-  convenience function:
+  But normally this would be done using `Absinthe.Schema.Notation.list_of/1`.
 
   ```
   type: list_of(:item)
