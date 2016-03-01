@@ -36,10 +36,6 @@ Please see the website at [http://absinthe-graphql.org](http://absinthe-graphql.
   - [Adapter](http://absinthe-graphql.org/guides/adapters) mechanism to support conversion between camelCase query documents
     and snake_cased schema definition.
 
-## Related Projects
-
-- [absinthe_plug](https://hex.pm/packages/absinthe_plug)
-
 ## Installation
 
 Install from [Hex.pm](https://hex.pm/packages/absinthe):
@@ -72,7 +68,11 @@ See [CHANGELOG](./CHANGELOG.md) for upgrade steps between versions.
 
 ### Roadmap
 
-See the Roadmap [on the website](https://absinthe-graphql.org/roadmap).
+See the Roadmap on [absinthe-graphql.org](https://absinthe-graphql.org/roadmap).
+
+## Related Projects
+
+See the Project List on [absinthe-graphql.org](http://absinthe-graphql.org/projects).
 
 ## License
 
