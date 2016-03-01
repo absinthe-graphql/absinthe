@@ -11,29 +11,13 @@ defmodule Absinthe.Type.Enum do
   Given a type defined as the following (see `Absinthe.Type.Definitions`):
 
   ```
-  @absinthe :type
-  def color_channel do
-    %Absinthe.Type.Enum{
-      description: "The selected color channel",
-      values: values(
-        red: [
-          description: "Color Red",
-          value: :r
-        ],
-        green: [
-          description: "Color Green",
-          value: :g
-        ],
-        blue: [
-          description: "Color Blue",
-          value: :b
-        ],
-        alpha: deprecate([
-          description: "Alpha",
-          value: :a
-        ], reason: "We no longer support opacity settings")
-      )
-    }
+  enum :color_channel do
+    description "The selected color channel"
+
+    value :red, as: :r, description: "Color Red"
+    value :green, as: :g, description: "Color Green"
+    value :blue, as: :b, description: "Color Blue"
+    value :alpha, as: :a, deprecate: "We no longer support opacity settings", description: "Alpha Channel"
   end
   ```
 
@@ -47,17 +31,21 @@ defmodule Absinthe.Type.Enum do
   `:red`:
 
   ```
-  values: values(
-    red: [description: "Color Red"]
-    ...
-  )
+  enum :color_channel do
+    description "The selected color channel"
+
+    value :red, description: "Color Red"
+    value :green, description: "Color Green"
+    value :blue, description: "Color Blue"
+    value :alpha, deprecate: "We no longer support opacity settings", description: "Alpha Channel"
+  end
   ```
 
   If you really want to use a shorthand, skipping support for descriptions,
   custom raw values, and deprecation, you can just provide a list of atoms:
 
   ```
-  values: values([:red, :green, :blue, :alpha])
+  enum :color_channel, values: [:red, :green, :blue, :alpha]
   ```
 
   Keep in mind that writing a terse definition that skips descriptions and

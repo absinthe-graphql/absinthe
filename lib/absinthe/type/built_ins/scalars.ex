@@ -1,12 +1,14 @@
 defmodule Absinthe.Type.BuiltIns.Scalars do
   use Absinthe.Schema.Notation
 
+  @moduledoc false
+
   alias Absinthe.Flag
 
   scalar :integer, name: "Int" do
     description """
     The `Int` scalar type represents non-fractional signed whole numeric
-    values. Int can represent values between -(2^53 - 1) and 2^53 - 1 since
+    values. Int can represent values between `-(2^53 - 1)` and `2^53 - 1` since
     represented in JSON as double-precision floating point numbers specified
     by [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
     """
@@ -86,16 +88,16 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   end
 
   @spec parse_float(integer | float | binary) :: {:ok, float} | :error
-  def parse_float(value) when is_integer(value) do
+  defp parse_float(value) when is_integer(value) do
     {:ok, value * 1.0}
   end
-  def parse_float(value) when is_float(value) do
+  defp parse_float(value) when is_float(value) do
     {:ok, value}
   end
-  def parse_float(value) when is_binary(value) do
+  defp parse_float(value) when is_binary(value) do
     with {value, _} <- Float.parse(value), do: {:ok, value}
   end
-  def parse_float(_value) do
+  defp parse_float(_value) do
     :error
   end
 

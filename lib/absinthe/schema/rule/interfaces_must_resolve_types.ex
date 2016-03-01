@@ -4,7 +4,9 @@ defmodule Absinthe.Schema.Rule.InterfacesMustResolveTypes do
   alias Absinthe.Schema
   alias Absinthe.Type
 
-  @moduledoc """
+  @moduledoc false
+
+  @description """
   An interface must be able to resolve the implementing types of results.
 
   > The interface type should have some way of determining which object a given
@@ -19,7 +21,7 @@ defmodule Absinthe.Schema.Rule.InterfacesMustResolveTypes do
     * Does not have a `resolve_type` function.
     * Is missing a `is_type_of` function on all implementing types.
 
-    #{@moduledoc}
+    #{@description}
     """
   end
 

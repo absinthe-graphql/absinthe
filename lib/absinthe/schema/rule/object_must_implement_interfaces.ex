@@ -4,7 +4,9 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfaces do
   alias Absinthe.Schema
   alias Absinthe.Type
 
-  @moduledoc """
+  @moduledoc false
+
+  @description """
   An object type must be a super-set of all interfaces it implements.
 
   * The object type must include a field of the same name for every field
@@ -36,7 +38,7 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfaces do
     """
     Type "#{obj}" does not fully implement interface type "#{interface}"
 
-    #{@moduledoc}
+    #{@description}
     """
   end
 

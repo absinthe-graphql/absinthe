@@ -31,6 +31,7 @@ defmodule Absinthe.Utils do
   ```
   """
   @spec camelize(binary, Keyword.t) :: binary
+  def camelize(word, opts \\ [])
   def camelize("__" <> word, opts) do
     "__" <> camelize(word, opts)
   end
@@ -44,12 +45,73 @@ defmodule Absinthe.Utils do
     end
   end
 
-  @doc """
-  Camelize a word, respecting underscore prefixes.
+  @doc false
+  def placement_docs([{_, placement} | _]) do
+    placement
+    |> do_placement_docs
+  end
+  defp do_placement_docs([toplevel: true]) do
+    """
+    Top level in module.
+    """
+  end
+  defp do_placement_docs([toplevel: false]) do
+    """
+    Allowed under any block. Not allowed to be top level
+    """
+  end
 
-  See `camelize/2`.
-  """
-  @spec camelize(binary) :: binary
-  def camelize(word), do: camelize(word, [])
+  defp do_placement_docs([under: under]) when is_list(under) do
+    under = under
+    |> Enum.sort_by(&(&1))
+    |> Enum.map(&"`#{&1}`")
+    |> Enum.join(" ")
+    """
+    Allowed under: #{under}
+    """
+  end
+
+  defp do_placement_docs([under: under]) do
+    do_placement_docs([under: [under]])
+  end
+
+  @doc false
+  def describe_builtin_module(module) do
+    title = module
+    |> Module.split
+    |> List.last
+
+    types = module.__absinthe_types__
+    |> Map.keys
+    |> Enum.sort_by(&(&1))
+    |> Enum.map(fn identifier ->
+      type = module.__absinthe_type__(identifier)
+      """
+      ## #{type.name}
+      Identifier: `#{inspect identifier}`
+
+      #{type.description}
+      """
+    end)
+
+    directives = module.__absinthe_directives__
+    |> Map.keys
+    |> Enum.sort_by(&(&1))
+    |> Enum.map(fn identifier ->
+      directive = module.__absinthe_directive__(identifier)
+      """
+      ## #{directive.name}
+      Identifier: `#{inspect identifier}`
+
+      #{directive.description}
+      """
+    end)
+
+    """
+    # #{title}
+
+    #{types ++ directives}
+    """
+  end
 
 end

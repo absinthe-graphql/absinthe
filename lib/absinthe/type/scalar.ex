@@ -21,16 +21,10 @@ defmodule Absinthe.Type.Scalar do
   Supporting a time format in ISOz format, using [Timex](http://hexdocs.pm/timex):
 
   ```
-  use Absinthe.Field.Definitions
-  # Also loaded by `use Absinthe.Field.Schema`
-
-  @absinthe :type
-  def time do
-    %Absinthe.Type.Scalar{
-      description: "Time (in ISOz format)",
-      parse: &Timex.DateFormat.parse(&1, "{ISOz}"),
-      serialize: &Timex.DateFormat.format!(&1, "{ISOz}")
-    }
+  scalar :time do
+    description "Time (in ISOz format)"
+    parse &Timex.DateFormat.parse(&1, "{ISOz}")
+    serialize &Timex.DateFormat.format!(&1, "{ISOz}")
   end
   ```
   """

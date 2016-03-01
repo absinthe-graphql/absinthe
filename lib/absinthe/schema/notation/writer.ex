@@ -1,4 +1,37 @@
 defmodule Absinthe.Schema.Notation.Writer do
+  @moduledoc false
+
+  defmacro __before_compile__(env) do
+    info = build_info(env)
+
+    errors        = Macro.escape info.errors
+    exports       = Macro.escape info.exports
+    type_map      = Macro.escape info.type_map
+    implementors  = Macro.escape info.implementors
+    directive_map = Macro.escape info.directive_map
+
+    [
+      quote do
+        def __absinthe_types__, do: unquote(type_map)
+      end,
+      info.type_functions,
+      quote do
+        def __absinthe_type__(_), do: nil
+      end,
+      quote do
+        def __absinthe_directives__, do: unquote(directive_map)
+      end,
+      info.directive_functions,
+      quote do
+        def __absinthe_directive__(_), do: nil
+      end,
+      quote do
+        def __absinthe_errors__, do: unquote(errors)
+        def __absinthe_interface_implementors__, do: unquote(implementors)
+        def __absinthe_exports__, do: unquote(exports)
+      end
+    ]
+  end
 
   defp type_functions(definition) do
     ast = build(:type, definition)
@@ -74,8 +107,12 @@ defmodule Absinthe.Schema.Notation.Writer do
     |> Enum.reject(&is_nil/1)
   end
 
-  defmacro __before_compile__(env) do
-    result = %{
+  defp build_info(env) do
+    descriptions = env.module
+    |> Module.get_attribute(:absinthe_descriptions)
+    |> Enum.into(%{})
+
+    info = %{
       type_map: %{},
       directive_map: %{},
       errors: [],
@@ -85,71 +122,81 @@ defmodule Absinthe.Schema.Notation.Writer do
       implementors: %{}
     }
 
-    info = Module.get_attribute(env.module, :absinthe_definitions)
-    |> Enum.reduce(result, fn
-      %{category: :directive} = definition, acc ->
-        errors = directive_errors(definition, acc)
-        %{acc |
-          directive_map: Map.put(acc.directive_map, definition.identifier, definition.attrs[:name]),
-          directive_functions: (if length(errors) > 0, do: acc.directive_functions, else: [directive_functions(definition) | acc.directive_functions]),
-          # TODO: Handle directive exports differently
-          exports: (if Keyword.get(definition.opts, :export, definition.source != Absinthe.Type.BuiltIns) do
-            [definition.identifier | acc.exports]
-          else
-            acc.exports
-          end),
-          errors: errors ++ acc.errors
-         }
-      %{category: :type} = definition, acc ->
-        errors = type_errors(definition, acc)
-        %{acc |
-          type_map: Map.put(acc.type_map, definition.identifier, definition.attrs[:name]),
-          type_functions: (if length(errors) > 0, do: acc.type_functions, else: [type_functions(definition) | acc.type_functions]),
-          implementors: Enum.reduce(List.wrap(definition.attrs[:interfaces]), acc.implementors, fn
-            iface, implementors ->
-              update_in(implementors, [iface], fn
-                nil ->
-                  [definition.identifier]
-                list ->
-                  [definition.identifier | list]
-              end)
-          end),
-          exports: (if Keyword.get(definition.opts, :export, definition.source != Absinthe.Type.BuiltIns) do
-            [definition.identifier | acc.exports]
-          else
-            acc.exports
-          end),
-          errors: errors ++ acc.errors
-         }
-    end)
+    env.module
+    |> Module.get_attribute(:absinthe_definitions)
+    |> Enum.map(&update_description(&1, descriptions))
+    |> Enum.reduce(info, &do_build_info/2)
+  end
 
-    errors        = Macro.escape info.errors
-    exports       = Macro.escape info.exports
-    type_map      = Macro.escape info.type_map
-    implementors  = Macro.escape info.implementors
-    directive_map = Macro.escape info.directive_map
-
-    [
-      quote do
-        def __absinthe_types__, do: unquote(type_map)
-      end,
-      info.type_functions,
-      quote do
-        def __absinthe_type__(_), do: nil
-      end,
-      quote do
-        def __absinthe_directives__, do: unquote(directive_map)
-      end,
-      info.directive_functions,
-      quote do
-        def __absinthe_directive__(_), do: nil
-      end,
-      quote do
-        def __absinthe_errors__, do: unquote(errors)
-        def __absinthe_interface_implementors__, do: unquote(implementors)
-        def __absinthe_exports__, do: unquote(exports)
+  defp update_description(definition, descriptions) do
+    if definition.attrs[:description] do
+      definition
+    else
+      case Map.get(descriptions, definition.identifier) do
+        nil -> definition
+        desc -> Map.update!(definition, :attrs, &Keyword.put(&1, :description, desc))
       end
-    ]
+    end
+  end
+
+  defp do_build_info(%{category: :directive} = definition, info) do
+    errors = directive_errors(definition, info)
+
+    info
+    |> update_directive_map(definition)
+    |> update_directive_functions(definition, errors)
+    |> update_exports(definition)
+    |> update_errors(errors)
+  end
+
+  defp do_build_info(%{category: :type} = definition, info) do
+    errors = type_errors(definition, info)
+    info
+    |> update_type_map(definition)
+    |> update_type_functions(definition, errors)
+    |> update_implementors(definition)
+    |> update_exports(definition)
+    |> update_errors(errors)
+  end
+
+  defp update_directive_map(info, definition) do
+    Map.update!(info, :directive_map, &Map.put(&1, definition.identifier, definition.attrs[:name]))
+  end
+
+  defp update_directive_functions(info, definition, []) do
+    Map.update!(info, :directive_functions, &[directive_functions(definition) | &1])
+  end
+
+  defp update_type_map(info, definition) do
+    Map.update!(info, :type_map, &Map.put(&1, definition.identifier, definition.attrs[:name]))
+  end
+
+  defp update_type_functions(info, definition, []) do
+    Map.update!(info, :type_functions, &[type_functions(definition) | &1])
+  end
+  defp update_type_functions(info, _definition, _errors), do: info
+
+  defp update_implementors(info, definition) do
+    implementors = definition.attrs[:interfaces]
+    |> List.wrap
+    |> Enum.reduce(info.implementors, fn
+      iface, implementors ->
+        Map.update(implementors, iface, [definition.identifier], &[definition.identifier | &1])
+    end)
+    %{info | implementors: implementors}
+  end
+
+  defp update_exports(info, definition) do
+    exports = (if Keyword.get(definition.opts, :export, definition.source != Absinthe.Type.BuiltIns) do
+      [definition.identifier | info.exports]
+    else
+      info.exports
+    end)
+    %{info | exports: exports}
+  end
+
+  defp update_errors(info, errors) do
+    %{info | errors: errors ++ info.errors}
   end
 
 end

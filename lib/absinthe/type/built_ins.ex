@@ -1,9 +1,20 @@
 defmodule Absinthe.Type.BuiltIns do
-  use Absinthe.Schema.Notation
-  alias __MODULE__
+  built_in_types = [
+    Absinthe.Type.BuiltIns.Scalars,
+    Absinthe.Type.BuiltIns.Directives,
+    Absinthe.Type.BuiltIns.Introspection,
+  ] |> Enum.map(&Absinthe.Utils.describe_builtin_module/1)
 
-  import_types BuiltIns.Scalars
-  import_types BuiltIns.Directives
-  import_types BuiltIns.Introspection
+  @moduledoc """
+  Built in data types
+
+  #{built_in_types}
+  """
+
+  use Absinthe.Schema.Notation
+
+  import_types Absinthe.Type.BuiltIns.Scalars
+  import_types Absinthe.Type.BuiltIns.Directives
+  import_types Absinthe.Type.BuiltIns.Introspection
 
 end

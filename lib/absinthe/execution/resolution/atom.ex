@@ -1,9 +1,7 @@
 defimpl Absinthe.Execution.Resolution, for: Atom do
 
-  @moduledoc """
-  If we attempt to resolve at atom, we assume
-  it is an identifier referencing a type.
-  """
+  # If we attempt to resolve at atom, we assume
+  # it is an identifier referencing a type.
 
   alias Absinthe.Schema
   alias Absinthe.Type

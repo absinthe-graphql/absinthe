@@ -4,6 +4,12 @@ defmodule Absinthe.Schema.Error do
   """
   defexception message: "Invalid schema", details: []
 
+  @type detail_t :: %{
+    rule: Absinthe.Schema.Rule.t,
+    location: %{file: binary, line: integer},
+    data: any
+  }
+
   def exception(details) do
     detail = Enum.map(details, &format_detail/1) |> Enum.join("\n")
     %__MODULE__{message: "Invalid schema:\n" <> detail <> "\n", details: details}
@@ -21,18 +27,6 @@ defmodule Absinthe.Schema.Error do
     |> Enum.map(&"  #{&1}")
     |> Enum.join("\n")
     |> String.lstrip
-  end
-
-  defmodule Detail do
-
-    @type t :: %{
-      rule: Absinthe.Schema.Rule.t,
-      location: %{file: binary, line: integer},
-      data: any
-    }
-
-    defstruct rule: nil, location: nil, data: nil
-
   end
 
 end

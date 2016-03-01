@@ -3,7 +3,9 @@ defmodule Absinthe.Schema.Rule.TypeNamesAreReserved do
 
   alias Absinthe.Schema
 
-  @moduledoc """
+  @moduledoc false
+
+  @description """
   Type system artifacts must not begin with two leading underscores.
 
   > GraphQL type system authors must not define any types, fields, arguments,
@@ -18,7 +20,7 @@ defmodule Absinthe.Schema.Rule.TypeNamesAreReserved do
     """
     #{artifact_name} #{inspect value} starts with two leading underscores.
 
-    #{@moduledoc}
+    #{@description}
     """
   end
 

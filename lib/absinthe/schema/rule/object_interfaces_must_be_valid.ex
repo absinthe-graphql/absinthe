@@ -4,7 +4,8 @@ defmodule Absinthe.Schema.Rule.ObjectInterfacesMustBeValid do
   alias Absinthe.Schema
   alias Absinthe.Type
 
-  @moduledoc """
+  @moduledoc false
+  @description """
   Only interfaces may be present in an Object's interface list.
 
   Reference: https://github.com/facebook/graphql/blob/master/spec/Section%203%20--%20Type%20System.md#interfaces
@@ -14,7 +15,7 @@ defmodule Absinthe.Schema.Rule.ObjectInterfacesMustBeValid do
     """
     Type "#{obj}" cannot implement non-interface type "#{interface}"
 
-    #{@moduledoc}
+    #{@description}
     """
   end
 

@@ -4,6 +4,9 @@ defmodule Absinthe.Schema do
   @moduledoc """
   Define a GraphQL schema.
 
+  See also `Absinthe.Schema.Notation` for a reference of the macros imported by
+  this module available to build types for your schema.
+
   ## Basic Usage
 
   To define a schema, `use Absinthe.Schema` within
@@ -13,7 +16,6 @@ defmodule Absinthe.Schema do
 
   ```
   defmodule App.Schema do
-
     use Absinthe.Schema
 
     # ... define it here!
@@ -36,21 +38,18 @@ defmodule Absinthe.Schema do
     "bar" => %{id: "bar", name: "Bar", value: 5}
   }
 
-  query [
-    fields: [
-      item: [
-        type: :item,
-        description: "Get an item by ID",
-        args: [
-          id: [type: :id, description: "The ID of the item"]
-        ],
-        resolve: fn
-          %{id: id}, _ ->
-            {:ok, Map.get(@fake_db, id)}
-        end
-      ]
-    ]
-  ]
+  query do
+    @desc "Get an item by ID"
+    field :item, :item do
+
+      @desc "The ID of the item"
+      arg :id, type: :id
+
+      resolve: fn %{id: id}, _ ->
+        {:ok, Map.get(@fake_db, id)}
+      end
+    end
+  end
   ```
 
   For more information on object types (especially how the `resolve`
@@ -61,16 +60,13 @@ defmodule Absinthe.Schema do
   and what fields it contains.
 
   ```
-  @doc \"""
-  A valuable item
-  \"""
-  object :item, [
-    fields: [
-      id: [type: :id],
-      name: [type: :string, description: "The item's name"],
-      value: [type: :integer, description: "Recently appraised value"]
-    ]
-  ]
+  object :item do
+    description "A valuable Item"
+
+    field :id, :id
+    field :name, :string, description: "The item's name"
+    field :value, :integer, description: "Recently appraised value"
+  end
   ```
 
   We can also load types from other modules using the `import_types`
@@ -78,7 +74,6 @@ defmodule Absinthe.Schema do
 
   ```
   defmodule App.Schema do
-
     use Absinthe.Schema
 
     import_types App.Schema.Scalars
@@ -93,12 +88,11 @@ defmodule Absinthe.Schema do
 
   ```
   defmodule App.Schema.Objects do
-
     use Absinthe.Scheme.Notation
 
-    object :item, [
+    object :item do
       # ... type definition
-    ]
+    end
 
     # ... other objects!
 
@@ -124,6 +118,7 @@ defmodule Absinthe.Schema do
     end
   end
 
+  @doc false
   def __after_compile__(env, _bytecode) do
     [
       env.module.__absinthe_errors__,
@@ -139,31 +134,51 @@ defmodule Absinthe.Schema do
   end
 
   @default_query_name "RootQueryType"
+  @doc """
+  Defines a root Query object
+  """
   defmacro query(raw_attrs, [do: block]) do
     attrs = raw_attrs
     |> Keyword.put_new(:name, @default_query_name)
     Absinthe.Schema.Notation.scope(__CALLER__, :object, :query, attrs, block)
   end
+
+  @doc """
+  Defines a root Query object
+  """
   defmacro query([do: block]) do
     Absinthe.Schema.Notation.scope(__CALLER__, :object, :query, [name: @default_query_name], block)
   end
 
   @default_mutation_name "RootMutationType"
+  @doc """
+  Defines a root Mutation object
+  """
   defmacro mutation(raw_attrs, [do: block]) do
     attrs = raw_attrs
     |> Keyword.put_new(:name, @default_mutation_name)
     Absinthe.Schema.Notation.scope(__CALLER__, :object, :mutation, attrs, block)
   end
+
+  @doc """
+  Defines a root Mutation object
+  """
   defmacro mutation([do: block]) do
     Absinthe.Schema.Notation.scope(__CALLER__, :object, :mutation, [name: @default_mutation_name], block)
   end
 
   @default_subscription_name "RootSubscriptionType"
+  @doc """
+  Defines a root Subscription object
+  """
   defmacro subscription(raw_attrs, [do: block]) do
     attrs = raw_attrs
     |> Keyword.put_new(:name, @default_subscription_name)
     Absinthe.Schema.Notation.scope(__CALLER__, :object, :subscription, attrs, block)
   end
+  @doc """
+  Defines a root Subscription object
+  """
   defmacro subscription([do: block]) do
     Absinthe.Schema.Notation.scope(__CALLER__, :object, :subscription, [name: @default_subscription_name], block)
   end
@@ -198,6 +213,9 @@ defmodule Absinthe.Schema do
     end
   end
 
+  @doc """
+  List all types on a schema
+  """
   @spec types(t) :: [Type.t]
   def types(schema) do
     schema.__absinthe_types__
@@ -205,6 +223,9 @@ defmodule Absinthe.Schema do
     |> Enum.map(&lookup_type(schema, &1))
   end
 
+  @doc """
+  List all directives on a schema
+  """
   @spec directives(t) :: [Type.Directive.t]
   def directives(schema) do
     schema.__absinthe_directives__
@@ -212,6 +233,9 @@ defmodule Absinthe.Schema do
     |> Enum.map(&lookup_directive(schema, &1))
   end
 
+  @doc """
+  List all implementors of an interface on a schema
+  """
   @spec implementors(t, atom) :: [Type.Object.t]
   def implementors(schema, ident) when is_atom(ident) do
     schema.__absinthe_interface_implementors__

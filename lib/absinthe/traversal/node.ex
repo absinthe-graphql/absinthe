@@ -1,5 +1,7 @@
 defprotocol Absinthe.Traversal.Node do
 
+  @moduledoc false
+
   @fallback_to_any true
 
   @spec children(any, Absinthe.Traversal.t) :: [any]

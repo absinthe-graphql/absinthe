@@ -12,24 +12,21 @@ defmodule Absinthe.Type.Union do
   * Provide a `:is_type_of` function on each possible concrete type
 
   ```
-  @absinthe :type
-  def search_result do
-    %Type.Union{
-      description: "A search result that can be a person or business",
-      types: [:person, :business],
-      resolve_type: fn
-        %{age: _}, _ -> {:ok, :person}
-        %{employee_count: _}, _ -> {:ok, :business}
-        _ -> :error
-      end
-    }
+  union :search_result do
+    description "A search result"
+
+    types [:person, :business]
+    resolve_type fn
+      %Person{}, _ -> :person
+      %Business{}, _ -> :business
+    end
   end
   ```
 
-  * `:name` - The name of the union type. Should be a TitleCased `binary`. Set automatically when using `@absinthe :type` from `Absinthe.Type.Definitions`.
-  * `:description` - A nice description for introspection.
-  * `:types` - The list of possible types.
-  * `:resolve_type` - A function used to determine the concrete type of a resolved object. See also `Absinthe.Type.Object`'s `:is_type_of`.
+  * `name` - The name of the union type. Should be a TitleCased `binary`. Set automatically.
+  * `description` - A nice description for introspection.
+  * `types` - The list of possible types.
+  * `resolve_type` - A function used to determine the concrete type of a resolved object. See also `Absinthe.Type.Object`'s `:is_type_of`. Either `resolve_type` is specified in the union type, or every object type in the union must specify `is_type_of`
 
   The `:resolve_type` function will be passed two arguments; the object whose type needs to be identified, and the `Absinthe.Execution` struct providing the full execution context.
 

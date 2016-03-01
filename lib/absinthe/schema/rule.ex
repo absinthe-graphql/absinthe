@@ -1,5 +1,7 @@
 defmodule Absinthe.Schema.Rule do
 
+  @moduledoc false
+
   alias __MODULE__
 
   defmacro __using__(_opts) do
@@ -17,8 +19,8 @@ defmodule Absinthe.Schema.Rule do
     end
   end
 
-  @callback check(Absithe.Schema.t) :: [Absinthe.Error.Detail.t]
-  @callback explanation(Absithe.Error.Detail.t) :: binary
+  @callback check(Absithe.Schema.t) :: [Absinthe.Error.detail_t]
+  @callback explanation(Absithe.Error.detail_t) :: binary
 
   @rules [
     Rule.TypeNamesAreReserved,
@@ -27,7 +29,7 @@ defmodule Absinthe.Schema.Rule do
     Rule.InterfacesMustResolveTypes
   ]
 
-  @spec check(Absinthe.Schema.t) :: [Absinthe.Error.Detail.t]
+  @spec check(Absinthe.Schema.t) :: [Absinthe.Error.detail_t]
   def check(schema) do
     Enum.flat_map(@rules, &(&1.check(schema)))
   end
