@@ -36,7 +36,7 @@ Goals:
 
 ## Related Projects
 
-- [absinthe_plug](http://hex.pm/projects/absinthe_plug)
+- [absinthe_plug](https://hex.pm/packages/absinthe_plug)
 
 ## Installation
 
@@ -137,7 +137,7 @@ for more information.
 
 Now, you can use Absinthe to execute a query document. Keep in mind that for
 HTTP, you'll probably want to use
-[absinthe_plug](http://hex.pm/projects/absinthe_plug) instead of executing
+[absinthe_plug](https://hex.pm/packages/absinthe_plug) instead of executing
 GraphQL query documents yourself. Absinthe doesn't know or care about HTTP,
 but absinthe_plug does -- and handles the vagaries of interacting with HTTP
 GraphQL clients so you don't have to.
@@ -164,7 +164,7 @@ Query documents also support variables:
 ## Variables
 
 To support variables, simply define them for your query document [as the specification expects](https://facebook.github.io/graphql/#sec-Language.Query-Document.Variables),
-and pass in a `variables` option (eg, [absinthe_plug](http://hex.pm/projects/absinthe_plug) handles providing these directly from query parameters or the POST body) to `run`:
+and pass in a `variables` option (eg, [absinthe_plug](https://hex.pm/packages/absinthe_plug) handles providing these directly from query parameters or the POST body) to `run`:
 
 ```elixir
 """
