@@ -125,8 +125,8 @@ You'll notice we mention another type here: `:item`.
 We haven't defined that yet; let's do it. In the same `MyApp.Schema` module:
 
 ```elixir
+@desc "An item"
 object :item do
-  description "An item"
   field :id, :id
   field :name, :string
 end
@@ -209,7 +209,7 @@ object fields.
 ## Descriptions
 
 Descriptions for types, directives, field, arguments, etc can be provided one of
-two ways:
+three ways:
 
 By passing a `:description` option to the definition:
 
@@ -224,6 +224,15 @@ By using the `description` macro inside the definition:
 ```elixir
 object :foo do
   description "A Foo"
+  # ...
+end
+```
+
+By using the `@desc` module attribute above the definition:
+
+```elixir
+@desc "A Foo"
+object :foo do
   # ...
 end
 ```

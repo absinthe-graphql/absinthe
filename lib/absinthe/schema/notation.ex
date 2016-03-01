@@ -2,6 +2,8 @@ defmodule Absinthe.Schema.Notation do
 
   @moduledoc """
   This module contains macros used to build GraphQL types.
+
+  See `Absinthe.Schema` for a rough overview of schema building from scratch.
   """
 
   alias Absinthe.Utils
@@ -629,6 +631,9 @@ defmodule Absinthe.Schema.Notation do
   Defines a description
 
   This macro adds a description to any other macro which takes a block.
+
+  Note that you can also specify a description by using `@desc` above any item
+  that can take a description attribute.
 
   ## Placement
 

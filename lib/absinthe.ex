@@ -64,10 +64,11 @@ defmodule Absinthe do
     }
 
     query do
+      @desc "Get an item by ID"
       field :item, type: :item do
-        description "Get an item by ID"
 
-        arg :id, :id, description: "The ID of the item"
+        @desc "The ID of the item"
+        arg :id, :id
 
         resolve fn %{id: id}, _ ->
           {:ok, Map.get(@fake_db, id)}
@@ -75,9 +76,8 @@ defmodule Absinthe do
       end
     end
 
+    @desc "A valuable item"
     object :item do
-      description "A valuable item"
-
       field :id, :id
       field :name, :string, description: "The item's name"
       field :value, :integer, description: "Recently appraised value"

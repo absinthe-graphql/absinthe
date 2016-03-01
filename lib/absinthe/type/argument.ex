@@ -2,9 +2,6 @@ defmodule Absinthe.Type.Argument do
 
   @moduledoc """
   Used to define an argument.
-
-  Usually these are defined using the `Absinthe.Type.Definitions.args/1`
-  convenience function.
   """
 
   alias __MODULE__
@@ -15,8 +12,7 @@ defmodule Absinthe.Type.Argument do
   @typedoc """
   Argument configuration
 
-  * `:name` - The name of the argument, usually assigned automatically by
-    the `Absinthe.Type.Definitions.args/1` convenience function.
+  * `:name` - The name of the argument, usually assigned automatically by the `arg` macro
   * `:type` - The type values the argument accepts/will coerce to.
   * `:deprecation` - Deprecation information for an argument, usually
     set-up using the `Absinthe.Type.Definitions.deprecate/1` convenience
