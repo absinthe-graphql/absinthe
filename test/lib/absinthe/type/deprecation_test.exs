@@ -20,7 +20,9 @@ defmodule Absinthe.Type.DeprecationTest do
           source: [type: :string, deprecate: true]
         ]
 
-      field :email_address, :string, deprecate: "privacy"
+      field :email_address, :string do
+        deprecate "privacy"
+      end
 
       field :address, :string, deprecate: true
 

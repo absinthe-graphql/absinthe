@@ -91,6 +91,43 @@ defmodule Absinthe.Schema.Notation do
     []
   end
 
+  @placement {:resolve, [under: [:field]]}
+  @doc """
+  Mark a field as deprecated
+
+  In most cases you can simply pass the deprecate: "message" attribute. However
+  when using the block form of a field it can be nice to also use this macro.
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+
+  ## Examples
+  ```
+  field :foo, :string do
+    deprecate "Foo will no longer be supported"
+  end
+  ```
+
+  This is how to deprecate other things
+  ```
+  field :foo, :string do
+    arg :bar, :integer, deprecate: "This isn't supported either"
+  end
+
+  enum :colors do
+    value :red
+    value :blue, deprecate: "This isn't supported"
+  end
+  ```
+  """
+  defmacro deprecate(msg) do
+    env = __CALLER__
+    check_placement!(env.module, :deprecate)
+    Scope.put_attribute(env.module, :deprecate, msg)
+    []
+  end
+
   @doc """
   Declare an implemented interface for an object.
 
