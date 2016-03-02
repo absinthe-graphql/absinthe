@@ -12,7 +12,7 @@ defmodule Absinthe.Type.Object do
 
   ## Examples
 
-  Given a type defined as the following (see `Absinthe.Schema.Definition.object`):
+  Given a type defined as the following (see `Absinthe.Schema.Notation.object/3`):
 
   ```
   @desc "A person"

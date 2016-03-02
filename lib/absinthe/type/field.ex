@@ -4,7 +4,7 @@ defmodule Absinthe.Type.Field do
   @moduledoc """
   Used to define a field.
 
-  Usually these are defined using `Absinthe.Schema.Notation.field/1`
+  Usually these are defined using `Absinthe.Schema.Notation.field/4`
 
   See the `t` type below for details and examples of how to define a field.
   """

@@ -8,7 +8,7 @@ defmodule Absinthe.Type.Enum do
 
   ## Examples
 
-  Given a type defined as the following (see `Absinthe.Schema.Definition`):
+  Given a type defined as the following (see `Absinthe.Schema.Notation`):
 
   ```
   @desc "The selected color channel"
@@ -59,7 +59,7 @@ defmodule Absinthe.Type.Enum do
   @typedoc """
   A defined enum type.
 
-  Should be defined using `Absinthe.Schema.Definition.enum/2`.
+  Should be defined using `Absinthe.Schema.Notation.enum/2`.
 
   * `:name` - The name of the enum type. Should be a TitleCased `binary`. Set automatically.
   * `:description` - A nice description for introspection.

@@ -46,9 +46,9 @@ defmodule Absinthe.Type.Scalar do
   @typedoc """
   A defined scalar type.
 
-  Note new scalars should be defined using `Absinthe.Schema.Definition.scalar`.
+  Note new scalars should be defined using `Absinthe.Schema.Notation.scalar`.
 
-  * `:name` - The name of scalar. Should be a TitleCased `binary`. Set Automatically by `Absinthe.Schema.Definition.scalar`.
+  * `:name` - The name of scalar. Should be a TitleCased `binary`. Set Automatically by `Absinthe.Schema.Notation.scalar`.
   * `:description` - A nice description for introspection.
   * `:serialize` - A function used to convert a value to a form suitable for JSON serialization
   * `:parse` - A function used to convert the raw, incoming form of a scalar to the canonical internal format.
