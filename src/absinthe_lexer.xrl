@@ -41,6 +41,7 @@ StringValue         = "{StringCharacter}*"
 % Boolean Value
 BooleanValue        = true|false
 
+
 % Reserved words
 ReservedWord        = query|mutation|fragment|on|implements|interface|union|scalar|enum|input|extend|null
 

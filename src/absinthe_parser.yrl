@@ -102,7 +102,20 @@ Alias -> Name ':' : '$1'.
 Arguments -> '(' ArgumentList ')' : '$2'.
 ArgumentList -> Argument : ['$1'].
 ArgumentList -> Argument ArgumentList : ['$1'|'$2'].
-Argument -> Name ':' Value : build_ast_node('Argument', #{name => extract_binary('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
+Argument -> 'name' ':' Value : build_ast_node('Argument', #{name => extract_binary('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
+Argument -> 'query' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
+Argument -> 'mutation' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
+Argument -> 'fragment' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
+Argument -> 'type' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
+Argument -> 'implements' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
+Argument -> 'union' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
+Argument -> 'scalar' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
+Argument -> 'enum' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
+Argument -> 'input' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
+Argument -> 'extend' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
+Argument -> 'null' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
+Argument -> 'on' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
+Argument -> 'interface' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
 
 Directives -> Directive : ['$1'].
 Directives -> Directive Directives : ['$1'|'$2'].

@@ -169,16 +169,22 @@ defmodule Absinthe do
     parse(%Absinthe.Language.Source{body: input})
   end
   def parse(input) do
-    case input.body |> tokenize do
-      {:ok, []} -> {:ok, %Absinthe.Language.Document{}}
-      {:ok, tokens} ->
-        case :absinthe_parser.parse(tokens) do
-          {:ok, _doc} = result ->
-            result
-          {:error, raw_error} ->
-            {:error, format_raw_parse_error(raw_error)}
-        end
-      other -> other
+    try do
+      case input.body |> tokenize do
+        {:ok, []} -> {:ok, %Absinthe.Language.Document{}}
+        {:ok, tokens} ->
+
+          case :absinthe_parser.parse(tokens) do
+            {:ok, _doc} = result ->
+              result
+            {:error, raw_error} ->
+              {:error, format_raw_parse_error(raw_error)}
+          end
+        other -> other
+      end
+    rescue
+      error ->
+        {:error, format_raw_parse_error(error)}
     end
   end
 
@@ -259,6 +265,16 @@ defmodule Absinthe do
   defp format_raw_parse_error({line, :absinthe_lexer, {problem, field}}) do
     message = "#{problem}: #{field}"
     %{message: message, locations: [%{line: line, column: 0}]}
+  end
+  @unknown_error_msg "An unknown error occurred during parsing"
+  @spec format_raw_parse_error(map) :: Execution.error_t
+  defp format_raw_parse_error(%{} = error) do
+    detail = if Exception.exception?(error) do
+      ": " <> Exception.message(error)
+    else
+      ""
+    end
+    %{message: @unknown_error_msg <> detail}
   end
 
   @doc """
