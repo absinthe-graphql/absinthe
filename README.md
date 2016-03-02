@@ -63,7 +63,7 @@ See [CHANGELOG](./CHANGELOG.md) for upgrade steps between versions.
 ## Documentation
 
 - For the tutorial, guides, and general information about Absinthe-related
-  projects, see [http://absinthe-graphql.org](http://absithe-graphql.org).
+  projects, see [http://absinthe-graphql.org](http://absinthe-graphql.org).
 - Links to the API documentation are available in the [project list](https://absinthe-graphql.org/projects).
 
 ### Roadmap
