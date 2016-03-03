@@ -60,7 +60,9 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro object(identifier, attrs \\ [], [do: block]) do
-    scope(__CALLER__, :object, identifier, attrs, block)
+    env = __CALLER__
+    check_placement!(env.module, :object, @placement[:object])
+    scope(env, :object, identifier, attrs, block)
     handle_desc(identifier)
   end
 
@@ -86,7 +88,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro interfaces(ifaces) when is_list(ifaces) do
     env = __CALLER__
-    check_placement!(env.module, :interfaces)
+    check_placement!(env.module, :interfaces, @placement[:interfaces])
     Scope.put_attribute(env.module, :interfaces, ifaces)
     []
   end
@@ -123,7 +125,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro deprecate(msg) do
     env = __CALLER__
-    check_placement!(env.module, :deprecate)
+    check_placement!(env.module, :deprecate, @placement[:deprecate])
     Scope.put_attribute(env.module, :deprecate, msg)
     []
   end
@@ -148,7 +150,7 @@ defmodule Absinthe.Schema.Notation do
   @placement {:interface_attribute, [under: :object]}
   defmacro interface(identifier) do
     env = __CALLER__
-    check_placement!(env.module, :interface_attribute, as: "`interface` (as an attribute)")
+    check_placement!(env.module, :interface_attribute, @placement[:interface_attribute], as: "`interface` (as an attribute)")
     Scope.put_attribute(env.module, :interfaces, identifier, accumulate: true)
     []
   end
@@ -182,7 +184,9 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro interface(identifier, attrs \\ [], [do: block]) do
-    scope(__CALLER__, :interface, identifier, attrs, block)
+    env = __CALLER__
+    check_placement!(env.module, :interface, @placement[:interface])
+    scope(env, :interface, identifier, attrs, block)
     handle_desc(identifier)
   end
 
@@ -214,7 +218,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro resolve_type(func_ast) do
     env = __CALLER__
-    check_placement!(env.module, :resolve_type)
+    check_placement!(env.module, :resolve_type, @placement[:resolve_type])
     Scope.put_attribute(env.module, :resolve_type, func_ast)
     []
   end
@@ -227,13 +231,19 @@ defmodule Absinthe.Schema.Notation do
   See `field/4`
   """
   defmacro field(identifier, [do: block]) do
-    scope(__CALLER__, :field, identifier, [], block)
+    env = __CALLER__
+    check_placement!(env.module, :field, @placement[:field])
+    scope(env, :field, identifier, [], block)
   end
   defmacro field(identifier, attrs) when is_list(attrs) do
-    scope(__CALLER__, :field, identifier, attrs, nil)
+    env = __CALLER__
+    check_placement!(env.module, :field, @placement[:field])
+    scope(env, :field, identifier, attrs, nil)
   end
   defmacro field(identifier, type) do
-    scope(__CALLER__, :field, identifier, [type: type], nil)
+    env = __CALLER__
+    check_placement!(env.module, :field, @placement[:field])
+    scope(env, :field, identifier, [type: type], nil)
   end
   @doc """
   Defines a GraphQL field
@@ -241,13 +251,19 @@ defmodule Absinthe.Schema.Notation do
   See `field/4`
   """
   defmacro field(identifier, attrs, [do: block]) when is_list(attrs) do
-    scope(__CALLER__, :field, identifier, attrs, block)
+    env = __CALLER__
+    check_placement!(env.module, :field, @placement[:field])
+    scope(env, :field, identifier, attrs, block)
   end
   defmacro field(identifier, type, [do: block]) do
-    scope(__CALLER__, :field, identifier, [type: type], block)
+    env = __CALLER__
+    check_placement!(env.module, :field, @placement[:field])
+    scope(env, :field, identifier, [type: type], block)
   end
   defmacro field(identifier, type, attrs) do
-    scope(__CALLER__, :field, identifier, Keyword.put(attrs, :type, type),  nil)
+    env = __CALLER__
+    check_placement!(env.module, :field, @placement[:field])
+    scope(env, :field, identifier, Keyword.put(attrs, :type, type),  nil)
   end
   @doc """
   Defines a GraphQL field.
@@ -271,7 +287,9 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro field(identifier, type, attrs, [do: block]) do
-    scope(__CALLER__, :field, identifier, Keyword.put(attrs, :type, type), block)
+    env = __CALLER__
+    check_placement!(env.module, :field, @placement[:field])
+    scope(env, :field, identifier, Keyword.put(attrs, :type, type), block)
   end
 
   @placement {:resolve, [under: [:field]]}
@@ -330,7 +348,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro resolve(func_ast) do
     env = __CALLER__
-    check_placement!(env.module, :resolve)
+    check_placement!(env.module, :resolve, @placement[:resolve])
     Scope.put_attribute(env.module, :resolve, func_ast)
     []
   end
@@ -345,7 +363,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro is_type_of(func_ast) do
     env = __CALLER__
-    check_placement!(env.module, :is_type_of)
+    check_placement!(env.module, :is_type_of, @placement[:is_type_of])
     Scope.put_attribute(env.module, :is_type_of, func_ast)
     []
   end
@@ -369,7 +387,9 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro arg(identifier, type, attrs) do
-    scope(__CALLER__, :arg, identifier, Keyword.put(attrs, :type, type), nil)
+    env = __CALLER__
+    check_placement!(env.module, :arg, @placement[:arg])
+    scope(env, :arg, identifier, Keyword.put(attrs, :type, type), nil)
   end
 
   @doc """
@@ -378,10 +398,14 @@ defmodule Absinthe.Schema.Notation do
   See `arg/3`
   """
   defmacro arg(identifier, attrs) when is_list(attrs) do
-    scope(__CALLER__, :arg, identifier, attrs, nil)
+    env = __CALLER__
+    check_placement!(env.module, :arg, @placement[:arg])
+    scope(env, :arg, identifier, attrs, nil)
   end
   defmacro arg(identifier, type) do
-    scope(__CALLER__, :arg, identifier, [type: type], nil)
+    env = __CALLER__
+    check_placement!(env.module, :arg, @placement[:arg])
+    scope(env, :arg, identifier, [type: type], nil)
   end
 
   # SCALARS
@@ -406,7 +430,9 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro scalar(identifier, attrs, [do: block]) do
-    scope(__CALLER__, :scalar, identifier, attrs, block)
+    env = __CALLER__
+    check_placement!(env.module, :scalar, @placement[:scalar])
+    scope(env, :scalar, identifier, attrs, block)
     handle_desc(identifier)
   end
 
@@ -416,11 +442,15 @@ defmodule Absinthe.Schema.Notation do
   See `scalar/3`
   """
   defmacro scalar(identifier, [do: block]) do
-    scope(__CALLER__, :scalar, identifier, [], block)
+    env = __CALLER__
+    check_placement!(env.module, :scalar, @placement[:scalar])
+    scope(env, :scalar, identifier, [], block)
     handle_desc(identifier)
   end
   defmacro scalar(identifier, attrs) do
-    scope(__CALLER__, :scalar, identifier, attrs, nil)
+    env = __CALLER__
+    check_placement!(env.module, :scalar, @placement[:scalar])
+    scope(env, :scalar, identifier, attrs, nil)
     handle_desc(identifier)
   end
 
@@ -437,7 +467,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro serialize(func_ast) do
     env = __CALLER__
-    check_placement!(env.module, :serialize)
+    check_placement!(env.module, :serialize, @placement[:serialize])
     Scope.put_attribute(env.module, :serialize, func_ast)
     []
   end
@@ -457,7 +487,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro parse(func_ast) do
     env = __CALLER__
-    check_placement!(env.module, :parse)
+    check_placement!(env.module, :parse, @placement[:parse])
     Scope.put_attribute(env.module, :parse, func_ast)
     []
   end
@@ -494,7 +524,9 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro directive(identifier, attrs \\ [], [do: block]) do
-    scope(__CALLER__, :directive, identifier, attrs, block)
+    env = __CALLER__
+    check_placement!(env.module, :directive, @placement[:directive])
+    scope(env, :directive, identifier, attrs, block)
     handle_desc(identifier)
   end
 
@@ -510,7 +542,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro on(ast_node) do
     env = __CALLER__
-    check_placement!(env.module, :on)
+    check_placement!(env.module, :on, @placement[:on])
     ast_node
     |> List.wrap
     |> Enum.each(fn
@@ -535,7 +567,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro instruction(func_ast) do
     env = __CALLER__
-    check_placement!(env.module, :instruction)
+    check_placement!(env.module, :instruction, @placement[:instruction])
     Scope.put_attribute(env.module, :instruction, func_ast)
     []
   end
@@ -560,7 +592,9 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro input_object(identifier, attrs \\ [], [do: block]) do
-    scope(__CALLER__, :input_object, identifier, attrs, block)
+    env = __CALLER__
+    check_placement!(env.module, :input_object, @placement[:input_object])
+    scope(env, :input_object, identifier, attrs, block)
     handle_desc(identifier)
   end
 
@@ -590,7 +624,9 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro union(identifier, attrs \\ [], [do: block]) do
-    scope(__CALLER__, :union, identifier, attrs, block)
+    env = __CALLER__
+    check_placement!(env.module, :union, @placement[:union])
+    scope(env, :union, identifier, attrs, block)
     handle_desc(identifier)
   end
 
@@ -606,7 +642,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro types(types) do
     env = __CALLER__
-    check_placement!(env.module, :types)
+    check_placement!(env.module, :types, @placement[:types])
     Scope.put_attribute(env.module, :types, List.wrap(types))
     []
   end
@@ -622,7 +658,9 @@ defmodule Absinthe.Schema.Notation do
   #{Utils.placement_docs(@placement)}
   """
   defmacro enum(identifier, attrs, [do: block]) do
-    scope(__CALLER__, :enum, identifier, attrs, block)
+    env = __CALLER__
+    check_placement!(env.module, :enum, @placement[:enum])
+    scope(env, :enum, identifier, attrs, block)
     handle_desc(identifier)
   end
 
@@ -632,11 +670,15 @@ defmodule Absinthe.Schema.Notation do
   See `enum/3`
   """
   defmacro enum(identifier, [do: block]) do
-    scope(__CALLER__, :enum, identifier, [], block)
+    env = __CALLER__
+    check_placement!(env.module, :enum, @placement[:enum])
+    scope(env, :enum, identifier, [], block)
     handle_desc(identifier)
   end
   defmacro enum(identifier, attrs) do
-    scope(__CALLER__, :enum, identifier, attrs, nil)
+    env = __CALLER__
+    check_placement!(env.module, :enum, @placement[:enum])
+    scope(env, :enum, identifier, attrs, nil)
     handle_desc(identifier)
   end
 
@@ -652,7 +694,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro value(identifier, raw_attrs \\ []) do
     env = __CALLER__
-    check_placement!(env.module, :value)
+    check_placement!(env.module, :value, @placement[:value])
 
     attrs = raw_attrs
     |> Keyword.put(:value, Keyword.get(raw_attrs, :as, identifier))
@@ -680,8 +722,9 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro description(text_block) do
     text = reformat_description(text_block)
-    check_placement!(__CALLER__.module, :description)
-    Scope.put_attribute(__CALLER__.module, :description, text)
+    env = __CALLER__
+    check_placement!(env.module, :description, @placement[:description])
+    Scope.put_attribute(env.module, :description, text)
     []
   end
 
@@ -814,8 +857,6 @@ defmodule Absinthe.Schema.Notation do
   # After verifying it is valid in the current context, open a new notation
   # scope, setting any provided attributes.
   defp open_scope(kind, env, identifier, attrs) do
-    check_placement!(env.module, kind)
-
     attrs = attrs
     |> add_reference(env, identifier)
     |> add_description(env)
@@ -941,10 +982,8 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Check whether the provided operation is appropriate in the current
   # in the current scope context
-  def check_placement!(mod, usage, opts \\ []) do
-    rules = Keyword.get(@placement, usage, [])
-    |> Enum.into(%{})
-    do_check_placement!(mod, usage, rules, opts)
+  def check_placement!(mod, usage, kw_rules, opts \\ []) do
+    do_check_placement!(mod, usage, Enum.into(List.wrap(kw_rules), %{}), opts)
   end
   defp do_check_placement!(mod, usage, %{under: parents} = rules, opts) do
     case Scope.current(mod) do
