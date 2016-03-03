@@ -56,10 +56,10 @@ defmodule Absinthe.IntrospectionTest do
 
     it "can use __schema to get the directives" do
       result = "{ __schema { directives { name args { name type { kind ofType { name kind } } } onOperation onFragment onField } } }" |> Absinthe.run(ContactSchema)
-      assert {:ok, %{data: %{"__schema" => %{"directives" => [
-                                              %{"name" => "skip", "args" => [%{"name" => "if", "type" => %{"kind" => "NON_NULL", "ofType" => %{"name" => "Boolean", "kind" => "SCALAR"}}}], "onOperation" => false, "onFragment" => true, "onField" => true},
-                                              %{"name" => "include", "args" => [%{"name" => "if", "type" => %{"kind" => "NON_NULL", "ofType" => %{"name" => "Boolean", "kind" => "SCALAR"}}}], "onOperation" => false, "onFragment" => true, "onField" => true}
-                                            ]}}}} == result
+      assert {:ok,
+            %{data: %{"__schema" => %{"directives" => [%{"args" => [%{"name" => "if", "type" => %{"kind" => "NON_NULL", "ofType" => %{"kind" => "SCALAR", "name" => "Boolean"}}}], "name" => "include", "onField" => true, "onFragment" => true,
+                     "onOperation" => false},
+                   %{"args" => [%{"name" => "if", "type" => %{"kind" => "NON_NULL", "ofType" => %{"kind" => "SCALAR", "name" => "Boolean"}}}], "name" => "skip", "onField" => true, "onFragment" => true, "onOperation" => false}]}}}} == result
     end
 
   end
@@ -143,7 +143,11 @@ defmodule Absinthe.IntrospectionTest do
       }
       """
       |> Absinthe.run(ContactSchema)
-      assert_result {:ok, %{data: %{"__type" => %{"name" => "ProfileInput", "description" => "The basic details for a person", "kind" => "INPUT_OBJECT", "inputFields" => [%{"name" => "name", "description" => "The person's name", "type" => %{"name" => "String", "kind" => "SCALAR", "ofType" => nil}, "defaultValue" => "Janet"}, %{"defaultValue" => nil, "description" => nil, "name" => "code", "type" => %{"kind" => "NON_NULL", "name" => nil, "ofType" => %{"kind" => "SCALAR", "name" => "String"}}}, %{"name" => "age", "description" => "The person's age", "type" => %{"name" => "Int", "kind" => "SCALAR", "ofType" => nil}, "defaultValue" => "43"}]}}}}, result
+      assert_result {:ok, %{data: %{"__type" => %{"description" => "The basic details for a person",
+             "inputFields" => [%{"defaultValue" => "43", "description" => "The person's age", "name" => "age", "type" => %{"kind" => "SCALAR", "name" => "Int", "ofType" => nil}},
+              %{"defaultValue" => nil, "description" => nil, "name" => "code", "type" => %{"kind" => "NON_NULL", "name" => nil, "ofType" => %{"kind" => "SCALAR", "name" => "String"}}},
+              %{"defaultValue" => "Janet", "description" => "The person's name", "name" => "name", "type" => %{"kind" => "SCALAR", "name" => "String", "ofType" => nil}}], "kind" => "INPUT_OBJECT", "name" => "ProfileInput"}}}},
+              result
       assert !match?({:ok, %{data: %{"__type" => %{"fields" => _}}}}, result)
     end
 
@@ -165,7 +169,7 @@ defmodule Absinthe.IntrospectionTest do
       }
       """
       |> Absinthe.run(ContactSchema)
-      assert_result {:ok, %{data: %{"__type" => %{"name" => "NamedEntity", "description" => "A named entity", "kind" => "INTERFACE", "possibleTypes" => [%{"name" => "Business"}, %{"name" => "Person"}]}}}}, result
+      assert_result {:ok, %{data: %{"__type" => %{"description" => "A named entity", "kind" => "INTERFACE", "name" => "NamedEntity", "possibleTypes" => [%{"name" => "Person"}, %{"name" => "Business"}]}}}}, result
     end
 
   end
@@ -194,15 +198,12 @@ defmodule Absinthe.IntrospectionTest do
       assert_result {:ok,
                      %{data:
                        %{"__type" => %{
-                          "fields" => [%{"name" => "others",
-                                         "type" => %{"kind" => "LIST", "name" => nil,
-                                                     "ofType" => %{"kind" => "OBJECT", "name" => "Person"}}},
-                                       %{"name" => "name",
-                                         "type" => %{"kind" => "SCALAR", "name" => "String", "ofType" => nil}},
-                                       %{"name" => "age",
-                                         "type" => %{"kind" => "SCALAR", "name" => "Int", "ofType" => nil}},
-                                       %{"name" => "address",
-                                         "type" => %{"kind" => "SCALAR", "name" => "String", "ofType" => nil}}]}}}}, result
+                          "fields" => [
+        %{"name" => "address", "type" => %{"kind" => "SCALAR", "name" => "String", "ofType" => nil}},
+        %{"name" => "age", "type" => %{"kind" => "SCALAR", "name" => "Int", "ofType" => nil}},
+        %{"name" => "name", "type" => %{"kind" => "SCALAR", "name" => "String", "ofType" => nil}},
+        %{"name" => "others", "type" => %{"kind" => "LIST", "name" => nil, "ofType" => %{"kind" => "OBJECT", "name" => "Person"}}}
+      ]}}}}, result
     end
 
   end
@@ -224,7 +225,7 @@ defmodule Absinthe.IntrospectionTest do
       }
       """
       |> Absinthe.run(ContactSchema)
-      assert_result {:ok, %{data: %{"__type" => %{"name" => "Person", "description" => "A person", "kind" => "OBJECT", "fields" => [%{"name" => "others"}, %{"name" => "name"}, %{"name" => "age"}]}}}}, result
+      assert_result {:ok, %{data: %{"__type" => %{"name" => "Person", "description" => "A person", "kind" => "OBJECT", "fields" => [%{"name" => "age"}, %{"name" => "name"}, %{"name" => "others"}]}}}}, result
     end
 
     it "can use __type and include deprecated fields" do
@@ -243,13 +244,9 @@ defmodule Absinthe.IntrospectionTest do
       }
       """
       |> Absinthe.run(ContactSchema)
-      assert_result {:ok, %{data: %{"__type" => %{"kind" => "OBJECT",
-                                                  "name" => "Person",
-                                                  "description" => "A person",
-                                                  "fields" => [%{"name" => "others", "isDeprecated" => false, "deprecationReason" => nil},
-                                                               %{"name" => "name", "isDeprecated" => false, "deprecationReason" => nil},
-                                                               %{"name" => "age", "isDeprecated" => false, "deprecationReason" => nil},
-                                                               %{"name" => "address", "isDeprecated" => true, "deprecationReason" => "change of privacy policy"}]}}}}, result
+      assert_result {:ok, %{data: %{"__type" => %{"description" => "A person",
+                 "fields" => [%{"deprecationReason" => "change of privacy policy", "isDeprecated" => true, "name" => "address"}, %{"deprecationReason" => nil, "isDeprecated" => false, "name" => "age"},
+                  %{"deprecationReason" => nil, "isDeprecated" => false, "name" => "name"}, %{"deprecationReason" => nil, "isDeprecated" => false, "name" => "others"}], "kind" => "OBJECT", "name" => "Person"}}}}, result
     end
 
     it "can use __type to view interfaces" do
@@ -296,7 +293,7 @@ defmodule Absinthe.IntrospectionTest do
       }
       """
       |> Absinthe.run(KindSchema)
-      assert {:ok, %{data: %{"__type" => %{"name" => "Foo", "fields" => [%{"name" => "name", "type" => %{"name" => "String", "kind" => "SCALAR"}}, %{"name" => "kind", "type" => %{"name" => "String", "kind" => "SCALAR"}}]}}}} = result
+      assert {:ok, %{data: %{"__type" => %{"fields" => [%{"name" => "kind", "type" => %{"kind" => "SCALAR", "name" => "String"}}, %{"name" => "name", "type" => %{"kind" => "SCALAR", "name" => "String"}}], "name" => "Foo"}}}} = result
     end
 
     it "can use __schema with a field named 'kind'" do
@@ -372,7 +369,7 @@ defmodule Absinthe.IntrospectionTest do
       }
       """
       |> Absinthe.run(ContactSchema)
-      assert_result {:ok, %{data: %{"__type" => %{"name" => "SearchResult", "description" => "A search result", "kind" => "UNION", "possibleTypes" => [%{"name" => "Person"}, %{"name" => "Business"}]}}}}, result
+      assert_result {:ok, %{data: %{"__type" => %{"description" => "A search result", "kind" => "UNION", "name" => "SearchResult", "possibleTypes" => [%{"name" => "Business"}, %{"name" => "Person"}]}}}}, result
     end
 
   end
