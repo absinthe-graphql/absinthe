@@ -1,25 +1,10 @@
 defmodule Absinthe.Execution.ListTest.Schema do
   use Absinthe.Schema
 
-  object :item do
-    field :id, :string
-    field :name, :string
-    field :categories, list_of(:string)
-    field :preview_url, :string
-    field :download_url, :string
-  end
-
   query do
-    field :items, list_of(:item) do
-      arg :category, :string
-
+    field :categories, list_of(:string) do
       resolve fn _, _ ->
-        items = [
-          %{
-            categories: ["foo", "bar", "baz"]
-          }
-        ]
-        {:ok, items}
+        {:ok, ["foo", "bar", "baz"]}
       end
     end
   end
@@ -27,13 +12,10 @@ end
 
 defmodule Absinthe.Execution.ListTest do
   use ExSpec, async: true
-  alias __MODULE__
 
   @query """
   {
-    items {
-      categories
-    }
+    categories
   }
   """
 
