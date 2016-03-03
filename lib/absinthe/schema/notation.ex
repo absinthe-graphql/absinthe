@@ -22,7 +22,9 @@ defmodule Absinthe.Schema.Notation do
 
   Module.register_attribute(__MODULE__, :placement, accumulate: true)
 
-  defp handle_desc(identifier) do
+  @doc false
+  # Return a quote that records the current @desc value for a given identifier
+  def desc_attribute_recorder(identifier) do
     quote do
       @absinthe_descriptions {unquote(identifier), @desc}
       @desc nil
@@ -60,8 +62,14 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro object(identifier, attrs \\ [], [do: block]) do
-    scope(__CALLER__, :object, identifier, attrs, block)
-    handle_desc(identifier)
+    __CALLER__
+    |> recordable!(:object, @placement[:object])
+    |> record_object!(identifier, attrs, block)
+    desc_attribute_recorder(identifier)
+  end
+
+  def record_object!(env, identifier, attrs, block) do
+    scope(env, :object, identifier, attrs, block)
   end
 
   @placement {:interfaces, [under: :object]}
@@ -85,10 +93,16 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro interfaces(ifaces) when is_list(ifaces) do
-    env = __CALLER__
-    check_placement!(env.module, :interfaces)
-    Scope.put_attribute(env.module, :interfaces, ifaces)
-    []
+    __CALLER__
+    |> recordable!(:interfaces, @placement[:interfaces])
+    |> record_interfaces!(ifaces)
+  end
+
+  @doc false
+  # Record a list of implemented interfaces in the current scope
+  def record_interfaces!(env, ifaces) do
+    Enum.each(ifaces, &record_interface!(env, &1))
+    :ok
   end
 
   @placement {:resolve, [under: [:field]]}
@@ -122,10 +136,16 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro deprecate(msg) do
-    env = __CALLER__
-    check_placement!(env.module, :deprecate)
+    __CALLER__
+    |> recordable!(:deprecate, @placement[:deprecate])
+    |> record_deprecate!(msg)
+  end
+
+  @doc false
+  # Record a deprecation in the current scope
+  def record_deprecate!(env, msg) do
     Scope.put_attribute(env.module, :deprecate, msg)
-    []
+    :ok
   end
 
   @doc """
@@ -147,10 +167,16 @@ defmodule Absinthe.Schema.Notation do
   """
   @placement {:interface_attribute, [under: :object]}
   defmacro interface(identifier) do
-    env = __CALLER__
-    check_placement!(env.module, :interface_attribute, as: "`interface` (as an attribute)")
+    __CALLER__
+    |> recordable!(:interface_attribute, @placement[:interface_attribute], as: "`interface` (as an attribute)")
+    |> record_interface!(identifier)
+  end
+
+  @doc false
+  # Record an implemented interface in the current scope
+  def record_interface!(env, identifier) do
     Scope.put_attribute(env.module, :interfaces, identifier, accumulate: true)
-    []
+    :ok
   end
 
   # INTERFACES
@@ -182,8 +208,16 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro interface(identifier, attrs \\ [], [do: block]) do
-    scope(__CALLER__, :interface, identifier, attrs, block)
-    handle_desc(identifier)
+    __CALLER__
+    |> recordable!(:interface, @placement[:interface])
+    |> record_interface!(identifier, attrs, block)
+    desc_attribute_recorder(identifier)
+  end
+
+  @doc false
+  # Record an interface type
+  def record_interface!(env, identifier, attrs, block) do
+    scope(env, :interface, identifier, attrs, block)
   end
 
   @placement {:resolve_type, [under: [:interface, :union]]}
@@ -213,10 +247,16 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro resolve_type(func_ast) do
-    env = __CALLER__
-    check_placement!(env.module, :resolve_type)
+    __CALLER__
+    |> recordable!(:resolve_type, @placement[:resolve_type])
+    |> record_resolve_type!(func_ast)
+  end
+
+  @doc false
+  # Record a type resolver in the current scope
+  def record_resolve_type!(env, func_ast) do
     Scope.put_attribute(env.module, :resolve_type, func_ast)
-    []
+    :ok
   end
 
   # FIELDS
@@ -227,13 +267,19 @@ defmodule Absinthe.Schema.Notation do
   See `field/4`
   """
   defmacro field(identifier, [do: block]) do
-    scope(__CALLER__, :field, identifier, [], block)
+    __CALLER__
+    |> recordable!(:field, @placement[:field])
+    |> record_field!(identifier, [], block)
   end
   defmacro field(identifier, attrs) when is_list(attrs) do
-    scope(__CALLER__, :field, identifier, attrs, nil)
+    __CALLER__
+    |> recordable!(:field, @placement[:field])
+    |> record_field!(identifier, attrs, nil)
   end
   defmacro field(identifier, type) do
-    scope(__CALLER__, :field, identifier, [type: type], nil)
+    __CALLER__
+    |> recordable!(:field, @placement[:field])
+    |> record_field!(identifier, [type: type], nil)
   end
   @doc """
   Defines a GraphQL field
@@ -241,13 +287,19 @@ defmodule Absinthe.Schema.Notation do
   See `field/4`
   """
   defmacro field(identifier, attrs, [do: block]) when is_list(attrs) do
-    scope(__CALLER__, :field, identifier, attrs, block)
+    __CALLER__
+    |> recordable!(:field, @placement[:field])
+    |> record_field!(identifier, attrs, block)
   end
   defmacro field(identifier, type, [do: block]) do
-    scope(__CALLER__, :field, identifier, [type: type], block)
+    __CALLER__
+    |> recordable!(:field, @placement[:field])
+    |> record_field!(identifier, [type: type], block)
   end
   defmacro field(identifier, type, attrs) do
-    scope(__CALLER__, :field, identifier, Keyword.put(attrs, :type, type),  nil)
+    __CALLER__
+    |> recordable!(:field, @placement[:field])
+    |> record_field!(identifier, Keyword.put(attrs, :type, type), nil)
   end
   @doc """
   Defines a GraphQL field.
@@ -271,7 +323,15 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro field(identifier, type, attrs, [do: block]) do
-    scope(__CALLER__, :field, identifier, Keyword.put(attrs, :type, type), block)
+    __CALLER__
+    |> recordable!(:field, @placement[:field])
+    |> record_field!(identifier, Keyword.put(attrs, :type, type), block)
+  end
+
+  @doc false
+  # Record a field in the current scope
+  def record_field!(env, identifier, attrs, block) do
+    scope(env, :field, identifier, attrs, block)
   end
 
   @placement {:resolve, [under: [:field]]}
@@ -329,10 +389,16 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro resolve(func_ast) do
-    env = __CALLER__
-    check_placement!(env.module, :resolve)
+    __CALLER__
+    |> recordable!(:resolve, @placement[:resolve])
+    |> record_resolve!(func_ast)
+  end
+
+  @doc false
+  # Record a resolver in the current scope
+  def record_resolve!(env, func_ast) do
     Scope.put_attribute(env.module, :resolve, func_ast)
-    []
+    :ok
   end
 
   @placement {:is_type_of, [under: [:object]]}
@@ -344,10 +410,16 @@ defmodule Absinthe.Schema.Notation do
   #{Utils.placement_docs(@placement)}
   """
   defmacro is_type_of(func_ast) do
-    env = __CALLER__
-    check_placement!(env.module, :is_type_of)
+    __CALLER__
+    |> recordable!(:is_type_of, @placement[:is_type_of])
+    |> record_is_type_of!(func_ast)
+  end
+
+  @doc false
+  # Record a type checker in the current scope
+  def record_is_type_of!(env, func_ast) do
     Scope.put_attribute(env.module, :is_type_of, func_ast)
-    []
+    :ok
   end
 
   @placement {:arg, [under: [:directive, :field]]}
@@ -369,7 +441,9 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro arg(identifier, type, attrs) do
-    scope(__CALLER__, :arg, identifier, Keyword.put(attrs, :type, type), nil)
+    __CALLER__
+    |> recordable!(:arg, @placement[:arg])
+    |> record_arg!(identifier, Keyword.put(attrs, :type, type), nil)
   end
 
   @doc """
@@ -378,10 +452,20 @@ defmodule Absinthe.Schema.Notation do
   See `arg/3`
   """
   defmacro arg(identifier, attrs) when is_list(attrs) do
-    scope(__CALLER__, :arg, identifier, attrs, nil)
+    __CALLER__
+    |> recordable!(:arg, @placement[:arg])
+    |> record_arg!(identifier, attrs, nil)
   end
   defmacro arg(identifier, type) do
-    scope(__CALLER__, :arg, identifier, [type: type], nil)
+    __CALLER__
+    |> recordable!(:arg, @placement[:arg])
+    |> record_arg!(identifier, [type: type], nil)
+  end
+
+  @doc false
+  # Record an argument in the current scope
+  def record_arg!(env, identifier, attrs, block) do
+    scope(env, :arg, identifier, attrs, block)
   end
 
   # SCALARS
@@ -406,8 +490,10 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro scalar(identifier, attrs, [do: block]) do
-    scope(__CALLER__, :scalar, identifier, attrs, block)
-    handle_desc(identifier)
+    __CALLER__
+    |> recordable!(:scalar, @placement[:scalar])
+    |> record_scalar!(identifier, attrs, block)
+    desc_attribute_recorder(identifier)
   end
 
   @doc """
@@ -416,12 +502,22 @@ defmodule Absinthe.Schema.Notation do
   See `scalar/3`
   """
   defmacro scalar(identifier, [do: block]) do
-    scope(__CALLER__, :scalar, identifier, [], block)
-    handle_desc(identifier)
+    __CALLER__
+    |> recordable!(:scalar, @placement[:scalar])
+    |> record_scalar!(identifier, [], block)
+    desc_attribute_recorder(identifier)
   end
   defmacro scalar(identifier, attrs) do
-    scope(__CALLER__, :scalar, identifier, attrs, nil)
-    handle_desc(identifier)
+    __CALLER__
+    |> recordable!(:scalar, @placement[:scalar])
+    |> record_scalar!(identifier, attrs, nil)
+    desc_attribute_recorder(identifier)
+  end
+
+  @doc false
+  # Record a scalar type
+  def record_scalar!(env, identifier, attrs, block) do
+    scope(env, :scalar, identifier, attrs, block)
   end
 
   @placement {:serialize, [under: [:scalar]]}
@@ -436,10 +532,16 @@ defmodule Absinthe.Schema.Notation do
   #{Utils.placement_docs(@placement)}
   """
   defmacro serialize(func_ast) do
-    env = __CALLER__
-    check_placement!(env.module, :serialize)
+    __CALLER__
+    |> recordable!(:serialize, @placement[:serialize])
+    |> record_serialize!(func_ast)
+  end
+
+  @doc false
+  # Record a serialize function in the current scope
+  def record_serialize!(env, func_ast) do
     Scope.put_attribute(env.module, :serialize, func_ast)
-    []
+    :ok
   end
 
   @placement {:parse, [under: [:scalar]]}
@@ -456,10 +558,17 @@ defmodule Absinthe.Schema.Notation do
   #{Utils.placement_docs(@placement)}
   """
   defmacro parse(func_ast) do
-    env = __CALLER__
-    check_placement!(env.module, :parse)
-    Scope.put_attribute(env.module, :parse, func_ast)
+    __CALLER__
+    |> recordable!(:parse, @placement[:parse])
+    |> record_parse!(func_ast)
     []
+  end
+
+  @doc false
+  # Record a parse function in the current scope
+  def record_parse!(env, func_ast) do
+    Scope.put_attribute(env.module, :parse, func_ast)
+    :ok
   end
 
   # DIRECTIVES
@@ -494,8 +603,16 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro directive(identifier, attrs \\ [], [do: block]) do
-    scope(__CALLER__, :directive, identifier, attrs, block)
-    handle_desc(identifier)
+    __CALLER__
+    |> recordable!(:directive, @placement[:directive])
+    |> record_directive!(identifier, attrs, block)
+    desc_attribute_recorder(identifier)
+  end
+
+  @doc false
+  # Record a directive
+  def record_directive!(env, identifier, attrs, block) do
+    scope(env, :directive, identifier, attrs, block)
   end
 
   @placement {:on, [under: :directive]}
@@ -509,8 +626,14 @@ defmodule Absinthe.Schema.Notation do
   #{Utils.placement_docs(@placement)}
   """
   defmacro on(ast_node) do
-    env = __CALLER__
-    check_placement!(env.module, :on)
+    __CALLER__
+    |> recordable!(:on, @placement[:on])
+    |> record_on!(ast_node)
+  end
+
+  @doc false
+  # Record directive AST nodes in the current scope
+  def record_on!(env, ast_node) do
     ast_node
     |> List.wrap
     |> Enum.each(fn
@@ -522,7 +645,7 @@ defmodule Absinthe.Schema.Notation do
           accumulate: true
         )
     end)
-    []
+    :ok
   end
 
   @placement {:instruction, [under: :directive]}
@@ -534,10 +657,16 @@ defmodule Absinthe.Schema.Notation do
   #{Utils.placement_docs(@placement)}
   """
   defmacro instruction(func_ast) do
-    env = __CALLER__
-    check_placement!(env.module, :instruction)
+    __CALLER__
+    |> recordable!(:instruction, @placement[:instruction])
+    |> record_instruction!(func_ast)
+  end
+
+  @doc false
+  # Record a directive instruction function in the current scope
+  def record_instruction!(env, func_ast) do
     Scope.put_attribute(env.module, :instruction, func_ast)
-    []
+    :ok
   end
 
   # INPUT OBJECTS
@@ -560,8 +689,16 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro input_object(identifier, attrs \\ [], [do: block]) do
-    scope(__CALLER__, :input_object, identifier, attrs, block)
-    handle_desc(identifier)
+    __CALLER__
+    |> recordable!(:input_object, @placement[:input_object])
+    |> record_input_object!(identifier, attrs, block)
+    desc_attribute_recorder(identifier)
+  end
+
+  @doc false
+  # Record an input object type
+  def record_input_object!(env, identifier, attrs, block) do
+    scope(env, :input_object, identifier, attrs, block)
   end
 
   # UNIONS
@@ -590,8 +727,16 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro union(identifier, attrs \\ [], [do: block]) do
-    scope(__CALLER__, :union, identifier, attrs, block)
-    handle_desc(identifier)
+    __CALLER__
+    |> recordable!(:union, @placement[:union])
+    |> record_union!(identifier, attrs, block)
+    desc_attribute_recorder(identifier)
+  end
+
+  @doc false
+  # Record a union type
+  def record_union!(env, identifier, attrs, block) do
+    scope(env, :union, identifier, attrs, block)
   end
 
   @placement {:types, [under: [:union]]}
@@ -605,10 +750,16 @@ defmodule Absinthe.Schema.Notation do
   #{Utils.placement_docs(@placement)}
   """
   defmacro types(types) do
-    env = __CALLER__
-    check_placement!(env.module, :types)
+    __CALLER__
+    |> recordable!(:types, @placement[:types])
+    |> record_types!(types)
+  end
+
+  @doc false
+  # Record a list of member types for a union in the current scope
+  def record_types!(env, types) do
     Scope.put_attribute(env.module, :types, List.wrap(types))
-    []
+    :ok
   end
 
   # ENUMS
@@ -622,8 +773,10 @@ defmodule Absinthe.Schema.Notation do
   #{Utils.placement_docs(@placement)}
   """
   defmacro enum(identifier, attrs, [do: block]) do
-    scope(__CALLER__, :enum, identifier, attrs, block)
-    handle_desc(identifier)
+    __CALLER__
+    |> recordable!(:enum, @placement[:enum])
+    |> record_enum!(identifier, attrs, block)
+    desc_attribute_recorder(identifier)
   end
 
   @doc """
@@ -632,12 +785,22 @@ defmodule Absinthe.Schema.Notation do
   See `enum/3`
   """
   defmacro enum(identifier, [do: block]) do
-    scope(__CALLER__, :enum, identifier, [], block)
-    handle_desc(identifier)
+    __CALLER__
+    |> recordable!(:enum, @placement[:enum])
+    |> record_enum!(identifier, [], block)
+    desc_attribute_recorder(identifier)
   end
   defmacro enum(identifier, attrs) do
-    scope(__CALLER__, :enum, identifier, attrs, nil)
-    handle_desc(identifier)
+    __CALLER__
+    |> recordable!(:enum, @placement[:enum])
+    |> record_enum!(identifier, attrs, nil)
+    desc_attribute_recorder(identifier)
+  end
+
+  @doc false
+  # Record an enum type
+  def record_enum!(env, identifier, attrs, block) do
+    scope(env, :enum, identifier, attrs, block)
   end
 
   @placement {:value, [under: [:enum]]}
@@ -651,16 +814,20 @@ defmodule Absinthe.Schema.Notation do
   #{Utils.placement_docs(@placement)}
   """
   defmacro value(identifier, raw_attrs \\ []) do
-    env = __CALLER__
-    check_placement!(env.module, :value)
+    __CALLER__
+    |> recordable!(:value, @placement[:value])
+    |> record_value!(identifier, raw_attrs)
+  end
 
+  @doc false
+  # Record an enum value in the current scope
+  def record_value!(env, identifier, raw_attrs) do
     attrs = raw_attrs
     |> Keyword.put(:value, Keyword.get(raw_attrs, :as, identifier))
     |> Keyword.delete(:as)
     |> add_description(env)
-
     Scope.put_attribute(env.module, :values, {identifier, attrs}, accumulate: true)
-    []
+    :ok
   end
 
   # GENERAL ATTRIBUTES
@@ -678,14 +845,21 @@ defmodule Absinthe.Schema.Notation do
 
   #{Utils.placement_docs(@placement)}
   """
-  defmacro description(text_block) do
-    text = reformat_description(text_block)
-    check_placement!(__CALLER__.module, :description)
-    Scope.put_attribute(__CALLER__.module, :description, text)
-    []
+  defmacro description(text) do
+    __CALLER__
+    |> recordable!(:description, @placement[:description])
+    |> record_description!(text)
   end
 
   defp reformat_description(text), do: String.strip(text)
+
+  @doc false
+  # Record a description in the current scope
+  def record_description!(env, text_block) do
+    text = reformat_description(text_block)
+    Scope.put_attribute(env.module, :description, text)
+    :ok
+  end
 
   # IMPORTS
 
@@ -711,34 +885,40 @@ defmodule Absinthe.Schema.Notation do
     type_module_ast
     |> Macro.expand(env)
     |> do_import_types(env)
-
-    []
   end
 
   defp do_import_types(type_module, env) when is_atom(type_module) do
-    for {ident, name} <- type_module.__absinthe_types__ do
-      if Enum.member?(type_module.__absinthe_exports__, ident) do
-        put_definition(env.module, %Absinthe.Schema.Notation.Definition{
+
+    types = for {ident, name} <- type_module.__absinthe_types__, ident in type_module.__absinthe_exports__ do
+      put_definition(
+        env.module,
+        %Absinthe.Schema.Notation.Definition{
           category: :type,
           source: type_module,
           identifier: ident,
           attrs: [name: name],
           file: env.file,
-          line: env.line})
-      end
+          line: env.line
+        }
+      )
+      ident
     end
 
-    for {ident, name} <- type_module.__absinthe_directives__ do
-      if Enum.member?(type_module.__absinthe_exports__, ident) do
-        put_definition(env.module, %Absinthe.Schema.Notation.Definition{
+    directives = for {ident, name} <- type_module.__absinthe_directives__, ident in type_module.__absinthe_exports__ do
+      put_definition(
+        env.module,
+        %Absinthe.Schema.Notation.Definition{
           category: :directive,
           source: type_module,
           identifier: ident,
           attrs: [name: name],
           file: env.file,
-          line: env.line})
-      end
+          line: env.line
+        }
+      )
     end
+
+    {:ok, types: types, directives: directives}
   end
   defp do_import_types(type_module, _) do
     raise ArgumentError, """
@@ -782,7 +962,6 @@ defmodule Absinthe.Schema.Notation do
     block |> expand(env)
 
     close_scope(kind, env, identifier)
-    []
   end
 
   defp expand(ast, env) do
@@ -814,8 +993,6 @@ defmodule Absinthe.Schema.Notation do
   # After verifying it is valid in the current context, open a new notation
   # scope, setting any provided attributes.
   defp open_scope(kind, env, identifier, attrs) do
-    check_placement!(env.module, kind)
-
     attrs = attrs
     |> add_reference(env, identifier)
     |> add_description(env)
@@ -939,18 +1116,16 @@ defmodule Absinthe.Schema.Notation do
   end
 
   @doc false
-  # Check whether the provided operation is appropriate in the current
+  # Ensure the provided operation can be recorded in the current environment,
   # in the current scope context
-  def check_placement!(mod, usage, opts \\ []) do
-    rules = Keyword.get(@placement, usage, [])
-    |> Enum.into(%{})
-    do_check_placement!(mod, usage, rules, opts)
+  def recordable!(env, usage, kw_rules, opts \\ []) do
+    do_recordable!(env, usage, Enum.into(List.wrap(kw_rules), %{}), opts)
   end
-  defp do_check_placement!(mod, usage, %{under: parents} = rules, opts) do
-    case Scope.current(mod) do
+  defp do_recordable!(env, usage, %{under: parents} = rules, opts) do
+    case Scope.current(env.module) do
       %{name: name} ->
         if Enum.member?(List.wrap(parents), name) do
-          do_check_placement!(mod, usage, Map.delete(rules, :under), opts)
+          do_recordable!(env, usage, Map.delete(rules, :under), opts)
         else
           raise Absinthe.Schema.Notation.Error, only_within(usage, parents, opts)
         end
@@ -958,27 +1133,26 @@ defmodule Absinthe.Schema.Notation do
         raise Absinthe.Schema.Notation.Error, only_within(usage, parents, opts)
     end
   end
-  defp do_check_placement!(mod, usage, %{toplevel: true} = rules, opts) do
-    case Scope.current(mod) do
+  defp do_recordable!(env, usage, %{toplevel: true} = rules, opts) do
+    case Scope.current(env.module) do
       nil ->
-        do_check_placement!(mod, usage, Map.delete(rules, :toplevel), opts)
+        do_recordable!(env, usage, Map.delete(rules, :toplevel), opts)
       _ ->
         ref = opts[:as] || "`#{usage}`"
         raise Absinthe.Schema.Notation.Error, "Invalid schema notation: #{ref} must only be used toplevel"
     end
   end
-  defp do_check_placement!(mod, usage, %{toplevel: false} = rules, opts) do
-    case Scope.current(mod) do
+  defp do_recordable!(env, usage, %{toplevel: false} = rules, opts) do
+    case Scope.current(env.module) do
       nil ->
         ref = opts[:as] || "`#{usage}`"
         raise Absinthe.Schema.Notation.Error, "Invalid schema notation: #{ref} must not be used toplevel"
       _ ->
-        do_check_placement!(mod, usage, Map.delete(rules, :toplevel), opts)
+        do_recordable!(env, usage, Map.delete(rules, :toplevel), opts)
     end
   end
-
-  defp do_check_placement!(_, _, rules, _) when map_size(rules) == 0 do
-    :ok
+  defp do_recordable!(env, _, rules, _) when map_size(rules) == 0 do
+    env
   end
 
   # The error message when a macro can only be used within a certain set of
