@@ -204,7 +204,7 @@ defmodule Absinthe.Type do
       :error -> false
     end
   end
-  def valid_input?(_) do
+  def valid_input?(_, _) do
     true
   end
 
