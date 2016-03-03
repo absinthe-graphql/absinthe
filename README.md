@@ -4,6 +4,7 @@
 
 [![Build Status](https://secure.travis-ci.org/absinthe-graphql/absinthe.svg?branch=master
 "Build Status")](https://travis-ci.org/absinthe-graphql/absinthe)
+[![Deps Status](https://beta.hexfaktor.org/badge/all/github/absinthe-graphql/absinthe.svg)](https://beta.hexfaktor.org/github/absinthe-graphql/absinthe)
 
 Goals:
 
