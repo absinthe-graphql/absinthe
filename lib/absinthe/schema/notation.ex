@@ -70,7 +70,6 @@ defmodule Absinthe.Schema.Notation do
 
   def record_object!(env, identifier, attrs, block) do
     scope(env, :object, identifier, attrs, block)
-    :ok
   end
 
   @placement {:interfaces, [under: :object]}
@@ -219,7 +218,6 @@ defmodule Absinthe.Schema.Notation do
   # Record an interface type
   def record_interface!(env, identifier, attrs, block) do
     scope(env, :interface, identifier, attrs, block)
-    :ok
   end
 
   @placement {:resolve_type, [under: [:interface, :union]]}
@@ -334,7 +332,6 @@ defmodule Absinthe.Schema.Notation do
   # Record a field in the current scope
   def record_field!(env, identifier, attrs, block) do
     scope(env, :field, identifier, attrs, block)
-    :ok
   end
 
   @placement {:resolve, [under: [:field]]}
@@ -469,7 +466,6 @@ defmodule Absinthe.Schema.Notation do
   # Record an argument in the current scope
   def record_arg!(env, identifier, attrs, block) do
     scope(env, :arg, identifier, attrs, block)
-    :ok
   end
 
   # SCALARS
@@ -522,7 +518,6 @@ defmodule Absinthe.Schema.Notation do
   # Record a scalar type
   def record_scalar!(env, identifier, attrs, block) do
     scope(env, :scalar, identifier, attrs, block)
-    :ok
   end
 
   @placement {:serialize, [under: [:scalar]]}
@@ -618,7 +613,6 @@ defmodule Absinthe.Schema.Notation do
   # Record a directive
   def record_directive!(env, identifier, attrs, block) do
     scope(env, :directive, identifier, attrs, block)
-    :ok
   end
 
   @placement {:on, [under: :directive]}
@@ -705,7 +699,6 @@ defmodule Absinthe.Schema.Notation do
   # Record an input object type
   def record_input_object!(env, identifier, attrs, block) do
     scope(env, :input_object, identifier, attrs, block)
-    :ok
   end
 
   # UNIONS
@@ -744,7 +737,6 @@ defmodule Absinthe.Schema.Notation do
   # Record a union type
   def record_union!(env, identifier, attrs, block) do
     scope(env, :union, identifier, attrs, block)
-    :ok
   end
 
   @placement {:types, [under: [:union]]}
@@ -809,7 +801,6 @@ defmodule Absinthe.Schema.Notation do
   # Record an enum type
   def record_enum!(env, identifier, attrs, block) do
     scope(env, :enum, identifier, attrs, block)
-    :ok
   end
 
   @placement {:value, [under: [:enum]]}
