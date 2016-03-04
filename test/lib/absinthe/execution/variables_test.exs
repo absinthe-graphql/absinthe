@@ -39,7 +39,7 @@ defmodule Absinthe.Execution.VariablesTest do
         provided = %{"id" => "foo"}
         assert %{variables: %Absinthe.Execution.Variables{
           raw: %{"id" => "foo"},
-          processed: %{"id" => %Absinthe.Execution.Variable{value: "foo", schema_type: %Absinthe.Type.Scalar{}}}
+          processed: %{"id" => %Absinthe.Execution.Variable{value: "foo"}}
         }} = @id_required |> parse(provided)
 
       end
@@ -63,14 +63,14 @@ defmodule Absinthe.Execution.VariablesTest do
       provided = %{"id" => "bar"}
       assert %{variables: %Absinthe.Execution.Variables{
         raw: %{"id" => "bar"},
-        processed: %{"id" => %Absinthe.Execution.Variable{value: "bar", schema_type: %Absinthe.Type.Scalar{}}}
+        processed: %{"id" => %Absinthe.Execution.Variable{value: "bar"}}
       }} = @with_default |> parse(provided)
     end
 
     it "when not provided" do
       assert %{variables: %Absinthe.Execution.Variables{
         raw: %{},
-        processed: %{"id" => %Absinthe.Execution.Variable{value: @default}}, type_name: "String"}}
+        processed: %{"id" => %Absinthe.Execution.Variable{value: @default, type_name: "String"}}
       }} = @with_default |> parse
     end
 

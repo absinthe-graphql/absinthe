@@ -58,8 +58,7 @@ defmodule Absinthe.Execution.Variables do
     execution
   end
 
-  defp do_build_variable(%{default_value: value, variable: var_ast}, nil, schema_type, execution) do
-    var_ast |> IO.inspect
+  defp do_build_variable(%{default_value: %{value: value}, variable: var_ast} = def, nil, schema_type, execution) do
     case Execution.Variable.build(value, schema_type) do
       {:ok, var} ->
         add_variable(execution, var_ast.name, var)
