@@ -88,7 +88,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
       doc = """
       {contacts(contacts: [{email: "a@b.com"}, {email: "c@d.com"}])}
       """
-      assert_result {:ok, %{data: %{"contacts" => [1, 2]}}}, doc |> Absinthe.run(Schema)
+      assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "c@d.com"]}}}, doc |> Absinthe.run(Schema)
     end
   end
 
