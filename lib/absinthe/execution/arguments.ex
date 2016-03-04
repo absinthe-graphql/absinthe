@@ -3,11 +3,9 @@ defmodule Absinthe.Execution.Arguments do
 
   @moduledoc false
 
-  alias Absinthe.Validation
   alias Absinthe.Execution
   alias Absinthe.Type
   alias Absinthe.Language
-  alias Absinthe.Schema
 
   # Build an arguments map from the argument definitions in the schema, using the
   # argument values from the query document.
@@ -23,27 +21,34 @@ defmodule Absinthe.Execution.Arguments do
     acc_map_argument(arg_asts, schema_arguments, %{}, execution)
   end
 
+  defp add_argument(arg_ast, %Type.NonNull{of_type: inner_type}, execution) do
+    real_inner_type = execution.schema.__absinthe_type__(inner_type)
+    add_argument(arg_ast, real_inner_type, execution)
+  end
+
   defp add_argument(%Language.Argument{value: value}, %Type.Argument{type: inner_type}, execution) do
     real_inner_type = case inner_type do
       inner_type when is_atom(inner_type) ->
-        Schema.lookup_type(execution.schema, inner_type)
+        execution.schema.__absinthe_type__(inner_type)
       inner_type -> inner_type
     end
 
     add_argument(value, real_inner_type, execution)
   end
+
   defp add_argument(%Language.ListValue{values: values}, %Type.List{of_type: inner_type}, execution) do
-    real_inner_type = Schema.lookup_type(execution.schema, inner_type)
+    real_inner_type = execution.schema.__absinthe_type__(inner_type)
     {acc, exec} = acc_list_argument(values, real_inner_type, [], execution)
     {:ok, acc, exec}
   end
+
   defp add_argument(%Language.ObjectValue{fields: ast_fields}, %Type.InputObject{fields: schema_fields}, execution) do
     {acc, execution} = acc_map_argument(ast_fields, schema_fields, %{}, execution)
     {:ok, acc, execution}
   end
 
   defp add_argument(%Language.ObjectField{value: value}, %Type.Field{type: inner_type}, execution) do
-    real_inner_type = Schema.lookup_type(execution.schema, inner_type)
+    real_inner_type = execution.schema.__absinthe_type__(inner_type)
     add_argument(value, real_inner_type, execution)
   end
 

@@ -62,12 +62,16 @@ defmodule Absinthe.Execution.ArgumentsTest do
             {:error, "No value provided for flag argument"}
         end
 
+      field :required_thing, :string do
+        arg :name, non_null(:name)
+        resolve fn %{name: %{first_name: name}}, _ -> {:ok, name} end
+      end
+
     end
 
   end
 
   describe "list inputs" do
-    @tag :pending
     it "works with basic scalars" do
       doc = """
       {numbers(numbers: [1, 2])}
@@ -75,7 +79,6 @@ defmodule Absinthe.Execution.ArgumentsTest do
       assert_result {:ok, %{data: %{"numbers" => [1, 2]}}}, doc |> Absinthe.run(Schema)
     end
 
-    @tag :pending
     it "works with custom scalars" do
       doc = """
       {names(names: ["Joe", "bob"])}
@@ -83,7 +86,6 @@ defmodule Absinthe.Execution.ArgumentsTest do
       assert_result {:ok, %{data: %{"names" => ["Joe", "bob"]}}}, doc |> Absinthe.run(Schema)
     end
 
-    @tag :pending
     it "works with input objects" do
       doc = """
       {contacts(contacts: [{email: "a@b.com"}, {email: "c@d.com"}])}
@@ -102,6 +104,12 @@ defmodule Absinthe.Execution.ArgumentsTest do
   end
 
   describe "custom scalar arguments" do
+    it "works when specified as non null" do
+      doc = """
+      { requiredThing(name: "bob") }
+      """
+      assert_result {:ok, %{data: %{"requiredThing" => "bob"}}}, doc |> Absinthe.run(Schema)
+    end
     it "works when passed to resolution" do
       assert_result {:ok, %{data: %{"something" => "bob"}}}, "{ something(name: \"bob\") }" |> Absinthe.run(Schema)
     end
