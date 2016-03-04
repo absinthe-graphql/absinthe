@@ -10,9 +10,10 @@ defmodule Absinthe.Schema.Notation do
   alias Absinthe.Type
   alias Absinthe.Schema.Notation.Scope
 
-  defmacro __using__(_opts) do
+  defmacro __using__(opts \\ []) do
+    import_opts = opts |> Keyword.put(:only, :macros)
     quote do
-      import unquote(__MODULE__), only: :macros
+      import unquote(__MODULE__), unquote(import_opts)
       Module.register_attribute __MODULE__, :absinthe_definitions, accumulate: true
       Module.register_attribute(__MODULE__, :absinthe_descriptions, accumulate: true)
       @before_compile unquote(__MODULE__).Writer
