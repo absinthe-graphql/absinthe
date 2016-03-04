@@ -26,6 +26,18 @@ defmodule Absinthe.Execution.Arguments do
     add_argument(arg_ast, real_inner_type, execution)
   end
 
+  defp add_argument(%Language.Variable{name: name}, %{name: arg_type_name}, execution) do
+    execution.variables.processed
+    |> Map.get(name)
+    |> case do
+      # The variable exists, and it has the same
+      # type as the argument in the schema.
+      # yay! we can use it.
+      %{value: value, type_name: ^arg_type_name} ->
+        {:ok, value, execution}
+    end
+  end
+
   defp add_argument(%Language.Argument{value: value}, %Type.Argument{type: inner_type}, execution) do
     real_inner_type = case inner_type do
       inner_type when is_atom(inner_type) ->
@@ -116,7 +128,6 @@ defmodule Absinthe.Execution.Arguments do
         acc_map_argument(rest, schema_fields, acc, execution)
     end
   end
-
 
   # Given a document argument, pop the relevant schema argument
   # The reason for popping the arg is that it's an easy way to prevent using

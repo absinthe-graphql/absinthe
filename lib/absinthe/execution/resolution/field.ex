@@ -20,17 +20,19 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.Field do
             nil
         end
         |> result(ast_node, field, execution)
+
       %{resolve: resolver} ->
         case Execution.Arguments.build(ast_node, field.args, execution) do
           {:ok, args, exe} ->
             resolver.(args, environment(field, ast_node, execution))
             |> process_raw_result(ast_node, field, exe)
-          {:error, {missing, invalid}, exe} ->
+          {:error, missing, invalid, exe} ->
             exe
             |> skip_as(:missing, missing, name, ast_node)
             |> skip_as(:invalid, invalid, name, ast_node)
             |> Flag.as(:skip)
         end
+
       nil ->
         if Introspection.type?(parent_type) do
           {:skip, execution}

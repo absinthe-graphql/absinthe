@@ -26,8 +26,8 @@ defmodule Absinthe.Execution.VariablesTest do
     # Get schema
     schema = Things
     # Prepare execution context
-    {:ok, execution} = %Execution{schema: schema, document: document, variables: provided}
-    |> Execution.prepare
+    {:ok, execution} = %Execution{schema: schema, document: document}
+    |> Execution.prepare(%{variables: provided})
     execution
   end
 
@@ -37,7 +37,11 @@ defmodule Absinthe.Execution.VariablesTest do
 
       it "returns a value" do
         provided = %{"id" => "foo"}
-        assert %{variables: %{"id" => "foo"}} = @id_required |> parse(provided)
+        assert %{variables: %Absinthe.Execution.Variables{
+          raw: %{"id" => "foo"},
+          processed: %{"id" => %Absinthe.Execution.Variable{value: "foo", schema_type: %Absinthe.Type.Scalar{}}}
+        }} = @id_required |> parse(provided)
+
       end
 
     end
@@ -45,7 +49,8 @@ defmodule Absinthe.Execution.VariablesTest do
     context "when not provided" do
 
       it "returns an error" do
-        assert %{variables: %{}, errors: [%{message: "Variable `id' (String): Not provided"}]} = @id_required |> parse
+        assert %{variables: %Absinthe.Execution.Variables{raw: %{}}, errors: [%{message: "Variable `id' (String): Not provided"}]} = @id_required |> parse
+        assert {:ok, %{data: %{}, errors: [%{locations: [%{column: 0, line: 1}], message: "Variable `id' (String): Not provided"}]}} == Absinthe.run(@id_required, Things)
       end
 
     end
@@ -56,11 +61,17 @@ defmodule Absinthe.Execution.VariablesTest do
 
     it "when provided" do
       provided = %{"id" => "bar"}
-      assert %{variables: %{"id" => "bar"}} = @with_default |> parse(provided)
+      assert %{variables: %Absinthe.Execution.Variables{
+        raw: %{"id" => "bar"},
+        processed: %{"id" => %Absinthe.Execution.Variable{value: "bar", schema_type: %Absinthe.Type.Scalar{}}}
+      }} = @with_default |> parse(provided)
     end
 
     it "when not provided" do
-      assert %{variables: %{"id" => @default}} = @with_default |> parse
+      assert %{variables: %Absinthe.Execution.Variables{
+        raw: %{},
+        processed: %{"id" => %Absinthe.Execution.Variable{value: @default}}, type_name: "String"}}
+      }} = @with_default |> parse
     end
 
   end
