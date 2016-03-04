@@ -31,6 +31,23 @@ defmodule Absinthe.Execution.ListTest.Schema do
       resolve fn _, _ -> {:ok, [[1, 2, 3], [4, 5, 6]]} end
     end
 
+    field :big_nesting_of_numbers, list_of(list_of(list_of(list_of(:integer)))) do
+      resolve fn _, _ ->
+        list = [[
+          [
+            [1, 2, 3], [4, 5, 6]
+          ],
+          [
+            [7, 8, 9]
+          ],
+          [
+            [10, 11, 12]
+          ]
+        ]]
+        {:ok, list}
+      end
+    end
+
     field :list_of_list_of_books, list_of(list_of(:book)) do
       resolve fn _, _ ->
         books = [[
@@ -102,6 +119,27 @@ defmodule Absinthe.Execution.ListTest do
   """
   it "should resolve list of list of numbers" do
     assert {:ok, %{data: %{"listOfListOfNumbers" => [[1,2,3],[4,5,6]]}}} ==
+      Absinthe.run(@query, __MODULE__.Schema)
+  end
+
+  @query """
+  {
+    bigNestingOfNumbers
+  }
+  """
+  it "should resolve list of lists of... numbers with a depth of 4" do
+    list = [[
+      [
+        [1, 2, 3], [4, 5, 6]
+      ],
+      [
+        [7, 8, 9]
+      ],
+      [
+        [10, 11, 12]
+      ]
+    ]]
+    assert {:ok, %{data: %{"bigNestingOfNumbers" => list}}} ==
       Absinthe.run(@query, __MODULE__.Schema)
   end
 
