@@ -1119,6 +1119,9 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Ensure the provided operation can be recorded in the current environment,
   # in the current scope context
+  def recordable!(env, usage) do
+    recordable!(env, usage, Keyword.get(@placement, usage, []))
+  end
   def recordable!(env, usage, kw_rules, opts \\ []) do
     do_recordable!(env, usage, Enum.into(List.wrap(kw_rules), %{}), opts)
   end
@@ -1154,6 +1157,13 @@ defmodule Absinthe.Schema.Notation do
   end
   defp do_recordable!(env, _, rules, _) when map_size(rules) == 0 do
     env
+  end
+
+  @doc false
+  # Get the placement information for a macro
+  @spec placement(atom) :: Keyword.t
+  def placement(usage) do
+    Keyword.get(@placement, usage, [])
   end
 
   # The error message when a macro can only be used within a certain set of
