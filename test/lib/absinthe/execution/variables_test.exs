@@ -76,4 +76,20 @@ defmodule Absinthe.Execution.VariablesTest do
 
   end
 
+  describe "list variables" do
+    it "should work in a basic case" do
+      doc = """
+      query FindContacts($contacts:[String]) {
+        contacts(contacts:$contacts)
+      }
+      """
+      %{variables: %Absinthe.Execution.Variables{
+        raw: %{},
+        processed: %{"contacts" => %Absinthe.Execution.Variable{value: values, type_name: type}}
+      }} = doc |> parse(%{"contacts" => ["ben", "bob"]})
+      assert values == ["ben", "bob"]
+      assert type == "String"
+    end
+  end
+
 end

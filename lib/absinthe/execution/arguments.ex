@@ -32,7 +32,7 @@ defmodule Absinthe.Execution.Arguments do
     |> case do
       # The variable exists, and it has the same
       # type as the argument in the schema.
-      # yay! we can use it.
+      # yay! we can use it as is.
       %{value: value, type_name: ^arg_type_name} ->
         {:ok, value, execution}
     end
@@ -69,6 +69,7 @@ defmodule Absinthe.Execution.Arguments do
       {:ok, coerced_value} ->
         {:ok, coerced_value, execution}
       :error ->
+        # TODO: add parser error
         {:error, execution}
     end
   end
