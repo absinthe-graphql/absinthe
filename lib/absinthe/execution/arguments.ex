@@ -21,21 +21,13 @@ defmodule Absinthe.Execution.Arguments do
     acc_map_argument(arg_asts, schema_arguments, %{}, execution)
   end
 
+  defp add_argument(%Language.Variable{name: name}, schema_type, execution) do
+    retrieve_variable(name, schema_type, execution)
+  end
+
   defp add_argument(arg_ast, %Type.NonNull{of_type: inner_type}, execution) do
     real_inner_type = execution.schema.__absinthe_type__(inner_type)
     add_argument(arg_ast, real_inner_type, execution)
-  end
-
-  defp add_argument(%Language.Variable{name: name}, %{name: arg_type_name}, execution) do
-    execution.variables.processed
-    |> Map.get(name)
-    |> case do
-      # The variable exists, and it has the same
-      # type as the argument in the schema.
-      # yay! we can use it as is.
-      %{value: value, type_name: ^arg_type_name} ->
-        {:ok, value, execution}
-    end
   end
 
   defp add_argument(%Language.Argument{value: value}, %Type.Argument{type: inner_type}, execution) do
@@ -81,6 +73,49 @@ defmodule Absinthe.Execution.Arguments do
     {:error, execution}
   end
 
+  defp retrieve_variable(name, schema_type, execution) do
+    type_stack = build_type_stack(schema_type, [], execution.schema)
+
+    execution.variables.processed
+    |> Map.get(name)
+    |> case do
+      # The variable exists, and it has the same
+      # type as the argument in the schema.
+      # yay! we can use it as is.
+      %{value: value, type_stack: ^type_stack} ->
+        {:ok, value, execution}
+    end
+  end
+
+  # For a given schema, build the stack of types it contains.
+  # This is necessary because when comparing the type of a processed variable
+  # with the type of the desired argument we must compare not simply the inner
+  # most type, but also how many layers of lists it's inside of.
+  #
+  # Otherwise a variable of type String could substitute for an argument that
+  # wanted [String]
+  #
+  # NonNull type's don't get added to the stack because whether a variable was
+  # specified as non null in the document has no bearing on whether or not
+  # it can be substituted for a non null marked argument.
+  #
+  # See Variables.validate_definition_type/2 for the corresponding logic
+  # used when building a variable.
+  defp build_type_stack(%Type.NonNull{of_type: inner_type}, acc, schema) do
+    build_type_stack(inner_type, acc, schema)
+  end
+  defp build_type_stack(%Type.List{of_type: inner_type}, acc, schema) do
+    build_type_stack(inner_type, [Type.List | acc], schema)
+  end
+  defp build_type_stack(%{name: name}, acc, schema) do
+    [name | acc]
+  end
+  defp build_type_stack(identifier, acc, schema) do
+    identifier
+    |> schema.__absinthe_type__
+    |> build_type_stack(acc, schema)
+  end
+
   # Go through a list arguments belonging to a list type.
   # For each item try to resolve it with add_argument.
   # If it's a valid item, accumulate, if not, don't.
@@ -99,8 +134,10 @@ defmodule Absinthe.Execution.Arguments do
   # If a field exists, and if the
   # If it's a valid item, accumulate,
   defp acc_map_argument([], remaining_fields, acc, execution) do
+    # Having gone through the list of given values, go through
+    # the remaining fields and populate any defaults.
+    # TODO see if we need to add an error around non null fields
     acc = Enum.reduce(remaining_fields, acc, fn
-      # No default, carry on
       {_, %{default_value: nil}}, acc ->
         acc
 

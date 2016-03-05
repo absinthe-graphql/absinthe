@@ -22,33 +22,39 @@ defmodule Absinthe.Execution.Variables do
 
   def build_definition(definition, execution) do
     case validate_definition_type(definition.type, execution) do
-      {:ok, schema_type} ->
-        process_variable(definition, schema_type, execution)
+      {:ok, schema_type, type_stack} ->
+        process_variable(definition, schema_type, type_stack, execution)
       :error ->
-        Execution.put_error(execution, :variable, definition.name, "Type `#{definition.type.name}' not present in schema", at: definition.type)
+        inner_type = definition.type |> unwrap
+        inner_type |> IO.inspect
+        Execution.put_error(execution, :variable, inner_type.name, "Type `#{inner_type.name}' not present in schema", at: definition.type)
     end
   end
 
-  defp validate_definition_type(%Absinthe.Language.ListType{type: inner_type}, execution) do
-    validate_definition_type(inner_type, execution)
-  end
+  defp unwrap(%{type: inner_type}), do: unwrap(inner_type)
+  defp unwrap(type), do: type
 
-  defp validate_definition_type(%Language.NamedType{name: name}, execution) do
+  defp validate_definition_type(type, execution) do
+    validate_definition_type(type, [], execution)
+  end
+  defp validate_definition_type(%Language.NonNullType{type: inner_type}, acc, execution) do
+    validate_definition_type(inner_type, acc, execution)
+  end
+  defp validate_definition_type(%Language.ListType{type: inner_type}, acc, execution) do
+    validate_definition_type(inner_type, [Type.List | acc], execution)
+  end
+  defp validate_definition_type(%Language.NamedType{name: name}, acc, execution) do
     case execution.schema.__absinthe_type__(name) do
       nil -> :error
-      type -> {:ok, type}
+      type -> {:ok, type, [name | acc]}
     end
   end
 
-  defp validate_definition_type(%Language.NonNullType{type: inner_type}, execution) do
-    validate_definition_type(inner_type, execution)
-  end
-
-  defp process_variable(definition, schema_type, execution) do
+  defp process_variable(definition, schema_type, type_stack, execution) do
     raw_value = Map.get(execution.variables.raw, definition.variable.name)
     case build_variable(definition, raw_value, schema_type, execution) do
       {:ok, value, execution} ->
-        put_variable(execution, definition.variable.name, value, schema_type)
+        put_variable(execution, definition.variable.name, value, type_stack)
       {:error, execution} ->
         execution
     end
@@ -76,7 +82,17 @@ defmodule Absinthe.Execution.Variables do
     build_variable(%{definition | type: inner_type}, value, schema_type, execution)
   end
 
-  defp build_variable(%{type: %Language.NamedType{}, variable: var_ast}, value, %Type.Scalar{} = schema_type, execution) do
+  defp build_variable(%{type: %Language.ListType{type: inner_type}, variable: var_ast} = definition, raw_values, schema_type, execution) when is_list(raw_values) do
+    {values, execution} = acc_list_values(raw_values, %{definition | type: inner_type}, schema_type, [], execution)
+    {:ok, values, execution}
+  end
+
+  defp build_variable(%{variable: var_ast}, values, %Type.InputObject{fields: schema_fields}, execution) when is_map(values) do
+    {values, execution} = acc_map_values(Map.to_list(values), schema_fields, %{}, execution)
+    {:ok, values, execution}
+  end
+
+  defp build_variable(%{variable: var_ast}, value, %Type.Scalar{} = schema_type, execution) do
     case schema_type.parse.(value) do
       {:ok, coerced_value} ->
         {:ok, coerced_value, execution}
@@ -87,13 +103,7 @@ defmodule Absinthe.Execution.Variables do
     end
   end
 
-  defp build_variable(%{type: %Language.ListType{type: inner_type}, variable: var_ast} = definition, raw_values, schema_type, execution) when is_list(raw_values) do
-    {values, execution} = acc_list_values(raw_values, %{definition | type: inner_type}, schema_type, [], execution)
-    {:ok, values, execution}
-  end
-
   defp build_variable(definition, values, schema_type, execution) do
-
     IO.puts "\n\ndefinition"
     IO.inspect definition
     IO.puts "\n\nvalue"
@@ -114,8 +124,59 @@ defmodule Absinthe.Execution.Variables do
     end
   end
 
-  defp put_variable(execution, name, value, %{name: type_name}) do
-    variable = %Execution.Variable{value: value, type_name: type_name}
+  # So this sorta sucks.
+  # Input objects create their own world where it's simply bare elixir
+  # values and schema types, whereas previously it was AST values and schema types
+  # There's a fair bit of duplication between what's here, what's earlier in the module,
+  # and what exists over in Arguments.ex
+  # I don't necessarily think that the duplication is ipso facto bad, but each individual
+  # use case should at least live in its own module that gives it some more semantic value
+
+  defp build_map_value(value, %Type.Field{type: inner_type}, execution) do
+    real_inner_type = execution.schema.__absinthe_type__(inner_type)
+    build_map_value(value, real_inner_type, execution)
+  end
+  defp build_map_value(value, %Type.Scalar{parse: parser}, execution) do
+    case parser.(value) do
+      {:ok, coerced_value} ->
+        {:ok, coerced_value, execution}
+      :error ->
+        {:error, execution}
+    end
+  end
+
+  defp acc_map_values([], schema_type, acc, execution), do: {acc, execution}
+  defp acc_map_values([{key, raw_value} | rest], schema_fields, acc, execution) do
+    case pop_field(schema_fields, key) do
+      {name, schema_field, schema_fields} ->
+        case build_map_value(raw_value, schema_field, execution) do
+          {:ok, value, execution} ->
+            acc_map_values(rest, schema_fields, Map.put(acc, name, value), execution)
+          {:error, execution} ->
+            acc_map_values(rest, schema_fields, acc, execution)
+        end
+      :error ->
+        # Todo: register field as unnecssary
+        acc_map_values(rest, schema_fields, acc, execution)
+    end
+  end
+
+  # Given a document argument, pop the relevant schema argument
+  # The reason for popping the arg is that it's an easy way to prevent using
+  # the same argument name twice.
+  defp pop_field(schema_arguments, name) do
+    name = String.to_existing_atom(name)
+
+    case Map.pop(schema_arguments, name) do
+      {nil, _} -> :error
+      {val, args} -> {name, val, args}
+    end
+  rescue
+    ArgumentError -> :error
+  end
+
+  defp put_variable(execution, name, value, type_stack) do
+    variable = %Execution.Variable{value: value, type_stack: type_stack}
     variables = execution.variables
     |> Map.update!(:processed, &Map.put(&1, name, variable))
 

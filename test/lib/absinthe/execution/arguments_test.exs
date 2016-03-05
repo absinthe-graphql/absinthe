@@ -83,23 +83,23 @@ defmodule Absinthe.Execution.ArgumentsTest do
     describe "list inputs" do
       it "works with basic scalars" do
         doc = """
-        {numbers(numbers: [1, 2])}
+        query GetNumbers($numbers:[Int!]!){numbers(numbers:$numbers)}
         """
-        assert_result {:ok, %{data: %{"numbers" => [1, 2]}}}, doc |> Absinthe.run(Schema)
+        assert_result {:ok, %{data: %{"numbers" => [1, 2]}}}, doc |> Absinthe.run(Schema, variables: %{"numbers" =>[1, 2]})
       end
 
       it "works with custom scalars" do
         doc = """
-        {names(names: ["Joe", "bob"])}
+        query GetNames($names:[Name!]!){names(names:$names)}
         """
-        assert_result {:ok, %{data: %{"names" => ["Joe", "bob"]}}}, doc |> Absinthe.run(Schema)
+        assert_result {:ok, %{data: %{"names" => ["Joe", "bob"]}}}, doc |> Absinthe.run(Schema, variables: %{"names" => ["Joe", "bob"]})
       end
 
       it "works with input objects" do
         doc = """
-        {contacts(contacts: [{email: "a@b.com"}, {email: "c@d.com"}])}
+        query GetContacts($contacts:[ContactInput]){contacts(contacts:$contacts)}
         """
-        assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "c@d.com"]}}}, doc |> Absinthe.run(Schema)
+        assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "c@d.com"]}}}, doc |> Absinthe.run(Schema, variables: %{"contacts" => [%{"email" => "a@b.com"}, %{"email" => "c@d.com"}]})
       end
     end
 
