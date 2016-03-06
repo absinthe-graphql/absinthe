@@ -102,7 +102,7 @@ defmodule Absinthe.Execution.Arguments do
     end
   end
 
-  defp add_argument(ast, nil, type_stack, meta) do
+  defp add_argument(_ast, nil, type_stack, meta) do
     raise ArgumentError, """
     Schema #{meta.schema} is internally inconsistent!
 

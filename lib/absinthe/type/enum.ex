@@ -89,7 +89,7 @@ defmodule Absinthe.Type.Enum do
   # Get the external representation of an enum value
   @doc false
   @spec serialize(t, any) :: binary
-  def serialize(enum, internal_value) do
+  def serialize(_enum, _internal_value) do
     raise "Not yet implemented"
   end
 

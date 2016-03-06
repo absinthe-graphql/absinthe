@@ -147,6 +147,7 @@ defmodule Absinthe.Execution.VariablesTest do
         raw: %{},
         processed: %{"contact" => %Absinthe.Execution.Variable{value: value, type_stack: type}}
       }} = doc |> parse(__MODULE__.Schema, %{"contact" => %{"email" => nil}})
+      assert value == %{}
       assert errors == [%{locations: [], message: "Variable `email' (email): Not provided"}]
       assert ["ContactInput"] == type
     end
