@@ -17,7 +17,7 @@ defmodule Things do
       resolve: fn
         %{id: id, thing: %{value: val}}, _ ->
           found = @db |> Map.get(id)
-        {:ok, %{found | value: val}}
+          {:ok, %{found | value: val}}
         %{id: id, thing: fields}, _ ->
           found = @db |> Map.get(id)
         {:ok, found |> Map.merge(fields)}
@@ -41,7 +41,8 @@ defmodule Things do
         val: [type: non_null(:integer)]
       ],
       resolve: fn
-       %{val: v} -> v |> to_string
+       %{val: v}, _ -> {:ok, v |> to_string}
+       args, _ -> {:error, "got #{inspect args}"}
       end
 
     field :thing_by_context,

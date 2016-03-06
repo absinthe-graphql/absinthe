@@ -38,6 +38,7 @@ defmodule Absinthe.Execution do
   @spec prepare(t) :: t
   def prepare(execution, options \\ %{}) do
     defined = execution
+    |> Map.put(:context, Map.get(options, :context, %{}))
     |> add_configured_adapter
     |> adapt
     |> categorize_definitions
@@ -98,7 +99,7 @@ defmodule Absinthe.Execution do
   def format_error(%{adapter: adapter}, error_info, %{loc: %{start_line: line}}) do
     adapter.format_error(error_info, [%{line: line, column: @default_column_number}])
   end
-  def format_error(%{adapter: adapter}, error_info, nil) do
+  def format_error(%{adapter: adapter}, error_info, _) do
     adapter.format_error(error_info)
   end
 

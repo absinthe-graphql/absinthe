@@ -17,13 +17,13 @@ defmodule Absinthe.Execution.ArgumentsTest do
     end
 
     input_object :contact_input do
-      field :email, :string
+      field :email, non_null(:string)
     end
 
     query do
 
       field :contacts, list_of(:string) do
-        arg :contacts, list_of(:contact_input)
+        arg :contacts, non_null(list_of(:contact_input))
 
         resolve fn %{contacts: contacts}, _ ->
           {:ok, Enum.map(contacts, &Map.get(&1, :email))}
@@ -147,7 +147,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         doc = """
         { requiredThing }
         """
-        assert_result {:ok, %{data: %{}, errors: [%{message: "Field `requiredThing': Got %{} instead"}]}}, doc |> Absinthe.run(Schema)
+        assert_result {:ok, %{data: %{}, errors: [%{message: "Field `requiredThing': 1 required argument (`name') not provided"}, %{message: "Argument `name' (Name): Not provided"}]}}, doc |> Absinthe.run(Schema)
       end
     end
 
@@ -181,6 +181,14 @@ defmodule Absinthe.Execution.ArgumentsTest do
         """
         assert_result {:ok, %{data: %{"user" => "bubba@joe.com"}}}, doc |> Absinthe.run(Schema)
       end
+
+      it "returns the correct error if an inner field is marked non null but is missing" do
+        doc = """
+        {user(contact: {foo: "buz"})}
+        """
+        assert_result {:ok, %{data: %{}, errors: [%{message: "Field `user': 1 required argument (`contact.email') not provided"}, %{message: "Argument `contact.email' (String): Not provided"}]}},
+          doc |> Absinthe.run(Schema)
+      end
     end
 
     describe "custom scalar arguments" do
@@ -203,6 +211,10 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"something" => "NO"}}}, "{ something }" |> Absinthe.run(Schema)
       end
 
+      it "returns a correct error when passed the wrong type" do
+        assert_result {:ok, %{data: %{}, errors: [%{message: "Field `something': 1 badly formed argument (`flag') provided"}, %{message: "Argument `flag' (Boolean): Invalid value provided"}]}},
+          "{ something(flag: {foo: 1}) }" |> Absinthe.run(Schema)
+      end
     end
   end
 

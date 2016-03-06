@@ -133,7 +133,7 @@ defmodule Absinthe.Adapter.LanguageConventionsTest do
   it "can do a query with an object argument" do
     query = """
     query GimmeMuseum {
-      fieldTrips(location: {name: "Portland"}) {
+      fieldTrips(location: {name: "Portland", foo: "buzz"}) {
         name
         locationName
       }
@@ -151,7 +151,7 @@ defmodule Absinthe.Adapter.LanguageConventionsTest do
         }
       }
     """
-    assert {:ok, %{data: %{"fieldTrip" => %{"name" => "Museum", "locationName" => "Portland"}}}} == run(query, %{myId: "museum"})
+    assert {:ok, %{data: %{"fieldTrip" => %{"name" => "Museum", "locationName" => "Portland"}}}} == run(query, %{"myId" => "museum"})
   end
 
   it "can do a simple query with an adapted argument" do

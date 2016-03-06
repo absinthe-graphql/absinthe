@@ -7,7 +7,6 @@ defmodule Absinthe.Execution.Variables do
   alias Absinthe.Type
   alias Absinthe.Language
   alias Absinthe.Execution
-  alias Absinthe.Schema
 
   defstruct raw: %{}, processed: %{}
 
@@ -70,7 +69,7 @@ defmodule Absinthe.Execution.Variables do
     {:error, execution}
   end
 
-  defp build_variable(%{default_value: nil}, nil, schema_type, execution) do
+  defp build_variable(%{default_value: nil}, nil, _schema_type, execution) do
     {:ok, nil, execution}
   end
 
@@ -82,12 +81,12 @@ defmodule Absinthe.Execution.Variables do
     build_variable(%{definition | type: inner_type}, value, schema_type, execution)
   end
 
-  defp build_variable(%{type: %Language.ListType{type: inner_type}, variable: var_ast} = definition, raw_values, schema_type, execution) when is_list(raw_values) do
+  defp build_variable(%{type: %Language.ListType{type: inner_type}} = definition, raw_values, schema_type, execution) when is_list(raw_values) do
     {values, execution} = acc_list_values(raw_values, %{definition | type: inner_type}, schema_type, [], execution)
     {:ok, values, execution}
   end
 
-  defp build_variable(%{variable: var_ast}, values, %Type.InputObject{fields: schema_fields}, execution) when is_map(values) do
+  defp build_variable(%{variable: _}, values, %Type.InputObject{fields: schema_fields}, execution) when is_map(values) do
     {values, execution} = acc_map_values(Map.to_list(values), schema_fields, %{}, execution)
     {:ok, values, execution}
   end
@@ -103,7 +102,7 @@ defmodule Absinthe.Execution.Variables do
     end
   end
 
-  defp build_variable(definition, values, schema_type, execution) do
+  defp build_variable(definition, values, schema_type, _execution) do
     IO.puts "\n\ndefinition"
     IO.inspect definition
     IO.puts "\n\nvalue"
@@ -113,14 +112,13 @@ defmodule Absinthe.Execution.Variables do
     raise "blarg"
   end
 
-  defp acc_list_values([], _, schema_type, acc, execution), do: {:lists.reverse(acc), execution}
+  defp acc_list_values([], _, _, acc, execution), do: {:lists.reverse(acc), execution}
   defp acc_list_values([value | rest], definition, schema_type, acc, execution) do
     case build_variable(definition, value, schema_type, execution) do
       {:ok, item, execution} ->
         acc_list_values(rest, definition, schema_type, [item | acc], execution)
       {:error, execution} ->
-        acc_list_values(rest, definition, schema_type, acc, execution)
-        val  -> IO.inspect()
+        {:error, execution}
     end
   end
 
@@ -133,8 +131,14 @@ defmodule Absinthe.Execution.Variables do
   # use case should at least live in its own module that gives it some more semantic value
 
   defp build_map_value(value, %Type.Field{type: inner_type}, execution) do
-    real_inner_type = execution.schema.__absinthe_type__(inner_type)
-    build_map_value(value, real_inner_type, execution)
+    build_map_value(value, inner_type, execution)
+  end
+  defp build_map_value(nil, %Type.NonNull{of_type: _inner_type}, execution) do
+    # TODO: add error
+    {:error, execution}
+  end
+  defp build_map_value(value, %Type.NonNull{of_type: inner_type}, execution) do
+    build_map_value(value, inner_type, execution)
   end
   defp build_map_value(value, %Type.Scalar{parse: parser}, execution) do
     case parser.(value) do
@@ -144,17 +148,23 @@ defmodule Absinthe.Execution.Variables do
         {:error, execution}
     end
   end
+  defp build_map_value(value, type, execution) when is_atom(type) do
+    real_type = execution.schema.__absinthe_type__(type)
+    build_map_value(value, real_type, execution)
+  end
 
-  defp acc_map_values([], schema_type, acc, execution), do: {acc, execution}
+  defp acc_map_values([], _, acc, execution), do: {acc, execution}
   defp acc_map_values([{key, raw_value} | rest], schema_fields, acc, execution) do
     case pop_field(schema_fields, key) do
       {name, schema_field, schema_fields} ->
         case build_map_value(raw_value, schema_field, execution) do
           {:ok, value, execution} ->
             acc_map_values(rest, schema_fields, Map.put(acc, name, value), execution)
+
           {:error, execution} ->
             acc_map_values(rest, schema_fields, acc, execution)
         end
+
       :error ->
         # Todo: register field as unnecssary
         acc_map_values(rest, schema_fields, acc, execution)

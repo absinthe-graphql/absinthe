@@ -149,8 +149,8 @@ defmodule AbsintheTest do
         }
       }
     """
-    result = run(query, variables: %{thingId: "bar"})
-    assert_result {:ok, %{data: %{"thing" => %{"name" => "Bar"}}, errors: [%{locations: [%{column: 0, line: 1}], message: "Variable `other' (String): Not provided"}]}}, result
+    result = run(query, variables: %{"thingId" => "bar"})
+    assert_result {:ok, %{data: %{}, errors: [%{message: "Variable `other' (String): Not provided"}]}}, result
   end
 
   it "reports parser errors from parse" do
@@ -230,8 +230,7 @@ defmodule AbsintheTest do
       }
     """
     |> Absinthe.run(ColorSchema)
-    assert_result {:ok, %{data: %{"red" => %{"name" => "RED", "value" => 100}, "green" => %{"name" => "GREEN", "value" => 200}, "blue" => %{"name" => "BLUE", "value" => 300}, "puce" => %{"name" => "PUCE", "value" => -100}},
-                          errors: [%{message: "Argument `channel' (Channel): Enum value \"puce\" deprecated; it's ugly"}]}}, result
+    assert_result {:ok, %{data: %{"red" => %{"name" => "RED", "value" => 100}, "green" => %{"name" => "GREEN", "value" => 200}, "blue" => %{"name" => "BLUE", "value" => 300}, "puce" => %{"name" => "PUCE", "value" => -100}}}}, result
   end
 
   describe "fragments" do

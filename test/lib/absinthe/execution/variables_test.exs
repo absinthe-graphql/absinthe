@@ -2,12 +2,12 @@ defmodule Absinthe.Execution.VariablesTest.Schema do
   use Absinthe.Schema
 
   input_object :contact_input do
-    field :email, :string
+    field :email, non_null(:string)
   end
 
   query do
     field :user, :string do
-      arg :contact, :contact_input
+      arg :contact, non_null(:contact_input)
 
       resolve fn
         %{contact: %{email: email}}, _ ->
@@ -134,6 +134,20 @@ defmodule Absinthe.Execution.VariablesTest do
       }} = doc |> parse(__MODULE__.Schema, %{"contact" => %{"email" => "ben"}})
       assert errors == []
       assert %{email: "ben"} == value
+      assert ["ContactInput"] == type
+    end
+
+    it "should return an error when a required field isn't included" do
+      doc = """
+      query FindContact($contact:ContactInput) {
+        contact(contact:$contact)
+      }
+      """
+      assert %{errors: errors, variables: %Absinthe.Execution.Variables{
+        raw: %{},
+        processed: %{"contact" => %Absinthe.Execution.Variable{value: value, type_stack: type}}
+      }} = doc |> parse(__MODULE__.Schema, %{"contact" => %{"email" => nil}})
+      assert errors != []
       assert ["ContactInput"] == type
     end
   end

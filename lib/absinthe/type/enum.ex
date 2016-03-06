@@ -118,10 +118,10 @@ defmodule Absinthe.Type.Enum do
   defp lookup_value(_enum, _field, nil) do
     nil
   end
-  defp lookup_value(enum, :name, criteria) do
-    enum.values
-    |> Map.values
-    |> Enum.find(&(&1.name == criteria))
+  defp lookup_value(enum, :name, name) do
+    Map.fetch(enum.values, String.to_existing_atom(name))
+  rescue
+    ArgumentError -> :error
   end
   defp lookup_value(enum, :value, criteria) do
     enum.values
