@@ -172,6 +172,13 @@ defmodule Absinthe.Execution.ArgumentsTest do
         """
         assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "c@d.com"]}}}, doc |> Absinthe.run(Schema)
       end
+
+      it "returns deeply nested errors" do
+        doc = """
+        {contacts(contacts: [{email: "a@b.com"}, {foo: "c@d.com"}])}
+        """
+        assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "c@d.com"]}}}, doc |> Absinthe.run(Schema)
+      end
     end
 
     describe "input object arguments" do

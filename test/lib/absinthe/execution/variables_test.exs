@@ -137,7 +137,7 @@ defmodule Absinthe.Execution.VariablesTest do
       assert ["ContactInput"] == type
     end
 
-    it "should return an error when a required field isn't included" do
+    it "should return an error when a required field is explicitly set to nil" do
       doc = """
       query FindContact($contact:ContactInput) {
         contact(contact:$contact)
@@ -147,7 +147,9 @@ defmodule Absinthe.Execution.VariablesTest do
         raw: %{},
         processed: %{"contact" => %Absinthe.Execution.Variable{value: value, type_stack: type}}
       }} = doc |> parse(__MODULE__.Schema, %{"contact" => %{"email" => nil}})
+      value |> IO.inspect
       assert errors != []
+      errors |> IO.inspect
       assert ["ContactInput"] == type
     end
   end

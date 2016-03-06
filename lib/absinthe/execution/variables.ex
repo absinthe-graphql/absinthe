@@ -97,7 +97,7 @@ defmodule Absinthe.Execution.Variables do
         {:ok, coerced_value, execution}
       :error ->
         # TODO: real error message
-        execution = Execution.put_error(execution, :variable, var_ast.name, "Could not parse", at: var_ast.type)
+        # execution = Execution.put_error(execution, :variable, var_ast.name, &"Argument `#{&1}' (#{type_name}): Invalid value provided", at: var_ast.type)
         {:error, execution}
     end
   end
@@ -135,6 +135,7 @@ defmodule Absinthe.Execution.Variables do
   end
   defp build_map_value(nil, %Type.NonNull{of_type: _inner_type}, execution) do
     # TODO: add error
+    raise "why am I here?"
     {:error, execution}
   end
   defp build_map_value(value, %Type.NonNull{of_type: inner_type}, execution) do
@@ -153,7 +154,28 @@ defmodule Absinthe.Execution.Variables do
     build_map_value(value, real_type, execution)
   end
 
-  defp acc_map_values([], _, acc, execution), do: {acc, execution}
+  defp acc_map_values([], remaining_fields, acc, execution) do
+    {acc, execution} = Enum.reduce(remaining_fields, {acc, execution}, fn
+      {name, %{type: %Type.NonNull{of_type: inner_type}, deprecation: nil}}, {acc, exec} ->
+        exec = Execution.put_error(exec, :variable, name,
+          &"Variable `#{&1}' (#{name}): Not provided",
+          at: nil)
+        {acc, exec}
+
+      {_, %{default_value: nil}}, {acc, meta} ->
+        {acc, meta}
+
+      {name, %{default_value: default}}, {acc, meta} ->
+        case Map.get(acc, name) do
+          nil -> {Map.put(acc, name, default), meta}
+          _ -> {acc, meta}
+        end
+    end)
+    {acc, execution}
+  end
+  defp acc_map_values([{_, nil} | rest], schema_fields, acc, execution) do
+    acc_map_values(rest, schema_fields, acc, execution)
+  end
   defp acc_map_values([{key, raw_value} | rest], schema_fields, acc, execution) do
     case pop_field(schema_fields, key) do
       {name, schema_field, schema_fields} ->
