@@ -169,6 +169,20 @@ defmodule Absinthe.Execution.ArgumentsTest do
       end
 
     end
+
+    describe "enum types" do
+      it "should work with valid values" do
+        doc = """
+        query GetContact($type:ContactType){ contact(type: $type) }
+        """
+        assert_result {:ok, %{data: %{"contact" => "email"}}}, doc |> Absinthe.run(Schema, variables: %{"type" => "email"})
+      end
+
+      it "should return an error with invalid values" do
+        assert_result {:ok, %{data: %{}, errors: [%{message: "Field `contact': 1 badly formed argument (`type') provided"}, %{message: "Argument `type' (ContactType): Invalid value provided"}]}},
+          "{ contact(type: \"bagel\") }" |> Absinthe.run(Schema)
+      end
+    end
   end
 
   describe "literal arguments" do
@@ -203,6 +217,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "c@d.com"]}}}, doc |> Absinthe.run(Schema)
       end
 
+      @pending
       it "returns deeply nested errors" do
         doc = """
         {contacts(contacts: [{email: "a@b.com"}, {foo: "c@d.com"}])}

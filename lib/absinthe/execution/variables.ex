@@ -91,25 +91,31 @@ defmodule Absinthe.Execution.Variables do
     {:ok, values, execution}
   end
 
+  defp build_variable(%{variable: var_ast}, value, %Type.Enum{} = enum, execution) do
+    case Type.Enum.parse(enum, value) do
+      {:ok, value} ->
+        {:ok, value, execution}
+
+      :error ->
+        execution = Execution.put_error(execution, :variable, var_ast.name, &"Argument `#{&1}' (#{enum.name}): Invalid value provided", at: var_ast)
+        {:error, execution}
+    end
+  end
+
   defp build_variable(%{variable: var_ast}, value, %Type.Scalar{} = schema_type, execution) do
     case schema_type.parse.(value) do
       {:ok, coerced_value} ->
         {:ok, coerced_value, execution}
       :error ->
         # TODO: real error message
-        # execution = Execution.put_error(execution, :variable, var_ast.name, &"Argument `#{&1}' (#{type_name}): Invalid value provided", at: var_ast.type)
+        execution = Execution.put_error(execution, :variable, var_ast.name, &"Argument `#{&1}' (#{schema_type.name}): Invalid value provided", at: var_ast)
         {:error, execution}
     end
   end
 
-  defp build_variable(definition, values, schema_type, _execution) do
-    IO.puts "\n\ndefinition"
-    IO.inspect definition
-    IO.puts "\n\nvalue"
-    IO.inspect values
-    IO.puts "\n\nschem_type"
-    IO.inspect schema_type
-    raise "blarg"
+  defp build_variable(%{variable: var_ast} = definition, values, schema_type, execution) do
+    execution = Execution.put_error(execution, :variable, var_ast.name, &"Argument `#{&1}' (#{schema_type.name}): Invalid value provided", at: var_ast)
+    {:error, execution}
   end
 
   defp acc_list_values([], _, _, acc, execution), do: {:lists.reverse(acc), execution}
