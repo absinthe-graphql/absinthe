@@ -83,11 +83,11 @@ defmodule Absinthe.Execution.Arguments do
   end
 
   defp add_argument(%{value: value} = ast, %Type.Enum{} = enum, type_stack, meta) do
-    case Type.Enum.get_value(enum, name: value) do
-      {:ok, %{value: value}} ->
+    case Type.Enum.parse(enum, value) do
+      {:ok, value} ->
         {:ok, value, meta}
-      :error->
-        raise "untested"
+
+      :error ->
         {:error, put_meta(meta, :invalid, type_stack, enum, ast)}
     end
   end
@@ -102,9 +102,20 @@ defmodule Absinthe.Execution.Arguments do
     end
   end
 
-  defp add_argument(value, type, stack, meta) when is_atom(type) do
+  defp add_argument(ast, nil, type_stack, meta) do
+    raise ArgumentError, """
+    Schema #{meta.schema} is internally inconsistent!
+
+    Type referenced at #{inspect type_stack} does not exist
+
+    This clause should become irrelevant when schemas check internal consistency
+    at compile time.
+    """
+  end
+
+  defp add_argument(ast, type, type_stack, meta) when is_atom(type) do
     real_type = meta.schema.__absinthe_type__(type)
-    add_argument(value, real_type, stack, meta)
+    add_argument(ast, real_type, type_stack, meta)
   end
 
   defp add_argument(ast, type, type_stack, meta) do

@@ -20,7 +20,37 @@ defmodule Absinthe.Execution.ArgumentsTest do
       field :email, non_null(:string)
     end
 
+    enum :contact_type do
+      value :email
+      value :phone
+    end
+
+    union :numeric do
+      types [:float, :integer]
+
+      resolve_type fn
+        n, _ when is_float(n) -> :float
+        n, _ when is_integer(n) -> :integer
+      end
+    end
+
     query do
+
+      field :contact, :string do
+        arg :type, :contact_type
+
+        resolve fn %{type: val}, _ -> {:ok, val} end
+      end
+
+      field :numeric, :numeric do
+        arg :value, non_null(:numeric)
+
+        resolve fn %{value: val}, _ ->
+          IO.puts "hey"
+          IO.inspect val
+          {:ok, val}
+        end
+      end
 
       field :contacts, list_of(:string) do
         arg :contacts, non_null(list_of(:contact_input))
@@ -221,6 +251,17 @@ defmodule Absinthe.Execution.ArgumentsTest do
       it "returns a correct error when passed the wrong type" do
         assert_result {:ok, %{data: %{}, errors: [%{message: "Field `something': 1 badly formed argument (`flag') provided"}, %{message: "Argument `flag' (Boolean): Invalid value provided"}]}},
           "{ something(flag: {foo: 1}) }" |> Absinthe.run(Schema)
+      end
+    end
+
+    describe "enum types" do
+      it "should work with valid values" do
+        assert_result {:ok, %{data: %{"contact" => "email"}}}, "{ contact(type: \"email\") }" |> Absinthe.run(Schema)
+      end
+
+      it "should return an error with invalid values" do
+        assert_result {:ok, %{data: %{}, errors: [%{message: "Field `contact': 1 badly formed argument (`type') provided"}, %{message: "Argument `type' (ContactType): Invalid value provided"}]}},
+          "{ contact(type: \"bagel\") }" |> Absinthe.run(Schema)
       end
     end
   end

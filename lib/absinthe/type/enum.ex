@@ -80,11 +80,9 @@ defmodule Absinthe.Type.Enum do
   @doc false
   @spec parse(t, any) :: any
   def parse(enum, external_value) do
-    case get_value(enum, name: external_value) do
-      nil ->
-        nil
-      value ->
-        value.value
+    case fetch_value(enum, external_value) do
+      {:ok, %{value: value}} -> {:ok, value}
+      val -> val
     end
   end
 
@@ -92,41 +90,15 @@ defmodule Absinthe.Type.Enum do
   @doc false
   @spec serialize(t, any) :: binary
   def serialize(enum, internal_value) do
-    case get_value(enum, value: internal_value) do
-      nil ->
-        nil
-      value ->
-        value.name
-    end
+    raise "Not yet implemented"
   end
 
   @doc false
-  @spec get_value(t, Keyword.t) :: Type.Enum.Value.t | nil
-  def get_value(enum, options \\ []) do
-    do_get_value(enum, options |> Enum.into(%{}))
-  end
-
-  @spec do_get_value(t, map) :: Type.Enum.Value.t | nil
-  defp do_get_value(enum, %{name: raw_name}) do
-    lookup_value(enum, :name, raw_name |> to_string)
-  end
-  defp do_get_value(enum, %{value: value}) do
-    lookup_value(enum, :value, value)
-  end
-
-  @spec lookup_value(t, atom, binary | nil) :: Type.Enum.Value.t | nil
-  defp lookup_value(_enum, _field, nil) do
-    nil
-  end
-  defp lookup_value(enum, :name, name) do
+  @spec fetch_value(t, Keyword.t) :: Type.Enum.Value.t | nil
+  def fetch_value(enum, name) do
     Map.fetch(enum.values, String.to_existing_atom(name))
   rescue
     ArgumentError -> :error
-  end
-  defp lookup_value(enum, :value, criteria) do
-    enum.values
-    |> Map.values
-    |> Enum.find(&(&1.value == criteria))
   end
 
 end

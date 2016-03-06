@@ -7,7 +7,11 @@ defmodule Absinthe.Type.EnumTest do
     use Absinthe.Schema
 
     query do
-      field :channel, :color_channel, description: "The active color channel"
+      field :channel, :color_channel, description: "The active color channel" do
+        resolve fn _, _ ->
+          {:ok, :red}
+        end
+      end
     end
 
     enum :color_channel do
