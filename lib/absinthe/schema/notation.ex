@@ -545,6 +545,29 @@ defmodule Absinthe.Schema.Notation do
     :ok
   end
 
+  @placement {:private, [under: [:field]]}
+  @doc false
+  defmacro private(owner, key, value) do
+    __CALLER__
+    |> recordable!(:private, @placement[:private])
+    |> record_private!(owner, key, value)
+  end
+
+  @doc false
+  # Record a private value
+  def record_private!(env, owner, key, value) do
+    new_private = Scope.current(env.module).attrs
+    |> Keyword.put_new(:__private__, [])
+    |> update_in([Macro.expand(owner, env)], fn
+      nil ->
+        [{key, value}]
+      existing ->
+        Keyword.put(existing, key, value)
+    end)
+    Scope.put_attribute(env.module, :__private__, new_private)
+    :ok
+  end
+
   @placement {:parse, [under: [:scalar]]}
   @doc """
   Defines a parse function for a `scalar` type

@@ -20,11 +20,10 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.Field do
             nil
         end
         |> result(ast_node, field, execution)
-
-      %{resolve: resolver} ->
+      %{resolve: _} ->
         case Execution.Arguments.build(ast_node, field.args, execution) do
           {:ok, args, exe} ->
-            resolver.(args, environment(field, ast_node, execution))
+            Type.Field.resolve(field, args, field_info(field, ast_node, execution))
             |> process_raw_result(ast_node, field, exe)
           {:error, missing, invalid, exe} ->
             exe
@@ -65,8 +64,8 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.Field do
 
   # Build a `Absinthe.Execution.Field` struct containing the resolution environment
   # of the field
-  @spec environment(Type.Field.t, Language.t, Execution.t) :: Execution.Field.t
-  defp environment(field, ast_node, execution) do
+  @spec field_info(Type.Field.t, Language.t, Execution.t) :: Execution.Field.t
+  defp field_info(field, ast_node, execution) do
     %Execution.Field{
       adapter: execution.adapter,
       ast_node: ast_node,
