@@ -129,13 +129,9 @@ defmodule Absinthe.Schema.Notation.Writer do
   end
 
   defp update_description(definition, descriptions) do
-    if definition.attrs[:description] do
-      definition
-    else
-      case Map.get(descriptions, definition.identifier) do
-        nil -> definition
-        desc -> Map.update!(definition, :attrs, &Keyword.put(&1, :description, desc))
-      end
+    case Map.get(descriptions, definition.identifier) do
+      nil -> definition
+      desc -> Map.update!(definition, :attrs, &Keyword.put(&1, :description, desc))
     end
   end
 
