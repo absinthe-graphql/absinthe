@@ -45,12 +45,9 @@ defmodule Absinthe.Execution do
     |> categorize_definitions
 
     with {:ok, operation} <- selected_operation(execution) do
-      variables = %__MODULE__.Variables{
-        raw: Map.get(options, :variables, %{})
-      }
+      variables = %__MODULE__.Variables{raw: Map.get(options, :variables, %{})}
 
-      %{execution | selected_operation: operation, variables: variables}
-      |> Execution.Variables.build
+      {:ok, %{execution | selected_operation: operation, variables: variables}}
     end
   end
 

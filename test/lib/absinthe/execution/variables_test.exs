@@ -61,7 +61,8 @@ defmodule Absinthe.Execution.VariablesTest do
     # Prepare execution context
     {_, execution} = %Execution{schema: schema, document: document}
     |> Execution.prepare(%{variables: provided})
-    execution
+
+    Execution.Variables.build(execution)
   end
 
   describe "a required variable" do
@@ -70,18 +71,18 @@ defmodule Absinthe.Execution.VariablesTest do
 
       it "returns a value" do
         provided = %{"id" => "foo"}
-        assert %{variables: %Absinthe.Execution.Variables{
+        assert {:ok, %{variables: %Absinthe.Execution.Variables{
           raw: %{"id" => "foo"},
           processed: %{"id" => %Absinthe.Execution.Variable{value: "foo"}}
-        }} = @id_required |> parse(provided)
+        }}} = @id_required |> parse(provided)
       end
     end
 
     context "when not provided" do
       it "returns an error" do
-        assert %{variables: %Absinthe.Execution.Variables{raw: %{}}, errors: errors} = @id_required |> parse
+        assert {:error, %{variables: %Absinthe.Execution.Variables{raw: %{}}, errors: errors}} = @id_required |> parse
         assert [%{locations: [%{column: 0, line: 1}], message: "Variable `id' (String): Not provided"}] == errors
-        assert {:error, %{errors: [%{locations: [%{column: 0, line: 1}], message: "Variable `id' (String): Not provided"}]}} = Absinthe.run(@id_required, Things)
+        assert {:ok, %{errors: [%{locations: [%{column: 0, line: 1}], message: "Variable `id' (String): Not provided"}]}} = Absinthe.run(@id_required, Things)
       end
     end
   end
@@ -90,17 +91,17 @@ defmodule Absinthe.Execution.VariablesTest do
 
     it "when provided" do
       provided = %{"id" => "bar"}
-      assert %{variables: %Absinthe.Execution.Variables{
+      assert {:ok, %{variables: %Absinthe.Execution.Variables{
         raw: %{"id" => "bar"},
         processed: %{"id" => %Absinthe.Execution.Variable{value: "bar"}}
-      }} = @with_default |> parse(provided)
+      }}} = @with_default |> parse(provided)
     end
 
     it "when not provided" do
-      assert %{variables: %Absinthe.Execution.Variables{
+      assert {:ok, %{variables: %Absinthe.Execution.Variables{
         raw: %{},
         processed: %{"id" => %Absinthe.Execution.Variable{value: @default, type_stack: ["String"]}}
-      }} = @with_default |> parse
+      }}} = @with_default |> parse
     end
   end
 
@@ -109,9 +110,9 @@ defmodule Absinthe.Execution.VariablesTest do
       doc = """
       query FindContacts($contacts:[String]) {contacts(contacts:$contacts)}
       """
-      assert %{variables: %Absinthe.Execution.Variables{
+      assert {:ok, %{variables: %Absinthe.Execution.Variables{
         processed: %{"contacts" => %Absinthe.Execution.Variable{value: value, type_stack: type}}
-      }} = doc |> parse(%{"contacts" => ["ben", "bob"]})
+      }}} = doc |> parse(%{"contacts" => ["ben", "bob"]})
       assert value == ["ben", "bob"]
       assert type == ["String", Absinthe.Type.List]
     end
@@ -120,9 +121,9 @@ defmodule Absinthe.Execution.VariablesTest do
       doc = """
       query FindContacts($contacts:[String]) {contacts(contacts:$contacts)}
       """
-      assert %{variables: %Absinthe.Execution.Variables{
+      assert {:ok, %{variables: %Absinthe.Execution.Variables{
         processed: %{"contacts" => %Absinthe.Execution.Variable{value: value, type_stack: _}}
-      }} = doc |> parse(%{"contacts" => ["ben", nil, nil, "bob", nil]})
+      }}} = doc |> parse(%{"contacts" => ["ben", nil, nil, "bob", nil]})
       assert ["ben", "bob"] == value
     end
 
@@ -130,7 +131,7 @@ defmodule Absinthe.Execution.VariablesTest do
       doc = """
       query FindContacts($contacts:[String!]) {contacts(contacts:$contacts)}
       """
-      assert %{errors: errors} = doc |> parse(%{"contacts" => ["ben", nil, nil, "bob", nil]})
+      assert {:error, %{errors: errors}} = doc |> parse(%{"contacts" => ["ben", nil, nil, "bob", nil]})
       assert errors != []
     end
 
@@ -138,9 +139,9 @@ defmodule Absinthe.Execution.VariablesTest do
       doc = """
       query FindContacts($contacts:[ContactInput]) {contacts(contacts:$contacts)}
       """
-      assert %{variables: %Absinthe.Execution.Variables{
+      assert {:ok, %{variables: %Absinthe.Execution.Variables{
         processed: %{"contacts" => %Absinthe.Execution.Variable{value: value, type_stack: type}}
-      }} = doc |> parse(__MODULE__.Schema, %{"contacts" => [%{"email" => "ben"}, %{"email" => "bob"}]})
+      }}} = doc |> parse(__MODULE__.Schema, %{"contacts" => [%{"email" => "ben"}, %{"email" => "bob"}]})
       assert value == [%{email: "ben"}, %{email: "bob"}]
       assert type == ["ContactInput", Absinthe.Type.List]
     end
@@ -151,10 +152,10 @@ defmodule Absinthe.Execution.VariablesTest do
       doc = """
       query FindContact($contact:ContactInput) {contact(contact:$contact)}
       """
-      assert %{errors: errors, variables: %Absinthe.Execution.Variables{
+      assert {:ok, %{errors: errors, variables: %Absinthe.Execution.Variables{
         raw: %{},
         processed: %{"contact" => %Absinthe.Execution.Variable{value: value, type_stack: type}}
-      }} = doc |> parse(__MODULE__.Schema, %{"contact" => %{"email" => "ben"}})
+      }}} = doc |> parse(__MODULE__.Schema, %{"contact" => %{"email" => "ben"}})
       assert errors == []
       assert %{email: "ben"} == value
       assert ["ContactInput"] == type
@@ -164,7 +165,7 @@ defmodule Absinthe.Execution.VariablesTest do
       doc = """
       query FindContact($contact:ContactInput) {contact(contact:$contact)}
       """
-      assert %{errors: errors} = doc |> parse(__MODULE__.Schema, %{"contact" => %{"email" => nil}})
+      assert {:error, %{errors: errors}} = doc |> parse(__MODULE__.Schema, %{"contact" => %{"email" => nil}})
       assert [%{locations: [%{column: 0, line: 1}], message: "Variable `contact.email' (String): Not provided"}] == errors
     end
 
@@ -185,7 +186,7 @@ defmodule Absinthe.Execution.VariablesTest do
         contacts(contacts:$contacts)
       }
       """
-      assert {:error, %{errors: errors}} = doc |> Absinthe.run(__MODULE__.Schema, variables: %{"contacts" => [%{"email" => nil}]})
+      assert {:ok, %{errors: errors}} = doc |> Absinthe.run(__MODULE__.Schema, variables: %{"contacts" => [%{"email" => nil}]})
       assert [%{locations: [%{column: 0, line: 1}], message: "Variable `contacts[].email' (String): Not provided"}] == errors
     end
   end
