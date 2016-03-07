@@ -79,10 +79,10 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.Field do
     }
   end
 
-  defp skip_as(execution, _reason, [], _name, _ast_node) do
+  def skip_as(execution, _reason, [], _name, _ast_node) do
     execution
   end
-  defp skip_as(execution, reason, collected, name, ast_node) do
+  def skip_as(execution, reason, collected, name, ast_node) do
     execution
     |> Execution.put_error(:field, name, describe(collected, reason), at: ast_node)
   end

@@ -31,6 +31,15 @@ defmodule Absinthe.Type.DirectiveTest do
       }
     }
     """
+    it "is defined" do
+      assert Schema.lookup_directive(ContactSchema, :skip)
+    end
+    it "behaves as expected for a field" do
+      assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query_field, ContactSchema, variables: %{"skipPerson" => false})
+      assert {:ok, %{data: %{}}} == Absinthe.run(@query_field, ContactSchema, variables: %{"skipPerson" => true})
+      assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}, errors: [%{locations: [%{column: 0, line: 2}], message: "Argument `if' (Boolean): Not provided"}]}} == Absinthe.run(@query_field, ContactSchema)
+    end
+
     @query_fragment """
     query Test($skipAge: Boolean) {
       person {
@@ -42,14 +51,6 @@ defmodule Absinthe.Type.DirectiveTest do
       age
     }
     """
-    it "is defined" do
-      assert Schema.lookup_directive(ContactSchema, :skip)
-    end
-    it "behaves as expected for a field" do
-      assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query_field, ContactSchema, variables: %{"skipPerson" => false})
-      assert {:ok, %{data: %{}}} == Absinthe.run(@query_field, ContactSchema, variables: %{"skipPerson" => true})
-      assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query_field, ContactSchema)
-    end
     @tag :frag
     it "behaves as expected for a fragment" do
       assert {:ok, %{data: %{"person" => %{"name" => "Bruce", "age" => 35}}}} == Absinthe.run(@query_fragment, ContactSchema, variables: %{"skipAge" => false})
@@ -83,7 +84,7 @@ defmodule Absinthe.Type.DirectiveTest do
     it "behaves as expected for a field" do
       assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query_field, ContactSchema, variables: %{"includePerson" => true})
       assert {:ok, %{data: %{}}} == Absinthe.run(@query_field, ContactSchema, variables: %{"includePerson" => false})
-      assert {:ok, %{data: %{}}} == Absinthe.run(@query_field, ContactSchema)
+      assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}, errors: [%{locations: [%{column: 0, line: 2}], message: "Argument `if' (Boolean): Not provided"}]}} == Absinthe.run(@query_field, ContactSchema)
     end
     it "behaves as expected for a fragment" do
       assert {:ok, %{data: %{"person" => %{"name" => "Bruce", "age" => 35}}}} == Absinthe.run(@query_fragment, ContactSchema, variables: %{"includeAge" => true})

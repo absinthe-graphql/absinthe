@@ -34,6 +34,8 @@ defmodule Absinthe.Execution.Variable do
 
     {execution, _} = Meta.process_errors(execution, meta, :variable, :extra, &"Variable `#{&1}': Not present in schema")
 
+    {execution, _} = Meta.process_errors(execution, meta, :variable, :deprecated, nil)
+
     case Enum.any?(missing) || Enum.any?(invalid) do
       false ->
         {:ok, %__MODULE__{value: value, type_stack: outer_type_stack}, execution}
@@ -70,8 +72,9 @@ defmodule Absinthe.Execution.Variable do
 
   defp do_build(%{variable: var_ast}, value, %Type.Enum{} = enum, type_stack, meta) do
     case Type.Enum.parse(enum, value) do
-      {:ok, value} ->
-        {:ok, value, meta}
+      {:ok, enum_value} ->
+        meta = meta |> add_deprecation_notice(enum_value, enum, [enum_value.value | type_stack], var_ast)
+        {:ok, enum_value.value, meta}
 
       :error ->
         {:error, Meta.put_invalid(meta, type_stack, enum, var_ast)}
@@ -120,7 +123,8 @@ defmodule Absinthe.Execution.Variable do
   # I don't necessarily think that the duplication is ipso facto bad, but each individual
   # use case should at least live in its own module that gives it some more semantic value
 
-  defp build_map_value(value, %Type.Field{type: inner_type}, type_stack, var_ast, meta) do
+  defp build_map_value(value, %Type.Field{type: inner_type} = type, type_stack, var_ast, meta) do
+    meta = meta |> add_deprecation_notice(type, inner_type, type_stack, var_ast)
     build_map_value(value, inner_type, type_stack, var_ast, meta)
   end
   defp build_map_value(nil, %Type.NonNull{of_type: inner_type}, type_stack, var_ast, meta) do
@@ -189,6 +193,17 @@ defmodule Absinthe.Execution.Variable do
     end
   rescue
     ArgumentError -> :error
+  end
+
+  defp add_deprecation_notice(meta, %{deprecation: nil}, _, _, _) do
+    meta
+  end
+  defp add_deprecation_notice(meta, %{deprecation: %{reason: reason}}, type, type_stack, ast) do
+    details = if reason, do: "; #{reason}", else: ""
+
+    Meta.put_deprecated(meta, type_stack, Type.unwrap(type), ast, fn type_name ->
+      &"Variable `#{&1}' (#{type_name}): Deprecated#{details}"
+    end)
   end
 
 end

@@ -81,7 +81,7 @@ defmodule Absinthe.Type.Enum do
   @spec parse(t, any) :: any
   def parse(enum, external_value) do
     case fetch_value(enum, external_value) do
-      {:ok, %{value: value}} -> {:ok, value}
+      {:ok, value} -> {:ok, value}
       val -> val
     end
   end

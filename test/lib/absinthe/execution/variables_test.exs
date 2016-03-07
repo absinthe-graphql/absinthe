@@ -3,6 +3,7 @@ defmodule Absinthe.Execution.VariablesTest.Schema do
 
   input_object :contact_input do
     field :email, non_null(:string)
+    field :address, non_null(:string), deprecate: "no longer used"
   end
 
   query do
@@ -176,6 +177,16 @@ defmodule Absinthe.Execution.VariablesTest do
       assert {:ok, %{errors: errors, data: data}} = doc |> Absinthe.run(__MODULE__.Schema, variables: %{"contact" => %{"email" => "bob", "extra" => "thing"}})
       assert [%{locations: [%{column: 0, line: 1}], message: "Variable `contact.extra': Not present in schema"}] == errors
       assert %{"user" => "bob"} == data
+    end
+
+    it "returns an error for inner deprecated fields" do
+      doc = """
+      query FindContact($contact:ContactInput) {contact(contact:$contact)}
+      """
+      assert {:ok, %{errors: errors, variables: %Absinthe.Execution.Variables{
+        processed: %{"contact" => %Absinthe.Execution.Variable{value: value}}}}} = doc |> parse(__MODULE__.Schema, %{"contact" => %{"email" => "bob", "address" => "boo"}})
+      assert %{email: "bob", address: "boo"} == value
+      assert [%{locations: [%{column: 0, line: 1}], message: "Variable `contact.address' (String): Deprecated; no longer used"}] == errors
     end
   end
 

@@ -28,29 +28,39 @@ defmodule Absinthe.Execution.InputMeta do
   def put_extra(meta, type_stack, ast) do
     put_meta(meta, :extra, type_stack, nil, ast)
   end
-
-  defp put_meta(meta, key, type_stack, type, ast) when is_atom(type) and type != nil do
-    real_type = meta.schema.__absinthe_type__(type)
-    put_meta(meta, key, type_stack, real_type, ast)
-  end
-  defp put_meta(meta, key, type_stack, type, ast) when is_list(type_stack) do
-    Map.update!(meta, key, &[%{ast: ast, type_stack: type_stack, type: type} | &1])
+  def put_deprecated(meta, type_stack, type, ast, msg \\ "") do
+    put_meta(meta, :deprecated, type_stack, type, ast, %{msg: msg})
   end
 
-  def process_errors(execution, meta, kind, key, msg) do
+  defp put_meta(meta, key, type_stack, type, ast, opts \\ %{})
+  defp put_meta(meta, key, type_stack, type, ast, opts) when is_atom(type) and type != nil do
+    real_type = type |> meta.schema.__absinthe_type__
+
+    put_meta(meta, key, type_stack, real_type, ast, opts)
+  end
+  defp put_meta(meta, key, type_stack, type, ast, opts) when is_list(type_stack) do
+    name = type_stack |> dotted_name
+
+    item = %{ast: ast, name: name, type: type, msg: Map.get(opts, :msg)}
+
+    Map.update!(meta, key, &[item | &1])
+  end
+
+  def process_errors(execution, meta, kind, key, default_msg) do
     meta
     |> Map.fetch!(key)
     |> Enum.reduce({execution, []}, fn
-      %{type_stack: type_stack, ast: ast, type: type}, {exec, names} ->
-        name_to_report = type_stack |> dotted_name
-        exec = exec |> Execution.put_error(kind, name_to_report, error_message(msg, type), at: ast)
+      %{name: name, ast: ast, type: type, msg: msg}, {exec, names} ->
+        exec = exec |> Execution.put_error(kind, name, error_message(msg || default_msg, type), at: ast)
 
-        {exec, [name_to_report | names]}
+        {exec, [name | names]}
     end)
   end
 
   defp error_message(msg, nil), do: msg
-  defp error_message(msg, type) when is_function(msg), do: msg.(type.name)
+  defp error_message(msg, type) when is_function(msg) do
+    msg.(type.name)
+  end
   defp error_message(msg, _), do: msg
 
   # Having gone through the list of given values, go through

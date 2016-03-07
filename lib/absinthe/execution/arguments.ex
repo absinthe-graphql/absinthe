@@ -28,6 +28,8 @@ defmodule Absinthe.Execution.Arguments do
 
     {execution, _} = Meta.process_errors(execution, meta, :argument, :extra, &"Argument `#{&1}': Not present in schema")
 
+    {execution, _} = Meta.process_errors(execution, meta, :argument, :deprecated, nil)
+
     case Enum.any?(missing) || Enum.any?(invalid) do
       false ->
         {:ok, values, execution}
@@ -48,7 +50,8 @@ defmodule Absinthe.Execution.Arguments do
     add_argument(arg_ast, inner_type, type_stack, meta)
   end
 
-  defp add_argument(%Language.Argument{value: value}, %Type.Argument{type: inner_type} = type, type_stack, meta) do
+  defp add_argument(%Language.Argument{value: value} = ast_node, %Type.Argument{type: inner_type} = type, type_stack, meta) do
+    meta = meta |> add_deprecation_notice(type, inner_type, [type.name | type_stack], ast_node)
     add_argument(value, inner_type, [type.name | type_stack], meta)
   end
 
@@ -63,14 +66,16 @@ defmodule Absinthe.Execution.Arguments do
     {:ok, acc, meta}
   end
 
-  defp add_argument(%Language.ObjectField{value: value}, %Type.Field{type: inner_type} = type, type_stack, meta) do
+  defp add_argument(%Language.ObjectField{value: value} = ast_node, %Type.Field{type: inner_type} = type, type_stack, meta) do
+    meta = meta |> add_deprecation_notice(type, inner_type, [type.name | type_stack], ast_node)
     add_argument(value, inner_type, [type.name | type_stack], meta)
   end
 
   defp add_argument(%{value: value} = ast, %Type.Enum{} = enum, type_stack, meta) do
     case Type.Enum.parse(enum, value) do
-      {:ok, value} ->
-        {:ok, value, meta}
+      {:ok, enum_value} ->
+        meta = meta |> add_deprecation_notice(enum_value, enum, [enum_value.value | type_stack], ast)
+        {:ok, enum_value.value, meta}
 
       :error ->
         {:error, Meta.put_invalid(meta, type_stack, enum, ast)}
@@ -91,7 +96,8 @@ defmodule Absinthe.Execution.Arguments do
     raise ArgumentError, """
     Schema #{meta.schema} is internally inconsistent!
 
-    Type referenced at #{inspect type_stack} does not exist
+    Type referenced at #{inspect type_stack} does not exist in the schema, even
+    though items in the schema refer to it. This is bad!
 
     This clause should become irrelevant when schemas check internal consistency
     at compile time.
@@ -107,6 +113,17 @@ defmodule Absinthe.Execution.Arguments do
     {:error, Meta.put_invalid(meta, type_stack, type, ast)}
   end
 
+  defp add_deprecation_notice(meta, %{deprecation: nil}, _, _, _) do
+    meta
+  end
+  defp add_deprecation_notice(meta, %{deprecation: %{reason: reason}}, type, type_stack, ast) do
+    details = if reason, do: "; #{reason}", else: ""
+
+    Meta.put_deprecated(meta, type_stack, Type.unwrap(type), ast, fn type_name ->
+      &"Argument `#{&1}' (#{type_name}): Deprecated#{details}"
+    end)
+  end
+
   defp retrieve_variable(name, schema_type, type_stack, ast, meta) do
     full_type_stack = fillout_stack(schema_type, [], meta.schema)
     meta.variables
@@ -118,7 +135,7 @@ defmodule Absinthe.Execution.Arguments do
       %{value: value, type_stack: ^full_type_stack} ->
         do_retrieve_variable(value, schema_type, type_stack, ast, meta)
       _ ->
-        {:error, meta}
+        do_retrieve_variable(nil, schema_type, type_stack, ast, meta)
     end
   end
 
