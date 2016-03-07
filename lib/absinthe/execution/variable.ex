@@ -114,6 +114,16 @@ defmodule Absinthe.Execution.Variable do
   defp build_map_value(value, %Type.NonNull{of_type: inner_type}, type_stack, var_ast, meta) do
     build_map_value(value, inner_type, type_stack, var_ast, meta)
   end
+  defp build_map_value(value, %Type.Enum{} = enum, type_stack, var_ast, meta) do
+    case Type.Enum.parse(enum, value) do
+      {:ok, enum_value} ->
+        meta = meta |> add_deprecation_notice(enum_value, enum, [enum_value.value | type_stack], var_ast)
+        {:ok, enum_value.value, meta}
+
+      :error ->
+        {:error, Meta.put_invalid(meta, type_stack, enum, var_ast)}
+    end
+  end
   defp build_map_value(value, %Type.Scalar{parse: parser} = type, type_stack, var_ast, meta) do
     Input.parse_scalar(value, var_ast, type, type_stack, meta)
   end

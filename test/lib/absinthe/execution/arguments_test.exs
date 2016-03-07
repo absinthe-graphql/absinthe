@@ -18,6 +18,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
 
     input_object :contact_input do
       field :email, non_null(:string)
+      field :type, :contact_type
     end
 
     enum :contact_type do
@@ -167,6 +168,15 @@ defmodule Absinthe.Execution.ArgumentsTest do
         query GetContact($type:ContactType){ contact(type: $type) }
         """
         assert_result {:ok, %{data: %{"contact" => "Email"}}}, doc |> Absinthe.run(Schema, variables: %{"type" => "Email"})
+      end
+
+      it "should work when nested" do
+        doc = """
+        query FindUser($contact: ContactInput!){
+          user(contact:$contact)
+        }
+        """
+        assert_result {:ok, %{data: %{"user" => "bubba@joe.com"}}}, doc |> Absinthe.run(Schema, variables: %{"contact" => %{"email" => "bubba@joe.com", "type" => "Email"}})
       end
 
       it "should return an error with invalid values" do
