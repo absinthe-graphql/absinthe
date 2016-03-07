@@ -228,7 +228,11 @@ defmodule Absinthe.Execution.ArgumentsTest do
         doc = """
         {contacts(contacts: [{email: "a@b.com"}, {foo: "c@d.com"}])}
         """
-        assert_result {:ok, %{data: %{}, errors: [%{message: "Field `contacts': 1 required argument (`contacts[].email') not provided"}, %{message: "Argument `contacts[].email' (String): Not provided"}]}},
+        assert_result {:ok, %{data: %{}, errors: [
+          %{message: "Field `contacts': 1 required argument (`contacts[].email') not provided"},
+          %{message: "Argument `contacts[].foo': Not present in schema"},
+          %{message: "Argument `contacts[].email' (String): Not provided"},
+        ]}},
           doc |> Absinthe.run(Schema)
       end
     end
@@ -245,7 +249,19 @@ defmodule Absinthe.Execution.ArgumentsTest do
         doc = """
         {user(contact: {foo: "buz"})}
         """
-        assert_result {:ok, %{data: %{}, errors: [%{message: "Field `user': 1 required argument (`contact.email') not provided"}, %{message: "Argument `contact.email' (String): Not provided"}]}},
+        assert_result {:ok, %{data: %{}, errors: [
+          %{message: "Field `user': 1 required argument (`contact.email') not provided"},
+          %{message: "Argument `contact.foo': Not present in schema"},
+          %{message: "Argument `contact.email' (String): Not provided"},
+        ]}},
+          doc |> Absinthe.run(Schema)
+      end
+
+      it "returns an error if extra fields are given" do
+        doc = """
+        {user(contact: {email: "bubba", foo: "buz"})}
+        """
+        assert_result {:ok, %{data: %{"user" => "bubba"}, errors: [%{message: "Argument `contact.foo': Not present in schema"}]}},
           doc |> Absinthe.run(Schema)
       end
     end

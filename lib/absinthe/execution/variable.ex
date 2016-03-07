@@ -32,7 +32,8 @@ defmodule Absinthe.Execution.Variable do
       &"Variable `#{&1}' (#{type_name}): Invalid value provided"
     end)
 
-    {execution, _} = Meta.process_errors(execution, meta, :variable, :extra, &"Argument `#{&1}': Not present in schema")
+    {execution, _} = Meta.process_errors(execution, meta, :variable, :extra, &"Variable `#{&1}': Not present in schema")
+
     case Enum.any?(missing) || Enum.any?(invalid) do
       false ->
         {:ok, %__MODULE__{value: value, type_stack: outer_type_stack}, execution}
@@ -41,7 +42,7 @@ defmodule Absinthe.Execution.Variable do
     end
   end
 
-  defp do_build(%{type: %Language.NonNullType{type: inner_type}, variable: var_ast}, nil, schema_type, type_stack, meta) do
+  defp do_build(%{type: %Language.NonNullType{}, variable: var_ast}, nil, schema_type, type_stack, meta) do
     {:error, Meta.put_missing(meta, type_stack, schema_type, var_ast)}
   end
 

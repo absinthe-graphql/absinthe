@@ -16,15 +16,17 @@ defmodule Absinthe.Execution.Arguments do
   def build(ast_field, schema_arguments, execution) do
     meta = Meta.build(execution, variables: execution.variables.processed)
 
-    {values, post_meta} = add_arguments(ast_field.arguments, schema_arguments, ast_field, meta)
+    {values, meta} = add_arguments(ast_field.arguments, schema_arguments, ast_field, meta)
 
-    {execution, missing} = Meta.process_errors(execution, post_meta, :argument, :missing, fn type_name ->
+    {execution, missing} = Meta.process_errors(execution, meta, :argument, :missing, fn type_name ->
       &"Argument `#{&1}' (#{type_name}): Not provided"
     end)
 
-    {execution, invalid} = Meta.process_errors(execution, post_meta, :argument, :invalid, fn type_name ->
+    {execution, invalid} = Meta.process_errors(execution, meta, :argument, :invalid, fn type_name ->
       &"Argument `#{&1}' (#{type_name}): Invalid value provided"
     end)
+
+    {execution, _} = Meta.process_errors(execution, meta, :argument, :extra, &"Argument `#{&1}': Not present in schema")
 
     case Enum.any?(missing) || Enum.any?(invalid) do
       false ->
@@ -196,7 +198,7 @@ defmodule Absinthe.Execution.Arguments do
         end
 
       :error ->
-        # Todo: register field as unnecssary
+        meta = Meta.put_extra(meta, [value.name | type_stack], root_node)
         do_map_argument(rest, schema_fields, acc, type_stack, root_node, meta)
     end
   end

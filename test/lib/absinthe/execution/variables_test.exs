@@ -174,7 +174,7 @@ defmodule Absinthe.Execution.VariablesTest do
       query FindContact($contact:ContactInput) {user(contact:$contact)}
       """
       assert {:ok, %{errors: errors, data: data}} = doc |> Absinthe.run(__MODULE__.Schema, variables: %{"contact" => %{"email" => "bob", "extra" => "thing"}})
-      assert [%{locations: [%{column: 0, line: 1}], message: "Argument `contact.extra': Not present in schema"}] == errors
+      assert [%{locations: [%{column: 0, line: 1}], message: "Variable `contact.extra': Not present in schema"}] == errors
       assert %{"user" => "bob"} == data
     end
   end
