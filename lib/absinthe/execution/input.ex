@@ -4,6 +4,7 @@ defmodule Absinthe.Execution.Input do
   # Common functionality for Arguments and Variables
 
   alias Absinthe.Execution
+  alias __MODULE__.Meta
 
   def process(input_type, meta, execution) do
     name = input_type
@@ -39,6 +40,17 @@ defmodule Absinthe.Execution.Input do
 
         {exec, [name | names]}
     end)
+  end
+
+  @compile {:inline, parse_scalar: 5}
+  def parse_scalar(value, ast, %{parse: parser} = type, type_stack, meta) do
+    case parser.(value) do
+      {:ok, coerced_value} ->
+        {:ok, coerced_value, meta}
+
+      :error ->
+        {:error, Meta.put_invalid(meta, type_stack, type, ast)}
+    end
   end
 
   defp error_message(msg, nil), do: msg

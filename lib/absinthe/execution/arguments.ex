@@ -78,13 +78,7 @@ defmodule Absinthe.Execution.Arguments do
   end
 
   defp add_argument(%{value: value} = ast, %Type.Scalar{parse: parser} = type, type_stack, meta) do
-    case parser.(value) do
-      {:ok, coerced_value} ->
-        {:ok, coerced_value, meta}
-
-      :error ->
-        {:error, Meta.put_invalid(meta, type_stack, type, ast)}
-    end
+    Input.parse_scalar(value, ast, type, type_stack, meta)
   end
 
   defp add_argument(_ast, nil, type_stack, meta) do

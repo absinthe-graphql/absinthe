@@ -29,13 +29,34 @@ defmodule Absinthe.Type.Enum.Value do
 
   @spec build(Keyword.t) :: %{atom => Absinthe.Type.Enum.Value.t}
   def build(raw_values) when is_list(raw_values) do
-    ast = for {value_name, value_attrs} <- normalize(raw_values) do
-      name = value_name |> Atom.to_string
-      value_data = [name: name] ++ Keyword.put_new(value_attrs, :value, value_name)
-      value_ast = quote do: %Absinthe.Type.Enum.Value{unquote_splicing(value_data |> Absinthe.Type.Deprecation.from_attribute)}
-      {value_name, value_ast}
+    ast = for {identifier, value_attrs} <- normalize(raw_values) do
+      value_data = value_data(identifier, value_attrs)
+      value_ast = quote do: %Absinthe.Type.Enum.Value{unquote_splicing(value_data)}
+
+      {identifier, value_ast}
     end
     quote do: %{unquote_splicing(ast)}
+  end
+
+  def build(raw_values, key) when is_list(raw_values) do
+    ast = for {identifier, value_attrs} <- normalize(raw_values) do
+      value_data = value_data(identifier, value_attrs)
+      value_ast = quote do: %Absinthe.Type.Enum.Value{unquote_splicing(value_data)}
+
+      {value_data[key], value_ast}
+    end
+    quote do: %{unquote_splicing(ast)}
+  end
+
+  defp value_data(identifier, value_attrs) do
+    default_name = identifier
+    |> Atom.to_string
+    |> String.upcase
+
+    value_attrs
+    |> Keyword.put_new(:value, identifier)
+    |> Keyword.put_new(:name, default_name )
+    |> Type.Deprecation.from_attribute
   end
 
   # Normalize shorthand lists of atoms to the keyword list that `values` expects

@@ -211,19 +211,19 @@ defmodule AbsintheTest do
   it "should resolve using enums" do
     result = """
       {
-        red: info(channel: "red") {
+        red: info(channel: RED) {
           name
           value
         }
-        green: info(channel: "green") {
+        green: info(channel: GREEN) {
           name
           value
         }
-        blue: info(channel: "blue") {
+        blue: info(channel: BLUE) {
           name
           value
         }
-        puce: info(channel: "puce") {
+        puce: info(channel: PUCE) {
           name
           value
         }

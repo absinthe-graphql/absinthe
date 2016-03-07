@@ -16,7 +16,6 @@ defmodule Absinthe.Type.EnumTest do
 
     enum :color_channel do
       description "The selected color channel"
-
       value :red, as: :r, description: "Color Red"
       value :green, as: :g, description: "Color Green"
       value :blue, as: :b, description: "Color Blue"
@@ -42,17 +41,17 @@ defmodule Absinthe.Type.EnumTest do
     it "can be defined by a map with defined values" do
       type = TestSchema.__absinthe_type__(:color_channel)
       assert %Type.Enum{} = type
-      assert %Type.Enum.Value{name: "red", value: :r, description: "Color Red"} = type.values[:red]
+      assert %Type.Enum.Value{name: "RED", value: :r, description: "Color Red"} = type.values[:red]
     end
     it "can be defined by a map without defined values" do
       type = TestSchema.__absinthe_type__(:color_channel2)
       assert %Type.Enum{} = type
-      assert %Type.Enum.Value{name: "red", value: :red} = type.values[:red]
+      assert %Type.Enum.Value{name: "RED", value: :red} = type.values[:red]
     end
     it "can be defined by a shorthand list of atoms" do
       type = TestSchema.__absinthe_type__(:color_channel3)
       assert %Type.Enum{} = type
-      assert %Type.Enum.Value{name: "red", value: :red, description: nil} = type.values[:red]
+      assert %Type.Enum.Value{name: "RED", value: :red, description: nil} = type.values[:red]
     end
   end
 

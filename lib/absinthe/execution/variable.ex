@@ -69,13 +69,7 @@ defmodule Absinthe.Execution.Variable do
   end
 
   defp do_build(%{variable: var_ast}, value, %Type.Scalar{} = schema_type, type_stack, meta) do
-    case schema_type.parse.(value) do
-      {:ok, coerced_value} ->
-        {:ok, coerced_value, meta}
-
-      :error ->
-        {:error, Meta.put_invalid(meta, type_stack, schema_type, var_ast)}
-    end
+    Input.parse_scalar(value, var_ast, schema_type, type_stack, meta)
   end
 
   defp do_build(%{variable: var_ast}, _values, schema_type, type_stack, meta) do
@@ -121,13 +115,7 @@ defmodule Absinthe.Execution.Variable do
     build_map_value(value, inner_type, type_stack, var_ast, meta)
   end
   defp build_map_value(value, %Type.Scalar{parse: parser} = type, type_stack, var_ast, meta) do
-    case parser.(value) do
-      {:ok, coerced_value} ->
-        {:ok, coerced_value, meta}
-
-      :error ->
-        {:error, Meta.put_invalid(meta, type_stack, type, var_ast)}
-    end
+    Input.parse_scalar(value, var_ast, type, type_stack, meta)
   end
   defp build_map_value(value, type, type_stack, var_ast, meta) when is_atom(type) do
     real_type = meta.schema.__absinthe_type__(type)

@@ -21,34 +21,17 @@ defmodule Absinthe.Execution.ArgumentsTest do
     end
 
     enum :contact_type do
-      value :email
+      value :email, name: "Email", as: "Email"
       value :phone
       value :sms, deprecate: "Use phone instead"
     end
 
-    union :numeric do
-      types [:float, :integer]
-
-      resolve_type fn
-        n, _ when is_float(n) -> :float
-        n, _ when is_integer(n) -> :integer
-      end
-    end
-
     query do
 
-      field :contact, :string do
+      field :contact, :contact_type do
         arg :type, :contact_type
 
         resolve fn %{type: val}, _ -> {:ok, val} end
-      end
-
-      field :numeric, :numeric do
-        arg :value, non_null(:numeric)
-
-        resolve fn %{value: val}, _ ->
-          {:ok, val}
-        end
       end
 
       field :contacts, list_of(:string) do
@@ -183,7 +166,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         doc = """
         query GetContact($type:ContactType){ contact(type: $type) }
         """
-        assert_result {:ok, %{data: %{"contact" => "email"}}}, doc |> Absinthe.run(Schema, variables: %{"type" => "email"})
+        assert_result {:ok, %{data: %{"contact" => "Email"}}}, doc |> Absinthe.run(Schema, variables: %{"type" => "Email"})
       end
 
       it "should return an error with invalid values" do
@@ -195,7 +178,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         doc = """
         query GetContact($type:ContactType){ contact(type: $type) }
         """
-        assert_result {:ok, %{data: %{"contact" => "sms"}, errors: [%{message: "Variable `type.sms' (ContactType): Deprecated; Use phone instead"}]}}, doc |> Absinthe.run(Schema, variables: %{"type" => "sms"})
+        assert_result {:ok, %{data: %{"contact" => "SMS"}, errors: [%{message: "Variable `type.sms' (ContactType): Deprecated; Use phone instead"}]}}, doc |> Absinthe.run(Schema, variables: %{"type" => "SMS"})
       end
     end
   end
@@ -310,14 +293,14 @@ defmodule Absinthe.Execution.ArgumentsTest do
 
     describe "enum types" do
       it "should work with valid values" do
-        assert_result {:ok, %{data: %{"contact" => "email"}}}, "{ contact(type: \"email\") }" |> Absinthe.run(Schema)
+        assert_result {:ok, %{data: %{"contact" => "Email"}}}, "{ contact(type: Email) }" |> Absinthe.run(Schema)
       end
 
       it "should return a deprecation notice if one of the values given is deprecated" do
         doc = """
-        query GetContact { contact(type: sms) }
+        query GetContact { contact(type: SMS) }
         """
-        assert_result {:ok, %{data: %{"contact" => "sms"}, errors: [%{message: "Argument `type.sms' (ContactType): Deprecated; Use phone instead"}]}}, doc |> Absinthe.run(Schema)
+        assert_result {:ok, %{data: %{"contact" => "SMS"}, errors: [%{message: "Argument `type.sms' (ContactType): Deprecated; Use phone instead"}]}}, doc |> Absinthe.run(Schema)
       end
 
       it "should return an error with invalid values" do

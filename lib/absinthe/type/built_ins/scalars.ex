@@ -105,6 +105,9 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   defp parse_string(value) when is_binary(value) do
     {:ok, value}
   end
+  defp parse_string(value) when is_float(value) or is_integer(value) do
+    {:ok, to_string(value)}
+  end
   defp parse_string(_), do: :error
 
   @spec parse_boolean(any) :: {:ok, boolean} | :error
