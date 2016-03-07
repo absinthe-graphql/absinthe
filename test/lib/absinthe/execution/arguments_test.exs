@@ -218,6 +218,14 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"numbers" => [1, 2]}}}, doc |> Absinthe.run(Schema)
       end
 
+      it "it will coerce a non list item if it's of the right type" do
+        # per https://facebook.github.io/graphql/#sec-Lists
+        doc = """
+        {numbers(numbers: 1)}
+        """
+        assert_result {:ok, %{data: %{"numbers" => [1]}}}, doc |> Absinthe.run(Schema)
+      end
+
       it "works with custom scalars" do
         doc = """
         {names(names: ["Joe", "bob"])}

@@ -50,6 +50,12 @@ defmodule Absinthe.Execution.Arguments do
     {:ok, acc, meta}
   end
 
+  defp add_argument(%{value: _} = ast, %Type.List{of_type: inner_type}, type_stack, meta) do
+    real_inner_type = meta.schema.__absinthe_type__(inner_type)
+    {acc, meta} = list_argument([ast], real_inner_type, type_stack, meta)
+    {:ok, acc, meta}
+  end
+
   defp add_argument(%Language.ObjectValue{fields: ast_fields} = ast, %Type.InputObject{fields: schema_fields}, type_stack, meta) do
     {acc, meta} = map_argument(ast_fields, schema_fields, type_stack, ast, meta)
     {:ok, acc, meta}

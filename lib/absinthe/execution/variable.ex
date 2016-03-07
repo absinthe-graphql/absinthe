@@ -18,7 +18,6 @@ defmodule Absinthe.Execution.Variable do
     var_name = definition.variable.name
     raw_value = Map.get(execution.variables.raw, var_name)
 
-    # this sequence could be better I think.
     {value, meta} = case do_build(definition, raw_value, schema_type, [var_name], meta) do
       {:ok, value, meta} -> {value, meta}
       {:error, meta} -> {:error, meta}

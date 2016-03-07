@@ -67,6 +67,15 @@ defmodule Absinthe.Type.DirectiveTest do
       }
     }
     """
+    it "is defined" do
+      assert Schema.lookup_directive(ContactSchema, :include)
+    end
+    it "behaves as expected for a field" do
+      assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query_field, ContactSchema, variables: %{"includePerson" => true})
+      assert {:ok, %{data: %{}}} == Absinthe.run(@query_field, ContactSchema, variables: %{"includePerson" => false})
+      assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}, errors: [%{locations: [%{column: 0, line: 2}], message: "Argument `if' (Boolean): Not provided"}]}} == Absinthe.run(@query_field, ContactSchema)
+    end
+
     @query_fragment """
     query Test($includeAge: Boolean) {
       person {
@@ -78,18 +87,15 @@ defmodule Absinthe.Type.DirectiveTest do
       age
     }
     """
-    it "is defined" do
-      assert Schema.lookup_directive(ContactSchema, :include)
-    end
-    it "behaves as expected for a field" do
-      assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query_field, ContactSchema, variables: %{"includePerson" => true})
-      assert {:ok, %{data: %{}}} == Absinthe.run(@query_field, ContactSchema, variables: %{"includePerson" => false})
-      assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}, errors: [%{locations: [%{column: 0, line: 2}], message: "Argument `if' (Boolean): Not provided"}]}} == Absinthe.run(@query_field, ContactSchema)
-    end
     it "behaves as expected for a fragment" do
       assert {:ok, %{data: %{"person" => %{"name" => "Bruce", "age" => 35}}}} == Absinthe.run(@query_fragment, ContactSchema, variables: %{"includeAge" => true})
       assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query_fragment, ContactSchema, variables: %{"includeAge" => false})
-      assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query_fragment, ContactSchema)
+    end
+
+    @tag :pending
+    it "should return an error if the variable is not supplied" do
+      assert {:ok, %{errors: errors}} = Absinthe.run(@query_fragment, ContactSchema)
+      assert [] != errors
     end
   end
 
