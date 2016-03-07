@@ -1,4 +1,4 @@
-defmodule Absinthe.Execution.InputMeta do
+defmodule Absinthe.Execution.Input.Meta do
   @moduledoc false
 
   # Includes common functionality for handling Variables and Arguments
@@ -45,23 +45,6 @@ defmodule Absinthe.Execution.InputMeta do
 
     Map.update!(meta, key, &[item | &1])
   end
-
-  def process_errors(execution, meta, kind, key, default_msg) do
-    meta
-    |> Map.fetch!(key)
-    |> Enum.reduce({execution, []}, fn
-      %{name: name, ast: ast, type: type, msg: msg}, {exec, names} ->
-        exec = exec |> Execution.put_error(kind, name, error_message(msg || default_msg, type), at: ast)
-
-        {exec, [name | names]}
-    end)
-  end
-
-  defp error_message(msg, nil), do: msg
-  defp error_message(msg, type) when is_function(msg) do
-    msg.(type.name)
-  end
-  defp error_message(msg, _), do: msg
 
   # Having gone through the list of given values, go through
   # the remaining fields and populate any defaults.

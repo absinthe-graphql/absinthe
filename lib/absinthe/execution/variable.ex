@@ -6,14 +6,14 @@ defmodule Absinthe.Execution.Variable do
 
   alias Absinthe.Type
   alias Absinthe.Language
-  alias Absinthe.Execution
-  alias Absinthe.Execution.InputMeta, as: Meta
+  alias Absinthe.Execution.Input
+  alias Absinthe.Execution.Input.Meta
 
   # Non null checks here are about whether it's specified as non null via ! in
   # the document itself. It has nothing to do with whether a given argument
   # has been declared non null, that's the job of `Arguments`
   def build(definition, schema_type, outer_type_stack, execution) do
-    meta = meta = Meta.build(execution)
+    meta = Meta.build(execution)
 
     var_name = definition.variable.name
     raw_value = Map.get(execution.variables.raw, var_name)
@@ -24,22 +24,10 @@ defmodule Absinthe.Execution.Variable do
       {:error, meta} -> {:error, meta}
     end
 
-    {execution, missing} = Meta.process_errors(execution, meta, :variable, :missing, fn type_name ->
-      &"Variable `#{&1}' (#{type_name}): Not provided"
-    end)
-
-    {execution, invalid} = Meta.process_errors(execution, meta, :variable, :invalid, fn type_name ->
-      &"Variable `#{&1}' (#{type_name}): Invalid value provided"
-    end)
-
-    {execution, _} = Meta.process_errors(execution, meta, :variable, :extra, &"Variable `#{&1}': Not present in schema")
-
-    {execution, _} = Meta.process_errors(execution, meta, :variable, :deprecated, nil)
-
-    case Enum.any?(missing) || Enum.any?(invalid) do
-      false ->
+    case Input.process(:variable, meta, execution) do
+      {:ok, execution} ->
         {:ok, %__MODULE__{value: value, type_stack: outer_type_stack}, execution}
-      true ->
+      {:error, _missing, _invalid, execution} ->
         {:error, execution}
     end
   end
@@ -48,7 +36,7 @@ defmodule Absinthe.Execution.Variable do
     {:error, Meta.put_missing(meta, type_stack, schema_type, var_ast)}
   end
 
-  defp do_build(%{default_value: nil}, nil, _schema_type, type_stack, meta) do
+  defp do_build(%{default_value: nil}, nil, _schema_type, _type_stack, meta) do
     {:ok, nil, meta}
   end
 
@@ -87,7 +75,7 @@ defmodule Absinthe.Execution.Variable do
         {:ok, coerced_value, meta}
 
       :error ->
-        {:error, Meta.put_missing(meta, type_stack, schema_type, var_ast)}
+        {:error, Meta.put_invalid(meta, type_stack, schema_type, var_ast)}
     end
   end
 
@@ -133,14 +121,13 @@ defmodule Absinthe.Execution.Variable do
   defp build_map_value(value, %Type.NonNull{of_type: inner_type}, type_stack, var_ast, meta) do
     build_map_value(value, inner_type, type_stack, var_ast, meta)
   end
-  defp build_map_value(value, %Type.Scalar{parse: parser}, type_stack, var_ast, meta) do
+  defp build_map_value(value, %Type.Scalar{parse: parser} = type, type_stack, var_ast, meta) do
     case parser.(value) do
       {:ok, coerced_value} ->
         {:ok, coerced_value, meta}
 
       :error ->
-        # {:error, Meta.put_invalid(meta, type_stack, schema_type, var_ast)}
-        {:error, meta}
+        {:error, Meta.put_invalid(meta, type_stack, type, var_ast)}
     end
   end
   defp build_map_value(value, type, type_stack, var_ast, meta) when is_atom(type) do

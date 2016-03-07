@@ -36,23 +36,6 @@ defmodule Absinthe.Execution.VariablesTest do
 
   alias Absinthe.Execution
 
-  @id_required """
-    query FetchThingQuery($id: String!) {
-      thing(id: $id) {
-        name
-      }
-    }
-    """
-
-  @default "foo"
-  @with_default """
-    query FetchThingQuery($id: String = "#{@default}") {
-      thing(id: $id) {
-        name
-      }
-    }
-    """
-
   def parse(query_document, provided \\ %{}) do
     parse(query_document, Things, provided)
   end
@@ -67,7 +50,13 @@ defmodule Absinthe.Execution.VariablesTest do
   end
 
   describe "a required variable" do
-
+    @id_required """
+      query FetchThingQuery($id: String!) {
+        thing(id: $id) {
+          name
+        }
+      }
+      """
     context "when provided" do
 
       it "returns a value" do
@@ -88,8 +77,25 @@ defmodule Absinthe.Execution.VariablesTest do
     end
   end
 
-  describe "a defaulted variable" do
+  describe "scalar variable" do
+    it "returns an error if it does not parse" do
+      doc = """
+      query ScalarError($item:Int){foo(bar:$item)}
+      """
+      assert {:error, %{errors: errors}} = doc |> parse(%{"item" => "asdf"})
+      assert [%{locations: [%{column: 0, line: 1}], message: "Variable `item' (Int): Invalid value provided"}] == errors
+    end
+  end
 
+  describe "a defaulted variable" do
+    @default "foo"
+    @with_default """
+    query FetchThingQuery($id: String = "#{@default}") {
+      thing(id: $id) {
+        name
+      }
+    }
+    """
     it "when provided" do
       provided = %{"id" => "bar"}
       assert {:ok, %{variables: %Absinthe.Execution.Variables{
@@ -160,6 +166,14 @@ defmodule Absinthe.Execution.VariablesTest do
       assert errors == []
       assert %{email: "ben"} == value
       assert ["ContactInput"] == type
+    end
+
+    it "should return an error if an inner scalar doesn't parse" do
+      doc = """
+      query FindContact($contact:ContactInput) {contact(contact:$contact)}
+      """
+      assert {:error, %{errors: errors}} = doc |> parse(__MODULE__.Schema, %{"contact" => %{"email" => [1,2,3]}})
+      assert [%{locations: [%{column: 0, line: 1}], message: "Variable `contact.email' (String): Invalid value provided"}] == errors
     end
 
     it "should return an error when a required field is explicitly set to nil" do

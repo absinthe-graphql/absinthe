@@ -76,7 +76,7 @@ defmodule Absinthe.Execution.DeprecationTest do
         it "shows a deprecation notice without a reason" do
           query = """
             mutation UpdateThing {
-              thing: update_thing(id: "foo", thing: {deprecatedField: 2}) {
+              thing: updateThing(id: "foo", thing: {deprecatedField: "2"}) {
                 name
               }
             }
@@ -89,7 +89,7 @@ defmodule Absinthe.Execution.DeprecationTest do
         it "shows a deprecation notice with a reason" do
           query = """
             mutation UpdateThing {
-              thing: updateThing(id: "foo", thing: {deprecatedFieldWithReason: 2}) {
+              thing: updateThing(id: "foo", thing: {deprecatedFieldWithReason: "2"}) {
                 name
               }
             }
@@ -106,7 +106,7 @@ defmodule Absinthe.Execution.DeprecationTest do
         it "shows a deprecation notice without a reason" do
           query = """
             mutation UpdateThing {
-              thing: updateThing(id: "foo", thing: {deprecatedNonNullField: 2}) {
+              thing: updateThing(id: "foo", thing: {deprecatedNonNullField: "2"}) {
                 name
               }
             }
@@ -119,7 +119,7 @@ defmodule Absinthe.Execution.DeprecationTest do
         it "shows a deprecation notice with a reason" do
           query = """
             mutation UpdateThing {
-              thing: update_thing(id: "foo", thing: {deprecatedNonNullFieldWithReason: 2}) {
+              thing: updateThing(id: "foo", thing: {deprecatedNonNullFieldWithReason: "2"}) {
                 name
               }
             }

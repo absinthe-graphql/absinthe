@@ -6,7 +6,8 @@ defmodule Absinthe.Execution.Arguments do
   alias Absinthe.Execution
   alias Absinthe.Type
   alias Absinthe.Language
-  alias Absinthe.Execution.InputMeta, as: Meta
+  alias Absinthe.Execution.Input
+  alias Absinthe.Execution.Input.Meta
 
   # Build an arguments map from the argument definitions in the schema, using the
   # argument values from the query document.
@@ -18,22 +19,10 @@ defmodule Absinthe.Execution.Arguments do
 
     {values, meta} = add_arguments(ast_field.arguments, schema_arguments, ast_field, meta)
 
-    {execution, missing} = Meta.process_errors(execution, meta, :argument, :missing, fn type_name ->
-      &"Argument `#{&1}' (#{type_name}): Not provided"
-    end)
-
-    {execution, invalid} = Meta.process_errors(execution, meta, :argument, :invalid, fn type_name ->
-      &"Argument `#{&1}' (#{type_name}): Invalid value provided"
-    end)
-
-    {execution, _} = Meta.process_errors(execution, meta, :argument, :extra, &"Argument `#{&1}': Not present in schema")
-
-    {execution, _} = Meta.process_errors(execution, meta, :argument, :deprecated, nil)
-
-    case Enum.any?(missing) || Enum.any?(invalid) do
-      false ->
+    case Input.process(:argument, meta, execution) do
+      {:ok, execution} ->
         {:ok, values, execution}
-      true ->
+      {:error, missing, invalid, execution} ->
         {:error, missing, invalid, execution}
     end
   end

@@ -102,13 +102,10 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   end
 
   @spec parse_string(any) :: {:ok, binary} | :error
-  defp parse_string(value) do
-    try do
-      {:ok, to_string(value)}
-    rescue
-      Protocol.UndefinedError -> :error
-    end
+  defp parse_string(value) when is_binary(value) do
+    {:ok, value}
   end
+  defp parse_string(_), do: :error
 
   @spec parse_boolean(any) :: {:ok, boolean} | :error
   defp parse_boolean(value) when is_number(value) do
