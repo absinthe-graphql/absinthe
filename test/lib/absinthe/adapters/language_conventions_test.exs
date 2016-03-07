@@ -192,6 +192,36 @@ defmodule Absinthe.Adapter.LanguageConventionsTest do
     assert {:ok, %{data: %{"fieldTrip" => %{"name" => "Museum"}}, errors: [%{message: "Field `badField': Not present in schema", locations: [%{line: 4, column: 0}]}]}} == run(query)
   end
 
+  it "transforms a simple query document" do
+    doc = transform """
+    {
+      person {
+        firstName
+      }
+    }
+    """
+    assert %{definitions: [%{selection_set: %{selections: [%{selection_set: %{selections: [%{name: "first_name"}]}}]}}]} = doc
+  end
+
+  it "transforms a query document with an inline fragment" do
+    doc = transform """
+    {
+      person {
+       ... on Foo {
+         firstName
+       }
+      }
+    }
+    """
+    assert %{definitions: [%{selection_set: %{selections: [%{selection_set: %{selections: [%{selection_set: %{selections: [%{name: "first_name"}]}}]}}]}}]} = doc
+  end
+
+  defp transform(query) do
+    {:ok, doc} = Absinthe.parse(query)
+    doc
+    |> Absinthe.Adapter.LanguageConventions.load_document
+  end
+
   defp run(query_document) do
     run(query_document, %{})
   end

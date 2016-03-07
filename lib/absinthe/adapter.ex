@@ -77,6 +77,10 @@ defmodule Absinthe.Adapter do
         %{node |
           selection_set: load_ast_node(node.selection_set)}
       end
+      defp load_ast_node(%Language.InlineFragment{} = node) do
+        %{node |
+          selection_set: load_ast_node(node.selection_set)}
+      end
       defp load_ast_node(%Language.SelectionSet{} = node) do
         %{node |
           selections: node.selections |> Enum.map(&load_ast_node/1)}
