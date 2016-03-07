@@ -3,222 +3,223 @@ defmodule Absinthe.Execution.Arguments do
 
   @moduledoc false
 
-  alias Absinthe.Validation
   alias Absinthe.Execution
   alias Absinthe.Type
   alias Absinthe.Language
-  alias Absinthe.Schema
+  alias Absinthe.Execution.Input
+  alias Absinthe.Execution.Input.Meta
 
   # Build an arguments map from the argument definitions in the schema, using the
   # argument values from the query document.
   @doc false
-  @spec build(Language.t | Language.t, %{atom => Type.Argument.t}, Execution.t) :: {:ok, {%{atom => any}, Execution.t}} | {:error, {[binary], [binary]}, Execution.t}
+  @spec build(Language.t | Language.t, %{atom => Type.Argument.t}, Execution.t) ::
+    {:ok, {%{atom => any}, Execution.t}} | {:error, {[binary], [binary]}, Execution.t}
   def build(ast_field, schema_arguments, execution) do
-    initial = {%{}, {[], []}, execution}
-    {values, {missing, invalid}, post_execution} = schema_arguments
-    |> Enum.reduce(initial, &(add_argument(&1, ast_field, &2)))
-    execution_to_return = report_extra_arguments(ast_field, schema_arguments |> Map.keys |> Enum.map(&to_string/1), post_execution)
-    case missing ++ invalid do
-      [] -> {:ok, values, execution_to_return}
-      _ -> {:error, {missing, invalid}, execution_to_return}
+    meta = Meta.build(execution, variables: execution.variables.processed)
+
+    {values, meta} = add_arguments(ast_field.arguments, schema_arguments, ast_field, meta)
+
+    case Input.process(:argument, meta, execution) do
+      {:ok, execution} ->
+        {:ok, values, execution}
+      {:error, missing, invalid, execution} ->
+        {:error, missing, invalid, execution}
     end
   end
 
-  # Parse the argument value from the query document field
-  @spec add_argument({atom, Type.Argument.t}, Language.t, {map, {[binary], [binary]}, Execution.t}) :: {map, {[binary], [binary]}, Execution.t}
-  defp add_argument({name, definition}, ast_field, acc) do
-    ast_field
-    |> lookup_argument(name)
-    |> do_add_argument(definition, ast_field, acc)
+  defp add_arguments(arg_asts, schema_arguments, ast_field, meta) do
+    map_argument(arg_asts, schema_arguments, [], ast_field, meta)
   end
 
-  # No argument found in the query document field
-  @spec do_add_argument(Language.Argument.t | nil, Type.Argument.t, Language.t, {map, {[binary], [binary]}, Execution.t}) :: {map, {[binary], [binary]}, Execution.t}
-  defp do_add_argument(nil, definition, ast_field, {values, {missing, invalid}, execution} = acc) do
-    cond do
-      Validation.RequiredInput.required?(definition) ->
-        internal_type = Schema.lookup_type(execution.schema, definition.type)
-        exe = execution
-        |> Execution.put_error(:argument, definition.name, &"Argument `#{&1}' (#{internal_type.name}): Not provided", at: ast_field)
-        {values, {[to_string(definition.name) | missing], invalid}, exe}
-      definition.default_value != nil ->
-        input_type = Schema.lookup_type(execution.schema, definition.type)
-        {
-          values |> Map.put(definition.name |> String.to_atom, definition.default_value),
-          {missing, invalid},
-          execution
-        }
-      true ->
-        acc
-    end
-  end
-  defp do_add_argument(ast_argument, definition, _ast_field, {values, {missing, invalid} = tracking, execution}) do
-    execution_with_deprecation = execution |> add_argument_deprecation(ast_argument.name, definition, ast_argument)
-    value_to_coerce = ast_argument.value || execution.variables[ast_argument.name] || definition.default_value
-
-    input_type = Schema.lookup_type(execution.schema, definition.type)
-    if input_type do
-      add_argument_value(input_type, value_to_coerce, ast_argument, [ast_argument.name], {values, tracking, execution_with_deprecation})
-    else
-      exe = execution
-      |> Execution.put_error(:argument, ast_argument.name, &"Argument `#{&1}' (#{definition.type |> Type.unwrap}): Unknown type", at: ast_argument)
-      {values, {missing, [ast_argument.name | invalid]}, exe}
-    end
+  defp add_argument(%Language.Variable{name: name} = ast, schema_type, type_stack, meta) do
+    retrieve_variable(name, schema_type, type_stack, ast, meta)
   end
 
-  defp add_argument_deprecation(execution, _name, %{deprecation: nil}, _ast_node) do
-    execution
-  end
-  defp add_argument_deprecation(execution, name, %{type: identifier, deprecation: %{reason: reason}}, ast_node) do
-    internal_type = Schema.lookup_type(execution.schema, identifier)
-    details = if reason, do: "; #{reason}", else: ""
-    execution
-    |> Execution.put_error(:argument, name, &"Argument `#{&1}' (#{internal_type.name}): Deprecated#{details}", at: ast_node)
+  defp add_argument(arg_ast, %Type.NonNull{of_type: inner_type}, type_stack, meta) do
+    add_argument(arg_ast, inner_type, type_stack, meta)
   end
 
-  # Coerce an input value into an input type, tracking errors
-  @spec add_argument_value(Type.input_t, any, Language.Argument.t, [binary], Execution.t) :: {any, Execution.t}
+  defp add_argument(%Language.Argument{value: value} = ast_node, %Type.Argument{type: inner_type} = type, type_stack, meta) do
+    meta = meta |> add_deprecation_notice(type, inner_type, [type.name | type_stack], ast_node)
+    add_argument(value, inner_type, [type.name | type_stack], meta)
+  end
 
-  # Nil value
-  defp add_argument_value(input_type, nil, ast_argument, [value_name|_] = full_value_name, {values, {missing, invalid}, execution}) do
-    if Validation.RequiredInput.required?(input_type) do
-      name_to_report = full_value_name |> dotted_name
-      internal_type = Schema.lookup_type(execution.schema, input_type)
-      exe = execution
-      |> Execution.put_error(:argument, name_to_report, &"Argument `#{&1}' (#{internal_type.name}): Not provided", at: ast_argument)
-      {values, {[name_to_report | missing], invalid}, exe}
-    else
-      {
-        values |> Map.put(value_name |> String.to_existing_atom, nil),
-        {missing, invalid},
-        execution
-      }
-    end
+  defp add_argument(%Language.ListValue{values: values}, %Type.List{of_type: inner_type}, type_stack, meta) do
+    real_inner_type = meta.schema.__absinthe_type__(inner_type)
+    {acc, meta} = list_argument(values, real_inner_type, ["[]" | type_stack], meta)
+    {:ok, acc, meta}
   end
-  # Non-nil value
-  defp add_argument_value(type, input_value, ast_argument, names, {_, _, execution} = acc) do
-    Schema.lookup_type(execution.schema, type)
-    |> do_add_argument_value(input_value, ast_argument, names, acc)
+
+  defp add_argument(%{value: _} = ast, %Type.List{of_type: inner_type}, type_stack, meta) do
+    real_inner_type = meta.schema.__absinthe_type__(inner_type)
+    {acc, meta} = list_argument([ast], real_inner_type, type_stack, meta)
+    {:ok, acc, meta}
   end
-  # Scalar value (inside a wrapping type) found
-  defp do_add_argument_value(%Type.Scalar{} = definition_type, %{value: internal_value}, ast_argument, names, acc) do
-    do_add_argument_value(definition_type, internal_value, ast_argument, names, acc)
+
+  defp add_argument(%Language.ObjectValue{fields: ast_fields} = ast, %Type.InputObject{fields: schema_fields}, type_stack, meta) do
+    {acc, meta} = map_argument(ast_fields, schema_fields, type_stack, ast, meta)
+    {:ok, acc, meta}
   end
-  # Variable value found
-  defp do_add_argument_value(definition_type, %Language.Variable{name: name}, ast_argument, names, {_, _, execution} = acc) do
-    add_argument_value(definition_type, execution.variables[name], ast_argument, names, acc)
+
+  defp add_argument(%Language.ObjectField{value: value} = ast_node, %Type.Field{type: inner_type} = type, type_stack, meta) do
+    meta = meta |> add_deprecation_notice(type, inner_type, [type.name | type_stack], ast_node)
+    add_argument(value, inner_type, [type.name | type_stack], meta)
   end
-  # Wrapped scalar value found
-  defp do_add_argument_value(%Type.Scalar{} = type, %{value: internal_value}, ast_argument, names, acc) do
-    do_add_argument_value(type, internal_value, ast_argument, names, acc)
-  end
-  # Bare scalar value found
-  defp do_add_argument_value(%Type.Scalar{name: type_name, parse: parser}, internal_value, ast_argument, [value_name | _] = full_value_name, {values, {missing, invalid}, execution}) do
-    case parser.(internal_value) do
-      {:ok, coerced_value} ->
-        {values |> Map.put(value_name |> String.to_existing_atom, coerced_value), {missing, invalid}, execution}
+
+  defp add_argument(%{value: value} = ast, %Type.Enum{} = enum, type_stack, meta) do
+    case Type.Enum.parse(enum, value) do
+      {:ok, enum_value} ->
+        meta = meta |> add_deprecation_notice(enum_value, enum, [enum_value.value | type_stack], ast)
+        {:ok, enum_value.value, meta}
+
       :error ->
-        name_to_report = full_value_name |> dotted_name
-        {
-          values,
-          {missing, [name_to_report | invalid]},
-          execution |> Execution.put_error(:argument, name_to_report, &"Argument `#{&1}' (#{type_name}): Invalid value provided", at: ast_argument)
-        }
+        {:error, Meta.put_invalid(meta, type_stack, enum, ast)}
     end
-  end
-  # Enum value found
-  defp do_add_argument_value(%Type.Enum{} = enum, %{value: raw_value}, ast_argument, [value_name | _] = full_value_name, {values, {missing, invalid}, execution}) do
-    case Type.Enum.get_value(enum, name: raw_value |> to_string) do
-      nil ->
-        name_to_report = full_value_name |> dotted_name
-        {
-          values,
-          {missing, [name_to_report | invalid]},
-          execution |> Execution.put_error(:argument, name_to_report, &"Argument `#{&1}' (Enum): Invalid value", at: ast_argument)
-        }
-      enum_value ->
-        execution_with_deprecation = execution |> add_enum_value_deprecation(ast_argument.name, enum, enum_value, ast_argument)
-        {values |> Map.put(value_name |> String.to_existing_atom, enum_value.value), {missing, invalid}, execution_with_deprecation}
-    end
-  end
-  # Input object value found
-  defp do_add_argument_value(%Type.InputObject{fields: schema_fields}, %{fields: input_fields}, ast_argument, [value_name | _] = names, {values, {missing, invalid}, execution}) do
-    {_, object_values, {new_missing, new_invalid}, execution_to_return} = schema_fields
-    |> Enum.reduce({names, %{}, {missing, invalid}, execution}, fn ({name, schema_field}, {acc_value_name, acc_values, {acc_missing, acc_invalid}, acc_execution}) ->
-      input_field = input_fields |> Enum.find(&(&1.name == name |> to_string))
-      full_value_name = [name |> to_string | acc_value_name]
-      case input_field do
-        nil ->
-          # No input value
-          if Validation.RequiredInput.required?(schema_field) do
-            name_to_report = full_value_name |> dotted_name
-            unwrapped_type = Schema.lookup_type(acc_execution.schema, schema_field.type)
-            {
-              acc_value_name,
-              acc_values,
-              {[name_to_report | acc_missing], invalid},
-              acc_execution
-              |> Execution.put_error(:argument, name_to_report, &"Argument `#{&1}' (#{unwrapped_type.name}): Not provided", at: ast_argument)
-            }
-          else
-            {acc_value_name, acc_values, {acc_missing, acc_invalid}, acc_execution}
-          end
-        %{value: value} ->
-          field_type = Schema.lookup_type(acc_execution.schema, schema_field.type)
-          {result_values, {result_missing, result_invalid}, next_execution} = add_argument_value(field_type, value, ast_argument, full_value_name, {acc_values, {acc_missing, acc_invalid}, acc_execution})
-          {
-            acc_value_name,
-            result_values,
-            {result_missing, result_invalid},
-            next_execution |> add_argument_deprecation(full_value_name |> dotted_name, schema_field, ast_argument)
-          }
-      end
-    end)
-    {
-      values |> Map.put(value_name |> String.to_existing_atom, object_values),
-      {new_missing, new_invalid},
-      execution_to_return
-    }
-  end
-  # TODO: When a definition can't be found, we should add some type of
-  # validation error
-  defp do_add_argument_value(nil, _value, _ast_argument, _names, acc) do
-    acc
   end
 
-  defp add_enum_value_deprecation(execution, _name, _enum, %{deprecation: nil}, _ast_node) do
-    execution
+  defp add_argument(%{value: value} = ast, %Type.Scalar{parse: parser} = type, type_stack, meta) do
+    Input.parse_scalar(value, ast, type, type_stack, meta)
   end
-  defp add_enum_value_deprecation(execution, name, %{name: enum_type_name}, %{name: enum_value, deprecation: %{reason: reason}}, ast_node) do
+
+  defp add_argument(_ast, nil, type_stack, meta) do
+    raise ArgumentError, """
+    Schema #{meta.schema} is internally inconsistent!
+
+    Type referenced at #{inspect type_stack} does not exist in the schema, even
+    though items in the schema refer to it. This is bad!
+
+    This clause should become irrelevant when schemas check internal consistency
+    at compile time.
+    """
+  end
+
+  defp add_argument(ast, type, type_stack, meta) when is_atom(type) do
+    real_type = meta.schema.__absinthe_type__(type)
+    add_argument(ast, real_type, type_stack, meta)
+  end
+
+  defp add_argument(ast, type, type_stack, meta) do
+    {:error, Meta.put_invalid(meta, type_stack, type, ast)}
+  end
+
+  defp add_deprecation_notice(meta, %{deprecation: nil}, _, _, _) do
+    meta
+  end
+  defp add_deprecation_notice(meta, %{deprecation: %{reason: reason}}, type, type_stack, ast) do
     details = if reason, do: "; #{reason}", else: ""
-    execution
-    |> Execution.put_error(:argument, name, &"Argument `#{&1}' (#{enum_type_name}): Enum value \"#{enum_value}\" deprecated#{details}", at: ast_node)
-  end
 
-  # Add errors for any additional arguments not present in the schema
-  @spec report_extra_arguments(Language.t, [binary], Execution.t) :: Execution.t
-  defp report_extra_arguments(ast_field, schema_argument_names, execution) do
-    ast_field.arguments
-    |> Enum.reduce(execution, fn ast_arg, acc ->
-      if Enum.member?(schema_argument_names, ast_arg.name) do
-        acc
-      else
-        execution
-        |> Execution.put_error(:argument, ast_arg.name, "Not present in schema", at: ast_arg)
-      end
+    Meta.put_deprecated(meta, type_stack, Type.unwrap(type), ast, fn type_name ->
+      &"Argument `#{&1}' (#{type_name}): Deprecated#{details}"
     end)
   end
 
-  @spec lookup_argument(Language.t, atom) :: Language.Argument.t | nil
-  defp lookup_argument(ast_field, name) do
-    argument_name = name |> to_string
-    ast_field.arguments
-    |> Enum.find(&(&1.name == argument_name))
+  defp retrieve_variable(name, schema_type, type_stack, ast, meta) do
+    full_type_stack = fillout_stack(schema_type, [], meta.schema)
+    meta.variables
+    |> Map.get(name)
+    |> case do
+      # The variable exists, and it has the same
+      # type as the argument in the schema.
+      # yay! we can use it as is.
+      %{value: value, type_stack: ^full_type_stack} ->
+        do_retrieve_variable(value, schema_type, type_stack, ast, meta)
+      _ ->
+        do_retrieve_variable(nil, schema_type, type_stack, ast, meta)
+    end
   end
 
-  @spec dotted_name([binary]) :: binary
-  defp dotted_name(names) do
-    names |> Enum.reverse |> Enum.join(".")
+  defp do_retrieve_variable(nil, %Type.NonNull{of_type: inner_type}, type_stack, ast, meta) do
+    {:error, Meta.put_missing(meta, type_stack, inner_type, ast)}
+  end
+  defp do_retrieve_variable(value, _, _, _, meta) do
+    {:ok, value, meta}
   end
 
+  # For a given schema node, build the stack of types it contains.
+  # This is necessary because when comparing the type of a processed variable
+  # with the type of the desired argument we must compare not only the inner
+  # most type, but also how many layers of lists it's inside of.
+  #
+  # Otherwise a variable of type String could substitute for an argument that
+  # wanted [String]
+  #
+  # NonNull type's don't get added to the stack because whether a variable was
+  # specified as non null in the document has no bearing on whether or not
+  # it can be substituted for a non null marked argument.
+  #
+  # See Variables.validate_definition_type/2 for the corresponding logic
+  # used when building a variable.
+  defp fillout_stack(%Type.NonNull{of_type: inner_type}, acc, schema) do
+    fillout_stack(inner_type, acc, schema)
+  end
+  defp fillout_stack(%Type.List{of_type: inner_type}, acc, schema) do
+    fillout_stack(inner_type, [Type.List | acc], schema)
+  end
+  defp fillout_stack(%{name: name}, acc, _schema) do
+    [name | acc]
+  end
+  defp fillout_stack(identifier, acc, schema) do
+    identifier
+    |> schema.__absinthe_type__
+    |> fillout_stack(acc, schema)
+  end
+
+  # Go through a list arguments belonging to a list type.
+  # For each item try to resolve it with add_argument.
+  # If it's a valid item, accumulate, if not, don't.
+  defp list_argument(values, inner_type, type_stack, meta) do
+    do_list_argument(values, inner_type, [], type_stack, meta)
+  end
+  defp do_list_argument([], _, acc, _, meta), do: {:lists.reverse(acc), meta}
+  defp do_list_argument([value | rest], inner_type, acc, type_stack, meta) do
+    case add_argument(value, inner_type, type_stack, meta) do
+      {:ok, item, meta} ->
+        do_list_argument(rest, inner_type, [item | acc], type_stack, meta)
+      {:error, meta} ->
+        do_list_argument(rest, inner_type, acc, type_stack, meta)
+    end
+  end
+
+  # Go through a list of arguments belonging to an object type
+  # For each item, find the corresponding field within the object
+  # If a field exists, and if the
+  # If it's a valid item, accumulate,
+  defp map_argument(items, fields, type_stack, root_node, meta) do
+    do_map_argument(items, fields, [], type_stack, root_node, meta)
+  end
+
+  defp do_map_argument([], remaining_fields, acc, type_stack, root_node, meta) do
+    Meta.check_missing_fields(remaining_fields, acc, type_stack, root_node, meta)
+  end
+  defp do_map_argument([value | rest], schema_fields, acc, type_stack, root_node, meta) do
+    case pop_field(schema_fields, value) do
+      {name, schema_field, schema_fields} ->
+        # The value refers to a legitimate field in the schema,
+        # now see if it can be handled properly.
+        case add_argument(value, schema_field, type_stack, meta) do
+          {:ok, item, meta} ->
+            do_map_argument(rest, schema_fields, [{name, item} | acc], type_stack, root_node, meta)
+          {:error, meta} ->
+            do_map_argument(rest, schema_fields, acc, type_stack, root_node, meta)
+        end
+
+      :error ->
+        meta = Meta.put_extra(meta, [value.name | type_stack], root_node)
+        do_map_argument(rest, schema_fields, acc, type_stack, root_node, meta)
+    end
+  end
+
+  # Given a document argument, pop the relevant schema argument
+  # The reason for popping the arg is that it's an easy way to prevent using
+  # the same argument name twice.
+  defp pop_field(schema_arguments, %{name: name}) do
+    name = String.to_existing_atom(name)
+
+    case Map.pop(schema_arguments, name) do
+      {nil, _} -> :error
+      {val, args} -> {name, val, args}
+    end
+  rescue
+    ArgumentError -> :error
+  end
 end

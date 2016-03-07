@@ -63,70 +63,42 @@ defmodule Absinthe.Type.Enum do
 
   * `:name` - The name of the enum type. Should be a TitleCased `binary`. Set automatically.
   * `:description` - A nice description for introspection.
-  * `:values` - The enum valuesn, usually provided using the `Absinthe.Schema.Notation.values/1` or `Absinthe.Schema.Notation.value/1` macro.
+  * `:values` - The enum values, usually provided using the `Absinthe.Schema.Notation.values/1` or `Absinthe.Schema.Notation.value/1` macro.
 
   The `:__reference__` key is for internal use.
   """
   @type t :: %{name: binary, description: binary, values: %{binary => Type.Enum.Value.t}, __reference__: Type.Reference.t}
-  defstruct name: nil, description: nil, values: %{}, __reference__: nil
+  defstruct name: nil, description: nil, values: %{}, values_by_internal_value: %{}, values_by_name: %{}, __reference__: nil
 
 
   def build(%{attrs: attrs}) do
-    values = Type.Enum.Value.build(attrs[:values] || [])
-    quote do: %unquote(__MODULE__){unquote_splicing(attrs), values: unquote(values)}
+    raw_values = attrs[:values] || []
+
+    values = Type.Enum.Value.build(raw_values)
+    internal_values = Type.Enum.Value.build(raw_values, :value)
+    values_by_name = Type.Enum.Value.build(raw_values, :name)
+
+    quote do
+      %unquote(__MODULE__){
+        unquote_splicing(attrs),
+        values: unquote(values),
+        values_by_internal_value: unquote(internal_values),
+        values_by_name: unquote(values_by_name),
+      }
+    end
   end
 
   # Get the internal representation of an enum value
   @doc false
   @spec parse(t, any) :: any
   def parse(enum, external_value) do
-    case get_value(enum, name: external_value) do
-      nil ->
-        nil
-      value ->
-        value.value
-    end
+    Map.fetch(enum.values_by_name, external_value)
   end
 
   # Get the external representation of an enum value
   @doc false
-  @spec serialize(t, any) :: binary
-  def serialize(enum, internal_value) do
-    case get_value(enum, value: internal_value) do
-      nil ->
-        nil
-      value ->
-        value.name
-    end
+  @spec serialize!(t, any) :: binary
+  def serialize!(enum, internal_value) do
+    Map.fetch!(enum.values_by_internal_value, internal_value).name
   end
-
-  @doc false
-  @spec get_value(t, Keyword.t) :: Type.Enum.Value.t | nil
-  def get_value(enum, options \\ []) do
-    do_get_value(enum, options |> Enum.into(%{}))
-  end
-
-  @spec do_get_value(t, map) :: Type.Enum.Value.t | nil
-  defp do_get_value(enum, %{name: raw_name}) do
-    lookup_value(enum, :name, raw_name |> to_string)
-  end
-  defp do_get_value(enum, %{value: value}) do
-    lookup_value(enum, :value, value)
-  end
-
-  @spec lookup_value(t, atom, binary | nil) :: Type.Enum.Value.t | nil
-  defp lookup_value(_enum, _field, nil) do
-    nil
-  end
-  defp lookup_value(enum, :name, criteria) do
-    enum.values
-    |> Map.values
-    |> Enum.find(&(&1.name == criteria))
-  end
-  defp lookup_value(enum, :value, criteria) do
-    enum.values
-    |> Map.values
-    |> Enum.find(&(&1.value == criteria))
-  end
-
 end

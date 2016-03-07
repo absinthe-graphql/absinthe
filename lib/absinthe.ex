@@ -120,7 +120,7 @@ defmodule Absinthe do
     }
   }
   \"""
-  |> Absinthe.run(App.Schema, variables: %{id: params[:item_id]})
+  |> Absinthe.run(App.Schema, variables: %{"id" => params[:item_id]})
   ```
 
   The result, if `params[:item_id]` was `"foo"`, would be the same:
@@ -226,7 +226,7 @@ defmodule Absinthe do
     }
   }
   \"""
-  |> Absinthe.run(App.Schema, variables: %{id: params[:item_id]})
+  |> Absinthe.run(App.Schema, variables: %{"id" => params[:item_id]})
   ```
 
   See the `Absinthe` module documentation for more examples.

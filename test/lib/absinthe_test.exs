@@ -149,8 +149,8 @@ defmodule AbsintheTest do
         }
       }
     """
-    result = run(query, variables: %{thingId: "bar"})
-    assert_result {:ok, %{data: %{"thing" => %{"name" => "Bar"}}, errors: [%{locations: [%{column: 0, line: 1}], message: "Variable `other' (String): Not provided"}]}}, result
+    result = run(query, variables: %{"thingId" => "bar"})
+    assert_result {:ok, %{data: %{}, errors: [%{message: "Variable `other' (String): Not provided"}]}}, result
   end
 
   it "reports parser errors from parse" do
@@ -211,27 +211,26 @@ defmodule AbsintheTest do
   it "should resolve using enums" do
     result = """
       {
-        red: info(channel: "red") {
+        red: info(channel: RED) {
           name
           value
         }
-        green: info(channel: "green") {
+        green: info(channel: GREEN) {
           name
           value
         }
-        blue: info(channel: "blue") {
+        blue: info(channel: BLUE) {
           name
           value
         }
-        puce: info(channel: "puce") {
+        puce: info(channel: PUCE) {
           name
           value
         }
       }
     """
     |> Absinthe.run(ColorSchema)
-    assert_result {:ok, %{data: %{"red" => %{"name" => "RED", "value" => 100}, "green" => %{"name" => "GREEN", "value" => 200}, "blue" => %{"name" => "BLUE", "value" => 300}, "puce" => %{"name" => "PUCE", "value" => -100}},
-                          errors: [%{message: "Argument `channel' (Channel): Enum value \"puce\" deprecated; it's ugly"}]}}, result
+    assert_result {:ok, %{data: %{"red" => %{"name" => "RED", "value" => 100}, "green" => %{"name" => "GREEN", "value" => 200}, "blue" => %{"name" => "BLUE", "value" => 300}, "puce" => %{"name" => "PUCE", "value" => -100}}, errors: [%{message: "Argument `channel.p' (Channel): Deprecated; it's ugly"}]}}, result
   end
 
   describe "fragments" do

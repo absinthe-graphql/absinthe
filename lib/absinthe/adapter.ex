@@ -151,9 +151,12 @@ defmodule Absinthe.Adapter do
         |> format_error(locations)
       end
 
-      def format_error(%{value: value} = error_info) do
+      def format_error(%{value: value} = error_info) when not is_function(value) do
         %{error_info | value: inspect(value)}
         |> format_error([])
+      end
+      def format_error(%{value: value} = error_info) do
+        format_error(error_info, [])
       end
 
       defoverridable [load_document: 1,

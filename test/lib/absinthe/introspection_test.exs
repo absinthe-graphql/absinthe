@@ -85,10 +85,10 @@ defmodule Absinthe.IntrospectionTest do
       |> Absinthe.run(ColorSchema)
       assert {:ok, %{data: %{"__type" => %{"name" => "Channel", "description" => "A color channel", "kind" => "ENUM", "enumValues" => values}}}} = result
       assert [
-        %{"name" => "blue", "description" => "The color blue", "isDeprecated" => false, "deprecationReason" => nil},
-        %{"name" => "green", "description" => "The color green", "isDeprecated" => false, "deprecationReason" => nil},
-        %{"name" => "puce", "description" => "The color puce", "isDeprecated" => true, "deprecationReason" => "it's ugly"},
-        %{"name" => "red", "description" => "The color red", "isDeprecated" => false, "deprecationReason" => nil}
+        %{"name" => "BLUE", "description" => "The color blue", "isDeprecated" => false, "deprecationReason" => nil},
+        %{"name" => "GREEN", "description" => "The color green", "isDeprecated" => false, "deprecationReason" => nil},
+        %{"name" => "PUCE", "description" => "The color puce", "isDeprecated" => true, "deprecationReason" => "it's ugly"},
+        %{"name" => "RED", "description" => "The color red", "isDeprecated" => false, "deprecationReason" => nil}
       ] == values |> Enum.sort_by(&(&1["name"]))
     end
 
@@ -109,9 +109,9 @@ defmodule Absinthe.IntrospectionTest do
       |> Absinthe.run(ColorSchema)
       assert {:ok, %{data: %{"__type" => %{"name" => "Channel", "description" => "A color channel", "kind" => "ENUM", "enumValues" => values}}}} = result
       assert [
-        %{"name" => "blue", "description" => "The color blue"},
-        %{"name" => "green", "description" => "The color green"},
-        %{"name" => "red", "description" => "The color red"}
+        %{"name" => "BLUE", "description" => "The color blue"},
+        %{"name" => "GREEN", "description" => "The color green"},
+        %{"name" => "RED", "description" => "The color red"}
       ] == values |> Enum.sort_by(&(&1["name"]))
     end
 

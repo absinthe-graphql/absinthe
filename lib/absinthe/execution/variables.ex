@@ -7,7 +7,8 @@ defmodule Absinthe.Execution.Variables do
   alias Absinthe.Type
   alias Absinthe.Language
   alias Absinthe.Execution
-  alias Absinthe.Schema
+
+  defstruct raw: %{}, processed: %{}
 
   # Build a variables map from the variable definitions in the selected operation
   # and the variable values provided to the execution.
@@ -15,93 +16,52 @@ defmodule Absinthe.Execution.Variables do
   @spec build(Execution.t) :: {%{binary => any}, Execution.t}
   def build(execution) do
     execution.selected_operation.variable_definitions
-    |> Enum.reduce({%{}, execution |> normalize_keys}, &parse/2)
+    |> Enum.reduce({:ok, execution}, &build_definition/2)
   end
 
-  # Normalize the variable keys to binaries
-  @spec normalize_keys(Execution.t) :: Execution.t
-  defp normalize_keys(execution) do
-    %{execution | variables: execution.variables |> Execution.stringify_keys}
-  end
-
-  # Parse a definition and add values/errors
-  @spec parse(Language.VariableDefinition.t, {map, Execution.t}) :: {map, Execution.t}
-  defp parse(definition, {_, execution} = acc) do
-    name = definition.variable.name
-    ast_type = definition.type |> Language.unwrap
-    schema_type = Schema.type_from_ast(execution.schema, definition.type)
-    do_parse(name, definition, ast_type, schema_type, acc)
-  end
-
-  # No schema type was found
-  @spec do_parse(atom, Language.VariableDefinition.t, Language.NamedType.t, Type.input_t, {map, Execution.t}) :: {map, Execution.t}
-  defp do_parse(name, _definition, ast_type, nil, {values, execution}) do
-    exe = execution
-    |> Execution.put_error(:variable, name, "Type (#{ast_type.name}) not present in schema", at: ast_type )
-    {values, exe}
-  end
-  defp do_parse(name, definition, ast_type, schema_type, {_, execution} = acc) do
-    value = execution.variables[to_string(name)]
-    provided_value = value_or_default(
-      value,
-      default(definition.default_value)
-    )
-    case Type.valid_input?(schema_type, provided_value) do
-      true ->
-        valid(name, provided_value, schema_type, acc)
-      false ->
-        invalid(name, provided_value, ast_type, schema_type, acc)
+  def build_definition(definition, {status, execution}) do
+    case validate_definition_type(definition.type, execution) do
+      {:ok, schema_type, type_stack} ->
+        process_variable(definition, schema_type, type_stack, execution, status)
+      :error ->
+        inner_type = definition.type |> unwrap
+        execution = Execution.put_error(execution, :variable, inner_type.name, "Type `#{inner_type.name}': Not present in schema", at: definition.type)
+        {:error, execution}
     end
   end
 
-  # Get the value (if non-nil) or the default
-  @spec value_or_default(any, any) :: any
-  defp value_or_default(nil, default_value), do: default_value
-  defp value_or_default(value, _), do: value
+  defp unwrap(%{type: inner_type}), do: unwrap(inner_type)
+  defp unwrap(type), do: type
 
-  # Accumulate the value for a valid variable
-  @spec valid(atom, any, Type.input_t, {map, Execution.t}) :: {map, Execution.t}
-  defp valid(name, value, schema_type, {values, execution}) do
-    {
-      values |> Map.put(to_string(name), coerce(value, schema_type)),
-      execution
-    }
+  defp validate_definition_type(type, execution) do
+    validate_definition_type(type, [], execution)
   end
-
-  # Accumulate an error for an invalid variable
-  @spec invalid(atom, any, Language.NamedType.t, Type.input_t, {map, Execution.t}) :: {map, Execution.t}
-  defp invalid(name, value, ast_type, _schema_type, {values, execution}) do
-    exe = execution
-    |> Execution.put_error(:variable, name, error_message(ast_type, value), at: ast_type)
-    {values, exe}
+  defp validate_definition_type(%Language.NonNullType{type: inner_type}, acc, execution) do
+    validate_definition_type(inner_type, acc, execution)
   end
-
-  # Define the error message for an invalid variable
-  @spec error_message(Language.NamedType.t, any) :: (binary -> binary)
-  defp error_message(ast_type, nil) do
-    &"Variable `#{&1}' (#{ast_type.name}): Not provided"
+  defp validate_definition_type(%Language.ListType{type: inner_type}, acc, execution) do
+    validate_definition_type(inner_type, [Type.List | acc], execution)
   end
-  defp error_message(ast_type, _value) do
-    &"Variable `#{&1}' (#{ast_type.name}): Invalid value"
-  end
-
-  # Coerce a value or default provided for a variable so it is suitable for
-  # the defined type
-  @spec coerce(any, Type.input_t) :: any
-  defp coerce(nil, _schema_type) do
-    nil
-  end
-  defp coerce(value, schema_type) do
-    %{parse: parser} = schema_type |> Type.unwrap
-    case parser.(value) do
-      {:ok, coerced} -> coerced
-      :error -> nil
+  defp validate_definition_type(%Language.NamedType{name: name}, acc, execution) do
+    case execution.schema.__absinthe_type__(name) do
+      nil -> :error
+      type -> {:ok, type, [name | acc]}
     end
   end
 
-  # Extract the default value, if any
-  @spec default(Absinthe.Language.value_t) :: any
-  defp default(%{value: value}), do: value
-  defp default(_), do: nil
+  defp process_variable(definition, schema_type, type_stack, execution, status) do
+    case Execution.Variable.build(definition, schema_type, type_stack, execution) do
+      {:ok, variable, execution} ->
+        {status, put_variable(execution, definition.variable.name, variable)}
+      error ->
+        error
+    end
+  end
 
+  defp put_variable(execution, name, variable) do
+    variables = execution.variables
+    |> Map.update!(:processed, &Map.put(&1, name, variable))
+
+    %{execution | variables: variables}
+  end
 end

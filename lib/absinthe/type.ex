@@ -184,7 +184,7 @@ defmodule Absinthe.Type do
 
   @doc "Unwrap a type from a List or NonNull"
   @spec unwrap(wrapping_t | t) :: t
-  def unwrap(%{of_type: t}), do: t
+  def unwrap(%{of_type: t}), do: unwrap(t)
   def unwrap(type), do: type
 
   # VALID TYPE
@@ -213,7 +213,9 @@ defmodule Absinthe.Type do
   end
   def field(%{fields: fields}, name) do
     fields
-    |> Map.get(name |> String.to_atom)
+    |> Map.get(name |> String.to_existing_atom)
+  rescue
+    ArgumentError -> nil
   end
   def field(_, _name) do
     nil

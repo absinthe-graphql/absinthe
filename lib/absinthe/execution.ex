@@ -24,9 +24,11 @@ defmodule Absinthe.Execution do
   defstruct schema: nil, document: nil, variables: %{}, fragments: %{}, operations: %{}, selected_operation: nil, operation_name: nil, errors: [], categorized: false, strategy: nil, adapter: nil, resolution: nil, context: %{}, root_value: nil
 
   @doc false
-  def run(execution, options \\ []) do
-    raw = execution |> Map.merge(options |> Enum.into(%{}))
-    case prepare(raw) do
+  def run(execution, raw_opts \\ []) do
+    options = raw_opts |> Enum.into(%{})
+    execution
+    |> prepare(options)
+    |> case do
       {:ok, prepared} -> execute(prepared)
       other -> other
     end
@@ -34,13 +36,19 @@ defmodule Absinthe.Execution do
 
   @doc false
   @spec prepare(t) :: t
-  def prepare(execution) do
-    defined = execution
+  def prepare(raw_execution, options \\ %{}) do
+    execution = raw_execution
+    |> Map.put(:context, Map.get(options, :context, %{}))
+    |> Map.put(:adapter, Map.get(options, :adapter))
+    |> Map.put(:root_value, Map.get(options, :root_value))
     |> add_configured_adapter
     |> adapt
     |> categorize_definitions
-    with {:ok, operation} <- selected_operation(defined) do
-      set_variables(%{defined | selected_operation: operation})
+
+    with {:ok, operation} <- selected_operation(execution) do
+      variables = %__MODULE__.Variables{raw: Map.get(options, :variables, %{})}
+
+      {:ok, %{execution | selected_operation: operation, variables: variables}}
     end
   end
 
@@ -92,7 +100,7 @@ defmodule Absinthe.Execution do
   def format_error(%{adapter: adapter}, error_info, %{loc: %{start_line: line}}) do
     adapter.format_error(error_info, [%{line: line, column: @default_column_number}])
   end
-  def format_error(%{adapter: adapter}, error_info, nil) do
+  def format_error(%{adapter: adapter}, error_info, _) do
     adapter.format_error(error_info)
   end
 
@@ -168,13 +176,6 @@ defmodule Absinthe.Execution do
   end
   def selected_operation(%{operations: _, operation_name: nil}) do
     {:error, "Multiple operations available, but no operation_name provided"}
-  end
-
-  # Set the variables on the execution struct
-  @spec set_variables(Execution.t) :: Execution.t
-  defp set_variables(execution) do
-    {values, next_execution} = Execution.Variables.build(execution)
-    {:ok, %{next_execution | variables: values}}
   end
 
   # Get the concrete type (if necessary) of a possibly abstract type
