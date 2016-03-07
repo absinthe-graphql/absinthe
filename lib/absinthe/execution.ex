@@ -40,6 +40,7 @@ defmodule Absinthe.Execution do
     execution = raw_execution
     |> Map.put(:context, Map.get(options, :context, %{}))
     |> Map.put(:adapter, Map.get(options, :adapter))
+    |> Map.put(:root_value, Map.get(options, :root_value))
     |> add_configured_adapter
     |> adapt
     |> categorize_definitions

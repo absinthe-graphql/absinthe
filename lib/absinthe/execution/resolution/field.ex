@@ -15,7 +15,11 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.Field do
       %{resolve: nil} ->
         case target do
           %{} ->
-            target |> Map.get(name |> String.to_atom)
+            try do
+              target |> Map.get(name |> String.to_existing_atom)
+            rescue
+              ArgumentError -> nil
+            end
           _ ->
             nil
         end
