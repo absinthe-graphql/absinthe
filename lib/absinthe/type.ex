@@ -184,7 +184,7 @@ defmodule Absinthe.Type do
 
   @doc "Unwrap a type from a List or NonNull"
   @spec unwrap(wrapping_t | t) :: t
-  def unwrap(%{of_type: t}), do: t
+  def unwrap(%{of_type: t}), do: unwrap(t)
   def unwrap(type), do: type
 
   # VALID TYPE

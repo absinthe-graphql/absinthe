@@ -36,18 +36,21 @@ defmodule Absinthe.Execution do
 
   @doc false
   @spec prepare(t) :: t
-  def prepare(execution, options \\ %{}) do
-    defined = execution
+  def prepare(raw_execution, options \\ %{}) do
+    execution = raw_execution
     |> Map.put(:context, Map.get(options, :context, %{}))
+    |> Map.put(:adapter, Map.get(options, :adapter))
     |> add_configured_adapter
     |> adapt
     |> categorize_definitions
-    with {:ok, operation} <- selected_operation(defined) do
+
+    with {:ok, operation} <- selected_operation(execution) do
       variables = %__MODULE__.Variables{
         raw: Map.get(options, :variables, %{})
       }
-      %{defined | selected_operation: operation, variables: variables}
-      |> set_variables
+
+      %{execution | selected_operation: operation, variables: variables}
+      |> Execution.Variables.build
     end
   end
 
@@ -175,12 +178,6 @@ defmodule Absinthe.Execution do
   end
   def selected_operation(%{operations: _, operation_name: nil}) do
     {:error, "Multiple operations available, but no operation_name provided"}
-  end
-
-  # Set the variables on the execution struct
-  @spec set_variables(Execution.t) :: Execution.t
-  defp set_variables(execution) do
-    {:ok, Execution.Variables.build(execution)}
   end
 
   # Get the concrete type (if necessary) of a possibly abstract type

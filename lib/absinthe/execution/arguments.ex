@@ -6,6 +6,7 @@ defmodule Absinthe.Execution.Arguments do
   alias Absinthe.Execution
   alias Absinthe.Type
   alias Absinthe.Language
+  alias Absinthe.Execution.InputMeta, as: Meta
 
   # Build an arguments map from the argument definitions in the schema, using the
   # argument values from the query document.
@@ -13,19 +14,17 @@ defmodule Absinthe.Execution.Arguments do
   @spec build(Language.t | Language.t, %{atom => Type.Argument.t}, Execution.t) ::
     {:ok, {%{atom => any}, Execution.t}} | {:error, {[binary], [binary]}, Execution.t}
   def build(ast_field, schema_arguments, execution) do
-    meta = %{
-      schema: execution.schema,
-      missing: [],
-      invalid: [],
-      extra: [],
-      type_stack: [],
-      variables: execution.variables.processed
-    }
+    meta = Meta.build(execution, variables: execution.variables.processed)
 
-    {values, post_meta} = add_arguments(ast_field.arguments, schema_arguments, meta)
+    {values, post_meta} = add_arguments(ast_field.arguments, schema_arguments, ast_field, meta)
 
-    {execution, missing} = process_errors(execution, post_meta, :missing, fn type_name -> &"Argument `#{&1}' (#{type_name}): Not provided" end)
-    {execution, invalid} = process_errors(execution, post_meta, :invalid, fn type_name -> &"Argument `#{&1}' (#{type_name}): Invalid value provided" end)
+    {execution, missing} = Meta.process_errors(execution, post_meta, :argument, :missing, fn type_name ->
+      &"Argument `#{&1}' (#{type_name}): Not provided"
+    end)
+
+    {execution, invalid} = Meta.process_errors(execution, post_meta, :argument, :invalid, fn type_name ->
+      &"Argument `#{&1}' (#{type_name}): Invalid value provided"
+    end)
 
     case Enum.any?(missing) || Enum.any?(invalid) do
       false ->
@@ -35,28 +34,12 @@ defmodule Absinthe.Execution.Arguments do
     end
   end
 
-  defp process_errors(execution, meta, key, msg) do
-    meta
-    |> Map.fetch!(key)
-    |> Enum.reduce({execution, []}, fn
-      %{type_stack: type_stack, ast: ast, type: type}, {exec, names} ->
-        name_to_report = type_stack |> dotted_name
-        exec = exec |> Execution.put_error(:argument, name_to_report, msg.(type.name), at: ast)
-        {exec, [name_to_report | names]}
-    end)
+  defp add_arguments(arg_asts, schema_arguments, ast_field, meta) do
+    map_argument(arg_asts, schema_arguments, [], ast_field, meta)
   end
 
-  @spec dotted_name([binary]) :: binary
-  defp dotted_name(names) do
-    names |> Enum.reverse |> Enum.join(".")
-  end
-
-  defp add_arguments(arg_asts, schema_arguments, meta) do
-    acc_map_argument(arg_asts, schema_arguments, %{}, [], meta)
-  end
-
-  defp add_argument(%Language.Variable{name: name}, schema_type, type_stack, meta) do
-    retrieve_variable(name, schema_type, type_stack, meta)
+  defp add_argument(%Language.Variable{name: name} = ast, schema_type, type_stack, meta) do
+    retrieve_variable(name, schema_type, type_stack, ast, meta)
   end
 
   defp add_argument(arg_ast, %Type.NonNull{of_type: inner_type}, type_stack, meta) do
@@ -69,12 +52,12 @@ defmodule Absinthe.Execution.Arguments do
 
   defp add_argument(%Language.ListValue{values: values}, %Type.List{of_type: inner_type}, type_stack, meta) do
     real_inner_type = meta.schema.__absinthe_type__(inner_type)
-    {acc, meta} = acc_list_argument(values, real_inner_type, [], type_stack, meta)
+    {acc, meta} = list_argument(values, real_inner_type, ["[]" | type_stack], meta)
     {:ok, acc, meta}
   end
 
-  defp add_argument(%Language.ObjectValue{fields: ast_fields}, %Type.InputObject{fields: schema_fields}, type_stack, meta) do
-    {acc, meta} = acc_map_argument(ast_fields, schema_fields, %{}, type_stack, meta)
+  defp add_argument(%Language.ObjectValue{fields: ast_fields} = ast, %Type.InputObject{fields: schema_fields}, type_stack, meta) do
+    {acc, meta} = map_argument(ast_fields, schema_fields, type_stack, ast, meta)
     {:ok, acc, meta}
   end
 
@@ -88,7 +71,7 @@ defmodule Absinthe.Execution.Arguments do
         {:ok, value, meta}
 
       :error ->
-        {:error, put_meta(meta, :invalid, type_stack, enum, ast)}
+        {:error, Meta.put_invalid(meta, type_stack, enum, ast)}
     end
   end
 
@@ -98,7 +81,7 @@ defmodule Absinthe.Execution.Arguments do
         {:ok, coerced_value, meta}
 
       :error ->
-        {:error, put_meta(meta, :invalid, type_stack, type, ast)}
+        {:error, Meta.put_invalid(meta, type_stack, type, ast)}
     end
   end
 
@@ -119,18 +102,10 @@ defmodule Absinthe.Execution.Arguments do
   end
 
   defp add_argument(ast, type, type_stack, meta) do
-    {:error, put_meta(meta, :invalid, type_stack, type, ast)}
+    {:error, Meta.put_invalid(meta, type_stack, type, ast)}
   end
 
-  defp put_meta(meta, key, type_stack, type, ast) when is_atom(type) do
-    real_type = meta.schema.__absinthe_type__(type)
-    put_meta(meta, key, type_stack, real_type, ast)
-  end
-  defp put_meta(meta, key, type_stack, type, ast) when is_list(type_stack) and is_map(type) do
-    Map.update!(meta, key, &[%{ast: ast, type_stack: type_stack, type: type} | &1])
-  end
-
-  defp retrieve_variable(name, schema_type, _type_stack, meta) do
+  defp retrieve_variable(name, schema_type, type_stack, ast, meta) do
     full_type_stack = fillout_stack(schema_type, [], meta.schema)
     meta.variables
     |> Map.get(name)
@@ -139,15 +114,22 @@ defmodule Absinthe.Execution.Arguments do
       # type as the argument in the schema.
       # yay! we can use it as is.
       %{value: value, type_stack: ^full_type_stack} ->
-        {:ok, value, meta}
+        do_retrieve_variable(value, schema_type, type_stack, ast, meta)
       _ ->
         {:error, meta}
     end
   end
 
+  defp do_retrieve_variable(nil, %Type.NonNull{of_type: inner_type}, type_stack, ast, meta) do
+    {:error, Meta.put_missing(meta, type_stack, inner_type, ast)}
+  end
+  defp do_retrieve_variable(value, _, _, _, meta) do
+    {:ok, value, meta}
+  end
+
   # For a given schema node, build the stack of types it contains.
   # This is necessary because when comparing the type of a processed variable
-  # with the type of the desired argument we must compare not simply the inner
+  # with the type of the desired argument we must compare not only the inner
   # most type, but also how many layers of lists it's inside of.
   #
   # Otherwise a variable of type String could substitute for an argument that
@@ -177,13 +159,16 @@ defmodule Absinthe.Execution.Arguments do
   # Go through a list arguments belonging to a list type.
   # For each item try to resolve it with add_argument.
   # If it's a valid item, accumulate, if not, don't.
-  defp acc_list_argument([], _, acc, _, meta), do: {:lists.reverse(acc), meta}
-  defp acc_list_argument([value | rest], inner_type, acc, type_stack, meta) do
+  defp list_argument(values, inner_type, type_stack, meta) do
+    do_list_argument(values, inner_type, [], type_stack, meta)
+  end
+  defp do_list_argument([], _, acc, _, meta), do: {:lists.reverse(acc), meta}
+  defp do_list_argument([value | rest], inner_type, acc, type_stack, meta) do
     case add_argument(value, inner_type, type_stack, meta) do
       {:ok, item, meta} ->
-        acc_list_argument(rest, inner_type, [item | acc], type_stack, meta)
+        do_list_argument(rest, inner_type, [item | acc], type_stack, meta)
       {:error, meta} ->
-        acc_list_argument(rest, inner_type, acc, type_stack, meta)
+        do_list_argument(rest, inner_type, acc, type_stack, meta)
     end
   end
 
@@ -191,40 +176,28 @@ defmodule Absinthe.Execution.Arguments do
   # For each item, find the corresponding field within the object
   # If a field exists, and if the
   # If it's a valid item, accumulate,
-  defp acc_map_argument([], remaining_fields, acc, type_stack, meta) do
-    # Having gone through the list of given values, go through
-    # the remaining fields and populate any defaults.
-    # TODO see if we need to add an error around non null fields
-    {acc, meta} = Enum.reduce(remaining_fields, {acc, meta}, fn
-      {name, %{type: %Type.NonNull{of_type: inner_type}, deprecation: nil}}, {acc, meta} ->
-        {acc, put_meta(meta, :missing, [name | type_stack], inner_type, nil)}
-
-      {_, %{default_value: nil}}, {acc, meta} ->
-        {acc, meta}
-
-      {name, %{default_value: default}}, {acc, meta} ->
-        case Map.get(acc, name) do
-          nil -> {Map.put(acc, name, default), meta}
-          _ -> {acc, meta}
-        end
-    end)
-    {acc, meta}
+  defp map_argument(items, fields, type_stack, root_node, meta) do
+    do_map_argument(items, fields, [], type_stack, root_node, meta)
   end
-  defp acc_map_argument([value | rest], schema_fields, acc, type_stack, meta) do
+
+  defp do_map_argument([], remaining_fields, acc, type_stack, root_node, meta) do
+    Meta.check_missing_fields(remaining_fields, acc, type_stack, root_node, meta)
+  end
+  defp do_map_argument([value | rest], schema_fields, acc, type_stack, root_node, meta) do
     case pop_field(schema_fields, value) do
       {name, schema_field, schema_fields} ->
         # The value refers to a legitimate field in the schema,
         # now see if it can be handled properly.
         case add_argument(value, schema_field, type_stack, meta) do
           {:ok, item, meta} ->
-            acc_map_argument(rest, schema_fields, Map.put(acc, name, item), type_stack, meta)
+            do_map_argument(rest, schema_fields, [{name, item} | acc], type_stack, root_node, meta)
           {:error, meta} ->
-            acc_map_argument(rest, schema_fields, acc, type_stack, meta)
+            do_map_argument(rest, schema_fields, acc, type_stack, root_node, meta)
         end
 
       :error ->
         # Todo: register field as unnecssary
-        acc_map_argument(rest, schema_fields, acc, type_stack, meta)
+        do_map_argument(rest, schema_fields, acc, type_stack, root_node, meta)
     end
   end
 

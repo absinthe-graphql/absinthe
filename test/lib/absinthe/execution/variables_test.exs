@@ -6,6 +6,17 @@ defmodule Absinthe.Execution.VariablesTest.Schema do
   end
 
   query do
+    field :contacts, :string do
+      arg :contacts, non_null(list_of(non_null(:contact_input)))
+
+      resolve fn
+        %{contacts: _}, _ ->
+          {:ok, "we did it"}
+        args, _ ->
+          {:error, "got: #{inspect args}"}
+      end
+    end
+
     field :user, :string do
       arg :contact, non_null(:contact_input)
 
@@ -48,7 +59,7 @@ defmodule Absinthe.Execution.VariablesTest do
     # Parse
     {:ok, document} = Absinthe.parse(query_document)
     # Prepare execution context
-    {:ok, execution} = %Execution{schema: schema, document: document}
+    {_, execution} = %Execution{schema: schema, document: document}
     |> Execution.prepare(%{variables: provided})
     execution
   end
@@ -67,10 +78,10 @@ defmodule Absinthe.Execution.VariablesTest do
     end
 
     context "when not provided" do
-
       it "returns an error" do
-        assert %{variables: %Absinthe.Execution.Variables{raw: %{}}, errors: [%{message: "Variable `id' (String): Not provided"}]} = @id_required |> parse
-        assert {:ok, %{data: %{}, errors: [%{locations: [%{column: 0, line: 1}], message: "Variable `id' (String): Not provided"}]}} == Absinthe.run(@id_required, Things)
+        assert %{variables: %Absinthe.Execution.Variables{raw: %{}}, errors: errors} = @id_required |> parse
+        assert [%{locations: [%{column: 0, line: 1}], message: "Variable `id' (String): Not provided"}] == errors
+        assert {:error, %{errors: [%{locations: [%{column: 0, line: 1}], message: "Variable `id' (String): Not provided"}]}} = Absinthe.run(@id_required, Things)
       end
     end
   end
@@ -96,9 +107,7 @@ defmodule Absinthe.Execution.VariablesTest do
   describe "list variables" do
     it "should work in a basic case" do
       doc = """
-      query FindContacts($contacts:[String]) {
-        contacts(contacts:$contacts)
-      }
+      query FindContacts($contacts:[String]) {contacts(contacts:$contacts)}
       """
       assert %{variables: %Absinthe.Execution.Variables{
         processed: %{"contacts" => %Absinthe.Execution.Variable{value: value, type_stack: type}}
@@ -107,11 +116,27 @@ defmodule Absinthe.Execution.VariablesTest do
       assert type == ["String", Absinthe.Type.List]
     end
 
+    it "it strips null values" do
+      doc = """
+      query FindContacts($contacts:[String]) {contacts(contacts:$contacts)}
+      """
+      assert %{variables: %Absinthe.Execution.Variables{
+        processed: %{"contacts" => %Absinthe.Execution.Variable{value: value, type_stack: _}}
+      }} = doc |> parse(%{"contacts" => ["ben", nil, nil, "bob", nil]})
+      assert ["ben", "bob"] == value
+    end
+
+    it "returns an error if you give it a null value and it's non null" do
+      doc = """
+      query FindContacts($contacts:[String!]) {contacts(contacts:$contacts)}
+      """
+      assert %{errors: errors} = doc |> parse(%{"contacts" => ["ben", nil, nil, "bob", nil]})
+      assert errors != []
+    end
+
     it "works when it's a list of input objects" do
       doc = """
-      query FindContacts($contacts:[ContactInput]) {
-        contacts(contacts:$contacts)
-      }
+      query FindContacts($contacts:[ContactInput]) {contacts(contacts:$contacts)}
       """
       assert %{variables: %Absinthe.Execution.Variables{
         processed: %{"contacts" => %Absinthe.Execution.Variable{value: value, type_stack: type}}
@@ -124,9 +149,7 @@ defmodule Absinthe.Execution.VariablesTest do
   describe "input object variables" do
     it "should work in a basic case" do
       doc = """
-      query FindContact($contact:ContactInput) {
-        contact(contact:$contact)
-      }
+      query FindContact($contact:ContactInput) {contact(contact:$contact)}
       """
       assert %{errors: errors, variables: %Absinthe.Execution.Variables{
         raw: %{},
@@ -139,17 +162,31 @@ defmodule Absinthe.Execution.VariablesTest do
 
     it "should return an error when a required field is explicitly set to nil" do
       doc = """
-      query FindContact($contact:ContactInput) {
-        contact(contact:$contact)
+      query FindContact($contact:ContactInput) {contact(contact:$contact)}
+      """
+      assert %{errors: errors} = doc |> parse(__MODULE__.Schema, %{"contact" => %{"email" => nil}})
+      assert [%{locations: [%{column: 0, line: 1}], message: "Variable `contact.email' (String): Not provided"}] == errors
+    end
+
+    it "tracks extra values" do
+      doc = """
+      query FindContact($contact:ContactInput) {user(contact:$contact)}
+      """
+      assert {:ok, %{errors: errors, data: data}} = doc |> Absinthe.run(__MODULE__.Schema, variables: %{"contact" => %{"email" => "bob", "extra" => "thing"}})
+      assert [%{locations: [%{column: 0, line: 1}], message: "Argument `contact.extra': Not present in schema"}] == errors
+      assert %{"user" => "bob"} == data
+    end
+  end
+
+  describe "nested errors" do
+    it "should return a useful error message for deeply nested errors" do
+      doc = """
+      query FindContact($contacts:[ContactInput]) {
+        contacts(contacts:$contacts)
       }
       """
-      assert %{errors: errors, variables: %Absinthe.Execution.Variables{
-        raw: %{},
-        processed: %{"contact" => %Absinthe.Execution.Variable{value: value, type_stack: type}}
-      }} = doc |> parse(__MODULE__.Schema, %{"contact" => %{"email" => nil}})
-      assert value == %{}
-      assert errors == [%{locations: [], message: "Variable `email' (email): Not provided"}]
-      assert ["ContactInput"] == type
+      assert {:error, %{errors: errors}} = doc |> Absinthe.run(__MODULE__.Schema, variables: %{"contacts" => [%{"email" => nil}]})
+      assert [%{locations: [%{column: 0, line: 1}], message: "Variable `contacts[].email' (String): Not provided"}] == errors
     end
   end
 

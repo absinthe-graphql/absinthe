@@ -1,90 +1,113 @@
 defmodule Absinthe.Execution.Variable do
   @moduledoc false
-  # Represents an execution variable
+  # Represents an meta variable
 
   defstruct value: nil, type_stack: nil
 
   alias Absinthe.Type
   alias Absinthe.Language
   alias Absinthe.Execution
+  alias Absinthe.Execution.InputMeta, as: Meta
 
   # Non null checks here are about whether it's specified as non null via ! in
   # the document itself. It has nothing to do with whether a given argument
   # has been declared non null, that's the job of `Arguments`
   def build(definition, schema_type, outer_type_stack, execution) do
-    raw_value = Map.get(execution.variables.raw, definition.variable.name)
+    meta = meta = Meta.build(execution)
 
-    case do_build(definition, raw_value, schema_type, execution) do
-      {:ok, value, execution} ->
+    var_name = definition.variable.name
+    raw_value = Map.get(execution.variables.raw, var_name)
+
+    # this sequence could be better I think.
+    {value, meta} = case do_build(definition, raw_value, schema_type, [var_name], meta) do
+      {:ok, value, meta} -> {value, meta}
+      {:error, meta} -> {:error, meta}
+    end
+
+    {execution, missing} = Meta.process_errors(execution, meta, :variable, :missing, fn type_name ->
+      &"Variable `#{&1}' (#{type_name}): Not provided"
+    end)
+
+    {execution, invalid} = Meta.process_errors(execution, meta, :variable, :invalid, fn type_name ->
+      &"Variable `#{&1}' (#{type_name}): Invalid value provided"
+    end)
+
+    {execution, _} = Meta.process_errors(execution, meta, :variable, :extra, &"Argument `#{&1}': Not present in schema")
+    case Enum.any?(missing) || Enum.any?(invalid) do
+      false ->
         {:ok, %__MODULE__{value: value, type_stack: outer_type_stack}, execution}
-
-      other ->
-        other
+      true ->
+        {:error, execution}
     end
   end
-  defp do_build(%{type: %Language.NonNullType{type: inner_type}, variable: variable}, nil, _, execution) do
-    execution = Execution.put_error(execution, :variable, variable.name,
-      &"Variable `#{&1}' (#{inner_type.name}): Not provided",
-      at: inner_type)
-    {:error, execution}
+
+  defp do_build(%{type: %Language.NonNullType{type: inner_type}, variable: var_ast}, nil, schema_type, type_stack, meta) do
+    {:error, Meta.put_missing(meta, type_stack, schema_type, var_ast)}
   end
 
-  defp do_build(%{default_value: nil}, nil, _schema_type, execution) do
-    {:ok, nil, execution}
+  defp do_build(%{default_value: nil}, nil, _schema_type, type_stack, meta) do
+    {:ok, nil, meta}
   end
 
-  defp do_build(%{default_value: %{value: value}} = definition, nil, schema_type, execution) do
-    do_build(definition, value, schema_type, execution)
+  defp do_build(%{default_value: %{value: value}} = definition, nil, schema_type, type_stack, meta) do
+    do_build(definition, value, schema_type, type_stack, meta)
   end
 
-  defp do_build(%{type: %Language.NonNullType{type: inner_type}} = definition, value, schema_type, execution) do
-    do_build(%{definition | type: inner_type}, value, schema_type, execution)
+  defp do_build(%{type: %Language.NonNullType{type: inner_type}} = definition, value, schema_type, type_stack, meta) do
+    do_build(%{definition | type: inner_type}, value, schema_type, type_stack, meta)
   end
 
-  defp do_build(%{type: %Language.ListType{type: inner_type}} = definition, raw_values, schema_type, execution) when is_list(raw_values) do
-    {values, execution} = acc_list_values(raw_values, %{definition | type: inner_type}, schema_type, [], execution)
-    {:ok, values, execution}
+  defp do_build(%{type: %Language.ListType{type: inner_type}} = definition, raw_values, schema_type, type_stack, meta) when is_list(raw_values) do
+    {values, meta} = list_values(raw_values, %{definition | type: inner_type}, schema_type, ["[]", type_stack], meta)
+    {:ok, values, meta}
   end
 
-  defp do_build(%{variable: _}, values, %Type.InputObject{fields: schema_fields}, execution) when is_map(values) do
-    {values, execution} = acc_map_values(Map.to_list(values), schema_fields, %{}, execution)
-    {:ok, values, execution}
+  defp do_build(%{variable: var_ast}, values, %Type.InputObject{fields: schema_fields}, type_stack, meta) when is_map(values) do
+    {values, meta} = map_values(Map.to_list(values), schema_fields, type_stack, var_ast, meta)
+    {:ok, values, meta}
   end
 
-  defp do_build(%{variable: var_ast}, value, %Type.Enum{} = enum, execution) do
+  defp do_build(%{variable: var_ast}, value, %Type.Enum{} = enum, type_stack, meta) do
     case Type.Enum.parse(enum, value) do
       {:ok, value} ->
-        {:ok, value, execution}
+        {:ok, value, meta}
 
       :error ->
-        execution = Execution.put_error(execution, :variable, var_ast.name, &"Argument `#{&1}' (#{enum.name}): Invalid value provided", at: var_ast)
-        {:error, execution}
+        {:error, Meta.put_invalid(meta, type_stack, enum, var_ast)}
     end
   end
 
-  defp do_build(%{variable: var_ast}, value, %Type.Scalar{} = schema_type, execution) do
+  defp do_build(%{variable: var_ast}, value, %Type.Scalar{} = schema_type, type_stack, meta) do
     case schema_type.parse.(value) do
       {:ok, coerced_value} ->
-        {:ok, coerced_value, execution}
+        {:ok, coerced_value, meta}
+
       :error ->
-        # TODO: real error message
-        execution = Execution.put_error(execution, :variable, var_ast.name, &"Argument `#{&1}' (#{schema_type.name}): Invalid value provided", at: var_ast)
-        {:error, execution}
+        {:error, Meta.put_missing(meta, type_stack, schema_type, var_ast)}
     end
   end
 
-  defp do_build(%{variable: var_ast}, _values, schema_type, execution) do
-    execution = Execution.put_error(execution, :variable, var_ast.name, &"Argument `#{&1}' (#{schema_type.name}): Invalid value provided", at: var_ast)
-    {:error, execution}
+  defp do_build(%{variable: var_ast}, _values, schema_type, type_stack, meta) do
+    {:error, Meta.put_invalid(meta, type_stack, schema_type, var_ast)}
   end
 
-  defp acc_list_values([], _, _, acc, execution), do: {:lists.reverse(acc), execution}
-  defp acc_list_values([value | rest], definition, schema_type, acc, execution) do
-    case do_build(definition, value, schema_type, execution) do
-      {:ok, item, execution} ->
-        acc_list_values(rest, definition, schema_type, [item | acc], execution)
-      {:error, execution} ->
-        {:error, execution}
+  defp list_values(items, definition, schema_type, type_stack, meta) do
+    do_list_values(items, definition, schema_type, [], type_stack, meta)
+  end
+  defp do_list_values([], _def, _schema_type, acc, _stack_type, meta) do
+    {:lists.reverse(acc), meta}
+  end
+  defp do_list_values([value | rest], definition, schema_type, acc, type_stack, meta) do
+    case do_build(definition, value, schema_type, type_stack, meta) do
+      {:ok, nil, meta} ->
+        do_list_values(rest, definition, schema_type, acc, type_stack, meta)
+
+      {:ok, item, meta} ->
+        do_list_values(rest, definition, schema_type, [item | acc], type_stack, meta)
+
+      {:error, meta} ->
+        meta = Meta.put_invalid(meta, type_stack, schema_type, definition.variable)
+        do_list_values(rest, definition, schema_type, acc, type_stack, meta)
     end
   end
 
@@ -96,66 +119,60 @@ defmodule Absinthe.Execution.Variable do
   # I don't necessarily think that the duplication is ipso facto bad, but each individual
   # use case should at least live in its own module that gives it some more semantic value
 
-  defp build_map_value(value, %Type.Field{type: inner_type}, execution) do
-    build_map_value(value, inner_type, execution)
+  defp build_map_value(value, %Type.Field{type: inner_type}, type_stack, var_ast, meta) do
+    build_map_value(value, inner_type, type_stack, var_ast, meta)
   end
-  defp build_map_value(nil, %Type.NonNull{of_type: _inner_type}, execution) do
-    # TODO: add error
-    raise "why am I here?"
-    {:error, execution}
+  defp build_map_value(nil, %Type.NonNull{of_type: inner_type}, type_stack, var_ast, meta) do
+    {:error, Meta.put_missing(meta, type_stack, inner_type, var_ast)}
   end
-  defp build_map_value(value, %Type.NonNull{of_type: inner_type}, execution) do
-    build_map_value(value, inner_type, execution)
+  defp build_map_value(value, %Type.NonNull{of_type: inner_type}, type_stack, var_ast, meta) do
+    build_map_value(value, inner_type, type_stack, var_ast, meta)
   end
-  defp build_map_value(value, %Type.Scalar{parse: parser}, execution) do
+  defp build_map_value(value, %Type.Scalar{parse: parser}, type_stack, var_ast, meta) do
     case parser.(value) do
       {:ok, coerced_value} ->
-        {:ok, coerced_value, execution}
+        {:ok, coerced_value, meta}
+
       :error ->
-        {:error, execution}
+        # {:error, Meta.put_invalid(meta, type_stack, schema_type, var_ast)}
+        {:error, meta}
     end
   end
-  defp build_map_value(value, type, execution) when is_atom(type) do
-    real_type = execution.schema.__absinthe_type__(type)
-    build_map_value(value, real_type, execution)
+  defp build_map_value(value, type, type_stack, var_ast, meta) when is_atom(type) do
+    real_type = meta.schema.__absinthe_type__(type)
+    build_map_value(value, real_type, type_stack, var_ast, meta)
   end
 
-  defp acc_map_values([], remaining_fields, acc, execution) do
-    {acc, execution} = Enum.reduce(remaining_fields, {acc, execution}, fn
-      {name, %{type: %Type.NonNull{}, deprecation: nil}}, {acc, exec} ->
-        exec = Execution.put_error(exec, :variable, name,
-          &"Variable `#{&1}' (#{name}): Not provided",
-          at: nil)
-        {acc, exec}
-
-      {_, %{default_value: nil}}, {acc, meta} ->
-        {acc, meta}
-
-      {name, %{default_value: default}}, {acc, meta} ->
-        case Map.get(acc, name) do
-          nil -> {Map.put(acc, name, default), meta}
-          _ -> {acc, meta}
-        end
-    end)
-    {acc, execution}
+  defp map_values(items, fields, type_stack, var_ast, meta) do
+    # Initialize accumulator
+    #
+    # We use a list here rather than a map because building a list with `{k, v}`
+    # pairs and then using `:maps.from_list` is both faster and produces less
+    # garbage.
+    do_map_values(items, fields, [], type_stack, var_ast, meta)
   end
-  defp acc_map_values([{_, nil} | rest], schema_fields, acc, execution) do
-    acc_map_values(rest, schema_fields, acc, execution)
+  defp do_map_values([], remaining_fields, acc, type_stack, var_ast, meta) do
+    Meta.check_missing_fields(remaining_fields, acc, type_stack, var_ast, meta)
   end
-  defp acc_map_values([{key, raw_value} | rest], schema_fields, acc, execution) do
+  defp do_map_values([{key, raw_value} | rest], schema_fields, acc, type_stack, var_ast, meta) do
     case pop_field(schema_fields, key) do
       {name, schema_field, schema_fields} ->
-        case build_map_value(raw_value, schema_field, execution) do
-          {:ok, value, execution} ->
-            acc_map_values(rest, schema_fields, Map.put(acc, name, value), execution)
+        case build_map_value(raw_value, schema_field, [key | type_stack], var_ast, meta) do
+          {:ok, nil, meta} ->
+            do_map_values(rest, schema_fields, acc, type_stack, var_ast, meta)
 
-          {:error, execution} ->
-            acc_map_values(rest, schema_fields, acc, execution)
+          {:ok, value, meta} ->
+            do_map_values(rest, schema_fields, [{name, value} | acc], type_stack, var_ast, meta)
+
+          {:error, meta} ->
+            # No need to put an error here because which ever build_map_value clause
+            # failed should have added it already.
+            do_map_values(rest, schema_fields, acc, type_stack, var_ast, meta)
         end
 
       :error ->
-        # Todo: register field as unnecssary
-        acc_map_values(rest, schema_fields, acc, execution)
+        meta = Meta.put_extra(meta, [key | type_stack], var_ast)
+        do_map_values(rest, schema_fields, acc, type_stack, var_ast, meta)
     end
   end
 

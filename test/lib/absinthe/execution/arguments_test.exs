@@ -46,8 +46,6 @@ defmodule Absinthe.Execution.ArgumentsTest do
         arg :value, non_null(:numeric)
 
         resolve fn %{value: val}, _ ->
-          IO.puts "hey"
-          IO.inspect val
           {:ok, val}
         end
       end
@@ -110,6 +108,15 @@ defmodule Absinthe.Execution.ArgumentsTest do
   end
 
   describe "arguments with variables" do
+
+    it "should raise an error when a non null argument variable is null" do
+      doc = """
+      query GetContacts($contacts:[ContactInput]){contacts(contacts:$contacts)}
+      """
+      assert_result {:ok, %{data: %{}, errors: [%{message: "Field `contacts': 1 required argument (`contacts') not provided"}, %{message: "Argument `contacts' (ContactInput): Not provided"}]}},
+        doc |> Absinthe.run(Schema)
+    end
+
     describe "list inputs" do
       it "works with basic scalars" do
         doc = """
@@ -217,12 +224,12 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "c@d.com"]}}}, doc |> Absinthe.run(Schema)
       end
 
-      @tag :pending
       it "returns deeply nested errors" do
         doc = """
         {contacts(contacts: [{email: "a@b.com"}, {foo: "c@d.com"}])}
         """
-        assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "c@d.com"]}}}, doc |> Absinthe.run(Schema)
+        assert_result {:ok, %{data: %{}, errors: [%{message: "Field `contacts': 1 required argument (`contacts[].email') not provided"}, %{message: "Argument `contacts[].email' (String): Not provided"}]}},
+          doc |> Absinthe.run(Schema)
       end
     end
 

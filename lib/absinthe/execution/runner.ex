@@ -11,14 +11,11 @@ defmodule Absinthe.Execution.Runner do
   def run(%{selected_operation: nil}) do
     {:ok, %{}}
   end
-  def run(%{selected_operation: %{operation: op_type} = operation, errors: []} = execution) do
+  def run(%{selected_operation: %{operation: op_type} = operation} = execution) do
     case execute(op_type, operation, execution) do
       {:ok, value, %{errors: errors}} -> {:ok, %{data: value, errors: errors} |> collapse}
       other -> other
     end
-  end
-  def run(%{errors: errors}) do
-    {:ok, %{data: %{}, errors: errors}}
   end
 
   @spec execute(atom, Absinthe.Language.OperationDefinition.t, Absinthe.Execution.t) :: {:ok, Execution.result_t} | {:error, any}

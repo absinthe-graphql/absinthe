@@ -16,17 +16,17 @@ defmodule Absinthe.Execution.Variables do
   @spec build(Execution.t) :: {%{binary => any}, Execution.t}
   def build(execution) do
     execution.selected_operation.variable_definitions
-    |> Enum.reduce(execution, &build_definition/2)
+    |> Enum.reduce({:ok, execution}, &build_definition/2)
   end
 
-  def build_definition(definition, execution) do
+  def build_definition(definition, {status, execution}) do
     case validate_definition_type(definition.type, execution) do
       {:ok, schema_type, type_stack} ->
-        process_variable(definition, schema_type, type_stack, execution)
+        process_variable(definition, schema_type, type_stack, execution, status)
       :error ->
         inner_type = definition.type |> unwrap
-        inner_type |> IO.inspect
-        Execution.put_error(execution, :variable, inner_type.name, "Type `#{inner_type.name}' not present in schema", at: definition.type)
+        execution = Execution.put_error(execution, :variable, inner_type.name, "Type `#{inner_type.name}': Not present in schema", at: definition.type)
+        {:error, execution}
     end
   end
 
@@ -49,13 +49,11 @@ defmodule Absinthe.Execution.Variables do
     end
   end
 
-  defp process_variable(definition, schema_type, type_stack, execution) do
-
+  defp process_variable(definition, schema_type, type_stack, execution, status) do
     case Execution.Variable.build(definition, schema_type, type_stack, execution) do
       {:ok, variable, execution} ->
-        put_variable(execution, definition.variable.name, variable)
-      {:error, execution} ->
-        execution
+        {status, put_variable(execution, definition.variable.name, variable)}
+      error -> error
     end
   end
 

@@ -7,4 +7,8 @@ defmodule Absinthe.Adapter.Passthrough do
 
   use Absinthe.Adapter
 
+  def load_document(doc), do: doc
+
+  def dump_results(results), do: results
+
 end

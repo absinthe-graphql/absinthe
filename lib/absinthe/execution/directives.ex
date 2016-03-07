@@ -22,7 +22,7 @@ defmodule Absinthe.Execution.Directives do
                   [Type.Directive.check(definition, ast_node, args) | results],
                   checked_execution
                 }
-              {:error, checked_execution} ->
+              {:error, _, _, checked_execution} ->
                 {results, checked_execution}
             end
         end
