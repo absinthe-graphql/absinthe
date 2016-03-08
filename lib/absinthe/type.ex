@@ -213,7 +213,9 @@ defmodule Absinthe.Type do
   end
   def field(%{fields: fields}, name) do
     fields
-    |> Map.get(name |> String.to_atom)
+    |> Map.get(name |> String.to_existing_atom)
+  rescue
+    ArgumentError -> nil
   end
   def field(_, _name) do
     nil

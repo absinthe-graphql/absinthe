@@ -18,36 +18,21 @@ defmodule Absinthe.Execution.ArgumentsTest do
 
     input_object :contact_input do
       field :email, non_null(:string)
+      field :type, :contact_type
     end
 
     enum :contact_type do
-      value :email
+      value :email, name: "Email", as: "Email"
       value :phone
-    end
-
-    union :numeric do
-      types [:float, :integer]
-
-      resolve_type fn
-        n, _ when is_float(n) -> :float
-        n, _ when is_integer(n) -> :integer
-      end
+      value :sms, deprecate: "Use phone instead"
     end
 
     query do
 
-      field :contact, :string do
+      field :contact, :contact_type do
         arg :type, :contact_type
 
         resolve fn %{type: val}, _ -> {:ok, val} end
-      end
-
-      field :numeric, :numeric do
-        arg :value, non_null(:numeric)
-
-        resolve fn %{value: val}, _ ->
-          {:ok, val}
-        end
       end
 
       field :contacts, list_of(:string) do
@@ -182,12 +167,28 @@ defmodule Absinthe.Execution.ArgumentsTest do
         doc = """
         query GetContact($type:ContactType){ contact(type: $type) }
         """
-        assert_result {:ok, %{data: %{"contact" => "email"}}}, doc |> Absinthe.run(Schema, variables: %{"type" => "email"})
+        assert_result {:ok, %{data: %{"contact" => "Email"}}}, doc |> Absinthe.run(Schema, variables: %{"type" => "Email"})
+      end
+
+      it "should work when nested" do
+        doc = """
+        query FindUser($contact: ContactInput!){
+          user(contact:$contact)
+        }
+        """
+        assert_result {:ok, %{data: %{"user" => "bubba@joe.com"}}}, doc |> Absinthe.run(Schema, variables: %{"contact" => %{"email" => "bubba@joe.com", "type" => "Email"}})
       end
 
       it "should return an error with invalid values" do
         assert_result {:ok, %{data: %{}, errors: [%{message: "Field `contact': 1 badly formed argument (`type') provided"}, %{message: "Argument `type' (ContactType): Invalid value provided"}]}},
           "{ contact(type: \"bagel\") }" |> Absinthe.run(Schema)
+      end
+
+      it "should return a deprecation notice if one of the values given is deprecated" do
+        doc = """
+        query GetContact($type:ContactType){ contact(type: $type) }
+        """
+        assert_result {:ok, %{data: %{"contact" => "SMS"}, errors: [%{message: "Variable `type.sms' (ContactType): Deprecated; Use phone instead"}]}}, doc |> Absinthe.run(Schema, variables: %{"type" => "SMS"})
       end
     end
   end
@@ -210,6 +211,14 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"numbers" => [1, 2]}}}, doc |> Absinthe.run(Schema)
       end
 
+      it "it will coerce a non list item if it's of the right type" do
+        # per https://facebook.github.io/graphql/#sec-Lists
+        doc = """
+        {numbers(numbers: 1)}
+        """
+        assert_result {:ok, %{data: %{"numbers" => [1]}}}, doc |> Absinthe.run(Schema)
+      end
+
       it "works with custom scalars" do
         doc = """
         {names(names: ["Joe", "bob"])}
@@ -228,7 +237,11 @@ defmodule Absinthe.Execution.ArgumentsTest do
         doc = """
         {contacts(contacts: [{email: "a@b.com"}, {foo: "c@d.com"}])}
         """
-        assert_result {:ok, %{data: %{}, errors: [%{message: "Field `contacts': 1 required argument (`contacts[].email') not provided"}, %{message: "Argument `contacts[].email' (String): Not provided"}]}},
+        assert_result {:ok, %{data: %{}, errors: [
+          %{message: "Field `contacts': 1 required argument (`contacts[].email') not provided"},
+          %{message: "Argument `contacts[].foo': Not present in schema"},
+          %{message: "Argument `contacts[].email' (String): Not provided"},
+        ]}},
           doc |> Absinthe.run(Schema)
       end
     end
@@ -245,7 +258,19 @@ defmodule Absinthe.Execution.ArgumentsTest do
         doc = """
         {user(contact: {foo: "buz"})}
         """
-        assert_result {:ok, %{data: %{}, errors: [%{message: "Field `user': 1 required argument (`contact.email') not provided"}, %{message: "Argument `contact.email' (String): Not provided"}]}},
+        assert_result {:ok, %{data: %{}, errors: [
+          %{message: "Field `user': 1 required argument (`contact.email') not provided"},
+          %{message: "Argument `contact.foo': Not present in schema"},
+          %{message: "Argument `contact.email' (String): Not provided"},
+        ]}},
+          doc |> Absinthe.run(Schema)
+      end
+
+      it "returns an error if extra fields are given" do
+        doc = """
+        {user(contact: {email: "bubba", foo: "buz"})}
+        """
+        assert_result {:ok, %{data: %{"user" => "bubba"}, errors: [%{message: "Argument `contact.foo': Not present in schema"}]}},
           doc |> Absinthe.run(Schema)
       end
     end
@@ -278,7 +303,14 @@ defmodule Absinthe.Execution.ArgumentsTest do
 
     describe "enum types" do
       it "should work with valid values" do
-        assert_result {:ok, %{data: %{"contact" => "email"}}}, "{ contact(type: \"email\") }" |> Absinthe.run(Schema)
+        assert_result {:ok, %{data: %{"contact" => "Email"}}}, "{ contact(type: Email) }" |> Absinthe.run(Schema)
+      end
+
+      it "should return a deprecation notice if one of the values given is deprecated" do
+        doc = """
+        query GetContact { contact(type: SMS) }
+        """
+        assert_result {:ok, %{data: %{"contact" => "SMS"}, errors: [%{message: "Argument `type.sms' (ContactType): Deprecated; Use phone instead"}]}}, doc |> Absinthe.run(Schema)
       end
 
       it "should return an error with invalid values" do

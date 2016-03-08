@@ -6,46 +6,36 @@ defmodule Absinthe.Execution.Variable do
 
   alias Absinthe.Type
   alias Absinthe.Language
-  alias Absinthe.Execution
-  alias Absinthe.Execution.InputMeta, as: Meta
+  alias Absinthe.Execution.Input
+  alias Absinthe.Execution.Input.Meta
 
   # Non null checks here are about whether it's specified as non null via ! in
   # the document itself. It has nothing to do with whether a given argument
   # has been declared non null, that's the job of `Arguments`
   def build(definition, schema_type, outer_type_stack, execution) do
-    meta = meta = Meta.build(execution)
+    meta = Meta.build(execution)
 
     var_name = definition.variable.name
     raw_value = Map.get(execution.variables.raw, var_name)
 
-    # this sequence could be better I think.
     {value, meta} = case do_build(definition, raw_value, schema_type, [var_name], meta) do
       {:ok, value, meta} -> {value, meta}
       {:error, meta} -> {:error, meta}
     end
 
-    {execution, missing} = Meta.process_errors(execution, meta, :variable, :missing, fn type_name ->
-      &"Variable `#{&1}' (#{type_name}): Not provided"
-    end)
-
-    {execution, invalid} = Meta.process_errors(execution, meta, :variable, :invalid, fn type_name ->
-      &"Variable `#{&1}' (#{type_name}): Invalid value provided"
-    end)
-
-    {execution, _} = Meta.process_errors(execution, meta, :variable, :extra, &"Argument `#{&1}': Not present in schema")
-    case Enum.any?(missing) || Enum.any?(invalid) do
-      false ->
+    case Input.process(:variable, meta, execution) do
+      {:ok, execution} ->
         {:ok, %__MODULE__{value: value, type_stack: outer_type_stack}, execution}
-      true ->
+      {:error, _missing, _invalid, execution} ->
         {:error, execution}
     end
   end
 
-  defp do_build(%{type: %Language.NonNullType{type: inner_type}, variable: var_ast}, nil, schema_type, type_stack, meta) do
+  defp do_build(%{type: %Language.NonNullType{}, variable: var_ast}, nil, schema_type, type_stack, meta) do
     {:error, Meta.put_missing(meta, type_stack, schema_type, var_ast)}
   end
 
-  defp do_build(%{default_value: nil}, nil, _schema_type, type_stack, meta) do
+  defp do_build(%{default_value: nil}, nil, _schema_type, _type_stack, meta) do
     {:ok, nil, meta}
   end
 
@@ -69,8 +59,9 @@ defmodule Absinthe.Execution.Variable do
 
   defp do_build(%{variable: var_ast}, value, %Type.Enum{} = enum, type_stack, meta) do
     case Type.Enum.parse(enum, value) do
-      {:ok, value} ->
-        {:ok, value, meta}
+      {:ok, enum_value} ->
+        meta = meta |> add_deprecation_notice(enum_value, enum, [enum_value.value | type_stack], var_ast)
+        {:ok, enum_value.value, meta}
 
       :error ->
         {:error, Meta.put_invalid(meta, type_stack, enum, var_ast)}
@@ -78,13 +69,7 @@ defmodule Absinthe.Execution.Variable do
   end
 
   defp do_build(%{variable: var_ast}, value, %Type.Scalar{} = schema_type, type_stack, meta) do
-    case schema_type.parse.(value) do
-      {:ok, coerced_value} ->
-        {:ok, coerced_value, meta}
-
-      :error ->
-        {:error, Meta.put_missing(meta, type_stack, schema_type, var_ast)}
-    end
+    Input.parse_scalar(value, var_ast, schema_type, type_stack, meta)
   end
 
   defp do_build(%{variable: var_ast}, _values, schema_type, type_stack, meta) do
@@ -119,7 +104,8 @@ defmodule Absinthe.Execution.Variable do
   # I don't necessarily think that the duplication is ipso facto bad, but each individual
   # use case should at least live in its own module that gives it some more semantic value
 
-  defp build_map_value(value, %Type.Field{type: inner_type}, type_stack, var_ast, meta) do
+  defp build_map_value(value, %Type.Field{type: inner_type} = type, type_stack, var_ast, meta) do
+    meta = meta |> add_deprecation_notice(type, inner_type, type_stack, var_ast)
     build_map_value(value, inner_type, type_stack, var_ast, meta)
   end
   defp build_map_value(nil, %Type.NonNull{of_type: inner_type}, type_stack, var_ast, meta) do
@@ -128,15 +114,18 @@ defmodule Absinthe.Execution.Variable do
   defp build_map_value(value, %Type.NonNull{of_type: inner_type}, type_stack, var_ast, meta) do
     build_map_value(value, inner_type, type_stack, var_ast, meta)
   end
-  defp build_map_value(value, %Type.Scalar{parse: parser}, type_stack, var_ast, meta) do
-    case parser.(value) do
-      {:ok, coerced_value} ->
-        {:ok, coerced_value, meta}
+  defp build_map_value(value, %Type.Enum{} = enum, type_stack, var_ast, meta) do
+    case Type.Enum.parse(enum, value) do
+      {:ok, enum_value} ->
+        meta = meta |> add_deprecation_notice(enum_value, enum, [enum_value.value | type_stack], var_ast)
+        {:ok, enum_value.value, meta}
 
       :error ->
-        # {:error, Meta.put_invalid(meta, type_stack, schema_type, var_ast)}
-        {:error, meta}
+        {:error, Meta.put_invalid(meta, type_stack, enum, var_ast)}
     end
+  end
+  defp build_map_value(value, %Type.Scalar{parse: parser} = type, type_stack, var_ast, meta) do
+    Input.parse_scalar(value, var_ast, type, type_stack, meta)
   end
   defp build_map_value(value, type, type_stack, var_ast, meta) when is_atom(type) do
     real_type = meta.schema.__absinthe_type__(type)
@@ -188,6 +177,17 @@ defmodule Absinthe.Execution.Variable do
     end
   rescue
     ArgumentError -> :error
+  end
+
+  defp add_deprecation_notice(meta, %{deprecation: nil}, _, _, _) do
+    meta
+  end
+  defp add_deprecation_notice(meta, %{deprecation: %{reason: reason}}, type, type_stack, ast) do
+    details = if reason, do: "; #{reason}", else: ""
+
+    Meta.put_deprecated(meta, type_stack, Type.unwrap(type), ast, fn type_name ->
+      &"Variable `#{&1}' (#{type_name}): Deprecated#{details}"
+    end)
   end
 
 end

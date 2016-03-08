@@ -53,7 +53,8 @@ defmodule Absinthe.Execution.Variables do
     case Execution.Variable.build(definition, schema_type, type_stack, execution) do
       {:ok, variable, execution} ->
         {status, put_variable(execution, definition.variable.name, variable)}
-      error -> error
+      error ->
+        error
     end
   end
 

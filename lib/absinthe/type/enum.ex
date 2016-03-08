@@ -63,42 +63,42 @@ defmodule Absinthe.Type.Enum do
 
   * `:name` - The name of the enum type. Should be a TitleCased `binary`. Set automatically.
   * `:description` - A nice description for introspection.
-  * `:values` - The enum valuesn, usually provided using the `Absinthe.Schema.Notation.values/1` or `Absinthe.Schema.Notation.value/1` macro.
+  * `:values` - The enum values, usually provided using the `Absinthe.Schema.Notation.values/1` or `Absinthe.Schema.Notation.value/1` macro.
 
   The `:__reference__` key is for internal use.
   """
   @type t :: %{name: binary, description: binary, values: %{binary => Type.Enum.Value.t}, __reference__: Type.Reference.t}
-  defstruct name: nil, description: nil, values: %{}, __reference__: nil
+  defstruct name: nil, description: nil, values: %{}, values_by_internal_value: %{}, values_by_name: %{}, __reference__: nil
 
 
   def build(%{attrs: attrs}) do
-    values = Type.Enum.Value.build(attrs[:values] || [])
-    quote do: %unquote(__MODULE__){unquote_splicing(attrs), values: unquote(values)}
+    raw_values = attrs[:values] || []
+
+    values = Type.Enum.Value.build(raw_values)
+    internal_values = Type.Enum.Value.build(raw_values, :value)
+    values_by_name = Type.Enum.Value.build(raw_values, :name)
+
+    quote do
+      %unquote(__MODULE__){
+        unquote_splicing(attrs),
+        values: unquote(values),
+        values_by_internal_value: unquote(internal_values),
+        values_by_name: unquote(values_by_name),
+      }
+    end
   end
 
   # Get the internal representation of an enum value
   @doc false
   @spec parse(t, any) :: any
   def parse(enum, external_value) do
-    case fetch_value(enum, external_value) do
-      {:ok, %{value: value}} -> {:ok, value}
-      val -> val
-    end
+    Map.fetch(enum.values_by_name, external_value)
   end
 
   # Get the external representation of an enum value
   @doc false
-  @spec serialize(t, any) :: binary
-  def serialize(_enum, _internal_value) do
-    raise "Not yet implemented"
+  @spec serialize!(t, any) :: binary
+  def serialize!(enum, internal_value) do
+    Map.fetch!(enum.values_by_internal_value, internal_value).name
   end
-
-  @doc false
-  @spec fetch_value(t, Keyword.t) :: Type.Enum.Value.t | nil
-  def fetch_value(enum, name) do
-    Map.fetch(enum.values, String.to_existing_atom(name))
-  rescue
-    ArgumentError -> :error
-  end
-
 end

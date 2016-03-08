@@ -6,7 +6,8 @@ defmodule Absinthe.Execution.Arguments do
   alias Absinthe.Execution
   alias Absinthe.Type
   alias Absinthe.Language
-  alias Absinthe.Execution.InputMeta, as: Meta
+  alias Absinthe.Execution.Input
+  alias Absinthe.Execution.Input.Meta
 
   # Build an arguments map from the argument definitions in the schema, using the
   # argument values from the query document.
@@ -16,20 +17,12 @@ defmodule Absinthe.Execution.Arguments do
   def build(ast_field, schema_arguments, execution) do
     meta = Meta.build(execution, variables: execution.variables.processed)
 
-    {values, post_meta} = add_arguments(ast_field.arguments, schema_arguments, ast_field, meta)
+    {values, meta} = add_arguments(ast_field.arguments, schema_arguments, ast_field, meta)
 
-    {execution, missing} = Meta.process_errors(execution, post_meta, :argument, :missing, fn type_name ->
-      &"Argument `#{&1}' (#{type_name}): Not provided"
-    end)
-
-    {execution, invalid} = Meta.process_errors(execution, post_meta, :argument, :invalid, fn type_name ->
-      &"Argument `#{&1}' (#{type_name}): Invalid value provided"
-    end)
-
-    case Enum.any?(missing) || Enum.any?(invalid) do
-      false ->
+    case Input.process(:argument, meta, execution) do
+      {:ok, execution} ->
         {:ok, values, execution}
-      true ->
+      {:error, missing, invalid, execution} ->
         {:error, missing, invalid, execution}
     end
   end
@@ -46,7 +39,8 @@ defmodule Absinthe.Execution.Arguments do
     add_argument(arg_ast, inner_type, type_stack, meta)
   end
 
-  defp add_argument(%Language.Argument{value: value}, %Type.Argument{type: inner_type} = type, type_stack, meta) do
+  defp add_argument(%Language.Argument{value: value} = ast_node, %Type.Argument{type: inner_type} = type, type_stack, meta) do
+    meta = meta |> add_deprecation_notice(type, inner_type, [type.name | type_stack], ast_node)
     add_argument(value, inner_type, [type.name | type_stack], meta)
   end
 
@@ -56,19 +50,27 @@ defmodule Absinthe.Execution.Arguments do
     {:ok, acc, meta}
   end
 
+  defp add_argument(%{value: _} = ast, %Type.List{of_type: inner_type}, type_stack, meta) do
+    real_inner_type = meta.schema.__absinthe_type__(inner_type)
+    {acc, meta} = list_argument([ast], real_inner_type, type_stack, meta)
+    {:ok, acc, meta}
+  end
+
   defp add_argument(%Language.ObjectValue{fields: ast_fields} = ast, %Type.InputObject{fields: schema_fields}, type_stack, meta) do
     {acc, meta} = map_argument(ast_fields, schema_fields, type_stack, ast, meta)
     {:ok, acc, meta}
   end
 
-  defp add_argument(%Language.ObjectField{value: value}, %Type.Field{type: inner_type} = type, type_stack, meta) do
+  defp add_argument(%Language.ObjectField{value: value} = ast_node, %Type.Field{type: inner_type} = type, type_stack, meta) do
+    meta = meta |> add_deprecation_notice(type, inner_type, [type.name | type_stack], ast_node)
     add_argument(value, inner_type, [type.name | type_stack], meta)
   end
 
   defp add_argument(%{value: value} = ast, %Type.Enum{} = enum, type_stack, meta) do
     case Type.Enum.parse(enum, value) do
-      {:ok, value} ->
-        {:ok, value, meta}
+      {:ok, enum_value} ->
+        meta = meta |> add_deprecation_notice(enum_value, enum, [enum_value.value | type_stack], ast)
+        {:ok, enum_value.value, meta}
 
       :error ->
         {:error, Meta.put_invalid(meta, type_stack, enum, ast)}
@@ -76,20 +78,15 @@ defmodule Absinthe.Execution.Arguments do
   end
 
   defp add_argument(%{value: value} = ast, %Type.Scalar{parse: parser} = type, type_stack, meta) do
-    case parser.(value) do
-      {:ok, coerced_value} ->
-        {:ok, coerced_value, meta}
-
-      :error ->
-        {:error, Meta.put_invalid(meta, type_stack, type, ast)}
-    end
+    Input.parse_scalar(value, ast, type, type_stack, meta)
   end
 
   defp add_argument(_ast, nil, type_stack, meta) do
     raise ArgumentError, """
     Schema #{meta.schema} is internally inconsistent!
 
-    Type referenced at #{inspect type_stack} does not exist
+    Type referenced at #{inspect type_stack} does not exist in the schema, even
+    though items in the schema refer to it. This is bad!
 
     This clause should become irrelevant when schemas check internal consistency
     at compile time.
@@ -105,6 +102,17 @@ defmodule Absinthe.Execution.Arguments do
     {:error, Meta.put_invalid(meta, type_stack, type, ast)}
   end
 
+  defp add_deprecation_notice(meta, %{deprecation: nil}, _, _, _) do
+    meta
+  end
+  defp add_deprecation_notice(meta, %{deprecation: %{reason: reason}}, type, type_stack, ast) do
+    details = if reason, do: "; #{reason}", else: ""
+
+    Meta.put_deprecated(meta, type_stack, Type.unwrap(type), ast, fn type_name ->
+      &"Argument `#{&1}' (#{type_name}): Deprecated#{details}"
+    end)
+  end
+
   defp retrieve_variable(name, schema_type, type_stack, ast, meta) do
     full_type_stack = fillout_stack(schema_type, [], meta.schema)
     meta.variables
@@ -116,7 +124,7 @@ defmodule Absinthe.Execution.Arguments do
       %{value: value, type_stack: ^full_type_stack} ->
         do_retrieve_variable(value, schema_type, type_stack, ast, meta)
       _ ->
-        {:error, meta}
+        do_retrieve_variable(nil, schema_type, type_stack, ast, meta)
     end
   end
 
@@ -196,7 +204,7 @@ defmodule Absinthe.Execution.Arguments do
         end
 
       :error ->
-        # Todo: register field as unnecssary
+        meta = Meta.put_extra(meta, [value.name | type_stack], root_node)
         do_map_argument(rest, schema_fields, acc, type_stack, root_node, meta)
     end
   end

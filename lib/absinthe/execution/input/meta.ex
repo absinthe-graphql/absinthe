@@ -1,4 +1,4 @@
-defmodule Absinthe.Execution.InputMeta do
+defmodule Absinthe.Execution.Input.Meta do
   @moduledoc false
 
   # Includes common functionality for handling Variables and Arguments
@@ -28,30 +28,23 @@ defmodule Absinthe.Execution.InputMeta do
   def put_extra(meta, type_stack, ast) do
     put_meta(meta, :extra, type_stack, nil, ast)
   end
-
-  defp put_meta(meta, key, type_stack, type, ast) when is_atom(type) and type != nil do
-    real_type = meta.schema.__absinthe_type__(type)
-    put_meta(meta, key, type_stack, real_type, ast)
-  end
-  defp put_meta(meta, key, type_stack, type, ast) when is_list(type_stack) do
-    Map.update!(meta, key, &[%{ast: ast, type_stack: type_stack, type: type} | &1])
+  def put_deprecated(meta, type_stack, type, ast, msg \\ "") do
+    put_meta(meta, :deprecated, type_stack, type, ast, %{msg: msg})
   end
 
-  def process_errors(execution, meta, kind, key, msg) do
-    meta
-    |> Map.fetch!(key)
-    |> Enum.reduce({execution, []}, fn
-      %{type_stack: type_stack, ast: ast, type: type}, {exec, names} ->
-        name_to_report = type_stack |> dotted_name
-        exec = exec |> Execution.put_error(kind, name_to_report, error_message(msg, type), at: ast)
+  defp put_meta(meta, key, type_stack, type, ast, opts \\ %{})
+  defp put_meta(meta, key, type_stack, type, ast, opts) when is_atom(type) and type != nil do
+    real_type = type |> meta.schema.__absinthe_type__
 
-        {exec, [name_to_report | names]}
-    end)
+    put_meta(meta, key, type_stack, real_type, ast, opts)
   end
+  defp put_meta(meta, key, type_stack, type, ast, opts) when is_list(type_stack) do
+    name = type_stack |> dotted_name
 
-  defp error_message(msg, nil), do: msg
-  defp error_message(msg, type) when is_function(msg), do: msg.(type.name)
-  defp error_message(msg, _), do: msg
+    item = %{ast: ast, name: name, type: type, msg: Map.get(opts, :msg)}
+
+    Map.update!(meta, key, &[item | &1])
+  end
 
   # Having gone through the list of given values, go through
   # the remaining fields and populate any defaults.

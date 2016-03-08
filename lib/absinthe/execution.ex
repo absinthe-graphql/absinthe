@@ -40,17 +40,15 @@ defmodule Absinthe.Execution do
     execution = raw_execution
     |> Map.put(:context, Map.get(options, :context, %{}))
     |> Map.put(:adapter, Map.get(options, :adapter))
+    |> Map.put(:root_value, Map.get(options, :root_value))
     |> add_configured_adapter
     |> adapt
     |> categorize_definitions
 
     with {:ok, operation} <- selected_operation(execution) do
-      variables = %__MODULE__.Variables{
-        raw: Map.get(options, :variables, %{})
-      }
+      variables = %__MODULE__.Variables{raw: Map.get(options, :variables, %{})}
 
-      %{execution | selected_operation: operation, variables: variables}
-      |> Execution.Variables.build
+      {:ok, %{execution | selected_operation: operation, variables: variables}}
     end
   end
 
