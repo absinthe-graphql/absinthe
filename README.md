@@ -24,16 +24,16 @@ Please see the website at [http://absinthe-graphql.org](http://absinthe-graphql.
 - Schema definition
   - All types (eg, Object, Input Object, Enum, Union, Interface, Scalar)
   - Circular type references
-  - Support for [custom scalars](http://absinthe-graphql.org/guides/custom-scalars)
+  - Support for [custom scalars](http://absinthe-graphql.org/guides/custom-scalars/)
   - Support for custom directives
-  - Field, argument, and enum value [deprecation](http://absinthe-graphql.org/guides/deprecation)
+  - Field, argument, and enum value [deprecation](http://absinthe-graphql.org/guides/deprecation/)
   - Compile-time schema validation
-- [Introspection](http://absinthe-graphql.org/guides/introspection), compatible with GraphiQL
+- [Introspection](http://absinthe-graphql.org/guides/introspection/), compatible with GraphiQL
 - Query execution
   - General
   - Named fragments, inline fragments, and fragment spreads with type conditions
   - `@skip` and `@include` directives
-  - [Adapter](http://absinthe-graphql.org/guides/adapters) mechanism to support conversion between camelCase query documents
+  - [Adapter](http://absinthe-graphql.org/guides/adapters/) mechanism to support conversion between camelCase query documents
     and snake_cased schema definition.
 
 ## Installation
@@ -64,11 +64,11 @@ See [CHANGELOG](./CHANGELOG.md) for upgrade steps between versions.
 
 - For the tutorial, guides, and general information about Absinthe-related
   projects, see [http://absinthe-graphql.org](http://absinthe-graphql.org).
-- Links to the API documentation are available in the [project list](http://absinthe-graphql.org/projects).
+- Links to the API documentation are available in the [project list](http://absinthe-graphql.org/projects/).
 
 ### Roadmap
 
-See the Roadmap on [absinthe-graphql.org](http://absinthe-graphql.org/roadmap).
+See the Roadmap on [absinthe-graphql.org](http://absinthe-graphql.org/roadmap/).
 
 ## Related Projects
 
@@ -81,7 +81,7 @@ BSD License
 Copyright (c) CargoSense, Inc.
 
 Parser derived from GraphQL Elixir, Copyright (c) Josh Price
-https://github.com/joshprice/graphql-elixir
+https://github.com/graphql-elixir/graphql-elixir
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
