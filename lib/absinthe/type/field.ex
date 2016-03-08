@@ -150,15 +150,9 @@ defmodule Absinthe.Type.Field do
     system_fn.(args, field_info, designer_fn)
   end
 
-  # Get any `:resolve` function registered in the `:__private__` key
-  # (more than one should not be set)
+  # Get the registered resolve helper, if any
   defp system_resolve(private) do
-    private
-    |> Keyword.values
-    |> Enum.find_value(fn
-      settings ->
-        settings[:resolve]
-    end)
+    get_in(private, [Absinthe, :resolve])
   end
 
   defimpl Absinthe.Validation.RequiredInput do
