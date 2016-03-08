@@ -77,7 +77,7 @@ defmodule Absinthe.Execution.Arguments do
     end
   end
 
-  defp add_argument(%{value: value} = ast, %Type.Scalar{parse: parser} = type, type_stack, meta) do
+  defp add_argument(%{value: value} = ast, %Type.Scalar{} = type, type_stack, meta) do
     Input.parse_scalar(value, ast, type, type_stack, meta)
   end
 

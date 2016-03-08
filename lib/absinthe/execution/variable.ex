@@ -124,7 +124,7 @@ defmodule Absinthe.Execution.Variable do
         {:error, Meta.put_invalid(meta, type_stack, enum, var_ast)}
     end
   end
-  defp build_map_value(value, %Type.Scalar{parse: parser} = type, type_stack, var_ast, meta) do
+  defp build_map_value(value, %Type.Scalar{} = type, type_stack, var_ast, meta) do
     Input.parse_scalar(value, var_ast, type, type_stack, meta)
   end
   defp build_map_value(value, type, type_stack, var_ast, meta) when is_atom(type) do

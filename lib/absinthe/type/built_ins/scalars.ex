@@ -49,7 +49,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
 
     serialize &to_string/1
     parse parse_with([Absinthe.Language.IntValue,
-                       Absinthe.Language.StringValue], &parse_string/1)
+                       Absinthe.Language.StringValue], &parse_id/1)
   end
 
   scalar :boolean do
@@ -109,6 +109,15 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     {:ok, to_string(value)}
   end
   defp parse_string(_), do: :error
+
+  @spec parse_id(any) :: {:ok, binary} | :error
+  defp parse_id(value) when is_binary(value) do
+    {:ok, value}
+  end
+  defp parse_id(value) when is_integer(value) do
+    {:ok, Integer.to_string(value)}
+  end
+  defp parse_id(_), do: :error
 
   @spec parse_boolean(any) :: {:ok, boolean} | :error
   defp parse_boolean(value) when is_number(value) do
