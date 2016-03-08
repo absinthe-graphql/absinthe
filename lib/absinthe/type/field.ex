@@ -90,9 +90,10 @@ defmodule Absinthe.Type.Field do
                default_value: any,
                args: %{(binary | atom) => Absinthe.Type.Argument.t} | nil,
                resolve: resolver_t | nil,
+               __private__: Keyword.t,
                __reference__: Type.Reference.t}
 
-  defstruct name: nil, description: nil, type: nil, deprecation: nil, args: %{}, resolve: nil, default_value: nil, __reference__: nil
+  defstruct name: nil, description: nil, type: nil, deprecation: nil, args: %{}, resolve: nil, default_value: nil, __private__: [], __reference__: nil
 
   @doc """
   Build an AST of the field map for inclusion in other types
@@ -133,6 +134,25 @@ defmodule Absinthe.Type.Field do
       false ->
         Keyword.put(arg_attrs, :__reference__, default_reference)
     end
+  end
+
+  def resolve(%{resolve: designer_resolve, __private__: private}, args, field_info) do
+    do_resolve(system_resolve(private), designer_resolve, args, field_info)
+  end
+
+  # No system resolver, so just invoke the schema designer's resolver
+  defp do_resolve(nil, designer_fn, args, field_info) do
+    designer_fn.(args, field_info)
+  end
+  # If a system resolver is set, we resolve by passing it the schema designer
+  # resolver; it's responsible for returning the result.
+  defp do_resolve(system_fn, designer_fn, args, field_info) do
+    system_fn.(args, field_info, designer_fn)
+  end
+
+  # Get the registered resolve helper, if any
+  defp system_resolve(private) do
+    get_in(private, [Absinthe, :resolve])
   end
 
   defimpl Absinthe.Validation.RequiredInput do
