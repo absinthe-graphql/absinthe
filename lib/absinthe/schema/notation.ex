@@ -545,7 +545,7 @@ defmodule Absinthe.Schema.Notation do
     :ok
   end
 
-  @placement {:private, [under: [:field]]}
+  @placement {:private, [under: [:field, :object]]}
   @doc false
   defmacro private(owner, key, value) do
     __CALLER__
@@ -555,17 +555,13 @@ defmodule Absinthe.Schema.Notation do
 
   @doc false
   # Record a private value
-  def record_private!(env, owner, key, value) do
-    new_private = Scope.current(env.module).attrs
+  def record_private!(env, raw_owner, raw_key, raw_value) do
+    [owner, key, value] = Enum.map([raw_owner, raw_key, raw_value], &Macro.expand(&1, env))
+    new_attrs = Scope.current(env.module).attrs
     |> Keyword.put_new(:__private__, [])
-    |> update_in([Macro.expand(owner, env)], fn
-      nil ->
-        [{key, value}]
-      existing ->
-        Keyword.put(existing, key, value)
-    end)
-    Scope.put_attribute(env.module, :__private__, new_private)
-    :ok
+    |> update_in([:__private__, owner], &List.wrap(&1))
+    |> put_in([:__private__, owner, key], value)
+    Scope.put_attribute(env.module, :__private__, new_attrs[:__private__])
   end
 
   @placement {:parse, [under: [:scalar]]}
@@ -1140,6 +1136,16 @@ defmodule Absinthe.Schema.Notation do
   end
 
   @doc false
+  # Get a value at a path
+  @spec get_in_private(atom, [atom]) :: any
+  def get_in_private(mod, path) do
+    Enum.find_value(Scope.on(mod), fn
+      %{attrs: attrs} ->
+        get_in(attrs, [:__private__ | path])
+    end)
+  end
+
+  @doc false
   # Ensure the provided operation can be recorded in the current environment,
   # in the current scope context
   def recordable!(env, usage) do
@@ -1176,6 +1182,16 @@ defmodule Absinthe.Schema.Notation do
         raise Absinthe.Schema.Notation.Error, "Invalid schema notation: #{ref} must not be used toplevel"
       _ ->
         do_recordable!(env, usage, Map.delete(rules, :toplevel), opts)
+    end
+  end
+  defp do_recordable!(env, usage, %{private_lookup: address} = rules, opts) when is_list(address) do
+    case get_in_private(env.module, address) do
+      nil ->
+        ref = opts[:as] || "`#{usage}`"
+        message = "Invalid schema notation: #{ref} failed a private value lookup for `#{address |> List.last}'"
+        raise Absinthe.Schema.Notation.Error, message
+     _ ->
+        do_recordable!(env, usage, Map.delete(rules, :private_lookup), opts)
     end
   end
   defp do_recordable!(env, _, rules, _) when map_size(rules) == 0 do
