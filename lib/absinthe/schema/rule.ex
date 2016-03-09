@@ -24,6 +24,7 @@ defmodule Absinthe.Schema.Rule do
 
   @rules [
     Rule.TypeNamesAreReserved,
+    Rule.TypeNamesAreValid,
     Rule.ObjectInterfacesMustBeValid,
     Rule.ObjectMustImplementInterfaces,
     Rule.InterfacesMustResolveTypes

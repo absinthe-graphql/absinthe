@@ -257,7 +257,7 @@ defmodule Absinthe.Schema.NotationTest do
     it "can be under field as an attribute" do
       assert_no_notation_error "ResolveValid", """
       object :bar do
-        field :foo do
+        field :foo, :integer do
           resolve fn _, _, _ -> {:ok, 1} end
         end
       end
@@ -341,6 +341,10 @@ defmodule Absinthe.Schema.NotationTest do
   describe "types" do
     it "can be under union as an attribute" do
       assert_no_notation_error "TypesValid", """
+      object :audi do
+      end
+      object :volvo do
+      end
       union :brand do
         types [:audi, :volvo]
       end
@@ -407,7 +411,7 @@ defmodule Absinthe.Schema.NotationTest do
   end
 
   def assert_no_notation_error(name, text) do
-    """
+    assert """
     defmodule MyTestSchema.#{name} do
       use Absinthe.Schema
       #{text}
