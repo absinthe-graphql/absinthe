@@ -96,12 +96,6 @@ defmodule Absinthe.Adapter do
         map_var(rest, [item | acc])
       end
 
-    #   %Absinthe.Language.VariableDefinition{default_value: nil,
-    #  loc: nil,
-    #  type: %Absinthe.Language.NamedType{loc: %{start_line: 1}, name: "Boolean"},
-    #  variable: %Absinthe.Language.Variable{loc: %{start_line: 1},
-    #   name: "includePerson"}}]}], loc: nil
-
       defp load_variable_definitions(%{variable: variable} = node) do
         %{ node |
           variable: Map.update!(variable, :name, &to_internal_name(&1, :variable))
