@@ -82,15 +82,7 @@ defmodule Absinthe.Execution.Arguments do
   end
 
   defp add_argument(_ast, nil, type_stack, meta) do
-    raise ArgumentError, """
-    Schema #{meta.schema} is internally inconsistent!
-
-    Type referenced at #{inspect type_stack} does not exist in the schema, even
-    though items in the schema refer to it. This is bad!
-
-    This clause should become irrelevant when schemas check internal consistency
-    at compile time.
-    """
+    raise ArgumentError, internal_schema_error(meta.schema, type_stack)
   end
 
   defp add_argument(ast, type, type_stack, meta) when is_atom(type) do
@@ -158,6 +150,9 @@ defmodule Absinthe.Execution.Arguments do
   defp fillout_stack(%{name: name}, acc, _schema) do
     [name | acc]
   end
+  defp fillout_stack(nil, acc, schema) do
+    raise ArgumentError, internal_schema_error(schema, acc)
+  end
   defp fillout_stack(identifier, acc, schema) do
     identifier
     |> schema.__absinthe_type__
@@ -221,5 +216,17 @@ defmodule Absinthe.Execution.Arguments do
     end
   rescue
     ArgumentError -> :error
+  end
+
+  defp internal_schema_error(schema, stack) do
+    """
+    Schema #{schema} is internally inconsistent!
+
+    Type referenced at #{inspect stack} does not exist in the schema, even
+    though items in the schema refer to it. This is bad!
+
+    This clause should become irrelevant when schemas check internal consistency
+    at compile time.
+    """
   end
 end

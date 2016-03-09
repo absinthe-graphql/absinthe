@@ -62,24 +62,88 @@ defmodule Absinthe.Adapter do
       alias Absinthe.Execution
       alias Absinthe.Language
 
+      def load_variables(variables) do
+        variables
+        |> map_var
+      end
+
+      defp do_load_variables(item) when is_map(item) do
+        item |> map_var
+      end
+      defp do_load_variables(item) when is_list(item) do
+        item |> list_var
+      end
+      defp do_load_variables(item) do
+        item
+      end
+
+      defp list_var(items) do
+        items |> list_var([])
+      end
+      defp list_var([], acc), do: :lists.reverse(acc)
+      defp list_var([item | rest], acc) do
+        list_var(rest, [do_load_variables(item) | acc])
+      end
+
+      defp map_var(items) do
+        items
+        |> Map.to_list
+        |> map_var([])
+      end
+      defp map_var([], acc), do: :maps.from_list(acc)
+      defp map_var([{k, v} | rest], acc) do
+        item = {to_internal_name(k, :key_name), do_load_variables(v)}
+        map_var(rest, [item | acc])
+      end
+
+    #   %Absinthe.Language.VariableDefinition{default_value: nil,
+    #  loc: nil,
+    #  type: %Absinthe.Language.NamedType{loc: %{start_line: 1}, name: "Boolean"},
+    #  variable: %Absinthe.Language.Variable{loc: %{start_line: 1},
+    #   name: "includePerson"}}]}], loc: nil
+
+      defp load_variable_definitions(%{variable: variable} = node) do
+        %{ node |
+          variable: Map.update!(variable, :name, &to_internal_name(&1, :variable))
+        }
+      end
+
       def load_document(%{definitions: definitions} = node) do
         %{node |
-          definitions: definitions |> Enum.map(&load_ast_node/1)}
+          definitions: definitions |> Enum.map(&load_ast_node/1),
+        }
       end
 
       # Rename a AST node and traverse children
+      defp load_ast_node(%Language.Directive{} = node) do
+        %{node |
+          arguments: Enum.map(node.arguments, &load_ast_node/1)
+        }
+      end
+      defp load_ast_node(%Language.Variable{} = node) do
+        %{node | name: to_internal_name(node.name, :variable)}
+      end
       defp load_ast_node(%Language.OperationDefinition{} = node) do
         %{node |
           name: node.name |> to_internal_name(:operation),
-          selection_set: load_ast_node(node.selection_set)}
+          selection_set: load_ast_node(node.selection_set),
+          variable_definitions: node.variable_definitions |> Enum.map(&load_variable_definitions/1)
+        }
       end
       defp load_ast_node(%Language.Fragment{} = node) do
         %{node |
-          selection_set: load_ast_node(node.selection_set)}
+          directives: node.directives |> Enum.map(&load_ast_node/1),
+          selection_set: load_ast_node(node.selection_set),
+        }
       end
       defp load_ast_node(%Language.InlineFragment{} = node) do
         %{node |
+          directives: node.directives |> Enum.map(&load_ast_node/1),
           selection_set: load_ast_node(node.selection_set)}
+      end
+      defp load_ast_node(%Language.FragmentSpread{} = node) do
+        %{node |
+          directives: node.directives |> Enum.map(&load_ast_node/1)}
       end
       defp load_ast_node(%Language.SelectionSet{} = node) do
         %{node |
@@ -89,7 +153,9 @@ defmodule Absinthe.Adapter do
         %{node |
           name: node.name |> to_internal_name(:field),
           selection_set: load_ast_node(node.selection_set),
-          arguments: node.arguments |> Enum.map(&load_ast_node/1)}
+          arguments: node.arguments |> Enum.map(&load_ast_node/1),
+          directives: node.directives |> Enum.map(&load_ast_node/1),
+        }
       end
       defp load_ast_node(%Language.ObjectValue{} = node) do
         %{node |
@@ -104,6 +170,9 @@ defmodule Absinthe.Adapter do
         %{node |
           name: node.name |> to_internal_name(:argument),
           value: load_ast_node(node.value)}
+      end
+      defp load_ast_node(%Language.ListValue{} = node) do
+        %{node | values: Enum.map(node.values, &load_ast_node/1)}
       end
       defp load_ast_node(other) do
         other

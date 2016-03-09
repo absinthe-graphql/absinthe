@@ -41,15 +41,18 @@ defmodule Absinthe.Execution do
     |> Map.put(:context, Map.get(options, :context, %{}))
     |> Map.put(:adapter, Map.get(options, :adapter))
     |> Map.put(:root_value, Map.get(options, :root_value))
+    |> add_variables(Map.get(options, :variables, %{}))
     |> add_configured_adapter
     |> adapt
     |> categorize_definitions
 
     with {:ok, operation} <- selected_operation(execution) do
-      variables = %__MODULE__.Variables{raw: Map.get(options, :variables, %{})}
-
-      {:ok, %{execution | selected_operation: operation, variables: variables}}
+      {:ok, %{execution | selected_operation: operation}}
     end
+  end
+
+  defp add_variables(execution, raw_vars) do
+    %{execution | variables: %__MODULE__.Variables{raw: raw_vars}}
   end
 
   @default_adapter Absinthe.Adapter.LanguageConventions
@@ -69,8 +72,11 @@ defmodule Absinthe.Execution do
     Application.get_env(:absinthe, :adapter, @default_adapter)
   end
 
-  defp adapt(%{document: document, adapter: adapter} = execution) do
-    %{execution | document: adapter.load_document(document)}
+  defp adapt(%{document: document, variables: variables, adapter: adapter} = execution) do
+    %{execution |
+      document: adapter.load_document(document),
+      variables: Map.update!(variables, :raw, &adapter.load_variables(&1)),
+    }
   end
 
   @default_column_number 0
