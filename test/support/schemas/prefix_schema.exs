@@ -3,12 +3,12 @@ defmodule PrefixSchema do
   use Absinthe.Schema
 
   query do
-    field :foo do
+    field :foo, :integer do
       arg :bar, :string
     end
     field :__mything,
       name: "__mything",
-      type: :thing,
+      type: :string,
       args: [
         __myarg: [type: :integer]
       ],

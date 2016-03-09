@@ -35,7 +35,6 @@ defmodule Absinthe.Type.Fixtures do
   object :article do
     field :id, :string
     field :is_published, :string
-    field :author, :author
     field :title, :string
     field :body, :string
   end
