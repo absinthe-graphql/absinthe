@@ -44,6 +44,9 @@ defmodule Absinthe.Execution.Input do
   end
 
   @compile {:inline, parse_scalar: 5}
+  def parse_scalar(nil, _, _, _type_stack, meta) do
+    {:ok, nil, meta}
+  end
   def parse_scalar(value, ast, %{parse: parser} = type, type_stack, meta) do
     case parser.(value) do
       {:ok, coerced_value} ->

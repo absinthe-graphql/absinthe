@@ -123,6 +123,10 @@ defmodule Absinthe.Execution.Arguments do
   defp do_retrieve_variable(nil, %Type.NonNull{of_type: inner_type}, type_stack, ast, meta) do
     {:error, Meta.put_missing(meta, type_stack, inner_type, ast)}
   end
+  defp do_retrieve_variable(nil, _, _, _, meta) do
+    # Don't put a missing error, but also don't put any value for the variable
+    {:error, meta}
+  end
   defp do_retrieve_variable(value, _, _, _, meta) do
     {:ok, value, meta}
   end

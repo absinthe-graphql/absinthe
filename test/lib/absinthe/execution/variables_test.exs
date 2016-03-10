@@ -6,7 +6,26 @@ defmodule Absinthe.Execution.VariablesTest.Schema do
     field :address, non_null(:string), deprecate: "no longer used"
   end
 
+  input_object :nullable_input do
+    field :field1, :string
+    field :field2, :string
+  end
+
   query do
+    field :nullable, :string do
+      arg :thing, :string
+      arg :input, :nullable_input
+
+      resolve fn
+        %{thing: thing}, _ ->
+          {:ok, "Got #{inspect thing}"}
+        %{input: fields}, _ ->
+          {:ok, "Got #{inspect Map.keys(fields)}"}
+        _, _ ->
+          {:ok, "Got nothing"}
+        end
+    end
+
     field :contacts, :string do
       arg :contacts, non_null(list_of(non_null(:contact_input)))
 
@@ -213,6 +232,20 @@ defmodule Absinthe.Execution.VariablesTest do
       """
       assert {:ok, %{errors: errors}} = doc |> Absinthe.run(__MODULE__.Schema, variables: %{"contacts" => [%{"emailValue" => nil}]})
       assert [%{locations: [%{column: 0, line: 1}], message: "Variable `contacts[].emailValue' (String): Not provided"}] == errors
+    end
+  end
+
+  describe "nil variables" do
+    it "should be the same as not passing in a variable at all" do
+      doc = """
+      query FindContact($thing:String) {nullable(thing:$thing)}
+      """
+      assert {:ok, %{errors: errors, variables: %Absinthe.Execution.Variables{
+        processed: processed}}} = doc |> parse(__MODULE__.Schema, %{"thing" => nil})
+      assert [] == errors
+      assert %{} == processed
+      assert {:ok, %{data: data}} = doc |> Absinthe.run(__MODULE__.Schema, variables: %{"thing" => nil})
+      assert %{"nullable" => "Got nothing"} == data
     end
   end
 

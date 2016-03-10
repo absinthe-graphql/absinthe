@@ -58,6 +58,9 @@ defmodule Absinthe.Execution.Variables do
     end
   end
 
+  defp put_variable(execution, name, %{value: nil}) do
+    execution
+  end
   defp put_variable(execution, name, variable) do
     variables = execution.variables
     |> Map.update!(:processed, &Map.put(&1, name, variable))
