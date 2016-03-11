@@ -175,4 +175,36 @@ defmodule Absinthe.SchemaTest do
 
   end
 
+  defmodule FragmentSpreadSchema do
+    use Absinthe.Schema
+
+    @viewer %{id: "ABCD", name: "Bruce"}
+
+    query do
+      field :viewer, :viewer do
+        resolve fn _, _ -> {:ok, @viewer} end
+      end
+    end
+
+    object :viewer do
+      field :id, :id
+      field :name, :string
+    end
+
+  end
+
+  describe "multiple fragment spreads" do
+
+    @query """
+    query Viewer{viewer{id,...F1}}
+    fragment F0 on Viewer{name,id}
+    fragment F1 on Viewer{id,...F0}
+    """
+
+    it "builds the correct result" do
+      assert {:ok, %{data: %{"viewer" => %{"id" => "ABCD", "name" => "Bruce"}}}} == Absinthe.run(@query, FragmentSpreadSchema)
+    end
+
+  end
+
 end
