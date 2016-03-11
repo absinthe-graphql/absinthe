@@ -50,7 +50,8 @@ VariableDefinitionList -> VariableDefinition : ['$1'].
 VariableDefinitionList -> VariableDefinition VariableDefinitionList : ['$1'|'$2'].
 VariableDefinition -> Variable ':' Type : build_ast_node('VariableDefinition', #{'variable' => '$1', 'type' => '$3'}, #{'start_line' => extract_line('$1')}).
 VariableDefinition -> Variable ':' Type DefaultValue : build_ast_node('VariableDefinition', #{'variable' => '$1', 'type' => '$3', 'default_value' => '$4'}, #{'start_line' => extract_line('$1')}).
-Variable -> '$' Name : build_ast_node('Variable', #{'name' => extract_binary('$2')}, #{'start_line' => extract_line('$1')}).
+Variable -> '$' NameWithoutOn : build_ast_node('Variable', #{'name' => extract_binary('$2')}, #{'start_line' => extract_line('$1')}).
+Variable -> '$' 'on' : build_ast_node('Variable', #{'name' => extract_binary('$2')}, #{'start_line' => extract_line('$1')}).
 
 DefaultValue -> '=' Value : '$2'.
 
@@ -102,20 +103,8 @@ Alias -> Name ':' : '$1'.
 Arguments -> '(' ArgumentList ')' : '$2'.
 ArgumentList -> Argument : ['$1'].
 ArgumentList -> Argument ArgumentList : ['$1'|'$2'].
-Argument -> 'name' ':' Value : build_ast_node('Argument', #{name => extract_binary('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
-Argument -> 'query' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
-Argument -> 'mutation' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
-Argument -> 'fragment' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
-Argument -> 'type' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
-Argument -> 'implements' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
-Argument -> 'union' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
-Argument -> 'scalar' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
-Argument -> 'enum' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
-Argument -> 'input' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
-Argument -> 'extend' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
-Argument -> 'null' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
-Argument -> 'on' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
-Argument -> 'interface' ':' Value : build_ast_node('Argument', #{name => extract_keyword('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
+Argument -> NameWithoutOn ':' Value : build_ast_node('Argument', #{name => extract_binary('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
+Argument -> 'on' ':' Value : build_ast_node('Argument', #{name => extract_binary('$1'), value => '$3'}, #{'start_line' => extract_line('$1')}).
 
 Directives -> Directive : ['$1'].
 Directives -> Directive Directives : ['$1'|'$2'].
@@ -123,21 +112,21 @@ Directive -> '@' Name : build_ast_node('Directive', #{name => extract_binary('$2
 Directive -> '@' Name Arguments : build_ast_node('Directive', #{name => extract_binary('$2'), 'arguments' => '$3'}, #{'start_line' => extract_line('$1')}).
 
 NameWithoutOn -> 'name' : '$1'.
-NameWithoutOn -> 'query' : extract_keyword('$1').
-NameWithoutOn -> 'mutation' : extract_keyword('$1').
-NameWithoutOn -> 'fragment' : extract_keyword('$1').
-NameWithoutOn -> 'type' : extract_keyword('$1').
-NameWithoutOn -> 'implements' : extract_keyword('$1').
-NameWithoutOn -> 'interface' : extract_keyword('$1').
-NameWithoutOn -> 'union' : extract_keyword('$1').
-NameWithoutOn -> 'scalar' : extract_keyword('$1').
-NameWithoutOn -> 'enum' : extract_keyword('$1').
-NameWithoutOn -> 'input' : extract_keyword('$1').
-NameWithoutOn -> 'extend' : extract_keyword('$1').
-NameWithoutOn -> 'null' : extract_keyword('$1').
+NameWithoutOn -> 'query' : extract_binary('$1').
+NameWithoutOn -> 'mutation' : extract_binary('$1').
+NameWithoutOn -> 'fragment' : extract_binary('$1').
+NameWithoutOn -> 'type' : extract_binary('$1').
+NameWithoutOn -> 'implements' : extract_binary('$1').
+NameWithoutOn -> 'interface' : extract_binary('$1').
+NameWithoutOn -> 'union' : extract_binary('$1').
+NameWithoutOn -> 'scalar' : extract_binary('$1').
+NameWithoutOn -> 'enum' : extract_binary('$1').
+NameWithoutOn -> 'input' : extract_binary('$1').
+NameWithoutOn -> 'extend' : extract_binary('$1').
+NameWithoutOn -> 'null' : extract_binary('$1').
 
 Name -> NameWithoutOn : '$1'.
-Name -> 'on' : extract_keyword('$1').
+Name -> 'on' : extract_binary('$1').
 
 Value -> Variable : '$1'.
 Value -> int_value : build_ast_node('IntValue', #{'value' => extract_integer('$1')}, #{'start_line' => extract_line('$1')}).
@@ -220,6 +209,8 @@ TypeExtensionDefinition -> 'extend' ObjectDefinition :
 Erlang code.
 
 extract_atom({Value, _Line}) -> Value.
+extract_binary(Value) when is_binary(Value) -> Value;
+extract_binary({Token, _Line}) -> list_to_binary(atom_to_list(Token));
 extract_binary({_Token, _Line, Value}) -> list_to_binary(Value).
 extract_quoted_string_token({_Token, _Line, Value}) -> list_to_binary(lists:sublist(Value, 2, length(Value) - 2)).
 extract_integer({_Token, _Line, Value}) ->
@@ -228,7 +219,6 @@ extract_float({_Token, _Line, Value}) ->
   {Float, []} = string:to_float(Value), Float.
 extract_boolean({_Token, _Line, "true"}) -> true;
 extract_boolean({_Token, _Line, "false"}) -> false.
-extract_keyword({Value, _Line}) -> list_to_binary(atom_to_list(Value)).
 extract_line({_Token, Line}) -> Line;                                
 extract_line({_Token, Line, _Value}) -> Line;
 extract_line(_) -> nil.

@@ -10,15 +10,15 @@ defmodule Absinthe.ParserTest do
   end
 
   @reserved ~w(query mutation fragment on implements interface union scalar enum input extend null)
-  it "can parse queries with arguments that are 'reserved words'" do
+  it "can parse queries with arguments and variables that are 'reserved words'" do
     @reserved
     |> Enum.each(fn
-      arg ->
+      name ->
         assert {:ok, _} = Absinthe.parse("""
-          mutation CreateThing($blah: Int!) {
-            createThing(#{arg}: $blah) { clientThingId }
-          }
-          """)
+        mutation CreateThing($#{name}: Int!) {
+          createThing(#{name}: $#{name}) { clientThingId }
+        }
+        """)
     end)
   end
 
