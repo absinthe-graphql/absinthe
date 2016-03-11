@@ -29,8 +29,8 @@ defmodule Absinthe.Execution.Directives do
     end)
     |> reduce_results
   end
-  def check(_, _) do
-    :ok
+  def check(execution, _) do
+    {:ok, execution}
   end
 
   @precedence [:include, :skip]
