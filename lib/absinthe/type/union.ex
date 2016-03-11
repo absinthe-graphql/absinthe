@@ -39,7 +39,7 @@ defmodule Absinthe.Type.Union do
 
   @type t :: %{name: binary,
                description: binary,
-               types: [Absinthe.Type.t],
+               types: [Type.identifier_t],
                resolve_type: ((any, Absinthe.Execution.t) -> atom | nil),
                __reference__: Type.Reference.t}
 
@@ -50,9 +50,12 @@ defmodule Absinthe.Type.Union do
   end
 
   @doc false
-  def member?(%{types: types}, type) do
-    types
-    |> Enum.member?(type)
+  @spec member?(t, Type.t) :: boolean
+  def member?(%{types: types}, %{__reference__: %{identifier: ident}}) do
+    ident in types
+  end
+  def member?(_, _) do
+    false
   end
 
   @doc false

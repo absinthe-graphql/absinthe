@@ -100,6 +100,15 @@ defmodule Absinthe.Type.Interface do
     true
   end
 
+  @doc false
+  @spec member?(t, Type.t) :: boolean
+  def member?(%{__reference__: %{identifier: ident}}, %{interfaces: ifaces}) do
+    ident in ifaces
+  end
+  def member?(_, _) do
+    false
+  end
+
   @spec implements?(Type.Interface.t, Type.Object.t) :: boolean
   def implements?(interface, type) do
     # Convert the submap into a list of key-value pairs where each key
