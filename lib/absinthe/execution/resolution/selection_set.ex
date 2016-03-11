@@ -11,7 +11,7 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
   def resolve(%{selections: selections}, %{resolution: %{type: type, target: target}, strategy: :serial} = execution) do
     parent_type = Schema.lookup_type(execution.schema, type)
     {flattened, exe} = flatten(selections, parent_type, execution)
-    {result, execution_to_return} = Enum.reduce(flattened, {%{}, exe}, fn
+    {result, execution_to_return} = Enum.reduce(squash(flattened), {%{}, exe}, fn
       {field_parent_type, {name, ast_node}}, {values, field_exe} ->
         field_resolution = %Resolution{parent_type: field_parent_type, target: target}
         case resolve_field(ast_node, %{field_exe | resolution: field_resolution}) do
@@ -22,6 +22,18 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
         end
     end)
     {:ok, result, execution_to_return}
+  end
+
+  # Remove instructions with the same name, preferring
+  # later ones
+  defp squash(instructions) do
+    instructions
+    |> Enum.reverse
+    |> Enum.uniq_by(fn
+      {_type, {name, _ast_node}} ->
+        name
+    end)
+    |> Enum.reverse
   end
 
   defp flatten(items, type, execution) when is_list(items) do
@@ -40,17 +52,35 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.SelectionSet do
         flatten(exe.fragments[ast_node.name], type, execution)
     end
   end
-  defp flatten(%{__struct__: str} = ast_node, type, execution) when str in [Language.InlineFragment, Language.Fragment] do
+  defp flatten(%{__struct__: str} = ast_node, parent_type, execution) when str in [Language.InlineFragment, Language.Fragment] do
     case Absinthe.Execution.Directives.check(execution, ast_node) do
       {:skip, _} ->
         {[], execution}
       {flag, _exe} when flag in [:ok, :include] ->
-        flatten(ast_node.selection_set.selections, type, execution)
+        fragment_type = type_for_fragment(ast_node, execution)
+        if allow_fragment?(ast_node, fragment_type, parent_type) do
+          flatten(ast_node.selection_set.selections, fragment_type, execution)
+        else
+          {[], execution}
+        end
     end
   end
   # For missing fragments
   defp flatten(nil, _, execution) do
     {[], execution}
+  end
+
+  defp allow_fragment?(%{type_condition: nil}, _, _) do
+    true
+  end
+  defp allow_fragment?(_, %{name: name}, %{name: name}) do
+    true
+  end
+  defp allow_fragment?(_, fragment_type, %{__struct__: str} = object_type) when str in [Type.Interface, Type.Union] do
+    str.member?(object_type, fragment_type)
+  end
+  defp allow_fragment?(_, _, _) do
+    false
   end
 
   @spec type_for_fragment(Language.FragmentSpread.t | Language.InlineFragment.t, Execution.t) :: Type.t | nil
