@@ -16,7 +16,7 @@ Nonterminals
 
 Terminals
   '{' '}' '(' ')' '[' ']' '!' ':' '@' '$' '=' '|' '...'
-  'query' 'mutation' 'fragment' 'on' 'null'
+  'query' 'mutation' 'subscription' 'fragment' 'on' 'null'
   'type' 'implements' 'interface' 'union' 'scalar' 'enum' 'input' 'extend'
   name int_value float_value string_value boolean_value.
 
@@ -33,6 +33,7 @@ Definition -> TypeDefinition : '$1'.
 
 OperationType -> 'query' : extract_atom('$1').
 OperationType -> 'mutation' : extract_atom('$1').
+OperationType -> 'subscription' : extract_atom('$1').
 
 OperationDefinition -> SelectionSet : build_ast_node('OperationDefinition', #{'operation' => 'query', 'selection_set' => '$1'}, #{'start_line' => extract_child_line('$1')}).
 OperationDefinition -> OperationType Name SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => extract_binary('$2'), 'selection_set' => '$3'}, #{'start_line' => extract_line('$2')}).
@@ -114,6 +115,7 @@ Directive -> '@' Name Arguments : build_ast_node('Directive', #{name => extract_
 NameWithoutOn -> 'name' : '$1'.
 NameWithoutOn -> 'query' : extract_binary('$1').
 NameWithoutOn -> 'mutation' : extract_binary('$1').
+NameWithoutOn -> 'subscription' : extract_binary('$1').
 NameWithoutOn -> 'fragment' : extract_binary('$1').
 NameWithoutOn -> 'type' : extract_binary('$1').
 NameWithoutOn -> 'implements' : extract_binary('$1').
