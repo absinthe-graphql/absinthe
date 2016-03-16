@@ -144,6 +144,10 @@ defmodule Absinthe.SchemaTest do
       field :name, :string
     end
 
+    subscription name: "SubscriptionRootTypeThing" do
+      field :name, :string
+    end
+
   end
 
 
@@ -157,12 +161,21 @@ defmodule Absinthe.SchemaTest do
       assert "MyRootMutation" == Schema.lookup_type(RootsSchema, :mutation).name
     end
 
+    it "supports subscriptions" do
+      assert "SubscriptionRootTypeThing" == Schema.lookup_type(RootsSchema, :subscription).name
+    end
+
+
   end
 
   describe "fields" do
 
-    it "have the correct structure" do
+    it "have the correct structure in query" do
       assert %Type.Field{name: "name"} = Schema.lookup_type(RootsSchema, :query).fields.name
+    end
+
+    it "have the correct structure in subscription" do
+      assert %Type.Field{name: "name"} = Schema.lookup_type(RootsSchema, :subscription).fields.name
     end
 
   end
