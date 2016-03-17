@@ -177,6 +177,7 @@ defmodule Absinthe.Schema.Notation do
   # Record an implemented interface in the current scope
   def record_interface!(env, identifier) do
     Scope.put_attribute(env.module, :interfaces, identifier, accumulate: true)
+    Scope.recorded!(env.module, :attr, :interface)
     :ok
   end
 
@@ -257,6 +258,7 @@ defmodule Absinthe.Schema.Notation do
   # Record a type resolver in the current scope
   def record_resolve_type!(env, func_ast) do
     Scope.put_attribute(env.module, :resolve_type, func_ast)
+    Scope.recorded!(env.module, :attr, :resolve_type)
     :ok
   end
 
@@ -399,6 +401,7 @@ defmodule Absinthe.Schema.Notation do
   # Record a resolver in the current scope
   def record_resolve!(env, func_ast) do
     Scope.put_attribute(env.module, :resolve, func_ast)
+    Scope.recorded!(env.module, :attr, :resolve)
     :ok
   end
 
@@ -420,6 +423,7 @@ defmodule Absinthe.Schema.Notation do
   # Record a type checker in the current scope
   def record_is_type_of!(env, func_ast) do
     Scope.put_attribute(env.module, :is_type_of, func_ast)
+    Scope.recorded!(env.module, :attr, :is_type_of)
     :ok
   end
 
@@ -542,6 +546,7 @@ defmodule Absinthe.Schema.Notation do
   # Record a serialize function in the current scope
   def record_serialize!(env, func_ast) do
     Scope.put_attribute(env.module, :serialize, func_ast)
+    Scope.recorded!(env.module, :attr, :serialize)
     :ok
   end
 
@@ -562,6 +567,7 @@ defmodule Absinthe.Schema.Notation do
     |> update_in([:__private__, owner], &List.wrap(&1))
     |> put_in([:__private__, owner, key], value)
     Scope.put_attribute(env.module, :__private__, new_attrs[:__private__])
+    :ok
   end
 
   @placement {:parse, [under: [:scalar]]}
@@ -588,6 +594,7 @@ defmodule Absinthe.Schema.Notation do
   # Record a parse function in the current scope
   def record_parse!(env, func_ast) do
     Scope.put_attribute(env.module, :parse, func_ast)
+    Scope.recorded!(env.module, :attr, :parse)
     :ok
   end
 
@@ -664,6 +671,8 @@ defmodule Absinthe.Schema.Notation do
           value,
           accumulate: true
         )
+        Scope.recorded!(env.module, :attr, :on)
+
     end)
     :ok
   end
@@ -686,6 +695,7 @@ defmodule Absinthe.Schema.Notation do
   # Record a directive instruction function in the current scope
   def record_instruction!(env, func_ast) do
     Scope.put_attribute(env.module, :instruction, func_ast)
+    Scope.recorded!(env.module, :attr, :instruction)
     :ok
   end
 
@@ -779,6 +789,7 @@ defmodule Absinthe.Schema.Notation do
   # Record a list of member types for a union in the current scope
   def record_types!(env, types) do
     Scope.put_attribute(env.module, :types, List.wrap(types))
+    Scope.recorded!(env.module, :attr, :types)
     :ok
   end
 
@@ -847,6 +858,7 @@ defmodule Absinthe.Schema.Notation do
     |> Keyword.delete(:as)
     |> add_description(env)
     Scope.put_attribute(env.module, :values, {identifier, attrs}, accumulate: true)
+    Scope.recorded!(env.module, :attr, :value)
     :ok
   end
 
@@ -878,6 +890,7 @@ defmodule Absinthe.Schema.Notation do
   def record_description!(env, text_block) do
     text = reformat_description(text_block)
     Scope.put_attribute(env.module, :description, text)
+    Scope.recorded!(env.module, :attr, :description)
     :ok
   end
 
@@ -982,6 +995,7 @@ defmodule Absinthe.Schema.Notation do
     block |> expand(env)
 
     close_scope(kind, env, identifier)
+    Scope.recorded!(env.module, kind, identifier)
   end
 
   defp expand(ast, env) do
