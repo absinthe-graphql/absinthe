@@ -239,8 +239,7 @@ defmodule Absinthe do
       {:ok, errors, doc} ->
         execute(schema, document, errors, options)
       {:error, errors, doc} ->
-        exec = %Absinthe.Execution{schema: schema, document: doc, errors: errors}
-        {:ok, exec}
+        {:ok, %{errors: errors}}
     end
   end
   def run(input, schema, options) do
