@@ -237,8 +237,8 @@ defmodule Absinthe do
   def run(%Absinthe.Language.Document{} = document, schema, options) do
     case Absinthe.Validation.run(document) do
       {:ok, errors, doc} ->
-        execute(schema, document, errors, options)
-      {:error, errors, doc} ->
+        execute(schema, doc, errors, options)
+      {:error, errors, _} ->
         {:ok, %{errors: errors}}
     end
   end

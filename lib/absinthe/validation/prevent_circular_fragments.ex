@@ -9,7 +9,7 @@ defmodule Absinthe.Validation.PreventCircularFragments do
       %Language.Fragment{} -> true
       _ -> false
     end)
-    |> check
+    |> check(errors)
   end
 
   # The overall approach here is to create a digraph with an `acyclic`
@@ -18,16 +18,21 @@ defmodule Absinthe.Validation.PreventCircularFragments do
   # an error we have a cycle! Thank you :digraph for doing the hard part
   # :)
   # NOTE: `:digraph` is MUTABLE, as it's backed by `:ets`
-  def check(fragments) do
+  def check(fragments, errors) do
     graph = :digraph.new([:acyclic])
-    errors = []
 
-    fragments
+    result = fragments
     |> Enum.reduce({errors, graph}, &check_fragment/2)
     |> case do
       {[], _} -> {:ok, []}
       {errors, _} -> {:error, errors}
     end
+
+    # The table will get deleted when the process exits, but we might
+    # as well clean up for ourselves explicitly.
+    :digraph.delete(graph)
+
+    result
   end
 
   def check([], errors, _), do: errors
