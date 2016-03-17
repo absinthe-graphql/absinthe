@@ -18,8 +18,9 @@ defmodule Absinthe.Validation.PreventCircularFragmentsTest do
       error = """
       Fragment Cycle Error
 
-      Fragment `nameFragment' forms a cycle via: (`nameFragment' => `nameFragment')
+      Fragment `nameFragment' forms a cycle via: (`nameFragment' => `nameFragment' => `nameFragment')
       """
+      |> String.strip
 
       assert {:error, errors, _} = Validation.run(doc)
       assert [%{locations: [%{column: 0, line: 3}], message: error}] == errors
@@ -46,17 +47,23 @@ defmodule Absinthe.Validation.PreventCircularFragmentsTest do
       fragment baz on Dog {
         age
         ...bar
+        ...qux
+      }
+
+      fragment qux on Dog {
+        asdf
         ...foo
       }
+
       """
       |> Absinthe.parse
 
-      msg1 = "Fragment Cycle Error\n\nFragment `baz' forms a cycle via: (`baz' => `foo' => `bar' => `baz')\n"
-      msg2 = "Fragment Cycle Error\n\nFragment `baz' forms a cycle via: (`baz' => `bar' => `baz')\n"
+      msg1 = "Fragment Cycle Error\n\nFragment `qux' forms a cycle via: (`qux' => `foo' => `bar' => `baz' => `qux')"
+      msg2 = "Fragment Cycle Error\n\nFragment `baz' forms a cycle via: (`baz' => `bar' => `baz')"
 
       assert {:error, errors, _} = Validation.run(doc)
       assert [
-        %{locations: [%{column: 0, line: 20}], message: msg1},
+        %{locations: [%{column: 0, line: 25}], message: msg1},
         %{locations: [%{column: 0, line: 19}], message: msg2}
       ] == errors
     end
@@ -86,6 +93,7 @@ defmodule Absinthe.Validation.PreventCircularFragmentsTest do
 
       Fragment `barkVolumeFragment' forms a cycle via: (`barkVolumeFragment' => `nameFragment' => `barkVolumeFragment')
       """
+      |> String.strip
 
       assert {:ok, %{errors: errors}} = Absinthe.run(doc, Things)
       assert [%{locations: [%{column: 0, line: 14}], message: msg}] == errors

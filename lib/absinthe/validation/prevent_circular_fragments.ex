@@ -12,76 +12,57 @@ defmodule Absinthe.Validation.PreventCircularFragments do
     |> check
   end
 
+  # The overall approach here is to create a digraph with an `acyclic`
+  # constraint. Then we just add the fragments as vectors, and fragment
+  # spreads are used to create edges. If at any point :digraph returns
+  # an error we have a cycle! Thank you :digraph for doing the hard part
+  # :)
+  # NOTE: `:digraph` is MUTABLE, as it's backed by `:ets`
   def check(fragments) do
+    graph = :digraph.new([:acyclic])
+    errors = []
+
     fragments
-    |> Enum.reduce({[], %{}}, fn fragment, acc ->
-      check_fragment(fragment, acc)
-    end)
+    |> Enum.reduce({errors, graph}, &check_fragment/2)
     |> case do
       {[], _} -> {:ok, []}
       {errors, _} -> {:error, errors}
     end
   end
 
-  # For a given fragment, determine if it forms a cycle.
-  # Acc consists of a list of errors, and a map associating a given fragment name
-  # with the names of other fragments it depends on internally via FragmentSpreads.
-  defp check_fragment(fragment, acc) do
-    result = Traversal.reduce(fragment, :unused, acc, fn
-      %Language.FragmentSpread{} = spread, traversal, {errors, fragments} = acc ->
-        transitive_fragments = transitive_dependencies(fragments, spread.name)
+  def check([], errors, _), do: errors
+  def check_fragment(fragment, {errors, graph}) do
+    _ = :digraph.add_vertex(graph, fragment.name)
 
-        dependencies = [spread.name | transitive_fragments]
+    Traversal.reduce(fragment, :unused, {errors, graph}, fn
+      %Language.FragmentSpread{} = spread, traversal, {errors, graph} ->
+        _ = :digraph.add_vertex(graph, spread.name)
 
-        fragments = Map.update(fragments, fragment.name, dependencies, &(dependencies ++ &1))
-
-        case fragment.name in dependencies do
-          true ->
+        case :digraph.add_edge(graph, fragment.name, spread.name) do
+          {:error, {:bad_edge, path}} ->
             # All just error generation logic
-            deps = [fragment.name | dependencies]
+            deps = [fragment.name | path]
             |> Enum.map(&"`#{&1}'")
             |> Enum.join(" => ")
 
-            message = """
+            msg = """
             Fragment Cycle Error
 
             Fragment `#{fragment.name}' forms a cycle via: (#{deps})
             """
+
             error = %{
-              message: message,
+              message: String.strip(msg),
               locations: [%{line: spread.loc.start_line, column: 0}]
             }
-            {:ok, {[error | errors], fragments}, traversal}
 
-          false ->
-            {:ok, {errors, fragments}, traversal}
+            {:ok, {[error | errors], graph}, traversal}
+
+          _ ->
+            {:ok, {errors, graph}, traversal}
         end
-      other, traversal, acc ->
+      _, traversal, acc ->
         {:ok, acc, traversal}
     end)
-  end
-
-  # Suppose we already know that Fragment B depends on fragment C because
-  # that was accumulated in a previous check_fragment call.
-  #
-  # If we now are checking fragment A, and have a node referring to
-  # fragment B, we know that fragment A must transitively depend on all of
-  # B's dependencies. This helps us capture cycles that happen over several
-  # different fragments.
-  defp transitive_dependencies(fragments, spread_name) do
-    deps = fragments |> Map.get(spread_name, [])
-
-    # this reversing stuff is to solve the dual constraints of keeping the
-    # accumulator on the correct side of the ++, and to ensure that the
-    # dependency order stays correct for nice error messages
-    deps
-    |> Enum.reduce(Enum.reverse(deps), fn dep, deps ->
-      transitive_deps = fragments
-      |> Map.get(dep, [])
-      |> Enum.reverse
-
-      transitive_deps ++ deps
-    end)
-    |> Enum.reverse
   end
 end
