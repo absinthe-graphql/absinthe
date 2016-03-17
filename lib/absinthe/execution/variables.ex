@@ -58,7 +58,7 @@ defmodule Absinthe.Execution.Variables do
     end
   end
 
-  defp put_variable(execution, name, %{value: nil}) do
+  defp put_variable(execution, _, %{value: nil}) do
     execution
   end
   defp put_variable(execution, name, variable) do

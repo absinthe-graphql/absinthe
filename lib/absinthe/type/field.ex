@@ -136,6 +136,10 @@ defmodule Absinthe.Type.Field do
     end
   end
 
+  def resolve(%{resolve: nil} = field, args, %{schema: schema} = field_info) do
+    %{field | resolve: schema.__absinthe_custom_default_resolve__}
+    |> resolve(args, field_info)
+  end
   def resolve(%{resolve: designer_resolve, __private__: private}, args, field_info) do
     do_resolve(system_resolve(private), designer_resolve, args, field_info)
   end
