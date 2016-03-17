@@ -24,6 +24,7 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.Field do
             nil
         end
         |> result(ast_node, field, execution)
+
       %{resolve: _} ->
         case Execution.Arguments.build(ast_node, field.args, execution) do
           {:ok, args, exe} ->
