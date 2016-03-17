@@ -125,14 +125,10 @@ defmodule Absinthe.Schema do
 
   ```
   default_resolve fn
-    _, %{source: source, definition: %{name: name}} ->
-      case source do
-        # Only from sources that are maps
-        %{} ->
-          {:ok, Map.get(source, String.upcase(name))}
-        _ ->
-          {:ok, nil}
-      end
+    _, %{source: source, definition: %{name: name}} when is_map(source) ->
+      {:ok, Map.get(source, String.upcase(name))}
+    _, _ ->
+      {:ok, nil}
   end
   ```
 
