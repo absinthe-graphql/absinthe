@@ -9,10 +9,19 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.Field do
 
   @spec resolve(Absinthe.Language.Field.t,
                 Absinthe.Execution.t) :: {:ok, map} | {:error, any}
-  def resolve(%{name: name} = ast_node, %{strategy: :serial, resolution: %{parent_type: parent_type}} = execution) do
+  def resolve(%{name: name} = ast_node, %{strategy: :serial, resolution: %{parent_type: parent_type, target: target}, schema: schema} = execution) do
     field = find_field(ast_node, execution)
-    case field do
-      %{resolve: _} ->
+    case {field, schema.__absinthe_custom_default_resolve__} do
+      {%{resolve: nil}, nil} ->
+        # No custom default resolve function, we can skip arguments
+        case target do
+          %{} ->
+            {:ok, Map.get(target, name |> String.to_existing_atom)}
+          _ ->
+            {:ok, nil}
+        end
+        |> process_raw_result(ast_node, field, execution)
+      {%{}, _} ->
         case Execution.Arguments.build(ast_node, field.args, execution) do
           {:ok, args, exe} ->
             Type.Field.resolve(field, args, field_info(field, ast_node, execution))
@@ -23,7 +32,7 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.Field do
             |> skip_as(:invalid, invalid, name, ast_node)
             |> Flag.as(:skip)
         end
-      nil ->
+      {nil, _} ->
         if Introspection.type?(parent_type) do
           {:skip, execution}
         else

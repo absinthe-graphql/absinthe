@@ -137,7 +137,7 @@ defmodule Absinthe.Type.Field do
   end
 
   def resolve(%{resolve: nil} = field, args, %{schema: schema} = field_info) do
-    %{field | resolve: schema.__absinthe_default_resolve__}
+    %{field | resolve: schema.__absinthe_custom_default_resolve__}
     |> resolve(args, field_info)
   end
   def resolve(%{resolve: designer_resolve, __private__: private}, args, field_info) do
@@ -157,20 +157,6 @@ defmodule Absinthe.Type.Field do
   # Get the registered resolve helper, if any
   defp system_resolve(private) do
     get_in(private, [Absinthe, :resolve])
-  end
-
-  @doc """
-  The default resolver, extracting values from source objects by atom names.
-
-  Override in your schema with `Absinthe.Schema.default_resolve/1`.
-  """
-  def default_resolve(_, %{source: source, definition: %{name: name}}) do
-    case source do
-      %{} = target ->
-        {:ok, Map.get(target, name |> String.to_existing_atom)}
-      _ ->
-        {:ok, nil}
-    end
   end
 
   defimpl Absinthe.Validation.RequiredInput do

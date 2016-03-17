@@ -104,12 +104,11 @@ defmodule Absinthe.Schema do
   ## Default Resolver
 
   By default, if a `resolve` function is not provided for a field, Absinthe
-  will attempt to extract the value of the field by calling
-  `Absinthe.Type.Field.default_resolve/2`, which uses `Map.get/2` to get a value
-  using the (atom) name of the field.
+  will attempt to extract the value of the field using `Map.get/2` with the
+  (atom) name of the field.
 
-  You can change this behavior by setting your own default resolve function in
-  your schema. For example, given we have a fields with a definitions like this:
+  You can change this behavior by setting your own custom default resolve
+  function in your schema. For example, given we have a field, `name`:
 
   ```
   field :name, :string
@@ -136,6 +135,9 @@ defmodule Absinthe.Schema do
       end
   end
   ```
+
+  Note this will now act as the default resolver for all fields in our schema
+  without their own `resolve` function.
   """
 
   @typedoc """
@@ -225,7 +227,7 @@ defmodule Absinthe.Schema do
   Defines a custom default resolve function for the schema.
   """
   defmacro default_resolve(func) do
-    Module.put_attribute(__CALLER__.module, :absinthe_default_resolve, func)
+    Module.put_attribute(__CALLER__.module, :absinthe_custom_default_resolve, func)
     :ok
   end
 
