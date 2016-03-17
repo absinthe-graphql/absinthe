@@ -1,6 +1,8 @@
 defmodule Absinthe.Validation.PreventCircularFragmentsTest do
   use ExSpec, async: true
 
+  alias Absinthe.Validation
+
   # https://facebook.github.io/graphql/#sec-Fragment-spreads-must-not-form-cycles
 
   describe "PreventCircularFragments" do
@@ -19,7 +21,7 @@ defmodule Absinthe.Validation.PreventCircularFragmentsTest do
       Fragment `nameFragment' forms a cycle via: (`nameFragment' => `nameFragment')
       """
 
-      assert {:error, errors, _} = Absinthe.Validation.validate(doc)
+      assert {:error, errors, _} = Validation.run(doc)
       assert [error] == errors
     end
 
@@ -49,7 +51,7 @@ defmodule Absinthe.Validation.PreventCircularFragmentsTest do
       Fragment `barkVolumeFragment' forms a cycle via: (`barkVolumeFragment' => `nameFragment' => `barkVolumeFragment')
       """
 
-      assert {:error, errors, _} = Absinthe.Validation.validate(doc)
+      assert {:error, errors, _} = Validation.run(doc)
       assert [error] == errors
     end
 

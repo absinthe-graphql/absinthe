@@ -10,7 +10,7 @@ defmodule Absinthe.Validation do
   # and the document should not be executed at all.
   #
   # Errors can include deprecation warnings and problems on individual fields
-  def validate(doc) do
+  def run(doc) do
     {status, errors} = Enum.reduce(@validations, {:ok, []}, fn module, {status, acc} ->
       case module.validate(doc, {status, acc}) do
         {:error, errors} -> {:error, errors}

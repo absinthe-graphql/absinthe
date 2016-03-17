@@ -235,7 +235,7 @@ defmodule Absinthe do
   def run(doc, schema, options \\ [])
   @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, Keyword.t) :: {:ok, Absinthe.Execution.result_t} | {:error, any}
   def run(%Absinthe.Language.Document{} = document, schema, options) do
-    case validate(document) do
+    case Absinthe.Validation.run(document) do
       {:ok, errors, doc} ->
         execute(schema, document, errors, options)
       {:error, errors, doc} ->
@@ -252,10 +252,6 @@ defmodule Absinthe do
       other ->
         other
     end
-  end
-
-  def validate(document) do
-    Absinthe.Validation.validate(document)
   end
 
   # TODO: Support modification by adapter
