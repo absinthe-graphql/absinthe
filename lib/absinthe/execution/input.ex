@@ -4,7 +4,6 @@ defmodule Absinthe.Execution.Input do
   # Common functionality for Arguments and Variables
 
   alias Absinthe.Execution
-  alias Absinthe.Type
   alias __MODULE__.Meta
 
   def process(input_type, meta, execution) do

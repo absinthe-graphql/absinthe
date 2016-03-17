@@ -22,4 +22,20 @@ defmodule Absinthe.ParserTest do
     end)
   end
 
+  @query """
+  mutation {
+    likeStory(storyID: 12345) {
+      story {
+        likeCount
+      }
+    }
+  }
+  subscription {
+    viewer { likes }
+  }
+  """
+  it "can parse mutations and subscriptions without names" do
+    assert {:ok, _} = Absinthe.parse(@query)
+  end
+
 end
