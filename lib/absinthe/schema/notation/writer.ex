@@ -10,6 +10,8 @@ defmodule Absinthe.Schema.Notation.Writer do
     implementors  = Macro.escape info.implementors
     directive_map = Macro.escape info.directive_map
 
+    default_resolve = Module.get_attribute(env.module, :absinthe_default_resolve)
+
     [
       quote do
         def __absinthe_types__, do: unquote(type_map)
@@ -29,6 +31,9 @@ defmodule Absinthe.Schema.Notation.Writer do
         def __absinthe_errors__, do: unquote(errors)
         def __absinthe_interface_implementors__, do: unquote(implementors)
         def __absinthe_exports__, do: unquote(exports)
+        def __absinthe_default_resolve__ do
+          unquote(default_resolve) || &Absinthe.Type.Field.default_resolve/2
+        end
       end
     ]
   end

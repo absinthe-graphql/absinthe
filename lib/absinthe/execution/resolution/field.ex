@@ -9,21 +9,9 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.Field do
 
   @spec resolve(Absinthe.Language.Field.t,
                 Absinthe.Execution.t) :: {:ok, map} | {:error, any}
-  def resolve(%{name: name} = ast_node, %{strategy: :serial, resolution: %{parent_type: parent_type, target: target}} = execution) do
+  def resolve(%{name: name} = ast_node, %{strategy: :serial, resolution: %{parent_type: parent_type}} = execution) do
     field = find_field(ast_node, execution)
     case field do
-      %{resolve: nil} ->
-        case target do
-          %{} ->
-            try do
-              target |> Map.get(name |> String.to_existing_atom)
-            rescue
-              ArgumentError -> nil
-            end
-          _ ->
-            nil
-        end
-        |> result(ast_node, field, execution)
       %{resolve: _} ->
         case Execution.Arguments.build(ast_node, field.args, execution) do
           {:ok, args, exe} ->
@@ -35,7 +23,6 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.Field do
             |> skip_as(:invalid, invalid, name, ast_node)
             |> Flag.as(:skip)
         end
-
       nil ->
         if Introspection.type?(parent_type) do
           {:skip, execution}
