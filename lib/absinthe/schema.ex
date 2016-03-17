@@ -100,6 +100,40 @@ defmodule Absinthe.Schema do
 
   end
   ```
+
+  ## Default Resolver
+
+  By default, if a `resolve` function is not provided for a field, Absinthe
+  will attempt to extract the value of the field using `Map.get/2` with the
+  (atom) name of the field.
+
+  You can change this behavior by setting your own custom default resolve
+  function in your schema. For example, given we have a field, `name`:
+
+  ```
+  field :name, :string
+  ```
+
+  And we're trying to extract values from a horrible backend API that gives us
+  maps with uppercase (!) string keys:
+
+  ```
+  %{"NAME" => "A name"}
+  ```
+
+  Here's how we could set our custom resolver to expect those keys:
+
+  ```
+  default_resolve fn
+    _, %{source: source, definition: %{name: name}} when is_map(source) ->
+      {:ok, Map.get(source, String.upcase(name))}
+    _, _ ->
+      {:ok, nil}
+  end
+  ```
+
+  Note this will now act as the default resolver for all fields in our schema
+  without their own `resolve` function.
   """
 
   @typedoc """
@@ -183,6 +217,14 @@ defmodule Absinthe.Schema do
   """
   defmacro subscription([do: block]) do
     Absinthe.Schema.Notation.scope(__CALLER__, :object, :subscription, [name: @default_subscription_name], block)
+  end
+
+  @doc """
+  Defines a custom default resolve function for the schema.
+  """
+  defmacro default_resolve(func) do
+    Module.put_attribute(__CALLER__.module, :absinthe_custom_default_resolve, func)
+    :ok
   end
 
   # Lookup a directive that in used by/available to a schema
