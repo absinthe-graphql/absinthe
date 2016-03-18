@@ -815,6 +815,26 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
 
+  A given query document might look like:
+
+  ```graphql
+  {
+    foo(color: RED)
+  }
+  ```
+
+  Internally you would get an argument in elixir that looks like:
+
+  ```elixir
+  %{color: :red}
+  ```
+
+  If your return value is an enum, it will get serialized out as:
+
+  ```json
+  {"color": "RED"}
+  ```
+
   You can provide custom value mappings. Here we use `r`, `g`, `b` values:
 
   ```
