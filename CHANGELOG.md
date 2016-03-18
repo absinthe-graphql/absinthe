@@ -1,5 +1,34 @@
 # Changelog
 
+## v1.1.0
+
+The v1.1.0 release bundles a bunch of bugfixes and expanded features for
+Absinthe, especially around:
+
+- Support for expanding notation in other packages
+- Complex arguments and variables
+- An `absinthe.schema.json` mix task to extract a JSON representation of
+  a schema for additional tooling (especially [Absinthe.Relay](https://github.com/absinthe-graphql/absinthe_relay).
+- Custom default resolvers, and more!
+
+In terms of breaking changes, there is one you should know about:
+
+## Enum values
+
+As of v1.1.0, Absinthe, by default, adheres to the specification recommendation
+that enum values be provided in ALLCAPS. If you have existing enum definitions
+in your schema that have not explicitly declared how values should be accepted,
+see the documentation for the `Absinthe.Schema.Notation.enum/3` macro,
+especially the use of `:as`, eg:
+
+```elixir
+enum :color do
+  value :red, as: "r"
+  value :green, as: "g"
+  value :blue, as: "b"
+end
+```
+
 ## v1.0.0
 
 Our v1.0.0 release offers an entirely new way of build schemas. This new

@@ -802,6 +802,29 @@ defmodule Absinthe.Schema.Notation do
   ## Placement
 
   #{Utils.placement_docs(@placement)}
+
+  ## Examples
+
+  Handling `RED`, `GREEN`, `BLUE` values from the query document:
+
+  ```
+  enum :color do
+    value :red
+    value :green
+    value :blue
+  end
+  ```
+
+  You can provide custom value mappings. Here we use `r`, `g`, `b` values:
+
+  ```
+  enum :color do
+    value :red, as: "r"
+    value :green, as: "g"
+    value :blue, as: "b"
+  end
+  ```
+
   """
   defmacro enum(identifier, attrs, [do: block]) do
     __CALLER__
