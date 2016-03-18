@@ -21,6 +21,7 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.Field do
             {:ok, nil}
         end
         |> process_raw_result(ast_node, field, execution)
+
       {%{}, _} ->
         case Execution.Arguments.build(ast_node, field.args, execution) do
           {:ok, args, exe} ->
@@ -32,6 +33,7 @@ defimpl Absinthe.Execution.Resolution, for: Absinthe.Language.Field do
             |> skip_as(:invalid, invalid, name, ast_node)
             |> Flag.as(:skip)
         end
+
       {nil, _} ->
         if Introspection.type?(parent_type) do
           {:skip, execution}

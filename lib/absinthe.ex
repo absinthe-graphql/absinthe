@@ -235,11 +235,11 @@ defmodule Absinthe do
   def run(doc, schema, options \\ [])
   @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, Keyword.t) :: {:ok, Absinthe.Execution.result_t} | {:error, any}
   def run(%Absinthe.Language.Document{} = document, schema, options) do
-    case execute(schema, document, options) do
-      {:ok, result} ->
-        {:ok, result}
-      other ->
-        other
+    case Absinthe.Validation.run(document) do
+      {:ok, errors, doc} ->
+        execute(schema, doc, errors, options)
+      {:error, errors, _} ->
+        {:ok, %{errors: errors}}
     end
   end
   def run(input, schema, options) do
@@ -296,9 +296,9 @@ defmodule Absinthe do
   # EXECUTION
   #
 
-  @spec execute(Absinthe.Schema.t, Absinthe.Language.Document.t, Keyword.t) :: Absinthe.Execution.result_t
-  defp execute(schema, document, options) do
-    %Absinthe.Execution{schema: schema, document: document}
+  @spec execute(Absinthe.Schema.t, Absinthe.Language.Document.t, [], Keyword.t) :: Absinthe.Execution.result_t
+  defp execute(schema, document, errors, options) do
+    %Absinthe.Execution{schema: schema, document: document, errors: errors}
     |> Absinthe.Execution.run(options)
   end
 
