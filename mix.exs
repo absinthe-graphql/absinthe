@@ -19,7 +19,7 @@ defmodule Absinthe.Mixfile do
   defp package do
     [description: "GraphQL for Elixir",
      files: ["lib", "src", "mix.exs", "README*"],
-     maintainers: ["Bruce Williams"],
+     maintainers: ["Bruce Williams", "Ben Wilson"],
      licenses: ["BSD"],
      links: %{github: "https://github.com/CargoSense/absinthe"}]
   end
