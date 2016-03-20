@@ -209,6 +209,7 @@ InputObjectDefinition -> 'input' Name '{' InputValueDefinitionList '}' :
 TypeExtensionDefinition -> 'extend' ObjectDefinition :
   build_ast_node('TypeExtensionDefinition', #{'definition' => '$2'}, #{'start_line' => extract_line('$1')}).
 
+
 Erlang code.
 
 extract_atom({Value, _Line}) -> Value.
