@@ -4,11 +4,13 @@ defmodule Absinthe.Execution.VariablesTest.Schema do
   input_object :contact_input do
     field :email_value, non_null(:string)
     field :address, non_null(:string), deprecate: "no longer used"
+    field :addresses, list_of(:string)
   end
 
   input_object :nullable_input do
     field :field1, :string
     field :field2, :string
+    field :contact, :contact_input
   end
 
   query do
@@ -185,6 +187,28 @@ defmodule Absinthe.Execution.VariablesTest do
       assert errors == []
       assert %{email_value: "ben"} == value
       assert ["ContactInput"] == type
+    end
+
+    it "should handle inner list fields" do
+      doc = """
+      query FindContact($contact:ContactInput) {contact(contact:$contact)}
+      """
+      assert {:ok, %{errors: errors, variables: %Absinthe.Execution.Variables{
+        raw: %{},
+        processed: %{"contact" => %Absinthe.Execution.Variable{value: value, type_stack: type}}
+      }}} = doc |> parse(__MODULE__.Schema, %{"contact" => %{"emailValue" => "ben", "addresses" => ["foo", "bar"]}})
+      assert errors == []
+    end
+
+    it "should handle inner input objects" do
+      doc = """
+      query FindContact($thing:NullableInput) {nullable(input:$thing)}
+      """
+      assert {:ok, %{errors: errors, variables: %Absinthe.Execution.Variables{
+        raw: %{},
+        processed: %{"contact" => %Absinthe.Execution.Variable{value: value, type_stack: type}}
+      }}} = doc |> parse(__MODULE__.Schema, %{"thing" => %{"contact" => %{"emailValue" => "ben"}}})
+      assert errors == []
     end
 
     it "should return an error if an inner scalar doesn't parse" do
