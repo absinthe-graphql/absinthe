@@ -104,6 +104,10 @@ defmodule Absinthe.Execution.Variable do
   # I don't necessarily think that the duplication is ipso facto bad, but each individual
   # use case should at least live in its own module that gives it some more semantic value
 
+  defp build_map_value(values, %Type.InputObject{fields: schema_fields}, type_stack, var_ast, meta) do
+    {values, meta} = map_values(Map.to_list(values), schema_fields, type_stack, var_ast, meta)
+    {:ok, values, meta}
+  end
   defp build_map_value(value, %Type.Field{type: inner_type} = type, type_stack, var_ast, meta) do
     meta = meta |> add_deprecation_notice(type, inner_type, type_stack, var_ast)
     build_map_value(value, inner_type, type_stack, var_ast, meta)

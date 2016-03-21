@@ -206,9 +206,10 @@ defmodule Absinthe.Execution.VariablesTest do
       """
       assert {:ok, %{errors: errors, variables: %Absinthe.Execution.Variables{
         raw: %{},
-        processed: %{"contact" => %Absinthe.Execution.Variable{value: value, type_stack: type}}
+        processed: %{"thing" => %Absinthe.Execution.Variable{value: value, type_stack: type}}
       }}} = doc |> parse(__MODULE__.Schema, %{"thing" => %{"contact" => %{"emailValue" => "ben"}}})
       assert errors == []
+      assert %{contact: %{email_value: "ben"}} == value
     end
 
     it "should return an error if an inner scalar doesn't parse" do
