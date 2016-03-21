@@ -48,7 +48,7 @@ defmodule Absinthe.Language.IDL do
   defp to_idl_ast(%Type.InputObject{}, %Type.Field{} = node, schema) do
     %Language.InputValueDefinition{
       name: node.name,
-      default_value: node.default_value,
+      default_value: to_idl_default_value_ast(Schema.lookup_type(schema, node.type, unwrap: false), node.default_value, schema),
       type: to_idl_ast(node.type, schema)
     }
   end
@@ -57,6 +57,23 @@ defmodule Absinthe.Language.IDL do
       name: node.name,
       arguments: Enum.map(Map.values(node.args), &to_idl_ast(&1, schema)),
       type: to_idl_ast(node.type, schema)
+    }
+  end
+
+  defp to_idl_default_value_ast(_, nil, _), do: nil
+  defp to_idl_default_value_ast(%Type.Scalar{name: "Boolean"}, value, schema) do
+    %Language.BooleanValue{value: value}
+  end
+  defp to_idl_default_value_ast(%Type.Scalar{name: "Int"}, value, schema) do
+    %Language.IntValue{value: value}
+  end
+  defp to_idl_default_value_ast(%Type.Scalar{name: "String"}, value, schema) do
+    %Language.StringValue{value: value}
+  end
+  defp to_idl_default_value_ast(%Type.List{of_type: type}, value, schema) do
+    internal_type = Schema.lookup_type(schema, type, unwrap: false)
+    %Language.ListValue{
+      values: Enum.map(value, &to_idl_default_value_ast(internal_type, &1, schema))
     }
   end
 
@@ -118,10 +135,39 @@ defmodule Absinthe.Language.IDL do
     ]
   end
 
+  defp default_idl_iodata(nil) do
+    ""
+  end
+  defp default_idl_iodata(node) do
+    [
+      " = ",
+      do_default_idl_iodata(node)
+    ]
+  end
 
-  defp default_idl_iodata(nil), do: ""
-  defp default_idl_iodata(value) when is_binary(value), do: ~s( = "#{value}")
-  defp default_idl_iodata(value), do: " = #{value}"
+  defp do_default_idl_iodata(%Language.StringValue{} = node) do
+    node.value
+    |> inspect
+  end
+  defp do_default_idl_iodata(%Language.IntValue{} = node) do
+    node.value
+    |> Integer.to_string
+  end
+  defp do_default_idl_iodata(%Language.FloatValue{} = node) do
+    node.value
+    |> Float.to_string
+  end
+  defp do_default_idl_iodata(%Language.BooleanValue{} = node) do
+    node.value
+    |> to_string
+  end
+  defp do_default_idl_iodata(%Language.ListValue{} = node) do
+    [
+      "[",
+      Enum.map(node.values, &do_default_idl_iodata/1),
+      "]"
+    ]
+  end
 
   defp arguments_idl_iodata([]) do
     ""

@@ -69,6 +69,8 @@ defmodule Absinthe.Language.IDLtest do
 
       input_object :input_article do
         field :author, :input_user
+        field :publish, :boolean, default_value: true
+        field :tags, list_of(:string), default_value: ~w(a b c)
       end
 
       input_object :input_user do
@@ -89,6 +91,8 @@ defmodule Absinthe.Language.IDLtest do
       equiv_idl = """
       input InputArticle {
         author: InputUser
+        publish: Boolean = true
+        tags: [String] = ["a", "b", "c"]
       }
       """
       {:ok, equiv_idl_ast_doc} = Absinthe.parse(equiv_idl)
@@ -96,6 +100,7 @@ defmodule Absinthe.Language.IDLtest do
       equiv_idl_iodata = Absinthe.Language.IDL.to_idl_iodata(equiv_idl_ast)
 
       idl_ast = InputObjectSchema.__absinthe_type__(:input_article) |> Absinthe.Language.IDL.to_idl_ast(InputObjectSchema)
+
       idl_iodata = Absinthe.Language.IDL.to_idl_iodata(idl_ast)
       assert idl_iodata == equiv_idl_iodata
     end
