@@ -195,9 +195,10 @@ defmodule Absinthe.Execution.VariablesTest do
       """
       assert {:ok, %{errors: errors, variables: %Absinthe.Execution.Variables{
         raw: %{},
-        processed: %{"contact" => %Absinthe.Execution.Variable{value: value, type_stack: type}}
+        processed: %{"contact" => %Absinthe.Execution.Variable{value: value}}
       }}} = doc |> parse(__MODULE__.Schema, %{"contact" => %{"emailValue" => "ben", "addresses" => ["foo", "bar"]}})
       assert errors == []
+      assert %{addresses: ["foo", "bar"], email_value: "ben"} == value
     end
 
     it "should handle inner input objects" do
@@ -206,7 +207,7 @@ defmodule Absinthe.Execution.VariablesTest do
       """
       assert {:ok, %{errors: errors, variables: %Absinthe.Execution.Variables{
         raw: %{},
-        processed: %{"thing" => %Absinthe.Execution.Variable{value: value, type_stack: type}}
+        processed: %{"thing" => %Absinthe.Execution.Variable{value: value}}
       }}} = doc |> parse(__MODULE__.Schema, %{"thing" => %{"contact" => %{"emailValue" => "ben"}}})
       assert errors == []
       assert %{contact: %{email_value: "ben"}} == value
