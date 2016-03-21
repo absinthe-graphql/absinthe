@@ -15,14 +15,13 @@ defmodule Absinthe.Language.IDL do
   def to_idl_ast(%Type.Object{} = node, schema) do
     %Language.ObjectDefinition{
       name: node.name,
-      fields: Enum.map(Map.values(node.fields), &to_idl_ast(&1, schema))
+      fields: Enum.map(Map.values(node.fields), &to_idl_ast(node, &1, schema))
     }
   end
-  def to_idl_ast(%Type.Field{} = node, schema) do
-    %Language.FieldDefinition{
+  def to_idl_ast(%Type.InputObject{} = node, schema) do
+    %Language.InputObjectDefinition{
       name: node.name,
-      arguments: Enum.map(Map.values(node.args), &to_idl_ast(&1, schema)),
-      type: to_idl_ast(node.type, schema)
+      fields: Enum.map(Map.values(node.fields), &to_idl_ast(node, &1, schema))
     }
   end
   def to_idl_ast(%Type.Argument{} = node, schema) do
@@ -45,6 +44,22 @@ defmodule Absinthe.Language.IDL do
     %Language.NamedType{name: schema.__absinthe_type__(node).name}
   end
 
+  @spec to_idl_ast(Type.t, Type.t, Schema.t) :: Language.t
+  defp to_idl_ast(%Type.InputObject{}, %Type.Field{} = node, schema) do
+    %Language.InputValueDefinition{
+      name: node.name,
+      default_value: node.default_value,
+      type: to_idl_ast(node.type, schema)
+    }
+  end
+  defp to_idl_ast(%Type.Object{}, %Type.Field{} = node, schema) do
+    %Language.FieldDefinition{
+      name: node.name,
+      arguments: Enum.map(Map.values(node.args), &to_idl_ast(&1, schema)),
+      type: to_idl_ast(node.type, schema)
+    }
+  end
+
   @spec to_idl_iodata(Language.t) :: iodata
   def to_idl_iodata(%Language.Document{} = doc) do
     doc.definitions
@@ -59,12 +74,30 @@ defmodule Absinthe.Language.IDL do
       "}\n"
     ]
   end
+  def to_idl_iodata(%Language.InputObjectDefinition{} = node) do
+    [
+      "input ",
+      node.name,
+      " {\n",
+      indented(2, node.fields),
+      "}\n"
+    ]
+  end
   def to_idl_iodata(%Language.FieldDefinition{} = node) do
     [
       node.name,
       arguments_idl_iodata(node.arguments),
       ": ",
       to_idl_iodata(node.type),
+      "\n"
+    ]
+  end
+  def to_idl_iodata(%Language.InputValueDefinition{} = node) do
+    [
+      node.name,
+      ": ",
+      to_idl_iodata(node.type),
+      default_idl_iodata(node.default_value),
       "\n"
     ]
   end
@@ -86,6 +119,9 @@ defmodule Absinthe.Language.IDL do
   end
 
 
+  defp default_idl_iodata(nil), do: ""
+  defp default_idl_iodata(value) when is_binary(value), do: ~s( = "#{value}")
+  defp default_idl_iodata(value), do: " = #{value}"
 
   defp arguments_idl_iodata([]) do
     ""
