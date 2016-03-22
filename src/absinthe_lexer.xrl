@@ -43,7 +43,7 @@ BooleanValue        = true|false
 
 
 % Reserved words
-ReservedWord        = query|mutation|subscription|fragment|on|implements|interface|union|scalar|enum|input|extend|null
+ReservedWord        = query|mutation|subscription|fragment|on|implements|interface|union|scalar|enum|input|extend|type|null
 
 Rules.
 

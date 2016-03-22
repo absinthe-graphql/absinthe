@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.1.3
+
+(NOT YET RELEASED)
+
+Mix Tasks:
+
+- `absinthe.schema.json` now requires schema to be given as an `--schema`
+  option, but supports the `:absinthe` `:schema` application configuration
+  value.
+- `absinthe.schema.graphql` task added.
+
 ## v1.1.2
 
 Bugfixes:

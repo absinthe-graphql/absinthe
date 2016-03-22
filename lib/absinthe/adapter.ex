@@ -57,6 +57,8 @@ defmodule Absinthe.Adapter do
 
   defmacro __using__(_) do
     quote do
+      require Logger
+
       @behaviour unquote(__MODULE__)
 
       alias Absinthe.Execution
@@ -96,80 +98,129 @@ defmodule Absinthe.Adapter do
         map_var(rest, [item | acc])
       end
 
-      defp load_variable_definitions(%{variable: variable} = node) do
-        %{ node |
-          variable: Map.update!(variable, :name, &to_internal_name(&1, :variable))
-        }
-      end
+      def load_document(node), do: adapt(node, :load)
+      def dump_document(node), do: adapt(node, :dump)
 
-      def load_document(%{definitions: definitions} = node) do
-        %{node |
-          definitions: definitions |> Enum.map(&load_ast_node/1),
-        }
-      end
+      @ignore_nodes [
+        Language.EnumTypeDefinition,
+        Language.UnionTypeDefinition,
+        Language.ScalarTypeDefinition,
+        Language.StringValue,
+        Language.BooleanValue,
+        Language.IntValue,
+        Language.FloatValue,
+        Language.EnumValue
+      ]
 
       # Rename a AST node and traverse children
-      defp load_ast_node(%Language.Directive{} = node) do
+      def adapt(%Language.Document{definitions: definitions} = node, adaptation) do
+        %{
+          node |
+          definitions: definitions |> Enum.map(&adapt(&1, adaptation)),
+         }
+      end
+      def adapt(%Language.VariableDefinition{variable: variable} = node, adaptation) do
+        %{
+          node |
+          variable: Map.update!(variable, :name, &do_adapt(&1, :variable, adaptation))
+         }
+      end
+      def adapt(%Language.Directive{} = node, adaptation) do
         %{node |
-          arguments: Enum.map(node.arguments, &load_ast_node/1)
+          arguments: Enum.map(node.arguments, &adapt(&1, adaptation))
         }
       end
-      defp load_ast_node(%Language.Variable{} = node) do
-        %{node | name: to_internal_name(node.name, :variable)}
+      def adapt(%Language.Variable{} = node, adaptation) do
+        %{node | name: do_adapt(node.name, :variable, adaptation)}
       end
-      defp load_ast_node(%Language.OperationDefinition{} = node) do
+      def adapt(%Language.OperationDefinition{} = node, adaptation) do
         %{node |
-          name: node.name |> to_internal_name(:operation),
-          selection_set: load_ast_node(node.selection_set),
-          variable_definitions: node.variable_definitions |> Enum.map(&load_variable_definitions/1)
+          name: node.name |> do_adapt(:operation, adaptation),
+          selection_set: adapt(node.selection_set, adaptation),
+          variable_definitions: node.variable_definitions |> Enum.map(&adapt(&1, adaptation))
         }
       end
-      defp load_ast_node(%Language.Fragment{} = node) do
+      def adapt(%Language.ObjectDefinition{} = node, adaptation) do
         %{node |
-          directives: node.directives |> Enum.map(&load_ast_node/1),
-          selection_set: load_ast_node(node.selection_set),
+          fields: Enum.map(node.fields, &adapt(&1, adaptation))
+         }
+      end
+      def adapt(%Language.InputObjectDefinition{} = node, adaptation) do
+        %{node |
+          fields: Enum.map(node.fields, &adapt(&1, adaptation))
+         }
+      end
+      def adapt(%Language.Fragment{} = node, adaptation) do
+        %{node |
+          directives: node.directives |> Enum.map(&adapt(&1, adaptation)),
+          selection_set: adapt(node.selection_set, adaptation),
         }
       end
-      defp load_ast_node(%Language.InlineFragment{} = node) do
+      def adapt(%Language.InlineFragment{} = node, adaptation) do
         %{node |
-          directives: node.directives |> Enum.map(&load_ast_node/1),
-          selection_set: load_ast_node(node.selection_set)}
+          directives: node.directives |> Enum.map(&adapt(&1, adaptation)),
+          selection_set: adapt(node.selection_set, adaptation)}
       end
-      defp load_ast_node(%Language.FragmentSpread{} = node) do
+      def adapt(%Language.FragmentSpread{} = node, adaptation) do
         %{node |
-          directives: node.directives |> Enum.map(&load_ast_node/1)}
+          directives: node.directives |> Enum.map(&adapt(&1, adaptation))}
       end
-      defp load_ast_node(%Language.SelectionSet{} = node) do
+      def adapt(%Language.SelectionSet{} = node, adaptation) do
         %{node |
-          selections: node.selections |> Enum.map(&load_ast_node/1)}
+          selections: node.selections |> Enum.map(&adapt(&1, adaptation))}
       end
-      defp load_ast_node(%Language.Field{} = node) do
+      def adapt(%Language.Field{} = node, adaptation) do
         %{node |
-          name: node.name |> to_internal_name(:field),
-          selection_set: load_ast_node(node.selection_set),
-          arguments: node.arguments |> Enum.map(&load_ast_node/1),
-          directives: node.directives |> Enum.map(&load_ast_node/1),
+          name: node.name |> do_adapt(:field, adaptation),
+          selection_set: adapt(node.selection_set, adaptation),
+          arguments: node.arguments |> Enum.map(&adapt(&1, adaptation)),
+          directives: node.directives |> Enum.map(&adapt(&1, adaptation)),
         }
       end
-      defp load_ast_node(%Language.ObjectValue{} = node) do
+      def adapt(%Language.FieldDefinition{} = node, adaptation) do
         %{node |
-          fields: node.fields |> Enum.map(&load_ast_node/1)}
+          name: node.name |> do_adapt(:field, adaptation),
+          arguments: node.arguments |> Enum.map(&adapt(&1, adaptation)),
+         }
       end
-      defp load_ast_node(%Language.ObjectField{} = node) do
+      def adapt(%Language.InputValueDefinition{} = node, adaptation) do
         %{node |
-          name: node.name |> to_internal_name(:field),
-          value: load_ast_node(node.value)}
+          name: node.name |> do_adapt(:field, adaptation),
+         }
       end
-      defp load_ast_node(%Language.Argument{} = node) do
+      def adapt(%Language.ObjectValue{} = node, adaptation) do
         %{node |
-          name: node.name |> to_internal_name(:argument),
-          value: load_ast_node(node.value)}
+          fields: node.fields |> Enum.map(&adapt(&1, adaptation))}
       end
-      defp load_ast_node(%Language.ListValue{} = node) do
-        %{node | values: Enum.map(node.values, &load_ast_node/1)}
+      def adapt(%Language.ObjectField{} = node, adaptation) do
+        %{node |
+          name: node.name |> do_adapt(:field, adaptation),
+          value: adapt(node.value, adaptation)}
       end
-      defp load_ast_node(other) do
+      def adapt(%Language.Argument{} = node, adaptation) do
+        %{node |
+          name: node.name |> do_adapt(:argument, adaptation),
+          value: adapt(node.value, adaptation)}
+      end
+      def adapt(%Language.ListValue{} = node, adaptation) do
+        %{node | values: Enum.map(node.values, &adapt(&1, adaptation))}
+      end
+      def adapt(%{__struct__: str} = node, _) when str in @ignore_nodes do
+        node
+      end
+      def adapt(nil, _) do
+        nil
+      end
+      def adapt(other, _) do
+        Logger.warn "Absinthe: #{__MODULE__} could not adapt #{inspect other}"
         other
+      end
+
+      defp do_adapt(value, role, :load) do
+        to_internal_name(value, role)
+      end
+      defp do_adapt(value, role, :dump) do
+        to_external_name(value, role)
       end
 
       def dump_results(%{data: data} = results) do
@@ -227,6 +278,8 @@ defmodule Absinthe.Adapter do
       end
 
       defoverridable [load_document: 1,
+                      dump_document: 1,
+                      adapt: 2,
                       dump_results: 1,
                       format_error: 2,
                       format_error: 1,
@@ -249,6 +302,22 @@ defmodule Absinthe.Adapter do
   ```
   """
   @callback load_document(Absinthe.Language.Document.t) :: Absinthe.Language.Document.t
+
+
+  @doc """
+  Convert an AST node to/from a representation.
+
+  Called by `load_document/1`.
+
+  ## Examples
+
+  ```
+  def adapt(%{definitions: definitions} = document, :load) do
+    %{document | definitions: definitions |> Enum.map(&your_custom_loader/1)}
+  end
+  ```
+  """
+  @callback adapt(Absinthe.Language.t, :load | :dump) :: Absinthe.Language.t
 
   @doc """
   Convert the canonical (internal) results to the output (external)
