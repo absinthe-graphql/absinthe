@@ -15,11 +15,18 @@ defmodule Absinthe.Language.IDL do
   def to_idl_ast(%Type.Object{} = node, schema) do
     %Language.ObjectDefinition{
       name: node.name,
-      fields: Enum.map(Map.values(node.fields), &to_idl_ast(node, &1, schema))
+      fields: Enum.map(Map.values(node.fields), &to_idl_ast(node, &1, schema)),
+      interfaces: Enum.map(node.interfaces, &to_idl_interface_ast(&1, schema))
     }
   end
   def to_idl_ast(%Type.InputObject{} = node, schema) do
     %Language.InputObjectDefinition{
+      name: node.name,
+      fields: Enum.map(Map.values(node.fields), &to_idl_ast(node, &1, schema))
+    }
+  end
+  def to_idl_ast(%Type.Interface{} = node, schema) do
+    %Language.InterfaceDefinition{
       name: node.name,
       fields: Enum.map(Map.values(node.fields), &to_idl_ast(node, &1, schema))
     }
@@ -52,12 +59,17 @@ defmodule Absinthe.Language.IDL do
       type: to_idl_ast(node.type, schema)
     }
   end
-  defp to_idl_ast(%Type.Object{}, %Type.Field{} = node, schema) do
+  defp to_idl_ast(%{__struct__: str}, %Type.Field{} = node, schema) when str in [Type.Object, Type.Interface] do
     %Language.FieldDefinition{
       name: node.name,
       arguments: Enum.map(Map.values(node.args), &to_idl_ast(&1, schema)),
       type: to_idl_ast(node.type, schema)
     }
+  end
+
+  defp to_idl_interface_ast(identifier, schema) do
+    name = schema.__absinthe_type__(identifier).name
+    %Language.NamedType{name: name}
   end
 
   defp to_idl_default_value_ast(_, nil, _), do: nil
@@ -85,6 +97,16 @@ defmodule Absinthe.Language.IDL do
   def to_idl_iodata(%Language.ObjectDefinition{} = node) do
     [
       "type ",
+      node.name,
+      implements_iodata(node.interfaces),
+      " {\n",
+      indented(2, node.fields),
+      "}\n"
+    ]
+  end
+  def to_idl_iodata(%Language.InterfaceDefinition{} = node) do
+    [
+      "interface ",
       node.name,
       " {\n",
       indented(2, node.fields),
@@ -132,6 +154,18 @@ defmodule Absinthe.Language.IDL do
       "[",
       to_idl_iodata(node.type),
       "]"
+    ]
+  end
+
+  defp implements_iodata([]) do
+    []
+  end
+  defp implements_iodata(interfaces) do
+    [
+      " implements ",
+      interfaces
+      |> Enum.map(&Map.get(&1, :name))
+      |> Enum.join(", ")
     ]
   end
 

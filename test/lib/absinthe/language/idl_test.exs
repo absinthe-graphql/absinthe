@@ -1,10 +1,13 @@
 defmodule Absinthe.Language.IDLtest do
   use ExSpec, async: true
 
-  describe "object types" do
+  describe "object and interface types" do
 
     @idl """
-    type Article {
+    interface Authored {
+      author: User
+    }
+    type Article implements Authored {
       author: User
     }
     type User {
@@ -15,8 +18,17 @@ defmodule Absinthe.Language.IDLtest do
     defmodule ObjectSchema do
       use Absinthe.Schema
 
+      interface :authored do
+        field :author, :user
+        resolve_type fn
+          _, _ ->
+            {:ok, :article}
+        end
+      end
+
       object :article do
         field :author, :user
+        interface :authored
       end
 
       object :user do
@@ -35,7 +47,7 @@ defmodule Absinthe.Language.IDLtest do
 
     it "can be converted to IDL iodata" do
       equiv_idl = """
-      type Article {
+      type Article implements Authored {
         author: User
       }
       """
@@ -109,5 +121,7 @@ defmodule Absinthe.Language.IDLtest do
     end
 
   end
+
+
 
 end
