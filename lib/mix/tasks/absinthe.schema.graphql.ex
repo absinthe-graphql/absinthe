@@ -5,6 +5,9 @@ defmodule Mix.Tasks.Absinthe.Schema.Graphql do
 
   @shortdoc "Generate a schema.graphql file for an Absinthe schema"
 
+  @default_filename "./schema.graphql"
+  @default_adapter Absinthe.Adapter.LanguageConventions
+
   @moduledoc """
   Generate a schema.graphql file
 
@@ -14,38 +17,68 @@ defmodule Mix.Tasks.Absinthe.Schema.Graphql do
 
   ## Options
 
-    --adapter Sets the adapter. Default: Absinthe.Adapter.LanguageConventions
+    --adapter Sets the adapter. Default: #{@default_adapter}
 
   ## Examples
 
-      $ mix absinthe.schema.graphql MySchema
-      $ mix absinthe.schema.graphql MySchema ../path/to/schema.graphql
-      $ mix absinthe.schema.graphql MySchema --adapter Absinthe.Adapter.Passthrough
+  Write to default path `#{@default_filename}` using the `:schema` configured for
+  the `:absinthe` application, adapting it using the default
+  `#{@default_adapter}` adapter:
+
+      $ mix absinthe.schema.graphql
+
+  Write to default path `#{@default_filename}` using the `MySchema` schema, adapting
+  it using the default `#{@default_adapter}` adapter:
+
+      $ mix absinthe.schema.graphql --schema MySchema
+
+  Write to path `/path/to/schema.graphql` using the `MySchema` schema, adapting
+  it using the default `#{@default_adapter}` adapter:
+
+      $ mix absinthe.schema.graphql --schema MySchema /path/to/schema.graphql
+
+  Write to default path `#{@default_filename}` using the `MySchema` schema, adapting
+  it using the `Absinthe.Adapter.Passthrough` adapter:
+
+      $ mix absinthe.schema.graphql --schema MySchema --adapter Absinthe.Adapter.Passthrough
 
   """
 
   def run(argv) do
     Mix.Task.run("app.start", [])
 
-    {opts, [schema_name|rest], _} = OptionParser.parse(argv)
+    {opts, args, _} = OptionParser.parse(argv)
 
-    filename = rest |> List.first || "schema.graphql"
     adapter = find_adapter(opts)
-    schema = [schema_name] |> Module.safe_concat
+    schema = find_schema(opts)
+    filename = args |> List.first || @default_filename
 
     content = schema
     |> Absinthe.Language.IDL.to_idl_ast
     |> adapter.dump_document
     |> Absinthe.Language.IDL.to_idl_iodata
 
-    IO.puts "OK"
-
     create_directory(Path.dirname(filename))
     create_file(filename, content, force: true)
   end
 
   defp find_adapter(opts) do
-    Keyword.get(opts, :adapter, Absinthe.Adapter.LanguageConventions)
+    Keyword.get(opts, :adapter, fallback_adapter)
+    |> List.wrap
+    |> Module.safe_concat
+  end
+
+  defp fallback_adapter do
+    Application.get_env(:absinthe, :adapter) || @default_adapter
+  end
+
+  defp find_schema(opts) do
+    case Keyword.get(opts, :schema, Application.get_env(:absinthe, :schema)) do
+      nil ->
+        raise "No --schema given or :schema configured for the :absinthe application"
+      value ->
+        [value] |> Module.safe_concat
+    end
   end
 
 end
