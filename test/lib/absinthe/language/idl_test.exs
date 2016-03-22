@@ -122,6 +122,93 @@ defmodule Absinthe.Language.IDLtest do
 
   end
 
+  describe "multiple args" do
+
+    it "are output" do
+
+      idl = """
+      type User implements Node {
+        id: ID!
+        todos(status: String = "any", after: String, first: Int, before: String, last: Int): TodoConnection
+        numTodos: Int
+        numCompletedTodos: Int
+      }
+      """
+      {:ok, idl_ast_doc} = Absinthe.parse(idl)
+      idl_ast = idl_ast_doc.definitions |> List.first
+      idl_iodata = idl_ast |> Absinthe.Language.IDL.to_idl_iodata
+      assert idl == IO.iodata_to_binary(idl_iodata)
+
+    end
+
+  end
+
+  describe "enums" do
+
+    @idl """
+    enum Color {
+      BLUE
+      GREEN
+      RED
+    }
+    type Sprite {
+      fill(color: Color = BLUE): Image
+    }
+    type Image {
+      data: String
+    }
+    """
+
+    defmodule EnumSchema do
+      use Absinthe.Schema
+
+      enum :color do
+        value :red
+        value :green
+        value :blue
+      end
+
+      object :sprite do
+        field :fill, :image do
+          arg :color, :color, default_value: "BLUE"
+        end
+      end
+
+      object :image do
+        field :data, :string
+      end
+
+    end
+
+    it "are parsed from IDL" do
+      assert {:ok, _} = Absinthe.parse(@idl)
+    end
+
+    it "can be converted to IDL AST" do
+      assert %Absinthe.Language.ObjectDefinition{} = Absinthe.Language.IDL.to_idl_ast(ObjectSchema.__absinthe_type__(:article), ObjectSchema)
+    end
+
+    it "can be converted to IDL iodata" do
+      equiv_idl = """
+      enum Color {
+        BLUE
+        GREEN
+        RED
+      }
+      """
+      {:ok, equiv_idl_ast_doc} = Absinthe.parse(equiv_idl)
+      equiv_idl_ast = equiv_idl_ast_doc.definitions |> List.first
+      equiv_idl_iodata = Absinthe.Language.IDL.to_idl_iodata(equiv_idl_ast)
+
+      idl_ast = EnumSchema.__absinthe_type__(:color) |> Absinthe.Language.IDL.to_idl_ast(EnumSchema)
+      idl_iodata = Absinthe.Language.IDL.to_idl_iodata(idl_ast)
+      assert idl_iodata == equiv_idl_iodata
+    end
+    it "can be converted to IDL iodata as a schema" do
+      assert Absinthe.Language.IDL.to_idl_iodata(EnumSchema |> Absinthe.Language.IDL.to_idl_ast)
+    end
+
+  end
 
 
 end

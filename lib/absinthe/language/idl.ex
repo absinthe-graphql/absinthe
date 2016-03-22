@@ -31,6 +31,12 @@ defmodule Absinthe.Language.IDL do
       fields: Enum.map(Map.values(node.fields), &to_idl_ast(node, &1, schema))
     }
   end
+  def to_idl_ast(%Type.Enum{} = node, schema) do
+    %Language.EnumTypeDefinition{
+      name: node.name,
+      values: Enum.map(Map.values(node.values), &Map.get(&1, :name))
+    }
+  end
   def to_idl_ast(%Type.Argument{} = node, schema) do
     %Language.InputValueDefinition{
       name: node.name,
@@ -136,8 +142,16 @@ defmodule Absinthe.Language.IDL do
       node.name,
       ": ",
       to_idl_iodata(node.type),
-      default_idl_iodata(node.default_value),
-      "\n"
+      default_idl_iodata(node.default_value)
+    ]
+  end
+  def to_idl_iodata(%Language.EnumTypeDefinition{} = node) do
+    [
+      "enum ",
+      node.name,
+      " {\n",
+      indented(2, node.values),
+      "}\n"
     ]
   end
   def to_idl_iodata(%Language.NamedType{} = node) do
@@ -155,6 +169,9 @@ defmodule Absinthe.Language.IDL do
       to_idl_iodata(node.type),
       "]"
     ]
+  end
+  def to_idl_iodata(value) when is_binary(value) do
+    value
   end
 
   defp implements_iodata([]) do
@@ -204,7 +221,7 @@ defmodule Absinthe.Language.IDL do
   end
 
   defp arguments_idl_iodata([]) do
-    ""
+    []
   end
   defp arguments_idl_iodata(arguments) do
     [
