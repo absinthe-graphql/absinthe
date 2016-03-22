@@ -1,9 +1,11 @@
 defmodule Absinthe.Language.IDL do
   @moduledoc false
 
-  alias Absinthe.Schema
-  alias Absinthe.Language
-  alias Absinthe.Type
+  alias Absinthe.{Schema, Language, Type, Adapter}
+
+  defp adapt(name, role) do
+    Adapter.LanguageConventions.to_external_name(name, role)
+  end
 
   @spec to_idl_ast(atom) :: Language.Document.t
   def to_idl_ast(schema) do
@@ -51,7 +53,7 @@ defmodule Absinthe.Language.IDL do
   end
   def to_idl_ast(%Type.Argument{} = node, schema) do
     %Language.InputValueDefinition{
-      name: node.name,
+      name: node.name |> adapt(:argument),
       type: to_idl_ast(node.type, schema)
     }
   end
@@ -72,14 +74,14 @@ defmodule Absinthe.Language.IDL do
   @spec to_idl_ast(Type.t, Type.t, Schema.t) :: Language.t
   defp to_idl_ast(%Type.InputObject{}, %Type.Field{} = node, schema) do
     %Language.InputValueDefinition{
-      name: node.name,
+      name: node.name |> adapt(:field),
       default_value: to_idl_default_value_ast(Schema.lookup_type(schema, node.type, unwrap: false), node.default_value, schema),
       type: to_idl_ast(node.type, schema)
     }
   end
   defp to_idl_ast(%{__struct__: str}, %Type.Field{} = node, schema) when str in [Type.Object, Type.Interface] do
     %Language.FieldDefinition{
-      name: node.name,
+      name: node.name |> adapt(:field),
       arguments: Enum.map(Map.values(node.args), &to_idl_ast(&1, schema)),
       type: to_idl_ast(node.type, schema)
     }

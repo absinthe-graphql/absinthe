@@ -241,6 +241,12 @@ defmodule Absinthe.Language.IDLtest do
     defmodule UnionSchema do
       use Absinthe.Schema
 
+      query do
+        field :do_search, :search_result do
+          arg :search_term, :string
+        end
+      end
+
       object :person do
         field :name, :string
         field :age, :integer
@@ -287,6 +293,10 @@ defmodule Absinthe.Language.IDLtest do
     end
     it "can be converted to IDL iodata as a schema" do
       assert Absinthe.Language.IDL.to_idl_iodata(UnionSchema |> Absinthe.Language.IDL.to_idl_ast)
+    end
+
+    it "adapts field and argument names" do
+      assert %Absinthe.Language.ObjectDefinition{fields: [%{name: "doSearch", arguments: [%{name: "searchTerm"}]}]} = Absinthe.Language.IDL.to_idl_ast(UnionSchema.__absinthe_type__(:query), UnionSchema)
     end
 
   end
