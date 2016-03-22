@@ -3,37 +3,39 @@ defmodule Mix.Tasks.Absinthe.Schema.Graphql do
   use Mix.Task
   import Mix.Generator
 
-  @shortdoc "Generate a schema.graphql file for an Absinthe schema"
+  @shortdoc "Generate a schema.graphql (IDL) file for an Absinthe schema"
 
   @default_filename "./schema.graphql"
   @default_adapter Absinthe.Adapter.LanguageConventions
+  @default_adapter_name "Absinthe.Adapter.LanguageConventions"
 
   @moduledoc """
   Generate a schema.graphql file
 
   ## Usage
 
-      absinthe.schema.graphql Schema.Module.Name [FILENAME]
+      absinthe.schema.graphql [OPTIONS] [FILENAME]
 
   ## Options
 
-    --adapter Sets the adapter. Default: #{@default_adapter}
+      --schema The schema. Default: As configured for `:absinthe` `:schema`
+      --adapter Sets the adapter. Default: #{@default_adapter_name}
 
   ## Examples
 
   Write to default path `#{@default_filename}` using the `:schema` configured for
   the `:absinthe` application, adapting it using the default
-  `#{@default_adapter}` adapter:
+  `#{@default_adapter_name}` adapter:
 
       $ mix absinthe.schema.graphql
 
   Write to default path `#{@default_filename}` using the `MySchema` schema, adapting
-  it using the default `#{@default_adapter}` adapter:
+  it using the default `#{@default_adapter_name}` adapter:
 
       $ mix absinthe.schema.graphql --schema MySchema
 
   Write to path `/path/to/schema.graphql` using the `MySchema` schema, adapting
-  it using the default `#{@default_adapter}` adapter:
+  it using the default `#{@default_adapter_name}` adapter:
 
       $ mix absinthe.schema.graphql --schema MySchema /path/to/schema.graphql
 

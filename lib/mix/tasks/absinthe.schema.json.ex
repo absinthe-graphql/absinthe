@@ -5,22 +5,44 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
 
   @shortdoc "Generate a schema.json file for an Absinthe schema"
 
+  @default_filename "./schema.json"
+  @default_codec Poison
+  @default_codec_name "Poison"
+
   @moduledoc """
   Generate a schema.json file
 
   ## Usage
 
-      absinthe.schema.json Schema.Module.Name [FILENAME]
+      absinthe.schema.json [OPTIONS] [FILENAME]
 
   ## Options
 
-    --json-codec Sets JSON Codec. Default: Poison
-    --pretty Whether to pretty-print (Poison-only). Default: false
+      --schema The schema. Default: As configured for `:absinthe` `:schema`
+      --json-codec Sets JSON Codec. Default: #{@default_codec_name}
+      --pretty Whether to pretty-print. Default: false
 
   ## Examples
 
-      $ mix absinthe.schema.json MySchema
-      $ mix absinthe.schema.json MySchema ../path/to/schema.json
+  Write to default path `#{@default_filename}` using the `:schema` configured for
+  the `:absinthe` application and the default `#{@default_codec_name}` JSON codec:
+
+      $ mix absinthe.schema.json
+
+  Write to default path `#{@default_filename}` using the `MySchema` schema and
+  the default `#{@default_codec_name}` JSON codec.
+
+      $ mix absinthe.schema.json --schema MySchema
+
+  Write to path `/path/to/schema.json` using the `MySchema` schema, using the
+  default `#{@default_codec_name}` JSON codec, and pretty-printing:
+
+      $ mix absinthe.schema.json --schema MySchema --pretty /path/to/schema.json
+
+  Write to default path `#{@default_filename}` using the `MySchema` schema and
+  a custom JSON codec, `MyCodec`:
+
+      $ mix absinthe.schema.json --schema MySchema --json-codec MyCodec
 
   """
 
@@ -29,11 +51,11 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   def run(argv) do
     Mix.Task.run("app.start", [])
 
-    {opts, [schema_name|rest], _} = OptionParser.parse(argv)
+    {opts, args, _} = OptionParser.parse(argv)
 
-    filename = rest |> List.first || "schema.json"
+    schema = find_schema(opts)
     json_codec = find_json(opts)
-    schema = [schema_name] |> Module.safe_concat
+    filename = args |> List.first || @default_filename
 
     {:ok, query} = File.read(@introspection_graphql)
 
@@ -61,6 +83,15 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   end
   defp codec_opts(_, _) do
     []
+  end
+
+  defp find_schema(opts) do
+    case Keyword.get(opts, :schema, Application.get_env(:absinthe, :schema)) do
+      nil ->
+        raise "No --schema given or :schema configured for the :absinthe application"
+      value ->
+        [value] |> Module.safe_concat
+    end
   end
 
 end
