@@ -37,10 +37,15 @@ defmodule Absinthe.Language.IDL do
       values: Enum.map(Map.values(node.values), &Map.get(&1, :name))
     }
   end
-  def to_idl_ast(%Absinthe.Type.Union{} = node, schema) do
+  def to_idl_ast(%Type.Union{} = node, schema) do
     %Language.UnionTypeDefinition{
       name: node.name,
       types: Enum.map(node.types, &to_idl_named_type_ast(&1, schema))
+    }
+  end
+  def to_idl_ast(%Type.Scalar{} = node, _schema) do
+    %Language.ScalarTypeDefinition{
+      name: node.name
     }
   end
   def to_idl_ast(%Type.Argument{} = node, schema) do
@@ -174,6 +179,12 @@ defmodule Absinthe.Language.IDL do
       " = ",
       Enum.map(node.types, &Map.get(&1, :name))
       |> Enum.join(" | ")
+    ]
+  end
+  def to_idl_iodata(%Language.ScalarTypeDefinition{} = node) do
+    [
+      "scalar ",
+      node.name
     ]
   end
   def to_idl_iodata(%Language.NamedType{} = node) do

@@ -291,4 +291,44 @@ defmodule Absinthe.Language.IDLtest do
 
   end
 
+  describe "scalars" do
+
+    @idl """
+    scalar Time
+
+    """
+
+    defmodule ScalarSchema do
+      use Absinthe.Schema
+
+      scalar :time do
+        parse fn _ -> {:ok, :stub} end
+        serialize fn _ -> "stub" end
+      end
+
+    end
+
+    it "are parsed from IDL" do
+      assert {:ok, _} = Absinthe.parse(@idl)
+    end
+
+    it "can be converted to IDL AST" do
+      assert %Absinthe.Language.ScalarTypeDefinition{} = Absinthe.Language.IDL.to_idl_ast(ScalarSchema.__absinthe_type__(:time), ScalarSchema)
+    end
+
+    it "can be converted to IDL iodata" do
+      {:ok, equiv_idl_ast_doc} = Absinthe.parse(@idl)
+      equiv_idl_ast = equiv_idl_ast_doc.definitions |> List.first
+      equiv_idl_iodata = Absinthe.Language.IDL.to_idl_iodata(equiv_idl_ast)
+
+      idl_ast = ScalarSchema.__absinthe_type__(:time) |> Absinthe.Language.IDL.to_idl_ast(ScalarSchema)
+      idl_iodata = Absinthe.Language.IDL.to_idl_iodata(idl_ast)
+      assert idl_iodata == equiv_idl_iodata
+    end
+    it "can be converted to IDL iodata as a schema" do
+      assert Absinthe.Language.IDL.to_idl_iodata(ScalarSchema |> Absinthe.Language.IDL.to_idl_ast)
+    end
+
+  end
+
 end
