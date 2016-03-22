@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.1.1
+
+Bugfixes
+- Variables with input objects and lists inside other input objects work properly.
+
 ## v1.1.0
 
 The v1.1.0 release bundles a bunch of bugfixes and expanded features for
