@@ -22,7 +22,7 @@ defmodule Absinthe.Language.IDLtest do
         field :author, :user
         resolve_type fn
           _, _ ->
-            {:ok, :article}
+            :article
         end
       end
 
@@ -185,7 +185,7 @@ defmodule Absinthe.Language.IDLtest do
     end
 
     it "can be converted to IDL AST" do
-      assert %Absinthe.Language.ObjectDefinition{} = Absinthe.Language.IDL.to_idl_ast(ObjectSchema.__absinthe_type__(:article), ObjectSchema)
+      assert %Absinthe.Language.EnumTypeDefinition{} = Absinthe.Language.IDL.to_idl_ast(EnumSchema.__absinthe_type__(:color), EnumSchema)
     end
 
     it "can be converted to IDL iodata" do
@@ -210,5 +210,71 @@ defmodule Absinthe.Language.IDLtest do
 
   end
 
+  describe "unions" do
+
+    @idl """
+    type Person {
+      name: String
+      age: Int
+    }
+    type Business {
+      name: String
+      employeeCount: Int
+    }
+    union SearchResult = Business | Person
+    """
+
+    defmodule UnionSchema do
+      use Absinthe.Schema
+
+      object :person do
+        field :name, :string
+        field :age, :integer
+      end
+
+      object :business do
+        field :name, :string
+        field :employee_count, :integer
+      end
+
+      union :search_result do
+        types [:person, :business]
+        resolve_type fn
+          %{age: _}, _ ->
+            :person
+          _, _ ->
+            :business
+        end
+
+      end
+
+    end
+
+    it "are parsed from IDL" do
+      assert {:ok, _} = Absinthe.parse(@idl)
+    end
+
+    it "can be converted to IDL AST" do
+      assert %Absinthe.Language.UnionTypeDefinition{} = Absinthe.Language.IDL.to_idl_ast(UnionSchema.__absinthe_type__(:search_result), UnionSchema)
+    end
+
+    it "can be converted to IDL iodata" do
+      equiv_idl = """
+      union SearchResult = Person | Business
+
+      """
+      {:ok, equiv_idl_ast_doc} = Absinthe.parse(equiv_idl)
+      equiv_idl_ast = equiv_idl_ast_doc.definitions |> List.first
+      equiv_idl_iodata = Absinthe.Language.IDL.to_idl_iodata(equiv_idl_ast)
+
+      idl_ast = UnionSchema.__absinthe_type__(:search_result) |> Absinthe.Language.IDL.to_idl_ast(UnionSchema)
+      idl_iodata = Absinthe.Language.IDL.to_idl_iodata(idl_ast)
+      assert idl_iodata == equiv_idl_iodata
+    end
+    it "can be converted to IDL iodata as a schema" do
+      assert Absinthe.Language.IDL.to_idl_iodata(UnionSchema |> Absinthe.Language.IDL.to_idl_ast)
+    end
+
+  end
 
 end

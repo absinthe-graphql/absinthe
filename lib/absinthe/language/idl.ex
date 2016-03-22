@@ -16,7 +16,7 @@ defmodule Absinthe.Language.IDL do
     %Language.ObjectDefinition{
       name: node.name,
       fields: Enum.map(Map.values(node.fields), &to_idl_ast(node, &1, schema)),
-      interfaces: Enum.map(node.interfaces, &to_idl_interface_ast(&1, schema))
+      interfaces: Enum.map(node.interfaces, &to_idl_named_type_ast(&1, schema))
     }
   end
   def to_idl_ast(%Type.InputObject{} = node, schema) do
@@ -35,6 +35,12 @@ defmodule Absinthe.Language.IDL do
     %Language.EnumTypeDefinition{
       name: node.name,
       values: Enum.map(Map.values(node.values), &Map.get(&1, :name))
+    }
+  end
+  def to_idl_ast(%Absinthe.Type.Union{} = node, schema) do
+    %Language.UnionTypeDefinition{
+      name: node.name,
+      types: Enum.map(node.types, &to_idl_named_type_ast(&1, schema))
     }
   end
   def to_idl_ast(%Type.Argument{} = node, schema) do
@@ -73,7 +79,7 @@ defmodule Absinthe.Language.IDL do
     }
   end
 
-  defp to_idl_interface_ast(identifier, schema) do
+  defp to_idl_named_type_ast(identifier, schema) do
     name = schema.__absinthe_type__(identifier).name
     %Language.NamedType{name: name}
   end
@@ -152,6 +158,15 @@ defmodule Absinthe.Language.IDL do
       " {\n",
       indented(2, node.values),
       "}\n"
+    ]
+  end
+  def to_idl_iodata(%Language.UnionTypeDefinition{} = node) do
+    [
+      "union ",
+      node.name,
+      " = ",
+      Enum.map(node.types, &Map.get(&1, :name))
+      |> Enum.join(" | ")
     ]
   end
   def to_idl_iodata(%Language.NamedType{} = node) do
