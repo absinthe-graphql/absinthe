@@ -104,6 +104,14 @@ defmodule Absinthe.Execution.Variable do
   # I don't necessarily think that the duplication is ipso facto bad, but each individual
   # use case should at least live in its own module that gives it some more semantic value
 
+  defp build_map_value(values, %Type.InputObject{fields: schema_fields}, type_stack, var_ast, meta) do
+    {values, meta} = map_values(Map.to_list(values), schema_fields, type_stack, var_ast, meta)
+    {:ok, values, meta}
+  end
+  defp build_map_value(raw_values, %Type.List{of_type: inner_type}, type_stack, var_ast, meta) do
+    {values, meta} = inner_list_values(raw_values, inner_type, ["[]", type_stack], var_ast, meta)
+    {:ok, values, meta}
+  end
   defp build_map_value(value, %Type.Field{type: inner_type} = type, type_stack, var_ast, meta) do
     meta = meta |> add_deprecation_notice(type, inner_type, type_stack, var_ast)
     build_map_value(value, inner_type, type_stack, var_ast, meta)
@@ -130,6 +138,26 @@ defmodule Absinthe.Execution.Variable do
   defp build_map_value(value, type, type_stack, var_ast, meta) when is_atom(type) do
     real_type = meta.schema.__absinthe_type__(type)
     build_map_value(value, real_type, type_stack, var_ast, meta)
+  end
+
+  defp inner_list_values(raw_values, inner_type, type_stack, var_ast, meta) do
+    inner_list_values(raw_values, inner_type, type_stack, var_ast, [], meta)
+  end
+
+  defp inner_list_values([], _, _, _, acc, meta), do: {:lists.reverse(acc), meta}
+  defp inner_list_values([raw_value | rest], inner_type, type_stack, var_ast, acc, meta) do
+    case build_map_value(raw_value, inner_type, type_stack, var_ast, meta) do
+      {:ok, nil, meta} ->
+        inner_list_values(rest, inner_type, type_stack, var_ast, acc, meta)
+
+      {:ok, value, meta} ->
+        inner_list_values(rest, inner_type, type_stack, var_ast, [value | acc], meta)
+
+      {:error, meta} ->
+        # No need to put an error here because which ever build_map_value clause
+        # failed should have added it already.
+        inner_list_values(rest, inner_type, type_stack, var_ast, acc, meta)
+    end
   end
 
   defp map_values(items, fields, type_stack, var_ast, meta) do
