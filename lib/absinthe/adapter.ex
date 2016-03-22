@@ -212,7 +212,7 @@ defmodule Absinthe.Adapter do
         nil
       end
       def adapt(other, _) do
-        Logger.warn "Could not adapt #{inspect other}"
+        Logger.warn "Absinthe: #{__MODULE__} could not adapt #{inspect other}"
         other
       end
 
