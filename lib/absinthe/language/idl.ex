@@ -1,4 +1,5 @@
 defmodule Absinthe.Language.IDL do
+  @moduledoc false
 
   alias Absinthe.Schema
   alias Absinthe.Language
@@ -152,7 +153,6 @@ defmodule Absinthe.Language.IDL do
       arguments_idl_iodata(node.arguments),
       ": ",
       to_idl_iodata(node.type),
-      "\n"
     ]
   end
   def to_idl_iodata(%Language.InputValueDefinition{} = node) do
@@ -160,7 +160,7 @@ defmodule Absinthe.Language.IDL do
       node.name,
       ": ",
       to_idl_iodata(node.type),
-      default_idl_iodata(node.default_value)
+      default_idl_iodata(node.default_value),
     ]
   end
   def to_idl_iodata(%Language.EnumTypeDefinition{} = node) do
@@ -278,11 +278,11 @@ defmodule Absinthe.Language.IDL do
     ]
   end
 
-  defp indented(amount, collection) do
+  defp indented(amount, collection, opts \\ []) do
     indent = 1..amount |> Enum.map(fn _ -> " " end)
     Enum.map(collection, fn
       member ->
-        [indent, to_idl_iodata(member)]
+        [indent, to_idl_iodata(member), "\n"]
     end)
   end
 
