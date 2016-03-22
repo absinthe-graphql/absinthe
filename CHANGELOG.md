@@ -1,8 +1,15 @@
 # Changelog
 
+## v1.1.2
+
+Bugfixes:
+
+- Include `priv/` in package for `absinthe.schema.json` task.
+
 ## v1.1.1
 
-Bugfixes
+Bugfixes:
+
 - Variables with input objects and lists inside other input objects work properly.
 
 ## v1.1.0
