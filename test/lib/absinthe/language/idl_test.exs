@@ -99,6 +99,20 @@ defmodule Absinthe.Language.IDLtest do
       assert %Absinthe.Language.InputObjectDefinition{} = Absinthe.Language.IDL.to_idl_ast(InputObjectSchema.__absinthe_type__(:input_article), InputObjectSchema)
     end
 
+    # Note: This only tests that input object defaults parsed in from IDL
+    # are successfully emitted back, not that they can be set in Absinthe schema notation
+    it "can be provided as defaults" do
+      idl = """
+      type QueryRoot {
+        createThing(input: InputThing = {name: "Boo"}): Thing
+      }
+      """
+      {:ok, idl_ast_doc} = Absinthe.parse(idl)
+      idl_ast = idl_ast_doc.definitions |> List.first
+      idl_iodata = Absinthe.Language.IDL.to_idl_iodata(idl_ast)
+      assert idl == IO.iodata_to_binary(idl_iodata)
+    end
+
     it "can be converted to IDL iodata" do
       equiv_idl = """
       input InputArticle {

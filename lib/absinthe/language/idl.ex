@@ -31,7 +31,7 @@ defmodule Absinthe.Language.IDL do
       fields: Enum.map(Map.values(node.fields), &to_idl_ast(node, &1, schema))
     }
   end
-  def to_idl_ast(%Type.Enum{} = node, schema) do
+  def to_idl_ast(%Type.Enum{} = node, _schema) do
     %Language.EnumTypeDefinition{
       name: node.name,
       values: Enum.map(Map.values(node.values), &Map.get(&1, :name))
@@ -49,12 +49,12 @@ defmodule Absinthe.Language.IDL do
       type: to_idl_ast(node.type, schema)
     }
   end
-  def to_idl_ast(%Type.List{of_type: type} = node, schema) do
+  def to_idl_ast(%Type.List{of_type: type}, schema) do
     %Language.ListType{
       type: to_idl_ast(type, schema)
     }
   end
-  def to_idl_ast(%Type.NonNull{of_type: type} = node, schema) do
+  def to_idl_ast(%Type.NonNull{of_type: type}, schema) do
     %Language.NonNullType{
       type: to_idl_ast(type, schema)
     }
@@ -85,15 +85,22 @@ defmodule Absinthe.Language.IDL do
   end
 
   defp to_idl_default_value_ast(_, nil, _), do: nil
-  defp to_idl_default_value_ast(%Type.Scalar{name: "Boolean"}, value, schema) do
+  defp to_idl_default_value_ast(%Type.Scalar{name: "Boolean"}, value, _schema) do
     %Language.BooleanValue{value: value}
   end
-  defp to_idl_default_value_ast(%Type.Scalar{name: "Int"}, value, schema) do
+  defp to_idl_default_value_ast(%Type.Scalar{name: "Int"}, value, _schema) do
     %Language.IntValue{value: value}
   end
-  defp to_idl_default_value_ast(%Type.Scalar{name: "String"}, value, schema) do
+  defp to_idl_default_value_ast(%Type.Scalar{name: "String"}, value, _schema) do
     %Language.StringValue{value: value}
   end
+  defp to_idl_default_value_ast(%Type.Scalar{name: "ID"}, value, _schema) do
+    %Language.StringValue{value: value}
+  end
+  defp to_idl_default_value_ast(%Type.Scalar{name: "Float"}, value, _schema) do
+    %Language.FloatValue{value: value}
+  end
+
   defp to_idl_default_value_ast(%Type.List{of_type: type}, value, schema) do
     internal_type = Schema.lookup_type(schema, type, unwrap: false)
     %Language.ListValue{
@@ -232,6 +239,20 @@ defmodule Absinthe.Language.IDL do
       "[",
       Enum.map(node.values, &do_default_idl_iodata/1),
       "]"
+    ]
+  end
+  defp do_default_idl_iodata(%Language.ObjectValue{} = node) do
+    [
+      "{",
+      Enum.map(node.fields, &do_default_idl_iodata/1),
+      "}"
+    ]
+  end
+  defp do_default_idl_iodata(%Language.ObjectField{} = node) do
+    [
+      node.name,
+      ": ",
+      do_default_idl_iodata(node.value)
     ]
   end
 
