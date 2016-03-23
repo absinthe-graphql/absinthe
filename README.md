@@ -66,6 +66,12 @@ See [CHANGELOG](./CHANGELOG.md) for upgrade steps between versions.
   projects, see [http://absinthe-graphql.org](http://absinthe-graphql.org).
 - Links to the API documentation are available in the [project list](http://absinthe-graphql.org/projects/).
 
+### Mix Tasks
+
+Absinthe includes a number of useful Mix tasks for extracting schema metadata.
+
+Run `mix help` in your project and look for tasks starting with `absinthe`.
+
 ### Roadmap
 
 See the Roadmap on [absinthe-graphql.org](http://absinthe-graphql.org/roadmap/).
