@@ -16,6 +16,8 @@ defmodule Absinthe.Utils do
   "__FooBar"
   iex> camelize("__foo")
   "__Foo"
+  iex> camelize("_foo")
+  "_Foo"
   ```
 
   With a lowercase first letter:
@@ -28,12 +30,15 @@ defmodule Absinthe.Utils do
   "__fooBar"
   iex> camelize("__foo", lower: true)
   "__foo"
+  iex> camelize("_foo", lower: true)
+  "_foo"
+
   ```
   """
   @spec camelize(binary, Keyword.t) :: binary
   def camelize(word, opts \\ [])
-  def camelize("__" <> word, opts) do
-    "__" <> camelize(word, opts)
+  def camelize("_" <> word, opts) do
+    "_" <> camelize(word, opts)
   end
   def camelize(word, opts) do
     case opts |> Enum.into(%{}) do
