@@ -309,6 +309,17 @@ defmodule AbsintheTest do
 
   end
 
+  describe "an alias with an underscore" do
+
+    @query """
+    { _thing123:thing(id: "foo") { name } }
+    """
+    it "is returned intact" do
+      assert {:ok, %{data: %{"_thing123" => %{"name" => "Foo"}}}} == run(@query)
+    end
+
+  end
+
   defp run(query, options \\ []) do
     query
     |> Absinthe.run(Things, options)
