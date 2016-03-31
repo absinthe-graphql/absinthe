@@ -35,7 +35,7 @@ defmodule Absinthe.Type.Union do
 
   use Absinthe.Introspection.Kind
 
-  alias Absinthe.Type
+  alias Absinthe.{Schema, Type}
 
   @type t :: %{name: binary,
                description: binary,
