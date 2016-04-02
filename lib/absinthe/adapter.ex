@@ -55,6 +55,8 @@ defmodule Absinthe.Adapter do
 
   alias Absinthe.Execution
 
+  @type t :: atom
+
   defmacro __using__(_) do
     quote do
       require Logger

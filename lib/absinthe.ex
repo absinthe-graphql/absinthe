@@ -232,8 +232,15 @@ defmodule Absinthe do
   See the `Absinthe` module documentation for more examples.
 
   """
+  @type run_opts :: [
+    context: %{},
+    adapter: Absinthe.Adapter.t,
+    root_value: term,
+    operation_name: binary,
+  ]
+
   def run(doc, schema, options \\ [])
-  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, Keyword.t) :: {:ok, Absinthe.Execution.result_t} | {:error, any}
+  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, run_opts) :: {:ok, Absinthe.Execution.result_t} | {:error, any}
   def run(%Absinthe.Language.Document{} = document, schema, options) do
     case Absinthe.Validation.run(document) do
       {:ok, errors, doc} ->

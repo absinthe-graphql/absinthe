@@ -41,6 +41,7 @@ defmodule Absinthe.Execution do
     |> Map.put(:context, Map.get(options, :context, %{}))
     |> Map.put(:adapter, Map.get(options, :adapter))
     |> Map.put(:root_value, Map.get(options, :root_value))
+    |> Map.put(:operation_name, Map.get(options, :operation_name))
     |> add_variables(Map.get(options, :variables, %{}))
     |> add_configured_adapter
     |> adapt

@@ -1,7 +1,7 @@
 defmodule Absinthe.Language.IDL do
   @moduledoc false
 
-  alias Absinthe.{Schema, Language, Type, Adapter}
+  alias Absinthe.{Schema, Language, Type}
 
   @spec to_idl_ast(atom) :: Language.Document.t
   def to_idl_ast(schema) do
@@ -276,7 +276,7 @@ defmodule Absinthe.Language.IDL do
     ]
   end
 
-  defp indented(amount, collection, opts \\ []) do
+  defp indented(amount, collection) do
     indent = 1..amount |> Enum.map(fn _ -> " " end)
     Enum.map(collection, fn
       member ->

@@ -320,6 +320,34 @@ defmodule AbsintheTest do
 
   end
 
+  describe "multiple operation documents" do
+    @multiple_ops_query """
+    query ThingFoo {
+      thing(id: "foo") {
+        name
+      }
+    }
+    query ThingBar {
+      thing(id: "bar") {
+        name
+      }
+    }
+    """
+
+    it "can select an operation by name" do
+      assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}}} == Absinthe.run(@multiple_ops_query, Things, operation_name: "ThingFoo")
+    end
+
+    it "should error when no operation name is supplied" do
+      assert {:error, "Multiple operations available, but no operation_name provided"} == Absinthe.run(@multiple_ops_query, Things)
+    end
+
+    it "should error when an invalid operation name is supplied" do
+      op_name = "invalid"
+      assert {:error, "No operation with name: #{op_name}"} == Absinthe.run(@multiple_ops_query, Things, operation_name: op_name)
+    end
+  end
+
   defp run(query, options \\ []) do
     query
     |> Absinthe.run(Things, options)
