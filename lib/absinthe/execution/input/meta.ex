@@ -39,9 +39,7 @@ defmodule Absinthe.Execution.Input.Meta do
     put_meta(meta, key, type_stack, real_type, ast, opts)
   end
   defp put_meta(meta, key, type_stack, type, ast, opts) when is_list(type_stack) do
-    name = type_stack |> dotted_name
-
-    item = %{ast: ast, name: name, type: type, msg: Map.get(opts, :msg)}
+    item = %{ast: ast, name: type_stack, type: type, msg: Map.get(opts, :msg)}
 
     Map.update!(meta, key, &[item | &1])
   end
@@ -67,22 +65,5 @@ defmodule Absinthe.Execution.Input.Meta do
     end)
 
     {acc, meta}
-  end
-
-  @spec dotted_name([binary]) :: binary
-  def dotted_name(names) do
-    names
-    |> do_dotted_names([])
-    |> IO.iodata_to_binary
-  end
-
-  defp do_dotted_names([name | []], acc) do
-    [to_string(name) | acc]
-  end
-  defp do_dotted_names(["[]" | rest], acc) do
-    do_dotted_names(rest, ["[]" | acc])
-  end
-  defp do_dotted_names([name | rest], acc) do
-    do_dotted_names(rest, [ ".", to_string(name) | acc])
   end
 end

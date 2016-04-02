@@ -18,7 +18,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
 
     input_object :contact_input do
       field :email, non_null(:string)
-      field :type, :contact_type
+      field :contact_type, :contact_type
     end
 
     enum :contact_type do
@@ -176,7 +176,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
           user(contact:$contact)
         }
         """
-        assert_result {:ok, %{data: %{"user" => "bubba@joe.com"}}}, doc |> Absinthe.run(Schema, variables: %{"contact" => %{"email" => "bubba@joe.com", "type" => "Email"}})
+        assert_result {:ok, %{data: %{"user" => "bubba@joe.com"}}}, doc |> Absinthe.run(Schema, variables: %{"contact" => %{"email" => "bubba@joe.com", "contactType" => "Email"}})
       end
 
       it "should return an error with invalid values" do
@@ -317,6 +317,18 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{}, errors: [%{message: "Field `contact': 1 badly formed argument (`type') provided"}, %{message: "Argument `type' (ContactType): Invalid value provided"}]}},
           "{ contact(type: \"bagel\") }" |> Absinthe.run(Schema)
       end
+    end
+  end
+
+  describe "camelized errors" do
+    it "should adapt internal field names on error" do
+      doc = """
+      query FindUser {
+        user(contact: {email: "bubba@joe.com", contactType: 1})
+      }
+      """
+      assert {:ok, %{errors: errors}} = doc |> Absinthe.run(Schema)
+      assert [%{message: "Field `user': 1 badly formed argument (`contact.contactType') provided"}, %{message: "Argument `contact.contactType' (ContactType): Invalid value provided"}] = errors
     end
   end
 

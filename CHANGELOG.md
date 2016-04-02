@@ -2,7 +2,11 @@
 
 ## v1.1.3
 
-(NOT YET RELEASED)
+Bugfixes:
+
+- Fix regression where documents containing multiple operations could not have the operation selected
+- Fix issues with returning union types.
+- Fix bug where field names inside argument errors were not returned in the adapted format.
 
 Mix Tasks:
 

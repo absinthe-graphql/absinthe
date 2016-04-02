@@ -36,6 +36,7 @@ defmodule Absinthe.Execution.Input do
     |> Map.fetch!(key)
     |> Enum.reduce({execution, []}, fn
       %{name: name, ast: ast, type: type, msg: msg}, {exec, names} ->
+        name = name |> dotted_name(execution.adapter)
         exec = exec |> Execution.put_error(kind, name, error_message(msg || default_msg, type), at: ast)
 
         {exec, [name | names]}
@@ -61,4 +62,27 @@ defmodule Absinthe.Execution.Input do
     msg.(type.name)
   end
   defp error_message(msg, _), do: msg
+
+  @spec dotted_name([binary], atom) :: binary
+  def dotted_name(names, adapter) do
+    names
+    |> do_dotted_names(adapter, [])
+    |> IO.iodata_to_binary
+  end
+
+  defp do_dotted_names([name | []], adapter, acc) do
+    [format_name(name, adapter) | acc]
+  end
+  defp do_dotted_names(["[]" | rest], adapter, acc) do
+    do_dotted_names(rest, adapter, ["[]" | acc])
+  end
+  defp do_dotted_names([name | rest], adapter, acc) do
+    do_dotted_names(rest, adapter, [ ".", format_name(name, adapter) | acc])
+  end
+
+  defp format_name(name, adapter) do
+    name
+    |> to_string
+    |> adapter.to_external_name(:argument)
+  end
 end
