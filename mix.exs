@@ -11,6 +11,7 @@ defmodule Absinthe.Mixfile do
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      package: package,
+     source_url: "https://github.com/absinthe-graphql/absinthe",
      docs: [source_ref: "v#{@version}", main: "Absinthe"],
      deps: deps
     ]
