@@ -11,6 +11,7 @@ defmodule Absinthe.Mixfile do
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      package: package,
+     source_url: "https://github.com/absinthe-graphql/absinthe",
      docs: [source_ref: "v#{@version}", main: "Absinthe"],
      deps: deps
     ]
@@ -21,7 +22,7 @@ defmodule Absinthe.Mixfile do
      files: ["lib", "src", "priv", "mix.exs", "README*"],
      maintainers: ["Bruce Williams", "Ben Wilson"],
      licenses: ["BSD"],
-     links: %{github: "https://github.com/CargoSense/absinthe"}]
+     links: %{github: "https://github.com/absinthe-graphql/absinthe"}]
   end
 
   # Specifies which paths to compile per environment.
