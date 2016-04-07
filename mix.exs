@@ -22,7 +22,7 @@ defmodule Absinthe.Mixfile do
      files: ["lib", "src", "priv", "mix.exs", "README*"],
      maintainers: ["Bruce Williams", "Ben Wilson"],
      licenses: ["BSD"],
-     links: %{github: "https://github.com/CargoSense/absinthe"}]
+     links: %{github: "https://github.com/absinthe-graphql/absinthe"}]
   end
 
   # Specifies which paths to compile per environment.
