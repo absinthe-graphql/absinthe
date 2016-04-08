@@ -1,7 +1,7 @@
 defmodule Absinthe.Mixfile do
   use Mix.Project
 
-  @version "1.1.3"
+  @version "1.1.4"
 
   def project do
     [app: :absinthe,
@@ -11,7 +11,7 @@ defmodule Absinthe.Mixfile do
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      package: package,
-     source_url: "https://github.com/absinthe-graphql/absinthe",
+     source_url: "https://github.com/yurrriq/absinthe",
      docs: [source_ref: "v#{@version}", main: "Absinthe"],
      deps: deps
     ]

@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.4
+
+Add `rebar.config` to enable inclusion in Erlang projects via rebar3.
+
 ## v1.1.3
 
 Bugfixes:
