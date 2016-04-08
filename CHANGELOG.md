@@ -2,7 +2,9 @@
 
 ## v1.1.4
 
-Add `rebar.config` to enable inclusion in Erlang projects via rebar3.
+Bugfixes:
+- Add `rebar.config` to enable inclusion in Erlang projects via rebar3.
+- Check in `ebin/absinthe.app` to appease `rebar3:rebar_app_discover/3`.
 
 ## v1.1.3
 
