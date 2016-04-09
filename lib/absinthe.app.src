@@ -1,0 +1,11 @@
+{application, absinthe, [
+  {registered,   []},
+  {description,  "GraphQL for Elixir"},
+  {vsn,          "1.1.4"},
+  {modules,      []},
+  {applications, [kernel, stdlib, elixir, logger]}
+
+  {maintainers,  ["Bruce Williams", "Ben Wilson"]},
+  {licenses,     ["BSD"]},
+  {links,        [{"GitHub", "https://github.com/absinthe-graphql/absinthe"}]}
+]}.
