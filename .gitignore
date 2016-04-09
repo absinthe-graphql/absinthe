@@ -6,3 +6,5 @@
 erl_crash.dump
 *.ez
 src/*.erl
+ebin
+*.beam
