@@ -256,8 +256,13 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       resolve: fn
         _, %{source: %{default_value: nil}} ->
           {:ok, nil}
-        _, %{source: %{default_value: value}} ->
-          {:ok, value |> to_string}
+
+        _, %{schema: schema, source: %{default_value: value, type: type}} ->
+          case Absinthe.Schema.lookup_type(schema, type, unwrap: true) do
+            %{serialize: serializer} -> {:ok, serializer.(value)}
+              _ -> {:ok, to_string(value)}
+          end
+
         _, %{source: _} ->
           {:ok, nil}
       end
