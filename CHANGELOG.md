@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.1.4
+
+Bugfixes
+
+- Fix bug where fragments with abstract type conditions were not applied in some cases
+- Correctly serialize default values based on the underlying type for introspection
+
 ## v1.1.3
 
 Bugfixes:
