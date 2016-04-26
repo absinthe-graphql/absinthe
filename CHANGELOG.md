@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.1.5
+
+Bugfixes
+- Correctly stringify serialized default values when introspecting
+
 ## v1.1.4
 
 Bugfixes
