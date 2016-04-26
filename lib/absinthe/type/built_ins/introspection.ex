@@ -259,8 +259,11 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
 
         _, %{schema: schema, source: %{default_value: value, type: type}} ->
           case Absinthe.Schema.lookup_type(schema, type, unwrap: true) do
-            %{serialize: serializer} -> {:ok, serializer.(value)}
-              _ -> {:ok, to_string(value)}
+            %{serialize: serializer} ->
+              {:ok, inspect serializer.(value)}
+
+            _ ->
+              {:ok, to_string(value)}
           end
 
         _, %{source: _} ->
