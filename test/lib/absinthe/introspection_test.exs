@@ -146,7 +146,7 @@ defmodule Absinthe.IntrospectionTest do
       assert_result {:ok, %{data: %{"__type" => %{"description" => "The basic details for a person",
              "inputFields" => [%{"defaultValue" => "43", "description" => "The person's age", "name" => "age", "type" => %{"kind" => "SCALAR", "name" => "Int", "ofType" => nil}},
               %{"defaultValue" => nil, "description" => nil, "name" => "code", "type" => %{"kind" => "NON_NULL", "name" => nil, "ofType" => %{"kind" => "SCALAR", "name" => "String"}}},
-              %{"defaultValue" => "Janet", "description" => "The person's name", "name" => "name", "type" => %{"kind" => "SCALAR", "name" => "String", "ofType" => nil}}], "kind" => "INPUT_OBJECT", "name" => "ProfileInput"}}}},
+              %{"defaultValue" => "\"Janet\"", "description" => "The person's name", "name" => "name", "type" => %{"kind" => "SCALAR", "name" => "String", "ofType" => nil}}], "kind" => "INPUT_OBJECT", "name" => "ProfileInput"}}}},
               result
       assert !match?({:ok, %{data: %{"__type" => %{"fields" => _}}}}, result)
     end
