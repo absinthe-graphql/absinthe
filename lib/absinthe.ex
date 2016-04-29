@@ -11,12 +11,12 @@ defmodule Absinthe do
   ## Building HTTP APIs
 
   **IMPORTANT**: For HTTP, you'll probably want to use
-  [AbsinthePlug](https://hex.pm/projects/absinthe_plug) instead of executing
+  [AbsinthePlug](https://hex.pm/packages/absinthe_plug) instead of executing
   GraphQL query documents yourself. Absinthe doesn't know or care about HTTP,
   so keep that in mind while reading through the documentation. While you'll
   be building schemas just as in the examples here, the actual calls to
   `Absinthe.run/3` and its friends are best left to
-  [AbsinthePlug](https://hex.pm/projects/absinthe_plug) if you're providing an
+  [AbsinthePlug](https://hex.pm/packages/absinthe_plug) if you're providing an
   HTTP API.
 
   ## Ecosystem
