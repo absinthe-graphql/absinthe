@@ -35,6 +35,8 @@ Please see the website at [http://absinthe-graphql.org](http://absinthe-graphql.
   - `@skip` and `@include` directives
   - [Adapter](http://absinthe-graphql.org/guides/adapters/) mechanism to support conversion between camelCase query documents
     and snake_cased schema definition.
+ - Client support
+   - Generation of JSON and GraphQL (IDL) introspection documents for use by client frameworks
 
 ## Installation
 
