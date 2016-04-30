@@ -182,7 +182,8 @@ defmodule Absinthe.Language.IDL do
   def to_idl_iodata(%Language.ScalarTypeDefinition{} = node) do
     [
       "scalar ",
-      node.name
+      node.name,
+      "\n"
     ]
   end
   def to_idl_iodata(%Language.NamedType{} = node) do
