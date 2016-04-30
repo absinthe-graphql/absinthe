@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.1.6
+
+Bugfixes
+- Support adapting InterfaceDefinition structs; caused a warning when
+  running the `absinthe.schema.graphql` mix task.
+- Fix missing newline after scalar type definitions in IDL output by
+  the `absinthe.schema.graphql` mix task.
+
 ## v1.1.5
 
 Bugfixes
