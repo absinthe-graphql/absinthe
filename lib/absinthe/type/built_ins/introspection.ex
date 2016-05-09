@@ -82,7 +82,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
 
   end
 
-  enum :__directive_location, values: Type.Directive.location_values
+  enum :__directive_location, values: Type.Directive.valid_location_values
 
   object :__type do
     description "Represents scalars, interfaces, object types, unions, enums in the system"
