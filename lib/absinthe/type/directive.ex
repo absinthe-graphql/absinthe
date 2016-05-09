@@ -24,6 +24,36 @@ defmodule Absinthe.Type.Directive do
   @type t :: %{name: binary, description: binary, args: map, on: [atom], instruction: ((map) -> atom), __reference__: Type.Reference.t}
   defstruct name: nil, description: nil, args: nil, on: [], instruction: nil, __reference__: nil
 
+  @location_values [
+    # OPERATIONS
+    :query,
+    :mutation,
+    :subscription,
+    :field,
+    :fragment_definition,
+    :fragment_spread,
+    :inline_fragment,
+    # Schema Definitions
+    :schema,
+    :scalar,
+    :object,
+    :field_definition,
+    :argument_definition,
+    :interface,
+    :union,
+    :enum,
+    :enum_value,
+    :input_object,
+    :input_field_definition
+  ]
+
+  # Where directives can be used
+  @doc false
+  @spec valid_location_values :: [atom]
+  def valid_location_values do
+    @location_values
+  end
+
   def build(%{attrs: attrs}) do
     args = attrs
     |> Keyword.get(:args, [])

@@ -51,27 +51,37 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       end
 
     field :on_operation,
+      deprecate: "Check `locations` field for enum value OPERATION",
       type: :boolean,
       resolve: fn
         _, %{source: source} ->
+          # TODO: support :query, :mutation, :subscription in `on`
           {:ok, Enum.member?(source.on, Absinthe.Language.OperationDefinition)}
       end
 
     field :on_fragment,
+      deprecate: "Check `locations` field for enum value FRAGMENT_SPREAD",
       type: :boolean,
       resolve: fn
         _, %{source: source} ->
+          # TODO: support :fragment_spread in `on`
           {:ok, Enum.member?(source.on, Absinthe.Language.FragmentSpread)}
       end
 
     field :on_field,
       type: :boolean,
+      deprecate: "Check `locations` field for enum value FIELD",
       resolve: fn
         _, %{source: source} ->
+          # TODO: support :field in `on`
           {:ok, Enum.member?(source.on, Absinthe.Language.Field)}
       end
 
+    field :locations, list_of(:__directive_location)
+
   end
+
+  enum :__directive_location, values: Type.Directive.location_values
 
   object :__type do
     description "Represents scalars, interfaces, object types, unions, enums in the system"
