@@ -1,5 +1,6 @@
 defmodule Absinthe.Type.BuiltIns.Introspection do
   use Absinthe.Schema.Notation
+  alias Absinthe.Type
 
   @moduledoc false
   object :__schema do
