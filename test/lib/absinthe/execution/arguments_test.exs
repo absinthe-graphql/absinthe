@@ -88,6 +88,14 @@ defmodule Absinthe.Execution.ArgumentsTest do
         end
       end
 
+      field :default_list_args, list_of(:integer) do
+        arg :first, list_of(:integer), default_value: [1,2]
+        arg :second, list_of(:integer), default_value: [3,4]
+        resolve fn %{first: first, second: second}, _ ->
+          {:ok, [first | second]}
+        end
+      end
+
     end
 
   end
@@ -108,6 +116,13 @@ defmodule Absinthe.Execution.ArgumentsTest do
         query GetNumbers($numbers:[Int!]!){numbers(numbers:$numbers)}
         """
         assert_result {:ok, %{data: %{"numbers" => [1, 2]}}}, doc |> Absinthe.run(Schema, variables: %{"numbers" =>[1, 2]})
+      end
+
+      it "works with default values" do
+        doc = """
+        query GetNumbers($first:[Int],$second:[Int]){defaultListArgs(first:$first,second:$second)}
+        """
+        assert_result {:ok, %{data: [1, 2, 3, 4]}}, doc |> Absinthe.run(Schema)
       end
 
       it "works with custom scalars" do
