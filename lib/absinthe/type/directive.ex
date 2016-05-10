@@ -8,6 +8,7 @@ defmodule Absinthe.Type.Directive do
   """
 
   alias Absinthe.Type
+  alias Absinthe.Language
   use Absinthe.Introspection.Kind
 
   @typedoc """
@@ -16,43 +17,13 @@ defmodule Absinthe.Type.Directive do
   * `:name` - The name of the directivee. Should be a lowercase `binary`. Set automatically.
   * `:description` - A nice description for introspection.
   * `:args` - A map of `Absinthe.Type.Argument` structs. See `Absinthe.Schema.Notation.arg/1`.
-  * `:on` - A list of places the directives can be used (can be `:operation`, `:fragment`, `:field`).
+  * `:locations` - A list of places the directives can be used (can be `:operation`, `:fragment`, `:field`).
   * `:instruction` - A function that, given an argument, returns an instruction for the correct action to take
 
   The `:__reference__` key is for internal use.
   """
-  @type t :: %{name: binary, description: binary, args: map, on: [atom], instruction: ((map) -> atom), __reference__: Type.Reference.t}
-  defstruct name: nil, description: nil, args: nil, on: [], instruction: nil, __reference__: nil
-
-  @location_values [
-    # OPERATIONS
-    :query,
-    :mutation,
-    :subscription,
-    :field,
-    :fragment_definition,
-    :fragment_spread,
-    :inline_fragment,
-    # Schema Definitions
-    :schema,
-    :scalar,
-    :object,
-    :field_definition,
-    :argument_definition,
-    :interface,
-    :union,
-    :enum,
-    :enum_value,
-    :input_object,
-    :input_field_definition
-  ]
-
-  # Where directives can be used
-  @doc false
-  @spec valid_location_values :: [atom]
-  def valid_location_values do
-    @location_values
-  end
+  @type t :: %{name: binary, description: binary, args: map, locations: [atom], instruction: ((map) -> atom), __reference__: Type.Reference.t}
+  defstruct name: nil, description: nil, args: nil, locations: [], instruction: nil, __reference__: nil
 
   def build(%{attrs: attrs}) do
     args = attrs
@@ -79,15 +50,24 @@ defmodule Absinthe.Type.Directive do
 
   # Whether the directive is active in `place`
   @doc false
-  @spec on?(t, atom) :: boolean
-  def on?(%{on: places}, place) do
-    Enum.member?(places, place)
+  @spec on?(t, Language.t) :: boolean
+  def on?(%{locations: locations}, place) do
+    Enum.any?(locations, &(do_on?(&1, place)))
   end
+
+  # Operations
+  defp do_on?(location, %Language.OperationDefinition{operation: location}), do: true
+  defp do_on?(:field, %Language.Field{}), do: true
+  defp do_on?(:fragment_definition, %Language.Fragment{}), do: true
+  defp do_on?(:fragment_spread, %Language.FragmentSpread{}), do: true
+  defp do_on?(:inline_fragment, %Language.InlineFragment{}), do: true
+  # TODO: Schema definitions to support IDL input
+  defp do_on?(_, _), do: false
 
   # Check a directive and return an instruction
   @doc false
   @spec check(t, Language.t, map) :: atom
-  def check(definition, %{__struct__: place}, args) do
+  def check(definition, place, args) do
     if on?(definition, place) && definition.instruction do
       definition.instruction.(args)
     else

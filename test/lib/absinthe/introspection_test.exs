@@ -57,10 +57,11 @@ defmodule Absinthe.IntrospectionTest do
     it "can use __schema to get the directives" do
       result = "{ __schema { directives { name args { name type { kind ofType { name kind } } } locations onField onFragment onOperation } } }" |> Absinthe.run(ContactSchema)
       assert {:ok,
-              %{data: %{"__schema" => %{
+              %{errors: _,
+                data: %{"__schema" => %{
                          "directives" => [
-                         %{"args" => [%{"name" => "if", "type" => %{"kind" => "NON_NULL", "ofType" => %{"kind" => "SCALAR", "name" => "Boolean"}}}], "name" => "include", "locations" => ["FIELD", "FRAGMENT_SPREAD"], "onField" => true, "onFragment" => true, "onOperation" => false},
-                         %{"args" => [%{"name" => "if", "type" => %{"kind" => "NON_NULL", "ofType" => %{"kind" => "SCALAR", "name" => "Boolean"}}}], "name" => "skip", "locations" => ["FIELD", "FRAGMENT_SPREAD"], "onField" => true, "onFragment" => true, "onOperation" => false}]}}}} == result
+                         %{"args" => [%{"name" => "if", "type" => %{"kind" => "NON_NULL", "ofType" => %{"kind" => "SCALAR", "name" => "Boolean"}}}], "name" => "include", "locations" => ["INLINE_FRAGMENT", "FRAGMENT_SPREAD", "FIELD"], "onField" => true, "onFragment" => true, "onOperation" => false},
+                         %{"args" => [%{"name" => "if", "type" => %{"kind" => "NON_NULL", "ofType" => %{"kind" => "SCALAR", "name" => "Boolean"}}}], "name" => "skip", "locations" => ["INLINE_FRAGMENT", "FRAGMENT_SPREAD", "FIELD"], "onField" => true, "onFragment" => true, "onOperation" => false}]}}}} = result
     end
 
   end

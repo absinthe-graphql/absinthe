@@ -56,8 +56,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       type: :boolean,
       resolve: fn
         _, %{source: source} ->
-          # TODO: support :query, :mutation, :subscription in `on`
-          {:ok, Enum.member?(source.on, Absinthe.Language.OperationDefinition)}
+          {:ok, Enum.any?(source.locations, &Enum.member?([:query, :mutation, :subscription], &1))}
       end
 
     field :on_fragment,
@@ -65,8 +64,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       type: :boolean,
       resolve: fn
         _, %{source: source} ->
-          # TODO: support :fragment_spread in `on`
-          {:ok, Enum.member?(source.on, Absinthe.Language.FragmentSpread)}
+          {:ok, Enum.member?(source.locations, :fragment_spread)}
       end
 
     field :on_field,
@@ -74,15 +72,24 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       deprecate: "Check `locations` field for enum value FIELD",
       resolve: fn
         _, %{source: source} ->
-          # TODO: support :field in `on`
-          {:ok, Enum.member?(source.on, Absinthe.Language.Field)}
+          {:ok, Enum.member?(source.locations, :field)}
       end
 
     field :locations, list_of(:__directive_location)
 
   end
 
-  enum :__directive_location, values: Type.Directive.valid_location_values
+  enum :__directive_location, values: [
+    # OPERATIONS
+    :query,
+    :mutation,
+    :subscription,
+    :field,
+    :fragment_definition,
+    :fragment_spread,
+    :inline_fragment
+    # TODO: Schema definitions to support IDL input
+  ]
 
   object :__type do
     description "Represents scalars, interfaces, object types, unions, enums in the system"
@@ -272,7 +279,6 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
           case Absinthe.Schema.lookup_type(schema, type, unwrap: true) do
             %{serialize: serializer} ->
               {:ok, inspect serializer.(value)}
-
             _ ->
               {:ok, to_string(value)}
           end

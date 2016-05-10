@@ -13,7 +13,7 @@ defmodule Absinthe.Type.BuiltIns.Directives do
 
     arg :if, non_null(:boolean), description: "Included when true."
 
-    on [Language.FragmentSpread, Language.Field, Language.InlineFragment]
+    on [:field, :fragment_spread, :inline_fragment]
 
     instruction fn
       %{if: true} ->
@@ -31,7 +31,7 @@ defmodule Absinthe.Type.BuiltIns.Directives do
 
     arg :if, non_null(:boolean), description: "Skipped when true."
 
-    on [Language.FragmentSpread, Language.Field, Language.InlineFragment]
+    on [:field, :fragment_spread, :inline_fragment]
 
     instruction fn
       %{if: true} ->
@@ -40,24 +40,6 @@ defmodule Absinthe.Type.BuiltIns.Directives do
         :include
     end
 
-  end
-
-  # Whether the directive is active in `place`
-  @doc false
-  @spec on?(Type.Directive.t, atom) :: boolean
-  def on?(%{on: places}, place) do
-    Enum.member?(places, place)
-  end
-
-  # Check a directive and return an instruction
-  @doc false
-  @spec check(Type.Directive.t, Language.t, map) :: atom
-  def check(definition, %{__struct__: place}, args) do
-    if on?(definition, place) && definition.instruction do
-      definition.instruction.(args)
-    else
-      :ok
-    end
   end
 
 end
