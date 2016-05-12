@@ -1,6 +1,13 @@
 defmodule Absinthe.Language.IDLtest do
   use ExSpec, async: true
 
+  defmodule StubSchema do
+    use Absinthe.Schema
+    query do
+      # ...
+    end
+  end
+
   describe "object and interface types" do
 
     @idl """
@@ -53,14 +60,14 @@ defmodule Absinthe.Language.IDLtest do
       """
       {:ok, equiv_idl_ast_doc} = Absinthe.parse(equiv_idl)
       equiv_idl_ast = equiv_idl_ast_doc.definitions |> List.first
-      equiv_idl_iodata = Absinthe.Language.IDL.to_idl_iodata(equiv_idl_ast)
+      equiv_idl_iodata = Absinthe.Language.IDL.to_idl_iodata(equiv_idl_ast, ObjectSchema)
 
       idl_ast = ObjectSchema.__absinthe_type__(:article) |> Absinthe.Language.IDL.to_idl_ast(ObjectSchema)
-      idl_iodata = Absinthe.Language.IDL.to_idl_iodata(idl_ast)
+      idl_iodata = Absinthe.Language.IDL.to_idl_iodata(idl_ast, ObjectSchema)
       assert idl_iodata == equiv_idl_iodata
     end
     it "can be converted to IDL iodata as a schema" do
-      assert Absinthe.Language.IDL.to_idl_iodata(ObjectSchema |> Absinthe.Language.IDL.to_idl_ast)
+      assert Absinthe.Language.IDL.to_idl_iodata(ObjectSchema |> Absinthe.Language.IDL.to_idl_ast, ObjectSchema)
     end
 
   end
@@ -109,7 +116,7 @@ defmodule Absinthe.Language.IDLtest do
       """
       {:ok, idl_ast_doc} = Absinthe.parse(idl)
       idl_ast = idl_ast_doc.definitions |> List.first
-      idl_iodata = Absinthe.Language.IDL.to_idl_iodata(idl_ast)
+      idl_iodata = Absinthe.Language.IDL.to_idl_iodata(idl_ast, StubSchema)
       assert idl == IO.iodata_to_binary(idl_iodata)
     end
 
@@ -123,15 +130,15 @@ defmodule Absinthe.Language.IDLtest do
       """
       {:ok, equiv_idl_ast_doc} = Absinthe.parse(equiv_idl)
       equiv_idl_ast = equiv_idl_ast_doc.definitions |> List.first
-      equiv_idl_iodata = Absinthe.Language.IDL.to_idl_iodata(equiv_idl_ast)
+      equiv_idl_iodata = Absinthe.Language.IDL.to_idl_iodata(equiv_idl_ast, InputObjectSchema)
 
       idl_ast = InputObjectSchema.__absinthe_type__(:input_article) |> Absinthe.Language.IDL.to_idl_ast(InputObjectSchema)
 
-      idl_iodata = Absinthe.Language.IDL.to_idl_iodata(idl_ast)
+      idl_iodata = Absinthe.Language.IDL.to_idl_iodata(idl_ast, InputObjectSchema)
       assert idl_iodata == equiv_idl_iodata
     end
     it "can be converted to IDL iodata as a schema" do
-      assert Absinthe.Language.IDL.to_idl_iodata(InputObjectSchema |> Absinthe.Language.IDL.to_idl_ast)
+      assert Absinthe.Language.IDL.to_idl_iodata(InputObjectSchema |> Absinthe.Language.IDL.to_idl_ast, ObjectSchema)
     end
 
   end
@@ -150,9 +157,8 @@ defmodule Absinthe.Language.IDLtest do
       """
       {:ok, idl_ast_doc} = Absinthe.parse(idl)
       idl_ast = idl_ast_doc.definitions |> List.first
-      idl_iodata = idl_ast |> Absinthe.Language.IDL.to_idl_iodata
+      idl_iodata = idl_ast |> Absinthe.Language.IDL.to_idl_iodata(StubSchema)
       assert idl == IO.iodata_to_binary(idl_iodata)
-
     end
 
   end
@@ -212,14 +218,14 @@ defmodule Absinthe.Language.IDLtest do
       """
       {:ok, equiv_idl_ast_doc} = Absinthe.parse(equiv_idl)
       equiv_idl_ast = equiv_idl_ast_doc.definitions |> List.first
-      equiv_idl_iodata = Absinthe.Language.IDL.to_idl_iodata(equiv_idl_ast)
+      equiv_idl_iodata = Absinthe.Language.IDL.to_idl_iodata(equiv_idl_ast, EnumSchema)
 
       idl_ast = EnumSchema.__absinthe_type__(:color) |> Absinthe.Language.IDL.to_idl_ast(EnumSchema)
-      idl_iodata = Absinthe.Language.IDL.to_idl_iodata(idl_ast)
+      idl_iodata = Absinthe.Language.IDL.to_idl_iodata(idl_ast, EnumSchema)
       assert idl_iodata == equiv_idl_iodata
     end
     it "can be converted to IDL iodata as a schema" do
-      assert Absinthe.Language.IDL.to_idl_iodata(EnumSchema |> Absinthe.Language.IDL.to_idl_ast)
+      assert Absinthe.Language.IDL.to_idl_iodata(EnumSchema |> Absinthe.Language.IDL.to_idl_ast, EnumSchema)
     end
 
   end
@@ -279,14 +285,14 @@ defmodule Absinthe.Language.IDLtest do
       """
       {:ok, equiv_idl_ast_doc} = Absinthe.parse(equiv_idl)
       equiv_idl_ast = equiv_idl_ast_doc.definitions |> List.first
-      equiv_idl_iodata = Absinthe.Language.IDL.to_idl_iodata(equiv_idl_ast)
+      equiv_idl_iodata = Absinthe.Language.IDL.to_idl_iodata(equiv_idl_ast, EnumSchema)
 
       idl_ast = UnionSchema.__absinthe_type__(:search_result) |> Absinthe.Language.IDL.to_idl_ast(UnionSchema)
-      idl_iodata = Absinthe.Language.IDL.to_idl_iodata(idl_ast)
+      idl_iodata = Absinthe.Language.IDL.to_idl_iodata(idl_ast, UnionSchema)
       assert idl_iodata == equiv_idl_iodata
     end
     it "can be converted to IDL iodata as a schema" do
-      assert Absinthe.Language.IDL.to_idl_iodata(UnionSchema |> Absinthe.Language.IDL.to_idl_ast)
+      assert Absinthe.Language.IDL.to_idl_iodata(UnionSchema |> Absinthe.Language.IDL.to_idl_ast, UnionSchema)
     end
 
   end
@@ -319,14 +325,14 @@ defmodule Absinthe.Language.IDLtest do
     it "can be converted to IDL iodata" do
       {:ok, equiv_idl_ast_doc} = Absinthe.parse(@idl)
       equiv_idl_ast = equiv_idl_ast_doc.definitions |> List.first
-      equiv_idl_iodata = Absinthe.Language.IDL.to_idl_iodata(equiv_idl_ast)
+      equiv_idl_iodata = Absinthe.Language.IDL.to_idl_iodata(equiv_idl_ast, ScalarSchema)
 
       idl_ast = ScalarSchema.__absinthe_type__(:time) |> Absinthe.Language.IDL.to_idl_ast(ScalarSchema)
-      idl_iodata = Absinthe.Language.IDL.to_idl_iodata(idl_ast)
+      idl_iodata = Absinthe.Language.IDL.to_idl_iodata(idl_ast, ScalarSchema)
       assert idl_iodata == equiv_idl_iodata
     end
     it "can be converted to IDL iodata as a schema" do
-      assert Absinthe.Language.IDL.to_idl_iodata(ScalarSchema |> Absinthe.Language.IDL.to_idl_ast)
+      assert Absinthe.Language.IDL.to_idl_iodata(ScalarSchema |> Absinthe.Language.IDL.to_idl_ast, ScalarSchema)
     end
 
   end
