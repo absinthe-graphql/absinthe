@@ -6,6 +6,7 @@ Nonterminals
   FieldDefinitionList FieldDefinition ImplementsInterfaces ArgumentsDefinition
   InputValueDefinitionList InputValueDefinition UnionMembers
   EnumValueDefinitionList EnumValueDefinition
+  DirectiveDefinition
   SelectionSet Selections Selection
   OperationType Name NameWithoutOn VariableDefinitions VariableDefinition Directives Directive
   Field Alias Arguments ArgumentList Argument
@@ -16,7 +17,7 @@ Nonterminals
 
 Terminals
   '{' '}' '(' ')' '[' ']' '!' ':' '@' '$' '=' '|' '...'
-  'query' 'mutation' 'subscription' 'fragment' 'on' 'null'
+  'query' 'mutation' 'subscription' 'fragment' 'on' 'null' 'directive'
   'type' 'implements' 'interface' 'union' 'scalar' 'enum' 'input' 'extend'
   name int_value float_value string_value boolean_value.
 
@@ -160,6 +161,10 @@ TypeDefinition -> ScalarTypeDefinition : '$1'.
 TypeDefinition -> EnumTypeDefinition : '$1'.
 TypeDefinition -> InputObjectDefinition : '$1'.
 TypeDefinition -> TypeExtensionDefinition : '$1'.
+TypeDefinition -> DirectiveDefinition : '$1'.     
+
+DirectiveDefinition -> 'directive' '@' Name ArgumentsDefinition 'on' EnumValueDefinitionList :
+  build_ast_node('DirectiveDefinition', #{'name' => extract_binary('$3'), 'arguments' => '$4', 'locations' =>'$6'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$1')}).
 
 ObjectDefinition -> 'type' Name '{' FieldDefinitionList '}' :
   build_ast_node('ObjectDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$5')}).

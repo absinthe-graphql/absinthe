@@ -72,6 +72,18 @@ defmodule Absinthe.Language.IDLtest do
 
   end
 
+  describe "directives" do
+
+    @idl """
+    directive @foo(arg: Int) on FIELD
+    """
+
+    it "can be parsed from the IDL" do
+      assert {:ok, _} = Absinthe.parse(@idl)
+    end
+
+  end
+
   describe "input object types" do
 
     @idl """
