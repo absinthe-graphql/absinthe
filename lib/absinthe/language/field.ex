@@ -7,7 +7,7 @@ defmodule Absinthe.Language.Field do
                directives: [Absinthe.Language.Directive.t],
                selection_set: Absinthe.Language.SelectionSet.t,
                loc: Absinthe.Language.loc_t}
-  defstruct alias: nil, name: nil, arguments: [], directives: [], selection_set: nil, loc: %{start: nil}
+  defstruct alias: nil, name: nil, arguments: [], directives: [], selection_set: nil, loc: %{start_line: nil}
 
   defimpl Absinthe.Traversal.Node do
     def children(node, _schema) do

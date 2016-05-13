@@ -66,6 +66,16 @@ defmodule Absinthe.Language.IDL do
   def to_idl_ast(node, schema) when is_atom(node) do
     %Language.NamedType{name: schema.__absinthe_type__(node).name}
   end
+  def to_idl_ast(%Type.Directive{} = node, schema) do
+    %Language.DirectiveDefinition{
+      name: node.name,
+      arguments: Enum.map(Map.values(node.args), &to_idl_ast(&1, schema)),
+      locations: Enum.map(node.locations, fn loc ->
+        loc |> Atom.to_string |> String.upcase
+      end)
+    }
+  end
+
 
   @spec to_idl_ast(Type.t, Type.t, Schema.t) :: Language.t
   defp to_idl_ast(%Type.InputObject{}, %Type.Field{} = node, schema) do
@@ -206,6 +216,17 @@ defmodule Absinthe.Language.IDL do
       "]"
     ]
   end
+  def to_idl_iodata(%Language.DirectiveDefinition{} = node, schema) do
+    [
+      "directive @",
+      node,
+      arguments_idl_iodata(node.arguments, schema),
+      " on ",
+      Enum.intersperse(node.locations, ' '),
+      "\n"
+    ]
+  end
+
   def to_idl_iodata(value, _schema) when is_binary(value) do
     value
   end

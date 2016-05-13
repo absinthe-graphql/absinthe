@@ -2,7 +2,7 @@ defmodule Absinthe.Language.SelectionSet do
 
   @moduledoc false
 
-  defstruct selections: [], loc: %{start: nil}
+  defstruct selections: [], loc: %{start_line: nil}
 
   defimpl Absinthe.Traversal.Node do
 

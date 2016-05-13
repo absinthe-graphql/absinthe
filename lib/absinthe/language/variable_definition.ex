@@ -9,5 +9,5 @@ defmodule Absinthe.Language.VariableDefinition do
                default_value: any,
                loc: Language.loc_t}
 
-  defstruct variable: nil, type: nil, default_value: nil, loc: %{start: nil}
+  defstruct variable: nil, type: nil, default_value: nil, loc: %{start_line: nil}
 end
