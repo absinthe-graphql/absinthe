@@ -131,7 +131,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   defp parse_with(node_types, coercion) do
     fn
       %{value: value} = node ->
-      if Enum.is_member?(node_types, node) do
+      if Enum.member?(node_types, node) do
         coercion.(value)
       else
         nil
