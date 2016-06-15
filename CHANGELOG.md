@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.1.7
+
+Bugfixes
+- Fix execution of nested fragment spreads with abstract condition types.
+
 ## v1.1.6
 
 Bugfixes
