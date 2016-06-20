@@ -20,32 +20,47 @@ defmodule Absinthe.Execution.Variables do
   end
 
   def build_definition(definition, {status, execution}) do
-    case validate_definition_type(definition.type, execution) do
-      {:ok, schema_type, type_stack} ->
-        process_variable(definition, schema_type, type_stack, execution, status)
-      :error ->
-        inner_type = definition.type |> unwrap
-        execution = Execution.put_error(execution, :variable, inner_type.name, "Type `#{inner_type.name}': Not present in schema", at: definition.type)
-        {:error, execution}
+    with :ok <- validate_definition_uniqueness(definition, execution),
+         {:ok, schema_type, type_stack} <- validate_definition_type(definition, execution) do
+      process_variable(definition, schema_type, type_stack, execution, status)
     end
   end
 
   defp unwrap(%{type: inner_type}), do: unwrap(inner_type)
   defp unwrap(type), do: type
 
-  defp validate_definition_type(type, execution) do
-    validate_definition_type(type, [], execution)
+  # Validate that a variable is not defined more than once for the operation
+  @spec validate_definition_uniqueness(Language.VariableDefinition.t, Execution.t) :: :ok | {:error, Execution.t}
+  defp validate_definition_uniqueness(definition, execution) do
+    case Map.get(execution.variables.processed, definition.variable.name) do
+      nil ->
+        :ok
+      _ ->
+        execution = Execution.put_error(execution, :variable, definition.variable.name, "Defined more than once", at: definition.type)
+        {:error, execution}
+    end
   end
-  defp validate_definition_type(%Language.NonNullType{type: inner_type}, acc, execution) do
-    validate_definition_type(inner_type, acc, execution)
+
+  # Validate that the variable type is defined in the schema
+  @spec validate_definition_type(Language.VariableDefinition.t, Execution.t) :: :ok | {:error, Execution.t}
+  defp validate_definition_type(definition, execution) do
+    do_validate_definition_type(definition, definition.type, [], execution)
   end
-  defp validate_definition_type(%Language.ListType{type: inner_type}, acc, execution) do
-    validate_definition_type(inner_type, [Type.List | acc], execution)
+
+  defp do_validate_definition_type(definition, %Language.NonNullType{type: inner_type}, acc, execution) do
+    do_validate_definition_type(definition, inner_type, acc, execution)
   end
-  defp validate_definition_type(%Language.NamedType{name: name}, acc, execution) do
+  defp do_validate_definition_type(definition, %Language.ListType{type: inner_type}, acc, execution) do
+    do_validate_definition_type(definition, inner_type, [Type.List | acc], execution)
+  end
+  defp do_validate_definition_type(definition, %Language.NamedType{name: name}, acc, execution) do
     case execution.schema.__absinthe_type__(name) do
-      nil -> :error
-      type -> {:ok, type, [name | acc]}
+      nil ->
+        inner_type = definition.type |> unwrap
+        execution = Execution.put_error(execution, :variable, inner_type.name, "Type `#{inner_type.name}': Not present in schema", at: definition.type)
+        {:error, execution}
+      type ->
+        {:ok, type, [name | acc]}
     end
   end
 
