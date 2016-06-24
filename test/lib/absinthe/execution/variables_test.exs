@@ -53,7 +53,7 @@ defmodule Absinthe.Execution.VariablesTest.Schema do
 end
 
 defmodule Absinthe.Execution.VariablesTest do
-  use ExSpec, async: true
+  use Absinthe.Case, async: true
 
   alias Absinthe.Execution
 

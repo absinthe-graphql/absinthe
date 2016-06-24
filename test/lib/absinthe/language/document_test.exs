@@ -1,5 +1,5 @@
 defmodule Absinthe.Languguage.DocumentTest do
-  use ExSpec, async: true
+  use Absinthe.Case, async: true
 
   alias Absinthe.Language.Document
   alias Absinthe.Language.OperationDefinition

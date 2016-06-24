@@ -1,5 +1,5 @@
 defmodule Absinthe.Validation.PreventCircularFragmentsTest do
-  use ExSpec, async: true
+  use Absinthe.Case, async: true
 
   alias Absinthe.Validation
 

@@ -1,5 +1,5 @@
 defmodule Absinthe.Type.InputObjectTest do
-  use ExSpec, async: true
+  use Absinthe.Case, async: true
 
   defmodule TestSchema do
     use Absinthe.Schema

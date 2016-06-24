@@ -1,5 +1,5 @@
 defmodule Absinthe.Adapter.LanguageConventionsTest do
-  use ExSpec, async: true
+  use Absinthe.Case, async: true
 
   alias Absinthe.Adapter.LanguageConventions
 
