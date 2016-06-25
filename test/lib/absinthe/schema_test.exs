@@ -1,5 +1,5 @@
 defmodule Absinthe.SchemaTest do
-  use ExSpec, async: true
+  use Absinthe.Case, async: true
   use SupportSchemas
 
   alias Absinthe.Schema

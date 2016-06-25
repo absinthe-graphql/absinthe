@@ -1,5 +1,5 @@
 defmodule Absinthe.Execution.SubscriptionTest do
-  use ExSpec, async: true
+  use Absinthe.Case, async: true
 
   defmodule Schema do
     use Absinthe.Schema

@@ -1,5 +1,5 @@
 defmodule Absinthe.ParserTest do
-  use ExSpec, async: true
+  use Absinthe.Case, async: true
 
   it "parses a simple query" do
     assert {:ok, _} = Absinthe.parse("{ user(id: 2) { name } }")

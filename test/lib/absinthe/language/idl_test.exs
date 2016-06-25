@@ -1,5 +1,5 @@
 defmodule Absinthe.Language.IDLtest do
-  use ExSpec, async: true
+  use Absinthe.Case, async: true
 
   describe "object and interface types" do
 

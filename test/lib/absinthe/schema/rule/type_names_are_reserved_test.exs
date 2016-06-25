@@ -1,5 +1,5 @@
 defmodule Absinthe.Schema.Rule.TypeNamesAreReservedTest do
-  use ExSpec, async: true
+  use Absinthe.Case, async: true
   use SupportSchemas
 
   alias Absinthe.Schema.Rule

@@ -1,5 +1,5 @@
 defmodule Absinthe.Execution.DefaultResolverTest do
-  use ExSpec, async: true
+  use Absinthe.Case, async: true
 
   @root %{:foo => "baz", "bar" => "quux"}
   @query "{ foo bar }"

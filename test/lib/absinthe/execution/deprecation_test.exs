@@ -1,5 +1,5 @@
 defmodule Absinthe.Execution.DeprecationTest do
-  use ExSpec, async: true
+  use Absinthe.Case, async: true
 
   import AssertResult
 

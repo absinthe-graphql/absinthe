@@ -1,5 +1,5 @@
 defmodule Absinthe.Schema.NotationTest do
-  use ExSpec, async: true
+  use Absinthe.Case, async: true
 
   describe "arg" do
     it "can be under field as an attribute" do

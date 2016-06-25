@@ -1,5 +1,5 @@
 defmodule Absinthe.Type.DirectiveTest do
-  use ExSpec, async: true
+  use Absinthe.Case, async: true
 
   alias Absinthe.Schema
 
