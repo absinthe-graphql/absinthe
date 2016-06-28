@@ -1,4 +1,4 @@
-defmodule Absinthe.IR.IDL.Object do
+defmodule Absinthe.IR.IDL.ObjectDefinition do
 
   alias Absinthe.{IR, Language}
 
@@ -6,7 +6,7 @@ defmodule Absinthe.IR.IDL.Object do
   @type t :: %__MODULE__{
     name: binary,
     description: nil | binary,
-    fields: [IR.IDL.Field.t],
+    fields: [IR.IDL.FieldDefinition.t],
     directives: [IR.Directive.t],
     errors: [IR.Error.t],
     interfaces: [binary],

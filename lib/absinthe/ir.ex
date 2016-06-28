@@ -21,19 +21,19 @@ defmodule Absinthe.IR do
     |> do_from_ast(rest)
   end
   defp do_from_ast(ir, [%Language.ObjectDefinition{} = node | rest]) do
-    update_in(ir.types, &[IR.IDL.Object.from_ast(node) | &1])
+    update_in(ir.types, &[IR.IDL.ObjectDefinition.from_ast(node) | &1])
     |> do_from_ast(rest)
   end
   defp do_from_ast(ir, [%Language.UnionTypeDefinition{} = node | rest]) do
-    update_in(ir.types, &[IR.IDL.Union.from_ast(node) | &1])
+    update_in(ir.types, &[IR.IDL.UnionTypeDefinition.from_ast(node) | &1])
     |> do_from_ast(rest)
   end
   defp do_from_ast(ir, [%Language.EnumTypeDefinition{} = node | rest]) do
-    update_in(ir.types, &[IR.IDL.Enum.from_ast(node) | &1])
+    update_in(ir.types, &[IR.IDL.EnumTypeDefinition.from_ast(node) | &1])
     |> do_from_ast(rest)
   end
   defp do_from_ast(ir, [%Language.DirectiveDefinition{} = node | rest]) do
-    update_in(ir.directives, &[IR.IDL.Directive.from_ast(node) | &1])
+    update_in(ir.directives, &[IR.IDL.DirectiveDefinition.from_ast(node) | &1])
     |> do_from_ast(rest)
   end
   defp do_from_ast(ir, [definition | rest]) do

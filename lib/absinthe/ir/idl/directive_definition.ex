@@ -1,4 +1,4 @@
-defmodule Absinthe.IR.IDL.Directive do
+defmodule Absinthe.IR.IDL.DirectiveDefinition do
 
   alias Absinthe.Language
 
