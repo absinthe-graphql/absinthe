@@ -9,7 +9,6 @@ defmodule Absinthe.IR.IDL.ObjectDefinitionTest do
       assert %IR.IDL.ObjectDefinition{name: "Person"} = from_input("type Person { name: String! }")
     end
 
-    @tag :foo
     it "works, given an IDL 'type' definition and a directive" do
       rep = """
       type Person

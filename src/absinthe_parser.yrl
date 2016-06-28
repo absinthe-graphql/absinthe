@@ -200,6 +200,8 @@ InterfaceDefinition -> 'interface' Name Directives '{' FieldDefinitionList '}' :
 
 UnionTypeDefinition -> 'union' Name '=' UnionMembers :
   build_ast_node('UnionTypeDefinition', #{'name' => extract_binary('$2'), 'types' => '$4'}, #{'start_line' => extract_line('$1')}).
+UnionTypeDefinition -> 'union' Name Directives '=' UnionMembers :
+  build_ast_node('UnionTypeDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3', 'types' => '$5'}, #{'start_line' => extract_line('$1')}).
 
 UnionMembers -> NamedType : ['$1'].
 UnionMembers -> NamedType '|' UnionMembers : ['$1'|'$3'].

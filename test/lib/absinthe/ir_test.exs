@@ -79,11 +79,21 @@ defmodule Absinthe.IRTest do
       human(id: String!): Human
       droid(id: String!): Droid
     }
+
+    type Foo {
+      name: String
+    }
+
+    type Bar {
+      name: String
+    }
+
+    union Baz = Foo | Bar
     """
 
     test "creates the correct number of types" do
       rep = ir(@idl)
-      assert length(rep.types) == 5
+      assert length(rep.types) == 8
     end
 
   end
