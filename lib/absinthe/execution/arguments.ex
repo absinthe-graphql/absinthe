@@ -41,7 +41,7 @@ defmodule Absinthe.Execution.Arguments do
 
   defp add_argument(%Language.Argument{value: value} = ast_node, %Type.Argument{type: inner_type} = type, type_stack, meta) do
     meta = meta |> add_deprecation_notice(type, inner_type, [type.name | type_stack], ast_node)
-    add_argument(value, inner_type, [type.name | type_stack], meta)
+    add_argument(value, type, [type.name | type_stack], meta)
   end
 
   defp add_argument(%Language.ListValue{values: values}, %Type.List{of_type: inner_type}, type_stack, meta) do
@@ -106,15 +106,14 @@ defmodule Absinthe.Execution.Arguments do
   end
 
   defp retrieve_variable(name, schema_type, type_stack, ast, meta) do
-    full_type_stack = fillout_stack(schema_type, [], meta.schema)
-    meta.variables
-    |> Map.get(name)
-    |> case do
+    full_type_stack = fillout_stack(schema_type.type, [], meta.schema)
+    
+    case Map.get(meta.variables, name) do
       # The variable exists, and it has the same
       # type as the argument in the schema.
       # yay! we can use it as is.
       %{value: value, type_stack: ^full_type_stack} ->
-        do_retrieve_variable(value, schema_type, type_stack, ast, meta)
+        do_retrieve_variable(value, schema_type.type, type_stack, ast, meta)
       _ ->
         do_retrieve_variable(nil, schema_type, type_stack, ast, meta)
     end
@@ -123,9 +122,12 @@ defmodule Absinthe.Execution.Arguments do
   defp do_retrieve_variable(nil, %Type.NonNull{of_type: inner_type}, type_stack, ast, meta) do
     {:error, Meta.put_missing(meta, type_stack, inner_type, ast)}
   end
-  defp do_retrieve_variable(nil, _, _, _, meta) do
+  defp do_retrieve_variable(nil, schema_type, type_stack, ast, meta) do
     # Don't put a missing error, but also don't put any value for the variable
-    {:error, meta}
+    case schema_type.default_value do
+      nil -> {:error, meta}
+      val -> {:ok, val, meta}
+    end
   end
   defp do_retrieve_variable(value, _, _, _, meta) do
     {:ok, value, meta}
