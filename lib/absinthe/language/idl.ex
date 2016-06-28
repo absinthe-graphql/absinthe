@@ -219,7 +219,7 @@ defmodule Absinthe.Language.IDL do
   def to_idl_iodata(%Language.DirectiveDefinition{} = node, schema) do
     [
       "directive @",
-      node,
+      node.name,
       arguments_idl_iodata(node.arguments, schema),
       " on ",
       Enum.intersperse(node.locations, ' '),

@@ -103,7 +103,7 @@ defmodule Absinthe.Language.IDLtest do
 
       idl_ast = DirectiveSchema.__absinthe_directive__(:foo) |> Absinthe.Language.IDL.to_idl_ast(DirectiveSchema)
       idl_iodata = Absinthe.Language.IDL.to_idl_iodata(idl_ast, DirectiveSchema)
-      assert idl_iodata = equiv_idl_iodata
+      assert idl_iodata == equiv_idl_iodata
     end
 
   end
