@@ -2,7 +2,7 @@ defmodule Absinthe.Language.OperationDefinition do
 
   @moduledoc false
 
-  defstruct operation: nil, name: nil, variable_definitions: [], directives: [], selection_set: nil, loc: %{start: nil}
+  defstruct operation: nil, name: nil, variable_definitions: [], directives: [], selection_set: nil, loc: %{start_line: nil}
 
   defimpl Absinthe.Traversal.Node do
 

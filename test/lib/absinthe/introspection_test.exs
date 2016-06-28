@@ -40,7 +40,7 @@ defmodule Absinthe.IntrospectionTest do
         ContactSchema
       )
       names = types |> Enum.map(&(&1["name"])) |> Enum.sort
-      expected = ~w(Int ID String Boolean Float Contact Person Business ProfileInput SearchResult NamedEntity RootMutationType RootQueryType __Schema __Directive __EnumValue __Field __InputValue __Type) |> Enum.sort
+      expected = ~w(Int ID String Boolean Float Contact Person Business ProfileInput SearchResult NamedEntity RootMutationType RootQueryType __Schema __Directive __DirectiveLocation __EnumValue __Field __InputValue __Type) |> Enum.sort
       assert expected == names
     end
 
@@ -55,11 +55,13 @@ defmodule Absinthe.IntrospectionTest do
     end
 
     it "can use __schema to get the directives" do
-      result = "{ __schema { directives { name args { name type { kind ofType { name kind } } } onOperation onFragment onField } } }" |> Absinthe.run(ContactSchema)
+      result = "{ __schema { directives { name args { name type { kind ofType { name kind } } } locations onField onFragment onOperation } } }" |> Absinthe.run(ContactSchema)
       assert {:ok,
-            %{data: %{"__schema" => %{"directives" => [%{"args" => [%{"name" => "if", "type" => %{"kind" => "NON_NULL", "ofType" => %{"kind" => "SCALAR", "name" => "Boolean"}}}], "name" => "include", "onField" => true, "onFragment" => true,
-                     "onOperation" => false},
-                   %{"args" => [%{"name" => "if", "type" => %{"kind" => "NON_NULL", "ofType" => %{"kind" => "SCALAR", "name" => "Boolean"}}}], "name" => "skip", "onField" => true, "onFragment" => true, "onOperation" => false}]}}}} == result
+              %{errors: _,
+                data: %{"__schema" => %{
+                         "directives" => [
+                         %{"args" => [%{"name" => "if", "type" => %{"kind" => "NON_NULL", "ofType" => %{"kind" => "SCALAR", "name" => "Boolean"}}}], "name" => "include", "locations" => ["INLINE_FRAGMENT", "FRAGMENT_SPREAD", "FIELD"], "onField" => true, "onFragment" => true, "onOperation" => false},
+                         %{"args" => [%{"name" => "if", "type" => %{"kind" => "NON_NULL", "ofType" => %{"kind" => "SCALAR", "name" => "Boolean"}}}], "name" => "skip", "locations" => ["INLINE_FRAGMENT", "FRAGMENT_SPREAD", "FIELD"], "onField" => true, "onFragment" => true, "onOperation" => false}]}}}} = result
     end
 
   end

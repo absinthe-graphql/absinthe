@@ -9,12 +9,10 @@ query IntrospectionQuery {
     directives {
       name
       description
+      locations
       args {
         ...InputValue
       }
-      onOperation
-      onFragment
-      onField
     }
   }
 }
@@ -68,6 +66,22 @@ fragment TypeRef on __Type {
       ofType {
         kind
         name
+        ofType {
+          kind
+          name
+          ofType {
+            kind
+            name
+            ofType {
+              kind
+              name
+              ofType {
+                kind
+                name
+              }
+            }
+          }
+        }
       }
     }
   }

@@ -655,24 +655,23 @@ defmodule Absinthe.Schema.Notation do
   defmacro on(ast_node) do
     __CALLER__
     |> recordable!(:on, @placement[:on])
-    |> record_on!(ast_node)
+    |> record_locations!(ast_node)
   end
 
   @doc false
   # Record directive AST nodes in the current scope
-  def record_on!(env, ast_node) do
+  def record_locations!(env, ast_node) do
     ast_node
     |> List.wrap
     |> Enum.each(fn
       value ->
         Scope.put_attribute(
           env.module,
-          :on,
+          :locations,
           value,
           accumulate: true
         )
-        Scope.recorded!(env.module, :attr, :on)
-
+        Scope.recorded!(env.module, :attr, :locations)
     end)
     :ok
   end

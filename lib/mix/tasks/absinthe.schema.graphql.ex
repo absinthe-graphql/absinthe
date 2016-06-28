@@ -58,7 +58,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Graphql do
     content = schema
     |> Absinthe.Language.IDL.to_idl_ast
     |> adapter.dump_document
-    |> Absinthe.Language.IDL.to_idl_iodata
+    |> Absinthe.Language.IDL.to_idl_iodata(schema)
 
     create_directory(Path.dirname(filename))
     create_file(filename, content, force: true)

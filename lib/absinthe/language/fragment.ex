@@ -2,7 +2,7 @@ defmodule Absinthe.Language.Fragment do
 
   @moduledoc false
 
-  defstruct name: nil, type_condition: nil, directives: [], selection_set: nil, loc: %{start: nil}
+  defstruct name: nil, type_condition: nil, directives: [], selection_set: nil, loc: %{start_line: nil}
 
   defimpl Absinthe.Traversal.Node do
     def children(node, _schema) do

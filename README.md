@@ -7,7 +7,7 @@
 
 Goals:
 
-- Complete implementation of the [GraphQL Working Draft](https://facebook.github.io/graphql), dated October 2015
+- Complete implementation of the [GraphQL Working Draft](https://facebook.github.io/graphql), dated April 2016.
 - An idiomatic, readable, and comfortable API for Elixir developers
 - Detailed error messages and documentation
 - A focus on robustness and production-level performance

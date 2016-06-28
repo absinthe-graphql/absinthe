@@ -66,6 +66,16 @@ defmodule Absinthe.Language.IDL do
   def to_idl_ast(node, schema) when is_atom(node) do
     %Language.NamedType{name: schema.__absinthe_type__(node).name}
   end
+  def to_idl_ast(%Type.Directive{} = node, schema) do
+    %Language.DirectiveDefinition{
+      name: node.name,
+      arguments: Enum.map(Map.values(node.args), &to_idl_ast(&1, schema)),
+      locations: Enum.map(node.locations, fn loc ->
+        loc |> Atom.to_string |> String.upcase
+      end)
+    }
+  end
+
 
   @spec to_idl_ast(Type.t, Type.t, Schema.t) :: Language.t
   defp to_idl_ast(%Type.InputObject{}, %Type.Field{} = node, schema) do
@@ -112,65 +122,69 @@ defmodule Absinthe.Language.IDL do
     }
   end
 
-  @spec to_idl_iodata(Language.t) :: iodata
-  def to_idl_iodata(%Language.Document{} = doc) do
-    doc.definitions
-    |> Enum.map(&to_idl_iodata/1)
+  @spec to_idl_iodata(Language.t, Schema.t) :: iodata
+  def to_idl_iodata(%Language.Document{} = doc, schema) do
+    [
+      "schema {\n",
+      Enum.map(~w(query mutation subscription)a, &to_idl_root_iodata(&1, schema)),
+      "}\n",
+      Enum.map(doc.definitions, &(to_idl_iodata(&1, schema)))
+    ]
   end
-  def to_idl_iodata(%Language.ObjectDefinition{} = node) do
+  def to_idl_iodata(%Language.ObjectDefinition{} = node, schema) do
     [
       "type ",
       node.name,
       implements_iodata(node.interfaces),
       " {\n",
-      indented(2, node.fields),
+      indented(2, node.fields, schema),
       "}\n"
     ]
   end
-  def to_idl_iodata(%Language.InterfaceDefinition{} = node) do
+  def to_idl_iodata(%Language.InterfaceDefinition{} = node, schema) do
     [
       "interface ",
       node.name,
       " {\n",
-      indented(2, node.fields),
+      indented(2, node.fields, schema),
       "}\n"
     ]
   end
-  def to_idl_iodata(%Language.InputObjectDefinition{} = node) do
+  def to_idl_iodata(%Language.InputObjectDefinition{} = node, schema) do
     [
       "input ",
       node.name,
       " {\n",
-      indented(2, node.fields),
+      indented(2, node.fields, schema),
       "}\n"
     ]
   end
-  def to_idl_iodata(%Language.FieldDefinition{} = node) do
+  def to_idl_iodata(%Language.FieldDefinition{} = node, schema) do
     [
       node.name,
-      arguments_idl_iodata(node.arguments),
+      arguments_idl_iodata(node.arguments, schema),
       ": ",
-      to_idl_iodata(node.type),
+      to_idl_iodata(node.type, schema),
     ]
   end
-  def to_idl_iodata(%Language.InputValueDefinition{} = node) do
+  def to_idl_iodata(%Language.InputValueDefinition{} = node, schema) do
     [
       node.name,
       ": ",
-      to_idl_iodata(node.type),
+      to_idl_iodata(node.type, schema),
       default_idl_iodata(node.default_value),
     ]
   end
-  def to_idl_iodata(%Language.EnumTypeDefinition{} = node) do
+  def to_idl_iodata(%Language.EnumTypeDefinition{} = node, schema) do
     [
       "enum ",
       node.name,
       " {\n",
-      indented(2, node.values),
+      indented(2, node.values, schema),
       "}\n"
     ]
   end
-  def to_idl_iodata(%Language.UnionTypeDefinition{} = node) do
+  def to_idl_iodata(%Language.UnionTypeDefinition{} = node, _schema) do
     [
       "union ",
       node.name,
@@ -179,31 +193,51 @@ defmodule Absinthe.Language.IDL do
       |> Enum.join(" | ")
     ]
   end
-  def to_idl_iodata(%Language.ScalarTypeDefinition{} = node) do
+  def to_idl_iodata(%Language.ScalarTypeDefinition{} = node, _schema) do
     [
       "scalar ",
       node.name,
       "\n"
     ]
   end
-  def to_idl_iodata(%Language.NamedType{} = node) do
+  def to_idl_iodata(%Language.NamedType{} = node, _schema) do
     node.name
   end
-  def to_idl_iodata(%Language.NonNullType{} = node) do
+  def to_idl_iodata(%Language.NonNullType{} = node, schema) do
     [
-      to_idl_iodata(node.type),
+      to_idl_iodata(node.type, schema),
       "!"
     ]
   end
-  def to_idl_iodata(%Language.ListType{} = node) do
+  def to_idl_iodata(%Language.ListType{} = node, schema) do
     [
       "[",
-      to_idl_iodata(node.type),
+      to_idl_iodata(node.type, schema),
       "]"
     ]
   end
-  def to_idl_iodata(value) when is_binary(value) do
+  def to_idl_iodata(%Language.DirectiveDefinition{} = node, schema) do
+    [
+      "directive @",
+      node,
+      arguments_idl_iodata(node.arguments, schema),
+      " on ",
+      Enum.intersperse(node.locations, ' '),
+      "\n"
+    ]
+  end
+
+  def to_idl_iodata(value, _schema) when is_binary(value) do
     value
+  end
+
+  defp to_idl_root_iodata(name, schema) do
+    case Schema.lookup_type(schema, name) do
+      nil ->
+        ""
+      object ->
+        "  #{name}: #{object.name}\n"
+    end
   end
 
   defp implements_iodata([]) do
@@ -266,22 +300,22 @@ defmodule Absinthe.Language.IDL do
     ]
   end
 
-  defp arguments_idl_iodata([]) do
+  defp arguments_idl_iodata([], _schema) do
     []
   end
-  defp arguments_idl_iodata(arguments) do
+  defp arguments_idl_iodata(arguments, schema) do
     [
       "(",
-      Enum.intersperse(Enum.map(arguments, &to_idl_iodata/1), ", "),
+      Enum.intersperse(Enum.map(arguments, &to_idl_iodata(&1, schema)), ", "),
       ")"
     ]
   end
 
-  defp indented(amount, collection) do
+  defp indented(amount, collection, schema) do
     indent = 1..amount |> Enum.map(fn _ -> " " end)
     Enum.map(collection, fn
       member ->
-        [indent, to_idl_iodata(member), "\n"]
+        [indent, to_idl_iodata(member, schema), "\n"]
     end)
   end
 

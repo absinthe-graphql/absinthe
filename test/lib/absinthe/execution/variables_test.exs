@@ -133,6 +133,18 @@ defmodule Absinthe.Execution.VariablesTest do
     end
   end
 
+  describe "duplicate variable name" do
+    it "returns an error if a variable is duplicated" do
+      doc = """
+      query DuplicateError($item: Int, $item: Int) {
+        foo(bar: $item) { baz }
+      }
+      """
+      assert {:error, %{errors: errors}} = doc |> parse(%{"item" => 1})
+      assert [%{locations: [%{column: 0, line: 1}], message: "Variable `item': Defined more than once"}] == errors
+    end
+  end
+
   describe "list variables" do
     it "should work in a basic case" do
       doc = """
