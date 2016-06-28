@@ -1,10 +1,16 @@
 defmodule Absinthe.IR.Directive do
 
-  defstruct name: nil, arguments: []
-  @type t :: %__MODULE__{} # TODO
+  alias Absinthe.Language
 
-  def from_ast(node) do
-    %__MODULE__{name: node.name} # TODO: Arguments
+  defstruct name: nil, arguments: [], errors: [], ast_node: nil
+  @type t :: %__MODULE__{
+    name: String.t,
+    arguments: [Absinthe.IR.Argument.t],
+    errors: [Absinthe.IR.Error.t],
+    ast_node: Language.t,
+  }
+
+  def from_ast(_) do
   end
 
 end
