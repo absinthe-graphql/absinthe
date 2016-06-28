@@ -145,9 +145,9 @@ defmodule Absinthe do
     @moduledoc """
     An error during parsing.
     """
-    defexception location: nil, msg: ""
+    defexception source: nil, location: nil, message: ""
     def message(exception) do
-      "#{exception.msg} on line #{exception.location.line}"
+      "#{exception.message} on line #{exception.location.line}"
     end
   end
 
@@ -197,7 +197,8 @@ defmodule Absinthe do
   def parse!(input) do
     case parse(input) do
       {:ok, result} -> result
-      {:error, err} -> raise SyntaxError, source: input, msg: err.message, location: err.locations[0]
+      {:error, err} ->
+        raise Absinthe.SyntaxError, source: input, message: err.message, location: err.locations |> List.first
     end
   end
 
