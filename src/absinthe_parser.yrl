@@ -168,8 +168,12 @@ DirectiveDefinition -> 'directive' '@' Name ArgumentsDefinition 'on' EnumValueDe
 
 ObjectDefinition -> 'type' Name '{' FieldDefinitionList '}' :
   build_ast_node('ObjectDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$5')}).
+ObjectDefinition -> 'type' Name Directives '{' FieldDefinitionList '}' :
+  build_ast_node('ObjectDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3', 'fields' => '$5'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$6')}).
 ObjectDefinition -> 'type' Name ImplementsInterfaces '{' FieldDefinitionList '}' :
   build_ast_node('ObjectDefinition', #{'name' => extract_binary('$2'), 'interfaces' => '$3', 'fields' => '$5'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$6')}).
+ObjectDefinition -> 'type' Name ImplementsInterfaces Directives '{' FieldDefinitionList '}' :
+  build_ast_node('ObjectDefinition', #{'name' => extract_binary('$2'), 'interfaces' => '$3', 'directives' => '$4', 'fields' => '$6'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$7')}).
 
 ImplementsInterfaces -> 'implements' NamedTypeList : '$2'.
 

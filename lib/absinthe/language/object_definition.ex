@@ -2,5 +2,5 @@ defmodule Absinthe.Language.ObjectDefinition do
 
   @moduledoc false
 
-  defstruct name: nil, interfaces: [], fields: [], loc: %{start_line: nil}
+  defstruct name: nil, directives: [], interfaces: [], fields: [], loc: %{start_line: nil}
 end

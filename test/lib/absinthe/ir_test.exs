@@ -20,7 +20,13 @@ defmodule Absinthe.IRTest do
 
     test 'returns an IR struct with the right number of types' do
       rep = """
-        type Person { name: String }
+
+        type Person
+        @description(text: "A person object")
+        {
+          name: String
+        }
+
         type Business { name: String}
         union Entity = Person | Business
         enum Purpose { BUSINESS PLEASURE }
