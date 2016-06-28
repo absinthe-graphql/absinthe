@@ -46,6 +46,48 @@ defmodule Absinthe.IRTest do
 
   end
 
+  describe '.from_ast for IDL' do
+
+    @idl """
+    enum Episode { NEWHOPE, EMPIRE, JEDI }
+
+    interface Character {
+      id: String!
+      name: String
+      friends: [Character]
+      appearsIn: [Episode]
+    }
+
+    type Human implements Character {
+      id: String!
+      name: String
+      friends: [Character]
+      appearsIn: [Episode]
+      homePlanet: String
+    }
+
+    type Droid implements Character {
+      id: String!
+      name: String
+      friends: [Character]
+      appearsIn: [Episode]
+      primaryFunction: String
+    }
+
+    type Query {
+      hero(episode: Episode): Character
+      human(id: String!): Human
+      droid(id: String!): Droid
+    }
+    """
+
+    test "creates the correct number of types" do
+      rep = ir(@idl)
+      assert length(rep.types) == 5
+    end
+
+  end
+
   def ir(input) do
     Absinthe.parse!(input)
     |> Absinthe.IR.from_ast

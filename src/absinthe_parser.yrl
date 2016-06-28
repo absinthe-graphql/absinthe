@@ -195,6 +195,8 @@ InputValueDefinition -> Name ':' Type DefaultValue : build_ast_node('InputValueD
 
 InterfaceDefinition -> 'interface' Name '{' FieldDefinitionList '}' :
   build_ast_node('InterfaceDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$5')}).
+InterfaceDefinition -> 'interface' Name Directives '{' FieldDefinitionList '}' :
+  build_ast_node('InterfaceDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3', 'fields' => '$5'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$6')}).
 
 UnionTypeDefinition -> 'union' Name '=' UnionMembers :
   build_ast_node('UnionTypeDefinition', #{'name' => extract_binary('$2'), 'types' => '$4'}, #{'start_line' => extract_line('$1')}).

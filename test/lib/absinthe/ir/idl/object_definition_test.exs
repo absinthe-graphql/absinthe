@@ -5,11 +5,12 @@ defmodule Absinthe.IR.IDL.ObjectDefinitionTest do
 
   describe ".from_ast" do
 
-    test "works, given an IDL 'type' definition" do
+    it "works, given an IDL 'type' definition" do
       assert %IR.IDL.ObjectDefinition{name: "Person"} = from_input("type Person { name: String! }")
     end
 
-    test "works, given an IDL 'type' definition and a directive" do
+    @tag :foo
+    it "works, given an IDL 'type' definition and a directive" do
       rep = """
       type Person
       @description(text: "A person")
@@ -20,7 +21,7 @@ defmodule Absinthe.IR.IDL.ObjectDefinitionTest do
       assert %IR.IDL.ObjectDefinition{name: "Person", directives: [%{name: "description"}]} = rep
     end
 
-    test "works, given an IDL 'type' definition that implements an interface" do
+    it "works, given an IDL 'type' definition that implements an interface" do
       rep = """
       type Person implements Entity {
         name: String!
@@ -29,7 +30,7 @@ defmodule Absinthe.IR.IDL.ObjectDefinitionTest do
       assert %IR.IDL.ObjectDefinition{name: "Person", interfaces: ["Entity"]} = rep
     end
 
-    test "works, given an IDL 'type' definition that implements an interface and uses a directive" do
+    it "works, given an IDL 'type' definition that implements an interface and uses a directive" do
       rep = """
       type Person implements Entity
       @description(text: "A person entity")
