@@ -19,11 +19,17 @@ defmodule Absinthe.IRTest do
     end
 
     test 'returns an IR struct with the right number of types' do
-      rep = ir("type Thing { name: String }")
+      rep = """
+        type Person { name: String }
+        type Business { name: String}
+        union Entity = Person | Business
+        enum Purpose { BUSINESS PLEASURE }
+      """ |> ir
       assert length(rep.directives) == 0
       assert length(rep.operations) == 0
-      assert length(rep.types) == 1
+      assert length(rep.types) == 4
     end
+
 
     test 'returns an IR struct with the right number of directives' do
       rep = ir("directive @cs(if: Boolean!) on FIELD")

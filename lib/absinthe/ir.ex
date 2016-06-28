@@ -1,4 +1,5 @@
 defmodule Absinthe.IR do
+  require Logger
 
   alias Absinthe.Language
 
@@ -23,11 +24,20 @@ defmodule Absinthe.IR do
     update_in(ir.types, &[IR.IDL.Object.from_ast(node) | &1])
     |> do_from_ast(rest)
   end
+  defp do_from_ast(ir, [%Language.UnionTypeDefinition{} = node | rest]) do
+    update_in(ir.types, &[IR.IDL.Union.from_ast(node) | &1])
+    |> do_from_ast(rest)
+  end
+  defp do_from_ast(ir, [%Language.EnumTypeDefinition{} = node | rest]) do
+    update_in(ir.types, &[IR.IDL.Enum.from_ast(node) | &1])
+    |> do_from_ast(rest)
+  end
   defp do_from_ast(ir, [%Language.DirectiveDefinition{} = node | rest]) do
     update_in(ir.directives, &[IR.IDL.Directive.from_ast(node) | &1])
     |> do_from_ast(rest)
   end
-  defp do_from_ast(ir, [_ | rest]) do
+  defp do_from_ast(ir, [definition | rest]) do
+    Logger.warn "Could not convert AST definition #{inspect definition} to IR"
     do_from_ast(ir, rest)
   end
 
