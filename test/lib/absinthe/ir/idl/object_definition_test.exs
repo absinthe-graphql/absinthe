@@ -1,4 +1,4 @@
-defmodule Absinthe.IR.IDL.ObjectTest do
+defmodule Absinthe.IR.IDL.ObjectDefinitionTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.IR
@@ -6,7 +6,7 @@ defmodule Absinthe.IR.IDL.ObjectTest do
   describe ".from_ast" do
 
     test "works, given an IDL 'type' definition" do
-      assert %IR.IDL.Object{name: "Person"} = from_input("type Person { name: String! }")
+      assert %IR.IDL.ObjectDefinition{name: "Person"} = from_input("type Person { name: String! }")
     end
 
     test "works, given an IDL 'type' definition and a directive" do
@@ -17,7 +17,7 @@ defmodule Absinthe.IR.IDL.ObjectTest do
         name: String!
       }
       """ |> from_input
-      assert %IR.IDL.Object{name: "Person", directives: [%{name: "description"}]} = rep
+      assert %IR.IDL.ObjectDefinition{name: "Person", directives: [%{name: "description"}]} = rep
     end
 
     test "works, given an IDL 'type' definition that implements an interface" do
@@ -26,7 +26,7 @@ defmodule Absinthe.IR.IDL.ObjectTest do
         name: String!
       }
       """ |> from_input
-      assert %IR.IDL.Object{name: "Person", interfaces: ["Entity"]} = rep
+      assert %IR.IDL.ObjectDefinition{name: "Person", interfaces: ["Entity"]} = rep
     end
 
     test "works, given an IDL 'type' definition that implements an interface and uses a directive" do
@@ -37,7 +37,7 @@ defmodule Absinthe.IR.IDL.ObjectTest do
         name: String!
       }
       """ |> from_input
-      assert %IR.IDL.Object{name: "Person", interfaces: ["Entity"], directives: [%{name: "description"}]} = rep
+      assert %IR.IDL.ObjectDefinition{name: "Person", interfaces: ["Entity"], directives: [%{name: "description"}]} = rep
     end
 
   end
@@ -45,7 +45,7 @@ defmodule Absinthe.IR.IDL.ObjectTest do
   defp from_input(text) do
     Absinthe.parse!(text)
     |> extract_ast_node
-    |> IR.IDL.Object.from_ast
+    |> IR.IDL.ObjectDefinition.from_ast
   end
 
   defp extract_ast_node(%Absinthe.Language.Document{definitions: [node]}) do

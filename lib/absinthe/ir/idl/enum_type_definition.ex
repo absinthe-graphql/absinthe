@@ -1,4 +1,4 @@
-defmodule Absinthe.IR.IDL.Enum do
+defmodule Absinthe.IR.IDL.EnumTypeDefinition do
 
   alias Absinthe.Language
 

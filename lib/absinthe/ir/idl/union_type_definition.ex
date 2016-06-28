@@ -1,4 +1,4 @@
-defmodule Absinthe.IR.IDL.Union do
+defmodule Absinthe.IR.IDL.UnionTypeDefinition do
 
   alias Absinthe.Language
 
