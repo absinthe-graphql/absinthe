@@ -7,6 +7,7 @@ defmodule Absinthe.IR.IDL.FieldDefinitionTest do
   type Foo {
     bar: [String!]!
     baz @description(text: "A directive on baz"): Int
+    quuxes(limit: Int = 4): [Quux]
   }
   """
 
@@ -20,8 +21,14 @@ defmodule Absinthe.IR.IDL.FieldDefinitionTest do
 
     it "captures directives" do
       {doc, fields} = fields_from_input(@idl)
-      field_def = fields |> List.last |> IR.IDL.FieldDefinition.from_ast(doc)
+      field_def = fields |> Enum.at(1) |> IR.IDL.FieldDefinition.from_ast(doc)
       assert %IR.IDL.FieldDefinition{name: "baz"} = field_def
+    end
+
+    it "includes argument definitions" do
+      {doc, fields} = fields_from_input(@idl)
+      field_def = fields |> Enum.at(2) |> IR.IDL.FieldDefinition.from_ast(doc)
+      assert %IR.IDL.FieldDefinition{name: "quuxes", type: %IR.ListType{of_type: %IR.NamedType{name: "Quux"}}, arguments: [%IR.IDL.ArgumentDefinition{name: "limit", type: %IR.NamedType{name: "Int"}, default_value: %IR.Input.Integer{value: 4}}]} = field_def
     end
 
   end

@@ -1,4 +1,5 @@
 defmodule Absinthe.IR.Input.Object do
+
   defstruct [
     fields: [],
     errors: [],
