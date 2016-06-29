@@ -20,8 +20,8 @@ defmodule Absinthe.IR do
     update_in(ir.operations, &[IR.Operation.from_ast(node, doc) | &1])
     |> do_from_ast(rest, doc)
   end
-  defp do_from_ast(ir, [%Language.ObjectDefinition{} = node | rest], doc) do
-    update_in(ir.types, &[IR.IDL.ObjectDefinition.from_ast(node, doc) | &1])
+  defp do_from_ast(ir, [%Language.ObjectTypeDefinition{} = node | rest], doc) do
+    update_in(ir.types, &[IR.IDL.ObjectTypeDefinition.from_ast(node, doc) | &1])
     |> do_from_ast(rest, doc)
   end
   defp do_from_ast(ir, [%Language.UnionTypeDefinition{} = node | rest], doc) do

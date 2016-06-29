@@ -1,4 +1,4 @@
-defmodule Absinthe.Language.InputObjectDefinition do
+defmodule Absinthe.Language.InputObjectTypeDefinition do
 
   @moduledoc false
 

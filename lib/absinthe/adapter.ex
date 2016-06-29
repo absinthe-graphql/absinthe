@@ -142,12 +142,12 @@ defmodule Absinthe.Adapter do
           variable_definitions: node.variable_definitions |> Enum.map(&adapt(&1, adaptation))
         }
       end
-      def adapt(%Language.ObjectDefinition{} = node, adaptation) do
+      def adapt(%Language.ObjectTypeDefinition{} = node, adaptation) do
         %{node |
           fields: Enum.map(node.fields, &adapt(&1, adaptation))
          }
       end
-      def adapt(%Language.InputObjectDefinition{} = node, adaptation) do
+      def adapt(%Language.InputObjectTypeDefinition{} = node, adaptation) do
         %{node |
           fields: Enum.map(node.fields, &adapt(&1, adaptation))
          }

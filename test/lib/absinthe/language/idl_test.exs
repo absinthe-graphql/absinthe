@@ -49,7 +49,7 @@ defmodule Absinthe.Language.IDLtest do
     end
 
     it "can be converted to IDL AST" do
-      assert %Absinthe.Language.ObjectDefinition{} = Absinthe.Language.IDL.to_idl_ast(ObjectSchema.__absinthe_type__(:article), ObjectSchema)
+      assert %Absinthe.Language.ObjectTypeDefinition{} = Absinthe.Language.IDL.to_idl_ast(ObjectSchema.__absinthe_type__(:article), ObjectSchema)
     end
 
     it "can be converted to IDL iodata" do
@@ -139,7 +139,7 @@ defmodule Absinthe.Language.IDLtest do
     end
 
     it "can be converted to IDL AST" do
-      assert %Absinthe.Language.InputObjectDefinition{} = Absinthe.Language.IDL.to_idl_ast(InputObjectSchema.__absinthe_type__(:input_article), InputObjectSchema)
+      assert %Absinthe.Language.InputObjectTypeDefinition{} = Absinthe.Language.IDL.to_idl_ast(InputObjectSchema.__absinthe_type__(:input_article), InputObjectSchema)
     end
 
     # Note: This only tests that input object defaults parsed in from IDL

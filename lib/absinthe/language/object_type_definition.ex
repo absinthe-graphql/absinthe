@@ -1,4 +1,4 @@
-defmodule Absinthe.Language.ObjectDefinition do
+defmodule Absinthe.Language.ObjectTypeDefinition do
 
   @moduledoc false
 

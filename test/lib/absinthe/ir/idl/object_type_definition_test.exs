@@ -1,4 +1,4 @@
-defmodule Absinthe.IR.IDL.ObjectDefinitionTest do
+defmodule Absinthe.IR.IDL.ObjectTypeDefinitionTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.IR
@@ -6,7 +6,7 @@ defmodule Absinthe.IR.IDL.ObjectDefinitionTest do
   describe ".from_ast" do
 
     it "works, given an IDL 'type' definition" do
-      assert %IR.IDL.ObjectDefinition{name: "Person"} = from_input("type Person { name: String! }")
+      assert %IR.IDL.ObjectTypeDefinition{name: "Person"} = from_input("type Person { name: String! }")
     end
 
     it "works, given an IDL 'type' definition and a directive" do
@@ -17,7 +17,7 @@ defmodule Absinthe.IR.IDL.ObjectDefinitionTest do
         name: String!
       }
       """ |> from_input
-      assert %IR.IDL.ObjectDefinition{name: "Person", directives: [%{name: "description"}]} = rep
+      assert %IR.IDL.ObjectTypeDefinition{name: "Person", directives: [%{name: "description"}]} = rep
     end
 
     it "works, given an IDL 'type' definition that implements an interface" do
@@ -26,7 +26,7 @@ defmodule Absinthe.IR.IDL.ObjectDefinitionTest do
         name: String!
       }
       """ |> from_input
-      assert %IR.IDL.ObjectDefinition{name: "Person", interfaces: ["Entity"]} = rep
+      assert %IR.IDL.ObjectTypeDefinition{name: "Person", interfaces: ["Entity"]} = rep
     end
 
     it "works, given an IDL 'type' definition that implements an interface and uses a directive" do
@@ -37,7 +37,7 @@ defmodule Absinthe.IR.IDL.ObjectDefinitionTest do
         name: String!
       }
       """ |> from_input
-      assert %IR.IDL.ObjectDefinition{name: "Person", interfaces: ["Entity"], directives: [%{name: "description"}]} = rep
+      assert %IR.IDL.ObjectTypeDefinition{name: "Person", interfaces: ["Entity"], directives: [%{name: "description"}]} = rep
     end
 
   end
@@ -47,7 +47,7 @@ defmodule Absinthe.IR.IDL.ObjectDefinitionTest do
 
     doc
     |> extract_ast_node
-    |> IR.IDL.ObjectDefinition.from_ast(doc)
+    |> IR.IDL.ObjectTypeDefinition.from_ast(doc)
   end
 
   defp extract_ast_node(%Absinthe.Language.Document{definitions: [node]}) do

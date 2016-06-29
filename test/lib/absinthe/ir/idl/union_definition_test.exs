@@ -29,6 +29,7 @@ defmodule Absinthe.IR.IDL.UnionDefinitionTest do
 
   defp from_input(text) do
     doc = Absinthe.parse!(text)
+
     doc
     |> extract_ast_node
     |> IR.IDL.UnionTypeDefinition.from_ast(doc)

@@ -12,14 +12,14 @@ defmodule Absinthe.Language.IDL do
 
   @spec to_idl_ast(Absinthe.Type.t, Absinthe.Schema.t) :: Language.t
   def to_idl_ast(%Type.Object{} = node, schema) do
-    %Language.ObjectDefinition{
+    %Language.ObjectTypeDefinition{
       name: node.name,
       fields: Enum.map(Map.values(node.fields), &to_idl_ast(node, &1, schema)),
       interfaces: Enum.map(node.interfaces, &to_idl_named_type_ast(&1, schema))
     }
   end
   def to_idl_ast(%Type.InputObject{} = node, schema) do
-    %Language.InputObjectDefinition{
+    %Language.InputObjectTypeDefinition{
       name: node.name,
       fields: Enum.map(Map.values(node.fields), &to_idl_ast(node, &1, schema))
     }
@@ -131,7 +131,7 @@ defmodule Absinthe.Language.IDL do
       Enum.map(doc.definitions, &(to_idl_iodata(&1, schema)))
     ]
   end
-  def to_idl_iodata(%Language.ObjectDefinition{} = node, schema) do
+  def to_idl_iodata(%Language.ObjectTypeDefinition{} = node, schema) do
     [
       "type ",
       node.name,
@@ -150,7 +150,7 @@ defmodule Absinthe.Language.IDL do
       "}\n"
     ]
   end
-  def to_idl_iodata(%Language.InputObjectDefinition{} = node, schema) do
+  def to_idl_iodata(%Language.InputObjectTypeDefinition{} = node, schema) do
     [
       "input ",
       node.name,

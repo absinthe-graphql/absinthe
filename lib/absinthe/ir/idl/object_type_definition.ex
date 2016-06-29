@@ -1,4 +1,4 @@
-defmodule Absinthe.IR.IDL.ObjectDefinition do
+defmodule Absinthe.IR.IDL.ObjectTypeDefinition do
 
   alias Absinthe.{IR, Language}
 
@@ -13,7 +13,7 @@ defmodule Absinthe.IR.IDL.ObjectDefinition do
     ast_node: Language.t
   }
 
-  def from_ast(%Language.ObjectDefinition{} = node, doc) do
+  def from_ast(%Language.ObjectTypeDefinition{} = node, doc) do
     %__MODULE__{
       name: node.name,
       ast_node: node,
