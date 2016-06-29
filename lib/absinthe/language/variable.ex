@@ -1,6 +1,16 @@
 defmodule Absinthe.Language.Variable do
-
   @moduledoc false
 
-  defstruct name: nil, loc: %{start_line: nil}
+  alias Absinthe.Language
+
+  defstruct [
+    name: nil,
+    loc: %{start_line: nil}
+  ]
+
+  @type t :: %__MODULE__{
+    name: binary,
+    loc: Language.loc_t
+  }
+
 end

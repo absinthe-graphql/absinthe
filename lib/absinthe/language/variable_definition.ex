@@ -1,5 +1,4 @@
 defmodule Absinthe.Language.VariableDefinition do
-
   @moduledoc false
 
   alias Absinthe.Language

@@ -1,6 +1,7 @@
 defmodule Absinthe.Language.StringValue do
-
   @moduledoc false
+
+  alias Absinthe.Language
 
   defstruct [
     value: nil,
@@ -9,7 +10,7 @@ defmodule Absinthe.Language.StringValue do
 
   @type t :: %__MODULE__{
     value: binary,
-    loc: Absinthe.Language.loc_t
+    loc: Language.loc_t
   }
 
 end

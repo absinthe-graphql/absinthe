@@ -1,5 +1,4 @@
 defmodule Absinthe.Language.Argument do
-
   @moduledoc false
 
   defstruct [

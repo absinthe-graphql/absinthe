@@ -1,6 +1,7 @@
 defmodule Absinthe.Language.SelectionSet do
-
   @moduledoc false
+
+  alias Absinthe.Language
 
   defstruct [
     selections: [],
@@ -13,9 +14,9 @@ defmodule Absinthe.Language.SelectionSet do
   }
 
   defimpl Absinthe.Traversal.Node do
-
-    def children(node, _schema), do: node.selections
-
+    def children(node, _schema) do
+      node.selections
+    end
   end
 
 end

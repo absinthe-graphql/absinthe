@@ -1,6 +1,18 @@
 defmodule Absinthe.Language.ScalarTypeDefinition do
-
   @moduledoc false
 
-  defstruct name: nil, loc: %{start_line: nil}
+  alias Absinthe.Language
+
+  defstruct [
+    name: nil,
+    directives: [],
+    loc: %{start_line: nil}
+  ]
+
+  @type t :: %__MODULE__{
+    name: binary,
+    directives: [Language.Directive.t],
+    loc: Language.t
+  }
+
 end

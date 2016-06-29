@@ -1,5 +1,4 @@
 defmodule Absinthe.Language.InputObjectTypeDefinition do
-
   @moduledoc false
 
   defstruct [

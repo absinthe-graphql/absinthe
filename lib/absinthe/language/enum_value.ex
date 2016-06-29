@@ -1,5 +1,4 @@
 defmodule Absinthe.Language.EnumValue do
-
   @moduledoc false
 
   alias Absinthe.Language

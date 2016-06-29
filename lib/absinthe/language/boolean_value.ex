@@ -1,5 +1,4 @@
 defmodule Absinthe.Language.BooleanValue do
-
   @moduledoc false
 
   defstruct [
