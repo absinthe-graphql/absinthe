@@ -1,4 +1,6 @@
 defmodule Absinthe.IR.VariableDefinition do
+  alias Absinthe.IR
+
   defstruct [
     name: nil,
     type: nil,
@@ -10,10 +12,14 @@ defmodule Absinthe.IR.VariableDefinition do
 
   @type t :: %__MODULE__{
     name: String.t,
-    type: Absinthe.IR.Input.t,
-    errors: [Absinthe.IR.Error.t],
-    default_value: Absinthe.IR.Input.t,
+    type: IR.NamedType.maybe_wrapped_t,
+    errors: [IR.Error.t],
+    default_value: IR.Input.t,
     ast_node: Absinthe.Language.t,
     schema_type: Absinthe.Type.t
   }
+
+  def from_ast(node, doc) do
+    
+  end
 end

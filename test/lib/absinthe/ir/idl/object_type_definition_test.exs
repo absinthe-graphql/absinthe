@@ -26,7 +26,7 @@ defmodule Absinthe.IR.IDL.ObjectTypeDefinitionTest do
         name: String!
       }
       """ |> from_input
-      assert %IR.IDL.ObjectTypeDefinition{name: "Person", interfaces: ["Entity"]} = rep
+      assert %IR.IDL.ObjectTypeDefinition{name: "Person", interfaces: [%IR.NamedType{name: "Entity"}]} = rep
     end
 
     it "works, given an IDL 'type' definition that implements an interface and uses a directive" do
@@ -37,7 +37,7 @@ defmodule Absinthe.IR.IDL.ObjectTypeDefinitionTest do
         name: String!
       }
       """ |> from_input
-      assert %IR.IDL.ObjectTypeDefinition{name: "Person", interfaces: ["Entity"], directives: [%{name: "description"}]} = rep
+      assert %IR.IDL.ObjectTypeDefinition{name: "Person", interfaces: [%IR.NamedType{name: "Entity"}], directives: [%{name: "description"}]} = rep
     end
 
   end

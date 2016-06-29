@@ -17,7 +17,7 @@ defmodule Absinthe.IR.IDL.ObjectTypeDefinition do
     %__MODULE__{
       name: node.name,
       ast_node: node,
-      interfaces: Enum.map(node.interfaces, &(&1.name)),
+      interfaces: Enum.map(node.interfaces, &IR.NamedType.from_ast(&1, doc)),
       directives: Enum.map(node.directives, &IR.Directive.from_ast(&1, doc))
     }
   end

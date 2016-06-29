@@ -1,4 +1,6 @@
 defmodule Absinthe.IR.Input.Argument do
+  alias Absinthe.IR
+
   defstruct [
     name: nil,
     value: nil,
@@ -12,4 +14,8 @@ defmodule Absinthe.IR.Input.Argument do
     errors: [Absinthe.IR.Error.t],
     ast_node: Absinthe.Language.t,
   }
+
+  def from_ast(node, doc) do
+
+  end
 end
