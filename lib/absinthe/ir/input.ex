@@ -9,7 +9,7 @@ defmodule Absinthe.IR.Input do
     | Input.Variable.t
     | Input.Boolean.t
 
-  @type collection :: IR.List.t | Input.Object.t
+  @type collection :: IR.Input.List.t | Input.Object.t
 
   @type t :: leaf | collection
 end

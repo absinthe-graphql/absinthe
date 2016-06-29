@@ -9,7 +9,7 @@ defmodule Absinthe.IR.NamedType do
     ast_node: Absinthe.Language.NamedType.t,
   }
 
-  @type maybe_wrapped_t :: IR.NonNull.t | IR.List.t | __MODULE__.t
+  @type maybe_wrapped_t :: IR.NonNull.t | IR.ListType.t | __MODULE__.t
 
   def from_ast(%{name: name} = node, _doc) do
     %__MODULE__{

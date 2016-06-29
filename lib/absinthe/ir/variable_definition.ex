@@ -19,7 +19,10 @@ defmodule Absinthe.IR.VariableDefinition do
     schema_type: Absinthe.Type.t
   }
 
-  def from_ast(node, doc) do
-    
+  def from_ast(%Absinthe.Language.VariableDefinition{} = node, doc) do
+    %__MODULE__{
+      name: node.variable.name,
+      type: :atom,
+    }
   end
 end
