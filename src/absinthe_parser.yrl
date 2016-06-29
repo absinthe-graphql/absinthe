@@ -231,6 +231,9 @@ EnumValueDefinition -> EnumValue : '$1'.
 
 InputObjectTypeDefinition -> 'input' Name '{' InputValueDefinitionList '}' :
   build_ast_node('InputObjectTypeDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, #{'start_line' => extract_line('$2'), 'end_line' => extract_line('$5')}).
+InputObjectTypeDefinition -> 'input' Name Directives '{' InputValueDefinitionList '}' :
+  build_ast_node('InputObjectTypeDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3', 'fields' => '$5'}, #{'start_line' => extract_line('$2'), 'end_line' => extract_line('$6')}).
+
 
 TypeExtensionDefinition -> 'extend' ObjectTypeDefinition :
   build_ast_node('TypeExtensionDefinition', #{'definition' => '$2'}, #{'start_line' => extract_line('$1')}).
