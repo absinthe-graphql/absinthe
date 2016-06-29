@@ -1,4 +1,4 @@
-defmodule Absinthe.IR.IDL.UnionDefinitionTest do
+defmodule Absinthe.IR.IDL.UnionTypeDefinitionTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.IR
