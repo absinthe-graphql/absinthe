@@ -1,7 +1,7 @@
 Nonterminals
   Document
   Definitions Definition OperationDefinition Fragment TypeDefinition
-  ObjectDefinition InterfaceDefinition UnionTypeDefinition
+  ObjectDefinition InterfaceTypeDefinition UnionTypeDefinition
   ScalarTypeDefinition EnumTypeDefinition InputObjectDefinition TypeExtensionDefinition
   FieldDefinitionList FieldDefinition ImplementsInterfaces ArgumentsDefinition
   InputValueDefinitionList InputValueDefinition UnionMembers
@@ -155,7 +155,7 @@ ObjectFields -> ObjectField ObjectFields : ['$1'|'$2'].
 ObjectField -> Name ':' Value : build_ast_node('ObjectField', #{'name' => extract_binary('$1'), 'value' => '$3'}, #{'start_line' => extract_line('$1')}).
 
 TypeDefinition -> ObjectDefinition : '$1'.
-TypeDefinition -> InterfaceDefinition : '$1'.
+TypeDefinition -> InterfaceTypeDefinition : '$1'.
 TypeDefinition -> UnionTypeDefinition : '$1'.
 TypeDefinition -> ScalarTypeDefinition : '$1'.
 TypeDefinition -> EnumTypeDefinition : '$1'.
@@ -193,10 +193,10 @@ InputValueDefinitionList -> InputValueDefinition InputValueDefinitionList : ['$1
 InputValueDefinition -> Name ':' Type : build_ast_node('InputValueDefinition', #{'name' => extract_binary('$1'), 'type' => '$3'}, #{'start_line' => extract_line('$1')}).
 InputValueDefinition -> Name ':' Type DefaultValue : build_ast_node('InputValueDefinition', #{'name' => extract_binary('$1'), 'type' => '$3', 'default_value' => '$4'}, #{'start_line' => extract_line('$1')}).
 
-InterfaceDefinition -> 'interface' Name '{' FieldDefinitionList '}' :
-  build_ast_node('InterfaceDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$5')}).
-InterfaceDefinition -> 'interface' Name Directives '{' FieldDefinitionList '}' :
-  build_ast_node('InterfaceDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3', 'fields' => '$5'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$6')}).
+InterfaceTypeDefinition -> 'interface' Name '{' FieldDefinitionList '}' :
+  build_ast_node('InterfaceTypeDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$5')}).
+InterfaceTypeDefinition -> 'interface' Name Directives '{' FieldDefinitionList '}' :
+  build_ast_node('InterfaceTypeDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3', 'fields' => '$5'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$6')}).
 
 UnionTypeDefinition -> 'union' Name '=' UnionMembers :
   build_ast_node('UnionTypeDefinition', #{'name' => extract_binary('$2'), 'types' => '$4'}, #{'start_line' => extract_line('$1')}).

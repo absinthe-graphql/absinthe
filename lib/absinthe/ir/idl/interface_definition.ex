@@ -1,4 +1,4 @@
-defmodule Absinthe.IR.IDL.InterfaceDefinition do
+defmodule Absinthe.IR.IDL.InterfaceTypeDefinition do
 
   alias Absinthe.{IR, Language}
 
@@ -12,7 +12,7 @@ defmodule Absinthe.IR.IDL.InterfaceDefinition do
     ast_node: Language.t
   }
 
-  def from_ast(%Language.InterfaceDefinition{} = node) do
+  def from_ast(%Language.InterfaceTypeDefinition{} = node) do
     %__MODULE__{
       name: node.name,
       ast_node: node,

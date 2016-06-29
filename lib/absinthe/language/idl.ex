@@ -25,7 +25,7 @@ defmodule Absinthe.Language.IDL do
     }
   end
   def to_idl_ast(%Type.Interface{} = node, schema) do
-    %Language.InterfaceDefinition{
+    %Language.InterfaceTypeDefinition{
       name: node.name,
       fields: Enum.map(Map.values(node.fields), &to_idl_ast(node, &1, schema))
     }
@@ -141,7 +141,7 @@ defmodule Absinthe.Language.IDL do
       "}\n"
     ]
   end
-  def to_idl_iodata(%Language.InterfaceDefinition{} = node, schema) do
+  def to_idl_iodata(%Language.InterfaceTypeDefinition{} = node, schema) do
     [
       "interface ",
       node.name,

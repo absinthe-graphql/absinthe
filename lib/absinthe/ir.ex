@@ -36,8 +36,8 @@ defmodule Absinthe.IR do
     update_in(ir.directives, &[IR.IDL.DirectiveDefinition.from_ast(node) | &1])
     |> do_from_ast(rest)
   end
-  defp do_from_ast(ir, [%Language.InterfaceDefinition{} = node | rest]) do
-    update_in(ir.types, &[IR.IDL.InterfaceDefinition.from_ast(node) | &1])
+  defp do_from_ast(ir, [%Language.InterfaceTypeDefinition{} = node | rest]) do
+    update_in(ir.types, &[IR.IDL.InterfaceTypeDefinition.from_ast(node) | &1])
     |> do_from_ast(rest)
   end
   defp do_from_ast(ir, [definition | rest]) do

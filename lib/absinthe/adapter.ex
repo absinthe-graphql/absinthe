@@ -207,7 +207,7 @@ defmodule Absinthe.Adapter do
       def adapt(%Language.ListValue{} = node, adaptation) do
         %{node | values: Enum.map(node.values, &adapt(&1, adaptation))}
       end
-      def adapt(%Language.InterfaceDefinition{} = node, adaptation) do
+      def adapt(%Language.InterfaceTypeDefinition{} = node, adaptation) do
         %{node |
           fields: node.fields |> Enum.map(&adapt(&1, adaptation))}
       end
