@@ -1,4 +1,4 @@
-defmodule Absinthe.IR.NonNull do
+defmodule Absinthe.IR.NonNullType do
   defstruct [
     of_type: nil,
     ast_node: nil,
