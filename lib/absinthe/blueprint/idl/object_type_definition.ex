@@ -4,12 +4,12 @@ defmodule Absinthe.Blueprint.IDL.ObjectTypeDefinition do
 
   defstruct name: nil, description: nil, interfaces: [], fields: [], directives: [], errors: [], ast_node: nil
   @type t :: %__MODULE__{
-    name: binary,
-    description: nil | binary,
+    name: String.t,
+    description: nil | String.t,
     fields: [Blueprint.IDL.FieldDefinition.t],
     directives: [Blueprint.Directive.t],
     errors: [Blueprint.Error.t],
-    interfaces: [binary],
+    interfaces: [String.t],
     ast_node: Language.t
   }
 

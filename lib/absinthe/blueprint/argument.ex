@@ -1,5 +1,6 @@
 defmodule Absinthe.Blueprint.Input.Argument do
-  alias Absinthe.Blueprint
+
+  alias Absinthe.{Blueprint, Language}
 
   defstruct [
     name: nil,
@@ -10,12 +11,13 @@ defmodule Absinthe.Blueprint.Input.Argument do
 
   @type t :: %__MODULE__{
     name: String.t,
-    value: Absinthe.Blueprint.Input.t,
-    errors: [Absinthe.Blueprint.Error.t],
-    ast_node: Absinthe.Language.t,
+    value: Blueprint.Input.t,
+    errors: [Blueprint.Error.t],
+    ast_node: Language.t,
   }
 
-  def from_ast(node, doc) do
+  def from_ast(_node, _doc) do
 
   end
+
 end

@@ -11,7 +11,7 @@ defmodule Absinthe.Blueprint.IDL.FieldDefinition do
   ]
 
   @type t :: %__MODULE__{
-    name: binary,
+    name: String.t,
     arguments: Blueprint.IDL.ArgumentDefinition.t,
     type: Blueprint.type_reference_t,
     errors: [Blueprint.Error.t],
@@ -22,7 +22,7 @@ defmodule Absinthe.Blueprint.IDL.FieldDefinition do
     %__MODULE__{
       name: node.name,
       arguments: Enum.map(node.arguments, &Blueprint.IDL.ArgumentDefinition.from_ast(&1, doc)),
-      type: Blueprint.type_from_ast_type(node.type),
+      type: Blueprint.type_from_ast_type(node.type, doc),
       ast_node: node
     }
   end

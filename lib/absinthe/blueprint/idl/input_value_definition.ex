@@ -10,7 +10,7 @@ defmodule Absinthe.Blueprint.IDL.InputValueDefinition do
   ]
 
   @type t :: %__MODULE__{
-    name: binary,
+    name: String.t,
     type: Blueprint.type_reference_t,
     errors: [Blueprint.Error.t],
     ast_node: Language.t
@@ -19,7 +19,7 @@ defmodule Absinthe.Blueprint.IDL.InputValueDefinition do
   def from_ast(node, doc) do
     %__MODULE__{
       name: node.name,
-      type: Blueprint.type_from_ast_type(node.type),
+      type: Blueprint.type_from_ast_type(node.type, doc),
       ast_node: node
     }
   end

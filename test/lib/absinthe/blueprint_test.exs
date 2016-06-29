@@ -88,12 +88,17 @@ defmodule Absinthe.BlueprintTest do
       name: String
     }
 
+    input Profile {
+      name: String!
+      age: Int = 18
+    }
+
     union Baz = Foo | Bar
     """
 
     test "creates the correct number of types" do
       rep = ir(@idl)
-      assert length(rep.types) == 8
+      assert length(rep.types) == 9
     end
 
   end

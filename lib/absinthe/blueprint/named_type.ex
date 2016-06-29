@@ -1,20 +1,25 @@
 defmodule Absinthe.Blueprint.NamedType do
+
+  alias Absinthe.{Blueprint, Language}
+
+  @enforce_keys [:name, :ast_node]
   defstruct [
-    name: nil,
-    ast_node: nil,
+    :name,
+    :ast_node,
+    errors: []
   ]
 
   @type t :: %__MODULE__{
     name: String.t,
-    ast_node: Absinthe.Language.NamedType.t,
+    ast_node: Language.NamedType.t,
+    errors: [Blueprint.Error.t]
   }
 
-  @type maybe_wrapped_t :: Blueprint.NonNull.t | Blueprint.ListType.t | __MODULE__.t
-
-  def from_ast(%{name: name} = node, _doc) do
+  def from_ast(%Language.NamedType{name: name} = node, _doc) do
     %__MODULE__{
       name: name,
       ast_node: node
     }
   end
+
 end

@@ -5,7 +5,7 @@ defmodule Absinthe.Blueprint.Error do
   ]
 
   @type t :: %__MODULE__{
-    message: binary,
+    message: String.t,
     phase: atom,
   }
 end

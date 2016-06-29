@@ -4,8 +4,8 @@ defmodule Absinthe.Blueprint.IDL.InputObjectTypeDefinition do
 
   defstruct name: nil, description: nil, interfaces: [], fields: [], directives: [], errors: [], ast_node: nil
   @type t :: %__MODULE__{
-    name: binary,
-    description: nil | binary,
+    name: String.t,
+    description: nil | String.t,
     fields: [Blueprint.IDL.InputValueDefinition.t],
     directives: [Blueprint.Directive.t],
     errors: [Blueprint.Error.t],

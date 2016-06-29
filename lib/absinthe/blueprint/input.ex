@@ -13,7 +13,7 @@ defmodule Absinthe.Blueprint.Input do
 
   @type t :: leaf | collection
 
-  @mapping %{
+  @ast_modules_to_blueprint_modules %{
     Language.BooleanValue => Input.Boolean,
     Language.EnumValue => Input.Enum,
     Language.FloatValue => Input.Float,
@@ -21,22 +21,12 @@ defmodule Absinthe.Blueprint.Input do
     Language.ListValue => Input.List,
     Language.ObjectValue => Input.Object,
     Language.StringValue => Input.String,
+    Language.Variable => Input.Variable
   }
+  @supported_ast_node_modules Map.keys(@ast_modules_to_blueprint_modules)
 
-  def from_ast(%Language.ObjectValue{} = node, doc) do
-    %Input.Object{
-      fields: Enum.map(node.fields, &Input.Field.from_ast(&1, doc)),
-      ast_node: node
-    }
-  end
-  def from_ast(%{__struct__: ast_node_struct} = node, _doc) do
-    struct(
-      @mapping[ast_node_struct],
-      [
-        value: node.value,
-        ast_node: node
-      ]
-    )
+  def from_ast(%{__struct__: mod} = node, doc) when mod in @supported_ast_node_modules do
+    @ast_modules_to_blueprint_modules[mod].from_ast(node, doc)
   end
 
 end

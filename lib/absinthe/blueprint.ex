@@ -26,6 +26,10 @@ defmodule Absinthe.Blueprint do
     update_in(ir.types, &[Blueprint.IDL.ObjectTypeDefinition.from_ast(node, doc) | &1])
     |> do_from_ast(rest, doc)
   end
+  defp do_from_ast(ir, [%Language.InputObjectTypeDefinition{} = node | rest], doc) do
+    update_in(ir.types, &[Blueprint.IDL.InputObjectTypeDefinition.from_ast(node, doc) | &1])
+    |> do_from_ast(rest, doc)
+  end
   defp do_from_ast(ir, [%Language.UnionTypeDefinition{} = node | rest], doc) do
     update_in(ir.types, &[Blueprint.IDL.UnionTypeDefinition.from_ast(node, doc) | &1])
     |> do_from_ast(rest, doc)
@@ -47,15 +51,16 @@ defmodule Absinthe.Blueprint do
     do_from_ast(ir, rest, doc)
   end
 
-  @spec type_from_ast_type(Language.type_reference_t) :: Blueprint.type_reference_t
-  def type_from_ast_type(%Language.NamedType{name: name}) do
-    %Blueprint.NamedType{name: name}
-  end
-  def type_from_ast_type(%Language.ListType{type: maybe_wrapped_type}) do
-    %Blueprint.ListType{of_type: type_from_ast_type(maybe_wrapped_type)}
-  end
-  def type_from_ast_type(%Language.NonNullType{type: maybe_wrapped_type}) do
-    %Blueprint.NonNullType{of_type: type_from_ast_type(maybe_wrapped_type)}
+  @ast_modules_to_blueprint_modules_for_types %{
+    Language.NamedType => Blueprint.NamedType,
+    Language.ListType => Blueprint.ListType,
+    Language.NonNullType => Blueprint.NonNullType,
+  }
+  @supported_ast_modules_for_types Map.keys(@ast_modules_to_blueprint_modules_for_types)
+
+  @spec type_from_ast_type(Language.type_reference_t, Language.Document.t) :: Blueprint.type_reference_t
+  def type_from_ast_type(%{__struct__: mod} = node, doc) when mod in @supported_ast_modules_for_types do
+    @ast_modules_to_blueprint_modules_for_types[mod].from_ast(node, doc)
   end
 
 end

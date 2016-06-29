@@ -11,8 +11,8 @@ defmodule Absinthe.Blueprint.IDL.ScalarTypeDefinition do
   ]
 
   @type t :: %__MODULE__{
-    name: binary,
-    description: nil | binary,
+    name: String.t,
+    description: nil | String.t,
     directives: [Blueprint.Directive.t],
     errors: [Blueprint.Error.t],
     ast_node: Language.t

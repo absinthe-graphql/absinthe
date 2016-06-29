@@ -11,7 +11,7 @@ defmodule Absinthe.Blueprint.IDL.ArgumentDefinition do
   ]
 
   @type t :: %__MODULE__{
-    name: binary,
+    name: String.t,
     default_value: any,
     type: Blueprint.type_reference_t,
     errors: [Blueprint.Error.t],
@@ -22,7 +22,7 @@ defmodule Absinthe.Blueprint.IDL.ArgumentDefinition do
     %__MODULE__{
       name: node.name,
       default_value: ast_default_value(node.default_value, doc),
-      type: Blueprint.type_from_ast_type(node.type),
+      type: Blueprint.type_from_ast_type(node.type, doc),
       ast_node: node
     }
   end
