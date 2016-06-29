@@ -209,6 +209,7 @@ UnionMembers -> NamedType : ['$1'].
 UnionMembers -> NamedType '|' UnionMembers : ['$1'|'$3'].
 
 ScalarTypeDefinition -> 'scalar' Name : build_ast_node('ScalarTypeDefinition', #{'name' => extract_binary('$2')}, #{'start_line' => extract_line('$2')}).
+ScalarTypeDefinition -> 'scalar' Name Directives : build_ast_node('ScalarTypeDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3'}, #{'start_line' => extract_line('$2')}).
 
 EnumTypeDefinition -> 'enum' Name '{' EnumValueDefinitionList '}':
   build_ast_node('EnumTypeDefinition', #{'name' => extract_binary('$2'), 'values' => '$4'}, #{'start_line' => extract_line('$2'), 'end_line' => extract_line('$5')}).
