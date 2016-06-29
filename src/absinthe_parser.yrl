@@ -6,7 +6,7 @@ Nonterminals
   FieldDefinitionList FieldDefinition ImplementsInterfaces ArgumentsDefinition
   InputValueDefinitionList InputValueDefinition UnionMembers
   EnumValueDefinitionList EnumValueDefinition
-  DirectiveDefinition
+  DirectiveDefinition DirectiveDefinitionLocations
   SelectionSet Selections Selection
   OperationType Name NameWithoutOn VariableDefinitions VariableDefinition Directives Directive
   Field Alias Arguments ArgumentList Argument
@@ -163,8 +163,15 @@ TypeDefinition -> InputObjectTypeDefinition : '$1'.
 TypeDefinition -> TypeExtensionDefinition : '$1'.
 TypeDefinition -> DirectiveDefinition : '$1'.     
 
-DirectiveDefinition -> 'directive' '@' Name ArgumentsDefinition 'on' EnumValueDefinitionList :
+DirectiveDefinition -> 'directive' '@' Name 'on' DirectiveDefinitionLocations :
+  build_ast_node('DirectiveDefinition', #{'name' => extract_binary('$3'), 'locations' =>'$5'}, #{'start_line' => extract_line('$1')}).
+DirectiveDefinition -> 'directive' '@' Name ArgumentsDefinition 'on' DirectiveDefinitionLocations :
   build_ast_node('DirectiveDefinition', #{'name' => extract_binary('$3'), 'arguments' => '$4', 'locations' =>'$6'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$1')}).
+
+DirectiveDefinition -> 'directive' '@' Name 'on' DirectiveDefinitionLocations Directives :
+  build_ast_node('DirectiveDefinition', #{'name' => extract_binary('$3'), 'directives' => '$6', 'locations' => '$5'}, #{'start_line' => extract_line('$1')}).
+DirectiveDefinition -> 'directive' '@' Name ArgumentsDefinition 'on' DirectiveDefinitionLocations Directives :
+  build_ast_node('DirectiveDefinition', #{'name' => extract_binary('$3'), 'arguments' => '$4', 'directives' => '$7', 'locations' =>'$6'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$1')}).
 
 ObjectTypeDefinition -> 'type' Name '{' FieldDefinitionList '}' :
   build_ast_node('ObjectTypeDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$5')}).
@@ -216,6 +223,9 @@ EnumTypeDefinition -> 'enum' Name '{' EnumValueDefinitionList '}':
 
 EnumValueDefinitionList -> EnumValueDefinition : ['$1'].
 EnumValueDefinitionList -> EnumValueDefinition EnumValueDefinitionList : ['$1'|'$2'].
+
+DirectiveDefinitionLocations -> Name : [extract_binary('$1')].
+DirectiveDefinitionLocations -> Name '|' DirectiveDefinitionLocations : [extract_binary('$1')|'$3'].
 
 EnumValueDefinition -> EnumValue : '$1'.
 
