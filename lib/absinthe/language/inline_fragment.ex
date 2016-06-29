@@ -1,9 +1,21 @@
 defmodule Absinthe.Language.InlineFragment do
-
   @moduledoc false
 
-  @type t :: t
-  defstruct type_condition: nil, directives: [], selection_set: nil, loc: %{start_line: nil}
+  alias Absinthe.Language
+
+  defstruct [
+    type_condition: nil,
+    directives: [],
+    selection_set: nil,
+    loc: %{start_line: nil}
+  ]
+
+  @type t :: %__MODULE__{
+    type_condition: nil | Language.NamedType.t,
+    directives: [Language.Directive.t],
+    selection_set: Language.SelectionSet.t,
+    loc: Language.loc_t
+  }
 
   defimpl Absinthe.Traversal.Node do
     def children(node, _schema) do

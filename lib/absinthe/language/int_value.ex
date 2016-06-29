@@ -1,8 +1,12 @@
 defmodule Absinthe.Language.IntValue do
-
   @moduledoc false
 
-  @type t :: %{value: integer}
-  defstruct value: nil
+  defstruct [
+    value: nil
+  ]
+
+  @type t :: %__MODULE__{
+    value: integer
+  }
 
 end

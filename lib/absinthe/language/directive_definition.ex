@@ -2,7 +2,20 @@ defmodule Absinthe.Language.DirectiveDefinition do
 
   @moduledoc false
 
-  @type t :: %{name: binary, arguments: [Absinthe.Language.Argument.t], locations: [any], loc: Absinthe.Language.loc_t}
-  defstruct name: nil, arguments: [], locations: [], loc: %{start_line: nil}
+  alias Absinthe.Language
+
+  defstruct [
+    name: nil,
+    arguments: [],
+    locations: [],
+    loc: %{start_line: nil}
+  ]
+
+  @type t :: %__MODULE__{
+    name: binary,
+    arguments: [Language.Argument.t],
+    locations: [binary],
+    loc: Language.loc_t
+  }
 
 end

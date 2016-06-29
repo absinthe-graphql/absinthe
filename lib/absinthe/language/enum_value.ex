@@ -2,7 +2,16 @@ defmodule Absinthe.Language.EnumValue do
 
   @moduledoc false
 
-  @type t :: %{value: any, loc: Absinthe.Language.loc_t}
-  defstruct value: nil, loc: %{start_line: nil}
+  alias Absinthe.Language
+
+  defstruct [
+    value: nil,
+    loc: %{start_line: nil}
+  ]
+
+  @type t :: %__MODULE__{
+    value: any,
+    loc: Language.loc_t
+  }
 
 end

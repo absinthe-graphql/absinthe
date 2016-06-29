@@ -1,8 +1,16 @@
 defmodule Absinthe.Language.FloatValue do
-
   @moduledoc false
 
-  @type t :: %{value: float, loc: Absinthe.Language.loc_t}
-  defstruct value: nil, loc: %{}
+  alias Absinthe.Language
+
+  defstruct [
+    value: nil,
+    loc: %{start_line: nil}
+  ]
+
+  @type t :: %__MODULE__{
+    value: float,
+    loc: Language.loc_t
+  }
 
 end

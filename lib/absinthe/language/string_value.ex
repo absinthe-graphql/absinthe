@@ -2,7 +2,14 @@ defmodule Absinthe.Language.StringValue do
 
   @moduledoc false
 
-  @type t :: %{value: binary, loc: Absinthe.Language.loc_t}
-  defstruct value: nil, loc: %{}
+  defstruct [
+    value: nil,
+    loc: %{}
+  ]
+
+  @type t :: %__MODULE__{
+    value: binary,
+    loc: Absinthe.Language.loc_t
+  }
 
 end

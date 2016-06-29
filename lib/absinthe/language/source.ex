@@ -15,7 +15,7 @@ defmodule Absinthe.Language.Source do
   @moduledoc false
 
   # A query document `body` with source location `name`
-  @type t :: %{body: binary, name: binary}
+  @type t :: %__MODULE__{body: binary, name: binary}
 
   defstruct body: "", name: "GraphQL"
 end

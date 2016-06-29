@@ -1,9 +1,18 @@
 defmodule Absinthe.Language.FragmentSpread do
-
   @moduledoc false
 
-  @type t :: %{name: binary, directives: [Absinthe.Language.Directive.t]}
-  defstruct name: nil, directives: [], loc: %{start_line: nil}
+  alias Absinthe.Language
+
+  defstruct [
+    name: nil,
+    directives: [],
+    loc: %{start_line: nil}
+  ]
+
+  @type t :: %__MODULE__{
+    name: binary,
+    directives: [Language.Directive.t]
+  }
 
   defimpl Absinthe.Traversal.Node do
     def children(node, _schema) do

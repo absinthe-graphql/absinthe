@@ -1,6 +1,16 @@
 defmodule Absinthe.Language.ListType do
-
   @moduledoc false
 
-  defstruct type: nil, loc: %{start_line: nil}
+  alias Absinthe.Language
+
+  defstruct [
+    type: nil,
+    loc: %{start_line: nil}
+  ]
+
+  @type t :: %__MODULE__{
+    type: Language.type_reference_t,
+    loc: Language.loc_t
+  }
+
 end

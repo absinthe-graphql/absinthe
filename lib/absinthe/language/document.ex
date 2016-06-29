@@ -3,13 +3,19 @@ defmodule Absinthe.Language.Document do
 
   alias Absinthe.Language
 
+  defstruct [
+    definitions: [],
+    loc: %{start_line: nil}
+  ]
+
   @typedoc false
-  @type t :: %{definitions: [Absinthe.Traversal.Node.t], loc: Absinthe.Language.loc_t}
-  defstruct definitions: [], loc: %{start_line: nil}
+  @type t :: %__MODULE__{
+    definitions: [Absinthe.Traversal.Node.t],
+    loc: Language.loc_t
+  }
 
   @doc "Extract a named operation definition from a document"
   @spec get_operation(t, binary) :: nil | Absinthe.Language.OperationDefinition.t
-
   def get_operation(%{definitions: definitions}, name) do
     definitions
     |> Enum.find(nil, fn

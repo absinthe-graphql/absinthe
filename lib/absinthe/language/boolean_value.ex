@@ -2,7 +2,14 @@ defmodule Absinthe.Language.BooleanValue do
 
   @moduledoc false
 
-  @type t :: %{value: boolean, loc: Absinthe.Language.loc_t}
-  defstruct value: nil, loc: %{}
+  defstruct [
+    value: nil,
+    loc: %{}
+  ]
+
+  @type t :: %__MODULE__{
+    value: boolean,
+    loc: Absinthe.Language.loc_t
+  }
 
 end
