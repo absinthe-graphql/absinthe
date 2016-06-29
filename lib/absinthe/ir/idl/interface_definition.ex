@@ -12,11 +12,11 @@ defmodule Absinthe.IR.IDL.InterfaceTypeDefinition do
     ast_node: Language.t
   }
 
-  def from_ast(%Language.InterfaceTypeDefinition{} = node) do
+  def from_ast(%Language.InterfaceTypeDefinition{} = node, doc) do
     %__MODULE__{
       name: node.name,
       ast_node: node,
-      directives: Enum.map(node.directives, &IR.Directive.from_ast/1)
+      directives: Enum.map(node.directives, &IR.Directive.from_ast(&1, doc))
     }
   end
 

@@ -13,12 +13,12 @@ defmodule Absinthe.IR.IDL.ObjectDefinition do
     ast_node: Language.t
   }
 
-  def from_ast(%Language.ObjectDefinition{} = node) do
+  def from_ast(%Language.ObjectDefinition{} = node, doc) do
     %__MODULE__{
       name: node.name,
       ast_node: node,
       interfaces: Enum.map(node.interfaces, &(&1.name)),
-      directives: Enum.map(node.directives, &IR.Directive.from_ast/1)
+      directives: Enum.map(node.directives, &IR.Directive.from_ast(&1, doc))
     }
   end
 

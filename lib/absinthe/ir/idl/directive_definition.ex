@@ -11,7 +11,7 @@ defmodule Absinthe.IR.IDL.DirectiveDefinition do
     ast_node: Language.DirectiveDefinition.t,
   }
 
-  def from_ast(%Language.DirectiveDefinition{} = node) do
+  def from_ast(%Language.DirectiveDefinition{} = node, _doc) do
     # TODO: arguments, locations, etc
     %__MODULE__{name: node.name, ast_node: node}
   end

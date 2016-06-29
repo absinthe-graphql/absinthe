@@ -16,10 +16,14 @@ defmodule Absinthe.IR.Directive do
     ast_node: Language.t,
   }
 
+<<<<<<< HEAD
   def from_ast(%Language.Directive{} = node) do
     %__MODULE__{
       name: node.name
     }
+=======
+  def from_ast(_node, _doc) do
+>>>>>>> 69bd2bc... pass doc through
   end
 
 end

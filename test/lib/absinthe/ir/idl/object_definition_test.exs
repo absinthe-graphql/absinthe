@@ -43,9 +43,11 @@ defmodule Absinthe.IR.IDL.ObjectDefinitionTest do
   end
 
   defp from_input(text) do
-    Absinthe.parse!(text)
+    doc = Absinthe.parse!(text)
+
+    doc
     |> extract_ast_node
-    |> IR.IDL.ObjectDefinition.from_ast
+    |> IR.IDL.ObjectDefinition.from_ast(doc)
   end
 
   defp extract_ast_node(%Absinthe.Language.Document{definitions: [node]}) do
