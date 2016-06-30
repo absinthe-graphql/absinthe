@@ -26,6 +26,7 @@ defmodule Absinthe.Blueprint.VariableDefinition do
     %__MODULE__{
       name: node.variable.name,
       type: Blueprint.type_from_ast_type(node.type, doc),
+      default_value: Blueprint.Input.from_ast(node.default_value, doc),
       ast_node: node
     }
   end

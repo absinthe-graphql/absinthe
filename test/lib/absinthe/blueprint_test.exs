@@ -5,20 +5,20 @@ defmodule Absinthe.BlueprintTest do
 
   describe '.from_ast' do
 
-    test 'returns an Blueprint struct' do
+    test 'returns a Blueprint.t' do
       assert %Blueprint{} = ir("{ foo }")
       assert %Blueprint{} = ir("query { baz }")
       assert %Blueprint{} = ir("type Thing { name: String! }")
     end
 
-    test 'returns an Blueprint struct with the right number of operations' do
+    test 'returns a Blueprint.t with the right number of operations' do
       rep = ir("{ foo } mutation Bar { bar } subscription Baz { baz }")
       assert length(rep.directives) == 0
       assert length(rep.operations) == 3
       assert length(rep.types) == 0
     end
 
-    test 'returns an Blueprint struct with the right number of types' do
+    test 'returns a Blueprint.t with the right number of types' do
       rep = """
 
         type Person
@@ -37,7 +37,7 @@ defmodule Absinthe.BlueprintTest do
     end
 
 
-    test 'returns an Blueprint struct with the right number of directives' do
+    test 'returns a Blueprint.t with the right number of directives' do
       rep = ir("directive @cs(if: Boolean!) on FIELD")
       assert length(rep.directives) == 1
       assert length(rep.operations) == 0
