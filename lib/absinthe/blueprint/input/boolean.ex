@@ -2,16 +2,16 @@ defmodule Absinthe.Blueprint.Input.Boolean do
 
   alias Absinthe.{Blueprint, Language}
 
-  @enforce_keys [:value, :ast_node]
+  @enforce_keys [:value]
   defstruct [
     :value,
-    :ast_node,
+    ast_node: nil,
     errors: [],
   ]
 
   @type t :: %__MODULE__{
     value: true | false,
-    ast_node: Language.BooleanValue.t,
+    ast_node: nil | Language.BooleanValue.t,
     errors: [Blueprint.Error.t],
   }
 

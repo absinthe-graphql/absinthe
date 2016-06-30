@@ -2,22 +2,23 @@ defmodule Absinthe.Blueprint.Input.Field do
 
   alias Absinthe.{Blueprint, Language}
 
-  @enforce_keys [:name, :value, :ast_node]
+  @enforce_keys [:name, :value]
   defstruct [
     :name,
     :value,
-    :ast_node,
+    ast_node: nil,
     errors: [],
   ]
 
   @type t :: %__MODULE__{
     name: String.t,
     value: Blueprint.Input.t,
-    ast_node: Language.input_t,
+    ast_node: Language.ObjectField.t,
     errors: [Blueprint.Error.t],
   }
 
-  def from_ast(node, doc) do
+  @spec from_ast(Language.ObjectField.t, Language.Document.t) :: t
+  def from_ast(%Language.ObjectField{} = node, doc) do
     %__MODULE__{
       name: node.name,
       value: Blueprint.Input.from_ast(node.value, doc),

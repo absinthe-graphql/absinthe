@@ -25,6 +25,7 @@ defmodule Absinthe.Blueprint.Input do
   }
   @supported_ast_node_modules Map.keys(@ast_modules_to_blueprint_modules)
 
+  @spec from_ast(Language.input_t, Language.Document.t) :: t
   def from_ast(%{__struct__: mod} = node, doc) when mod in @supported_ast_node_modules do
     @ast_modules_to_blueprint_modules[mod].from_ast(node, doc)
   end

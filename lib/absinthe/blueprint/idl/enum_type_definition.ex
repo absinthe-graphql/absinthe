@@ -5,6 +5,7 @@ defmodule Absinthe.Blueprint.IDL.EnumTypeDefinition do
   defstruct name: nil, values: [], errors: [], ast_node: nil
   @type t :: %__MODULE__{} # TODO
 
+  @spec from_ast(Language.EnumTypeDefinition.t, Language.Document.t) :: t
   def from_ast(%Language.EnumTypeDefinition{} = node, _doc) do
     %__MODULE__{
       name: node.name,

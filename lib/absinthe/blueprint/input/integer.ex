@@ -2,16 +2,16 @@ defmodule Absinthe.Blueprint.Input.Integer do
 
   alias Absinthe.{Blueprint, Language}
 
-  @enforce_keys [:value, :ast_node]
+  @enforce_keys [:value]
   defstruct [
     :value,
-    :ast_node,
+    ast_node: nil,
     errors: [],
   ]
 
   @type t :: %__MODULE__{
     value: integer,
-    ast_node: Language.IntValue.t,
+    ast_node: nil | Language.IntValue.t,
     errors: [Blueprint.Error.t],
   }
 

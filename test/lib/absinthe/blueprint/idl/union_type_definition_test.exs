@@ -22,7 +22,7 @@ defmodule Absinthe.Blueprint.IDL.UnionTypeDefinitionTest do
   describe ".from_ast" do
 
     it "works, given an IDL 'union' definition" do
-      assert %Blueprint.IDL.UnionTypeDefinition{name: "Baz", types: ["Foo", "Bar"], directives: [%{name: "description"}]} = from_input(@idl)
+      assert %Blueprint.IDL.UnionTypeDefinition{name: "Baz", types: [%Blueprint.NamedType{name: "Foo"}, %Blueprint.NamedType{name: "Bar"}], directives: [%{name: "description"}]} = from_input(@idl)
     end
 
   end

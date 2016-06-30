@@ -2,16 +2,16 @@ defmodule Absinthe.Blueprint.Input.Variable do
 
   alias Absinthe.{Blueprint, Language}
 
-  @enforce_keys [:name, :ast_node]
+  @enforce_keys [:name]
   defstruct [
     :name,
-    :ast_node,
+    ast_node: nil,
     errors: [],
   ]
 
   @type t :: %__MODULE__{
     name: String.t,
-    ast_node: Language.Variable.t,
+    ast_node: nil | Language.Variable.t,
     errors: [Blueprint.Error.t],
   }
 

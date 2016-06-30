@@ -2,28 +2,31 @@ defmodule Absinthe.Blueprint.VariableDefinition do
 
   alias Absinthe.{Blueprint, Language, Type}
 
+  @enforce_keys [:name, :type]
   defstruct [
-    name: nil,
-    type: nil,
-    errors: [],
+    :name,
+    :type,
     default_value: nil,
     ast_node: nil,
+    errors: [],
     schema_type: nil,
   ]
 
   @type t :: %__MODULE__{
     name: String.t,
     type: Blueprint.type_reference_t,
-    errors: [Blueprint.Error.t],
     default_value: Blueprint.Input.t,
-    ast_node: Language.t,
-    schema_type: Type.t
+    ast_node: nil | Language.VariableDefinition.t,
+    errors: [Blueprint.Error.t],
+    schema_type: Type.t,
   }
 
+  @spec from_ast(Language.VariableDefinition.t, Language.Document.t) :: t
   def from_ast(%Language.VariableDefinition{} = node, doc) do
     %__MODULE__{
       name: node.variable.name,
-      type: :atom,
+      type: Blueprint.type_from_ast_type(node.type, doc),
+      ast_node: node
     }
   end
 end

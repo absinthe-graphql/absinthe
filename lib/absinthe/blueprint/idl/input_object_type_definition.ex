@@ -2,16 +2,27 @@ defmodule Absinthe.Blueprint.IDL.InputObjectTypeDefinition do
 
   alias Absinthe.{Blueprint, Language}
 
-  defstruct name: nil, description: nil, interfaces: [], fields: [], directives: [], errors: [], ast_node: nil
+  @enforce_keys [:name]
+  defstruct [
+    :name,
+    description: nil,
+    interfaces: [],
+    fields: [],
+    directives: [],
+    ast_node: nil,
+    errors: [],
+  ]
+
   @type t :: %__MODULE__{
     name: String.t,
     description: nil | String.t,
     fields: [Blueprint.IDL.InputValueDefinition.t],
     directives: [Blueprint.Directive.t],
     errors: [Blueprint.Error.t],
-    ast_node: Language.t
+    ast_node: nil | Language.InputObjectTypeDefinition.t
   }
 
+  @spec from_ast(Language.InputObjectTypeDefinition.t, Language.Document.t) :: t
   def from_ast(%Language.InputObjectTypeDefinition{} = node, doc) do
     %__MODULE__{
       name: node.name,

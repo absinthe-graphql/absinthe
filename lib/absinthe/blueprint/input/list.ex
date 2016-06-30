@@ -2,16 +2,16 @@ defmodule Absinthe.Blueprint.Input.List do
 
   alias Absinthe.{Blueprint, Language}
 
-  @enforce_keys [:values, :ast_node]
+  @enforce_keys [:values]
   defstruct [
     :values,
-    :ast_node,
+    ast_node: nil,
     errors: [],
   ]
 
   @type t :: %__MODULE__{
     values: [Blueprint.Input.t],
-    ast_node: Language.ListValue.t,
+    ast_node: nil | Language.ListValue.t,
     errors: [Blueprint.Error.t],
   }
 
@@ -22,6 +22,5 @@ defmodule Absinthe.Blueprint.Input.List do
       ast_node: node
     }
   end
-
 
 end

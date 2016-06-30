@@ -1,23 +1,50 @@
 defmodule Absinthe.Blueprint.Field do
+
+  alias Absinthe.{Blueprint, Language, Type}
+
+  @enforce_keys [:name]
   defstruct [
-    name: nil,
+    :name,
+    alias: nil,
     fields: [],
     arguments: [],
     directives: [],
     errors: [],
     ast_node: nil,
     schema_type: nil,
-    type_condition: nil
+    type_condition: nil,
   ]
 
   @type t :: %__MODULE__{
     name: String.t,
-    fields: [__MODULE__.t],
-    arguments: [Absinthe.Blueprint.Argument.t],
-    directives: [Absinthe.Blueprint.Directive.t],
-    errors: [Absinthe.Blueprint.Error.t],
-    ast_node: Absinthe.Language.t,
-    schema_type: Absinthe.Type.t,
-    type_condition: Absinthe.Blueprint.TypeCondition.t
+    fields: [t],
+    arguments: [Blueprint.Input.Argument.t],
+    directives: [Blueprint.Directive.t],
+    errors: [Blueprint.Error.t],
+    ast_node: Language.Field.t,
+    schema_type: Type.t,
+    type_condition: Blueprint.NamedType.t,
   }
+
+  # TODO: Flatten fragments here?
+  @spec from_ast(Language.Field.t, Language.Document.t) :: t
+  def from_ast(%Language.Field{} = node, doc) do
+    %__MODULE__{
+      name: node.name,
+      alias: node.alias,
+      fields: fields_from_ast_selection_set(node.selection_set, doc),
+      arguments: Enum.map(node.arguments, &Blueprint.Input.Argument.from_ast(&1, doc)),
+      directives: node.directives,
+      ast_node: node
+    }
+  end
+
+  @spec fields_from_ast_selection_set(nil | Language.SelectionSet.t, Language.Document.t) :: [t]
+  defp fields_from_ast_selection_set(nil, _doc) do
+    []
+  end
+  defp fields_from_ast_selection_set(%Language.SelectionSet{} = node, doc) do
+    for selection <- node.selections, do: from_ast(selection, doc)
+  end
+
 end

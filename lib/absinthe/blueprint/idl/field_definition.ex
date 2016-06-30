@@ -2,12 +2,13 @@ defmodule Absinthe.Blueprint.IDL.FieldDefinition do
 
   alias Absinthe.{Blueprint, Language}
 
+  @enforce_keys [:name, :type]
   defstruct [
-    name: nil,
+    :name,
+    :type,
     arguments: [],
-    type: nil,
+    ast_node: nil,
     errors: [],
-    ast_node: nil
   ]
 
   @type t :: %__MODULE__{
@@ -15,10 +16,11 @@ defmodule Absinthe.Blueprint.IDL.FieldDefinition do
     arguments: Blueprint.IDL.ArgumentDefinition.t,
     type: Blueprint.type_reference_t,
     errors: [Blueprint.Error.t],
-    ast_node: Language.t
+    ast_node: nil | Language.FieldDefinition.t
   }
 
-  def from_ast(node, doc) do
+  @spec from_ast(Language.FieldDefinition.t, Language.Document.t) :: t
+  def from_ast(%Language.FieldDefinition{} = node, doc) do
     %__MODULE__{
       name: node.name,
       arguments: Enum.map(node.arguments, &Blueprint.IDL.ArgumentDefinition.from_ast(&1, doc)),

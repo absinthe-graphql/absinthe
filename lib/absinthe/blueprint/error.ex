@@ -1,11 +1,14 @@
 defmodule Absinthe.Blueprint.Error do
+
+  @enforce_keys [:message, :phase]
   defstruct [
-    message: nil,
-    phase: nil,
+    :message,
+    :phase
   ]
 
   @type t :: %__MODULE__{
     message: String.t,
-    phase: atom,
+    phase: module,
   }
+
 end
