@@ -34,7 +34,7 @@ defmodule Absinthe.Blueprint.Field do
       alias: node.alias,
       fields: fields_from_ast_selection_set(node.selection_set, doc),
       arguments: Enum.map(node.arguments, &Blueprint.Input.Argument.from_ast(&1, doc)),
-      directives: node.directives,
+      directives: Enum.map(node.directives, &Blueprint.Directive.from_ast(&1, doc)),
       ast_node: node
     }
   end
