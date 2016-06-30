@@ -220,6 +220,8 @@ ScalarTypeDefinition -> 'scalar' Name Directives : build_ast_node('ScalarTypeDef
 
 EnumTypeDefinition -> 'enum' Name '{' EnumValueDefinitionList '}':
   build_ast_node('EnumTypeDefinition', #{'name' => extract_binary('$2'), 'values' => '$4'}, #{'start_line' => extract_line('$2'), 'end_line' => extract_line('$5')}).
+EnumTypeDefinition -> 'enum' Name Directives '{' EnumValueDefinitionList '}':
+  build_ast_node('EnumTypeDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3', 'values' => '$5'}, #{'start_line' => extract_line('$2'), 'end_line' => extract_line('$6')}).
 
 EnumValueDefinitionList -> EnumValueDefinition : ['$1'].
 EnumValueDefinitionList -> EnumValueDefinition EnumValueDefinitionList : ['$1'|'$2'].

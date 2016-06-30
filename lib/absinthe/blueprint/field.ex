@@ -44,7 +44,7 @@ defmodule Absinthe.Blueprint.Field do
     []
   end
   defp fields_from_ast_selection_set(%Language.SelectionSet{} = node, doc) do
-    for selection <- node.selections, do: from_ast(selection, doc)
+    Enum.map(node.selections, &from_ast(&1, doc))
   end
 
 end

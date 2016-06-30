@@ -6,13 +6,15 @@ defmodule Absinthe.Language.EnumTypeDefinition do
   defstruct [
     name: nil,
     values: [],
+    directives: [],
     loc: %{start_line: nil}
   ]
 
   @type t :: %__MODULE__{
-    name: binary,
-    values: [any],
-    loc: Language.loc_t
+    name: String.t,
+    values: [String.t],
+    directives: [Language.Directive.t],
+    loc: Language.loc_t,
   }
 
 end

@@ -49,7 +49,7 @@ defmodule Absinthe.BlueprintTest do
   describe '.from_ast for IDL' do
 
     @idl """
-    enum Episode { NEWHOPE, EMPBlueprintE, JEDI }
+    enum Episode { NEWHOPE, EMPIRE, JEDI }
 
     interface Character {
       id: String!
