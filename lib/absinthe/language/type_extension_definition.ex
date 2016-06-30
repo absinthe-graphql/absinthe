@@ -9,7 +9,7 @@ defmodule Absinthe.Language.TypeExtensionDefinition do
   ]
 
   @type t :: %__MODULE__{
-    definition: Language.ObjecTypeDefinition.t,
+    definition: Language.ObjectTypeDefinition.t,
     loc: Language.loc_t
   }
 
