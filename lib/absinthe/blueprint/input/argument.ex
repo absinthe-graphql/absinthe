@@ -18,8 +18,12 @@ defmodule Absinthe.Blueprint.Input.Argument do
   }
 
   @spec from_ast(Language.Argument.t, Language.Document.t) :: t
-  def from_ast(_node, _doc) do
-
+  def from_ast(%Language.Argument{} = node, doc) do
+    %__MODULE__{
+      name: node.name,
+      value: Blueprint.Input.from_ast(node.value, doc),
+      ast_node: node
+    }
   end
 
 end
