@@ -51,6 +51,8 @@ defmodule Absinthe.BlueprintTest do
     @idl """
     enum Episode { NEWHOPE, EMPIRE, JEDI }
 
+    scalar Time
+
     interface Character {
       id: String!
       name: String
@@ -98,7 +100,7 @@ defmodule Absinthe.BlueprintTest do
 
     test "creates the correct number of types" do
       rep = ir(@idl)
-      assert length(rep.types) == 9
+      assert length(rep.types) == 10
     end
 
   end

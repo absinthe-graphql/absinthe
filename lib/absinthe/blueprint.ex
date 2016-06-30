@@ -3,10 +3,17 @@ defmodule Absinthe.Blueprint do
 
   alias Absinthe.{Blueprint, Language}
 
-  alias __MODULE__
+  defstruct [
+    operations: [],
+    types: [],
+    directives: []
+  ]
 
-  defstruct operations: [], types: [], directives: []
-  @type t :: %__MODULE__{} # TODO
+  @type t :: %__MODULE__{
+    operations: [Blueprint.Operation.t],
+    types: [Blueprint.IDL.type_t],
+    directives: [Blueprint.IDL.Directive.t],
+  }
 
   @type type_reference_t :: Blueprint.ListType.t | Blueprint.NonNullType.t | Blueprint.NamedType.t
 
@@ -36,6 +43,10 @@ defmodule Absinthe.Blueprint do
   end
   defp do_from_ast(ir, [%Language.EnumTypeDefinition{} = node | rest], doc) do
     update_in(ir.types, &[Blueprint.IDL.EnumTypeDefinition.from_ast(node, doc) | &1])
+    |> do_from_ast(rest, doc)
+  end
+  defp do_from_ast(ir, [%Language.ScalarTypeDefinition{} = node | rest], doc) do
+    update_in(ir.types, &[Blueprint.IDL.ScalarTypeDefinition.from_ast(node, doc) | &1])
     |> do_from_ast(rest, doc)
   end
   defp do_from_ast(ir, [%Language.DirectiveDefinition{} = node | rest], doc) do
