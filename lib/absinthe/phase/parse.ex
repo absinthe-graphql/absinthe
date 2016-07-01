@@ -3,11 +3,11 @@ defmodule Absinthe.Phase.Parse do
 
   alias Absinthe.{Language, Phase, Pipeline}
 
-  @spec run(Language.Source.t, Pipeline.t) :: {:ok, Language.Document.t, Pipeline.t} | {:error, Absinthe.Phase.Error}
-  def run(input, pipeline) do
+  @spec run(Language.Source.t) :: {:ok, Language.Document.t} | {:error, Phase.Error.t}
+  def run(input) do
     case parse(input) do
       {:ok, doc} ->
-        {:ok, doc, pipeline}
+        {:ok, doc}
       other ->
         other
     end
