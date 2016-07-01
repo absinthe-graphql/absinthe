@@ -6,20 +6,27 @@ defmodule Absinthe.Blueprint do
   defstruct [
     operations: [],
     types: [],
-    directives: []
+    directives: [],
+    purpose: nil
   ]
 
   @type t :: %__MODULE__{
     operations: [Blueprint.Operation.t],
     types: [Blueprint.IDL.type_t],
     directives: [Blueprint.IDL.Directive.t],
+    purpose: nil | :operation | :schema
   }
 
   @type type_reference_t :: Blueprint.ListType.t | Blueprint.NonNullType.t | Blueprint.NamedType.t
 
   @spec from_ast(Language.Document.t) :: t
   def from_ast(doc) do
-    do_from_ast(%__MODULE__{}, doc.definitions, doc)
+    case do_from_ast(%__MODULE__{}, doc.definitions, doc) do
+      %{types: []} = blueprint ->
+        %{blueprint | purpose: :operation}
+      blueprint ->
+        %{blueprint | purpose: :schema}
+    end
   end
 
   defp do_from_ast(ir, [], _) do

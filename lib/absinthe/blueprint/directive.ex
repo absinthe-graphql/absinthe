@@ -1,6 +1,6 @@
 defmodule Absinthe.Blueprint.Directive do
 
-  alias Absinthe.{Blueprint, Language}
+  alias Absinthe.{Blueprint, Language, Phase}
 
   @enforce_keys [:name]
   defstruct [
@@ -12,8 +12,8 @@ defmodule Absinthe.Blueprint.Directive do
 
   @type t :: %__MODULE__{
     name: String.t,
-    arguments: [Absinthe.Blueprint.Input.Argument.t],
-    errors: [Absinthe.Blueprint.Error.t],
+    arguments: [Blueprint.Input.Argument.t],
+    errors: [Phase.Error.t],
     ast_node: nil | Language.Directive.t,
   }
 

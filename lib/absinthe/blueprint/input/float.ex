@@ -12,7 +12,7 @@ defmodule Absinthe.Blueprint.Input.Float do
   @type t :: %__MODULE__{
     value: float,
     ast_node: nil | Language.FloatValue.t,
-    errors: [Blueprint.Error.t],
+    errors: [Absinthe.Phase.Error.t],
   }
 
   @spec from_ast(Language.FloatValue.t, Language.Document.t) :: t

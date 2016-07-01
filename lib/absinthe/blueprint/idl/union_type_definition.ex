@@ -17,7 +17,7 @@ defmodule Absinthe.Blueprint.IDL.UnionTypeDefinition do
     description: nil | String.t,
     directives: [Blueprint.Directive.t],
     types: [Blueprint.NamedType.t],
-    errors: [Blueprint.Error.t],
+    errors: [Absinthe.Phase.Error.t],
     ast_node: nil | Language.UnionTypeDefinition.t,
   }
 

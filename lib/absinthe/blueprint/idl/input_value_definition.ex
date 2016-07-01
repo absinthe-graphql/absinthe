@@ -13,7 +13,7 @@ defmodule Absinthe.Blueprint.IDL.InputValueDefinition do
   @type t :: %__MODULE__{
     name: String.t,
     type: Blueprint.type_reference_t,
-    errors: [Blueprint.Error.t],
+    errors: [Absinthe.Phase.Error.t],
     ast_node: nil | Language.InputValueDefinition.t,
   }
 

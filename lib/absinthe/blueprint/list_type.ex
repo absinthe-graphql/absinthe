@@ -12,7 +12,7 @@ defmodule Absinthe.Blueprint.ListType do
   @type t :: %__MODULE__{
     of_type: Blueprint.type_reference_t,
     ast_node: nil | Language.ListType.t,
-    errors: [Blueprint.Error.t]
+    errors: [Absinthe.Phase.Error.t]
   }
 
   @spec from_ast(Language.ListType.t, Language.Document.t) :: t

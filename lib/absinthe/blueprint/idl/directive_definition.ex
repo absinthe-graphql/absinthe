@@ -18,7 +18,7 @@ defmodule Absinthe.Blueprint.IDL.DirectiveDefinition do
     description: nil,
     arguments: [Blueprint.ArgumentDefinition.t],
     locations: [String.t],
-    errors: [Blueprint.Error.t],
+    errors: [Absinthe.Phase.Error.t],
     ast_node: nil | Language.DirectiveDefinition.t,
   }
 

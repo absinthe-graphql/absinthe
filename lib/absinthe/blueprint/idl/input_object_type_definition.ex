@@ -18,7 +18,7 @@ defmodule Absinthe.Blueprint.IDL.InputObjectTypeDefinition do
     description: nil | String.t,
     fields: [Blueprint.IDL.InputValueDefinition.t],
     directives: [Blueprint.Directive.t],
-    errors: [Blueprint.Error.t],
+    errors: [Absinthe.Phase.Error.t],
     ast_node: nil | Language.InputObjectTypeDefinition.t
   }
 

@@ -15,7 +15,7 @@ defmodule Absinthe.Blueprint.IDL.ArgumentDefinition do
     name: String.t,
     default_value: Blueprint.Input.t,
     type: Blueprint.type_reference_t,
-    errors: [Blueprint.Error.t],
+    errors: [Absinthe.Phase.Error.t],
     ast_node: nil | Language.InputValueDefinition.t,
   }
 

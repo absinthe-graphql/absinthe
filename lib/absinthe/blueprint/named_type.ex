@@ -1,6 +1,6 @@
 defmodule Absinthe.Blueprint.NamedType do
 
-  alias Absinthe.{Blueprint, Language}
+  alias Absinthe.{Phase, Language}
 
   @enforce_keys [:name]
   defstruct [
@@ -12,7 +12,7 @@ defmodule Absinthe.Blueprint.NamedType do
   @type t :: %__MODULE__{
     name: String.t,
     ast_node: nil | Language.NamedType.t,
-    errors: [Blueprint.Error.t]
+    errors: [Phase.Error.t]
   }
 
   @spec from_ast(Language.NamedType.t, Language.Document.t) :: t

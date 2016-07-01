@@ -15,7 +15,7 @@ defmodule Absinthe.Blueprint.IDL.ScalarTypeDefinition do
     name: String.t,
     description: nil | String.t,
     directives: [Blueprint.Directive.t],
-    errors: [Blueprint.Error.t],
+    errors: [Absinthe.Phase.Error.t],
     ast_node: nil | Language.ScalarTypeDefinition.t,
   }
 

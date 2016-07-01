@@ -20,7 +20,7 @@ defmodule Absinthe.Blueprint.Field do
     fields: [t],
     arguments: [Blueprint.Input.Argument.t],
     directives: [Blueprint.Directive.t],
-    errors: [Blueprint.Error.t],
+    errors: [Absinthe.Phase.Error.t],
     ast_node: Language.Field.t,
     schema_type: Type.t,
     type_condition: Blueprint.NamedType.t,

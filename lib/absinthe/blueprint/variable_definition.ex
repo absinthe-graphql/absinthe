@@ -17,7 +17,7 @@ defmodule Absinthe.Blueprint.VariableDefinition do
     type: Blueprint.type_reference_t,
     default_value: Blueprint.Input.t,
     ast_node: nil | Language.VariableDefinition.t,
-    errors: [Blueprint.Error.t],
+    errors: [Absinthe.Phase.Error.t],
     schema_type: Type.t,
   }
 

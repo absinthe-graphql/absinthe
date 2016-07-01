@@ -15,7 +15,7 @@ defmodule Absinthe.Blueprint.IDL.FieldDefinition do
     name: String.t,
     arguments: Blueprint.IDL.ArgumentDefinition.t,
     type: Blueprint.type_reference_t,
-    errors: [Blueprint.Error.t],
+    errors: [Absinthe.Phase.Error.t],
     ast_node: nil | Language.FieldDefinition.t
   }
 

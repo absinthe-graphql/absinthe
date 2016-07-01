@@ -12,7 +12,7 @@ defmodule Absinthe.Blueprint.Input.Object do
   @type t :: %__MODULE__{
     fields: [Blueprint.Input.Field.t],
     ast_node: nil | Language.ObjectValue.t,
-    errors: [Blueprint.Error.t],
+    errors: [Absinthe.Phase.Error.t],
   }
 
   @spec from_ast(Language.ObjectValue.t, Language.Document.t) :: t

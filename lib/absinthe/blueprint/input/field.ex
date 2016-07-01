@@ -14,7 +14,7 @@ defmodule Absinthe.Blueprint.Input.Field do
     name: String.t,
     value: Blueprint.Input.t,
     ast_node: Language.ObjectField.t,
-    errors: [Blueprint.Error.t],
+    errors: [Absinthe.Phase.Error.t],
   }
 
   @spec from_ast(Language.ObjectField.t, Language.Document.t) :: t

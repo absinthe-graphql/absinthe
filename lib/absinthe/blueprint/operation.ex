@@ -18,7 +18,7 @@ defmodule Absinthe.Blueprint.Operation do
     fields: [Blueprint.Field.t],
     variable_definitions: [Blueprint.VariableDefinition.t],
     ast_node: nil | Language.OperationDefinition.t,
-    errors: [Blueprint.Error.t],
+    errors: [Absinthe.Phase.Error.t],
   }
 
   @spec from_ast(Language.OperationDefinition.t, Language.Document.t) :: t

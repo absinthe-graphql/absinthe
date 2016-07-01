@@ -13,7 +13,7 @@ defmodule Absinthe.Blueprint.Input.Argument do
   @type t :: %__MODULE__{
     name: String.t,
     value: Blueprint.Input.t,
-    errors: [Blueprint.Error.t],
+    errors: [Absinthe.Phase.Error.t],
     ast_node: nil | Language.Argument.t,
   }
 

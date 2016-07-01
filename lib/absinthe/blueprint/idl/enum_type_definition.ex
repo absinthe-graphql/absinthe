@@ -15,7 +15,7 @@ defmodule Absinthe.Blueprint.IDL.EnumTypeDefinition do
     values: [String.t],
     directives: [Blueprint.Directive.t],
     ast_node: nil | Language.EnumTypeDefinition.t,
-    errors: [Blueprint.Error.t],
+    errors: [Absinthe.Phase.Error.t],
   }
 
   @spec from_ast(Language.EnumTypeDefinition.t, Language.Document.t) :: t

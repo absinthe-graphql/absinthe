@@ -12,7 +12,7 @@ defmodule Absinthe.Blueprint.NonNullType do
   @type t :: %__MODULE__{
     of_type: Blueprint.type_reference_t,
     ast_node: nil | Language.NonNullType.t,
-    errors: [Blueprint.Error.t]
+    errors: [Absinthe.Phase.Error.t]
   }
 
   @spec from_ast(Language.NonNullType.t, Language.Document.t) :: t

@@ -1,6 +1,6 @@
 defmodule Absinthe.Blueprint.Input.Boolean do
 
-  alias Absinthe.{Blueprint, Language}
+  alias Absinthe.{Blueprint, Language, Phase}
 
   @enforce_keys [:value]
   defstruct [
@@ -12,7 +12,7 @@ defmodule Absinthe.Blueprint.Input.Boolean do
   @type t :: %__MODULE__{
     value: true | false,
     ast_node: nil | Language.BooleanValue.t,
-    errors: [Blueprint.Error.t],
+    errors: [Phase.Error.t],
   }
 
   @spec from_ast(Language.BooleanValue.t, Language.Document.t) :: t
