@@ -1,6 +1,6 @@
 defmodule Absinthe.Pipeline do
 
-  alias Absinthe.{Pipeline, Phase}
+  alias Absinthe.{Phase}
 
   @type t :: [Phase.t]
 
