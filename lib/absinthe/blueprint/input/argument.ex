@@ -1,12 +1,11 @@
 defmodule Absinthe.Blueprint.Input.Argument do
 
-  alias Absinthe.{Blueprint, Language}
+  alias Absinthe.Blueprint
 
   @enforce_keys [:name, :value]
   defstruct [
     :name,
     :value,
-    ast_node: nil,
     errors: [],
   ]
 
@@ -14,16 +13,6 @@ defmodule Absinthe.Blueprint.Input.Argument do
     name: String.t,
     value: Blueprint.Input.t,
     errors: [Absinthe.Phase.Error.t],
-    ast_node: nil | Language.Argument.t,
   }
-
-  @spec from_ast(Language.Argument.t, Language.Document.t) :: t
-  def from_ast(%Language.Argument{} = node, doc) do
-    %__MODULE__{
-      name: node.name,
-      value: Blueprint.Input.from_ast(node.value, doc),
-      ast_node: node
-    }
-  end
 
 end

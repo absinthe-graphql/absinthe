@@ -19,8 +19,8 @@ defmodule Absinthe.Language.Source do
   ]
 
   @type t :: %__MODULE__{
-    body: binary,
-    name: binary
+    body: String.t,
+    name: String.t
   }
 
 end

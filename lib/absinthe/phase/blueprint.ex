@@ -1,11 +1,12 @@
 defmodule Absinthe.Phase.Blueprint do
   use Absinthe.Phase
 
-  alias Absinthe.{Blueprint, Language}
+  alias Absinthe.Blueprint
 
-  @spec run(Language.Document.t) :: {:ok, Blueprint.t}
+  @spec run(any) :: {:ok, Blueprint.t}
   def run(input) do
-    {:ok, Blueprint.from_ast(input)}
+    doc = input # The doc is also the input
+    {:ok, Blueprint.Draft.convert(input, doc)}
   end
 
 end

@@ -1,7 +1,7 @@
 defmodule Absinthe.Phase.Parse do
   use Absinthe.Phase
 
-  alias Absinthe.{Language, Phase, Pipeline}
+  alias Absinthe.{Language, Phase}
 
   @spec run(Language.Source.t) :: {:ok, Language.Document.t} | {:error, Phase.Error.t}
   def run(input) do
@@ -50,7 +50,7 @@ defmodule Absinthe.Phase.Parse do
   @spec format_raw_parse_error({integer, :absinthe_parser, [char_list]}) :: Phase.Error.t
   defp format_raw_parse_error({line, :absinthe_parser, msgs}) do
     message = msgs |> Enum.map(&to_string/1) |> Enum.join("")
-    %{message: message, locations: [%{line: line, column: 0}], phase: __MODULE__}
+    %Phase.Error{message: message, locations: [%{line: line, column: 0}], phase: __MODULE__}
   end
   @spec format_raw_parse_error({integer, :absinthe_lexer, {atom, char_list}}) :: Phase.Error.t
   defp format_raw_parse_error({line, :absinthe_lexer, {problem, field}}) do

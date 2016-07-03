@@ -1,9 +1,9 @@
-defmodule Absinthe.Blueprint.IDL.InputObjectTypeDefinitionTest do
+defmodule Absinthe.Language.InputObjectTypeDefinitionTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.Blueprint
 
-  describe ".from_ast" do
+  describe "converting to Blueprint" do
 
     it "works, given an IDL 'input' definition" do
       assert %Blueprint.IDL.InputObjectTypeDefinition{name: "Profile"} = from_input("input Profile { name: String! }")
@@ -17,17 +17,17 @@ defmodule Absinthe.Blueprint.IDL.InputObjectTypeDefinitionTest do
         name: String!
       }
       """ |> from_input
-      assert %Blueprint.IDL.InputObjectTypeDefinition{name: "Profile", directives: [%{name: "description"}], fields: [%Blueprint.IDL.InputValueDefinition{type: %Blueprint.NonNullType{of_type: %Blueprint.NamedType{name: "String"}}}]} = rep
+      assert %Blueprint.IDL.InputObjectTypeDefinition{name: "Profile", directives: [%{name: "description"}], fields: [%Blueprint.IDL.InputValueDefinition{name: "name", type: %Blueprint.NonNullType{of_type: %Blueprint.NamedType{name: "String"}}}]} = rep
     end
 
   end
 
   defp from_input(text) do
-    doc = Absinthe.parse!(text)
+    {:ok, doc} = Absinthe.Phase.Parse.run(text)
 
     doc
     |> extract_ast_node
-    |> Blueprint.IDL.InputObjectTypeDefinition.from_ast(doc)
+    |> Blueprint.Draft.convert(doc)
   end
 
   defp extract_ast_node(%Absinthe.Language.Document{definitions: [node]}) do

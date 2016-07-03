@@ -1,6 +1,7 @@
 defmodule Absinthe.Language do
-
   @moduledoc false
+
+  alias Absinthe.Language
 
   alias __MODULE__
 
@@ -19,6 +20,8 @@ defmodule Absinthe.Language do
 
   @type loc_t :: %{start_line: nil | integer,
                    end_line:   nil | integer}
+
+  @type input_t :: Language.BooleanValue | Language.EnumValue | Language.FloatValue | Language.IntValue | Language.ListValue | Language.ObjectValue | Language.StringValue | Language.Variable
 
   # Unwrap an AST type from a NonNullType
   @doc false

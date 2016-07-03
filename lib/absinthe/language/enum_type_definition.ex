@@ -1,13 +1,13 @@
 defmodule Absinthe.Language.EnumTypeDefinition do
   @moduledoc false
 
-  alias Absinthe.Language
+  alias Absinthe.{Blueprint, Language}
 
   defstruct [
     name: nil,
     values: [],
     directives: [],
-    loc: %{start_line: nil}
+    loc: %{start_line: nil},
   ]
 
   @type t :: %__MODULE__{
@@ -16,5 +16,15 @@ defmodule Absinthe.Language.EnumTypeDefinition do
     directives: [Language.Directive.t],
     loc: Language.loc_t,
   }
+
+  defimpl Blueprint.Draft do
+    def convert(node, doc) do
+      %Blueprint.IDL.EnumTypeDefinition{
+        name: node.name,
+        values: node.values,
+        directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
+      }
+    end
+  end
 
 end

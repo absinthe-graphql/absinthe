@@ -1,6 +1,6 @@
 defmodule Absinthe.Blueprint.IDL.UnionTypeDefinition do
 
-  alias Absinthe.{Blueprint, Language}
+  alias Absinthe.Blueprint
 
   @enforce_keys [:name]
   defstruct [
@@ -9,7 +9,6 @@ defmodule Absinthe.Blueprint.IDL.UnionTypeDefinition do
     directives: [],
     types: [],
     errors: [],
-    ast_node: nil,
   ]
 
   @type t :: %__MODULE__{
@@ -18,17 +17,6 @@ defmodule Absinthe.Blueprint.IDL.UnionTypeDefinition do
     directives: [Blueprint.Directive.t],
     types: [Blueprint.NamedType.t],
     errors: [Absinthe.Phase.Error.t],
-    ast_node: nil | Language.UnionTypeDefinition.t,
   }
-
-  @spec from_ast(Language.UnionTypeDefinition.t, Language.Document.t) :: t
-  def from_ast(%Language.UnionTypeDefinition{} = node, doc) do
-    %__MODULE__{
-      name: node.name,
-      types: Enum.map(node.types, &Blueprint.NamedType.from_ast(&1, doc)),
-      directives: Enum.map(node.directives, &Blueprint.Directive.from_ast(&1, doc)),
-      ast_node: node
-    }
-  end
 
 end

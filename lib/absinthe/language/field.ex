@@ -1,7 +1,7 @@
 defmodule Absinthe.Language.Field do
   @moduledoc false
 
-  alias Absinthe.Language
+  alias Absinthe.{Blueprint, Language}
 
   defstruct [
     alias: nil,
@@ -9,17 +9,33 @@ defmodule Absinthe.Language.Field do
     arguments: [],
     directives: [],
     selection_set: nil,
-    loc: %{start_line: nil}
+    loc: %{start_line: nil},
   ]
 
   @type t :: %__MODULE__{
-    alias: nil | binary,
-    name: binary,
+    alias: nil | String.t,
+    name: String.t,
     arguments: [Absinthe.Language.Argument.t],
     directives: [Absinthe.Language.Directive.t],
     selection_set: Absinthe.Language.SelectionSet.t,
-    loc: Absinthe.Language.loc_t
+    loc: Absinthe.Language.loc_t,
   }
+
+  defimpl Blueprint.Draft do
+    def convert(node, doc) do
+      %Blueprint.Field{
+        name: node.name,
+        alias: node.alias,
+        fields: Absinthe.Blueprint.Draft.convert(selections(node.selection_set), doc),
+        arguments: Absinthe.Blueprint.Draft.convert(node.arguments, doc),
+        directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
+      }
+    end
+
+    @spec selections(nil | Language.SelectionSet.t) :: [Language.Field.t | Language.InlineFragment.t | Language.FragmentSpread.t]
+    defp selections(nil), do: []
+    defp selections(node), do: node.selections
+  end
 
   defimpl Absinthe.Traversal.Node do
     def children(node, _schema) do

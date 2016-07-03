@@ -1,6 +1,6 @@
 defmodule Absinthe.Blueprint.Operation do
 
-  alias Absinthe.{Blueprint, Language}
+  alias Absinthe.Blueprint
 
   @enforce_keys [:name, :type]
   defstruct [
@@ -8,7 +8,6 @@ defmodule Absinthe.Blueprint.Operation do
     :type,
     fields: [],
     variable_definitions: [],
-    ast_node: nil,
     errors: [],
   ]
 
@@ -17,19 +16,7 @@ defmodule Absinthe.Blueprint.Operation do
     type: :query | :mutation | :subscription,
     fields: [Blueprint.Field.t],
     variable_definitions: [Blueprint.VariableDefinition.t],
-    ast_node: nil | Language.OperationDefinition.t,
     errors: [Absinthe.Phase.Error.t],
   }
-
-  @spec from_ast(Language.OperationDefinition.t, Language.Document.t) :: t
-  def from_ast(%Language.OperationDefinition{} = node, doc) do
-    %__MODULE__{
-      name: node.name,
-      type: node.operation,
-      variable_definitions: Enum.map(node.variable_definitions, &Blueprint.VariableDefinition.from_ast(&1, doc)),
-      fields: Enum.map(node.selection_set.selections, &Blueprint.Field.from_ast(&1, doc)),
-      ast_node: node,
-    }
-  end
 
 end

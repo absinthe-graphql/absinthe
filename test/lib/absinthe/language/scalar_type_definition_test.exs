@@ -1,9 +1,9 @@
-defmodule Absinthe.Blueprint.IDL.ScalarTypeDefinitionTest do
+defmodule Absinthe.Language.ScalarTypeDefinitionTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.Blueprint
 
-  describe ".from_ast" do
+  describe "converting to Blueprint" do
 
     it "works, given an IDL 'scalar' definition" do
       assert %Blueprint.IDL.ScalarTypeDefinition{name: "Time"} = from_input("scalar Time")
@@ -20,11 +20,11 @@ defmodule Absinthe.Blueprint.IDL.ScalarTypeDefinitionTest do
   end
 
   defp from_input(text) do
-    doc = Absinthe.parse!(text)
+    {:ok, doc} = Absinthe.Phase.Parse.run(text)
 
     doc
     |> extract_ast_node
-    |> Blueprint.IDL.ScalarTypeDefinition.from_ast(doc)
+    |> Blueprint.Draft.convert(doc)
   end
 
   defp extract_ast_node(%Absinthe.Language.Document{definitions: [node]}) do

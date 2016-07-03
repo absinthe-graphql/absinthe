@@ -1,7 +1,7 @@
 defmodule Absinthe.Language.ScalarTypeDefinition do
   @moduledoc false
 
-  alias Absinthe.Language
+  alias Absinthe.{Blueprint, Language}
 
   defstruct [
     name: nil,
@@ -10,9 +10,18 @@ defmodule Absinthe.Language.ScalarTypeDefinition do
   ]
 
   @type t :: %__MODULE__{
-    name: binary,
+    name: String.t,
     directives: [Language.Directive.t],
     loc: Language.t
   }
+
+  defimpl Blueprint.Draft do
+    def convert(node, doc) do
+      %Blueprint.IDL.ScalarTypeDefinition{
+        name: node.name,
+        directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
+      }
+    end
+  end
 
 end

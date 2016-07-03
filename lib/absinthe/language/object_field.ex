@@ -1,7 +1,7 @@
 defmodule Absinthe.Language.ObjectField do
   @moduledoc false
 
-  alias Absinthe.Language
+  alias Absinthe.{Blueprint, Language}
 
   defstruct [
     name: nil,
@@ -10,9 +10,18 @@ defmodule Absinthe.Language.ObjectField do
   ]
 
   @type t :: %__MODULE__{
-    name: binary,
+    name: String.t,
     value: Language.value_t,
     loc: Language.loc_t
   }
+
+  defimpl Blueprint.Draft do
+    def convert(node, doc) do
+      %Blueprint.Input.Field{
+        name: node.name,
+        value: Blueprint.Draft.convert(node.value, doc),
+      }
+    end
+  end
 
 end

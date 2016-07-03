@@ -1,9 +1,9 @@
-defmodule Absinthe.Blueprint.IDL.ObjectTypeDefinitionTest do
+defmodule Absinthe.Language.ObjectTypeDefinitionTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.Blueprint
 
-  describe ".from_ast" do
+  describe "converting to Blueprint" do
 
     it "works, given an IDL 'type' definition" do
       assert %Blueprint.IDL.ObjectTypeDefinition{name: "Person"} = from_input("type Person { name: String! }")
@@ -43,11 +43,11 @@ defmodule Absinthe.Blueprint.IDL.ObjectTypeDefinitionTest do
   end
 
   defp from_input(text) do
-    doc = Absinthe.parse!(text)
+    {:ok, doc} = Absinthe.Phase.Parse.run(text)
 
     doc
     |> extract_ast_node
-    |> Blueprint.IDL.ObjectTypeDefinition.from_ast(doc)
+    |> Blueprint.Draft.convert(doc)
   end
 
   defp extract_ast_node(%Absinthe.Language.Document{definitions: [node]}) do

@@ -1,7 +1,7 @@
 defmodule Absinthe.Language.InterfaceTypeDefinition do
   @moduledoc false
 
-  alias Absinthe.Language
+  alias Absinthe.{Blueprint, Language}
 
   defstruct [
     name: nil,
@@ -11,10 +11,20 @@ defmodule Absinthe.Language.InterfaceTypeDefinition do
   ]
 
   @type t :: %__MODULE__{
-    name: binary,
+    name: String.t,
     fields: [Language.FieldDefinition.t],
     directives: [Language.Directive.t],
     loc: Language.loc_t
   }
+
+  defimpl Blueprint.Draft do
+    def convert(node, doc) do
+      %Blueprint.IDL.InterfaceTypeDefinition{
+        name: node.name,
+        fields: Absinthe.Blueprint.Draft.convert(node.fields, doc),
+        directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
+      }
+    end
+  end
 
 end

@@ -1,7 +1,9 @@
 defmodule Absinthe.Language.Document do
   @moduledoc false
 
-  alias Absinthe.Language
+  require Logger
+
+  alias Absinthe.{Blueprint, Language}
 
   defstruct [
     definitions: [],
@@ -15,7 +17,7 @@ defmodule Absinthe.Language.Document do
   }
 
   @doc "Extract a named operation definition from a document"
-  @spec get_operation(t, binary) :: nil | Absinthe.Language.OperationDefinition.t
+  @spec get_operation(t, String.t) :: nil | Absinthe.Language.OperationDefinition.t
   def get_operation(%{definitions: definitions}, name) do
     definitions
     |> Enum.find(nil, fn
@@ -27,7 +29,7 @@ defmodule Absinthe.Language.Document do
   end
 
   @doc false
-  @spec fragments_by_name(Absinthe.Language.Document.t) :: %{binary => Absinthe.Language.Fragment.t}
+  @spec fragments_by_name(Absinthe.Language.Document.t) :: %{String.t => Absinthe.Language.Fragment.t}
   def fragments_by_name(%{definitions: definitions}) do
     definitions
     |> Enum.reduce(%{}, fn (statement, memo) ->
@@ -38,6 +40,40 @@ defmodule Absinthe.Language.Document do
           memo
       end
     end)
+  end
+
+  defimpl Blueprint.Draft do
+
+    @operations [
+      Language.OperationDefinition,
+    ]
+    @types [
+      Language.EnumTypeDefinition,
+      Language.InputObjectTypeDefinition,
+      Language.InputValueDefinition,
+      Language.InterfaceTypeDefinition,
+      Language.ObjectTypeDefinition,
+      Language.ScalarTypeDefinition,
+      Language.UnionTypeDefinition,
+    ]
+    @directives [
+      Language.DirectiveDefinition,
+    ]
+
+    def convert(node, _) do
+      Enum.reduce(node.definitions, %Blueprint{}, &convert_definition(&1, node, &2))
+    end
+
+    defp convert_definition(%{__struct__: mod} = node, doc, blueprint) when mod in @operations do
+      update_in(blueprint.operations, &[Blueprint.Draft.convert(node, doc) | &1])
+    end
+    defp convert_definition(%{__struct__: mod} = node, doc, blueprint) when mod in @types do
+      update_in(blueprint.types, &[Blueprint.Draft.convert(node, doc) | &1])
+    end
+    defp convert_definition(%{__struct__: mod} = node, doc, blueprint) when mod in @directives do
+      update_in(blueprint.directives, &[Blueprint.Draft.convert(node, doc) | &1])
+    end
+
   end
 
   defimpl Absinthe.Traversal.Node do

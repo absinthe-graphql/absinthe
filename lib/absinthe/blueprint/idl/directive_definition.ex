@@ -1,6 +1,6 @@
 defmodule Absinthe.Blueprint.IDL.DirectiveDefinition do
 
-  alias Absinthe.{Blueprint, Language}
+  alias Absinthe.Blueprint
 
   @enforce_keys [:name]
   defstruct [
@@ -9,7 +9,6 @@ defmodule Absinthe.Blueprint.IDL.DirectiveDefinition do
     directives: [],
     arguments: [],
     locations: [],
-    ast_node: nil,
     errors: [],
   ]
 
@@ -19,18 +18,6 @@ defmodule Absinthe.Blueprint.IDL.DirectiveDefinition do
     arguments: [Blueprint.ArgumentDefinition.t],
     locations: [String.t],
     errors: [Absinthe.Phase.Error.t],
-    ast_node: nil | Language.DirectiveDefinition.t,
   }
-
-  @spec from_ast(Language.DirectiveDefinition.t, Language.Document.t) :: t
-  def from_ast(%Language.DirectiveDefinition{} = node, doc) do
-    %__MODULE__{
-      name: node.name,
-      ast_node: node,
-      directives: Enum.map(node.directives, &Blueprint.Directive.from_ast(&1, doc)),
-      arguments: Enum.map(node.arguments, &Blueprint.IDL.ArgumentDefinition.from_ast(&1, doc)),
-      locations: node.locations
-    }
-  end
 
 end

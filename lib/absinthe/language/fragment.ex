@@ -12,7 +12,7 @@ defmodule Absinthe.Language.Fragment do
   ]
 
   @type t :: %__MODULE__{
-    name: binary,
+    name: String.t,
     type_condition: nil | Language.NamedType.t,
     directives: [Language.Directive.t],
     selection_set: Language.SelectionSet.t,

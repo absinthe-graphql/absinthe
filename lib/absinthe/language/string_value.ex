@@ -1,7 +1,7 @@
 defmodule Absinthe.Language.StringValue do
   @moduledoc false
 
-  alias Absinthe.Language
+  alias Absinthe.{Blueprint, Language}
 
   defstruct [
     value: nil,
@@ -9,8 +9,16 @@ defmodule Absinthe.Language.StringValue do
   ]
 
   @type t :: %__MODULE__{
-    value: binary,
+    value: String.t,
     loc: Language.loc_t
   }
+
+  defimpl Blueprint.Draft do
+    def convert(node, _doc) do
+      %Blueprint.Input.String{
+        value: node.value,
+      }
+    end
+  end
 
 end

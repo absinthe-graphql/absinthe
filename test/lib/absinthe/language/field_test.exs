@@ -19,7 +19,7 @@ defmodule Absinthe.Blueprint.FieldTest do
   }
   """
 
-  describe ".from_ast" do
+  describe "converting to Blueprint" do
 
     it "builds a Field.t" do
       assert %Blueprint.Field{name: "foo", arguments: [%Blueprint.Input.Argument{name: "input", value: %Blueprint.Input.Object{fields: [%Blueprint.Input.Field{name: "foo", value: %Blueprint.Input.Integer{value: 2}}]}}]} = from_input(@query)
@@ -32,11 +32,11 @@ defmodule Absinthe.Blueprint.FieldTest do
   end
 
   defp from_input(text) do
-    doc = Absinthe.parse!(text)
+    {:ok, doc} = Absinthe.Phase.Parse.run(text)
 
     doc
     |> extract_ast_node
-    |> Blueprint.Field.from_ast(doc)
+    |> Blueprint.Draft.convert(doc)
   end
 
   defp extract_ast_node(%Absinthe.Language.Document{definitions: [node]}) do

@@ -1,7 +1,7 @@
 defmodule Absinthe.Language.VariableDefinition do
   @moduledoc false
 
-  alias Absinthe.Language
+  alias Absinthe.{Blueprint, Language}
 
   defstruct [
     variable: nil,
@@ -16,5 +16,15 @@ defmodule Absinthe.Language.VariableDefinition do
     default_value: any,
     loc: Language.loc_t
   }
+
+  defimpl Blueprint.Draft do
+    def convert(node, doc) do
+      %Blueprint.VariableDefinition{
+        name: node.variable.name,
+        type: Absinthe.Blueprint.Draft.convert(node.type, doc),
+        default_value: Absinthe.Blueprint.Draft.convert(node.default_value, doc),
+      }
+    end
+  end
 
 end

@@ -1,7 +1,7 @@
 defmodule Absinthe.Language.NonNullType do
   @moduledoc false
 
-  alias Absinthe.Language
+  alias Absinthe.{Blueprint, Language}
 
   defstruct [
     type: nil,
@@ -12,5 +12,13 @@ defmodule Absinthe.Language.NonNullType do
     type: Language.type_reference_t,
     loc: Language.t
   }
+
+  defimpl Blueprint.Draft do
+    def convert(node, doc) do
+      %Blueprint.NonNullType{
+        of_type: Blueprint.Draft.convert(node.type, doc),
+      }
+    end
+  end
 
 end

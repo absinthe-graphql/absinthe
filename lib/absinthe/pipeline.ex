@@ -1,6 +1,6 @@
 defmodule Absinthe.Pipeline do
 
-  alias Absinthe.{Phase}
+  alias Absinthe.Phase
 
   @type t :: [Phase.t]
 
@@ -22,6 +22,7 @@ defmodule Absinthe.Pipeline do
         {:error, %Phase.Error{}} = err ->
           {:halt, err}
         {:error, message} ->
+          IO.inspect(message)
           err = {:error, %Phase.Error{message: message, phase: phase}}
           {:halt, err}
       end

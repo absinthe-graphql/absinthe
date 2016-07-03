@@ -1,9 +1,9 @@
-defmodule Absinthe.Blueprint.IDL.DirectiveDefinitionTest do
+defmodule Absinthe.Language.DirectiveDefinitionTest do
   use Absinthe.Case, async: true
 
-  alias Absinthe.Blueprint
+  alias Absinthe.{Blueprint, Language, Phase}
 
-  describe ".from_ast" do
+  describe "blueprint conversion" do
 
     it "works, given an IDL 'directive' definition without arguments" do
       assert %Blueprint.IDL.DirectiveDefinition{name: "thingy", locations: ["FIELD", "OBJECT"]} = from_input("directive @thingy on FIELD | OBJECT")
@@ -19,14 +19,14 @@ defmodule Absinthe.Blueprint.IDL.DirectiveDefinitionTest do
   end
 
   defp from_input(text) do
-    doc = Absinthe.parse!(text)
+    {:ok, doc} = Phase.Parse.run(text)
 
     doc
     |> extract_ast_node
-    |> Blueprint.IDL.DirectiveDefinition.from_ast(doc)
+    |> Blueprint.Draft.convert(doc)
   end
 
-  defp extract_ast_node(%Absinthe.Language.Document{definitions: [node]}) do
+  defp extract_ast_node(%Language.Document{definitions: [node]}) do
     node
   end
 

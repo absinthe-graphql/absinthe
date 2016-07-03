@@ -1,7 +1,7 @@
 defmodule Absinthe.Language.FloatValue do
   @moduledoc false
 
-  alias Absinthe.Language
+  alias Absinthe.{Blueprint, Language}
 
   defstruct [
     value: nil,
@@ -12,5 +12,13 @@ defmodule Absinthe.Language.FloatValue do
     value: float,
     loc: Language.loc_t
   }
+
+  defimpl Blueprint.Draft do
+    def convert(node, _doc) do
+      %Blueprint.Input.Float{
+        value: node.value,
+      }
+    end
+  end
 
 end

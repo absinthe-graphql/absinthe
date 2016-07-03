@@ -1,7 +1,7 @@
 defmodule Absinthe.Language.EnumValue do
   @moduledoc false
 
-  alias Absinthe.Language
+  alias Absinthe.{Blueprint, Language}
 
   defstruct [
     value: nil,
@@ -12,5 +12,13 @@ defmodule Absinthe.Language.EnumValue do
     value: any,
     loc: Language.loc_t
   }
+
+  defimpl Blueprint.Draft do
+    def convert(node, _doc) do
+      %Blueprint.Input.Enum{
+        value: node.value,
+      }
+    end
+  end
 
 end

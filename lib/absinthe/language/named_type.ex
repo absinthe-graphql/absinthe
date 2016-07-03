@@ -1,7 +1,7 @@
 defmodule Absinthe.Language.NamedType do
   @moduledoc false
 
-  alias Absinthe.Language
+  alias Absinthe.{Blueprint, Language}
 
   defstruct [
     name: nil,
@@ -9,8 +9,16 @@ defmodule Absinthe.Language.NamedType do
   ]
 
   @type t :: %__MODULE__{
-    name: binary,
+    name: String.t,
     loc: Language.loc_t
   }
+
+  defimpl Blueprint.Draft do
+    def convert(node, _doc) do
+      %Blueprint.NamedType{
+        name: node.name,
+      }
+    end
+  end
 
 end

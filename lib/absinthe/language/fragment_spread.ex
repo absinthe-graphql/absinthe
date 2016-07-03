@@ -10,7 +10,7 @@ defmodule Absinthe.Language.FragmentSpread do
   ]
 
   @type t :: %__MODULE__{
-    name: binary,
+    name: String.t,
     directives: [Language.Directive.t]
   }
 

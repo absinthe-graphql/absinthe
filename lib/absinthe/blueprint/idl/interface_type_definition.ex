@@ -1,14 +1,11 @@
 defmodule Absinthe.Blueprint.IDL.InterfaceTypeDefinition do
 
-  alias Absinthe.{Blueprint, Language}
-
   @enforce_keys [:name]
   defstruct [
     :name,
     description: nil,
     fields: [],
     directives: [],
-    ast_node: nil,
     errors: [],
   ]
 
@@ -18,16 +15,6 @@ defmodule Absinthe.Blueprint.IDL.InterfaceTypeDefinition do
     fields: [Blueprint.IDL.FieldDefinition.t],
     directives: [Blueprint.Directive.t],
     errors: [Absinthe.Phase.Error.t],
-    ast_node: nil | Language.InterfaceTypeDefinition.t
   }
-
-  @spec from_ast(Language.InterfaceTypeDefinition.t, Language.Document.t) :: t
-  def from_ast(%Language.InterfaceTypeDefinition{} = node, doc) do
-    %__MODULE__{
-      name: node.name,
-      ast_node: node,
-      directives: Enum.map(node.directives, &Blueprint.Directive.from_ast(&1, doc))
-    }
-  end
 
 end

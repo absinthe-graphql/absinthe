@@ -2,7 +2,7 @@ defmodule Absinthe.Language.Directive do
 
   @moduledoc false
 
-  alias Absinthe.Language
+  alias Absinthe.{Blueprint, Language}
 
   defstruct [
     name: nil,
@@ -11,9 +11,18 @@ defmodule Absinthe.Language.Directive do
   ]
 
   @type t :: %__MODULE__{
-    name: binary,
+    name: String.t,
     arguments: [Language.Argument],
     loc: Language.loc_t
   }
+
+  defimpl Blueprint.Draft do
+    def convert(node, doc) do
+      %Blueprint.Directive{
+        name: node.name,
+        arguments: Absinthe.Blueprint.Draft.convert(node.arguments, doc)
+      }
+    end
+  end
 
 end

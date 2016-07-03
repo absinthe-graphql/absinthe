@@ -1,8 +1,8 @@
 defmodule Absinthe.Type.BuiltIns.Introspection do
-  use Absinthe.Schema.Notation
-  alias Absinthe.Type
-
   @moduledoc false
+
+  use Absinthe.Schema.Notation
+
   object :__schema do
     description "Represents a schema"
 
