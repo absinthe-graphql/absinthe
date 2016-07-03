@@ -50,6 +50,15 @@ defmodule Absinthe.Blueprint.Mapper do
     Blueprint.Input.Field => [:value],
     Blueprint.Input.List => [:values],
     Blueprint.Input.Object => [:fields],
+    Blueprint.IDL.DirectiveDefinition => [:directives, :types],
+    Blueprint.IDL.EnumTypeDefinition => [:directives, :values],
+    Blueprint.IDL.FieldDefinition => [:type, :arguments],
+    Blueprint.IDL.InputObjectTypeDefinition => [:interfaces, :fields, :directives],
+    Blueprint.IDL.InputValueDefinition => [:type, :default_value],
+    Blueprint.IDL.InterfaceTypeDefinition => [:fields, :directives],
+    Blueprint.IDL.ObjectTypeDefinition => [:interfaces, :fields, :directives],
+    Blueprint.IDL.ScalarTypeDefinition => [:directives],
+    Blueprint.IDL.UnionTypeDefinition => [:directives, :types],
   }
 
   @spec walk(Blueprint.t, any, ((Blueprint.t, any) -> {Blueprint.t, any}), ((Blueprint.t, any) -> {Blueprint.t, any})) :: {Blueprint.t, any}
