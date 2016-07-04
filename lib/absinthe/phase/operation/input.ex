@@ -1,13 +1,14 @@
-defmodule Absinthe.Phase.Operation.Variables do
+defmodule Absinthe.Phase.Operation.Input do
   @moduledoc """
-  For a given operation name, provided a mapping of variable names to literal
-  values:
+  For a given operation name, provided a mapping of variable names to values:
 
   - Add errors to any variable definition that is non-null but is not given a
     value
   - Set the `provided_value` field of all `Blueprint.Input.Argument.t` structs
     that are using variables to the values provided for those variables (or
     their defined defaults)
+  - Set the `provided_value` field of all `Blueprint.Input.Argument.t` structs
+    that are using literal values
 
   ## Examples
 
@@ -15,9 +16,9 @@ defmodule Absinthe.Phase.Operation.Variables do
 
   ```
   query Item($id: ID!) {
-  item(id: $id) {
-  name
-  }
+    item(id: $id, category: "Things") {
+      name
+    }
   }
   ```
 
@@ -27,8 +28,10 @@ defmodule Absinthe.Phase.Operation.Variables do
   run(blueprint, %{operation_name: "Item", variables: %{"id" => "1234"}})
   ``
 
-  The `item` field's `id` argument struct would be modified to have a
-  `provided_value` of `"1234"`.
+  - The `item` field's `id` argument struct would be modified to have a
+    `provided_value` of `"1234"`.
+  - The `item` field's `category` argument struct would be modified to have a
+    `provided_value` of `"Things"`.
 
   If, the following was used (note no `"id"` variable value is given):
 
@@ -36,8 +39,10 @@ defmodule Absinthe.Phase.Operation.Variables do
   run(blueprint, %{operation_name: "Item", variables: %{}})
   ``
 
-  The variable definition for `id` would have an error record in its `errors`
-  field.
+  - The variable definition for `id` would have an error record in its `errors`
+    field.
+  - The `item` field's `category` argument struct would be modified to have a
+    `provided_value` of `"Things"`.
   """
 
   alias Absinthe.{Blueprint, Phase}
@@ -75,6 +80,14 @@ defmodule Absinthe.Phase.Operation.Variables do
       acc
     }
   end
+  # Argument not using a variable: Set provided value from the literal value
+  defp handle_node(%Blueprint.Input.Argument{} = node, %{active_operation: true} = acc) do
+    {
+      struct(node, provided_value: Blueprint.Input.unwrap(node.value)),
+      acc
+    }
+  end
+
   # All other nodes: return unchanged
   defp handle_node(node, acc) do
     {node, acc}

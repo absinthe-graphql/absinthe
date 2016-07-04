@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Operation.VariablesTest do
+defmodule Absinthe.Phase.Operation.InputTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.{Blueprint, Phase, Pipeline}
@@ -11,8 +11,8 @@ defmodule Absinthe.Phase.Operation.VariablesTest do
         bar
       }
     }
-    query Profile($name: String, $age: Int = 36) {
-      profile(name: $name, age: $age) {
+    query Profile($age: Int = 36) {
+      profile(name: "Bruce", age: $age) {
         id
       }
     }
@@ -33,6 +33,8 @@ defmodule Absinthe.Phase.Operation.VariablesTest do
       field = op.fields |> List.first
       age_argument = field.arguments |> Enum.find(&(&1.name == "age"))
       assert 36 == age_argument.provided_value
+      name_argument = field.arguments |> Enum.find(&(&1.name == "name"))
+      assert "Bruce" == name_argument.provided_value
     end
   end
 
@@ -43,13 +45,14 @@ defmodule Absinthe.Phase.Operation.VariablesTest do
       field = op.fields |> List.first
       age_argument = field.arguments |> Enum.find(&(&1.name == "age"))
       assert 4 == age_argument.provided_value
+      name_argument = field.arguments |> Enum.find(&(&1.name == "name"))
+      assert "Bruce" == name_argument.provided_value
     end
   end
 
-
   def input(query, name, variables) do
     {:ok, result} = blueprint(query)
-    |> Phase.Operation.Variables.run(%{operation_name: name, variables: variables})
+    |> Phase.Operation.Input.run(%{operation_name: name, variables: variables})
 
     result
   end
