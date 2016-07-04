@@ -13,4 +13,13 @@ defmodule Absinthe.Blueprint.Input do
 
   @type t :: leaf | collection
 
+  @spec unwrap(t) :: any
+  def unwrap(%{__struct__: mod, value: value}) when mod in [Input.Integer, Input.Float, Input.Enum, Input.String, Input.Boolean] do
+    value
+  end
+  def unwrap(nil) do
+    nil
+  end
+  # TODO: Support collection types
+
 end

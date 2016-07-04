@@ -15,33 +15,34 @@ defmodule Absinthe.Blueprint do
   }
 
   @type node_t ::
-      Blueprint.Directive
-    | Blueprint.Field
-    | Blueprint.IDL.ArgumentDefinition
-    | Blueprint.IDL.DirectiveDefinition
-    | Blueprint.IDL.EnumTypeDefinition
-    | Blueprint.IDL.FieldDefinition
-    | Blueprint.IDL.InputObjectTypeDefinition
-    | Blueprint.IDL.InputValueDefinition
-    | Blueprint.IDL.InterfaceTypeDefinition
-    | Blueprint.IDL.ObjectTypeDefinition
-    | Blueprint.IDL.ScalarTypeDefinition
-    | Blueprint.IDL.UnionTypeDefinition
-    | Blueprint.Input.Argument
-    | Blueprint.Input.Boolean
-    | Blueprint.Input.Enum
-    | Blueprint.Input.Field
-    | Blueprint.Input.Float
-    | Blueprint.Input.Integer
-    | Blueprint.Input.List
-    | Blueprint.Input.Object
-    | Blueprint.Input.String
-    | Blueprint.Input.Variable
-    | Blueprint.ListType
-    | Blueprint.NamedType
-    | Blueprint.NonNullType
-    | Blueprint.Operation
-    | Blueprint.VariableDefinition
+      Blueprint.t
+    | Blueprint.Directive.t
+    | Blueprint.Field.t
+    | Blueprint.IDL.ArgumentDefinition.t
+    | Blueprint.IDL.DirectiveDefinition.t
+    | Blueprint.IDL.EnumTypeDefinition.t
+    | Blueprint.IDL.FieldDefinition.t
+    | Blueprint.IDL.InputObjectTypeDefinition.t
+    | Blueprint.IDL.InputValueDefinition.t
+    | Blueprint.IDL.InterfaceTypeDefinition.t
+    | Blueprint.IDL.ObjectTypeDefinition.t
+    | Blueprint.IDL.ScalarTypeDefinition.t
+    | Blueprint.IDL.UnionTypeDefinition.t
+    | Blueprint.Input.Argument.t
+    | Blueprint.Input.Boolean.t
+    | Blueprint.Input.Enum.t
+    | Blueprint.Input.Field.t
+    | Blueprint.Input.Float.t
+    | Blueprint.Input.Integer.t
+    | Blueprint.Input.List.t
+    | Blueprint.Input.Object.t
+    | Blueprint.Input.String.t
+    | Blueprint.Input.Variable.t
+    | Blueprint.ListType.t
+    | Blueprint.NamedType.t
+    | Blueprint.NonNullType.t
+    | Blueprint.Operation.t
+    | Blueprint.VariableDefinition.t
 
   @type type_reference_t ::
       Blueprint.ListType.t
