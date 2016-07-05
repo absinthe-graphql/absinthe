@@ -18,7 +18,7 @@ defmodule Absinthe.Language.Directive do
 
   defimpl Blueprint.Draft do
     def convert(node, doc) do
-      %Blueprint.Document.Directive{
+      %Blueprint.Directive{
         name: node.name,
         arguments: Absinthe.Blueprint.Draft.convert(node.arguments, doc)
       }

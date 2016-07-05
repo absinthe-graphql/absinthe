@@ -16,7 +16,7 @@ defmodule Absinthe.Blueprint.Schema.InputObjectTypeDefinition do
     name: String.t,
     description: nil | String.t,
     fields: [Blueprint.Schema.InputValueDefinition.t],
-    directives: [Blueprint.Document.Directive.t],
+    directives: [Blueprint.Directive.t],
     errors: [Absinthe.Phase.Error.t],
   }
 

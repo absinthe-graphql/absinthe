@@ -11,11 +11,12 @@ defmodule Absinthe.Blueprint do
   @type t :: %__MODULE__{
     operations: [Blueprint.Document.Operation.t],
     types: [Blueprint.Schema.t],
-    directives: [Blueprint.Schema.Directive.t],
+    directives: [Blueprint.Schema.DirectiveDefinition.t],
   }
 
   @type node_t ::
       Blueprint.t
+    | Blueprint.Directive.t
     | Blueprint.Document.t
     | Blueprint.Schema.t
     | Blueprint.Input.t

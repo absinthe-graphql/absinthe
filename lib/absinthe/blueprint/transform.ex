@@ -40,7 +40,7 @@ defmodule Absinthe.Blueprint.Transform do
 
   nodes_with_children = %{
     Blueprint => [:operations, :types, :directives],
-    Blueprint.Document.Directive => [:arguments],
+    Blueprint.Directive => [:arguments],
     Blueprint.Document.Field => [:fields, :arguments, :directives],
     Blueprint.Document.Operation => [:fields, :variable_definitions],
     Blueprint.TypeReference.List => [:of_type],

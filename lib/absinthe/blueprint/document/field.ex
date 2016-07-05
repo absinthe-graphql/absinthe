@@ -18,7 +18,7 @@ defmodule Absinthe.Blueprint.Document.Field do
     name: String.t,
     fields: [t],
     arguments: [Blueprint.Input.Argument.t],
-    directives: [Blueprint.Document.Directive.t],
+    directives: [Blueprint.Directive.t],
     errors: [Phase.Error.t],
     schema_type: Type.t,
     type_condition: Blueprint.TypeReference.Name.t,

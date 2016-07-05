@@ -13,7 +13,7 @@ defmodule Absinthe.Blueprint.Schema.ScalarTypeDefinition do
   @type t :: %__MODULE__{
     name: String.t,
     description: nil | String.t,
-    directives: [Blueprint.Document.Directive.t],
+    directives: [Blueprint.Directive.t],
     errors: [Absinthe.Phase.Error.t],
   }
 

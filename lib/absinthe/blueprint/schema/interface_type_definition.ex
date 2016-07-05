@@ -13,7 +13,7 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
     name: String.t,
     description: nil | String.t,
     fields: [Blueprint.Schema.FieldDefinition.t],
-    directives: [Blueprint.Document.Directive.t],
+    directives: [Blueprint.Directive.t],
     errors: [Absinthe.Phase.Error.t],
   }
 

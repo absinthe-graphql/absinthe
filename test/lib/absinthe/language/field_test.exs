@@ -26,7 +26,7 @@ defmodule Absinthe.Language.FieldTest do
     end
 
     it "builds a Field.t when using a directive" do
-      assert %Blueprint.Document.Field{name: "foo", directives: [%Blueprint.Document.Directive{name: "include", arguments: [%Blueprint.Input.Argument{name: "if", value: %Blueprint.Input.Variable{name: "showFoo"}}]}], arguments: [%Blueprint.Input.Argument{name: "input", value: %Blueprint.Input.Object{fields: [%Blueprint.Input.Field{name: "foo", value: %Blueprint.Input.Integer{value: 2}}]}}]} = from_input(@query_with_directive)
+      assert %Blueprint.Document.Field{name: "foo", directives: [%Blueprint.Directive{name: "include", arguments: [%Blueprint.Input.Argument{name: "if", value: %Blueprint.Input.Variable{name: "showFoo"}}]}], arguments: [%Blueprint.Input.Argument{name: "input", value: %Blueprint.Input.Object{fields: [%Blueprint.Input.Field{name: "foo", value: %Blueprint.Input.Integer{value: 2}}]}}]} = from_input(@query_with_directive)
     end
 
   end
