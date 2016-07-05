@@ -20,7 +20,7 @@ defmodule Absinthe.Language.InputObjectTypeDefinition do
 
   defimpl Blueprint.Draft do
     def convert(node, doc) do
-      %Blueprint.IDL.InputObjectTypeDefinition{
+      %Blueprint.Schema.InputObjectTypeDefinition{
         name: node.name,
         fields: Absinthe.Blueprint.Draft.convert(node.fields, doc),
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),

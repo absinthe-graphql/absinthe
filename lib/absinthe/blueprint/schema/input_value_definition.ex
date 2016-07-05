@@ -1,4 +1,4 @@
-defmodule Absinthe.Blueprint.IDL.InputValueDefinition do
+defmodule Absinthe.Blueprint.Schema.InputValueDefinition do
 
   alias Absinthe.Blueprint
 

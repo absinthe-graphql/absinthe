@@ -12,7 +12,7 @@ defmodule Absinthe.Phase.Query.Arguments do
   Note that no validation occurs in this phase.
   """
 
-  alias Absinthe.{Blueprint, Phase}
+  alias Absinthe.Blueprint
 
   @spec run(Blueprint.t) :: {:ok, Blueprint.t}
   def run(input) do

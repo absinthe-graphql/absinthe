@@ -1,12 +1,12 @@
-defmodule Absinthe.Blueprint.IDL do
+defmodule Absinthe.Blueprint.Schema do
 
   alias Absinthe.Blueprint
 
-  @type type_t :: Blueprint.IDL.EnumTypeDefinition.t
-  | Blueprint.IDL.InputObjectTypeDefinition.t
-  | Blueprint.IDL.InterfaceTypeDefinition.t
-  | Blueprint.IDL.ObjectTypeDefinition.t
-  | Blueprint.IDL.ScalarTypeDefinition.t
-  | Blueprint.IDL.UnionTypeDefinition.t
+  @type type_t :: Blueprint.Schema.EnumTypeDefinition.t
+  | Blueprint.Schema.InputObjectTypeDefinition.t
+  | Blueprint.Schema.InterfaceTypeDefinition.t
+  | Blueprint.Schema.ObjectTypeDefinition.t
+  | Blueprint.Schema.ScalarTypeDefinition.t
+  | Blueprint.Schema.UnionTypeDefinition.t
 
 end

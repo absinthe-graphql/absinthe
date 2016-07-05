@@ -19,7 +19,7 @@ defmodule Absinthe.Language.UnionTypeDefinition do
 
   defimpl Blueprint.Draft do
     def convert(node, doc) do
-      %Blueprint.IDL.UnionTypeDefinition{
+      %Blueprint.Schema.UnionTypeDefinition{
         name: node.name,
         types: Absinthe.Blueprint.Draft.convert(node.types, doc),
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),

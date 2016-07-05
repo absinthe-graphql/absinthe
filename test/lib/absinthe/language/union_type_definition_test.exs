@@ -21,8 +21,8 @@ defmodule Absinthe.Language.UnionTypeDefinitionTest do
 
   describe "converting to Blueprint" do
 
-    it "works, given an IDL 'union' definition" do
-      assert %Blueprint.IDL.UnionTypeDefinition{name: "Baz", types: [%Blueprint.NamedType{name: "Foo"}, %Blueprint.NamedType{name: "Bar"}], directives: [%{name: "description"}]} = from_input(@idl)
+    it "works, given a Blueprint Schema 'union' definition" do
+      assert %Blueprint.Schema.UnionTypeDefinition{name: "Baz", types: [%Blueprint.NamedType{name: "Foo"}, %Blueprint.NamedType{name: "Bar"}], directives: [%{name: "description"}]} = from_input(@idl)
     end
 
   end

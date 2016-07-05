@@ -87,7 +87,7 @@ defmodule Absinthe.Languguage.DocumentTest do
 
   end
 
-  describe "converting to Blueprint for IDL" do
+  describe "converting to Blueprint for Schema" do
 
     @idl """
     enum Episode { NEWHOPE, EMPIRE, JEDI }

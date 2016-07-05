@@ -1,4 +1,4 @@
-defmodule Absinthe.Blueprint.IDL.DirectiveDefinition do
+defmodule Absinthe.Blueprint.Schema.DirectiveDefinition do
 
   alias Absinthe.Blueprint
 

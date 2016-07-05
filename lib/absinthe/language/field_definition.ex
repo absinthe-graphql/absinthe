@@ -21,7 +21,7 @@ defmodule Absinthe.Language.FieldDefinition do
 
   defimpl Blueprint.Draft do
     def convert(node, doc) do
-      %Blueprint.IDL.FieldDefinition{
+      %Blueprint.Schema.FieldDefinition{
         name: node.name,
         arguments: Absinthe.Blueprint.Draft.convert(node.arguments, doc),
         type: Absinthe.Blueprint.Draft.convert(node.type, doc),

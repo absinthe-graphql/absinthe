@@ -5,16 +5,16 @@ defmodule Absinthe.Language.EnumTypeDefinitionTest do
 
   describe "converting to Blueprint" do
 
-    it "works, given an IDL 'enum' definition" do
+    it "works, given a Blueprint Schema 'enum' definition" do
       rep = "enum Episode { NEWHOPE, EMPIRE, JEDI }" |> from_input
-      assert %Blueprint.IDL.EnumTypeDefinition{name: "Episode", values: ["NEWHOPE", "EMPIRE", "JEDI"]} = rep
+      assert %Blueprint.Schema.EnumTypeDefinition{name: "Episode", values: ["NEWHOPE", "EMPIRE", "JEDI"]} = rep
     end
 
-    it "works, given an IDL 'enum' definition with a directive" do
+    it "works, given a Blueprint Schema 'enum' definition with a directive" do
       rep = """
       enum Episode @description(text: "An episode") { NEWHOPE, EMPIRE, JEDI }
       """ |> from_input
-      assert %Blueprint.IDL.EnumTypeDefinition{name: "Episode", directives: [%Blueprint.Directive{name: "description"}], values: ["NEWHOPE", "EMPIRE", "JEDI"]} = rep
+      assert %Blueprint.Schema.EnumTypeDefinition{name: "Episode", directives: [%Blueprint.Directive{name: "description"}], values: ["NEWHOPE", "EMPIRE", "JEDI"]} = rep
     end
 
 

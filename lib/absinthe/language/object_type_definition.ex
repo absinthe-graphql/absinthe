@@ -21,7 +21,7 @@ defmodule Absinthe.Language.ObjectTypeDefinition do
 
   defimpl Blueprint.Draft do
     def convert(node, doc) do
-      %Blueprint.IDL.ObjectTypeDefinition{
+      %Blueprint.Schema.ObjectTypeDefinition{
         name: node.name,
         fields: Absinthe.Blueprint.Draft.convert(node.fields, doc),
         interfaces: Absinthe.Blueprint.Draft.convert(node.interfaces, doc),

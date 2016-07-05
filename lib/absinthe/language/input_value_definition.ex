@@ -20,7 +20,7 @@ defmodule Absinthe.Language.InputValueDefinition do
 
   defimpl Blueprint.Draft do
     def convert(node, doc) do
-      %Blueprint.IDL.InputValueDefinition{
+      %Blueprint.Schema.InputValueDefinition{
         name: node.name,
         type: Blueprint.Draft.convert(node.type, doc),
         default_value: Blueprint.Draft.convert(node.default_value, doc),

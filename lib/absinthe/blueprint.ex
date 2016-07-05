@@ -10,24 +10,24 @@ defmodule Absinthe.Blueprint do
 
   @type t :: %__MODULE__{
     operations: [Blueprint.Operation.t],
-    types: [Blueprint.IDL.type_t],
-    directives: [Blueprint.IDL.Directive.t],
+    types: [Blueprint.Schema.type_t],
+    directives: [Blueprint.Schema.Directive.t],
   }
 
   @type node_t ::
       Blueprint.t
     | Blueprint.Directive.t
     | Blueprint.Field.t
-    | Blueprint.IDL.ArgumentDefinition.t
-    | Blueprint.IDL.DirectiveDefinition.t
-    | Blueprint.IDL.EnumTypeDefinition.t
-    | Blueprint.IDL.FieldDefinition.t
-    | Blueprint.IDL.InputObjectTypeDefinition.t
-    | Blueprint.IDL.InputValueDefinition.t
-    | Blueprint.IDL.InterfaceTypeDefinition.t
-    | Blueprint.IDL.ObjectTypeDefinition.t
-    | Blueprint.IDL.ScalarTypeDefinition.t
-    | Blueprint.IDL.UnionTypeDefinition.t
+    | Blueprint.Schema.ArgumentDefinition.t
+    | Blueprint.Schema.DirectiveDefinition.t
+    | Blueprint.Schema.EnumTypeDefinition.t
+    | Blueprint.Schema.FieldDefinition.t
+    | Blueprint.Schema.InputObjectTypeDefinition.t
+    | Blueprint.Schema.InputValueDefinition.t
+    | Blueprint.Schema.InterfaceTypeDefinition.t
+    | Blueprint.Schema.ObjectTypeDefinition.t
+    | Blueprint.Schema.ScalarTypeDefinition.t
+    | Blueprint.Schema.UnionTypeDefinition.t
     | Blueprint.Input.Argument.t
     | Blueprint.Input.Boolean.t
     | Blueprint.Input.Enum.t

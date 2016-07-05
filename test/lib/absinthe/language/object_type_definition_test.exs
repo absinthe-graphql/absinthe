@@ -5,11 +5,11 @@ defmodule Absinthe.Language.ObjectTypeDefinitionTest do
 
   describe "converting to Blueprint" do
 
-    it "works, given an IDL 'type' definition" do
-      assert %Blueprint.IDL.ObjectTypeDefinition{name: "Person"} = from_input("type Person { name: String! }")
+    it "works, given a Blueprint Schema 'type' definition" do
+      assert %Blueprint.Schema.ObjectTypeDefinition{name: "Person"} = from_input("type Person { name: String! }")
     end
 
-    it "works, given an IDL 'type' definition and a directive" do
+    it "works, given a Blueprint Schema 'type' definition and a directive" do
       rep = """
       type Person
       @description(text: "A person")
@@ -17,19 +17,19 @@ defmodule Absinthe.Language.ObjectTypeDefinitionTest do
         name: String!
       }
       """ |> from_input
-      assert %Blueprint.IDL.ObjectTypeDefinition{name: "Person", directives: [%{name: "description"}]} = rep
+      assert %Blueprint.Schema.ObjectTypeDefinition{name: "Person", directives: [%{name: "description"}]} = rep
     end
 
-    it "works, given an IDL 'type' definition that implements an interface" do
+    it "works, given a Blueprint Schema 'type' definition that implements an interface" do
       rep = """
       type Person implements Entity {
         name: String!
       }
       """ |> from_input
-      assert %Blueprint.IDL.ObjectTypeDefinition{name: "Person", interfaces: [%Blueprint.NamedType{name: "Entity"}]} = rep
+      assert %Blueprint.Schema.ObjectTypeDefinition{name: "Person", interfaces: [%Blueprint.NamedType{name: "Entity"}]} = rep
     end
 
-    it "works, given an IDL 'type' definition that implements an interface and uses a directive" do
+    it "works, given a Blueprint Schema 'type' definition that implements an interface and uses a directive" do
       rep = """
       type Person implements Entity
       @description(text: "A person entity")
@@ -37,7 +37,7 @@ defmodule Absinthe.Language.ObjectTypeDefinitionTest do
         name: String!
       }
       """ |> from_input
-      assert %Blueprint.IDL.ObjectTypeDefinition{name: "Person", interfaces: [%Blueprint.NamedType{name: "Entity"}], directives: [%{name: "description"}]} = rep
+      assert %Blueprint.Schema.ObjectTypeDefinition{name: "Person", interfaces: [%Blueprint.NamedType{name: "Entity"}], directives: [%{name: "description"}]} = rep
     end
 
   end

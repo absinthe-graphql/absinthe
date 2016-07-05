@@ -1,4 +1,4 @@
-defmodule Absinthe.Blueprint.IDL.EnumTypeDefinition do
+defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
 
   alias Absinthe.Blueprint
 

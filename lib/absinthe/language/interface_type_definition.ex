@@ -19,7 +19,7 @@ defmodule Absinthe.Language.InterfaceTypeDefinition do
 
   defimpl Blueprint.Draft do
     def convert(node, doc) do
-      %Blueprint.IDL.InterfaceTypeDefinition{
+      %Blueprint.Schema.InterfaceTypeDefinition{
         name: node.name,
         fields: Absinthe.Blueprint.Draft.convert(node.fields, doc),
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),

@@ -20,8 +20,8 @@ defmodule Absinthe.Language.InterfaceTypeDefinitionTest do
 
   describe "converting to Blueprint" do
 
-    it "works, given an IDL 'interface' definition" do
-      assert %Blueprint.IDL.InterfaceTypeDefinition{name: "Entity", directives: [%{name: "description"}]} = from_input(@idl)
+    it "works, given a Blueprint Schema 'interface' definition" do
+      assert %Blueprint.Schema.InterfaceTypeDefinition{name: "Entity", directives: [%{name: "description"}]} = from_input(@idl)
     end
 
   end

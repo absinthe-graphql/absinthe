@@ -17,7 +17,7 @@ defmodule Absinthe.Language.ScalarTypeDefinition do
 
   defimpl Blueprint.Draft do
     def convert(node, doc) do
-      %Blueprint.IDL.ScalarTypeDefinition{
+      %Blueprint.Schema.ScalarTypeDefinition{
         name: node.name,
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
       }

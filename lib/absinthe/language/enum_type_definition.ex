@@ -19,7 +19,7 @@ defmodule Absinthe.Language.EnumTypeDefinition do
 
   defimpl Blueprint.Draft do
     def convert(node, doc) do
-      %Blueprint.IDL.EnumTypeDefinition{
+      %Blueprint.Schema.EnumTypeDefinition{
         name: node.name,
         values: node.values,
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),

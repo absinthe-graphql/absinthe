@@ -1,4 +1,4 @@
-defmodule Absinthe.Blueprint.IDL.FieldDefinition do
+defmodule Absinthe.Blueprint.Schema.FieldDefinition do
 
   alias Absinthe.Blueprint
 
@@ -12,7 +12,7 @@ defmodule Absinthe.Blueprint.IDL.FieldDefinition do
 
   @type t :: %__MODULE__{
     name: String.t,
-    arguments: Blueprint.IDL.ArgumentDefinition.t,
+    arguments: Blueprint.Schema.ArgumentDefinition.t,
     type: Blueprint.type_reference_t,
     errors: [Absinthe.Phase.Error.t]
   }

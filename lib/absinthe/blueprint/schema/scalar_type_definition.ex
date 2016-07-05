@@ -1,10 +1,11 @@
-defmodule Absinthe.Blueprint.IDL.InterfaceTypeDefinition do
+defmodule Absinthe.Blueprint.Schema.ScalarTypeDefinition do
+
+  alias Absinthe.Blueprint
 
   @enforce_keys [:name]
   defstruct [
     :name,
     description: nil,
-    fields: [],
     directives: [],
     errors: [],
   ]
@@ -12,7 +13,6 @@ defmodule Absinthe.Blueprint.IDL.InterfaceTypeDefinition do
   @type t :: %__MODULE__{
     name: String.t,
     description: nil | String.t,
-    fields: [Blueprint.IDL.FieldDefinition.t],
     directives: [Blueprint.Directive.t],
     errors: [Absinthe.Phase.Error.t],
   }

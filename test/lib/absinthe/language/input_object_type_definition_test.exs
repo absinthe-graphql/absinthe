@@ -5,11 +5,11 @@ defmodule Absinthe.Language.InputObjectTypeDefinitionTest do
 
   describe "converting to Blueprint" do
 
-    it "works, given an IDL 'input' definition" do
-      assert %Blueprint.IDL.InputObjectTypeDefinition{name: "Profile"} = from_input("input Profile { name: String! }")
+    it "works, given a Blueprint Schema 'input' definition" do
+      assert %Blueprint.Schema.InputObjectTypeDefinition{name: "Profile"} = from_input("input Profile { name: String! }")
     end
 
-    it "works, given an IDL 'input' definition and a directive" do
+    it "works, given a Blueprint Schema 'input' definition and a directive" do
       rep = """
       input Profile
       @description(text: "A person's profile")
@@ -17,7 +17,7 @@ defmodule Absinthe.Language.InputObjectTypeDefinitionTest do
         name: String!
       }
       """ |> from_input
-      assert %Blueprint.IDL.InputObjectTypeDefinition{name: "Profile", directives: [%{name: "description"}], fields: [%Blueprint.IDL.InputValueDefinition{name: "name", type: %Blueprint.NonNullType{of_type: %Blueprint.NamedType{name: "String"}}}]} = rep
+      assert %Blueprint.Schema.InputObjectTypeDefinition{name: "Profile", directives: [%{name: "description"}], fields: [%Blueprint.Schema.InputValueDefinition{name: "name", type: %Blueprint.NonNullType{of_type: %Blueprint.NamedType{name: "String"}}}]} = rep
     end
 
   end

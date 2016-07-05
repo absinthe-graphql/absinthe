@@ -1,4 +1,4 @@
-defmodule Absinthe.Blueprint.IDL.InputObjectTypeDefinition do
+defmodule Absinthe.Blueprint.Schema.UnionTypeDefinition do
 
   alias Absinthe.Blueprint
 
@@ -6,17 +6,16 @@ defmodule Absinthe.Blueprint.IDL.InputObjectTypeDefinition do
   defstruct [
     :name,
     description: nil,
-    interfaces: [],
-    fields: [],
     directives: [],
+    types: [],
     errors: [],
   ]
 
   @type t :: %__MODULE__{
     name: String.t,
     description: nil | String.t,
-    fields: [Blueprint.IDL.InputValueDefinition.t],
     directives: [Blueprint.Directive.t],
+    types: [Blueprint.NamedType.t],
     errors: [Absinthe.Phase.Error.t],
   }
 

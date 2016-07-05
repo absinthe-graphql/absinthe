@@ -88,7 +88,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
     :fragment_definition,
     :fragment_spread,
     :inline_fragment
-    # TODO: Schema definitions to support IDL input
+    # TODO: Schema definitions to support Schema input
   ]
 
   object :__type do

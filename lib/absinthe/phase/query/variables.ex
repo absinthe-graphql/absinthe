@@ -40,7 +40,7 @@ defmodule Absinthe.Phase.Query.Variables do
   Note that no validation occurs in this phase.
   """
 
-  alias Absinthe.{Blueprint, Phase}
+  alias Absinthe.Blueprint
 
   @spec run(Blueprint.t, %{values: %{String.t => any}}) :: {:ok, Blueprint.t}
   def run(input, options) do
@@ -58,7 +58,7 @@ defmodule Absinthe.Phase.Query.Variables do
       update_in(acc.processed, &Map.put(&1, node.name, provided_value))
     }
   end
-  defp handle_node(%Blueprint.Operation{name: name} = node, acc) do
+  defp handle_node(%Blueprint.Operation{} = node, acc) do
     {
       %{node | provided_values: acc.processed},
       acc

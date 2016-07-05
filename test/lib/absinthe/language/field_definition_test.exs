@@ -13,22 +13,22 @@ defmodule Absinthe.Language.FieldDefinitionTest do
 
   describe "converting to Blueprint" do
 
-    it "works, given an IDL object field definition" do
+    it "works, given a Blueprint Schema object field definition" do
       {doc, fields} = fields_from_input(@idl)
       field_def = fields |> List.first |> Blueprint.Draft.convert(doc)
-      assert %Blueprint.IDL.FieldDefinition{name: "bar", type: %Blueprint.NonNullType{of_type: %Blueprint.ListType{of_type: %Blueprint.NonNullType{of_type: %Blueprint.NamedType{name: "String"}}}}} = field_def
+      assert %Blueprint.Schema.FieldDefinition{name: "bar", type: %Blueprint.NonNullType{of_type: %Blueprint.ListType{of_type: %Blueprint.NonNullType{of_type: %Blueprint.NamedType{name: "String"}}}}} = field_def
     end
 
     it "captures directives" do
       {doc, fields} = fields_from_input(@idl)
       field_def = fields |> Enum.at(1) |> Blueprint.Draft.convert(doc)
-      assert %Blueprint.IDL.FieldDefinition{name: "baz"} = field_def
+      assert %Blueprint.Schema.FieldDefinition{name: "baz"} = field_def
     end
 
     it "includes argument definitions" do
       {doc, fields} = fields_from_input(@idl)
       field_def = fields |> Enum.at(2) |> Blueprint.Draft.convert(doc)
-      assert %Blueprint.IDL.FieldDefinition{name: "quuxes", type: %Blueprint.ListType{of_type: %Blueprint.NamedType{name: "Quux"}}, arguments: [%Blueprint.IDL.InputValueDefinition{name: "limit", type: %Blueprint.NamedType{name: "Int"}, default_value: %Blueprint.Input.Integer{value: 4}}]} == field_def
+      assert %Blueprint.Schema.FieldDefinition{name: "quuxes", type: %Blueprint.ListType{of_type: %Blueprint.NamedType{name: "Quux"}}, arguments: [%Blueprint.Schema.InputValueDefinition{name: "limit", type: %Blueprint.NamedType{name: "Int"}, default_value: %Blueprint.Input.Integer{value: 4}}]} == field_def
     end
 
   end
