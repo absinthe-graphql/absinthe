@@ -1,6 +1,6 @@
-defmodule Absinthe.Blueprint.NamedType do
+defmodule Absinthe.Blueprint.TypeReference.Name do
 
-  alias Absinthe.{Phase}
+  alias Absinthe.Phase
 
   @enforce_keys [:name]
   defstruct [

@@ -15,7 +15,7 @@ defmodule Absinthe.Language.NamedType do
 
   defimpl Blueprint.Draft do
     def convert(node, _doc) do
-      %Blueprint.NamedType{
+      %Blueprint.TypeReference.Name{
         name: node.name,
       }
     end

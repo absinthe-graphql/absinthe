@@ -22,7 +22,7 @@ defmodule Absinthe.Language.UnionTypeDefinitionTest do
   describe "converting to Blueprint" do
 
     it "works, given a Blueprint Schema 'union' definition" do
-      assert %Blueprint.Schema.UnionTypeDefinition{name: "Baz", types: [%Blueprint.NamedType{name: "Foo"}, %Blueprint.NamedType{name: "Bar"}], directives: [%{name: "description"}]} = from_input(@idl)
+      assert %Blueprint.Schema.UnionTypeDefinition{name: "Baz", types: [%Blueprint.TypeReference.Name{name: "Foo"}, %Blueprint.TypeReference.Name{name: "Bar"}], directives: [%{name: "description"}]} = from_input(@idl)
     end
 
   end

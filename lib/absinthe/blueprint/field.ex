@@ -21,7 +21,7 @@ defmodule Absinthe.Blueprint.Field do
     directives: [Blueprint.Directive.t],
     errors: [Phase.Error.t],
     schema_type: Type.t,
-    type_condition: Blueprint.NamedType.t,
+    type_condition: Blueprint.TypeReference.Name.t,
   }
 
 end

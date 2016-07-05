@@ -13,7 +13,7 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
   @type t :: %__MODULE__{
     name: String.t,
     arguments: Blueprint.Schema.ArgumentDefinition.t,
-    type: Blueprint.type_reference_t,
+    type: Blueprint.TypeReference.t,
     errors: [Absinthe.Phase.Error.t]
   }
 

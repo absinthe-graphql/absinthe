@@ -15,7 +15,7 @@ defmodule Absinthe.Blueprint.VariableDefinition do
 
   @type t :: %__MODULE__{
     name: String.t,
-    type: Blueprint.type_reference_t,
+    type: Blueprint.TypeReference.t,
     default_value: Blueprint.Input.t,
     provided_value: nil | Blueprint.Input.t,
     errors: [Absinthe.Phase.Error.t],

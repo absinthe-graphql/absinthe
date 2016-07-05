@@ -26,7 +26,7 @@ defmodule Absinthe.Language.ObjectTypeDefinitionTest do
         name: String!
       }
       """ |> from_input
-      assert %Blueprint.Schema.ObjectTypeDefinition{name: "Person", interfaces: [%Blueprint.NamedType{name: "Entity"}]} = rep
+      assert %Blueprint.Schema.ObjectTypeDefinition{name: "Person", interfaces: [%Blueprint.TypeReference.Name{name: "Entity"}]} = rep
     end
 
     it "works, given a Blueprint Schema 'type' definition that implements an interface and uses a directive" do
@@ -37,7 +37,7 @@ defmodule Absinthe.Language.ObjectTypeDefinitionTest do
         name: String!
       }
       """ |> from_input
-      assert %Blueprint.Schema.ObjectTypeDefinition{name: "Person", interfaces: [%Blueprint.NamedType{name: "Entity"}], directives: [%{name: "description"}]} = rep
+      assert %Blueprint.Schema.ObjectTypeDefinition{name: "Person", interfaces: [%Blueprint.TypeReference.Name{name: "Entity"}], directives: [%{name: "description"}]} = rep
     end
 
   end

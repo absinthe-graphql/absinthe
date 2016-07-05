@@ -15,7 +15,7 @@ defmodule Absinthe.Language.ListType do
 
   defimpl Blueprint.Draft do
     def convert(node, doc) do
-      %Blueprint.ListType{
+      %Blueprint.TypeReference.List{
         of_type: Absinthe.Blueprint.Draft.convert(node.type, doc),
       }
     end

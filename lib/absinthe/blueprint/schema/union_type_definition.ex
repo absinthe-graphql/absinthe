@@ -15,7 +15,7 @@ defmodule Absinthe.Blueprint.Schema.UnionTypeDefinition do
     name: String.t,
     description: nil | String.t,
     directives: [Blueprint.Directive.t],
-    types: [Blueprint.NamedType.t],
+    types: [Blueprint.TypeReference.Name.t],
     errors: [Absinthe.Phase.Error.t],
   }
 

@@ -17,7 +17,7 @@ defmodule Absinthe.Language.InputObjectTypeDefinitionTest do
         name: String!
       }
       """ |> from_input
-      assert %Blueprint.Schema.InputObjectTypeDefinition{name: "Profile", directives: [%{name: "description"}], fields: [%Blueprint.Schema.InputValueDefinition{name: "name", type: %Blueprint.NonNullType{of_type: %Blueprint.NamedType{name: "String"}}}]} = rep
+      assert %Blueprint.Schema.InputObjectTypeDefinition{name: "Profile", directives: [%{name: "description"}], fields: [%Blueprint.Schema.InputValueDefinition{name: "name", type: %Blueprint.TypeReference.NonNull{of_type: %Blueprint.TypeReference.Name{name: "String"}}}]} = rep
     end
 
   end

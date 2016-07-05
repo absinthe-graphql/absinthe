@@ -1,4 +1,4 @@
-defmodule Absinthe.Blueprint.NonNullType do
+defmodule Absinthe.Blueprint.TypeReference.List do
 
   alias Absinthe.Blueprint
 
@@ -9,9 +9,8 @@ defmodule Absinthe.Blueprint.NonNullType do
   ]
 
   @type t :: %__MODULE__{
-    of_type: Blueprint.type_reference_t,
+    of_type: Blueprint.TypeReference.t,
     errors: [Absinthe.Phase.Error.t]
   }
-
 
 end

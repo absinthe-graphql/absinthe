@@ -15,7 +15,7 @@ defmodule Absinthe.Language.NonNullType do
 
   defimpl Blueprint.Draft do
     def convert(node, doc) do
-      %Blueprint.NonNullType{
+      %Blueprint.TypeReference.NonNull{
         of_type: Blueprint.Draft.convert(node.type, doc),
       }
     end
