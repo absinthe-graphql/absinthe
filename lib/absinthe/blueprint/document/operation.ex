@@ -8,6 +8,7 @@ defmodule Absinthe.Blueprint.Document.Operation do
     :type,
     fields: [],
     variable_definitions: [],
+    source_location: nil,
     # Populated by phases
     provided_values: %{},
     errors: [],
@@ -18,6 +19,7 @@ defmodule Absinthe.Blueprint.Document.Operation do
     type: :query | :mutation | :subscription,
     fields: [Blueprint.Document.Field.t],
     variable_definitions: [Blueprint.Document.VariableDefinition.t],
+    source_location: nil | Blueprint.Document.SourceLocation.t,
     provided_values: %{String.t => nil | Blueprint.Input.t},
     errors: [Absinthe.Phase.Error.t],
   }

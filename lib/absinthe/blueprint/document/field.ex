@@ -10,6 +10,7 @@ defmodule Absinthe.Blueprint.Document.Field do
     arguments: [],
     directives: [],
     errors: [],
+    source_location: nil,
     schema_type: nil,
     type_condition: nil,
   ]
@@ -20,6 +21,7 @@ defmodule Absinthe.Blueprint.Document.Field do
     arguments: [Blueprint.Input.Argument.t],
     directives: [Blueprint.Directive.t],
     errors: [Phase.Error.t],
+    source_location: nil | Blueprint.Document.SourceLocation.t,
     schema_type: Type.t,
     type_condition: Blueprint.TypeReference.Name.t,
   }

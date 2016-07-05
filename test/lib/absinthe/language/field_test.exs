@@ -22,11 +22,11 @@ defmodule Absinthe.Language.FieldTest do
   describe "converting to Blueprint" do
 
     it "builds a Field.t" do
-      assert %Blueprint.Document.Field{name: "foo", arguments: [%Blueprint.Input.Argument{name: "input", value: %Blueprint.Input.Object{fields: [%Blueprint.Input.Field{name: "foo", value: %Blueprint.Input.Integer{value: 2}}]}}]} = from_input(@query)
+      assert %Blueprint.Document.Field{name: "foo", arguments: [%Blueprint.Input.Argument{name: "input", value: %Blueprint.Input.Object{fields: [%Blueprint.Input.Field{name: "foo", value: %Blueprint.Input.Integer{value: 2}}]}}], source_location: %Blueprint.Document.SourceLocation{line: 2}} = from_input(@query)
     end
 
     it "builds a Field.t when using a directive" do
-      assert %Blueprint.Document.Field{name: "foo", directives: [%Blueprint.Directive{name: "include", arguments: [%Blueprint.Input.Argument{name: "if", value: %Blueprint.Input.Variable{name: "showFoo"}}]}], arguments: [%Blueprint.Input.Argument{name: "input", value: %Blueprint.Input.Object{fields: [%Blueprint.Input.Field{name: "foo", value: %Blueprint.Input.Integer{value: 2}}]}}]} = from_input(@query_with_directive)
+      assert %Blueprint.Document.Field{name: "foo", directives: [%Blueprint.Directive{name: "include", arguments: [%Blueprint.Input.Argument{name: "if", value: %Blueprint.Input.Variable{name: "showFoo"}}], source_location: %Blueprint.Document.SourceLocation{line: 2}}], arguments: [%Blueprint.Input.Argument{name: "input", value: %Blueprint.Input.Object{fields: [%Blueprint.Input.Field{name: "foo", value: %Blueprint.Input.Integer{value: 2}}]}}], source_location: %Blueprint.Document.SourceLocation{line: 2}} = from_input(@query_with_directive)
     end
 
   end

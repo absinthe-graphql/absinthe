@@ -27,7 +27,15 @@ defmodule Absinthe.Language.OperationDefinition do
         type: node.operation,
         variable_definitions: Blueprint.Draft.convert(node.variable_definitions, doc),
         fields: Blueprint.Draft.convert(node.selection_set.selections, doc),
+        source_location: source_location(node.loc),
       }
+    end
+
+    defp source_location(nil) do
+      nil
+    end
+    defp source_location(%{start_line: number}) do
+      Blueprint.Document.SourceLocation.at(number)
     end
   end
 

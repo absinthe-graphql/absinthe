@@ -7,6 +7,7 @@ defmodule Absinthe.Blueprint.Document.VariableDefinition do
     :name,
     :type,
     default_value: nil,
+    source_location: nil,
     # Added by phases
     provided_value: nil,
     errors: [],
@@ -17,6 +18,7 @@ defmodule Absinthe.Blueprint.Document.VariableDefinition do
     name: String.t,
     type: Blueprint.TypeReference.t,
     default_value: Blueprint.Input.t,
+    source_location: nil | Blueprint.Document.SourceLocation.t,
     provided_value: nil | Blueprint.Input.t,
     errors: [Absinthe.Phase.Error.t],
     schema_type: Type.t,

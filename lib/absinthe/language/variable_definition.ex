@@ -21,8 +21,9 @@ defmodule Absinthe.Language.VariableDefinition do
     def convert(node, doc) do
       %Blueprint.Document.VariableDefinition{
         name: node.variable.name,
-        type: Absinthe.Blueprint.Draft.convert(node.type, doc),
-        default_value: Absinthe.Blueprint.Draft.convert(node.default_value, doc),
+        type: Blueprint.Draft.convert(node.type, doc),
+        default_value: Blueprint.Draft.convert(node.default_value, doc),
+        source_location: Blueprint.Document.SourceLocation.at(node.loc.start_line),
       }
     end
   end

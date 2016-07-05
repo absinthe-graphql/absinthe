@@ -20,7 +20,8 @@ defmodule Absinthe.Language.Directive do
     def convert(node, doc) do
       %Blueprint.Directive{
         name: node.name,
-        arguments: Absinthe.Blueprint.Draft.convert(node.arguments, doc)
+        arguments: Absinthe.Blueprint.Draft.convert(node.arguments, doc),
+        source_location: Blueprint.Document.SourceLocation.at(node.loc.start_line),
       }
     end
   end

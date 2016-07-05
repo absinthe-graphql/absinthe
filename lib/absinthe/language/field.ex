@@ -29,6 +29,7 @@ defmodule Absinthe.Language.Field do
         fields: Absinthe.Blueprint.Draft.convert(selections(node.selection_set), doc),
         arguments: Absinthe.Blueprint.Draft.convert(node.arguments, doc),
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
+        source_location: Blueprint.Document.SourceLocation.at(node.loc.start_line),
       }
     end
 
