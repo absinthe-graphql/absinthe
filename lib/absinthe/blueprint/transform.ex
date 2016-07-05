@@ -1,4 +1,4 @@
-defmodule Absinthe.Blueprint.Mapper do
+defmodule Absinthe.Blueprint.Transform do
 
   alias Absinthe.Blueprint
 

@@ -21,8 +21,8 @@ defmodule Absinthe.Blueprint do
     | Blueprint.Input.t
     | Blueprint.TypeReference.t
 
-  defdelegate prewalk(blueprint, fun), to: Absinthe.Blueprint.Mapper
-  defdelegate prewalk(blueprint, acc, fun), to: Absinthe.Blueprint.Mapper
-  defdelegate postwalk(blueprint, fun), to: Absinthe.Blueprint.Mapper
-  defdelegate postwalk(blueprint, acc, fun), to: Absinthe.Blueprint.Mapper
+  defdelegate prewalk(blueprint, fun), to: Absinthe.Blueprint.Transform
+  defdelegate prewalk(blueprint, acc, fun), to: Absinthe.Blueprint.Transform
+  defdelegate postwalk(blueprint, fun), to: Absinthe.Blueprint.Transform
+  defdelegate postwalk(blueprint, acc, fun), to: Absinthe.Blueprint.Transform
 end
