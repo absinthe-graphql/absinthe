@@ -21,7 +21,7 @@ defmodule Absinthe.Language.EnumTypeDefinition do
     def convert(node, doc) do
       %Blueprint.Schema.EnumTypeDefinition{
         name: node.name,
-        values: node.values,
+        values: Enum.map(node.values, &(%Blueprint.Schema.EnumValueDefinition{value: &1})),
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
       }
     end
