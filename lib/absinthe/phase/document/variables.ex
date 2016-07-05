@@ -1,8 +1,8 @@
-defmodule Absinthe.Phase.Query.Variables do
+defmodule Absinthe.Phase.Document.Variables do
   @moduledoc """
   Provided a set of variable values:
 
-  - Set the `variables` field on the `Blueprint.Operation.t` to the reconciled
+  - Set the `variables` field on the `Blueprint.Document.Operation.t` to the reconciled
     mapping of variable values, supporting defined default values.
 
   ## Examples
@@ -50,7 +50,7 @@ defmodule Absinthe.Phase.Query.Variables do
   end
 
   @spec handle_node(Blueprint.node_t, map) :: {Blueprint.node_t, map}
-  defp handle_node(%Blueprint.VariableDefinition{} = node, acc) do
+  defp handle_node(%Blueprint.Document.VariableDefinition{} = node, acc) do
     provided_value = Map.get(acc.raw, node.name, node.default_value)
     |> Blueprint.Input.parse
     {
@@ -58,7 +58,7 @@ defmodule Absinthe.Phase.Query.Variables do
       update_in(acc.processed, &Map.put(&1, node.name, provided_value))
     }
   end
-  defp handle_node(%Blueprint.Operation{} = node, acc) do
+  defp handle_node(%Blueprint.Document.Operation{} = node, acc) do
     {
       %{node | provided_values: acc.processed},
       acc

@@ -23,7 +23,7 @@ defmodule Absinthe.Language.Field do
 
   defimpl Blueprint.Draft do
     def convert(node, doc) do
-      %Blueprint.Field{
+      %Blueprint.Document.Field{
         name: node.name,
         alias: node.alias,
         fields: Absinthe.Blueprint.Draft.convert(selections(node.selection_set), doc),

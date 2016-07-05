@@ -1,4 +1,4 @@
-defmodule Absinthe.Blueprint.Input.ObjectTest do
+defmodule Absinthe.Language.ObjectValueTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.Blueprint

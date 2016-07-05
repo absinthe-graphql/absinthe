@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Query.Arguments do
+defmodule Absinthe.Phase.Document.Arguments do
   @moduledoc """
   Populate all arguments in the document with their provided values:
 
@@ -6,7 +6,7 @@ defmodule Absinthe.Phase.Query.Arguments do
     `provided_value` field to that value.
   - If a variable is provided for an argument, set the `Argument.t`'s
     `provided_value` to the reconciled value for the variable
-    (Note: this requires the `Phase.Query.Variables` phase as a
+    (Note: this requires the `Phase.Document.Variables` phase as a
     prerequisite).
 
   Note that no validation occurs in this phase.
@@ -22,7 +22,7 @@ defmodule Absinthe.Phase.Query.Arguments do
   end
 
   @spec handle_node(Blueprint.node_t, map) :: {Blueprint.node_t, map}
-  defp handle_node(%Blueprint.Operation{} = node, acc) do
+  defp handle_node(%Blueprint.Document.Operation{} = node, acc) do
     {
       node,
       %{acc | provided_values: node.provided_values}

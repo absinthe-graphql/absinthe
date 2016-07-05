@@ -22,11 +22,11 @@ defmodule Absinthe.Language.OperationDefinition do
 
   defimpl Blueprint.Draft do
     def convert(node, doc) do
-      %Blueprint.Operation{
+      %Blueprint.Document.Operation{
         name: node.name,
         type: node.operation,
-        variable_definitions: Absinthe.Blueprint.Draft.convert(node.variable_definitions, doc),
-        fields: Absinthe.Blueprint.Draft.convert(node.selection_set.selections, doc),
+        variable_definitions: Blueprint.Draft.convert(node.variable_definitions, doc),
+        fields: Blueprint.Draft.convert(node.selection_set.selections, doc),
       }
     end
   end

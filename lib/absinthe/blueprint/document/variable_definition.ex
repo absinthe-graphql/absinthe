@@ -1,4 +1,4 @@
-defmodule Absinthe.Blueprint.VariableDefinition do
+defmodule Absinthe.Blueprint.Document.VariableDefinition do
 
   alias Absinthe.{Blueprint, Type}
 

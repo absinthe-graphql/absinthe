@@ -40,12 +40,12 @@ defmodule Absinthe.Blueprint.Mapper do
 
   nodes_with_children = %{
     Blueprint => [:operations, :types, :directives],
-    Blueprint.Directive => [:arguments],
-    Blueprint.Field => [:fields, :arguments, :directives],
-    Blueprint.Operation => [:fields, :variable_definitions],
+    Blueprint.Document.Directive => [:arguments],
+    Blueprint.Document.Field => [:fields, :arguments, :directives],
+    Blueprint.Document.Operation => [:fields, :variable_definitions],
     Blueprint.TypeReference.List => [:of_type],
     Blueprint.TypeReference.NonNull => [:of_type],
-    Blueprint.VariableDefinition => [:type, :default_value],
+    Blueprint.Document.VariableDefinition => [:type, :default_value],
     Blueprint.Input.Argument => [:value],
     Blueprint.Input.Field => [:value],
     Blueprint.Input.List => [:values],

@@ -47,14 +47,14 @@ defmodule Absinthe.Pipeline do
     {phase, [item]}
   end
 
-  @spec for_query :: t
-  @spec for_query(map) :: t
-  def for_query(provided_values \\ %{}) do
+  @spec for_document :: t
+  @spec for_document(map) :: t
+  def for_document(provided_values \\ %{}) do
     [
       Phase.Parse,
       Phase.Blueprint,
-      {Phase.Query.Variables, %{values: provided_values}},
-      Phase.Query.Arguments,
+      {Phase.Document.Variables, %{values: provided_values}},
+      Phase.Document.Arguments,
       # TODO: More
     ]
   end

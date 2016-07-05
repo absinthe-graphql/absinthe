@@ -1,4 +1,4 @@
-defmodule Absinthe.Blueprint.Directive do
+defmodule Absinthe.Blueprint.Document.Directive do
 
   alias Absinthe.{Blueprint, Phase}
 

@@ -1,4 +1,4 @@
-defmodule Absinthe.Blueprint.VariableDefinitionTest do
+defmodule Absinthe.Language.VariableDefinitionTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.{Blueprint, Language}
@@ -12,7 +12,7 @@ defmodule Absinthe.Blueprint.VariableDefinitionTest do
   describe "converting to Blueprint" do
 
     it "builds a VariableDefinition.t" do
-      assert %Blueprint.VariableDefinition{name: "showFoo", type: %Blueprint.TypeReference.Name{name: "Boolean"}, default_value: %Blueprint.Input.Boolean{value: true}} = from_input(@query)
+      assert %Blueprint.Document.VariableDefinition{name: "showFoo", type: %Blueprint.TypeReference.Name{name: "Boolean"}, default_value: %Blueprint.Input.Boolean{value: true}} = from_input(@query)
     end
 
   end

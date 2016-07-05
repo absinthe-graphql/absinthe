@@ -1,4 +1,4 @@
-defmodule Absinthe.Blueprint.Operation do
+defmodule Absinthe.Blueprint.Document.Operation do
 
   alias Absinthe.Blueprint
 
@@ -16,8 +16,8 @@ defmodule Absinthe.Blueprint.Operation do
   @type t :: %__MODULE__{
     name: nil | String.t,
     type: :query | :mutation | :subscription,
-    fields: [Blueprint.Field.t],
-    variable_definitions: [Blueprint.VariableDefinition.t],
+    fields: [Blueprint.Document.Field.t],
+    variable_definitions: [Blueprint.Document.VariableDefinition.t],
     provided_values: %{String.t => nil | Blueprint.Input.t},
     errors: [Absinthe.Phase.Error.t],
   }

@@ -17,7 +17,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
     description: nil | String.t,
     fields: [Blueprint.Schema.FieldDefinition.t],
     interfaces: [String.t],
-    directives: [Blueprint.Directive.t],
+    directives: [Blueprint.Document.Directive.t],
     errors: [Absinthe.Phase.Error.t],
   }
 

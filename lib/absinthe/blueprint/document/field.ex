@@ -1,4 +1,4 @@
-defmodule Absinthe.Blueprint.Field do
+defmodule Absinthe.Blueprint.Document.Field do
 
   alias Absinthe.{Blueprint, Phase, Type}
 
@@ -18,7 +18,7 @@ defmodule Absinthe.Blueprint.Field do
     name: String.t,
     fields: [t],
     arguments: [Blueprint.Input.Argument.t],
-    directives: [Blueprint.Directive.t],
+    directives: [Blueprint.Document.Directive.t],
     errors: [Phase.Error.t],
     schema_type: Type.t,
     type_condition: Blueprint.TypeReference.Name.t,

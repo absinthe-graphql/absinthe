@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Query.VariablesTest do
+defmodule Absinthe.Phase.Document.VariablesTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.{Blueprint, Phase, Pipeline}
@@ -42,7 +42,7 @@ defmodule Absinthe.Phase.Query.VariablesTest do
 
   def input(query, name, values) do
     {:ok, result} = blueprint(query)
-    |> Phase.Query.Variables.run(%{operation_name: name, values: values})
+    |> Phase.Document.Variables.run(%{operation_name: name, values: values})
 
     result
   end

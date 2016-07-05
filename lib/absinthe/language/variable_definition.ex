@@ -19,7 +19,7 @@ defmodule Absinthe.Language.VariableDefinition do
 
   defimpl Blueprint.Draft do
     def convert(node, doc) do
-      %Blueprint.VariableDefinition{
+      %Blueprint.Document.VariableDefinition{
         name: node.variable.name,
         type: Absinthe.Blueprint.Draft.convert(node.type, doc),
         default_value: Absinthe.Blueprint.Draft.convert(node.default_value, doc),

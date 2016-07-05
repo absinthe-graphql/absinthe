@@ -14,7 +14,7 @@ defmodule Absinthe.Language.EnumTypeDefinitionTest do
       rep = """
       enum Episode @description(text: "An episode") { NEWHOPE, EMPIRE, JEDI }
       """ |> from_input
-      assert %Blueprint.Schema.EnumTypeDefinition{name: "Episode", directives: [%Blueprint.Directive{name: "description"}], values: ["NEWHOPE", "EMPIRE", "JEDI"]} = rep
+      assert %Blueprint.Schema.EnumTypeDefinition{name: "Episode", directives: [%Blueprint.Document.Directive{name: "description"}], values: ["NEWHOPE", "EMPIRE", "JEDI"]} = rep
     end
 
 
