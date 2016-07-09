@@ -6,4 +6,9 @@ defmodule Blueprint.Document do
     | Blueprint.Document.Operation.t
     | Blueprint.Document.VariableDefinition.t
 
+  @type selection_t ::
+      Field.t
+    | Blueprint.Document.Fragment.Inline.t
+    | Blueprint.Document.Fragment.Spread.t
+
 end

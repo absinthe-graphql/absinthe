@@ -17,7 +17,7 @@ defmodule Absinthe.Blueprint.Document.Field do
 
   @type t :: %__MODULE__{
     name: String.t,
-    selections: [Blueprint.Document.Field.t | Blueprint.Document.Fragment.Inline | Blueprint.Document.Fragment.Spread],
+    selections: [Blueprint.Document.selection_t],
     arguments: [Blueprint.Input.Argument.t],
     directives: [Blueprint.Directive.t],
     errors: [Phase.Error.t],
