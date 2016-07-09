@@ -26,7 +26,7 @@ defmodule Absinthe.Language.OperationDefinition do
         name: node.name,
         type: node.operation,
         variable_definitions: Blueprint.Draft.convert(node.variable_definitions, doc),
-        fields: Blueprint.Draft.convert(node.selection_set.selections, doc),
+        selections: Blueprint.Draft.convert(node.selection_set.selections, doc),
         source_location: source_location(node.loc),
       }
     end

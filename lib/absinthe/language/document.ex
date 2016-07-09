@@ -59,19 +59,25 @@ defmodule Absinthe.Language.Document do
     @directives [
       Language.DirectiveDefinition,
     ]
+    @fragments [
+      Language.Fragment,
+    ]
 
     def convert(node, _) do
       Enum.reduce(node.definitions, %Blueprint{}, &convert_definition(&1, node, &2))
     end
 
-    defp convert_definition(%{__struct__: mod} = node, doc, blueprint) when mod in @operations do
+    defp convert_definition(%struct{} = node, doc, blueprint) when struct in @operations do
       update_in(blueprint.operations, &[Blueprint.Draft.convert(node, doc) | &1])
     end
-    defp convert_definition(%{__struct__: mod} = node, doc, blueprint) when mod in @types do
+    defp convert_definition(%struct{} = node, doc, blueprint) when struct in @types do
       update_in(blueprint.types, &[Blueprint.Draft.convert(node, doc) | &1])
     end
-    defp convert_definition(%{__struct__: mod} = node, doc, blueprint) when mod in @directives do
+    defp convert_definition(%struct{} = node, doc, blueprint) when struct in @directives do
       update_in(blueprint.directives, &[Blueprint.Draft.convert(node, doc) | &1])
+    end
+    defp convert_definition(%struct{} = node, doc, blueprint) when struct in @fragments do
+      update_in(blueprint.fragments, &[Blueprint.Draft.convert(node, doc) | &1])
     end
 
   end

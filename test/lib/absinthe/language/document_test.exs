@@ -57,6 +57,7 @@ defmodule Absinthe.Languguage.DocumentTest do
       assert length(rep.directives) == 0
       assert length(rep.operations) == 3
       assert length(rep.types) == 0
+      assert length(rep.fragments) == 0
     end
 
     test "returns a Blueprint.t with the right number of types" do
@@ -75,14 +76,40 @@ defmodule Absinthe.Languguage.DocumentTest do
       assert length(rep.directives) == 0
       assert length(rep.operations) == 0
       assert length(rep.types) == 4
+      assert length(rep.fragments) == 0
     end
 
+    test "returns a Blueprint.t with the right number of fragments" do
+      rep = """
+      query {
+        myItems {
+          ... ItemFields
+          ... NameField
+        }
+        otherItems {
+          ... ItemFields
+        }
+      }
+      fragment ItemFields on Item {
+        count
+      }
+      fragment NameField on NamedThing {
+        name
+      }
+
+      """ |> ir
+      assert length(rep.directives) == 0
+      assert length(rep.operations) == 1
+      assert length(rep.types) == 0
+      assert length(rep.fragments) == 2
+    end
 
     test "returns a Blueprint.t with the right number of directives" do
       rep = ir("directive @cs(if: Boolean!) on FIELD")
       assert length(rep.directives) == 1
       assert length(rep.operations) == 0
       assert length(rep.types) == 0
+      assert length(rep.fragments) == 0
     end
 
   end

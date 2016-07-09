@@ -6,7 +6,7 @@ defmodule Absinthe.Blueprint.Document.Operation do
   defstruct [
     :name,
     :type,
-    fields: [],
+    selections: [],
     variable_definitions: [],
     source_location: nil,
     # Populated by phases
@@ -17,7 +17,7 @@ defmodule Absinthe.Blueprint.Document.Operation do
   @type t :: %__MODULE__{
     name: nil | String.t,
     type: :query | :mutation | :subscription,
-    fields: [Blueprint.Document.Field.t],
+    selections: [Blueprint.Document.Field.t | Blueprint.Document.Fragment.Inline | Blueprint.Document.Fragment.Spread],
     variable_definitions: [Blueprint.Document.VariableDefinition.t],
     source_location: nil | Blueprint.Document.SourceLocation.t,
     provided_values: %{String.t => nil | Blueprint.Input.t},

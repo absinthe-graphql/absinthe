@@ -15,6 +15,22 @@ defmodule Absinthe.Language.OperationDefinitionTest do
       assert %Blueprint.Document.Operation{name: "Foo", type: :query, variable_definitions: [%Blueprint.Document.VariableDefinition{name: "showFoo", type: %Blueprint.TypeReference.Name{name: "Boolean"}, default_value: %Blueprint.Input.Boolean{value: true}}], source_location: %Blueprint.Document.SourceLocation{line: 1}} = from_input(@query)
     end
 
+    @query """
+    query Foo($showFoo: Boolean = true) {
+      foo @include(if: $showFoo)
+      ... QueryBits
+    }
+    fragment QueryBits on Query {
+      bar
+    }
+    """
+
+
+    it "builds a Operation.t including a named fragment spread" do
+      assert %Blueprint.Document.Operation{name: "Foo", type: :query, variable_definitions: [%Blueprint.Document.VariableDefinition{name: "showFoo", type: %Blueprint.TypeReference.Name{name: "Boolean"}, default_value: %Blueprint.Input.Boolean{value: true}}], source_location: %Blueprint.Document.SourceLocation{line: 1}, selections: [%Blueprint.Document.Field{name: "foo"}, %Blueprint.Document.Fragment.Spread{name: "QueryBits"}]} = from_input(@query)
+    end
+
+
   end
 
   defp from_input(text) do
@@ -25,8 +41,9 @@ defmodule Absinthe.Language.OperationDefinitionTest do
     |> Blueprint.Draft.convert(doc)
   end
 
-  defp extract_ast_node(%Language.Document{definitions: [node]}) do
-    node
+  defp extract_ast_node(%Language.Document{definitions: nodes}) do
+    nodes
+    |> List.first
   end
 
 end

@@ -22,7 +22,7 @@ defmodule Absinthe.Phase.Document.InputTest do
     it "uses the default value" do
       result = input(@query, %{})
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
-      field = op.fields |> List.first
+      field = op.selections |> List.first
       age_argument = field.arguments |> Enum.find(&(&1.name == "age"))
       assert %Blueprint.Input.Integer{value: 36} == age_argument.provided_value
       name_argument = field.arguments |> Enum.find(&(&1.name == "name"))
@@ -34,7 +34,7 @@ defmodule Absinthe.Phase.Document.InputTest do
     it "uses the default value" do
       result = input(@query, %{"age" => 4})
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
-      field = op.fields |> List.first
+      field = op.selections |> List.first
       age_argument = field.arguments |> Enum.find(&(&1.name == "age"))
       assert %Blueprint.Input.Integer{value: 4} == age_argument.provided_value
       name_argument = field.arguments |> Enum.find(&(&1.name == "name"))

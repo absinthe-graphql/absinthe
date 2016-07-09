@@ -39,12 +39,14 @@ defmodule Absinthe.Blueprint.Transform do
   end
 
   nodes_with_children = %{
-    Blueprint => [:operations, :types, :directives],
+    Blueprint => [:operations, :types, :directives, :fragments],
     Blueprint.Directive => [:arguments],
-    Blueprint.Document.Field => [:fields, :arguments, :directives],
-    Blueprint.Document.Operation => [:fields, :variable_definitions],
+    Blueprint.Document.Field => [:selections, :arguments, :directives],
+    Blueprint.Document.Operation => [:selections, :variable_definitions],
     Blueprint.TypeReference.List => [:of_type],
     Blueprint.TypeReference.NonNull => [:of_type],
+    Blueprint.Document.Fragment.Inline => [:fields],
+    Blueprint.Document.Fragment.Named => [:fields],
     Blueprint.Document.VariableDefinition => [:type, :default_value],
     Blueprint.Input.Argument => [:value],
     Blueprint.Input.Field => [:value],
