@@ -44,13 +44,13 @@ defmodule Absinthe.Phase.Document.InputTest do
 
   def input(query, values) do
     {:ok, result} = blueprint(query, values)
-    |> Phase.Document.Arguments.run
+    |> Phase.Document.Arguments.run([])
 
     result
   end
 
   defp blueprint(query, values) do
-    {:ok, blueprint} = Pipeline.run(query, @pre_pipeline ++ [{Phase.Document.Variables, %{values: values}}])
+    {:ok, blueprint} = Pipeline.run(query, @pre_pipeline ++ [{Phase.Document.Variables, values: values}])
     blueprint
   end
 

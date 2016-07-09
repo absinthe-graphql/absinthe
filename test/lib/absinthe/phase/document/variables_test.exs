@@ -20,7 +20,7 @@ defmodule Absinthe.Phase.Document.VariablesTest do
 
   describe "when not providing a value for an optional variable with a default value" do
     it "uses the default value" do
-      result = input(@query, "Profile", %{"name" => "Bruce"})
+      result = input(@query, %{"name" => "Bruce"})
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
       assert op.provided_values == %{
         "age" => %Blueprint.Input.Integer{value: 36},
@@ -31,7 +31,7 @@ defmodule Absinthe.Phase.Document.VariablesTest do
 
   describe "when providing a value for an optional variable with a default value" do
     it "uses the default value" do
-      result = input(@query, "Profile", %{"age" => 4, "name" => "Bruce"})
+      result = input(@query, %{"age" => 4, "name" => "Bruce"})
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
       assert op.provided_values == %{
         "age" => %Blueprint.Input.Integer{value: 4},
@@ -40,9 +40,9 @@ defmodule Absinthe.Phase.Document.VariablesTest do
     end
   end
 
-  def input(query, name, values) do
+  def input(query, values) do
     {:ok, result} = blueprint(query)
-    |> Phase.Document.Variables.run(%{operation_name: name, values: values})
+    |> Phase.Document.Variables.run(values: values)
 
     result
   end

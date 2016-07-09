@@ -34,7 +34,7 @@ defmodule Absinthe.Language.FieldDefinitionTest do
   end
 
   defp fields_from_input(text) do
-    {:ok, doc} = Absinthe.Phase.Parse.run(text)
+    {:ok, doc} = Absinthe.Phase.Parse.run(text, [])
 
     doc
     |> extract_fields

@@ -30,12 +30,14 @@ defmodule Absinthe.PipelineTest do
   end
 
   defmodule Phase1 do
-    def run(input) do
+    use Phase
+    def run(input, _) do
       {:ok, String.reverse(input)}
     end
   end
 
   defmodule Phase2 do
+    use Phase
     def run(input, options) do
       result = (1..options[:times])
       |> Enum.map(fn _ -> input end)
@@ -45,10 +47,15 @@ defmodule Absinthe.PipelineTest do
   end
 
   defmodule Phase3 do
-    def run(input, %{reverse: true}) do
+    use Phase
+    def run(input, options) do
+      do_run(input, Enum.into(options, %{}))
+    end
+
+    defp do_run(input, %{reverse: true}) do
       {:ok, String.reverse(input)}
     end
-    def run(input, %{reverse: false}) do
+    defp do_run(input, %{reverse: false}) do
       {:ok, input}
     end
   end
@@ -61,7 +68,8 @@ defmodule Absinthe.PipelineTest do
   end
 
   defmodule BadPhase do
-    def run(input) do
+    use Phase
+    def run(input, _) do
       input
     end
   end
@@ -69,6 +77,46 @@ defmodule Absinthe.PipelineTest do
   describe ".run with a bad phase result" do
     it "should return a nice error object" do
       assert {:error, %Phase.Error{phase: BadPhase, message: "Phase did not return an {:ok, any} | {:error, Absinthe.Phase.Error.t} | {:error, String.t}"}} ==  Pipeline.run("foo", [BadPhase])
+    end
+  end
+
+  defmodule PhaseDeps.BadPrePhase do
+    use Phase
+    def run(input, _) do
+      {:ok, input}
+    end
+  end
+
+  defmodule PhaseDeps.GoodPrePhase do
+    use Phase
+    def run(input, _) do
+      {:ok, %{input | flag: true}}
+    end
+  end
+
+  defmodule PhaseDeps.Check do
+    use Phase
+    def run(input, _) do
+      {:ok, %{input | checked: true}}
+    end
+
+    def check_input(%{flag: true}) do
+      :ok
+    end
+    def check_input(_) do
+      {:error, "input.flag must be true"}
+    end
+  end
+
+  describe ".run with a phase that checks input" do
+    @input %{flag: false, checked: false}
+
+    it "when an earlier phase sets input appropriately" do
+      assert {:ok, %{flag: true, checked: true}} == Pipeline.run(@input, [PhaseDeps.GoodPrePhase, PhaseDeps.Check])
+    end
+
+    it "when an earlier phase does not set input appropriately" do
+      assert {:error, %Phase.Error{phase: PhaseDeps.Check, message: "input.flag must be true"}} == Pipeline.run(@input, [PhaseDeps.BadPrePhase, PhaseDeps.Check])
     end
   end
 

@@ -20,7 +20,7 @@ defmodule Absinthe.Phase.Document.Variables do
   And this phase configuration:
 
   ```
-  run(blueprint, %{operation_name: "Item", variables: %{"id" => "1234"}})
+  run(blueprint, values: %{operation_name: "Item", variables: %{"id" => "1234"}})
   ``
 
   - The operation's `variables` field would have an `"id"` value set to
@@ -29,7 +29,7 @@ defmodule Absinthe.Phase.Document.Variables do
     `%Blueprint.Input.StringValue{value: "Another"}`
 
   ```
-  run(blueprint, %{operation_name: "Item", variables: %{}})
+  run(blueprint, values: %{operation_name: "Item", variables: %{}})
   ``
 
   - The operation's `variables` field would have an `"id"` value set to
@@ -40,11 +40,13 @@ defmodule Absinthe.Phase.Document.Variables do
   Note that no validation occurs in this phase.
   """
 
+  use Absinthe.Phase
   alias Absinthe.Blueprint
 
-  @spec run(Blueprint.t, %{values: %{String.t => any}}) :: {:ok, Blueprint.t}
+  @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
   def run(input, options) do
-    acc = %{raw: options.values, processed: %{}}
+    values = Keyword.fetch!(options, :values)
+    acc = %{raw: values, processed: %{}}
     {node, _} = Blueprint.postwalk(input, acc, &handle_node/2)
     {:ok, node}
   end
