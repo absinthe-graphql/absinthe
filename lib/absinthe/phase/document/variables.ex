@@ -20,7 +20,7 @@ defmodule Absinthe.Phase.Document.Variables do
   And this phase configuration:
 
   ```
-  run(blueprint, values: %{operation_name: "Item", variables: %{"id" => "1234"}})
+  run(blueprint, values: %{"id" => "1234"})
   ``
 
   - The operation's `variables` field would have an `"id"` value set to
@@ -29,7 +29,7 @@ defmodule Absinthe.Phase.Document.Variables do
     `%Blueprint.Input.StringValue{value: "Another"}`
 
   ```
-  run(blueprint, values: %{operation_name: "Item", variables: %{}})
+  run(blueprint, values: %{})
   ``
 
   - The operation's `variables` field would have an `"id"` value set to
