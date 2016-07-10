@@ -11,6 +11,7 @@ defmodule Absinthe.Blueprint.Document.Operation do
     source_location: nil,
     # Populated by phases
     provided_values: %{},
+    fields: [],
     errors: [],
   ]
 
@@ -21,6 +22,7 @@ defmodule Absinthe.Blueprint.Document.Operation do
     variable_definitions: [Blueprint.Document.VariableDefinition.t],
     source_location: nil | Blueprint.Document.SourceLocation.t,
     provided_values: %{String.t => nil | Blueprint.Input.t},
+    fields: [Blueprint.Document.Field.t],
     errors: [Absinthe.Phase.Error.t],
   }
 

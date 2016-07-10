@@ -12,10 +12,10 @@ defmodule Absinthe.Blueprint.Document.Fragment.Spread do
   ]
 
   @type t :: %__MODULE__{
-    name: String.t,
     directives: [Blueprint.Document.Directive.t],
-    source_location: nil | Blueprint.Document.SourceLocation.t,
     errors: [Absinthe.Phase.Error.t],
+    name: String.t,
+    source_location: nil | Blueprint.Document.SourceLocation.t,
   }
 
 end

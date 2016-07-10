@@ -9,10 +9,11 @@ defmodule Absinthe.Blueprint.Document.Field do
     selections: [],
     arguments: [],
     directives: [],
+    # Added by phases
     errors: [],
     source_location: nil,
     schema_type: nil,
-    type_condition: nil,
+    fields: []
   ]
 
   @type t :: %__MODULE__{
@@ -21,9 +22,9 @@ defmodule Absinthe.Blueprint.Document.Field do
     arguments: [Blueprint.Input.Argument.t],
     directives: [Blueprint.Directive.t],
     errors: [Phase.Error.t],
+    fields: [Blueprint.Document.Field.t],
     source_location: nil | Blueprint.Document.SourceLocation.t,
-    schema_type: Type.t,
-    type_condition: Blueprint.TypeReference.Name.t,
+    schema_type: Type.t
   }
 
 end

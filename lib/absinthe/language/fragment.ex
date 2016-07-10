@@ -24,7 +24,7 @@ defmodule Absinthe.Language.Fragment do
       %Blueprint.Document.Fragment.Named{
         name: node.name,
         type_condition: Blueprint.Draft.convert(node.type_condition, doc),
-        fields: Blueprint.Draft.convert(node.selection_set.selections, doc),
+        selections: Blueprint.Draft.convert(node.selection_set.selections, doc),
         directives: Blueprint.Draft.convert(node.directives, doc),
         source_location: source_location(node.loc),
       }

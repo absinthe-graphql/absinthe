@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Document.InputTest do
+defmodule Absinthe.Phase.Document.ArgumentsTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.{Blueprint, Phase, Pipeline}
