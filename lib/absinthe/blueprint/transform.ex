@@ -39,7 +39,7 @@ defmodule Absinthe.Blueprint.Transform do
   end
 
   nodes_with_children = %{
-    Blueprint => [:operations, :types, :directives, :fragments],
+    Blueprint => [:fragments, :operations, :types, :directives],
     Blueprint.Directive => [:arguments],
     Blueprint.Document.Field => [:selections, :arguments, :directives],
     Blueprint.Document.Operation => [:selections, :variable_definitions],

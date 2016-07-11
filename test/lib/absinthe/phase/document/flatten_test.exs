@@ -34,13 +34,22 @@ defmodule Absinthe.Phase.Document.FlattenTest do
   """
 
   describe "a deeply fragment-nested document" do
-    @tag :pending
     it "has its selections flattened to fields" do
       result = input(@query)
       op = result.operations |> List.first
       assert [
-        %Blueprint.Document.Field{name: "foo"},
-        %Blueprint.Document.Field{name: "more"}
+        %Blueprint.Document.Field{
+          name: "foo",
+          type_conditions: [],
+          fields: [
+            %Blueprint.Document.Field{name: "bar", type_conditions: []},
+            %Blueprint.Document.Field{name: "name", type_conditions: [%Blueprint.TypeReference.Name{name: "Foo"}]},
+            %Blueprint.Document.Field{name: "name", type_conditions: [%Blueprint.TypeReference.Name{name: "NotFoo"}]},
+            %Blueprint.Document.Field{name: "age", type_conditions: [%Blueprint.TypeReference.Name{name: "Foo"}]},
+            %Blueprint.Document.Field{name: "age", type_conditions: [%Blueprint.TypeReference.Name{name: "NotFoo"}]},
+          ],
+        },
+        %Blueprint.Document.Field{name: "more", type_conditions: [%Blueprint.TypeReference.Name{name: "Query"}]}
       ] = op.fields
     end
   end

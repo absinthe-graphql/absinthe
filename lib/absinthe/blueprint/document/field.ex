@@ -12,8 +12,9 @@ defmodule Absinthe.Blueprint.Document.Field do
     # Added by phases
     errors: [],
     source_location: nil,
+    type_conditions: [],
     schema_type: nil,
-    fields: []
+    fields: [],
   ]
 
   @type t :: %__MODULE__{
@@ -24,6 +25,7 @@ defmodule Absinthe.Blueprint.Document.Field do
     errors: [Phase.Error.t],
     fields: [Blueprint.Document.Field.t],
     source_location: nil | Blueprint.Document.SourceLocation.t,
+    type_conditions: [Blueprint.TypeReference.Name],
     schema_type: Type.t
   }
 
