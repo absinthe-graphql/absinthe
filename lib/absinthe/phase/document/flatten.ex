@@ -4,7 +4,8 @@ defmodule Absinthe.Phase.Document.Flatten do
   from operation and field selections into their fields list. Resulting fields
   are tagged with the source fragment type conditions.
 
-  Note that no field merging or schema-based validation occurs in this phase.
+  Note that no field merging occurs in this phase and that validation should
+  occur before it is run (to, eg, prevent circular fragments).
   """
 
   use Absinthe.Phase
@@ -12,7 +13,6 @@ defmodule Absinthe.Phase.Document.Flatten do
 
   @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
   def run(input, _) do
-    # TODO: Verify acyclical
     # TODO: Pass a Map of the fragments by name
     {result, _} = Blueprint.postwalk(input, input.fragments, &flatten/2)
     {:ok, result}
