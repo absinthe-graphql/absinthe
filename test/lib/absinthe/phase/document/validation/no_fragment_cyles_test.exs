@@ -22,9 +22,8 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
      end)
     end
 
-    @tag :pending
-    it "should error if named fragments form a cycle" do
-      {:ok, doc} = """
+    it "should add errors to named fragments that form a cycle" do
+      {:ok, blueprint} = """
       {
         dog {
           ...foo
@@ -44,58 +43,35 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
       fragment baz on Dog {
         age
         ...bar
-        ...qux
+        ...quux
       }
 
-      fragment qux on Dog {
+      fragment quux on Dog {
         asdf
         ...foo
       }
 
       """
-      |> Absinthe.parse
+      |> run
 
-      msg1 = "Fragment Cycle Error\n\nFragment `qux' forms a cycle via: (`qux' => `foo' => `bar' => `baz' => `qux')"
-      msg2 = "Fragment Cycle Error\n\nFragment `baz' forms a cycle via: (`baz' => `bar' => `baz')"
+      quux_msg = "forms a cycle via: (`quux' => `foo' => `bar' => `baz' => `quux')"
+      baz_msg = "forms a cycle via: (`baz' => `bar' => `baz')"
 
-      assert {:error, errors, _} = Validation.run(doc)
-      assert [
-        %{locations: [%{column: 0, line: 25}], message: msg1},
-        %{locations: [%{column: 0, line: 19}], message: msg2}
-      ] == errors
+      assert Enum.find(blueprint.fragments, fn
+        %{name: "baz", errors: [%{message: ^baz_msg}]} ->
+          true
+        _ ->
+          false
+      end)
+
+      assert Enum.find(blueprint.fragments, fn
+        %{name: "quux", errors: [%{message: ^quux_msg}]} ->
+          true
+        _ ->
+          false
+      end)
     end
 
-    @tag :pending
-    it "should not execute" do
-      {:ok, doc} = """
-      {
-        dog {
-          ...nameFragment
-        }
-      }
-
-      fragment nameFragment on Dog {
-        name
-        ...barkVolumeFragment
-      }
-
-      fragment barkVolumeFragment on Dog {
-        barkVolume
-        ...nameFragment
-      }
-      """
-      |> Absinthe.parse
-
-      msg = """
-      Fragment Cycle Error
-
-      Fragment `barkVolumeFragment' forms a cycle via: (`barkVolumeFragment' => `nameFragment' => `barkVolumeFragment')
-      """
-      |> String.strip
-
-      assert {:ok, %{errors: errors}} = Absinthe.run(doc, Things)
-      assert [%{locations: [%{column: 0, line: 14}], message: msg}] == errors
-    end
   end
 
   def run(input) do
