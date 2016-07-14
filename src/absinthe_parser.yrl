@@ -1,12 +1,12 @@
 Nonterminals
   Document
   Definitions Definition OperationDefinition Fragment TypeDefinition
-  ObjectDefinition InterfaceDefinition UnionTypeDefinition
-  ScalarTypeDefinition EnumTypeDefinition InputObjectDefinition TypeExtensionDefinition
+  ObjectTypeDefinition InterfaceTypeDefinition UnionTypeDefinition
+  ScalarTypeDefinition EnumTypeDefinition InputObjectTypeDefinition TypeExtensionDefinition
   FieldDefinitionList FieldDefinition ImplementsInterfaces ArgumentsDefinition
   InputValueDefinitionList InputValueDefinition UnionMembers
   EnumValueDefinitionList EnumValueDefinition
-  DirectiveDefinition
+  DirectiveDefinition DirectiveDefinitionLocations
   SelectionSet Selections Selection
   OperationType Name NameWithoutOn VariableDefinitions VariableDefinition Directives Directive
   Field Alias Arguments ArgumentList Argument
@@ -39,9 +39,9 @@ OperationType -> 'subscription' : extract_atom('$1').
 OperationDefinition -> SelectionSet : build_ast_node('OperationDefinition', #{'operation' => 'query', 'selection_set' => '$1'}, #{'start_line' => extract_child_line('$1')}).
 OperationDefinition -> OperationType SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'selection_set' => '$2'}, #{'start_line' => extract_line('$2')}).
 OperationDefinition -> OperationType Name SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => extract_binary('$2'), 'selection_set' => '$3'}, #{'start_line' => extract_line('$2')}).
-OperationDefinition -> OperationType Name VariableDefinitions SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => extract_binary('$2'), 'variable_definitions' => '$3', 'selection_set' => '$4'}, #{'start_line' => extract_line('$1')}).
-OperationDefinition -> OperationType Name Directives SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => extract_binary('$2'), 'directives' => '$3', 'selection_set' => '$4'}, #{'start_line' => extract_line('$1')}).
-OperationDefinition -> OperationType Name VariableDefinitions Directives SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => extract_binary('$2'), 'variable_definitions' => '$3', 'directives' => '$4', 'selection_set' => '$5'}, #{'start_line' => extract_line('$1')}).
+OperationDefinition -> OperationType Name VariableDefinitions SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => extract_binary('$2'), 'variable_definitions' => '$3', 'selection_set' => '$4'}, #{'start_line' => extract_line('$2')}).
+OperationDefinition -> OperationType Name Directives SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => extract_binary('$2'), 'directives' => '$3', 'selection_set' => '$4'}, #{'start_line' => extract_line('$2')}).
+OperationDefinition -> OperationType Name VariableDefinitions Directives SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => extract_binary('$2'), 'variable_definitions' => '$3', 'directives' => '$4', 'selection_set' => '$5'}, #{'start_line' => extract_line('$2')}).
 
 Fragment -> 'fragment' FragmentName 'on' TypeCondition SelectionSet : build_ast_node('Fragment', #{'name' => '$2', 'type_condition' => '$4', 'selection_set' => '$5'}, #{'start_line' => extract_line('$1')}).
 Fragment -> 'fragment' FragmentName 'on' TypeCondition Directives SelectionSet : build_ast_node('Fragment', #{'name' => '$2', 'type_condition' => '$4', 'directives' => '$5', 'selection_set' => '$6'}, #{'start_line' => extract_line('$1')}).
@@ -51,8 +51,8 @@ TypeCondition -> NamedType : '$1'.
 VariableDefinitions -> '(' VariableDefinitionList ')' : '$2'.
 VariableDefinitionList -> VariableDefinition : ['$1'].
 VariableDefinitionList -> VariableDefinition VariableDefinitionList : ['$1'|'$2'].
-VariableDefinition -> Variable ':' Type : build_ast_node('VariableDefinition', #{'variable' => '$1', 'type' => '$3'}, #{'start_line' => extract_line('$1')}).
-VariableDefinition -> Variable ':' Type DefaultValue : build_ast_node('VariableDefinition', #{'variable' => '$1', 'type' => '$3', 'default_value' => '$4'}, #{'start_line' => extract_line('$1')}).
+VariableDefinition -> Variable ':' Type : build_ast_node('VariableDefinition', #{'variable' => '$1', 'type' => '$3'}, #{'start_line' => extract_child_line('$1')}).
+VariableDefinition -> Variable ':' Type DefaultValue : build_ast_node('VariableDefinition', #{'variable' => '$1', 'type' => '$3', 'default_value' => '$4'}, #{'start_line' => extract_child_line('$1')}).
 Variable -> '$' NameWithoutOn : build_ast_node('Variable', #{'name' => extract_binary('$2')}, #{'start_line' => extract_line('$1')}).
 Variable -> '$' 'on' : build_ast_node('Variable', #{'name' => extract_binary('$2')}, #{'start_line' => extract_line('$1')}).
 
@@ -154,22 +154,33 @@ ObjectFields -> ObjectField : ['$1'].
 ObjectFields -> ObjectField ObjectFields : ['$1'|'$2'].
 ObjectField -> Name ':' Value : build_ast_node('ObjectField', #{'name' => extract_binary('$1'), 'value' => '$3'}, #{'start_line' => extract_line('$1')}).
 
-TypeDefinition -> ObjectDefinition : '$1'.
-TypeDefinition -> InterfaceDefinition : '$1'.
+TypeDefinition -> ObjectTypeDefinition : '$1'.
+TypeDefinition -> InterfaceTypeDefinition : '$1'.
 TypeDefinition -> UnionTypeDefinition : '$1'.
 TypeDefinition -> ScalarTypeDefinition : '$1'.
 TypeDefinition -> EnumTypeDefinition : '$1'.
-TypeDefinition -> InputObjectDefinition : '$1'.
+TypeDefinition -> InputObjectTypeDefinition : '$1'.
 TypeDefinition -> TypeExtensionDefinition : '$1'.
 TypeDefinition -> DirectiveDefinition : '$1'.     
 
-DirectiveDefinition -> 'directive' '@' Name ArgumentsDefinition 'on' EnumValueDefinitionList :
+DirectiveDefinition -> 'directive' '@' Name 'on' DirectiveDefinitionLocations :
+  build_ast_node('DirectiveDefinition', #{'name' => extract_binary('$3'), 'locations' =>'$5'}, #{'start_line' => extract_line('$1')}).
+DirectiveDefinition -> 'directive' '@' Name ArgumentsDefinition 'on' DirectiveDefinitionLocations :
   build_ast_node('DirectiveDefinition', #{'name' => extract_binary('$3'), 'arguments' => '$4', 'locations' =>'$6'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$1')}).
 
-ObjectDefinition -> 'type' Name '{' FieldDefinitionList '}' :
-  build_ast_node('ObjectDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$5')}).
-ObjectDefinition -> 'type' Name ImplementsInterfaces '{' FieldDefinitionList '}' :
-  build_ast_node('ObjectDefinition', #{'name' => extract_binary('$2'), 'interfaces' => '$3', 'fields' => '$5'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$6')}).
+DirectiveDefinition -> 'directive' '@' Name 'on' DirectiveDefinitionLocations Directives :
+  build_ast_node('DirectiveDefinition', #{'name' => extract_binary('$3'), 'directives' => '$6', 'locations' => '$5'}, #{'start_line' => extract_line('$1')}).
+DirectiveDefinition -> 'directive' '@' Name ArgumentsDefinition 'on' DirectiveDefinitionLocations Directives :
+  build_ast_node('DirectiveDefinition', #{'name' => extract_binary('$3'), 'arguments' => '$4', 'directives' => '$7', 'locations' =>'$6'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$1')}).
+
+ObjectTypeDefinition -> 'type' Name '{' FieldDefinitionList '}' :
+  build_ast_node('ObjectTypeDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$5')}).
+ObjectTypeDefinition -> 'type' Name Directives '{' FieldDefinitionList '}' :
+  build_ast_node('ObjectTypeDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3', 'fields' => '$5'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$6')}).
+ObjectTypeDefinition -> 'type' Name ImplementsInterfaces '{' FieldDefinitionList '}' :
+  build_ast_node('ObjectTypeDefinition', #{'name' => extract_binary('$2'), 'interfaces' => '$3', 'fields' => '$5'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$6')}).
+ObjectTypeDefinition -> 'type' Name ImplementsInterfaces Directives '{' FieldDefinitionList '}' :
+  build_ast_node('ObjectTypeDefinition', #{'name' => extract_binary('$2'), 'interfaces' => '$3', 'directives' => '$4', 'fields' => '$6'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$7')}).
 
 ImplementsInterfaces -> 'implements' NamedTypeList : '$2'.
 
@@ -180,6 +191,8 @@ FieldDefinitionList -> FieldDefinition : ['$1'].
 FieldDefinitionList -> FieldDefinition FieldDefinitionList : ['$1'|'$2'].
 FieldDefinition -> Name ':' Type : build_ast_node('FieldDefinition', #{'name' => extract_binary('$1'), 'type' => '$3'}, #{'start_line' => extract_line('$1')}).
 FieldDefinition -> Name ArgumentsDefinition ':' Type : build_ast_node('FieldDefinition', #{'name' => extract_binary('$1'), 'arguments' => '$2', 'type' => '$4'}, #{'start_line' => extract_line('$1')}).
+FieldDefinition -> Name Directives ':' Type : build_ast_node('FieldDefinition', #{'name' => extract_binary('$1'), 'directives' => '$3', 'type' => '$4'}, #{'start_line' => extract_line('$1')}).
+FieldDefinition -> Name ArgumentsDefinition Directives ':' Type : build_ast_node('FieldDefinition', #{'name' => extract_binary('$1'), 'arguments' => '$2', 'directives' => '$4', 'type' => '$5'}, #{'start_line' => extract_line('$1')}).
 
 ArgumentsDefinition -> '(' InputValueDefinitionList ')' : '$2'.
 
@@ -189,29 +202,42 @@ InputValueDefinitionList -> InputValueDefinition InputValueDefinitionList : ['$1
 InputValueDefinition -> Name ':' Type : build_ast_node('InputValueDefinition', #{'name' => extract_binary('$1'), 'type' => '$3'}, #{'start_line' => extract_line('$1')}).
 InputValueDefinition -> Name ':' Type DefaultValue : build_ast_node('InputValueDefinition', #{'name' => extract_binary('$1'), 'type' => '$3', 'default_value' => '$4'}, #{'start_line' => extract_line('$1')}).
 
-InterfaceDefinition -> 'interface' Name '{' FieldDefinitionList '}' :
-  build_ast_node('InterfaceDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$5')}).
+InterfaceTypeDefinition -> 'interface' Name '{' FieldDefinitionList '}' :
+  build_ast_node('InterfaceTypeDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$5')}).
+InterfaceTypeDefinition -> 'interface' Name Directives '{' FieldDefinitionList '}' :
+  build_ast_node('InterfaceTypeDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3', 'fields' => '$5'}, #{'start_line' => extract_line('$1'), 'end_line' => extract_line('$6')}).
 
 UnionTypeDefinition -> 'union' Name '=' UnionMembers :
   build_ast_node('UnionTypeDefinition', #{'name' => extract_binary('$2'), 'types' => '$4'}, #{'start_line' => extract_line('$1')}).
+UnionTypeDefinition -> 'union' Name Directives '=' UnionMembers :
+  build_ast_node('UnionTypeDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3', 'types' => '$5'}, #{'start_line' => extract_line('$1')}).
 
 UnionMembers -> NamedType : ['$1'].
 UnionMembers -> NamedType '|' UnionMembers : ['$1'|'$3'].
 
 ScalarTypeDefinition -> 'scalar' Name : build_ast_node('ScalarTypeDefinition', #{'name' => extract_binary('$2')}, #{'start_line' => extract_line('$2')}).
+ScalarTypeDefinition -> 'scalar' Name Directives : build_ast_node('ScalarTypeDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3'}, #{'start_line' => extract_line('$2')}).
 
 EnumTypeDefinition -> 'enum' Name '{' EnumValueDefinitionList '}':
   build_ast_node('EnumTypeDefinition', #{'name' => extract_binary('$2'), 'values' => '$4'}, #{'start_line' => extract_line('$2'), 'end_line' => extract_line('$5')}).
+EnumTypeDefinition -> 'enum' Name Directives '{' EnumValueDefinitionList '}':
+  build_ast_node('EnumTypeDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3', 'values' => '$5'}, #{'start_line' => extract_line('$2'), 'end_line' => extract_line('$6')}).
 
 EnumValueDefinitionList -> EnumValueDefinition : ['$1'].
 EnumValueDefinitionList -> EnumValueDefinition EnumValueDefinitionList : ['$1'|'$2'].
 
+DirectiveDefinitionLocations -> Name : [extract_binary('$1')].
+DirectiveDefinitionLocations -> Name '|' DirectiveDefinitionLocations : [extract_binary('$1')|'$3'].
+
 EnumValueDefinition -> EnumValue : '$1'.
 
-InputObjectDefinition -> 'input' Name '{' InputValueDefinitionList '}' :
-  build_ast_node('InputObjectDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, #{'start_line' => extract_line('$2'), 'end_line' => extract_line('$5')}).
+InputObjectTypeDefinition -> 'input' Name '{' InputValueDefinitionList '}' :
+  build_ast_node('InputObjectTypeDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, #{'start_line' => extract_line('$2'), 'end_line' => extract_line('$5')}).
+InputObjectTypeDefinition -> 'input' Name Directives '{' InputValueDefinitionList '}' :
+  build_ast_node('InputObjectTypeDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3', 'fields' => '$5'}, #{'start_line' => extract_line('$2'), 'end_line' => extract_line('$6')}).
 
-TypeExtensionDefinition -> 'extend' ObjectDefinition :
+
+TypeExtensionDefinition -> 'extend' ObjectTypeDefinition :
   build_ast_node('TypeExtensionDefinition', #{'definition' => '$2'}, #{'start_line' => extract_line('$1')}).
 
 

@@ -213,8 +213,6 @@ defmodule Absinthe.SchemaTest do
     fragment F0 on Viewer{name,id}
     fragment F1 on Viewer{id,...F0}
     """
-
-    @tag :fragment1
     it "builds the correct result" do
       assert {:ok, %{data: %{"viewer" => %{"id" => "ABCD", "name" => "Bruce"}}}} == Absinthe.run(@query, FragmentSpreadSchema)
     end

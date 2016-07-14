@@ -1,13 +1,42 @@
 defmodule Absinthe.Language.Field do
-
   @moduledoc false
 
-  @type t :: %{alias: nil | binary, name: binary,
-               arguments: [Absinthe.Language.Argument.t],
-               directives: [Absinthe.Language.Directive.t],
-               selection_set: Absinthe.Language.SelectionSet.t,
-               loc: Absinthe.Language.loc_t}
-  defstruct alias: nil, name: nil, arguments: [], directives: [], selection_set: nil, loc: %{start_line: nil}
+  alias Absinthe.{Blueprint, Language}
+
+  defstruct [
+    alias: nil,
+    name: nil,
+    arguments: [],
+    directives: [],
+    selection_set: nil,
+    loc: %{start_line: nil},
+  ]
+
+  @type t :: %__MODULE__{
+    alias: nil | String.t,
+    name: String.t,
+    arguments: [Absinthe.Language.Argument.t],
+    directives: [Absinthe.Language.Directive.t],
+    selection_set: Absinthe.Language.SelectionSet.t,
+    loc: Absinthe.Language.loc_t,
+  }
+
+  defimpl Blueprint.Draft do
+    def convert(node, doc) do
+      %Blueprint.Document.Field{
+        name: node.name,
+        alias: node.alias,
+        selections: Absinthe.Blueprint.Draft.convert(selections(node.selection_set), doc),
+        arguments: Absinthe.Blueprint.Draft.convert(node.arguments, doc),
+        directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
+        source_location: Blueprint.Document.SourceLocation.at(node.loc.start_line),
+      }
+    end
+
+    @spec selections(nil | Language.SelectionSet.t) :: [Language.Field.t | Language.InlineFragment.t | Language.FragmentSpread.t]
+    defp selections(nil), do: []
+    defp selections(node), do: node.selections
+  end
 
   defimpl Absinthe.Traversal.Node do
     def children(node, _schema) do

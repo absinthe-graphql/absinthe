@@ -51,7 +51,6 @@ defmodule Absinthe.Type.DirectiveTest do
       age
     }
     """
-    @tag :frag
     it "behaves as expected for a fragment" do
       assert {:ok, %{data: %{"person" => %{"name" => "Bruce", "age" => 35}}}} == Absinthe.run(@query_fragment, ContactSchema, variables: %{"skipAge" => false})
       assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query_fragment, ContactSchema, variables: %{"skipAge" => true})

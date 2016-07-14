@@ -51,6 +51,7 @@ defmodule Absinthe.Mixfile do
       {:ex_doc, "~> 0.11.0", only: :dev},
       {:earmark, "~> 0.1.19", only: :dev},
       {:benchfella, "~> 0.3.0", only: :dev},
+      {:dialyze, "~> 0.2", only: :dev}
     ]
   end
 end

@@ -1,8 +1,8 @@
 defmodule Absinthe.Type.BuiltIns.Introspection do
-  use Absinthe.Schema.Notation
-  alias Absinthe.Type
-
   @moduledoc false
+
+  use Absinthe.Schema.Notation
+
   object :__schema do
     description "Represents a schema"
 
@@ -88,7 +88,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
     :fragment_definition,
     :fragment_spread,
     :inline_fragment
-    # TODO: Schema definitions to support IDL input
+    # TODO: Schema definitions to support Schema input
   ]
 
   object :__type do

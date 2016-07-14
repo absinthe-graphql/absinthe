@@ -1,8 +1,33 @@
 defmodule Absinthe.Language.DirectiveDefinition do
-
   @moduledoc false
 
-  @type t :: %{name: binary, arguments: [Absinthe.Language.Argument.t], locations: [any], loc: Absinthe.Language.loc_t}
-  defstruct name: nil, arguments: [], locations: [], loc: %{start_line: nil}
+  alias Absinthe.{Blueprint, Language}
+
+  defstruct [
+    name: nil,
+    arguments: [],
+    directives: [],
+    locations: [],
+    loc: %{start_line: nil}
+  ]
+
+  @type t :: %__MODULE__{
+    name: String.t,
+    directives: [Language.Directive.t],
+    arguments: [Language.Argument.t],
+    locations: [String.t],
+    loc: Language.loc_t
+  }
+
+  defimpl Blueprint.Draft do
+    def convert(node, doc) do
+      %Blueprint.Schema.DirectiveDefinition{
+        name: node.name,
+        arguments: Absinthe.Blueprint.Draft.convert(node.arguments, doc),
+        directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
+        locations: node.locations
+      }
+    end
+  end
 
 end
