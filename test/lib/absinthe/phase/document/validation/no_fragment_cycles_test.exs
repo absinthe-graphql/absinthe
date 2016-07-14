@@ -5,8 +5,22 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
 
   describe ".run" do
 
-    it "should error if the named fragment tries to use itself" do
-      {:ok, blueprint} = """
+    it "should return ok if a fragment does not cycle" do
+      assert {:ok, _} = """
+      fragment nameFragment on Dog {
+        name
+      }
+      fragment ageFragment on Dog {
+        age
+      }
+      """
+      |> run
+    end
+
+
+    it "should return an error if the named fragment tries to use itself" do
+
+      {:error, blueprint} = """
       fragment nameFragment on Dog {
         name
         ...nameFragment
@@ -15,7 +29,7 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
       |> run
 
       assert Enum.find(blueprint.fragments, fn
-        %{name: "nameFragment", errors: [%{message: "forms a cycle via: (`nameFragment' => `nameFragment' => `nameFragment')", locations: [%{line: 3}]}]} ->
+        %{name: "nameFragment", errors: [%{message: "forms a cycle with itself"}]} ->
           true
         _ ->
           false
@@ -23,7 +37,7 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
     end
 
     it "should add errors to named fragments that form a cycle" do
-      {:ok, blueprint} = """
+      {:error, blueprint} = """
       {
         dog {
           ...foo
@@ -55,7 +69,7 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
       |> run
 
       quux_msg = "forms a cycle via: (`quux' => `foo' => `bar' => `baz' => `quux')"
-      baz_msg = "forms a cycle via: (`baz' => `bar' => `baz')"
+      baz_msg = "forms a cycle via: (`baz' => `quux' => `foo' => `bar' => `baz')"
 
       assert Enum.find(blueprint.fragments, fn
         %{name: "baz", errors: [%{message: ^baz_msg}]} ->
@@ -75,12 +89,12 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
   end
 
   def run(input) do
-    input
+    {:ok, blueprint} = input
     |> Pipeline.run([
       Phase.Parse,
-      Phase.Blueprint,
-      Phase.Document.Validation.NoFragmentCycles,
+      Phase.Blueprint
     ])
+    Phase.Document.Validation.NoFragmentCycles.run(blueprint, [])
   end
 
 end

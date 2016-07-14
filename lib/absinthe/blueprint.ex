@@ -7,6 +7,7 @@ defmodule Absinthe.Blueprint do
     types: [],
     directives: [],
     fragments: [],
+    errors: [],
   ]
 
   @type t :: %__MODULE__{
@@ -14,6 +15,7 @@ defmodule Absinthe.Blueprint do
     types: [Blueprint.Schema.t],
     directives: [Blueprint.Schema.DirectiveDefinition.t],
     fragments: [Blueprint.Document.Fragment.Named.t],
+    errors: [Blueprint.Phase.Error.t],
   }
 
   @type node_t ::

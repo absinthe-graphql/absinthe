@@ -5,12 +5,7 @@ defmodule Absinthe.Phase.Parse do
 
   @spec run(Language.Source.t, Keyword.t) :: {:ok, Language.Document.t} | {:error, Phase.Error.t}
   def run(input, _) do
-    case parse(input) do
-      {:ok, doc} ->
-        {:ok, doc}
-      other ->
-        other
-    end
+    parse(input)
   end
 
   @spec tokenize(binary) :: {:ok, [tuple]} | {:error, binary}

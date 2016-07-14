@@ -1,5 +1,7 @@
 defmodule Absinthe.Phase do
+
   @type t :: module
+  @type result_t :: {:cont | :halt, any}
 
   alias __MODULE__
 
