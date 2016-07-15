@@ -20,7 +20,7 @@ defmodule Absinthe.Phase.Document.Variables do
   And this phase configuration:
 
   ```
-  run(blueprint, values: %{"id" => "1234"})
+  run(blueprint, %{"id" => "1234"})
   ``
 
   - The operation's `variables` field would have an `"id"` value set to
@@ -29,7 +29,7 @@ defmodule Absinthe.Phase.Document.Variables do
     `%Blueprint.Input.StringValue{value: "Another"}`
 
   ```
-  run(blueprint, values: %{})
+  run(blueprint, %{})
   ``
 
   - The operation's `variables` field would have an `"id"` value set to
@@ -43,9 +43,8 @@ defmodule Absinthe.Phase.Document.Variables do
   use Absinthe.Phase
   alias Absinthe.Blueprint
 
-  @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
-  def run(input, options) do
-    values = Keyword.fetch!(options, :values)
+  @spec run(Blueprint.t, %{String.t => any}) :: {:ok, Blueprint.t}
+  def run(input, values) do
     acc = %{raw: values, processed: %{}}
     {node, _} = Blueprint.postwalk(input, acc, &handle_node/2)
     {:ok, node}

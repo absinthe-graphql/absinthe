@@ -3,7 +3,7 @@ defmodule Absinthe.Phase.Document.FlattenTest do
 
   alias Absinthe.{Blueprint, Phase, Pipeline}
 
-  @pre_pipeline [Phase.Parse, Phase.Blueprint, {Phase.Document.Variables, values: %{}}, Phase.Document.Arguments]
+  @pre_pipeline [Phase.Parse, Phase.Blueprint, {Phase.Document.Variables, %{}}, Phase.Document.Arguments]
 
   @query """
     query Foo($id: ID!) {

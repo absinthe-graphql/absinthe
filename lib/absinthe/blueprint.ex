@@ -8,6 +8,7 @@ defmodule Absinthe.Blueprint do
     directives: [],
     fragments: [],
     errors: [],
+    schema: nil,
   ]
 
   @type t :: %__MODULE__{
@@ -16,6 +17,7 @@ defmodule Absinthe.Blueprint do
     directives: [Blueprint.Schema.DirectiveDefinition.t],
     fragments: [Blueprint.Document.Fragment.Named.t],
     errors: [Blueprint.Phase.Error.t],
+    schema: nil | Absinthe.Schema.t,
   }
 
   @type node_t ::
@@ -30,4 +32,21 @@ defmodule Absinthe.Blueprint do
   defdelegate prewalk(blueprint, acc, fun), to: Absinthe.Blueprint.Transform
   defdelegate postwalk(blueprint, fun), to: Absinthe.Blueprint.Transform
   defdelegate postwalk(blueprint, acc, fun), to: Absinthe.Blueprint.Transform
+
+  def find(blueprint, fun) do
+    {_, found} = Blueprint.prewalk(blueprint, nil, fn
+      node, nil ->
+        if fun.(node) do
+          {node, node}
+        else
+          {node, nil}
+        end
+      node, found ->
+        # Already found
+        {node, found}
+    end)
+    found
+  end
+
+
 end

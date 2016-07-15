@@ -3,6 +3,10 @@ defmodule Absinthe.PipelineTest do
 
   alias Absinthe.{Blueprint, Pipeline, Phase}
 
+  defmodule Schema do
+    use Absinthe.Schema
+  end
+
   describe '.run an operation' do
 
     @query """
@@ -10,7 +14,7 @@ defmodule Absinthe.PipelineTest do
     """
 
     it 'can create a blueprint' do
-      assert {:ok, %Blueprint{}} = Pipeline.run(@query, Pipeline.for_document)
+      assert {:ok, %Blueprint{}} = Pipeline.run(@query, Pipeline.for_document(Schema))
     end
 
   end

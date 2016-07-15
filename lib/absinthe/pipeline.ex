@@ -22,14 +22,15 @@ defmodule Absinthe.Pipeline do
     end
   end
 
-  @spec for_document :: t
-  @spec for_document(map) :: t
-  def for_document(provided_values \\ %{}) do
+  @spec for_document(Absinthe.Schema.t) :: t
+  @spec for_document(Absinthe.Schema.t, map) :: t
+  def for_document(schema, provided_values \\ %{}) do
     [
       Phase.Parse,
       Phase.Blueprint,
       Phase.Document.Validation.structural,
-      {Phase.Document.Variables, values: provided_values},
+      {Phase.Document.Schema, schema},
+      {Phase.Document.Variables, provided_values},
       Phase.Document.Arguments,
       # TODO: More
     ]

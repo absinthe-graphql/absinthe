@@ -16,7 +16,7 @@ defmodule Absinthe.Phase do
     end
   end
 
-  @callback run(any, Keyword.t) :: {:ok, any} | {:error, Phase.Error.t}
+  @callback run(any, any) :: {:ok, any} | {:error, Phase.Error.t}
   @callback check_input(any) :: :ok | {:error, Phase.Error.t}
 
 end

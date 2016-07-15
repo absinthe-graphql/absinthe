@@ -42,7 +42,7 @@ defmodule Absinthe.Phase.Document.VariablesTest do
 
   def input(query, values) do
     {:ok, result} = blueprint(query)
-    |> Phase.Document.Variables.run(values: values)
+    |> Phase.Document.Variables.run(values)
 
     result
   end

@@ -9,6 +9,7 @@ defmodule Absinthe.Blueprint.Directive do
     # When part of a Document
     source_location: nil,
     # Added by phases
+    schema_node: nil,
     errors: [],
   ]
 
@@ -16,6 +17,7 @@ defmodule Absinthe.Blueprint.Directive do
     name: String.t,
     arguments: [Blueprint.Input.Argument.t],
     source_location: nil | Blueprint.Document.SourceLocation.t,
+    schema_node: nil | Absinthe.Type.Directive.t,
     errors: [Phase.Error.t],
   }
 
