@@ -19,6 +19,19 @@ defmodule Absinthe.Type.BuiltIns.Directives do
         :skip
     end
 
+    expand fn
+      %{if: true}, node, acc ->
+        {
+          %{node | flags: [:include | node.flags]},
+          acc
+        }
+      _, node, acc ->
+        {
+          %{node | flags: [:skip | node.flags]},
+          acc
+        }
+    end
+
   end
 
   directive :skip do
@@ -35,6 +48,19 @@ defmodule Absinthe.Type.BuiltIns.Directives do
         :skip
       _ ->
         :include
+    end
+
+    expand fn
+      %{if: true}, node, acc ->
+        {
+          %{node | flags: [:skip | node.flags]},
+          acc
+        }
+      _, node, acc ->
+        {
+          %{node | flags: [:include | node.flags]},
+          acc
+        }
     end
 
   end
