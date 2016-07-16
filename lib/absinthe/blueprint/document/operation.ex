@@ -10,6 +10,7 @@ defmodule Absinthe.Blueprint.Document.Operation do
     variable_definitions: [],
     source_location: nil,
     # Populated by phases
+    schema_node: nil,
     provided_values: %{},
     fields: [],
     errors: [],
@@ -21,6 +22,7 @@ defmodule Absinthe.Blueprint.Document.Operation do
     selections: [Blueprint.Document.selection_t],
     variable_definitions: [Blueprint.Document.VariableDefinition.t],
     source_location: nil | Blueprint.Document.SourceLocation.t,
+    schema_node: nil | Absinthe.Type.Object.t,
     provided_values: %{String.t => nil | Blueprint.Input.t},
     fields: [Blueprint.Document.Field.t],
     errors: [Absinthe.Phase.Error.t],
