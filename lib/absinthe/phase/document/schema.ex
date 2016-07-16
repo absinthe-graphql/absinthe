@@ -19,6 +19,12 @@ defmodule Absinthe.Phase.Document.Schema do
       acc
     }
   end
+  defp handle_node(%Blueprint.Document.Fragment.Inline{} = node, schema, acc) do
+    {
+      put_in(node.schema_node, schema.__absinthe_type__(node.type_condition.name)),
+      acc
+    }
+  end
   defp handle_node(%Blueprint.Directive{name: name} = node, schema, acc) do
     {
       put_in(node.schema_node, schema.__absinthe_directive__(name)),

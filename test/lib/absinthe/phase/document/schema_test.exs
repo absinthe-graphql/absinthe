@@ -59,7 +59,9 @@ defmodule Absinthe.Phase.Document.SchemaTest do
   }
   subscription NewBooks {
     newBook {
-      id
+      ... on Book {
+        id
+      }
     }
   }
   fragment BookName on Book {
@@ -111,6 +113,13 @@ defmodule Absinthe.Phase.Document.SchemaTest do
       assert %Absinthe.Type.Object{__reference__: %{identifier: :book}} = node.schema_node
     end
 
+    it "sets the inline fragment schema node" do
+      {:ok, result} = input(@query)
+      node = first_inline_frag(result)
+      assert %Absinthe.Type.Object{__reference__: %{identifier: :book}} = node.schema_node
+    end
+
+
     it "sets directive schema nodes" do
       {:ok, result} = input(@query)
       directive = Blueprint.find(result, fn
@@ -124,7 +133,16 @@ defmodule Absinthe.Phase.Document.SchemaTest do
 
   end
 
-  def frag(blueprint, name) do
+  defp first_inline_frag(blueprint) do
+    Blueprint.find(blueprint.operations, fn
+      %Blueprint.Document.Fragment.Inline{} ->
+        true
+      _ ->
+        false
+    end)
+  end
+
+  defp frag(blueprint, name) do
     Blueprint.find(blueprint.fragments, fn
       %Blueprint.Document.Fragment.Named{name: ^name} ->
         true
@@ -133,7 +151,7 @@ defmodule Absinthe.Phase.Document.SchemaTest do
     end)
   end
 
-  def op(blueprint, name) do
+  defp op(blueprint, name) do
     Blueprint.find(blueprint.operations, fn
       %Blueprint.Document.Operation{name: ^name} ->
         true
@@ -142,7 +160,7 @@ defmodule Absinthe.Phase.Document.SchemaTest do
     end)
   end
 
-  def input(query) do
+  defp input(query) do
     blueprint(query)
     |> Phase.Document.Schema.run(Schema)
   end

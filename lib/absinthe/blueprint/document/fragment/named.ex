@@ -21,7 +21,7 @@ defmodule Absinthe.Blueprint.Document.Fragment.Named do
     fields: [Blueprint.Document.Field.t],
     name: String.t,
     selections: [Blueprint.Document.selection_t],
-    schema_node: nil | Absinthe.Type.Object.t,
+    schema_node: nil | Absinthe.Type.t,
     source_location: nil | Blueprint.Document.SourceLocation.t,
     type_condition: Blueprint.TypeReference.Name.t,
   }
