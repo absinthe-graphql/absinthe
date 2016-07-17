@@ -56,7 +56,7 @@ defmodule Absinthe.Phase.Document.FlattenTest do
 
   def input(query) do
     {:ok, result} = blueprint(query)
-    |> Phase.Document.Flatten.run([])
+    |> Phase.Document.Flatten.run
 
     result
   end

@@ -94,7 +94,7 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
       Phase.Parse,
       Phase.Blueprint
     ])
-    Phase.Document.Validation.NoFragmentCycles.run(blueprint, [])
+    Phase.Document.Validation.NoFragmentCycles.run(blueprint)
   end
 
 end

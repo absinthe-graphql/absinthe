@@ -9,14 +9,12 @@ defmodule Absinthe.Phase do
     quote do
       @behaviour Phase
 
-      def run(input, options), do: {:ok, input}
+      def run(input), do: {:ok, input}
 
-      def check_input(_), do: :ok
-      defoverridable check_input: 1, run: 2
+      defoverridable run: 1
     end
   end
 
-  @callback run(any, any) :: {:ok, any} | {:error, Phase.Error.t}
-  @callback check_input(any) :: :ok | {:error, Phase.Error.t}
+  @callback run(any) :: {:ok, any} | {:error, Phase.Error.t}
 
 end

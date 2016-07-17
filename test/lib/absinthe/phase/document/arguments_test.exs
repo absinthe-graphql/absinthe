@@ -44,7 +44,7 @@ defmodule Absinthe.Phase.Document.ArgumentsTest do
 
   def input(query, values) do
     {:ok, result} = blueprint(query, values)
-    |> Phase.Document.Arguments.run([])
+    |> Phase.Document.Arguments.run
 
     result
   end

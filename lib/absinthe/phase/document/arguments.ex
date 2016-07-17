@@ -15,8 +15,8 @@ defmodule Absinthe.Phase.Document.Arguments do
   use Absinthe.Phase
   alias Absinthe.Blueprint
 
-  @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
-  def run(input, _) do
+  @spec run(Blueprint.t) :: {:ok, Blueprint.t}
+  def run(input) do
     acc = %{provided_values: %{}}
     {node, _} = Blueprint.prewalk(input, acc, &handle_node/2)
     {:ok, node}

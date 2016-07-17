@@ -8,8 +8,8 @@ defmodule Absinthe.Phase.Document.Directives do
   use Absinthe.Phase
   alias Absinthe.Blueprint
 
-  @spec run(Blueprint.t, any) :: {:ok, Blueprint.t}
-  def run(input, _) do
+  @spec run(Blueprint.t) :: {:ok, Blueprint.t}
+  def run(input) do
     {node, _} = Blueprint.prewalk(input, %{}, &handle_node/2)
     {:ok, node}
   end

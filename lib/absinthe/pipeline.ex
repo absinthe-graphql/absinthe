@@ -6,7 +6,7 @@ defmodule Absinthe.Pipeline do
   @type input_t :: any
   @type output_t :: %{errors: [Phase.Error.t]}
 
-  @type phase_config_t :: Phase.t | {Phase.t, Keyword.t}
+  @type phase_config_t :: Phase.t | {Phase.t, [any]}
 
   @type t :: [phase_config_t | [phase_config_t]]
 
@@ -51,8 +51,8 @@ defmodule Absinthe.Pipeline do
   defp do_run(input, pipeline) do
     List.flatten(pipeline)
     |> Enum.reduce_while(input, fn config, input ->
-      {phase, options} = phase_invocation(config)
-      case run_phase(phase, input, options) do
+      {phase, args} = phase_invocation(config)
+      case apply(phase, :run, [input | args]) do
         {:ok, value} ->
           {:cont, value}
         {:error, value} when is_binary(value) ->
@@ -69,24 +69,14 @@ defmodule Absinthe.Pipeline do
     end)
   end
 
-  @spec run_phase(Phase.t, input_t, Keyword.t) :: output_t | {:pipeline_error, String.t}
-  defp run_phase(phase, input, options) do
-    try do
-      phase.run(input, options)
-    rescue
-      UndefinedFunctionError ->
-        {:pipeline_error, "Could not run phase. Could not invoke `#{inspect phase}.run/2`. Does it exist?"}
-    end
-  end
-
   @spec halt_with_error_result(Phase.t, output_t | Phase.Error.t | [Phase.Error.t]) :: {:halt, {:ok, output_t}}
   defp halt_with_error_result(phase, error) do
     {:halt, {:ok, result_with_errors(phase, error)}}
   end
 
   @spec phase_invocation(phase_config_t) :: {Phase.t, list}
-  defp phase_invocation({phase, options}) do
-    {phase, options}
+  defp phase_invocation({phase, args}) do
+    {phase, List.wrap(args)}
   end
   defp phase_invocation(phase) do
     {phase, []}

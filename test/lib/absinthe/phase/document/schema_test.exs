@@ -113,12 +113,39 @@ defmodule Absinthe.Phase.Document.SchemaTest do
       assert %Absinthe.Type.Object{__reference__: %{identifier: :book}} = node.schema_node
     end
 
+    it "sets the schema node for a named fragment field" do
+      {:ok, result} = input(@query)
+      fragment = frag(result, "BookName")
+      node = field(fragment, "name")
+      assert %Absinthe.Type.Field{__reference__: %{identifier: :name}} = node.schema_node
+    end
+
     it "sets the inline fragment schema node" do
       {:ok, result} = input(@query)
       node = first_inline_frag(result)
       assert %Absinthe.Type.Object{__reference__: %{identifier: :book}} = node.schema_node
     end
 
+    it "sets the schema node for an inline fragment" do
+      {:ok, result} = input(@query)
+      fragment = first_inline_frag(result)
+      node = field(fragment, "id")
+      assert %Absinthe.Type.Field{__reference__: %{identifier: :id}} = node.schema_node
+    end
+
+    it "sets an operation field schema node" do
+      {:ok, result} = input(@query)
+      operation = op(result, "BooksOnly")
+      node = field(operation, "books")
+      assert %Absinthe.Type.Field{__reference__: %{identifier: :books}} = node.schema_node
+    end
+
+    it "sets an operation field schema node supporting an adapter" do
+      {:ok, result} = input(@query)
+      operation = op(result, "ChangeName")
+      node = field(operation, "changeName")
+      assert %Absinthe.Type.Field{__reference__: %{identifier: :change_name}} = node.schema_node
+    end
 
     it "sets directive schema nodes" do
       {:ok, result} = input(@query)
@@ -154,6 +181,15 @@ defmodule Absinthe.Phase.Document.SchemaTest do
   defp op(blueprint, name) do
     Blueprint.find(blueprint.operations, fn
       %Blueprint.Document.Operation{name: ^name} ->
+        true
+      _ ->
+        false
+    end)
+  end
+
+  defp field(scope, name) do
+    Blueprint.find(scope.selections, fn
+      %Blueprint.Document.Field{name: ^name} ->
         true
       _ ->
         false

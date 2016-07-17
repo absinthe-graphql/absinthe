@@ -46,7 +46,7 @@ defmodule Absinthe.Phase.Document.DirectivesTest do
 
   def input(query, values) do
     blueprint(query, values)
-    |> Phase.Document.Directives.run([])
+    |> Phase.Document.Directives.run
   end
 
   defp blueprint(query, values) do

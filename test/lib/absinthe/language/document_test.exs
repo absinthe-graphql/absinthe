@@ -29,7 +29,7 @@ defmodule Absinthe.Languguage.DocumentTest do
     describe "given an existing operation name" do
 
       it "returns the operation definition" do
-        {:ok, doc} = Absinthe.Phase.Parse.run(@input, [])
+        {:ok, doc} = Absinthe.Phase.Parse.run(@input)
         result = Document.get_operation(doc, "MyQuery2")
         assert %OperationDefinition{name: "MyQuery2", operation: :query} = result
       end
@@ -37,7 +37,7 @@ defmodule Absinthe.Languguage.DocumentTest do
     end
 
     describe "given a non-existing operation name" do
-      {:ok, doc} = Absinthe.Phase.Parse.run(@input, [])
+      {:ok, doc} = Absinthe.Phase.Parse.run(@input)
       result = Document.get_operation(doc, "DoesNotExist")
       assert nil == result
     end
