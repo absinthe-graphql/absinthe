@@ -9,6 +9,7 @@ defmodule Absinthe.Blueprint.Input.Argument do
     # Added by phases
     schema_node: nil,
     normalized_value: nil,
+    data_value: nil,
     errors: [],
   ]
 
@@ -17,6 +18,7 @@ defmodule Absinthe.Blueprint.Input.Argument do
     literal_value: Blueprint.Input.t,
     schema_node: nil | Absinthe.Type.Argument.t,
     normalized_value: Blueprint.Input.t,
+    data_value: any,
     errors: [Absinthe.Phase.Error.t],
   }
 
