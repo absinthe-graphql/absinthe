@@ -24,13 +24,13 @@ defmodule Absinthe.Blueprint.Input.Argument do
   def value_map(arguments) do
     arguments
     |> Enum.flat_map(fn
-      %__MODULE__{schema_node: nil, value: value} ->
+      %__MODULE__{schema_node: nil} ->
         []
       %__MODULE__{schema_node: schema_node, value: value} ->
-        {
-          schema_node.name |> String.to_existing_atom,
+        [{
+          schema_node.__reference__.identifier,
           value
-        }
+        }]
     end)
     |> Enum.into(%{})
   end
