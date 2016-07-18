@@ -9,6 +9,7 @@ defmodule Absinthe.Blueprint.Document.Fragment.Inline do
     directives: [],
     source_location: nil,
     # Populated by phases
+    schema_node: nil,
     fields: [],
     errors: [],
   ]
@@ -18,6 +19,7 @@ defmodule Absinthe.Blueprint.Document.Fragment.Inline do
     errors: [Absinthe.Phase.Error.t],
     fields: [Blueprint.Document.Field.t],
     selections: [Blueprint.Document.selection_t],
+    schema_node: nil | Absinthe.Type.t,
     source_location: nil | Blueprint.Document.SourceLocation.t,
     type_condition: Blueprint.TypeReference.Name.t,
   }

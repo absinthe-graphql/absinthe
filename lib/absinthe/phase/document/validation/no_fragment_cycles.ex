@@ -4,8 +4,8 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
 
   use Absinthe.Phase
 
-  @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
-  def run(input, _) do
+  @spec run(Blueprint.t) :: Phase.result_t
+  def run(input) do
     {fragments, error_count} = check(input.fragments)
     {
       instruction(error_count),

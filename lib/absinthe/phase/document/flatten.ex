@@ -11,8 +11,8 @@ defmodule Absinthe.Phase.Document.Flatten do
   use Absinthe.Phase
   alias Absinthe.Blueprint
 
-  @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
-  def run(input, _) do
+  @spec run(Blueprint.t) :: {:ok, Blueprint.t}
+  def run(input) do
     # TODO: Pass a Map of the fragments by name
     {result, _} = Blueprint.postwalk(input, input.fragments, &flatten/2)
     {:ok, result}
