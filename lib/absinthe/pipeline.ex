@@ -29,9 +29,9 @@ defmodule Absinthe.Pipeline do
       Phase.Parse,
       Phase.Blueprint,
       Phase.Document.Validation.structural,
-      {Phase.Document.Schema, schema},
       {Phase.Document.Variables, provided_values},
       Phase.Document.Arguments,
+      {Phase.Document.Schema, schema},
       # TODO: More
     ]
   end

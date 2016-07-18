@@ -15,12 +15,16 @@ defmodule Absinthe.Phase.Document.SchemaTest do
         arg :id, non_null(:id)
         arg :name, non_null(:string)
       end
+      field :add_review, :review do
+        arg :info, non_null(:input_review)
+      end
     end
 
     object :book do
       field :id, :id
       field :name, :string
       field :categories, list_of(:category)
+      field :reviews, list_of(:review)
     end
 
     subscription do
@@ -31,9 +35,24 @@ defmodule Absinthe.Phase.Document.SchemaTest do
       field :name
     end
 
+    object :review do
+      field :stars, :integer
+      field :text, :string
+    end
+
+    input_object :input_review do
+      field :stars, non_null(:integer)
+      field :text, :string
+    end
+
   end
 
-  @pre_pipeline [Phase.Parse, Phase.Blueprint]
+  @pre_pipeline Enum.take_while(Pipeline.for_document(Schema, %{}), fn
+    {Phase.Document.Schema, _} ->
+      false
+    _ ->
+      true
+  end)
 
   @nameless_query """
   { books { name } }
@@ -51,11 +70,12 @@ defmodule Absinthe.Phase.Document.SchemaTest do
   query BooksOnly {
     books { ... BookName }
   }
-  mutation ChangeName($id: ID!, $name: String!) {
+  mutation ModifyBook($id: ID!, $name: String!) {
     changeName(id: $id, name: $name) {
       id
       name
     }
+    addReview(id: $id, info: {stars: 4})
   }
   subscription NewBooks {
     newBook {
@@ -97,7 +117,7 @@ defmodule Absinthe.Phase.Document.SchemaTest do
 
     it "sets the mutation schema node" do
       {:ok, result} = input(@query)
-      node = op(result, "ChangeName")
+      node = op(result, "ModifyBook")
       assert %Type.Object{__reference__: %{identifier: :mutation}} = node.schema_node
     end
 
@@ -162,10 +182,22 @@ defmodule Absinthe.Phase.Document.SchemaTest do
 
     it "sets field argument schema nodes" do
       {:ok, result} = input(@query)
-      operation = op(result, "ChangeName")
+      operation = op(result, "ModifyBook")
       f = field(operation, "changeName")
       node = named(f, Blueprint.Input.Argument, "id")
       assert %Type.Argument{__reference__: %{identifier: :id}} = node.schema_node
+    end
+
+    @tag :nested
+    it "sets field argument schema nodes supporting input objects" do
+      {:ok, result} = input(@query)
+      operation = op(result, "ModifyBook")
+      f = field(operation, "addReview")
+      top_node = named(f, Blueprint.Input.Argument, "info")
+      assert %Type.Argument{__reference__: %{identifier: :info}} = top_node.schema_node
+      node = top_node.provided_value.fields |> List.first
+      assert %Type.Field{__reference__: %{identifier: :stars}} = node.schema_node
+      assert %Type.Scalar{__reference__: %{identifier: :integer}} = node.value.schema_node
     end
 
     it "sets directive argument schema nodes" do
