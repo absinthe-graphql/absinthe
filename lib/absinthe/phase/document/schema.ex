@@ -82,8 +82,8 @@ defmodule Absinthe.Phase.Document.Schema do
   @spec argument_with_schema_node(Blueprint.Input.Argument.t, Type.t, Absinthe.Schema.t, Absinthe.Adapter.t) :: Type.t
   defp argument_with_schema_node(%{name: name} = node, parent_schema_node, schema, adapter) do
     schema_node = find_schema_argument(parent_schema_node, name, adapter)
-    provided_value = value_with_schema_node(node.provided_value, schema_node, schema, adapter)
-    %{node | schema_node: schema_node, provided_value: provided_value}
+    normalized_value = value_with_schema_node(node.normalized_value, schema_node, schema, adapter)
+    %{node | schema_node: schema_node, normalized_value: normalized_value}
   end
   defp argument_with_schema_node(node, nil, _, _) do
     node

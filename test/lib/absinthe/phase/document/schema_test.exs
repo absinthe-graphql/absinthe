@@ -195,7 +195,7 @@ defmodule Absinthe.Phase.Document.SchemaTest do
       f = field(operation, "addReview")
       top_node = named(f, Blueprint.Input.Argument, "info")
       assert %Type.Argument{__reference__: %{identifier: :info}} = top_node.schema_node
-      node = top_node.provided_value.fields |> List.first
+      node = top_node.normalized_value.fields |> List.first
       assert %Type.Field{__reference__: %{identifier: :stars}} = node.schema_node
       assert %Type.Scalar{__reference__: %{identifier: :integer}} = node.value.schema_node
     end

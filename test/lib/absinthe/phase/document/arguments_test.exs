@@ -24,9 +24,9 @@ defmodule Absinthe.Phase.Document.ArgumentsTest do
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
       field = op.selections |> List.first
       age_argument = field.arguments |> Enum.find(&(&1.name == "age"))
-      assert %Blueprint.Input.Integer{value: 36} == age_argument.provided_value
+      assert %Blueprint.Input.Integer{value: 36} == age_argument.normalized_value
       name_argument = field.arguments |> Enum.find(&(&1.name == "name"))
-      assert %Blueprint.Input.String{value: "Bruce"} == name_argument.provided_value
+      assert %Blueprint.Input.String{value: "Bruce"} == name_argument.normalized_value
     end
   end
 
@@ -36,9 +36,9 @@ defmodule Absinthe.Phase.Document.ArgumentsTest do
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
       field = op.selections |> List.first
       age_argument = field.arguments |> Enum.find(&(&1.name == "age"))
-      assert %Blueprint.Input.Integer{value: 4} == age_argument.provided_value
+      assert %Blueprint.Input.Integer{value: 4} == age_argument.normalized_value
       name_argument = field.arguments |> Enum.find(&(&1.name == "name"))
-      assert %Blueprint.Input.String{value: "Bruce"} == name_argument.provided_value
+      assert %Blueprint.Input.String{value: "Bruce"} == name_argument.normalized_value
     end
   end
 
