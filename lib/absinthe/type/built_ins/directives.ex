@@ -25,7 +25,7 @@ defmodule Absinthe.Type.BuiltIns.Directives do
           %{node | flags: [:include | node.flags]},
           acc
         }
-      args, node, acc ->
+      _, node, acc ->
         {
           %{node | flags: [:skip | node.flags]},
           acc

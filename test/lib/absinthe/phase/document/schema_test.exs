@@ -188,7 +188,6 @@ defmodule Absinthe.Phase.Document.SchemaTest do
       assert %Type.Argument{__reference__: %{identifier: :id}} = node.schema_node
     end
 
-    @tag :nested
     it "sets field argument schema nodes supporting input objects" do
       {:ok, result} = input(@query)
       operation = op(result, "ModifyBook")
