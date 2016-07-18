@@ -30,7 +30,7 @@ defmodule Absinthe.Phase.Document.Arguments do
     }
   end
   # Argument using a variable: Set provided value
-  defp handle_node(%Blueprint.Input.Argument{value: %Blueprint.Input.Variable{name: variable_name}} = node, acc) do
+  defp handle_node(%Blueprint.Input.Argument{literal_value: %Blueprint.Input.Variable{name: variable_name}} = node, acc) do
     {
       %{node | normalized_value: Map.get(acc.provided_values, variable_name)},
       acc
@@ -39,7 +39,7 @@ defmodule Absinthe.Phase.Document.Arguments do
   # Argument not using a variable: Set provided value from the literal value
   defp handle_node(%Blueprint.Input.Argument{} = node, acc) do
     {
-      %{node | normalized_value: node.value},
+      %{node | normalized_value: node.literal_value},
       acc
     }
   end

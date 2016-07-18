@@ -2,10 +2,10 @@ defmodule Absinthe.Blueprint.Input.Argument do
 
   alias Absinthe.Blueprint
 
-  @enforce_keys [:name, :value]
+  @enforce_keys [:name, :literal_value]
   defstruct [
     :name,
-    :value,
+    :literal_value,
     # Added by phases
     schema_node: nil,
     normalized_value: nil,
@@ -14,7 +14,7 @@ defmodule Absinthe.Blueprint.Input.Argument do
 
   @type t :: %__MODULE__{
     name: String.t,
-    value: Blueprint.Input.t,
+    literal_value: Blueprint.Input.t,
     schema_node: nil | Absinthe.Type.Argument.t,
     normalized_value: Blueprint.Input.t,
     errors: [Absinthe.Phase.Error.t],
