@@ -1,9 +1,39 @@
-defmodule Absinthe.Phase.Document.ArgumentsTest do
+defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.{Blueprint, Phase, Pipeline}
 
-  @pre_pipeline [Phase.Parse, Phase.Blueprint]
+  defmodule Schema do
+    use Absinthe.Schema
+
+    query do
+      field :foo, :foo do
+        arg :id, non_null(:id)
+      end
+      field :profile, :user do
+        arg :name, :string
+        arg :age, :integer
+      end
+    end
+
+    object :foo do
+      field :bar, :string
+    end
+
+    object :user do
+      field :id, non_null(:id)
+      field :name, non_null(:string)
+      field :age, :integer
+    end
+
+  end
+
+  @pre_pipeline Enum.take_while(Pipeline.for_document(Schema, %{}), fn
+    {Phase.Document.Variables, _} ->
+      false
+    _ ->
+      true
+  end)
 
   @query """
     query Foo($id: ID!) {
@@ -44,7 +74,7 @@ defmodule Absinthe.Phase.Document.ArgumentsTest do
 
   def input(query, values) do
     {:ok, result} = blueprint(query, values)
-    |> Phase.Document.Arguments.run
+    |> Phase.Document.Arguments.Normalize.run
 
     result
   end

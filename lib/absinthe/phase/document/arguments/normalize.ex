@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Document.Arguments do
+defmodule Absinthe.Phase.Document.Arguments.Normalize do
   @moduledoc """
   Populate all arguments in the document with their provided values:
 

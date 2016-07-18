@@ -30,7 +30,7 @@ defmodule Absinthe.Pipeline do
       Phase.Blueprint,
       Phase.Document.Validation.structural,
       {Phase.Document.Variables, provided_values},
-      Phase.Document.Arguments,
+      Phase.Document.Arguments.Normalize,
       {Phase.Document.Schema, schema},
       Phase.Document.Directives,
       Phase.Document.Flatten,
