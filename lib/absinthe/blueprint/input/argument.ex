@@ -26,7 +26,7 @@ defmodule Absinthe.Blueprint.Input.Argument do
     |> Enum.flat_map(fn
       %__MODULE__{schema_node: nil} ->
         []
-      %__MODULE__{schema_node: schema_node, value: value} ->
+      %__MODULE__{schema_node: schema_node, provided_value: value} ->
         [{
           schema_node.__reference__.identifier,
           value

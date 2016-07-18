@@ -32,6 +32,8 @@ defmodule Absinthe.Pipeline do
       {Phase.Document.Variables, provided_values},
       Phase.Document.Arguments,
       {Phase.Document.Schema, schema},
+      Phase.Document.Directives,
+      Phase.Document.Flatten,
       # TODO: More
     ]
   end

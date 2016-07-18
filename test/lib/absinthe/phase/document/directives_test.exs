@@ -35,11 +35,25 @@ defmodule Absinthe.Phase.Document.DirectivesTest do
   }
   """
 
-  describe ".run" do
+  describe ".run with built-in @include" do
 
     it "returns a blueprint" do
       {:ok, result} = input(@query, %{})
       assert %Blueprint{} = result
+    end
+
+    @tag :pending
+    it "adds a :skip flag" do
+      {:ok, result} = input(@query, %{"cats" => false})
+      node = named(result, Blueprint.Document.Field, "categories")
+      assert Enum.member?(node.flags, :skip)
+    end
+
+    @tag :pending
+    it "adds an :include flag" do
+      {:ok, result} = input(@query, %{"cats" => true})
+      node = named(result, Blueprint.Document.Field, "categories")
+      assert Enum.member?(node.flags, :include)
     end
 
   end
@@ -62,6 +76,15 @@ defmodule Absinthe.Phase.Document.DirectivesTest do
         false
       _ ->
         true
+    end)
+  end
+
+  defp named(scope, mod, name) do
+    Blueprint.find(scope, fn
+      %{__struct__: ^mod, name: ^name} ->
+        true
+      _ ->
+        false
     end)
   end
 
