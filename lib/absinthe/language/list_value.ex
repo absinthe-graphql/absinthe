@@ -1,7 +1,7 @@
 defmodule Absinthe.Language.ListValue do
   @moduledoc false
 
-  alias Absinthe.Language
+  alias Absinthe.{Blueprint, Language}
 
   defstruct [
     values: [],
@@ -12,4 +12,13 @@ defmodule Absinthe.Language.ListValue do
     values: [Language.value_t],
     loc: Language.loc_t
   }
+
+  defimpl Blueprint.Draft do
+    def convert(node, doc) do
+      %Blueprint.Input.List{
+        values: Blueprint.Draft.convert(node.values, doc)
+      }
+    end
+  end
+
 end
