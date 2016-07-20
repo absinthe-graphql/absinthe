@@ -22,7 +22,7 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
     node
   end
 
-  defp build_value(%{schema_node: nil}) do
+  defp build_value(%{schema_node: nil} = node) do
     :error
   end
   defp build_value(%Blueprint.Input.Object{} = node) do
@@ -47,10 +47,37 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
     end
   end
   defp build_value(%{value: value, schema_node: %Type.Scalar{} = schema_node}) do
+    schema_node = schema_node |> unwrap_non_null
     Type.Scalar.parse(schema_node, value)
   end
-  defp build_value(_) do
+  defp build_value(%Blueprint.Input.List{values: values, schema_node: schema_node}) do
+    schema_node = schema_node |> unwrap_non_null
+    result = Enum.reduce_while(values, [], fn
+      value, list ->
+        case build_value(value) do
+          {:ok, value} ->
+            {:cont, [value | list]}
+          :error ->
+            {:halt, :error}
+        end
+    end)
+    case result do
+      :error ->
+        :error
+      values ->
+        {:ok, Enum.reverse(values)}
+    end
+  end
+  defp build_value(result) do
     :error
+  end
+
+  @spec unwrap_non_null(Type.NonNull.t | Type.t) :: Type.t
+  defp unwrap_non_null(%Type.NonNull{of_type: type}) do
+    type
+  end
+  defp unwrap_non_null(other) do
+    other
   end
 
 end

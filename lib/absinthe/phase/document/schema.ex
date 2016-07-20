@@ -80,13 +80,13 @@ defmodule Absinthe.Phase.Document.Schema do
 
   # Given a blueprint argument node, fill in its schema node
   @spec argument_with_schema_node(Blueprint.Input.Argument.t, Type.t, Absinthe.Schema.t, Absinthe.Adapter.t) :: Type.t
+  defp argument_with_schema_node(node, nil, _, _) do
+    node
+  end
   defp argument_with_schema_node(%{name: name} = node, parent_schema_node, schema, adapter) do
     schema_node = find_schema_argument(parent_schema_node, name, adapter)
     normalized_value = value_with_schema_node(node.normalized_value, schema_node, schema, adapter)
     %{node | schema_node: schema_node, normalized_value: normalized_value}
-  end
-  defp argument_with_schema_node(node, nil, _, _) do
-    node
   end
 
   # Given a blueprint provided value node, fill in its schema node
@@ -97,15 +97,30 @@ defmodule Absinthe.Phase.Document.Schema do
   defp value_with_schema_node(nil, _, _, _) do
     nil
   end
+  defp value_with_schema_node(node, %Type.NonNull{of_type: type}, schema, adapter) do
+    value_with_schema_node(node, type, schema, adapter)
+  end
+  defp value_with_schema_node(node, %Type.List{of_type: type}, schema, adapter) do
+    value_with_schema_node(node, type, schema, adapter)
+  end
+  defp value_with_schema_node(node, %Type.Scalar{} = parent_schema_node, schema, adapter) do
+    %{node | schema_node: parent_schema_node}
+  end
+  defp value_with_schema_node(node, %Type.Enum{} = parent_schema_node, schema, adapter) do
+    %{node | schema_node: parent_schema_node}
+  end
   defp value_with_schema_node(%Blueprint.Input.Object{} = node, parent_schema_node, schema, adapter) do
-    type_name = parent_schema_node.type |> Type.unwrap
-    schema_node = schema.__absinthe_type__(type_name)
+    schema_node = Type.expand(parent_schema_node.type, schema)
     fields = Enum.map(node.fields, &input_field_with_schema_node(&1, schema_node, schema, adapter))
     %{node | schema_node: schema_node, fields: fields}
   end
+  defp value_with_schema_node(%Blueprint.Input.List{} = node, parent_schema_node, schema, adapter) do
+    schema_node = Type.expand(parent_schema_node.type, schema)
+    values = Enum.map(node.values, &value_with_schema_node(&1, schema_node, schema, adapter))
+    %{node | schema_node: schema_node, values: values}
+  end
   defp value_with_schema_node(node, parent_schema_node, schema, _) do
-    type_name = parent_schema_node.type |> Type.unwrap
-    schema_node = schema.__absinthe_type__(type_name)
+    schema_node = Type.expand(parent_schema_node.type, schema)
     %{node | schema_node: schema_node}
   end
 

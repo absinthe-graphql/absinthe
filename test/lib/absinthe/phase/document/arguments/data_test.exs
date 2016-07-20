@@ -18,6 +18,9 @@ defmodule Absinthe.Phase.Document.Arguments.DataTest do
       field :profile, :profile do
         arg :id, non_null(:id)
       end
+      field :profiles, list_of(:profile) do
+        arg :ids, non_null(list_of(:id))
+      end
     end
 
     input_object :input_profile do
@@ -48,8 +51,14 @@ defmodule Absinthe.Phase.Document.Arguments.DataTest do
         id name age
       }
     }
-    query Profile($id: ID!) {
+    query Profile($id: ID!, $ids: [ID]!) {
       profile(id: $id) {
+        name
+      }
+      other: profile(id: $bad) {
+        name
+      }
+      profiles(ids: $ids) {
         name
       }
     }
@@ -77,6 +86,20 @@ defmodule Absinthe.Phase.Document.Arguments.DataTest do
       result = input(@query, %{"id" => "234"})
       arg = named(result, Blueprint.Input.Argument, "id")
       assert "234" == arg.data_value
+    end
+
+    it "doesn't set data_value for an un-declared variable" do
+      result = input(@query, %{"bad" => "234"})
+      other = named(result, Blueprint.Document.Field, "other")
+      arg = named(other, Blueprint.Input.Argument, "id")
+      assert nil == arg.data_value
+    end
+
+    @tag :only
+    it "sets data_value that is a list" do
+      result = input(@query, %{"ids" => ~w(2 3 4)})
+      arg = named(result, Blueprint.Input.Argument, "ids")
+      assert ~w(2 3 4) == arg.data_value
     end
 
   end
