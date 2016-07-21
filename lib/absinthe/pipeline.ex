@@ -34,7 +34,7 @@ defmodule Absinthe.Pipeline do
       {Phase.Document.Schema, schema},
       Phase.Document.Directives,
       Phase.Document.Flatten,
-      # TODO: More
+      {Phase.Execution.Resolution, [nil, provided_values[:context], provided_values[:root_value]]}
     ]
   end
 
