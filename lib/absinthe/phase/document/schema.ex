@@ -58,6 +58,9 @@ defmodule Absinthe.Phase.Document.Schema do
 
   # Given a schema type, lookup a child field definition
   @spec find_schema_field(nil | Type.t, String.t, Absinthe.Schema.t, Absinthe.Adapter.t) :: nil | Type.Field.t
+  defp find_schema_field(%{of_type: type}, name, schema, adapter) do
+    find_schema_field(type, name, schema, adapter)
+  end
   defp find_schema_field(%{fields: fields}, name, _, adapter) do
     internal_name = adapter.to_internal_name(name, :field)
     fields
@@ -103,10 +106,10 @@ defmodule Absinthe.Phase.Document.Schema do
   defp value_with_schema_node(node, %Type.List{of_type: type}, schema, adapter) do
     value_with_schema_node(node, type, schema, adapter)
   end
-  defp value_with_schema_node(node, %Type.Scalar{} = parent_schema_node, schema, adapter) do
+  defp value_with_schema_node(node, %Type.Scalar{} = parent_schema_node, _, _) do
     %{node | schema_node: parent_schema_node}
   end
-  defp value_with_schema_node(node, %Type.Enum{} = parent_schema_node, schema, adapter) do
+  defp value_with_schema_node(node, %Type.Enum{} = parent_schema_node, _, _) do
     %{node | schema_node: parent_schema_node}
   end
   defp value_with_schema_node(%Blueprint.Input.Object{} = node, parent_schema_node, schema, adapter) do

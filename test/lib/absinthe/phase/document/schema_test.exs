@@ -196,7 +196,7 @@ defmodule Absinthe.Phase.Document.SchemaTest do
       assert %Type.Argument{__reference__: %{identifier: :info}} = top_node.schema_node
       node = top_node.normalized_value.fields |> List.first
       assert %Type.Field{__reference__: %{identifier: :stars}} = node.schema_node
-      assert %Type.Scalar{__reference__: %{identifier: :integer}} = node.value.schema_node
+      assert %Type.NonNull{of_type: %Type.Scalar{__reference__: %{identifier: :integer}}} = node.value.schema_node
     end
 
     it "sets directive argument schema nodes" do

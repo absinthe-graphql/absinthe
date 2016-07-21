@@ -25,6 +25,10 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
   defp build_value(%{schema_node: nil} = node) do
     :error
   end
+  defp build_value(%{schema_node: %Type.NonNull{of_type: type}} = node) do
+    %{node | schema_node: type}
+    |> build_value
+  end
   defp build_value(%Blueprint.Input.Object{} = node) do
     result = node.fields
     |> Enum.reduce(%{}, fn

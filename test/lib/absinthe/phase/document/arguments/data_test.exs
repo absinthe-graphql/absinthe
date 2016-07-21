@@ -76,6 +76,7 @@ defmodule Absinthe.Phase.Document.Arguments.DataTest do
       assert %{name: "Bruce", age: 36} == arg.data_value
     end
 
+    @tag :pending # Requires validation
     it "sets data_value ignoring invalid, provided data" do
       result = input(@query, %{"input" => %{"name" => [], "age" => 36}})
       arg = named(result, Blueprint.Input.Argument, "input")
@@ -141,6 +142,7 @@ defmodule Absinthe.Phase.Document.Arguments.DataTest do
       assert %{name: "Brian", age: 28} == arg.data_value
     end
 
+    @tag :pending # Requires valiadtion
     it "sets data_value ignoring invalid, provided data" do
       result = input(@query, %{"input" => %{"name" => [], "age" => 36}})
       op = named(result, Blueprint.Document.Operation, "CreateProfileWithVariable")
