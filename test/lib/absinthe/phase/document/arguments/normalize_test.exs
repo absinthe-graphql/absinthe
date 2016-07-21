@@ -1,9 +1,39 @@
-defmodule Absinthe.Phase.Document.ArgumentsTest do
+defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.{Blueprint, Phase, Pipeline}
 
-  @pre_pipeline [Phase.Parse, Phase.Blueprint]
+  defmodule Schema do
+    use Absinthe.Schema
+
+    query do
+      field :foo, :foo do
+        arg :id, non_null(:id)
+      end
+      field :profile, :user do
+        arg :name, :string
+        arg :age, :integer
+      end
+    end
+
+    object :foo do
+      field :bar, :string
+    end
+
+    object :user do
+      field :id, non_null(:id)
+      field :name, non_null(:string)
+      field :age, :integer
+    end
+
+  end
+
+  @pre_pipeline Enum.take_while(Pipeline.for_document(Schema, %{}), fn
+    {Phase.Document.Variables, _} ->
+      false
+    _ ->
+      true
+  end)
 
   @query """
     query Foo($id: ID!) {
@@ -24,9 +54,9 @@ defmodule Absinthe.Phase.Document.ArgumentsTest do
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
       field = op.selections |> List.first
       age_argument = field.arguments |> Enum.find(&(&1.name == "age"))
-      assert %Blueprint.Input.Integer{value: 36} == age_argument.provided_value
+      assert %Blueprint.Input.Integer{value: 36} == age_argument.normalized_value
       name_argument = field.arguments |> Enum.find(&(&1.name == "name"))
-      assert %Blueprint.Input.String{value: "Bruce"} == name_argument.provided_value
+      assert %Blueprint.Input.String{value: "Bruce"} == name_argument.normalized_value
     end
   end
 
@@ -36,15 +66,15 @@ defmodule Absinthe.Phase.Document.ArgumentsTest do
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
       field = op.selections |> List.first
       age_argument = field.arguments |> Enum.find(&(&1.name == "age"))
-      assert %Blueprint.Input.Integer{value: 4} == age_argument.provided_value
+      assert %Blueprint.Input.Integer{value: 4} == age_argument.normalized_value
       name_argument = field.arguments |> Enum.find(&(&1.name == "name"))
-      assert %Blueprint.Input.String{value: "Bruce"} == name_argument.provided_value
+      assert %Blueprint.Input.String{value: "Bruce"} == name_argument.normalized_value
     end
   end
 
   def input(query, values) do
     {:ok, result} = blueprint(query, values)
-    |> Phase.Document.Arguments.run
+    |> Phase.Document.Arguments.Normalize.run
 
     result
   end

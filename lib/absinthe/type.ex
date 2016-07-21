@@ -4,7 +4,7 @@ defmodule Absinthe.Type do
 
   alias __MODULE__
 
-  alias Absinthe.Introspection
+  alias Absinthe.{Introspection, Schema}
 
   # ALL TYPES
 
@@ -186,6 +186,18 @@ defmodule Absinthe.Type do
   @spec unwrap(wrapping_t | t) :: t
   def unwrap(%{of_type: t}), do: unwrap(t)
   def unwrap(type), do: type
+
+  @doc "Expand any atom type references inside a List or NonNull"
+  @spec expand(wrapping_t | t, Schema.t) :: wrapping_t | t
+  def expand(type, schema) when is_atom(type) do
+    schema.__absinthe_type__(type)
+  end
+  def expand(%{of_type: t} = node, schema) do
+    %{node | of_type: expand(t, schema)}
+  end
+  def expand(type, _) do
+    type
+  end
 
   # VALID TYPE
 

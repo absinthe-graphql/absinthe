@@ -1,11 +1,11 @@
-defmodule Absinthe.Phase.Document.Arguments do
+defmodule Absinthe.Phase.Document.Arguments.Normalize do
   @moduledoc """
   Populate all arguments in the document with their provided values:
 
   - If a literal value is provided for an argument, set the `Argument.t`'s
-    `provided_value` field to that value.
+    `normalized_value` field to that value.
   - If a variable is provided for an argument, set the `Argument.t`'s
-    `provided_value` to the reconciled value for the variable
+    `normalized_value` to the reconciled value for the variable
     (Note: this requires the `Phase.Document.Variables` phase as a
     prerequisite).
 
@@ -30,16 +30,16 @@ defmodule Absinthe.Phase.Document.Arguments do
     }
   end
   # Argument using a variable: Set provided value
-  defp handle_node(%Blueprint.Input.Argument{value: %Blueprint.Input.Variable{name: variable_name}} = node, acc) do
+  defp handle_node(%Blueprint.Input.Argument{literal_value: %Blueprint.Input.Variable{name: variable_name}} = node, acc) do
     {
-      %{node | provided_value: Map.get(acc.provided_values, variable_name)},
+      %{node | normalized_value: Map.get(acc.provided_values, variable_name)},
       acc
     }
   end
   # Argument not using a variable: Set provided value from the literal value
   defp handle_node(%Blueprint.Input.Argument{} = node, acc) do
     {
-      %{node | provided_value: node.value},
+      %{node | normalized_value: node.literal_value},
       acc
     }
   end

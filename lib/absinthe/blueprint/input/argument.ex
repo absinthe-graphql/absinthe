@@ -2,21 +2,23 @@ defmodule Absinthe.Blueprint.Input.Argument do
 
   alias Absinthe.Blueprint
 
-  @enforce_keys [:name, :value]
+  @enforce_keys [:name, :literal_value]
   defstruct [
     :name,
-    :value,
+    :literal_value,
     # Added by phases
     schema_node: nil,
-    provided_value: nil,
+    normalized_value: nil,
+    data_value: nil,
     errors: [],
   ]
 
   @type t :: %__MODULE__{
     name: String.t,
-    value: Blueprint.Input.t,
+    literal_value: Blueprint.Input.t,
     schema_node: nil | Absinthe.Type.Argument.t,
-    provided_value: Blueprint.Input.t,
+    normalized_value: Blueprint.Input.t,
+    data_value: any,
     errors: [Absinthe.Phase.Error.t],
   }
 
@@ -26,7 +28,7 @@ defmodule Absinthe.Blueprint.Input.Argument do
     |> Enum.flat_map(fn
       %__MODULE__{schema_node: nil} ->
         []
-      %__MODULE__{schema_node: schema_node, provided_value: value} ->
+      %__MODULE__{schema_node: schema_node, normalized_value: value} ->
         [{
           schema_node.__reference__.identifier,
           value

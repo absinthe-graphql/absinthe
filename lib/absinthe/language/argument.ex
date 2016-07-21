@@ -19,7 +19,7 @@ defmodule Absinthe.Language.Argument do
     def convert(node, doc) do
       %Blueprint.Input.Argument{
         name: node.name,
-        value: Absinthe.Blueprint.Draft.convert(node.value, doc)
+        literal_value: Absinthe.Blueprint.Draft.convert(node.value, doc)
       }
     end
   end

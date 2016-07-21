@@ -3,7 +3,34 @@ defmodule Absinthe.Phase.Document.FlattenTest do
 
   alias Absinthe.{Blueprint, Phase, Pipeline}
 
-  @pre_pipeline [Phase.Parse, Phase.Blueprint, {Phase.Document.Variables, %{}}, Phase.Document.Arguments]
+  defmodule Schema do
+    use Absinthe.Schema
+
+    query do
+      field :foo, :foo do
+        arg :id, non_null(:id)
+      end
+      field :more, :string
+    end
+
+    object :foo do
+      field :name, :string
+      field :age, :integer
+    end
+
+    object :not_foo do
+      field :name, :string
+      field :age, :integer
+    end
+
+  end
+
+ @pre_pipeline Enum.take_while(Pipeline.for_document(Schema, %{"id" => 4}), fn
+    Phase.Document.Flatten ->
+      false
+    _ ->
+      true
+  end)
 
   @query """
     query Foo($id: ID!) {
@@ -20,8 +47,8 @@ defmodule Absinthe.Phase.Document.FlattenTest do
       }
       ... QueryFields
     }
-    fragment QueryFields on Query {
-      ... on Query {
+    fragment QueryFields on QueryRoot {
+      ... on QueryRoot {
         more
       }
     }
@@ -49,7 +76,7 @@ defmodule Absinthe.Phase.Document.FlattenTest do
             %Blueprint.Document.Field{name: "age", type_conditions: [%Blueprint.TypeReference.Name{name: "NotFoo"}]},
           ],
         },
-        %Blueprint.Document.Field{name: "more", type_conditions: [%Blueprint.TypeReference.Name{name: "Query"}]}
+        %Blueprint.Document.Field{name: "more", type_conditions: [%Blueprint.TypeReference.Name{name: "QueryRoot"}]}
       ] = op.fields
     end
   end
