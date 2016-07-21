@@ -116,9 +116,11 @@ defmodule Absinthe.Type.Field do
     quoted_empty_map = quote do: %{}
     ast = for {field_name, field_attrs} <- fields do
       name = field_name |> Atom.to_string
+      default_ref = field_attrs[:__reference__]
+
       field_data = [name: name] ++ Keyword.update(field_attrs, :args, quoted_empty_map, fn
         raw_args ->
-          args = for {name, attrs} <- raw_args, do: {name, ensure_reference(attrs, field_attrs[:__reference__])}
+          args = for {name, attrs} <- raw_args, do: {name, ensure_reference(attrs, name, default_ref)}
           Type.Argument.build(args || [])
       end)
       field_ast = quote do: %Absinthe.Type.Field{unquote_splicing(field_data |> Absinthe.Type.Deprecation.from_attribute)}
@@ -127,12 +129,15 @@ defmodule Absinthe.Type.Field do
     quote do: %{unquote_splicing(ast)}
   end
 
-  defp ensure_reference(arg_attrs, default_reference) do
+  defp ensure_reference(arg_attrs, name, default_reference) do
     case Keyword.has_key?(arg_attrs, :__reference__) do
       true ->
         arg_attrs
       false ->
-        Keyword.put(arg_attrs, :__reference__, default_reference)
+        # default_reference is map AST, hence the gymnastics to build it nicely.
+        {a, b, args} = default_reference
+
+        Keyword.put(arg_attrs, :__reference__, {a, b, Keyword.put(args, :identifier, name)})
     end
   end
 

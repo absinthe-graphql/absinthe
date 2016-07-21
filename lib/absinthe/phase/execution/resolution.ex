@@ -1,4 +1,10 @@
 defmodule Absinthe.Phase.Execution.Resolution do
+  @moduledoc """
+  Runs resolution functions in a new blueprint.
+
+  While this phase starts with a blueprint, it returns an annotated value tree.
+  """
+
   alias Absinthe.Blueprint.Document
   alias Absinthe.Phase.Execution
   alias Absinthe.{Type, Schema}
@@ -20,26 +26,33 @@ defmodule Absinthe.Phase.Execution.Resolution do
     }}
   end
 
-  def resolve_field(field, info, source) do
-    resolution_function = field.schema_node.resolve || fn _, _ ->
-      Map.fetch(source, field.schema_node.__reference__.identifier)
-    end
-
-    case resolution_function.(valid_arguments(field.arguments), %{info | source: source}) do
-      {:ok, result} ->
-        inner_type = Schema.lookup_type(info.schema, field.schema_node.type)
-        resolve_item(result, field, inner_type, info)
-      other ->
-        other
-    end
-  end
-
-  defp valid_arguments(arguments) do
+  defp filter_valid_arguments(arguments) do
     Map.new(arguments, fn arg ->
       {arg.schema_node.__reference__.identifier, arg.data_value}
     end)
   end
 
+  def resolve_field(%{schema_node: nil} = node, _, _) do
+    IO.puts "NO schema node for: #{inspect node}"
+    # TODO: real error handling
+    {:error, "field doesn't exist in schema"}
+  end
+  def resolve_field(field, info, source) do
+    resolution_function = field.schema_node.resolve || fn _, _ ->
+      Map.fetch(source, field.schema_node.__reference__.identifier)
+    end
+
+    field.arguments
+    |> filter_valid_arguments
+    |> resolution_function.(%{info | source: source})
+    |> case do
+      {:ok, result} ->
+        inner_type = Schema.lookup_type(info.schema, field.schema_node.type)
+        walk_result(result, field, inner_type, info)
+      other ->
+        other
+    end
+  end
 
   @doc """
   Handle the result of a resolution function
@@ -51,27 +64,28 @@ defmodule Absinthe.Phase.Execution.Resolution do
   ## Leaf nodes
 
   # Resolve item of type scalar
-  def resolve_item(item, bp, %Type.Scalar{} = schema_type, _) do
+  def walk_result(item, bp, %Type.Scalar{} = schema_type, _) do
     {:ok, %Execution.Leaf{
       # blueprint_node: bp,
-      name: bp.name,
+      name: bp.alias || bp.name,
       value: Type.Scalar.serialize(schema_type, item)
     }}
   end
   # Resolve Enum type
-  def resolve_item(item, bp, %Type.Enum{} = schema_type, info) do
+  def walk_result(item, bp, %Type.Enum{} = schema_type, info) do
     {:ok, %Execution.Leaf{
-      blueprint_node: bp,
-      name: bp.name,
+      # blueprint_node: bp,
+      name: bp.alias || bp.name,
       value: Type.Enum.serialize!(schema_type, item)
     }}
   end
 
-  ## ObjectTypes
-  def resolve_item(item, %{schema_node: %Type.Object{} = type} = bp, info) do
-    {:ok,
-      Enum.map(bp.fields, &resolve_field(&1, info, item))
-    }
+  def walk_result(item, bp, %Type.Object{} = type, info) do
+    {:ok, %Execution.Node{
+      # blueprint_node: bp,
+      name: bp.alias || bp.name,
+      fields: Enum.map(bp.fields, &resolve_field(&1, info, item)),
+    }}
   end
 
 end

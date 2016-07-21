@@ -1,5 +1,9 @@
 defmodule Absinthe.Phase.Execution.Data do
 
+  @moduledoc """
+  Produces data fit for external encoding from annotated value tree
+  """
+
   use Absinthe.Phase
 
   def run(tree) do
