@@ -16,6 +16,7 @@ defmodule Absinthe.Phase.Execution.Resolution do
     blueprint.operations
     |> hd
     |> resolve_operation(%Absinthe.Execution.Field{context: context, root_value: root_value, schema: blueprint.schema}, root_value)
+    # |> IO.inspect
   end
 
   def resolve_operation(operation, info, source) do
@@ -47,8 +48,8 @@ defmodule Absinthe.Phase.Execution.Resolution do
     |> resolution_function.(%{info | source: source})
     |> case do
       {:ok, result} ->
-        inner_type = Schema.lookup_type(info.schema, field.schema_node.type)
-        walk_result(result, field, inner_type, info)
+        full_type = Type.expand(field.schema_node.type, info.schema)
+        walk_result(result, field, full_type, info)
       other ->
         other
     end
@@ -86,6 +87,24 @@ defmodule Absinthe.Phase.Execution.Resolution do
       name: bp.alias || bp.name,
       fields: Enum.map(bp.fields, &resolve_field(&1, info, item)),
     }}
+  end
+
+  def walk_result(items, bp, %Type.List{of_type: inner_type}, info) do
+    values =
+      items
+      |> List.wrap # if it's just a single item we're supposed to wrap it in a list anyway.
+      |> Enum.map(&walk_result(&1, bp, inner_type, info))
+
+    {:ok, %Execution.List{name: bp.name, values: values}}
+  end
+
+  def walk_result(nil, _, %Type.NonNull{}, _) do
+    # Add to error accumulator we aren't managing yet
+    raise "not yet implemented"
+  end
+
+  def walk_result(val, bp, %Type.NonNull{of_type: inner_type}, info) do
+    walk_result(val, bp, inner_type, info)
   end
 
 end
