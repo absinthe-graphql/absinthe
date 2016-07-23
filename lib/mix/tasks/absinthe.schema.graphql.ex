@@ -59,8 +59,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Graphql do
     |> Absinthe.Language.IDL.to_idl_ast
     |> adapter.dump_document
     |> Absinthe.Language.IDL.to_idl_iodata(schema)
-    |> Enum.map(&make_string/1)
-    |> Enum.join
+    |> make_string
 
     create_directory(Path.dirname(filename))
     create_file(filename, content, force: true)
