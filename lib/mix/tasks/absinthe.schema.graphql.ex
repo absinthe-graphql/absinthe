@@ -59,10 +59,19 @@ defmodule Mix.Tasks.Absinthe.Schema.Graphql do
     |> Absinthe.Language.IDL.to_idl_ast
     |> adapter.dump_document
     |> Absinthe.Language.IDL.to_idl_iodata(schema)
+    |> Enum.map(&make_string/1)
+    |> Enum.join
 
     create_directory(Path.dirname(filename))
     create_file(filename, content, force: true)
   end
+
+  defp make_string(list) when is_list(list) do
+    list
+    |> Enum.map(&make_string/1)
+    |> Enum.join
+  end
+  defp make_string(string), do: string
 
   defp find_adapter(opts) do
     Keyword.get(opts, :adapter, fallback_adapter)
