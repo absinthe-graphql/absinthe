@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType
+defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
 
   alias Absinthe.{Blueprint, Phase}
 
