@@ -96,16 +96,6 @@ defmodule Absinthe.Language.IDLtest do
       assert {:ok, _} = Absinthe.parse(@idl)
     end
 
-    it "can be generated" do
-      {:ok, equiv_idl_ast_doc} = Absinthe.parse(@idl)
-      equiv_idl_ast = equiv_idl_ast_doc.definitions |> List.first
-      equiv_idl_iodata = Absinthe.Language.IDL.to_idl_iodata(equiv_idl_ast, DirectiveSchema)
-
-      idl_ast = DirectiveSchema.__absinthe_directive__(:foo) |> Absinthe.Language.IDL.to_idl_ast(DirectiveSchema)
-      idl_iodata = Absinthe.Language.IDL.to_idl_iodata(idl_ast, DirectiveSchema)
-      assert idl_iodata = equiv_idl_iodata
-    end
-
   end
 
   describe "input object types" do
