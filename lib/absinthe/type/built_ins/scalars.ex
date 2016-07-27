@@ -106,7 +106,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     {:ok, value}
   end
   defp parse_string(value) when is_float(value) or is_integer(value) do
-    {:ok, to_string(value)}
+    :error
   end
   defp parse_string(_), do: :error
 

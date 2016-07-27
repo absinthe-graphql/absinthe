@@ -61,14 +61,14 @@ defmodule Support.Harness.Validation do
 
   # Build a map of node => errors
   defp nodes_with_errors(input) do
-    {result, errors} = Blueprint.prewalk(input, [], &do_nodes_with_errors/2)
+    {_, errors} = Blueprint.prewalk(input, [], &do_nodes_with_errors/2)
     errors
   end
 
   defp do_nodes_with_errors(%{errors: []} = node, acc) do
     {node, acc}
   end
-  defp do_nodes_with_errors(%{errors: errors} = node, acc) do
+  defp do_nodes_with_errors(%{errors: _} = node, acc) do
     {node, [node | acc]}
   end
   defp do_nodes_with_errors(node, acc) do
