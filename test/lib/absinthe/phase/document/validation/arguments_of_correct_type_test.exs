@@ -32,6 +32,78 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         """, %{})
       end
 
+
+      it "Good boolean value" do
+        assert_passes_rule(@rule, """
+          {
+            complicatedArgs {
+              booleanArgField(booleanArg: true)
+            }
+          }
+        """, %{})
+      end
+
+      it "Good string value" do
+        assert_passes_rule(@rule, """
+          {
+            complicatedArgs {
+              stringArgField(stringArg: "foo")
+            }
+          }
+        """, %{})
+      end
+
+      it "Good float value" do
+        assert_passes_rule(@rule, """
+          {
+            complicatedArgs {
+              floatArgField(floatArg: 1.1)
+            }
+          }
+        """, %{})
+      end
+
+      it "Int into Float" do
+        assert_passes_rule(@rule, """
+          {
+            complicatedArgs {
+              floatArgField(floatArg: 1)
+            }
+          }
+        """, %{})
+      end
+
+      it "Int into ID" do
+        assert_passes_rule(@rule, """
+          {
+            complicatedArgs {
+              idArgField(idArg: 1)
+            }
+          }
+        """, %{})
+      end
+
+      it "String into ID" do
+        assert_passes_rule(@rule, """
+          {
+            complicatedArgs {
+              idArgField(idArg: "someIdString")
+            }
+          }
+        """, %{})
+      end
+
+      it "Good enum value" do
+        assert_passes_rule(@rule, """
+          {
+            dog {
+              doesKnowCommand(dogCommand: SIT)
+            }
+          }
+        """, %{})
+      end
+
+
     end
 
     describe "Invalid values" do
