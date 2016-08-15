@@ -1,6 +1,47 @@
 defmodule Absinthe.Schema.NotationTest do
   use Absinthe.Case, async: true
 
+  describe "import fields" do
+    it "fields can be imported" do
+      defmodule Foo do
+        use Absinthe.Schema.Notation
+
+        object :foo do
+          field :name, :string
+        end
+
+        object :bar do
+          import_fields :foo
+          field :email, :string
+        end
+      end
+
+      assert [:email, :name] = Foo.__absinthe_type__(:bar).fields |> Map.keys |> Enum.sort
+    end
+
+    it "can work transitively" do
+      defmodule Bar do
+        use Absinthe.Schema.Notation
+
+        object :foo do
+          field :name, :string
+        end
+
+        object :bar do
+          import_fields :foo
+          field :email, :string
+        end
+
+        object :baz do
+          import_fields :bar
+          field :age, :integer
+        end
+      end
+
+      assert [:age, :email, :name] == Bar.__absinthe_type__(:baz).fields |> Map.keys |> Enum.sort
+    end
+  end
+
   describe "arg" do
     it "can be under field as an attribute" do
       assert_no_notation_error "ArgFieldValid", """

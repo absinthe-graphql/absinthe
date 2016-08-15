@@ -85,7 +85,7 @@ defmodule Absinthe.Type.Object do
   The `:__private__` and `:__reference__` keys are for internal use.
   """
   @type t :: %{name: binary, description: binary, fields: map, interfaces: [Absinthe.Type.Interface.t], is_type_of: ((any) -> boolean), __private__: Keyword.t, __reference__: Type.Reference.t}
-  defstruct name: nil, description: nil, fields: nil, interfaces: [], is_type_of: nil, __private__: [], __reference__: nil
+  defstruct name: nil, description: nil, fields: nil, interfaces: [], is_type_of: nil, __private__: [], __reference__: nil, field_imports: []
 
   def build(%{attrs: attrs}) do
     fields = Type.Field.build(attrs[:fields] || [])
