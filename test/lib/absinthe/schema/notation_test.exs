@@ -52,8 +52,27 @@ defmodule Absinthe.Schema.NotationTest do
       end
 
       assert [error] = ErrorSchema.__absinthe_errors__
-      assert error == %{data: %{artifact: "Type :asdf not found in schema", value: :bar}, location: %{file: "/Users/ben/src/absinthe/test/lib/absinthe/schema/notation_test.exs", line: 48}}
+      assert error == %{data: %{artifact: "Type :asdf not found in schema", value: :bar}, location: %{file: __ENV__.file, line: 48}}
 
+    end
+
+    it "handles circular errors" do
+      defmodule Circles do
+        use Absinthe.Schema.Notation
+
+        object :foo do
+          import_fields :bar
+          field :name, :string
+        end
+
+        object :bar do
+          import_fields :foo
+          field :email, :string
+        end
+      end
+
+      assert [error] = Circles.__absinthe_errors__
+      assert error == %{data: %{artifact: "Field Import Cycle Error\n\nType foo has an import cycle via: (`foo' => `bar' => `foo')\n", value: :foo}, location: %{file: __ENV__.file, line: 63}}
     end
   end
 
