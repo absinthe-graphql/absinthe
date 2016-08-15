@@ -122,22 +122,31 @@ defmodule Absinthe.Schema.Notation.Writer do
   end
 
   defp build_info(env) do
-    descriptions = env.module
-    |> Module.get_attribute(:absinthe_descriptions)
-    |> Enum.into(%{})
+    descriptions =
+      env.module
+      |> Module.get_attribute(:absinthe_descriptions)
+      |> Enum.into(%{})
+
+    {definitions, errors} = if true do
+      env.module
+      |> Module.get_attribute(:absinthe_definitions)
+      |> Absinthe.Schema.Notation.FieldImporter.normalize_definitions
+    else
+      {env.module
+      |> Module.get_attribute(:absinthe_definitions), []}
+    end
 
     info = %{
       type_map: %{},
       directive_map: %{},
-      errors: [],
+      errors: errors,
       type_functions: [],
       directive_functions: [],
       exports: [],
       implementors: %{}
     }
 
-    env.module
-    |> Module.get_attribute(:absinthe_definitions)
+    definitions
     |> Enum.map(&update_description(&1, descriptions))
     |> Enum.reduce(info, &do_build_info/2)
   end
