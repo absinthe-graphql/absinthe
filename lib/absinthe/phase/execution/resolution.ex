@@ -16,11 +16,10 @@ defmodule Absinthe.Phase.Execution.Resolution do
     blueprint.operations
     |> hd
     |> resolve_operation(%Absinthe.Execution.Field{context: context, root_value: root_value, schema: blueprint.schema}, root_value)
-    # |> IO.inspect
   end
 
   def resolve_operation(operation, info, source) do
-    {:ok, %Execution.Node{
+    {:ok, %Execution.ResultObject{
       blueprint_node: nil,
       name: operation.name,
       fields: Enum.map(operation.fields, &resolve_field(&1, info, source)),
@@ -66,7 +65,7 @@ defmodule Absinthe.Phase.Execution.Resolution do
 
   # Resolve item of type scalar
   def walk_result(item, bp, %Type.Scalar{} = schema_type, _) do
-    {:ok, %Execution.Leaf{
+    {:ok, %Execution.Result{
       # blueprint_node: bp,
       name: bp.alias || bp.name,
       value: Type.Scalar.serialize(schema_type, item)
@@ -74,7 +73,7 @@ defmodule Absinthe.Phase.Execution.Resolution do
   end
   # Resolve Enum type
   def walk_result(item, bp, %Type.Enum{} = schema_type, info) do
-    {:ok, %Execution.Leaf{
+    {:ok, %Execution.Result{
       # blueprint_node: bp,
       name: bp.alias || bp.name,
       value: Type.Enum.serialize!(schema_type, item)
@@ -82,7 +81,7 @@ defmodule Absinthe.Phase.Execution.Resolution do
   end
 
   def walk_result(item, bp, %Type.Object{} = type, info) do
-    {:ok, %Execution.Node{
+    {:ok, %Execution.ResultObject{
       # blueprint_node: bp,
       name: bp.alias || bp.name,
       fields: Enum.map(bp.fields, &resolve_field(&1, info, item)),
@@ -95,12 +94,14 @@ defmodule Absinthe.Phase.Execution.Resolution do
       |> List.wrap # if it's just a single item we're supposed to wrap it in a list anyway.
       |> Enum.map(&walk_result(&1, bp, inner_type, info))
 
-    {:ok, %Execution.List{name: bp.name, values: values}}
+    {:ok, %Execution.ResultList{name: bp.name, values: values}}
   end
 
   def walk_result(nil, _, %Type.NonNull{}, _) do
-    # Add to error accumulator we aren't managing yet
-    raise "not yet implemented"
+    # We may want to raise here because this is a programmer error in some sense
+    # not a graphql user error.
+    # TODO: handle default value. Are there even default values on output types?
+    {:error, "Supposed to be non nil"}
   end
 
   def walk_result(val, bp, %Type.NonNull{of_type: inner_type}, info) do

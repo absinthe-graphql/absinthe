@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Execution.Leaf do
+defmodule Absinthe.Phase.Execution.Result do
   defstruct [
     :name,
     :value,
