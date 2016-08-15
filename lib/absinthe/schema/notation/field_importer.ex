@@ -1,31 +1,59 @@
 defmodule Absinthe.Schema.Notation.FieldImporter do
   def normalize_definitions(definitions) do
     definitions_map = definitions |> build_def_map
+    errors = []
+    acc = []
 
-    definitions = Enum.map(definitions, &normalize(&1, definitions_map))
-    {definitions, []}
+    normalize(definitions, definitions_map, errors, [])
   end
 
-  defp normalize(obj, map) do
+  def normalize([], map, errors, acc) do
+    {:lists.reverse(acc), errors}
+  end
+  def normalize([definition | rest], map, errors, acc) do
+    case do_normalize(definition, map) do
+      {:ok, definition} ->
+        normalize(rest, map, errors, [definition | acc])
+      {:error, error} ->
+        normalize(rest, map, [error | errors], acc)
+    end
+  end
+
+  defp do_normalize(obj, map) do
     case obj.attrs[:field_imports] do
       []->
-        obj
+        {:ok, obj}
       nil ->
-        obj
+        {:ok, obj}
       imports ->
-        %{obj | attrs: Keyword.update!(obj.attrs, :fields, &import_fields(imports, &1, map))}
+        with {:ok, fields} <- import_fields(imports, map, obj, obj.attrs[:fields]) do
+          {:ok, %{obj | attrs: Keyword.update!(obj.attrs, :fields, fn _ -> fields end)}}
+        end
     end
   end
 
   # Walk through the items we want to import fields from, get their fields,
   # and walk to any objects THEY import to get their fields, etc.
-  defp import_fields(nil, existing_fields, _), do: existing_fields
-  defp import_fields([], existing_fields, _), do: existing_fields
-  defp import_fields([{obj_ref, _opts} | rest], existing_fields, map) do
-    referenced_obj = Map.fetch!(map, obj_ref)
-    imported_fields = import_fields(referenced_obj.attrs[:field_imports], referenced_obj.attrs[:fields], map)
+  defp import_fields(nil, _map, _parent, fields), do: {:ok, fields}
+  defp import_fields([], _map, _parent, fields), do: {:ok, fields}
+  defp import_fields([{obj_ref, _opts} | rest], map, parent, existing_fields) do
+    with {:ok, %{attrs: attrs} = obj} <- find_obj(obj_ref, map, parent),
+    {:ok, fields} <- import_fields(attrs[:field_imports], map, obj, attrs[:fields]) do
+      import_fields(rest, map, parent, Keyword.merge(fields, existing_fields))
+    end
+  end
 
-    import_fields(rest, Keyword.merge(fields, imported_fields), map)
+  defp find_obj(obj_ref, map, parent) do
+    with :error <- Map.fetch(map, obj_ref) do
+      {:error, error(parent, "Type #{inspect obj_ref} not found in schema")}
+    end
+  end
+
+  defp error(definition, msg) do
+    %{
+      location: %{file: definition.file, line: definition.line},
+      data: %{artifact: msg, value: definition.identifier}
+    }
   end
 
   # builds a map of identifiers to definitions

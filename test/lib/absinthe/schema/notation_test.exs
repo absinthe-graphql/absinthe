@@ -40,6 +40,21 @@ defmodule Absinthe.Schema.NotationTest do
 
       assert [:age, :email, :name] == Bar.__absinthe_type__(:baz).fields |> Map.keys |> Enum.sort
     end
+
+    it "raises errors nicely" do
+      defmodule ErrorSchema do
+        use Absinthe.Schema.Notation
+
+        object :bar do
+          import_fields :asdf
+          field :email, :string
+        end
+      end
+
+      assert [error] = ErrorSchema.__absinthe_errors__
+      assert error == %{data: %{artifact: "Type :asdf not found in schema", value: :bar}, location: %{file: "/Users/ben/src/absinthe/test/lib/absinthe/schema/notation_test.exs", line: 48}}
+
+    end
   end
 
   describe "arg" do
