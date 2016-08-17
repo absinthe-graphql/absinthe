@@ -1,6 +1,103 @@
 defmodule Absinthe.Schema.NotationTest do
   use Absinthe.Case, async: true
 
+  describe "import fields" do
+    it "fields can be imported" do
+      defmodule Foo do
+        use Absinthe.Schema.Notation
+
+        object :foo do
+          field :name, :string
+        end
+
+        object :bar do
+          import_fields :foo
+          field :email, :string
+        end
+      end
+
+      assert [:email, :name] = Foo.__absinthe_type__(:bar).fields |> Map.keys |> Enum.sort
+    end
+
+    it "can work transitively" do
+      defmodule Bar do
+        use Absinthe.Schema.Notation
+
+        object :foo do
+          field :name, :string
+        end
+
+        object :bar do
+          import_fields :foo
+          field :email, :string
+        end
+
+        object :baz do
+          import_fields :bar
+          field :age, :integer
+        end
+      end
+
+      assert [:age, :email, :name] == Bar.__absinthe_type__(:baz).fields |> Map.keys |> Enum.sort
+    end
+
+    it "raises errors nicely" do
+      defmodule ErrorSchema do
+        use Absinthe.Schema.Notation
+
+        object :bar do
+          import_fields :asdf
+          field :email, :string
+        end
+      end
+
+      assert [error] = ErrorSchema.__absinthe_errors__
+      assert error == %{data: %{artifact: "Type :asdf not found in schema", value: :bar}, location: %{file: __ENV__.file, line: 48}}
+
+    end
+
+    it "handles circular errors" do
+      defmodule Circles do
+        use Absinthe.Schema.Notation
+
+        object :foo do
+          import_fields :bar
+          field :name, :string
+        end
+
+        object :bar do
+          import_fields :foo
+          field :email, :string
+        end
+      end
+
+      assert [error] = Circles.__absinthe_errors__
+      assert error == %{data: %{artifact: "Field Import Cycle Error\n\nType foo has an import cycle via: (`foo' => `bar' => `foo')\n", value: :foo}, location: %{file: __ENV__.file, line: 63}}
+    end
+
+    it "can import fields from imported types" do
+      defmodule Source do
+        use Absinthe.Schema.Notation
+
+        object :foo do
+          field :name, :string
+        end
+      end
+
+      defmodule Dest do
+        use Absinthe.Schema.Notation
+
+        import_types Source
+
+        object :bar do
+          import_fields :foo
+        end
+      end
+
+      assert [:name] = Dest.__absinthe_type__(:bar).fields |> Map.keys
+    end
+  end
+
   describe "arg" do
     it "can be under field as an attribute" do
       assert_no_notation_error "ArgFieldValid", """
