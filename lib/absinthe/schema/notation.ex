@@ -1004,6 +1004,20 @@ defmodule Absinthe.Schema.Notation do
     """
   end
 
+  @placement {:import_fields, [under: [:input_object, :interface, :object]]}
+  @doc """
+  Import fields from another object
+  """
+  defmacro import_fields(type_name, opts \\ []) do
+    __CALLER__
+    |> recordable!(:import_fields, @placement[:import_fields])
+    |> record_field_import!(type_name, opts)
+  end
+
+  defp record_field_import!(env, type_name, opts) do
+    Scope.put_attribute(env.module, :field_imports, {type_name, opts}, accumulate: true)
+  end
+
   # TYPE UTILITIES
   @doc """
   Marks a type reference as non null
