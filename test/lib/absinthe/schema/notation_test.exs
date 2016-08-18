@@ -52,7 +52,7 @@ defmodule Absinthe.Schema.NotationTest do
       end
 
       assert [error] = ErrorSchema.__absinthe_errors__
-      assert error == %{data: %{artifact: "Type :asdf not found in schema", value: :bar}, location: %{file: __ENV__.file, line: 48}}
+      assert error == %{data: %{artifact: "Field Import Erro\n\nObject :bar imports fields from :asdf but\n:asdf does not exist in the schema!", value: :asdf}, location: %{file: __ENV__.file, line: 48}, rule: Absinthe.Schema.Rule.FieldImportsExist}
 
     end
 
@@ -72,7 +72,7 @@ defmodule Absinthe.Schema.NotationTest do
       end
 
       assert [error] = Circles.__absinthe_errors__
-      assert error == %{data: %{artifact: "Field Import Cycle Error\n\nType foo has an import cycle via: (`foo' => `bar' => `foo')\n", value: :foo}, location: %{file: __ENV__.file, line: 63}}
+      assert error == %{data: %{artifact: "Field Import Cycle Error\n\nField Import in object `foo' `import_fields(:bar) forms a cycle via: (`foo' => `bar' => `foo')", value: :bar}, location: %{file: __ENV__.file, line: 63}, rule: Absinthe.Schema.Rule.NoCircularFieldImports}
     end
 
     it "can import fields from imported types" do
