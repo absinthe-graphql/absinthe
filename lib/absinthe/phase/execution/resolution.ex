@@ -22,7 +22,7 @@ defmodule Absinthe.Phase.Execution.Resolution do
     {:ok, %Execution.ResultObject{
       blueprint_node: nil,
       name: operation.name,
-      fields: Enum.map(operation.fields, &resolve_field(&1, info, source)),
+      fields: resolve_fields(operation.fields, info, source),
     }}
   end
 
@@ -63,6 +63,13 @@ defmodule Absinthe.Phase.Execution.Resolution do
 
   ## Leaf nodes
 
+  def walk_result(nil, bp, _, _) do
+    {:ok, %Execution.Result{
+      # blueprint_node: bp,
+      name: bp.alias || bp.name,
+      value: nil
+    }}
+  end
   # Resolve item of type scalar
   def walk_result(item, bp, %Type.Scalar{} = schema_type, _) do
     {:ok, %Execution.Result{
@@ -84,7 +91,7 @@ defmodule Absinthe.Phase.Execution.Resolution do
     {:ok, %Execution.ResultObject{
       # blueprint_node: bp,
       name: bp.alias || bp.name,
-      fields: Enum.map(bp.fields, &resolve_field(&1, info, item)),
+      fields: resolve_fields(bp.fields, info, item),
     }}
   end
 
@@ -92,7 +99,7 @@ defmodule Absinthe.Phase.Execution.Resolution do
     values =
       items
       |> List.wrap # if it's just a single item we're supposed to wrap it in a list anyway.
-      |> Enum.map(&walk_result(&1, bp, inner_type, info))
+      |> walk_results(bp, inner_type, info)
 
     {:ok, %Execution.ResultList{name: bp.name, values: values}}
   end
@@ -106,6 +113,20 @@ defmodule Absinthe.Phase.Execution.Resolution do
 
   def walk_result(val, bp, %Type.NonNull{of_type: inner_type}, info) do
     walk_result(val, bp, inner_type, info)
+  end
+
+  defp walk_results(items, bp, inner_type, info, acc \\ [])
+  defp walk_results([], _, _, _, acc), do: :lists.reverse(acc)
+  defp walk_results([item | items], bp, inner_type, info, acc) do
+    result = walk_result(item, bp, inner_type, info)
+    walk_results(items, bp, inner_type, info, [result | acc])
+  end
+
+  defp resolve_fields(fields, info, item, acc \\ [])
+  defp resolve_fields([], _, _, acc), do: :lists.reverse(acc)
+  defp resolve_fields([field | fields], info, item, acc) do
+    result = resolve_field(field, info, item)
+    resolve_fields(fields, info, item, [result | acc])
   end
 
 end
