@@ -240,7 +240,7 @@ defmodule Absinthe do
     operation_name: binary,
   ]
 
-  if System.get_env("NEW_EXECUTION") do
+  if true do
     def run(doc, schema, options \\ [])
     @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, run_opts) :: {:ok, Absinthe.Execution.result_t} | {:error, any}
     def run(document, schema, options) do
