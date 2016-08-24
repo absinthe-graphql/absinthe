@@ -5,11 +5,11 @@ defmodule Absinthe.Blueprint.Input.Argument do
   @enforce_keys [:name, :literal_value]
   defstruct [
     :name,
-    :literal_value,
+    :literal_value, # the value from the query doc. May be a pointer to a variable
     # Added by phases
     schema_node: nil,
-    normalized_value: nil,
-    data_value: nil,
+    normalized_value: nil, # Value after having variable values inlined
+    data_value: nil, # Value converted to native elixir value
     errors: [],
   ]
 

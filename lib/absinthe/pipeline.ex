@@ -34,6 +34,7 @@ defmodule Absinthe.Pipeline do
       Absinthe.Phase.Document.Arguments.Normalize,
       {Phase.Document.Schema, schema},
       Absinthe.Phase.Document.Arguments.Data,
+      Absinthe.Phase.Document.Arguments.Defaults,
       Phase.Document.Directives,
       Phase.Document.Flatten,
       {Phase.Execution.Resolution, [nil, provided_values[:context], provided_values[:root_value]]}

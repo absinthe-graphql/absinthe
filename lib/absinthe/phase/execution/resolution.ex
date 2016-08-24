@@ -27,19 +27,16 @@ defmodule Absinthe.Phase.Execution.Resolution do
   end
 
   defp filter_valid_arguments(arguments) do
-    Map.new(arguments, fn arg ->
+    arguments
+    |> Enum.reject(&Enum.any?(&1.errors))
+    |> Map.new(fn arg ->
       {arg.schema_node.__reference__.identifier, arg.data_value}
     end)
   end
 
-  def resolve_field(%{schema_node: nil} = node, _, _) do
-    IO.puts "NO schema node for: #{inspect node}"
-    # TODO: real error handling
-    {:error, "field doesn't exist in schema"}
-  end
   def resolve_field(field, info, source) do
     resolution_function = field.schema_node.resolve || fn _, _ ->
-      Map.fetch(source, field.schema_node.__reference__.identifier)
+      {:ok, Map.get(source, field.schema_node.__reference__.identifier)}
     end
 
     field.arguments
@@ -49,8 +46,15 @@ defmodule Absinthe.Phase.Execution.Resolution do
       {:ok, result} ->
         full_type = Type.expand(field.schema_node.type, info.schema)
         walk_result(result, field, full_type, info)
+      {:error, _} = error ->
+        error
       other ->
-        other
+        raise """
+        Resolution function did not return `{:ok, val}` or `{:error, reason}`
+        Resolving field: #{field.name}
+        Resolving on: #{inspect source}
+        Got: #{inspect other}
+        """
     end
   end
 
@@ -114,6 +118,15 @@ defmodule Absinthe.Phase.Execution.Resolution do
   def walk_result(val, bp, %Type.NonNull{of_type: inner_type}, info) do
     walk_result(val, bp, inner_type, info)
   end
+  def walk_result(a, b, c, d) do
+    IO.inspect [
+      a: a,
+      b: b,
+      c: c,
+      d: d
+    ]
+    raise "dead"
+  end
 
   defp walk_results(items, bp, inner_type, info, acc \\ [])
   defp walk_results([], _, _, _, acc), do: :lists.reverse(acc)
@@ -124,6 +137,9 @@ defmodule Absinthe.Phase.Execution.Resolution do
 
   defp resolve_fields(fields, info, item, acc \\ [])
   defp resolve_fields([], _, _, acc), do: :lists.reverse(acc)
+  defp resolve_fields([%{schema_node: nil} | fields], info, item, acc) do
+    resolve_fields(fields, info, item, acc)
+  end
   defp resolve_fields([field | fields], info, item, acc) do
     result = resolve_field(field, info, item)
     resolve_fields(fields, info, item, [result | acc])
