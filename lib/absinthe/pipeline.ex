@@ -31,10 +31,13 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Validation.structural,
       {Phase.Document.Variables, provided_values},
       Phase.Document.Arguments.Normalize,
+      Absinthe.Phase.Document.Arguments.Normalize,
       {Phase.Document.Schema, schema},
+      Absinthe.Phase.Document.Arguments.Data,
+      Absinthe.Phase.Document.Arguments.Defaults,
       Phase.Document.Directives,
       Phase.Document.Flatten,
-      # TODO: More
+      {Phase.Execution.Resolution, [nil, provided_values[:context], provided_values[:root_value]]}
     ]
   end
 
