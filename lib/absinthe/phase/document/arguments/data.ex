@@ -50,9 +50,9 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
         :error
     end
   end
-  defp build_value(%{value: value, schema_node: %Type.Scalar{} = schema_node}) do
+  defp build_value(%{schema_node: %Type.Scalar{} = schema_node} = node) do
     schema_node = schema_node |> unwrap_non_null
-    Type.Scalar.parse(schema_node, value)
+    Type.Scalar.parse(schema_node, node)
   end
   defp build_value(%{value: value, schema_node: %Type.Enum{} = schema_node}) do
     Type.Enum.parse(schema_node, value)

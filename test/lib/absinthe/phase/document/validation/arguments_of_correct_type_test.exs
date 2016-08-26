@@ -103,7 +103,6 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         """, %{})
       end
 
-
     end
 
     describe "Invalid values" do
@@ -111,13 +110,59 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
       describe "Invalid String values" do
 
         it "Int into String" do
-          assert_fails_rule(@rule, """
+          assert_fails_rule(@rule,
+            """
             {
               complicatedArgs {
                 stringArgField(stringArg: 1)
               }
             }
-            """, %{}, bad_value_matcher("stringArg", "String", "1", 3))
+            """,
+            %{},
+            bad_value_matcher("stringArg", "String", "1", 3)
+          )
+        end
+
+        it "Float into String" do
+          assert_fails_rule(@rule,
+            """
+            {
+              complicatedArgs {
+                stringArgField(stringArg: 1.0)
+              }
+            }
+            """,
+            %{},
+            bad_value_matcher("stringArg", "String", "1.0", 3)
+          )
+        end
+
+        it "Boolean into String" do
+          assert_fails_rule(@rule,
+            """
+            {
+              complicatedArgs {
+                stringArgField(stringArg: true)
+              }
+            }
+            """,
+            %{},
+            bad_value_matcher("stringArg", "String", "true", 3)
+          )
+        end
+
+        it "Unquoted String into String" do
+          assert_fails_rule(@rule,
+            """
+            {
+              complicatedArgs {
+                stringArgField(stringArg: BAR)
+              }
+            }
+            """,
+            %{},
+            bad_value_matcher("stringArg", "String", "BAR", 3)
+          )
         end
 
       end

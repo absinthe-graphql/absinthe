@@ -13,7 +13,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     by [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
     """
     serialize &(&1)
-    parse parse_with([Absinthe.Language.IntValue], &parse_int/1)
+    parse parse_with([Absinthe.Blueprint.Input.Integer], &parse_int/1)
   end
 
   scalar :float do
@@ -23,8 +23,8 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
     """
     serialize &(&1)
-    parse parse_with([Absinthe.Language.IntValue,
-                      Absinthe.Language.FloatValue], &parse_float/1)
+    parse parse_with([Absinthe.Blueprint.Input.Integer,
+                      Absinthe.Blueprint.Input.Float], &parse_float/1)
   end
 
 
@@ -35,7 +35,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     represent free-form human-readable text.
     """
     serialize &to_string/1
-    parse parse_with([Absinthe.Language.StringValue], &parse_string/1)
+    parse parse_with([Absinthe.Blueprint.Input.String], &parse_string/1)
   end
 
   scalar :id, name: "ID" do
@@ -48,8 +48,8 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     """
 
     serialize &to_string/1
-    parse parse_with([Absinthe.Language.IntValue,
-                       Absinthe.Language.StringValue], &parse_id/1)
+    parse parse_with([Absinthe.Blueprint.Input.Integer,
+                       Absinthe.Blueprint.Input.String], &parse_id/1)
   end
 
   scalar :boolean do
@@ -58,7 +58,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     """
 
     serialize &(&1)
-    parse parse_with([Absinthe.Language.BooleanValue], &parse_boolean/1)
+    parse parse_with([Absinthe.Blueprint.Input.Boolean], &parse_boolean/1)
   end
 
   # Integers are only safe when between -(2^53 - 1) and 2^53 - 1 due to being
@@ -86,6 +86,9 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
       parse_int(result)
     end
   end
+  defp parse_int(_) do
+    :error
+  end
 
   @spec parse_float(integer | float | binary) :: {:ok, float} | :error
   defp parse_float(value) when is_integer(value) do
@@ -97,7 +100,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   defp parse_float(value) when is_binary(value) do
     with {value, _} <- Float.parse(value), do: {:ok, value}
   end
-  defp parse_float(_value) do
+  defp parse_float(_) do
     :error
   end
 
@@ -108,7 +111,9 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   defp parse_string(value) when is_float(value) or is_integer(value) do
     :error
   end
-  defp parse_string(_), do: :error
+  defp parse_string(_) do
+    :error
+  end
 
   @spec parse_id(any) :: {:ok, binary} | :error
   defp parse_id(value) when is_binary(value) do
@@ -117,7 +122,9 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   defp parse_id(value) when is_integer(value) do
     {:ok, Integer.to_string(value)}
   end
-  defp parse_id(_), do: :error
+  defp parse_id(_) do
+    :error
+  end
 
   @spec parse_boolean(any) :: {:ok, boolean} | :error
   defp parse_boolean(value) when is_number(value) do
@@ -127,15 +134,15 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     {:ok, !!value}
   end
 
-  # Parse, supporting pulling values out of AST nodes
+  # Parse, supporting pulling values out of blueprint Input nodes
   defp parse_with(node_types, coercion) do
     fn
-      %{value: value} = node ->
-      if Enum.member?(node_types, node) do
-        coercion.(value)
-      else
-        nil
-      end
+      %{__struct__: str, value: value} ->
+        if Enum.member?(node_types, str) do
+          coercion.(value)
+        else
+          nil
+        end
       other ->
         coercion.(other)
     end
