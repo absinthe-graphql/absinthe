@@ -38,4 +38,16 @@ defmodule Absinthe.ParserTest do
     assert {:ok, _} = Absinthe.parse(@query)
   end
 
+  @query """
+  mutation {
+    createUser(name: "Владимир") {
+      id
+    }
+  }
+  """
+  it "can parse UTF-8" do
+    assert {:ok, _} = Absinthe.parse(@query)
+  end
+
+
 end

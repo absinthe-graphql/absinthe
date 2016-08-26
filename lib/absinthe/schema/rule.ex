@@ -27,7 +27,7 @@ defmodule Absinthe.Schema.Rule do
     Rule.TypeNamesAreValid,
     Rule.ObjectInterfacesMustBeValid,
     Rule.ObjectMustImplementInterfaces,
-    Rule.InterfacesMustResolveTypes
+    Rule.InterfacesMustResolveTypes,
   ]
 
   @spec check(Absinthe.Schema.t) :: [Absinthe.Error.detail_t]

@@ -85,11 +85,37 @@ defmodule Absinthe.Type.Object do
   The `:__private__` and `:__reference__` keys are for internal use.
   """
   @type t :: %{name: binary, description: binary, fields: map, interfaces: [Absinthe.Type.Interface.t], is_type_of: ((any) -> boolean), __private__: Keyword.t, __reference__: Type.Reference.t}
-  defstruct name: nil, description: nil, fields: nil, interfaces: [], is_type_of: nil, __private__: [], __reference__: nil
+  defstruct name: nil, description: nil, fields: nil, interfaces: [], is_type_of: nil, __private__: [], __reference__: nil, field_imports: []
 
   def build(%{attrs: attrs}) do
-    fields = Type.Field.build(attrs[:fields] || [])
-    quote do: %unquote(__MODULE__){unquote_splicing(attrs), fields: unquote(fields)}
+    fields =
+      (attrs[:fields] || [])
+      |> Type.Field.build()
+      |> handle_imports(attrs[:field_imports])
+
+    quote do
+      %unquote(__MODULE__){
+        unquote_splicing(attrs),
+        fields: unquote(fields),
+      }
+    end
+  end
+
+  defp handle_imports(fields, []), do: fields
+  defp handle_imports(fields, nil), do: fields
+  defp handle_imports(fields, imports) do
+    quote do
+      Enum.reduce(unquote(imports), unquote(fields), &Absinthe.Type.Object.import_fields(__MODULE__, &1, &2))
+    end
+  end
+
+  def import_fields(schema, {type, _opts}, fields) do
+    case schema.__absinthe_type__(type) do
+      %{fields: new_fields} ->
+        Map.merge(fields, new_fields)
+      _ ->
+        fields
+    end
   end
 
   @doc false
