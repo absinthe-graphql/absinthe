@@ -54,7 +54,7 @@ defmodule Absinthe.Type.Scalar do
   * `:parse` - A function used to convert the raw, incoming form of a scalar to the canonical internal format.
 
   The `:__reference__` key is for internal use.
-"""
+  """ 
   @type t :: %{name: binary, description: binary, serialize: (value_t -> any), parse: (any -> {:ok, value_t} | :error), __reference__: Type.Reference.t}
 
   @typedoc "The internal, canonical representation of a scalar value"

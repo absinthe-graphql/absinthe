@@ -54,8 +54,8 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
     schema_node = schema_node |> unwrap_non_null
     Type.Scalar.parse(schema_node, node)
   end
-  defp build_value(%{value: value, schema_node: %Type.Enum{} = schema_node}) do
-    Type.Enum.parse(schema_node, value)
+  defp build_value(%{value: value, schema_node: %Type.Enum{} = schema_node} = node) do
+    Type.Enum.parse(schema_node, node)
   end
   defp build_value(%Blueprint.Input.List{values: values}) do
     result = Enum.reduce_while(values, [], fn

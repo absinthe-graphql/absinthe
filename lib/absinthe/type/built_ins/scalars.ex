@@ -68,21 +68,11 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   @min_int -9007199254740991
 
   @spec parse_int(integer | float | binary) :: {:ok, integer} | :error
-  defp parse_int(value) when is_integer(value) do
-    cond do
-      value > @max_int -> @max_int
-      value < @min_int -> @min_int
-      true -> value
-    end
-    |> Flag.as(:ok)
+  defp parse_int(value) when is_integer(value) and value >= @min_int and value <= @max_int do
+    {:ok, value}
   end
   defp parse_int(value) when is_float(value) do
     with {result, _} <- Integer.parse(String.to_integer(value, 10)) do
-      parse_int(result)
-    end
-  end
-  defp parse_int(value) when is_binary(value) do
-    with {result, _} <- Integer.parse(value) do
       parse_int(result)
     end
   end
@@ -90,15 +80,12 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     :error
   end
 
-  @spec parse_float(integer | float | binary) :: {:ok, float} | :error
+  @spec parse_float(integer | float) :: {:ok, float} | :error
   defp parse_float(value) when is_integer(value) do
     {:ok, value * 1.0}
   end
   defp parse_float(value) when is_float(value) do
     {:ok, value}
-  end
-  defp parse_float(value) when is_binary(value) do
-    with {value, _} <- Float.parse(value), do: {:ok, value}
   end
   defp parse_float(_) do
     :error
@@ -130,8 +117,8 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   defp parse_boolean(value) when is_number(value) do
     {:ok, value > 0}
   end
-  defp parse_boolean(value) do
-    {:ok, !!value}
+  defp parse_boolean(value) when is_boolean(value) do
+    {:ok, value}
   end
 
   # Parse, supporting pulling values out of blueprint Input nodes
@@ -141,7 +128,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
         if Enum.member?(node_types, str) do
           coercion.(value)
         else
-          nil
+          :error
         end
       other ->
         coercion.(other)

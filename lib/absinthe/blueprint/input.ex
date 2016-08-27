@@ -2,6 +2,8 @@ defmodule Absinthe.Blueprint.Input do
   alias Absinthe.Blueprint
   alias __MODULE__
 
+  import Kernel, except: [inspect: 1]
+
   @type leaf ::
       Input.Integer.t
     | Input.Float.t
@@ -65,5 +67,25 @@ defmodule Absinthe.Blueprint.Input do
     nil
   end
 
+  @simple_inspect_types [
+    Input.Boolean,
+    Input.Float,
+    Input.Integer,
+    Input.String
+  ]
+
+  @spec inspect(t) :: String.t
+  def inspect(%str{value: value}) when str in @simple_inspect_types do
+    Kernel.inspect(value)
+  end
+  def inspect(%Input.Enum{value: value}) do
+    value
+  end
+  def inspect(%Input.List{values: values}) do
+    contents = values
+    |> Enum.map(&inspect/1)
+    |> Enum.join(", ")
+    "[#{contents}]"
+  end
 
 end
