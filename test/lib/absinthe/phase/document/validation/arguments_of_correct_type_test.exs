@@ -744,7 +744,6 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
       )
     end
 
-    @tag :focus
     it "Incorrect value and missing argument" do
       assert_fails_rule(@rule,
         """

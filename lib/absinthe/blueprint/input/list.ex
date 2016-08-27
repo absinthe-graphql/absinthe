@@ -16,4 +16,14 @@ defmodule Absinthe.Blueprint.Input.List do
     errors: [Phase.Error.t],
   }
 
+  @doc """
+  Wrap another input node in a list.
+  """
+  @spec wrap(Blueprint.Input.t) :: t
+  def wrap(%str{} = node) when str != __MODULE__ do
+    %__MODULE__{values: [node]}
+  end
+  def wrap(node) do
+    node
+  end
 end

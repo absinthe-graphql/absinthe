@@ -122,6 +122,11 @@ defmodule Absinthe.Phase.Document.Schema do
     values = Enum.map(node.values, &value_with_schema_node(&1, schema_node, schema, adapter))
     %{node | schema_node: schema_node, values: values}
   end
+  # Coerce argument-level lists
+  defp value_with_schema_node(%node_type{} = node, %Type.Argument{type: %Type.List{}} = type, schema, adapter) when node_type != Blueprint.Input.List do
+    Blueprint.Input.List.wrap(node)
+    |> value_with_schema_node(type, schema, adapter)
+  end
   defp value_with_schema_node(node, parent_schema_node, schema, _) do
     schema_node = Type.expand(parent_schema_node.type, schema)
     %{node | schema_node: schema_node}
