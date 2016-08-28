@@ -52,6 +52,21 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
     end
   end
 
+  @spec bad_argument_object_field(String.t, integer) :: no_return
+  defp bad_argument_object_field(message, line) do
+    fn
+      pairs ->
+        assert !Enum.empty?(pairs), "No errors were found, expected:\n  ---\n  #{message}\n  ---"
+        error_matched = Enum.any?(pairs, fn
+          {%Blueprint.Input.Object{flags: flags}, %Phase.Error{phase: @rule, message: ^message, locations: [%{line: ^line}]}} ->
+            Enum.member?(flags, :invalid)
+          _ ->
+            false
+        end)
+        assert error_matched, "Could not find error:\n  ---\n  " <> message <> "\n  ---"
+    end
+  end
+
   describe "Valid values" do
 
     it "Good int value" do
@@ -940,15 +955,10 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument(
-          "complexArg",
-          "ComplexInput",
-          ~s({requiredField: true, unknownField: "value"}),
-          3,
-          [
-            ~s(In field "unknownField": Unknown field.)
-          ]
-        )
+        [
+          bad_argument("complexArg", "ComplexInput", ~s({requiredField: true, unknownField: "value"}), 3),
+          bad_argument_object_field(~s(In field "unknownField": Unknown field.), 5)
+        ]
       )
     end
 

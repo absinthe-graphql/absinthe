@@ -8,6 +8,7 @@ defmodule Absinthe.Blueprint.Input.Field do
     :value,
     # Added by phases
     flags: [],
+    source_location: nil,
     schema_node: nil,
     errors: [],
   ]
@@ -17,6 +18,7 @@ defmodule Absinthe.Blueprint.Input.Field do
     value: Blueprint.Input.t,
     flags: [atom],
     schema_node: nil | Type.Field.t,
+    source_location: Blueprint.Document.SourceLocation.t,
     errors: [Absinthe.Phase.Error.t],
   }
 

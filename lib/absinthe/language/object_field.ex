@@ -20,8 +20,11 @@ defmodule Absinthe.Language.ObjectField do
       %Blueprint.Input.Field{
         name: node.name,
         value: Blueprint.Draft.convert(node.value, doc),
+        source_location: source_location(node),
       }
     end
+    defp source_location(%{loc: nil}), do: nil
+    defp source_location(%{loc: loc}), do: Blueprint.Document.SourceLocation.at(loc.start_line)
   end
 
 end
