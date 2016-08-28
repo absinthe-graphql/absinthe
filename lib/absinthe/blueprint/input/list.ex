@@ -25,7 +25,7 @@ defmodule Absinthe.Blueprint.Input.List do
   """
   @spec wrap(Blueprint.Input.t) :: t
   def wrap(%str{} = node) when str != __MODULE__ do
-    %__MODULE__{values: [node]}
+    %__MODULE__{values: [node], source_location: node.source_location}
   end
   def wrap(node) do
     node

@@ -6,13 +6,13 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
   import Support.Harness.Validation
   alias Absinthe.{Blueprint, Phase}
 
-  @spec bad_value(String.t, String.t, any, nil | integer) :: Support.Harness.Validation.error_checker_t
-  defp bad_value(arg_name, type_name, value, line) do
-    bad_value(arg_name, type_name, value, line, [~s(Expected type "#{type_name}", found #{value})])
+  @spec bad_argument(String.t, String.t, any, nil | integer) :: Support.Harness.Validation.error_checker_t
+  defp bad_argument(arg_name, type_name, value, line) do
+    bad_argument(arg_name, type_name, value, line, [~s(Expected type "#{type_name}", found #{value})])
   end
 
-  @spec bad_value(String.t, String.t, any, nil | integer, [String.t]) :: Support.Harness.Validation.error_checker_t
-  defp bad_value(arg_name, _type_name, _value, line, errors) do
+  @spec bad_argument(String.t, String.t, any, nil | integer, [String.t]) :: Support.Harness.Validation.error_checker_t
+  defp bad_argument(arg_name, _type_name, _value, line, errors) do
     fn
       pairs ->
         assert !Enum.empty?(pairs), "No errors were found"
@@ -22,6 +22,29 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
               {%Blueprint.Input.Argument{name: ^arg_name, flags: flags}, %Phase.Error{phase: @rule, message: ^message, locations: [%{line: ^line}]}} ->
                 Enum.member?(flags, :invalid)
               _ ->
+                false
+            end)
+            assert error_matched, "Could not find error:\n  ---\n  " <> message <> "\n  ---"
+        end)
+    end
+  end
+
+  @spec bad_argument_list_item(integer, String.t, any, nil | integer) :: Support.Harness.Validation.error_checker_t
+  defp bad_argument_list_item(index, type_name, value, line) do
+    bad_argument_list_item(index, type_name, value, line, [~s(In element ##{index + 1}: Expected type "#{type_name}", found #{value})])
+  end
+
+  @spec bad_argument_list_item(integer, String.t, any, nil | integer, [String.t]) :: Support.Harness.Validation.error_checker_t
+  defp bad_argument_list_item(_index, _type_name, _value, line, errors) do
+    fn
+      pairs ->
+        assert !Enum.empty?(pairs), "No errors were found"
+        Enum.each(errors, fn
+          message ->
+            error_matched = Enum.any?(pairs, fn
+              {%Blueprint.Input.List{flags: flags}, %Phase.Error{phase: @rule, message: ^message, locations: [%{line: ^line}]}} ->
+                Enum.member?(flags, :invalid)
+              other ->
                 false
             end)
             assert error_matched, "Could not find error:\n  ---\n  " <> message <> "\n  ---"
@@ -151,7 +174,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("stringArg", "String", "1", 3)
+        bad_argument("stringArg", "String", "1", 3)
       )
     end
 
@@ -165,7 +188,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("stringArg", "String", "1.0", 3)
+        bad_argument("stringArg", "String", "1.0", 3)
       )
     end
 
@@ -179,7 +202,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("stringArg", "String", "true", 3)
+        bad_argument("stringArg", "String", "true", 3)
       )
     end
 
@@ -193,7 +216,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("stringArg", "String", "BAR", 3)
+        bad_argument("stringArg", "String", "BAR", 3)
       )
     end
 
@@ -211,7 +234,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("intArg", "Int", ~s("3"), 3)
+        bad_argument("intArg", "Int", ~s("3"), 3)
       )
     end
 
@@ -225,7 +248,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("intArg", "Int", "829384293849283498239482938", 3)
+        bad_argument("intArg", "Int", "829384293849283498239482938", 3)
       )
     end
 
@@ -239,7 +262,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("intArg", "Int", "FOO", 3)
+        bad_argument("intArg", "Int", "FOO", 3)
       )
     end
 
@@ -253,7 +276,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("intArg", "Int", "3.0", 3)
+        bad_argument("intArg", "Int", "3.0", 3)
       )
     end
 
@@ -267,7 +290,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("intArg", "Int", "3.333", 3)
+        bad_argument("intArg", "Int", "3.333", 3)
       )
     end
 
@@ -285,7 +308,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("floatArg", "Float", ~s("3.333"), 3)
+        bad_argument("floatArg", "Float", ~s("3.333"), 3)
       )
     end
 
@@ -299,7 +322,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("floatArg", "Float", "true", 3)
+        bad_argument("floatArg", "Float", "true", 3)
       )
     end
 
@@ -313,7 +336,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("floatArg", "Float", "FOO", 3)
+        bad_argument("floatArg", "Float", "FOO", 3)
       )
     end
 
@@ -331,7 +354,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("booleanArg", "Boolean", "2", 3)
+        bad_argument("booleanArg", "Boolean", "2", 3)
       )
     end
 
@@ -345,7 +368,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("booleanArg", "Boolean", "1.0", 3)
+        bad_argument("booleanArg", "Boolean", "1.0", 3)
       )
     end
 
@@ -359,7 +382,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("booleanArg", "Boolean", ~s("true"), 3)
+        bad_argument("booleanArg", "Boolean", ~s("true"), 3)
       )
     end
 
@@ -373,7 +396,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("booleanArg", "Boolean", "TRUE", 3)
+        bad_argument("booleanArg", "Boolean", "TRUE", 3)
       )
     end
 
@@ -392,7 +415,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("idArg", "ID", "1.0", 3)
+        bad_argument("idArg", "ID", "1.0", 3)
       )
     end
 
@@ -406,7 +429,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("idArg", "ID", "true", 3)
+        bad_argument("idArg", "ID", "true", 3)
       )
     end
 
@@ -420,7 +443,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("idArg", "ID", "SOMETHING", 3)
+        bad_argument("idArg", "ID", "SOMETHING", 3)
       )
     end
 
@@ -438,7 +461,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("dogCommand", "DogCommand", "2", 3)
+        bad_argument("dogCommand", "DogCommand", "2", 3)
       )
     end
 
@@ -452,7 +475,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("dogCommand", "DogCommand", "1.0", 3)
+        bad_argument("dogCommand", "DogCommand", "1.0", 3)
       )
     end
 
@@ -466,7 +489,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("dogCommand", "DogCommand", ~s("SIT"), 3)
+        bad_argument("dogCommand", "DogCommand", ~s("SIT"), 3)
       )
     end
 
@@ -480,7 +503,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("dogCommand", "DogCommand", "true", 3)
+        bad_argument("dogCommand", "DogCommand", "true", 3)
       )
     end
 
@@ -494,7 +517,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("dogCommand", "DogCommand", "JUGGLE", 3)
+        bad_argument("dogCommand", "DogCommand", "JUGGLE", 3)
       )
     end
 
@@ -508,7 +531,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("dogCommand", "DogCommand", "sit", 3)
+        bad_argument("dogCommand", "DogCommand", "sit", 3)
       )
     end
 
@@ -569,12 +592,11 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value(
-          "stringListArg", "[String]", ~s(["one", 2]), 3
-        )
+        [
+          bad_argument("stringListArg", "[String]", ~s(["one", 2]), 3),
+          bad_argument_list_item(1, "String", "2", 3)
+        ]
       )
-      # Note: Validation of the individual item error is
-      # done by ArgumentListItemsOfCorrectType
     end
 
     it "Single value of incorrect type" do
@@ -587,7 +609,10 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("stringListArg", "[String]", "1", 3)
+        [
+          bad_argument("stringListArg", "[String]", "1", 3),
+          bad_argument_list_item(0, "String", "1", 3)
+        ]
       )
     end
 
@@ -740,8 +765,8 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         """,
         %{},
         [
-          bad_value("req2", "Int!", ~s("two"), 3),
-          bad_value("req1", "Int!", ~s("one"), 3)
+          bad_argument("req2", "Int!", ~s("two"), 3),
+          bad_argument("req1", "Int!", ~s("one"), 3)
         ]
       )
     end
@@ -756,7 +781,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("req1", "Int!", ~s("one"), 3)
+        bad_argument("req1", "Int!", ~s("one"), 3)
       )
     end
 
@@ -868,7 +893,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value(
+        bad_argument(
           "complexArg", "ComplexInput", "{intField: 4}", 3,
           [
             ~s(In field "requiredField": Expected "Boolean!", found null.)
@@ -890,7 +915,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value(
+        bad_argument(
           "complexArg",
           "ComplexInput",
           ~s({stringListField: ["one", 2], requiredField: true}),
@@ -915,7 +940,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value(
+        bad_argument(
           "complexArg",
           "ComplexInput",
           ~s({requiredField: true, unknownField: "value"}),
@@ -958,8 +983,8 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         """,
         %{},
         [
-          bad_value("if", "Boolean!", ~s("yes"), 2),
-          bad_value("if", "Boolean!", "ENUM", 3)
+          bad_argument("if", "Boolean!", ~s("yes"), 2),
+          bad_argument("if", "Boolean!", "ENUM", 3)
         ]
       )
     end

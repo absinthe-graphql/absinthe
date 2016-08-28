@@ -138,8 +138,8 @@ Value -> float_value : build_ast_node('FloatValue', #{'value' => extract_float('
 Value -> string_value : build_ast_node('StringValue', #{'value' => extract_quoted_string_token('$1')}, #{'start_line' => extract_line('$1')}).
 Value -> boolean_value : build_ast_node('BooleanValue', #{'value' => extract_boolean('$1')}, #{'start_line' => extract_line('$1')}).
 Value -> EnumValue : build_ast_node('EnumValue', #{'value' => '$1'}, #{'start_line' => extract_line('$1')}).
-Value -> ListValue : build_ast_node('ListValue', #{'values' => '$1'}, #{'start_line' => extract_line('$1')}).
-Value -> ObjectValue : build_ast_node('ObjectValue', #{'fields' => '$1'}, #{'start_line' => extract_line('$1')}).
+Value -> ListValue : build_ast_node('ListValue', #{'values' => '$1'}, #{'start_line' => extract_child_line('$1')}).
+Value -> ObjectValue : build_ast_node('ObjectValue', #{'fields' => '$1'}, #{'start_line' => extract_child_line('$1')}).
 
 EnumValue -> Name : extract_binary('$1').
 
@@ -258,8 +258,8 @@ extract_line({_Token, Line}) -> Line;
 extract_line({_Token, Line, _Value}) -> Line;
 extract_line(_) -> nil.
 
-extract_child_line([head|tail]) ->
-    extract_child_line(head);
+extract_child_line([Head|_]) ->
+    extract_child_line(Head);
 extract_child_line(#{loc := #{'start_line' := Line}}) ->
     Line;
 extract_child_line(_) ->

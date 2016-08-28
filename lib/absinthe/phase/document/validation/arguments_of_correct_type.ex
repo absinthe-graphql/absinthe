@@ -13,27 +13,46 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
   defp handle_node(%Blueprint.Input.Argument{schema_node: %{type: type_reference}, literal_value: literal, normalized_value: norm, data_value: nil} = node, schema) when not is_nil(norm) do
     type_identifier = Type.unwrap(type_reference)
     flags = [:invalid | node.flags]
-    errors = [error(node, schema) | node.errors]
+    errors = [error(node, argument_error_message(node, schema)) | node.errors]
     {%{node | flags: flags, errors: errors}, schema}
   end
-  defp handle_node(%Blueprint.Input.Argument{schema_node: %{type: type_reference}, literal_value: literal, normalized_value: norm, data_value: _} = node, schema) when not is_nil(norm) do
-    {node, schema}
+  defp handle_node(%Blueprint.Input.List{} = node, schema) do
+    if Enum.member?(node.flags, :invalid) do
+      add_errors = node.values
+      |> Enum.with_index
+      |> Enum.reduce([], fn
+        {value_node, index}, acc ->
+          if Enum.member?(value_node.flags, :invalid) do
+            [error(node, argument_list_item_error_message(index, value_node, schema)) | acc]
+          else
+            acc
+          end
+      end)
+      node = %{node | errors: add_errors ++ node.errors}
+      {node, schema}
+    else
+      {node, schema}
+    end
   end
   defp handle_node(node, schema) do
     {node, schema}
   end
 
-  defp error(node, schema) do
+  defp error(node, message) do
     Phase.Error.new(
       __MODULE__,
-      error_message(node, schema),
+      message,
       node.source_location
     )
   end
 
-  defp error_message(node, schema) do
+  defp argument_error_message(node, schema) do
     type_name = Type.name(node.schema_node.type, schema)
     ~s(Expected type "#{type_name}", found #{Blueprint.Input.inspect node.literal_value})
+  end
+  defp argument_list_item_error_message(index, node, schema) do
+    type_name = Type.name(node.schema_node, schema)
+    ~s(In element ##{index + 1}: Expected type "#{type_name}", found #{Blueprint.Input.inspect node})
   end
 
 end
