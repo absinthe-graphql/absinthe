@@ -570,10 +570,11 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         """,
         %{},
         bad_value(
-          "stringListArg", "[String]", ~s(["one", 2]), 3,
-          [~s(In element #1: Expected type "String", found 2.)]
+          "stringListArg", "[String]", ~s(["one", 2]), 3
         )
       )
+      # Note: Validation of the individual item error is
+      # done by ArgumentListItemsOfCorrectType
     end
 
     it "Single value of incorrect type" do

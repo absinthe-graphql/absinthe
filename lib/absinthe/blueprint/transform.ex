@@ -48,7 +48,7 @@ defmodule Absinthe.Blueprint.Transform do
     Blueprint.Document.Fragment.Inline => [:fields],
     Blueprint.Document.Fragment.Named => [:fields],
     Blueprint.Document.VariableDefinition => [:type, :default_value],
-    Blueprint.Input.Argument => [:literal_value],
+    Blueprint.Input.Argument => [:literal_value, :normalized_value],
     Blueprint.Input.Field => [:value],
     Blueprint.Input.List => [:values],
     Blueprint.Input.Object => [:fields],

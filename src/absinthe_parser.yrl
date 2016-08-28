@@ -161,7 +161,7 @@ TypeDefinition -> ScalarTypeDefinition : '$1'.
 TypeDefinition -> EnumTypeDefinition : '$1'.
 TypeDefinition -> InputObjectTypeDefinition : '$1'.
 TypeDefinition -> TypeExtensionDefinition : '$1'.
-TypeDefinition -> DirectiveDefinition : '$1'.     
+TypeDefinition -> DirectiveDefinition : '$1'.
 
 DirectiveDefinition -> 'directive' '@' Name 'on' DirectiveDefinitionLocations :
   build_ast_node('DirectiveDefinition', #{'name' => extract_binary('$3'), 'locations' =>'$5'}, #{'start_line' => extract_line('$1')}).
@@ -254,7 +254,7 @@ extract_float({_Token, _Line, Value}) ->
   {Float, []} = string:to_float(Value), Float.
 extract_boolean({_Token, _Line, "true"}) -> true;
 extract_boolean({_Token, _Line, "false"}) -> false.
-extract_line({_Token, Line}) -> Line;                                
+extract_line({_Token, Line}) -> Line;
 extract_line({_Token, Line, _Value}) -> Line;
 extract_line(_) -> nil.
 

@@ -4,8 +4,8 @@ defmodule Absinthe.Language.BooleanValue do
   alias Absinthe.Blueprint
 
   defstruct [
-    value: nil,
-    loc: %{}
+    :value,
+    :loc,
   ]
 
   @type t :: %__MODULE__{
@@ -16,9 +16,12 @@ defmodule Absinthe.Language.BooleanValue do
   defimpl Blueprint.Draft do
     def convert(node, doc) do
       %Blueprint.Input.Boolean{
-        value: Absinthe.Blueprint.Draft.convert(node.value, doc)
+        value: Absinthe.Blueprint.Draft.convert(node.value, doc),
+        source_location: source_location(node),
       }
     end
+    defp source_location(%{loc: nil}), do: nil
+    defp source_location(%{loc: loc}), do: Blueprint.Document.SourceLocation.at(loc.start_line)
   end
 
 end

@@ -3,6 +3,7 @@ defmodule Absinthe.Blueprint.Input.Float do
   @enforce_keys [:value]
   defstruct [
     :value,
+    :source_location,
     # Added by phases
     flags: [],
     schema_node: nil,
@@ -12,6 +13,7 @@ defmodule Absinthe.Blueprint.Input.Float do
   @type t :: %__MODULE__{
     value: float,
     flags: [atom],
+    source_location: Blueprint.Document.SourceLocation.t,
     schema_node: nil | Absinthe.Type.t,
     errors: [Absinthe.Phase.Error.t],
   }

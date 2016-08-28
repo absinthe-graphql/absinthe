@@ -20,7 +20,7 @@ defmodule Absinthe.Language.Argument do
       %Blueprint.Input.Argument{
         name: node.name,
         literal_value: Absinthe.Blueprint.Draft.convert(node.value, doc),
-        source_location: source_location(node)
+        source_location: source_location(node),
       }
     end
     defp source_location(%{loc: nil}), do: nil

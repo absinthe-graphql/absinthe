@@ -13,7 +13,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
   defp handle_node(%Blueprint.Input.Argument{schema_node: %{type: type_reference}, literal_value: literal, normalized_value: norm, data_value: nil} = node, schema) when not is_nil(norm) do
     type_identifier = Type.unwrap(type_reference)
     flags = [:invalid | node.flags]
-    errors = [error(type_reference, schema, literal, node) | node.errors]
+    errors = [error(node, schema) | node.errors]
     {%{node | flags: flags, errors: errors}, schema}
   end
   defp handle_node(%Blueprint.Input.Argument{schema_node: %{type: type_reference}, literal_value: literal, normalized_value: norm, data_value: _} = node, schema) when not is_nil(norm) do
@@ -23,13 +23,17 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
     {node, schema}
   end
 
-  defp error(type_reference, schema, literal, node) do
-    type_name = Type.name(type_reference, schema)
+  defp error(node, schema) do
     Phase.Error.new(
       __MODULE__,
-      ~s(Expected type "#{type_name}", found #{Blueprint.Input.inspect literal}),
+      error_message(node, schema),
       node.source_location
     )
+  end
+
+  defp error_message(node, schema) do
+    type_name = Type.name(node.schema_node.type, schema)
+    ~s(Expected type "#{type_name}", found #{Blueprint.Input.inspect node.literal_value})
   end
 
 end

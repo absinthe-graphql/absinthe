@@ -1,4 +1,18 @@
 defmodule Absinthe.Phase.Document.Arguments.Data do
+  @moduledoc """
+  Populate all arguments in the document with their provided data values:
+
+  - If valid data is available for an argument, set the `Argument.t`'s
+    `data_value` field to that value.
+  - If no valid data is available for an argument, set the `Argument.t`'s
+    `data_value` to `nil`.
+  - When determining the value of the argument, mark any invalid nodes
+    in the `Argument.t`'s `normalized_value` tree with `:invalid` and a
+    reason.
+
+  Note that the limited validation that occurs in this phase is limited to
+  setting the `data_value` to `nil` and adding flags to the `normalized_value`.
+  """
 
   alias Absinthe.{Blueprint, Type}
 
@@ -90,7 +104,7 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
         end
     end)
     if any_invalid?(list_values) do
-      node = %{node | values: list_values}
+      node = %{node | values: list_values |> Enum.reverse}
       {:error, flag_invalid(node, :bad_values)}
     else
       {:ok, result}

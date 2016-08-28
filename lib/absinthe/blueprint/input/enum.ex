@@ -2,9 +2,10 @@ defmodule Absinthe.Blueprint.Input.Enum do
 
   alias Absinthe.{Phase}
 
-  @enforce_keys [:value]
+  @enforce_keys [:value, :source_location]
   defstruct [
     :value,
+    :source_location,
     # Added by phases
     flags: [],
     schema_node: nil,
@@ -15,6 +16,7 @@ defmodule Absinthe.Blueprint.Input.Enum do
     value: String.t,
     flags: [atom],
     schema_node: nil | Absinthe.Type.t,
+    source_location: Blueprint.Document.SourceLocation.t,
     errors: [Phase.Error.t],
   }
 

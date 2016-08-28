@@ -5,6 +5,7 @@ defmodule Absinthe.Blueprint.Input.List do
   @enforce_keys [:values]
   defstruct [
     :values,
+    :source_location,
     # Added by phases
     flags: [],
     schema_node: nil,
@@ -15,6 +16,7 @@ defmodule Absinthe.Blueprint.Input.List do
     values: [Blueprint.Input.t],
     flags: [],
     schema_node: nil | Absinthe.Type.t,
+    source_location: Blueprint.Document.SourceLocation.t,
     errors: [Phase.Error.t],
   }
 
