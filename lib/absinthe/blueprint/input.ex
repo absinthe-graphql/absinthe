@@ -75,17 +75,26 @@ defmodule Absinthe.Blueprint.Input do
   ]
 
   @spec inspect(t) :: String.t
-  def inspect(%str{value: value}) when str in @simple_inspect_types do
-    Kernel.inspect(value)
+  def inspect(%str{} = node) when str in @simple_inspect_types do
+    Kernel.inspect(node.value)
   end
-  def inspect(%Input.Enum{value: value}) do
-    value
+  def inspect(%Input.Enum{} = node) do
+    node.value
   end
-  def inspect(%Input.List{values: values}) do
-    contents = values
+  def inspect(%Input.List{} = node) do
+    contents = node.values
     |> Enum.map(&inspect/1)
     |> Enum.join(", ")
     "[#{contents}]"
+  end
+  def inspect(%Input.Object{} = node) do
+    contents = node.fields
+    |> Enum.map(&inspect/1)
+    |> Enum.join(", ")
+    "{#{contents}}"
+  end
+  def inspect(%Input.Field{} = node) do
+    node.name <> ": " <> inspect(node.value)
   end
 
 end

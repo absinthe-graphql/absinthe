@@ -16,6 +16,9 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
     errors = [error(type_reference, schema, literal, node) | node.errors]
     {%{node | flags: flags, errors: errors}, schema}
   end
+  defp handle_node(%Blueprint.Input.Argument{schema_node: %{type: type_reference}, literal_value: literal, normalized_value: norm, data_value: _} = node, schema) when not is_nil(norm) do
+    {node, schema}
+  end
   defp handle_node(node, schema) do
     {node, schema}
   end

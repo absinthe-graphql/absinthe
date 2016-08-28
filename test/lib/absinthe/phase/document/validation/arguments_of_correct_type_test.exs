@@ -15,6 +15,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
   defp bad_value(arg_name, _type_name, _value, line, errors) do
     fn
       pairs ->
+        assert !Enum.empty?(pairs), "No errors were found"
         Enum.each(errors, fn
           message ->
             error_matched = Enum.any?(pairs, fn
@@ -585,7 +586,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_value("stringListArg", "String", "1", 3)
+        bad_value("stringListArg", "[String]", "1", 3)
       )
     end
 
