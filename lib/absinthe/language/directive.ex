@@ -7,7 +7,7 @@ defmodule Absinthe.Language.Directive do
   defstruct [
     name: nil,
     arguments: [],
-    loc: %{start_line: nil}
+    loc: nil
   ]
 
   @type t :: %__MODULE__{
@@ -21,9 +21,11 @@ defmodule Absinthe.Language.Directive do
       %Blueprint.Directive{
         name: node.name,
         arguments: Absinthe.Blueprint.Draft.convert(node.arguments, doc),
-        source_location: Blueprint.Document.SourceLocation.at(node.loc.start_line),
+        source_location: source_location(node),
       }
     end
+    defp source_location(%{loc: nil}), do: nil
+    defp source_location(%{loc: loc}), do: Blueprint.Document.SourceLocation.at(loc.start_line)
   end
 
 end

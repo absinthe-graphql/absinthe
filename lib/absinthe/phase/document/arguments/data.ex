@@ -21,8 +21,17 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
     {:ok, result}
   end
 
+  @argument_hosts [
+    Blueprint.Document.Field,
+    Blueprint.Directive,
+  ]
+
   defp handle_node(%{normalized_value: %{schema_node: nil}} = node, _) do
     node
+  end
+  defp handle_node(%argument_host{schema_node: schema_node} = node, adapter) when not is_nil(schema_node) and argument_host in @argument_hosts do
+    missing = generate_missing_arguments(node, adapter)
+    %{node | arguments: missing ++ node.arguments}
   end
   defp handle_node(%Blueprint.Input.Argument{} = node, adapter) do
     case build_value(node.normalized_value, adapter) do
@@ -105,7 +114,7 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
         other
     end
   end
-  defp build_value(%{value: value, schema_node: %Type.Enum{} = schema_node} = node, _adapter) do
+  defp build_value(%{schema_node: %Type.Enum{} = schema_node} = node, _adapter) do
     case Type.Enum.parse(schema_node, node) do
       :error ->
         {:error, flag_invalid(node, :bad_parse)}
@@ -159,6 +168,29 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
   end
   defp unwrap_non_null(other) do
     other
+  end
+
+  defp generate_missing_arguments(node, adapter) do
+    Enum.flat_map(node.schema_node.args, fn
+      {_, %Type.Argument{type: %Type.NonNull{}} = schema_argument} ->
+        if Enum.any?(node.arguments, &(match?(%Blueprint.Input.Argument{schema_node: ^schema_argument}, &1))) do
+          []
+        else
+          # Generate a stub argument
+          [
+            %Blueprint.Input.Argument{
+              name: schema_argument.name |> adapter.to_external_name(:argument),
+              literal_value: nil,
+              data_value: nil,
+              schema_node: schema_argument,
+              source_location: node.source_location,
+              flags: [:invalid, :missing]
+            }
+          ]
+        end
+      _ ->
+        []
+    end)
   end
 
 end

@@ -111,7 +111,7 @@ Argument -> 'on' ':' Value : build_ast_node('Argument', #{name => extract_binary
 
 Directives -> Directive : ['$1'].
 Directives -> Directive Directives : ['$1'|'$2'].
-Directive -> '@' Name : build_ast_node('Directive', #{name => extract_binary('$2')}).
+Directive -> '@' Name : build_ast_node('Directive', #{name => extract_binary('$2')}, #{'start_line' => extract_line('$1')}).
 Directive -> '@' Name Arguments : build_ast_node('Directive', #{name => extract_binary('$2'), 'arguments' => '$3'}, #{'start_line' => extract_line('$1')}).
 
 NameWithoutOn -> 'name' : '$1'.
@@ -265,8 +265,6 @@ extract_child_line(#{loc := #{'start_line' := Line}}) ->
 extract_child_line(_) ->
     nil.
 
-build_ast_node(Type, Node) ->
-  build_ast_node(Type, Node, nil).
 build_ast_node(Type, Node, #{'start_line' := nil}) ->
   build_ast_node(Type, Node, nil);
 build_ast_node(Type, Node, Loc) ->

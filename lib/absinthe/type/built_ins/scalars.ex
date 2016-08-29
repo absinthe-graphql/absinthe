@@ -3,8 +3,6 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
 
   @moduledoc false
 
-  alias Absinthe.Flag
-
   scalar :integer, name: "Int" do
     description """
     The `Int` scalar type represents non-fractional signed whole numeric

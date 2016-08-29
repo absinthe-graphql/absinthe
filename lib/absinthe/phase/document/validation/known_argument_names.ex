@@ -8,7 +8,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNames do
   errors (eg, the field) should be presented to the user.
   """
 
-  alias Absinthe.{Blueprint, Phase, Type}
+  alias Absinthe.{Blueprint, Phase}
 
   use Absinthe.Phase
 
