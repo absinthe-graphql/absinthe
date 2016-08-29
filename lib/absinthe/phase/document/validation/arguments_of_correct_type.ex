@@ -13,43 +13,35 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
   defp handle_node(%Blueprint.Input.Argument{schema_node: %{type: type_reference}, literal_value: literal, normalized_value: norm, data_value: nil} = node, schema) when not is_nil(norm) do
     type_identifier = Type.unwrap(type_reference)
     flags = [:invalid | node.flags]
-    errors = [error(node, argument_error_message(node, schema)) | node.errors]
-    {%{node | flags: flags, errors: errors}, schema}
+    err = error(node, error_message(node, schema))
+    {%{node | flags: flags, errors: [err | node.errors]}, schema}
   end
   defp handle_node(%Blueprint.Input.Object{} = node, schema) do
     if Enum.member?(node.flags, :invalid) do
-      add_errors = node.fields
-      |> Enum.reduce([], fn
-        field, acc ->
+      fields = Enum.map(node.fields, fn
+        field ->
           if Enum.member?(field.flags, :invalid) do
-            [error(field, argument_field_error_message(field, schema)) | acc]
-          else
-            acc
+            err = error(field, error_message(field, schema))
+            field = %{field | errors: [err | field.errors]}
           end
       end)
-      node = %{node | errors: add_errors ++ node.errors}
-      {node, schema}
-    else
-      {node, schema}
+      node = %{node | fields: Enum.reverse(fields)}
     end
+    {node, schema}
   end
   defp handle_node(%Blueprint.Input.List{} = node, schema) do
     if Enum.member?(node.flags, :invalid) do
-      add_errors = node.values
-      |> Enum.with_index
-      |> Enum.reduce([], fn
-        {value_node, index}, acc ->
+      values = Enum.map(node.values, fn
+        value_node ->
           if Enum.member?(value_node.flags, :invalid) do
-            [error(value_node, argument_list_item_error_message(index, value_node, schema)) | acc]
-          else
-            acc
+            err = error(value_node, error_message(value_node, schema))
+            value_node = %{value_node | errors: [err | value_node.errors]}
           end
+          value_node
       end)
-      node = %{node | errors: add_errors ++ node.errors}
-      {node, schema}
-    else
-      {node, schema}
+      node = %{node | values: Enum.reverse(values)}
     end
+    {node, schema}
   end
   defp handle_node(node, schema) do
     {node, schema}
@@ -63,16 +55,19 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
     )
   end
 
-  defp argument_field_error_message(node, schema) do
-    ~s(In field "#{node.name}": Unknown field.)
+  defp error_message(%Blueprint.Input.Argument{} = node, schema) do
+    error_message(node, node.schema_node.type, node.literal_value, schema)
   end
-  defp argument_error_message(node, schema) do
-    type_name = Type.name(node.schema_node.type, schema)
-    ~s(Expected type "#{type_name}", found #{Blueprint.Input.inspect node.literal_value})
+  defp error_message(node, schema) do
+    error_message(node, node.schema_node, node, schema)
   end
-  defp argument_list_item_error_message(index, node, schema) do
-    type_name = Type.name(node.schema_node, schema)
-    ~s(In element ##{index + 1}: Expected type "#{type_name}", found #{Blueprint.Input.inspect node})
+
+  defp error_message(%Blueprint.Input.Field{}, nil, value, schema) do
+    "Unknown field."
+  end
+  defp error_message(node, type, value, schema) do
+    type_name = Type.name(type, schema)
+    ~s(Expected type "#{type_name}", found #{Blueprint.Input.inspect value})
   end
 
 end

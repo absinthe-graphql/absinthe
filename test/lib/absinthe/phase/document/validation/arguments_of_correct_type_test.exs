@@ -6,65 +6,23 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
   import Support.Harness.Validation
   alias Absinthe.{Blueprint, Phase}
 
-  @spec bad_argument(String.t, String.t, any, nil | integer) :: Support.Harness.Validation.error_checker_t
-  defp bad_argument(arg_name, type_name, value, line) do
-    bad_argument(arg_name, type_name, value, line, [~s(Expected type "#{type_name}", found #{value})])
-  end
-
-  @spec bad_argument(String.t, String.t, any, nil | integer, [String.t]) :: Support.Harness.Validation.error_checker_t
-  defp bad_argument(arg_name, _type_name, _value, line, errors) do
+  defp bad_value(node_kind, message, line, metadata \\ []) do
+    expectation_banner = "\nExpected #{node_kind} node with error (from line ##{line}):\n---\n#{message}\n---"
     fn
       pairs ->
-        assert !Enum.empty?(pairs), "No errors were found"
-        Enum.each(errors, fn
-          message ->
-            error_matched = Enum.any?(pairs, fn
-              {%Blueprint.Input.Argument{name: ^arg_name, flags: flags}, %Phase.Error{phase: @rule, message: ^message, locations: [%{line: ^line}]}} ->
-                Enum.member?(flags, :invalid)
-              _ ->
-                false
-            end)
-            assert error_matched, "Could not find error:\n  ---\n  " <> message <> "\n  ---"
-        end)
-    end
-  end
-
-  @spec bad_argument_list_item(integer, String.t, any, nil | integer) :: Support.Harness.Validation.error_checker_t
-  defp bad_argument_list_item(index, type_name, value, line) do
-    bad_argument_list_item(index, type_name, value, line, [~s(In element ##{index + 1}: Expected type "#{type_name}", found #{value})])
-  end
-
-  @spec bad_argument_list_item(integer, String.t, any, nil | integer, [String.t]) :: Support.Harness.Validation.error_checker_t
-  defp bad_argument_list_item(_index, _type_name, _value, line, errors) do
-    fn
-      pairs ->
-        assert !Enum.empty?(pairs), "No errors were found"
-        Enum.each(errors, fn
-          message ->
-            error_matched = Enum.any?(pairs, fn
-              {%Blueprint.Input.List{flags: flags}, %Phase.Error{phase: @rule, message: ^message, locations: [%{line: ^line}]}} ->
-                Enum.member?(flags, :invalid)
-              other ->
-                false
-            end)
-            assert error_matched, "Could not find error:\n  ---\n  " <> message <> "\n  ---"
-        end)
-    end
-  end
-
-  @spec bad_argument_object_field(String.t, integer) :: no_return
-  defp bad_argument_object_field(message, line) do
-    fn
-      pairs ->
-        assert !Enum.empty?(pairs), "No errors were found, expected:\n  ---\n  #{message}\n  ---"
-        error_matched = Enum.any?(pairs, fn
-          {%Blueprint.Input.Object{flags: flags}, %Phase.Error{phase: @rule, message: ^message, locations: [%{line: ^line}]}} ->
-            Enum.member?(flags, :invalid)
+        assert !Enum.empty?(pairs), "No errors were found.\n#{expectation_banner}"
+        matched = Enum.any?(pairs, fn
+          {%str{} = node, %Phase.Error{phase: @rule, message: ^message, locations: [%{line: ^line}]} = error} when str == node_kind ->
+            Enum.member?(node.flags, :invalid) && Enum.all?(metadata, fn {key, value} -> Map.get(node, key) == value end)
           _ ->
             false
         end)
-        assert error_matched, "Could not find error:\n  ---\n  " <> message <> "\n  ---"
+        assert matched, "Could not find error.\n#{expectation_banner}"
     end
+  end
+
+  defp expected_type_message(type_name, value) do
+    ~s(Expected type "#{type_name}", found #{value})
   end
 
   describe "Valid values" do
@@ -189,7 +147,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("stringArg", "String", "1", 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("String", "1"), 3)
       )
     end
 
@@ -203,7 +161,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("stringArg", "String", "1.0", 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("String", "1.0"), 3, name: "stringArg")
       )
     end
 
@@ -217,7 +175,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("stringArg", "String", "true", 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("String", "true"), 3, name: "stringArg")
       )
     end
 
@@ -231,7 +189,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("stringArg", "String", "BAR", 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("String", "BAR"), 3, name: "stringArg")
       )
     end
 
@@ -249,7 +207,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("intArg", "Int", ~s("3"), 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("Int", ~s("3")), 3, name: "intArg")
       )
     end
 
@@ -263,7 +221,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("intArg", "Int", "829384293849283498239482938", 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("Int", "829384293849283498239482938"), 3, name: "intArg")
       )
     end
 
@@ -277,7 +235,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("intArg", "Int", "FOO", 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("Int", "FOO"), 3, name: "intArg")
       )
     end
 
@@ -291,7 +249,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("intArg", "Int", "3.0", 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("Int", "3.0"), 3, name: "intArg")
       )
     end
 
@@ -305,7 +263,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("intArg", "Int", "3.333", 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("Int", "3.333"), 3, name: "intArg")
       )
     end
 
@@ -323,7 +281,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("floatArg", "Float", ~s("3.333"), 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("Float", ~s("3.333")), 3, name: "floatArg")
       )
     end
 
@@ -337,7 +295,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("floatArg", "Float", "true", 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("Float", "true"), 3, name: "floatArg")
       )
     end
 
@@ -351,7 +309,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("floatArg", "Float", "FOO", 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("Float", "FOO"), 3, name: "floatArg")
       )
     end
 
@@ -369,7 +327,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("booleanArg", "Boolean", "2", 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("Boolean", "2"), 3, name: "booleanArg")
       )
     end
 
@@ -383,7 +341,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("booleanArg", "Boolean", "1.0", 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("Boolean", "1.0"), 3, name: "booleanArg")
       )
     end
 
@@ -397,7 +355,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("booleanArg", "Boolean", ~s("true"), 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("Boolean", ~s("true")), 3, name: "booleanArg")
       )
     end
 
@@ -411,7 +369,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("booleanArg", "Boolean", "TRUE", 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("Boolean", "TRUE"), 3, name: "booleanArg")
       )
     end
 
@@ -430,7 +388,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("idArg", "ID", "1.0", 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("ID", "1.0"), 3, name: "idArg")
       )
     end
 
@@ -444,7 +402,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("idArg", "ID", "true", 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("ID", "true"), 3, name: "idArg")
       )
     end
 
@@ -458,7 +416,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("idArg", "ID", "SOMETHING", 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("ID", "SOMETHING"), 3, name: "idArg")
       )
     end
 
@@ -476,7 +434,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("dogCommand", "DogCommand", "2", 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("DogCommand", "2"), 3, name: "dogCommand")
       )
     end
 
@@ -490,7 +448,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("dogCommand", "DogCommand", "1.0", 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("DogCommand", "1.0"), 3, name: "dogCommand")
       )
     end
 
@@ -504,7 +462,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("dogCommand", "DogCommand", ~s("SIT"), 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("DogCommand", ~s("SIT")), 3, name: "dogCommand")
       )
     end
 
@@ -518,7 +476,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("dogCommand", "DogCommand", "true", 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("DogCommand", "true"), 3, name: "dogCommand")
       )
     end
 
@@ -532,7 +490,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("dogCommand", "DogCommand", "JUGGLE", 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("DogCommand", "JUGGLE"), 3, name: "dogCommand")
       )
     end
 
@@ -546,7 +504,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("dogCommand", "DogCommand", "sit", 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("DogCommand", "sit"), 3, name: "dogCommand")
       )
     end
 
@@ -608,12 +566,13 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         """,
         %{},
         [
-          bad_argument("stringListArg", "[String]", ~s(["one", 2]), 3),
-          bad_argument_list_item(1, "String", "2", 3)
+          bad_value(Blueprint.Input.Argument, expected_type_message("[String]", ~s(["one", 2])), 3, name: "stringListArg"),
+          bad_value(Blueprint.Input.Integer, expected_type_message("String", "2"), 3)
         ]
       )
     end
 
+    @tag :focus
     it "Single value of incorrect type" do
       assert_fails_rule(@rule,
         """
@@ -625,8 +584,8 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         """,
         %{},
         [
-          bad_argument("stringListArg", "[String]", "1", 3),
-          bad_argument_list_item(0, "String", "1", 3)
+          bad_value(Blueprint.Input.Argument, expected_type_message("[String]", "1"), 3, name: "stringListArg"),
+          bad_value(Blueprint.Input.Integer, expected_type_message("String", "1"), 3)
         ]
       )
     end
@@ -780,8 +739,8 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         """,
         %{},
         [
-          bad_argument("req2", "Int!", ~s("two"), 3),
-          bad_argument("req1", "Int!", ~s("one"), 3)
+          bad_value(Blueprint.Input.Argument, expected_type_message("Int!", ~s("two")), 3, name: "req2"),
+          bad_value(Blueprint.Input.Argument, expected_type_message("Int!", ~s("one")), 3, name: "req1")
         ]
       )
     end
@@ -796,7 +755,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument("req1", "Int!", ~s("one"), 3)
+        bad_value(Blueprint.Input.Argument, expected_type_message("Int!", ~s("one")), 3, name: "req1")
       )
     end
 
@@ -908,12 +867,10 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument(
-          "complexArg", "ComplexInput", "{intField: 4}", 3,
-          [
-            ~s(In field "requiredField": Expected "Boolean!", found null.)
-          ]
-        )
+        [
+          bad_value(Blueprint.Input.Argument, expected_type_message("ComplexInput", "{intField: 4}"), 3, name: "complexArg"),
+          bad_value(Blueprint.Input.Field, expected_type_message("Boolean!", "null"), 3, name: "requiredField")
+        ]
       )
     end
 
@@ -930,15 +887,10 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         %{},
-        bad_argument(
-          "complexArg",
-          "ComplexInput",
-          ~s({stringListField: ["one", 2], requiredField: true}),
-          3,
-          [
-            ~s(In field "stringListField": In element #1: Expected type "String", found 2.)
-          ]
-        )
+        [
+          bad_value(Blueprint.Input.Argument, expected_type_message("ComplexInput", ~s({stringListField: ["one", 2], requiredField: true})), 3, name: "complexArg"),
+          bad_value(Blueprint.Input.Integer, expected_type_message("String", "2"), 4)
+        ]
       )
     end
 
@@ -956,8 +908,8 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         """,
         %{},
         [
-          bad_argument("complexArg", "ComplexInput", ~s({requiredField: true, unknownField: "value"}), 3),
-          bad_argument_object_field(~s(In field "unknownField": Unknown field.), 5)
+          bad_value(Blueprint.Input.Argument, expected_type_message("ComplexInput", ~s({requiredField: true, unknownField: "value"})), 3, name: "complexArg"),
+          bad_value(Blueprint.Input.Field, "Unknown field.", 5, name: "unknownField")
         ]
       )
     end
@@ -993,8 +945,8 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         """,
         %{},
         [
-          bad_argument("if", "Boolean!", ~s("yes"), 2),
-          bad_argument("if", "Boolean!", "ENUM", 3)
+          bad_value(Blueprint.Input.Argument, expected_type_message("Boolean!", ~s("yes")), 2, name: "if"),
+          bad_value(Blueprint.Input.Argument, expected_type_message("Boolean!", "ENUM"), 3, name: "if")
         ]
       )
     end
