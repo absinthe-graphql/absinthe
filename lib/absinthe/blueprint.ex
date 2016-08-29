@@ -9,6 +9,7 @@ defmodule Absinthe.Blueprint do
     fragments: [],
     errors: [],
     schema: nil,
+    adapter: nil
   ]
 
   @type t :: %__MODULE__{
@@ -18,6 +19,7 @@ defmodule Absinthe.Blueprint do
     fragments: [Blueprint.Document.Fragment.Named.t],
     errors: [Blueprint.Phase.Error.t],
     schema: nil | Absinthe.Schema.t,
+    adapter: nil | Absinthe.Adapter.t,
   }
 
   @type node_t ::

@@ -17,30 +17,30 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
   alias Absinthe.{Blueprint, Type}
 
   def run(input) do
-    result = Blueprint.prewalk(input, &handle_node/1)
+    result = Blueprint.prewalk(input, &(handle_node(&1, input.adapter)))
     {:ok, result}
   end
 
-  defp handle_node(%{normalized_value: %{schema_node: nil}} = node) do
+  defp handle_node(%{normalized_value: %{schema_node: nil}} = node, _) do
     node
   end
-  defp handle_node(%Blueprint.Input.Argument{} = node) do
-    case build_value(node.normalized_value) do
+  defp handle_node(%Blueprint.Input.Argument{} = node, adapter) do
+    case build_value(node.normalized_value, adapter) do
       {:ok, value} ->
         %{node | data_value: value}
       {:error, normalized_value} ->
         %{node | normalized_value: normalized_value}
     end
   end
-  defp handle_node(node) do
+  defp handle_node(node, _adapter) do
     node
   end
 
-  defp build_value(%{schema_node: nil} = node) do
+  defp build_value(%{schema_node: nil} = node, _adapter) do
     {:error, flag_invalid(node, :no_schema_node)}
   end
-  defp build_value(%{schema_node: %Type.NonNull{of_type: type}} = node) do
-    case build_value(%{node | schema_node: type}) do
+  defp build_value(%{schema_node: %Type.NonNull{of_type: type}} = node, adapter) do
+    case build_value(%{node | schema_node: type}, adapter) do
       {:error, node} ->
         # Rewrap
         node = %{node | schema_node: %Type.NonNull{of_type: node.schema_node}}
@@ -49,17 +49,37 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
         other
     end
   end
-  defp build_value(%Blueprint.Input.Object{} = node) do
+  defp build_value(%Blueprint.Input.Object{} = node, adapter) do
     {result, fields} = node.fields
     |> Enum.reduce({%{}, []}, fn
       field, {data, fields} ->
-        case build_value(field) do
+        case build_value(field, adapter) do
           {:ok, identifier, value} ->
             {Map.put(data, identifier, value), [field | fields]}
           {:error, field} ->
             {data, [field | fields]}
         end
     end)
+    missing_fields = Enum.flat_map(node.schema_node.fields, fn
+      {_, %Type.Field{type: %Type.NonNull{}} = schema_field} ->
+        if Enum.any?(fields, &(match?(%Blueprint.Input.Field{schema_node: ^schema_field}, &1))) do
+          []
+        else
+          # Generate a stub field
+          [
+            %Blueprint.Input.Field{
+              name: schema_field.name |> adapter.to_external_name(:field),
+              value: nil,
+              schema_node: schema_field,
+              source_location: node.source_location,
+              flags: [:invalid, :missing]
+            }
+          ]
+        end
+      _ ->
+        []
+    end)
+    fields = fields ++ missing_fields
     if any_invalid?(fields) do
       node = %{node | fields: fields}
       {:error, flag_invalid(node, :bad_fields)}
@@ -67,8 +87,8 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
       {:ok, result}
     end
   end
-  defp build_value(%Blueprint.Input.Field{} = node) do
-    case build_value(node.value) do
+  defp build_value(%Blueprint.Input.Field{} = node, adapter) do
+    case build_value(node.value, adapter) do
       {:ok, value} ->
         {:ok, node.schema_node.__reference__.identifier, value}
       {:error, node_value} ->
@@ -76,7 +96,7 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
         {:error, flag_invalid(node, :bad_value)}
     end
   end
-  defp build_value(%{schema_node: %Type.Scalar{} = schema_node} = node) do
+  defp build_value(%{schema_node: %Type.Scalar{} = schema_node} = node, _adapter) do
     schema_node = schema_node |> unwrap_non_null
     case Type.Scalar.parse(schema_node, node) do
       :error ->
@@ -85,7 +105,7 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
         other
     end
   end
-  defp build_value(%{value: value, schema_node: %Type.Enum{} = schema_node} = node) do
+  defp build_value(%{value: value, schema_node: %Type.Enum{} = schema_node} = node, _adapter) do
     case Type.Enum.parse(schema_node, node) do
       :error ->
         {:error, flag_invalid(node, :bad_parse)}
@@ -93,10 +113,10 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
         other
     end
   end
-  defp build_value(%Blueprint.Input.List{} = node) do
+  defp build_value(%Blueprint.Input.List{} = node, adapter) do
     {result, list_values} = Enum.reduce(node.values, {[], []}, fn
       list_value, {data, list_values} ->
-        case build_value(list_value) do
+        case build_value(list_value, adapter) do
           {:ok, value} ->
             {[value | data], [list_value | list_values]}
           {:error, list_value} ->
@@ -107,11 +127,14 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
       node = %{node | values: list_values |> Enum.reverse}
       {:error, flag_invalid(node, :bad_values)}
     else
-      {:ok, result}
+      {:ok, Enum.reverse(result)}
     end
   end
-  defp build_value(node) do
+  defp build_value(%{flags: _} = node, _adapter) do
     {:error, flag_invalid(node, :unknown_data_value)}
+  end
+  defp build_value(node, _adapter) do
+    {:error, node}
   end
 
   @spec any_invalid?([Blueprint.Input.t]) :: boolean

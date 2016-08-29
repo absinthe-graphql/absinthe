@@ -55,7 +55,7 @@ defmodule Support.Harness.Validation do
       Phase.Blueprint,
       {Phase.Document.Variables, provided_values},
       Phase.Document.Arguments.Normalize,
-      {Phase.Document.Schema, schema},
+      {Phase.Document.Schema, [schema, Absinthe.Adapter.LanguageConventions]},
       Phase.Document.Arguments.Data,
       Phase.Document.Directives
     ]

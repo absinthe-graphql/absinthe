@@ -12,7 +12,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
       pairs ->
         assert !Enum.empty?(pairs), "No errors were found.\n#{expectation_banner}"
         matched = Enum.any?(pairs, fn
-          {%str{} = node, %Phase.Error{phase: @rule, message: ^message, locations: [%{line: ^line}]} = error} when str == node_kind ->
+          {%str{} = node, %Phase.Error{phase: @rule, message: ^message, locations: [%{line: ^line}]}} when str == node_kind ->
             Enum.member?(node.flags, :invalid) && Enum.all?(metadata, fn {key, value} -> Map.get(node, key) == value end)
           _ ->
             false

@@ -10,7 +10,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
     {:ok, result}
   end
 
-  defp handle_node(%Blueprint.Input.Argument{schema_node: %{type: type_reference}, literal_value: literal, normalized_value: norm, data_value: nil} = node, schema) when not is_nil(norm) do
+  defp handle_node(%Blueprint.Input.Argument{schema_node: %{type: type_reference}, normalized_value: norm, data_value: nil} = node, schema) when not is_nil(norm) do
     type_identifier = Type.unwrap(type_reference)
     flags = [:invalid | node.flags]
     err = error(node, error_message(node, schema))
@@ -26,8 +26,10 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
           end
       end)
       node = %{node | fields: Enum.reverse(fields)}
+      {node, schema}
+    else
+      {node, schema}
     end
-    {node, schema}
   end
   defp handle_node(%Blueprint.Input.List{} = node, schema) do
     if Enum.member?(node.flags, :invalid) do
@@ -35,13 +37,16 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
         value_node ->
           if Enum.member?(value_node.flags, :invalid) do
             err = error(value_node, error_message(value_node, schema))
-            value_node = %{value_node | errors: [err | value_node.errors]}
+            %{value_node | errors: [err | value_node.errors]}
+          else
+            value_node
           end
-          value_node
       end)
       node = %{node | values: Enum.reverse(values)}
+      {node, schema}
+    else
+      {node, schema}
     end
-    {node, schema}
   end
   defp handle_node(node, schema) do
     {node, schema}
@@ -58,13 +63,16 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
   defp error_message(%Blueprint.Input.Argument{} = node, schema) do
     error_message(node, node.schema_node.type, node.literal_value, schema)
   end
+  defp error_message(%Blueprint.Input.Field{schema_node: nil}, _) do
+    "Unknown field."
+  end
+  defp error_message(%Blueprint.Input.Field{} = node, schema) do
+    error_message(node, node.schema_node.type, node.value, schema)
+  end
   defp error_message(node, schema) do
     error_message(node, node.schema_node, node, schema)
   end
 
-  defp error_message(%Blueprint.Input.Field{}, nil, value, schema) do
-    "Unknown field."
-  end
   defp error_message(node, type, value, schema) do
     type_name = Type.name(type, schema)
     ~s(Expected type "#{type_name}", found #{Blueprint.Input.inspect value})

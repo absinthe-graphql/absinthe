@@ -28,7 +28,7 @@ defmodule Absinthe.Language.FieldDefinitionTest do
     it "includes argument definitions" do
       {doc, fields} = fields_from_input(@idl)
       field_def = fields |> Enum.at(2) |> Blueprint.Draft.convert(doc)
-      assert %Blueprint.Schema.FieldDefinition{name: "quuxes", type: %Blueprint.TypeReference.List{of_type: %Blueprint.TypeReference.Name{name: "Quux"}}, arguments: [%Blueprint.Schema.InputValueDefinition{name: "limit", type: %Blueprint.TypeReference.Name{name: "Int"}, default_value: %Blueprint.Input.Integer{value: 4}}]} == field_def
+      assert %Blueprint.Schema.FieldDefinition{name: "quuxes", type: %Blueprint.TypeReference.List{of_type: %Blueprint.TypeReference.Name{name: "Quux"}}, arguments: [%Blueprint.Schema.InputValueDefinition{name: "limit", type: %Blueprint.TypeReference.Name{name: "Int"}, default_value: %Blueprint.Input.Integer{value: 4, source_location: %Blueprint.Document.SourceLocation{column: nil, line: 4}}}]} == field_def
     end
 
   end
