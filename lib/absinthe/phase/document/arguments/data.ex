@@ -9,9 +9,17 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
   - When determining the value of the argument, mark any invalid nodes
     in the `Argument.t`'s `normalized_value` tree with `:invalid` and a
     reason.
+  - If non-null arguments are not provided (eg, a `Argument.t` is missing
+    from `normalized_value`), add a stub `Argument.t` and flag it as
+    `:invalid` and `:missing`.
+  - If non-null input fields are not provided (eg, an `Input.Field.t` is
+    missing from `normalized_value`), add a stub `Input.Field.t` and flag it as
+    `:invalid` and `:missing`.
 
   Note that the limited validation that occurs in this phase is limited to
-  setting the `data_value` to `nil` and adding flags to the `normalized_value`.
+  setting the `data_value` to `nil`, adding flags to the `normalized_value`,
+  and building stub fields/arguments when missing values are required. Actual
+  addition of errors is handled by validation phases.
   """
 
   alias Absinthe.{Blueprint, Type}
