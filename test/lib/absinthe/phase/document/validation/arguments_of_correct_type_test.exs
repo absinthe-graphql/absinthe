@@ -3,23 +3,8 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
 
   @rule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType
 
-  import Support.Harness.Validation
-  alias Absinthe.{Blueprint, Phase}
-
-  defp bad_value(node_kind, message, line, metadata \\ []) do
-    expectation_banner = "\nExpected #{node_kind} node with error (from line ##{line}):\n---\n#{message}\n---"
-    fn
-      pairs ->
-        assert !Enum.empty?(pairs), "No errors were found.\n#{expectation_banner}"
-        matched = Enum.any?(pairs, fn
-          {%str{} = node, %Phase.Error{phase: @rule, message: ^message, locations: [%{line: ^line}]}} when str == node_kind ->
-            Enum.member?(node.flags, :invalid) && Enum.all?(metadata, fn {key, value} -> Map.get(node, key) == value end)
-          _ ->
-            false
-        end)
-        assert matched, "Could not find error.\n#{expectation_banner}"
-    end
-  end
+  use Support.Harness.Validation
+  alias Absinthe.{Blueprint}
 
   defp expected_type_message(type_name, value) do
     ~s(Expected type "#{type_name}", found #{value})

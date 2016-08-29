@@ -2,9 +2,28 @@ defmodule Support.Harness.Validation do
   import ExUnit.Assertions
 
   alias Absinthe.{Blueprint, Schema, Phase, Pipeline, Language}
-  alias __MODULE__
 
   @type error_checker_t :: ([{Blueprint.t, Blueprint.Error.t}] -> boolean)
+
+  defmacro __using__(_) do
+    quote do
+      import unquote(__MODULE__)
+      def bad_value(node_kind, message, line, metadata \\ []) do
+        expectation_banner = "\nExpected #{node_kind} node with error (from line ##{line}):\n---\n#{message}\n---"
+        fn
+          pairs ->
+            assert !Enum.empty?(pairs), "No errors were found.\n#{expectation_banner}"
+            matched = Enum.any?(pairs, fn
+              {%str{} = node, %Phase.Error{phase: @rule, message: ^message, locations: [%{line: ^line}]}} when str == node_kind ->
+                Enum.member?(node.flags, :invalid) && Enum.all?(metadata, fn {key, value} -> Map.get(node, key) == value end)
+              _ ->
+                false
+            end)
+            assert matched, "Could not find error.\n#{expectation_banner}"
+        end
+      end
+    end
+  end
 
   @spec assert_valid(Schema.t, [Phase.t], Language.Source.t, map) :: no_return
   def assert_valid(schema, rules, document, provided_values) do

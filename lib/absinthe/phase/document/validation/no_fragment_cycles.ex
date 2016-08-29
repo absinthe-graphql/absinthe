@@ -30,7 +30,7 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
   end
 
   @spec vertex(Blueprint.Document.Fragment.Named.t, :digraph.graph) :: {Blueprint.Document.Fragment.Named.t, :digraph.graph}
-  defp vertex(fragment, graph) do
+  defp vertex(%Blueprint.Document.Fragment.Named{} = fragment, graph) do
     :digraph.add_vertex(graph, fragment.name)
     Enum.each(fragment.selections, fn
       %Blueprint.Document.Fragment.Spread{} = spread ->
@@ -38,6 +38,9 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
       _ ->
         false
     end)
+    {fragment, graph}
+  end
+  defp vertex(fragment, graph) do
     {fragment, graph}
   end
 
