@@ -113,6 +113,8 @@ Directives -> Directive : ['$1'].
 Directives -> Directive Directives : ['$1'|'$2'].
 Directive -> '@' Name : build_ast_node('Directive', #{name => extract_binary('$2')}, #{'start_line' => extract_line('$1')}).
 Directive -> '@' Name Arguments : build_ast_node('Directive', #{name => extract_binary('$2'), 'arguments' => '$3'}, #{'start_line' => extract_line('$1')}).
+Directive -> '@' 'directive' : build_ast_node('Directive', #{name => extract_binary('$2')}, #{'start_line' => extract_line('$1')}).
+Directive -> '@' 'directive' Arguments : build_ast_node('Directive', #{name => extract_binary('$2'), 'arguments' => '$3'}, #{'start_line' => extract_line('$1')}).
 
 NameWithoutOn -> 'name' : '$1'.
 NameWithoutOn -> 'query' : extract_binary('$1').

@@ -8,20 +8,32 @@ defmodule Support.Harness.Validation do
   defmacro __using__(_) do
     quote do
       import unquote(__MODULE__)
-      def bad_value(node_kind, message, line, metadata \\ []) do
+      def bad_value(node_kind, message, line, check \\ []) do
         expectation_banner = "\nExpected #{node_kind} node with error (from line ##{line}):\n---\n#{message}\n---"
+        check_fun = node_check_function(check)
         fn
           pairs ->
             assert !Enum.empty?(pairs), "No errors were found.\n#{expectation_banner}"
             matched = Enum.any?(pairs, fn
               {%str{} = node, %Phase.Error{phase: @rule, message: ^message, locations: [%{line: ^line}]}} when str == node_kind ->
-                Enum.member?(node.flags, :invalid) && Enum.all?(metadata, fn {key, value} -> Map.get(node, key) == value end)
+                Enum.member?(node.flags, :invalid) && check_fun.(node)
               _ ->
                 false
             end)
             assert matched, "Could not find error.\n#{expectation_banner}"
         end
       end
+
+      defp node_check_function(check) when is_list(check) do
+        fn
+          node ->
+            Enum.all?(check, fn {key, value} -> Map.get(node, key) == value end)
+        end
+      end
+      defp node_check_function(check) when is_function(check) do
+        check
+      end
+
     end
   end
 
