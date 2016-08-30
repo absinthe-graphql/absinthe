@@ -1,9 +1,19 @@
 defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
+  @moduledoc """
+  Ensure that document doesn't have any fragment cycles that could
+  result in a loop during execution.
+
+  Note that if this phase fails, an error should immediately be given to
+  the user.
+  """
 
   alias Absinthe.{Blueprint, Phase}
 
   use Absinthe.Phase
 
+  @doc """
+  Run the validation.
+  """
   @spec run(Blueprint.t) :: Phase.result_t
   def run(input) do
     {fragments, error_count} = check(input.fragments)
@@ -13,11 +23,14 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
     }
   end
 
+  # Determine whether any errors have occurred
+  @spec instruction(integer) :: :ok | :error
   defp instruction(0), do: :ok
   defp instruction(_), do: :error
 
+  # Check a list of fragments for cycles
   @spec check([Blueprint.Document.Fragment.Named.t]) :: {[Blueprint.Document.Fragment.Named.t], integer}
-  def check(fragments) do
+  defp check(fragments) do
     {_, graph} = Blueprint.prewalk(fragments, :digraph.new([:cyclic]), &vertex/2)
     {modified, error_count} = Enum.reduce(fragments, {[], 0}, fn
       fragment, {processed, error_count} ->
@@ -29,6 +42,7 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
     {modified, error_count}
   end
 
+  # Add a vertex modeling a fragment
   @spec vertex(Blueprint.Document.Fragment.Named.t, :digraph.graph) :: {Blueprint.Document.Fragment.Named.t, :digraph.graph}
   defp vertex(%Blueprint.Document.Fragment.Named{} = fragment, graph) do
     :digraph.add_vertex(graph, fragment.name)
@@ -44,6 +58,7 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
     {fragment, graph}
   end
 
+  # Add an edge, modeling the relationship between two fragments
   @spec edge(Blueprint.Document.Fragment.Named.t, Blueprint.Document.Fragment.Spread.t, :digraph.graph) :: true
   defp edge(fragment, spread, graph) do
     :digraph.add_vertex(graph, spread.name)
@@ -65,6 +80,8 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
     [cycle_error(fragment, "forms a cycle via: (#{deps})")]
   end
 
+  # Generate the error for a fragment cycle
+  @spec cycle_error(Blueprint.Document.Fragment.Named.t, String.t) :: Phase.t
   defp cycle_error(fragment, message) do
     %Phase.Error{
       message: message,

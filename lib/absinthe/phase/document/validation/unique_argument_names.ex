@@ -9,6 +9,9 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNames do
   use Absinthe.Phase
   use Absinthe.Phase.Document.Validation
 
+  @doc """
+  Run the validation.
+  """
   @spec run(Blueprint.t) :: Phase.result_t
   def run(input) do
     result = Blueprint.prewalk(input, &handle_node/1)
@@ -20,6 +23,8 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNames do
     Blueprint.Directive
   ]
 
+  # Find fields and directives to check arguments
+  @spec handle_node(Blueprint.node_t) :: Blueprint.node_t
   defp handle_node(%argument_host{} = node) when argument_host in @argument_hosts do
     arguments = Enum.map(node.arguments, &(process(&1, node.arguments)))
     %{node | arguments: arguments}
@@ -29,14 +34,18 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNames do
     node
   end
 
+  # Check an argument, finding any duplicates
+  @spec process(Blueprint.Argument.t, [Blueprint.Input.Argument.t]) :: Blueprint.Input.Argument.t
   defp process(argument, arguments) do
-    do_process(argument, Enum.filter(arguments, &(&1.name == argument.name)))
+    check_duplicates(argument, Enum.filter(arguments, &(&1.name == argument.name)))
   end
 
-  defp do_process(argument, [_single]) do
+  # Add flags and errors if necessary for each argument.
+  @spec check_duplicates(Blueprint.Argument.t, [Blueprint.Input.Argument.t]) :: Blueprint.Input.Argument.t
+  defp check_duplicates(argument, [_single]) do
     argument
   end
-  defp do_process(argument, _multiple) do
+  defp check_duplicates(argument, _multiple) do
     %{
       argument |
       flags: [:invalid, :duplicate_name] ++ argument.flags,
@@ -44,6 +53,8 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNames do
     }
   end
 
+  # Generate an error for a duplicate argument.
+  @spec error(Blueprint.Argument.t) :: Phase.Error.t
   defp error(node) do
     Phase.Error.new(
       __MODULE__,

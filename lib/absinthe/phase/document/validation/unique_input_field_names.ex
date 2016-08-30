@@ -8,12 +8,17 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNames do
   use Absinthe.Phase
   use Absinthe.Phase.Document.Validation
 
+  @doc """
+  Run the validation.
+  """
   @spec run(Blueprint.t) :: Phase.result_t
   def run(input) do
     result = Blueprint.prewalk(input, &handle_node/1)
     {:ok, result}
   end
 
+  # Find input objects
+  @spec handle_node(Blueprint.node_t) :: Blueprint.node_t
   defp handle_node(%Blueprint.Input.Object{} = node) do
     fields = Enum.map(node.fields, &(process(&1, node.fields)))
     %{node | fields: fields}
@@ -23,14 +28,18 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNames do
     node
   end
 
+  # Check an input field, finding any duplicates
+  @spec process(Blueprint.Input.Field.t, [Blueprint.Input.Field.t]) :: Blueprint.Input.Field.t
   defp process(field, fields) do
-    do_process(field, Enum.filter(fields, &(&1.name == field.name)))
+    check_duplicates(field, Enum.filter(fields, &(&1.name == field.name)))
   end
 
-  defp do_process(field, [_single]) do
+  # Add flags and errors if necessary for each input field
+  @spec check_duplicates(Blueprint.Input.Field.t, [Blueprint.Input.Field.t]) :: Blueprint.Input.Field.t
+  defp check_duplicates(field, [_single]) do
     field
   end
-  defp do_process(field, _multiple) do
+  defp check_duplicates(field, _multiple) do
     %{
       field |
       flags: [:invalid, :duplicate_name] ++ field.flags,
@@ -38,6 +47,8 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNames do
     }
   end
 
+  # Generate an error for an input field
+  @spec error(Blueprint.Input.Field.t) :: Phase.t
   defp error(node) do
     Phase.Error.new(
       __MODULE__,
