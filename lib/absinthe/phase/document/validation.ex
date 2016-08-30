@@ -9,8 +9,20 @@ defmodule Absinthe.Phase.Document.Validation do
     Validation.NoFragmentCycles,
   ]
 
-  def structural do
+  @data_rules [
+    Validation.ArgumentsOfCorrectType,
+    Validation.KnownArgumentNames,
+    Validation.ProvidedNonNullArguments,
+    Validation.UniqueArgumentNames,
+    Validation.UniqueInputFieldNames,
+  ]
+
+  def structural_pipeline do
     @structural_rules
+  end
+
+  def data_pipeline do
+    @data_rules
   end
 
   defmacro __using__(_) do

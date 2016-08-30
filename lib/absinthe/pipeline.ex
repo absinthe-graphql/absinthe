@@ -28,12 +28,13 @@ defmodule Absinthe.Pipeline do
     [
       Phase.Parse,
       Phase.Blueprint,
-      Phase.Document.Validation.structural,
+      Phase.Document.Validation.structural_pipeline,
       {Phase.Document.Variables, provided_values},
       Phase.Document.Arguments.Normalize,
       {Phase.Document.Schema, [schema, adapter]},
       Phase.Document.Arguments.Data,
       Phase.Document.Arguments.Defaults,
+      Phase.Document.Validation.data_pipeline,
       Phase.Document.Directives,
       Phase.Document.Flatten,
       {Phase.Execution.Resolution, [nil, provided_values[:context], provided_values[:root_value]]}
