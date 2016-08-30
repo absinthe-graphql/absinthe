@@ -9,20 +9,19 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArguments do
 
   @spec run(Blueprint.t) :: Phase.result_t
   def run(input) do
-    {result, _} = Blueprint.prewalk(input, input.schema, &handle_node/2)
+    result = Blueprint.prewalk(input, &(handle_node(&1, input.schema)))
     {:ok, result}
   end
 
   defp handle_node(%Blueprint.Input.Argument{data_value: nil} = node, schema) do
     if Enum.member?(node.flags, :missing) do
-      node = %{node | errors: [error(node, node.schema_node.type, schema) | node.errors]}
-      {node, schema}
+      %{node | errors: [error(node, node.schema_node.type, schema) | node.errors]}
     else
-      {node, schema}
+      node
     end
   end
-  defp handle_node(node, schema) do
-    {node, schema}
+  defp handle_node(node, _) do
+    node
   end
 
   defp error(node, type, schema) do

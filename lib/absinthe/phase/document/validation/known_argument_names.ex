@@ -19,10 +19,9 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNames do
   end
 
   defp handle_node(%Blueprint.Input.Argument{schema_node: nil} = node) do
-    flags = [:invalid, :no_schema_node]
     %{
       node |
-      flags: flags ++ node.flags,
+      flags: [:invalid, :no_schema_node] ++ node.flags,
       errors: [error(node) | node.errors]
     }
   end

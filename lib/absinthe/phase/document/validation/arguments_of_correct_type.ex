@@ -6,14 +6,14 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
 
   @spec run(Blueprint.t) :: Phase.result_t
   def run(input) do
-    {result, _} = Blueprint.prewalk(input, input.schema, &handle_node/2)
+    result = Blueprint.prewalk(input, &(handle_node(&1, input.schema)))
     {:ok, result}
   end
 
   defp handle_node(%Blueprint.Input.Argument{schema_node: %{type: _}, normalized_value: norm, data_value: nil} = node, schema) when not is_nil(norm) do
     flags = [:invalid | node.flags]
     err = error(node, error_message(node, schema))
-    {%{node | flags: flags, errors: [err | node.errors]}, schema}
+    %{node | flags: flags, errors: [err | node.errors]}
   end
   defp handle_node(%Blueprint.Input.Object{} = node, schema) do
     if Enum.member?(node.flags, :invalid) do
@@ -24,10 +24,9 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
             field = %{field | errors: [err | field.errors]}
           end
       end)
-      node = %{node | fields: Enum.reverse(fields)}
-      {node, schema}
+      %{node | fields: Enum.reverse(fields)}
     else
-      {node, schema}
+      node
     end
   end
   defp handle_node(%Blueprint.Input.List{} = node, schema) do
@@ -41,14 +40,13 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
             value_node
           end
       end)
-      node = %{node | values: Enum.reverse(values)}
-      {node, schema}
+      %{node | values: Enum.reverse(values)}
     else
-      {node, schema}
+      node
     end
   end
-  defp handle_node(node, schema) do
-    {node, schema}
+  defp handle_node(node, _) do
+    node
   end
 
   defp error(node, message) do
