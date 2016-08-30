@@ -13,6 +13,18 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}}}, run(query)
   end
 
+  it "can do a simple query returning a list" do
+    query = """
+    query AllTheThings {
+      things {
+        id
+        name
+      }
+    }
+    """
+    assert_result {:ok, %{data: %{"things" => [%{"name" => "Bar", "id" => "bar"}, %{"name" => "Foo", "id" => "foo"}]}}}, run(query)
+  end
+
   it "can identify a bad field" do
     query = """
     {

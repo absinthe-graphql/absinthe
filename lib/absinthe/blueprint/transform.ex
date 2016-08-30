@@ -96,5 +96,4 @@ defmodule Absinthe.Blueprint.Transform do
       {Map.put(node, child_key, children), acc}
     end)
   end
-
 end

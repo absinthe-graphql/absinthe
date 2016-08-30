@@ -54,6 +54,12 @@ defmodule Things do
           {:error, "No :id context provided"}
       end
 
+    field :things, list_of(:thing) do
+      resolve fn _, _ ->
+        {:ok, @db |> Map.values |> Enum.sort_by(&(&1.id))}
+      end
+    end
+
     field :thing,
       type: :thing,
       args: [

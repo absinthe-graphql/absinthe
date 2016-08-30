@@ -241,24 +241,33 @@ defmodule Absinthe do
     operation_name: binary,
   ]
 
-  def run(doc, schema, options \\ [])
-  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, run_opts) :: {:ok, Absinthe.Execution.result_t} | {:error, any}
-  def run(%Absinthe.Language.Document{} = document, schema, options) do
-    case Absinthe.Validation.run(document) do
-      {:ok, errors, doc} ->
-        execute(schema, doc, errors, options)
-      {:error, errors, _} ->
-        {:ok, %{errors: errors}}
+  if true do
+    def run(doc, schema, options \\ [])
+    @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, run_opts) :: {:ok, Absinthe.Execution.result_t} | {:error, any}
+    def run(document, schema, options) do
+      pipeline = Absinthe.Pipeline.for_document(schema, Map.new(options)) ++ [Absinthe.Phase.Execution.Data]
+      Absinthe.Pipeline.run(document, pipeline)
     end
-  end
-  def run(input, schema, options) do
-    case parse(input) do
-      {:ok, document} ->
-        run(document, schema, options)
-      {:error, err} ->
-        {:ok, %{errors: [err]}}
-      other ->
-        other
+  else
+    def run(doc, schema, options \\ [])
+    @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, run_opts) :: {:ok, Absinthe.Execution.result_t} | {:error, any}
+    def run(%Absinthe.Language.Document{} = document, schema, options) do
+      case Absinthe.Validation.run(document) do
+        {:ok, errors, doc} ->
+          execute(schema, doc, errors, options)
+        {:error, errors, _} ->
+          {:ok, %{errors: errors}}
+      end
+    end
+    def run(input, schema, options) do
+      case parse(input) do
+        {:ok, document} ->
+          run(document, schema, options)
+        {:error, err} ->
+          {:ok, %{errors: [err]}}
+        other ->
+          other
+      end
     end
   end
 
