@@ -23,13 +23,14 @@ defmodule Absinthe.Pipeline do
   end
 
   @spec for_document(Absinthe.Schema.t) :: t
-  @spec for_document(Absinthe.Schema.t, map) :: t
+  @spec for_document(Absinthe.Schema.t, Enum.t) :: t
   def for_document(schema, provided_values \\ %{}, adapter \\ Absinthe.Adapter.LanguageConventions) do
+    provided_values = Map.new(provided_values)
     [
       Phase.Parse,
       Phase.Blueprint,
       Phase.Document.Validation.structural_pipeline,
-      {Phase.Document.Variables, provided_values},
+      {Phase.Document.Variables, Map.get(provided_values, :variables, %{})},
       Phase.Document.Arguments.Normalize,
       {Phase.Document.Schema, [schema, adapter]},
       Phase.Document.Arguments.Data,

@@ -60,32 +60,32 @@ defmodule Absinthe.Phase.Document.Arguments.DataTest do
     """
 
     it "sets data_value using valid, provided data" do
-      {:ok, result} = run_phase(@query, %{"input" => %{"name" => "Bruce", "age" => 36}})
+      {:ok, result} = run_phase(@query, variables: %{"input" => %{"name" => "Bruce", "age" => 36}})
       arg = named(result, Blueprint.Input.Argument, "input")
       assert %{name: "Bruce", age: 36} == arg.data_value
     end
 
     it "does not set data_value if additional data is provided that does not fit into the schema" do
-      {:ok, result} = run_phase(@query, %{"input" => %{"name" => "Bruce", "age" => 36, "other" => 123}})
+      {:ok, result} = run_phase(@query, variables: %{"input" => %{"name" => "Bruce", "age" => 36, "other" => 123}})
       arg = named(result, Blueprint.Input.Argument, "input")
       assert nil == arg.data_value
     end
 
     @tag :pending # Requires validation
     it "sets data_value ignoring invalid, provided data" do
-      {:ok, result} = run_phase(@query, %{"input" => %{"name" => [], "age" => 36}})
+      {:ok, result} = run_phase(@query, variables: %{"input" => %{"name" => [], "age" => 36}})
       arg = named(result, Blueprint.Input.Argument, "input")
       assert %{age: 36} == arg.data_value
     end
 
     it "sets data_value to a scalar value, given one" do
-      {:ok, result} = run_phase(@query, %{"id" => "234"})
+      {:ok, result} = run_phase(@query, variables: %{"id" => "234"})
       arg = named(result, Blueprint.Input.Argument, "id")
       assert "234" == arg.data_value
     end
 
     it "doesn't set data_value for an un-declared variable" do
-      {:ok, result} = run_phase(@query, %{"bad" => "234"})
+      {:ok, result} = run_phase(@query, variables: %{"bad" => "234"})
       other = named(result, Blueprint.Document.Field, "other")
       arg = named(other, Blueprint.Input.Argument, "id")
       assert nil == arg.data_value
@@ -93,7 +93,7 @@ defmodule Absinthe.Phase.Document.Arguments.DataTest do
 
     @tag :only
     it "sets data_value that is a list" do
-      {:ok, result} = run_phase(@query, %{"ids" => ~w(2 3 4)})
+      {:ok, result} = run_phase(@query, variables: %{"ids" => ~w(2 3 4)})
       arg = named(result, Blueprint.Input.Argument, "ids")
       assert ~w(2 3 4) == arg.data_value
     end
@@ -122,7 +122,7 @@ defmodule Absinthe.Phase.Document.Arguments.DataTest do
     """
 
     it "sets data_value using valid, provided data" do
-      {:ok, result} = run_phase(@query, %{})
+      {:ok, result} = run_phase(@query, variables: %{})
       op = named(result, Blueprint.Document.Operation, "CreateProfileWithVariable")
       profile1 = named(op, Blueprint.Document.Field, "profile1")
       arg = named(profile1, Blueprint.Input.Argument, "input")
@@ -130,24 +130,15 @@ defmodule Absinthe.Phase.Document.Arguments.DataTest do
     end
 
     it "does not set data_value when provided data does not fit schema" do
-      {:ok, result} = run_phase(@query, %{"input" => %{"name" => "Bruce", "age" => 36, "other" => 123}})
+      {:ok, result} = run_phase(@query, variables: %{"input" => %{"name" => "Bruce", "age" => 36, "other" => 123}})
       op = named(result, Blueprint.Document.Operation, "CreateProfileWithVariable")
       profile2 = named(op, Blueprint.Document.Field, "profile2")
       arg = named(profile2, Blueprint.Input.Argument, "input")
       assert nil == arg.data_value
     end
 
-    @tag :pending # Requires valiadtion
-    it "sets data_value ignoring invalid, provided data" do
-      {:ok, result} = run_phase(@query, %{"input" => %{"name" => [], "age" => 36}})
-      op = named(result, Blueprint.Document.Operation, "CreateProfileWithVariable")
-      profile3 = named(op, Blueprint.Document.Field, "profile3")
-      arg = named(profile3, Blueprint.Input.Argument, "input")
-      assert %{name: "Melissa"} == arg.data_value
-    end
-
     it "sets data_value to a scalar value, given one" do
-      {:ok, result} = run_phase(@query, %{})
+      {:ok, result} = run_phase(@query, variables: %{})
       op = named(result, Blueprint.Document.Operation, "Profile")
       arg = named(op, Blueprint.Input.Argument, "id")
       assert "234" == arg.data_value

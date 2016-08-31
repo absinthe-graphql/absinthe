@@ -3,6 +3,8 @@ defmodule Absinthe.Execution.ArgumentsTest do
 
   import AssertResult
 
+  alias Absinthe.{Pipeline, Phase}
+
   defmodule Schema do
     use Absinthe.Schema
 
@@ -52,7 +54,10 @@ defmodule Absinthe.Execution.ArgumentsTest do
       field :numbers, list_of(:integer) do
         arg :numbers, list_of(:integer)
 
-        resolve fn %{numbers: numbers}, _ -> {:ok, numbers} end
+        resolve fn
+          %{numbers: numbers}, _ ->
+            {:ok, numbers}
+          end
       end
 
       field :user, :string do
@@ -103,6 +108,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
     end
 
     describe "list inputs" do
+      @tag :focus
       it "works with basic scalars" do
         doc = """
         query GetNumbers($numbers:[Int!]!){numbers(numbers:$numbers)}

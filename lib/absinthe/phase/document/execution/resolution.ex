@@ -28,10 +28,14 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   defp filter_valid_arguments(arguments) do
     arguments
-    |> Enum.reject(&Enum.any?(&1.errors))
+    |> Enum.reject(&invalid_argument?/1)
     |> Map.new(fn arg ->
       {arg.schema_node.__reference__.identifier, arg.data_value}
     end)
+  end
+
+  defp invalid_argument?(argument) do
+    Enum.member?(argument.flags, :invalid) || !argument.data_value
   end
 
   def resolve_field(field, info, source) do
