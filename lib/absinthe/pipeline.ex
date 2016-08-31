@@ -37,7 +37,8 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Validation.data_pipeline,
       Phase.Document.Directives,
       Phase.Document.Flatten,
-      {Phase.Execution.Resolution, [nil, provided_values[:context], provided_values[:root_value]]}
+      {Phase.Execution.Resolution, [nil, provided_values[:context], provided_values[:root_value]]},
+      Phase.Execution.Data
     ]
   end
 

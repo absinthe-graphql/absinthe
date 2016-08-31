@@ -176,6 +176,21 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
         )
       end
 
+      @tag :focus
+      it "Missing one non-nullable argument using a variable" do
+        assert_fails_rule(@rule,
+          """
+          query WithReq1Blank($value: Int) {
+            complicatedArgs {
+              multipleReqs(req1: $value, req2: 2)
+            }
+          }
+          """,
+          %{},
+          bad_value(Blueprint.Input.Argument, message("Int!"), 3, name: "req1")
+        )
+      end
+
       it "Missing multiple non-nullable arguments" do
         assert_fails_rule(@rule,
           """

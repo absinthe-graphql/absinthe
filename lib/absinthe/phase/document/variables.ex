@@ -45,7 +45,7 @@ defmodule Absinthe.Phase.Document.Variables do
 
   @spec run(Blueprint.t, %{String.t => any}) :: {:ok, Blueprint.t}
   def run(input, values) do
-    acc = %{raw: Map.get(values, :variables, %{}), processed: %{}}
+    acc = %{raw: values, processed: %{}}
     {node, _} = Blueprint.postwalk(input, acc, &handle_node/2)
     {:ok, node}
   end

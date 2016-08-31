@@ -60,6 +60,7 @@ defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
     end
   end
 
+  @tag :focus
   describe "when providing a value for an optional variable with a default value" do
     it "uses the default value" do
       result = input(@query, %{"age" => 4})

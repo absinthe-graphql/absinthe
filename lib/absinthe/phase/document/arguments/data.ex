@@ -41,6 +41,10 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
     missing = generate_missing_arguments(node, adapter)
     %{node | arguments: missing ++ node.arguments}
   end
+  defp handle_node(%Blueprint.Input.Argument{normalized_value: nil, schema_node: %{type: %Type.NonNull{}}} = node, _adapter) do
+    flag_invalid(node, :missing)
+  end
+
   defp handle_node(%Blueprint.Input.Argument{} = node, adapter) do
     case build_value(node.normalized_value, adapter) do
       {:ok, value} ->
