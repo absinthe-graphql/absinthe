@@ -1,6 +1,17 @@
 defmodule Absinthe.Schema.Notation.Writer do
   @moduledoc false
 
+  defstruct [
+    :env,
+    type_map: %{},
+    directive_map: %{},
+    errors: [],
+    type_functions: [],
+    directive_functions: [],
+    exports: [],
+    implementors: %{},
+  ]
+
   defmacro __before_compile__(env) do
     info = build_info(env)
 
@@ -34,6 +45,26 @@ defmodule Absinthe.Schema.Notation.Writer do
       end,
       custom_default_resolve(default_resolve_func)
     ]
+  end
+
+  def build_info(env) do
+    descriptions = env.module
+    |> Module.get_attribute(:absinthe_descriptions)
+    |> Map.new
+
+    definitions =
+      env.module
+      |> Module.get_attribute(:absinthe_definitions)
+      |> Enum.map(&update_description(&1, descriptions))
+
+    {definitions, errors} =
+      {definitions, []}
+      |> Absinthe.Schema.Rule.FieldImportsExist.check
+      |> Absinthe.Schema.Rule.NoCircularFieldImports.check
+
+    info = %__MODULE__{env: env, errors: errors}
+
+    Enum.reduce(definitions, info, &do_build_info/2)
   end
 
   defp custom_default_resolve(nil) do
@@ -119,27 +150,6 @@ defmodule Absinthe.Schema.Notation.Writer do
       end,
     ]
     |> Enum.reject(&is_nil/1)
-  end
-
-  defp build_info(env) do
-    descriptions = env.module
-    |> Module.get_attribute(:absinthe_descriptions)
-    |> Enum.into(%{})
-
-    info = %{
-      type_map: %{},
-      directive_map: %{},
-      errors: [],
-      type_functions: [],
-      directive_functions: [],
-      exports: [],
-      implementors: %{}
-    }
-
-    env.module
-    |> Module.get_attribute(:absinthe_definitions)
-    |> Enum.map(&update_description(&1, descriptions))
-    |> Enum.reduce(info, &do_build_info/2)
   end
 
   defp update_description(definition, descriptions) do

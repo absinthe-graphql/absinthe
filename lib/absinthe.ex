@@ -154,7 +154,8 @@ defmodule Absinthe do
   @doc false
   @spec tokenize(binary) :: {:ok, [tuple]} | {:error, binary}
   def tokenize(input) do
-    case :absinthe_lexer.string(input |> to_char_list) do
+    chars = :erlang.binary_to_list(input)
+    case :absinthe_lexer.string(chars) do
       {:ok, tokens, _line_count} ->
         {:ok, tokens}
       {:error, raw_error, _} ->
@@ -240,34 +241,10 @@ defmodule Absinthe do
     operation_name: binary,
   ]
 
-  if true do
-    def run(doc, schema, options \\ [])
-    @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, run_opts) :: {:ok, Absinthe.Execution.result_t} | {:error, any}
-    def run(document, schema, options) do
-      pipeline = Absinthe.Pipeline.for_document(schema, Map.new(options)) ++ [Absinthe.Phase.Execution.Data]
-      Absinthe.Pipeline.run(document, pipeline)
-    end
-  else
-    def run(doc, schema, options \\ [])
-    @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, run_opts) :: {:ok, Absinthe.Execution.result_t} | {:error, any}
-    def run(%Absinthe.Language.Document{} = document, schema, options) do
-      case Absinthe.Validation.run(document) do
-        {:ok, errors, doc} ->
-          execute(schema, doc, errors, options)
-        {:error, errors, _} ->
-          {:ok, %{errors: errors}}
-      end
-    end
-    def run(input, schema, options) do
-      case parse(input) do
-        {:ok, document} ->
-          run(document, schema, options)
-        {:error, err} ->
-          {:ok, %{errors: [err]}}
-        other ->
-          other
-      end
-    end
+  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, run_opts) :: {:ok, Absinthe.Execution.result_t} | {:error, any}
+  def run(document, schema, options \\ []) do
+    pipeline = Absinthe.Pipeline.for_document(schema, Map.new(options))
+    Absinthe.Pipeline.run(document, pipeline)
   end
 
   # TODO: Support modification by adapter

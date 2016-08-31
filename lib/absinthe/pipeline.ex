@@ -24,20 +24,21 @@ defmodule Absinthe.Pipeline do
 
   @spec for_document(Absinthe.Schema.t) :: t
   @spec for_document(Absinthe.Schema.t, map) :: t
-  def for_document(schema, provided_values \\ %{}) do
+  def for_document(schema, provided_values \\ %{}, adapter \\ Absinthe.Adapter.LanguageConventions) do
     [
       Phase.Parse,
       Phase.Blueprint,
-      Phase.Document.Validation.structural,
+      Phase.Document.Validation.structural_pipeline,
       {Phase.Document.Variables, provided_values},
       Phase.Document.Arguments.Normalize,
-      Absinthe.Phase.Document.Arguments.Normalize,
-      {Phase.Document.Schema, schema},
-      Absinthe.Phase.Document.Arguments.Data,
-      Absinthe.Phase.Document.Arguments.Defaults,
+      {Phase.Document.Schema, [schema, adapter]},
+      Phase.Document.Arguments.Data,
+      Phase.Document.Arguments.Defaults,
+      Phase.Document.Validation.data_pipeline,
       Phase.Document.Directives,
       Phase.Document.Flatten,
-      {Phase.Execution.Resolution, [nil, provided_values[:context], provided_values[:root_value]]}
+      {Phase.Execution.Resolution, [nil, provided_values[:context], provided_values[:root_value]]},
+      Phase.Execution.Data
     ]
   end
 

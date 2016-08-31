@@ -1,86 +1,177 @@
 defmodule Absinthe.Phase.Document.Arguments.Data do
+  @moduledoc """
+  Populate all arguments in the document with their provided data values:
+
+  - If valid data is available for an argument, set the `Argument.t`'s
+    `data_value` field to that value.
+  - If no valid data is available for an argument, set the `Argument.t`'s
+    `data_value` to `nil`.
+  - When determining the value of the argument, mark any invalid nodes
+    in the `Argument.t`'s `normalized_value` tree with `:invalid` and a
+    reason.
+  - If non-null arguments are not provided (eg, a `Argument.t` is missing
+    from `normalized_value`), add a stub `Argument.t` and flag it as
+    `:invalid` and `:missing`.
+  - If non-null input fields are not provided (eg, an `Input.Field.t` is
+    missing from `normalized_value`), add a stub `Input.Field.t` and flag it as
+    `:invalid` and `:missing`.
+
+  Note that the limited validation that occurs in this phase is limited to
+  setting the `data_value` to `nil`, adding flags to the `normalized_value`,
+  and building stub fields/arguments when missing values are required. Actual
+  addition of errors is handled by validation phases.
+  """
 
   alias Absinthe.{Blueprint, Type}
 
   def run(input) do
-    result = Blueprint.prewalk(input, &handle_node/1)
+    result = Blueprint.prewalk(input, &(handle_node(&1, input.adapter)))
     {:ok, result}
   end
 
-  defp handle_node(%{normalized_value: %{schema_node: nil}} = node) do
+  @argument_hosts [
+    Blueprint.Document.Field,
+    Blueprint.Directive,
+  ]
+
+  defp handle_node(%{normalized_value: %{schema_node: nil}} = node, _) do
     node
   end
-  defp handle_node(%Blueprint.Input.Argument{} = node) do
-    case build_value(node.normalized_value) do
+  defp handle_node(%argument_host{schema_node: schema_node} = node, adapter) when not is_nil(schema_node) and argument_host in @argument_hosts do
+    missing = generate_missing_arguments(node, adapter)
+    %{node | arguments: missing ++ node.arguments}
+  end
+  defp handle_node(%Blueprint.Input.Argument{normalized_value: nil, schema_node: %{type: %Type.NonNull{}}} = node, _adapter) do
+    flag_invalid(node, :missing)
+  end
+
+  defp handle_node(%Blueprint.Input.Argument{} = node, adapter) do
+    case build_value(node.normalized_value, adapter) do
       {:ok, value} ->
         %{node | data_value: value}
-      _ ->
-        node
+      {:error, normalized_value} ->
+        %{node | normalized_value: normalized_value}
     end
   end
-  defp handle_node(node) do
+  defp handle_node(node, _adapter) do
     node
   end
 
-  defp build_value(%{schema_node: nil} = node) do
-    :error
+  defp build_value(%{schema_node: nil} = node, _adapter) do
+    {:error, flag_invalid(node, :no_schema_node)}
   end
-  defp build_value(%{schema_node: %Type.NonNull{of_type: type}} = node) do
-    %{node | schema_node: type}
-    |> build_value
+  defp build_value(%{schema_node: %Type.NonNull{of_type: type}} = node, adapter) do
+    case build_value(%{node | schema_node: type}, adapter) do
+      {:error, node} ->
+        # Rewrap
+        node = %{node | schema_node: %Type.NonNull{of_type: node.schema_node}}
+        {:error, node}
+      other ->
+        other
+    end
   end
-  defp build_value(%Blueprint.Input.Object{} = node) do
-    result = node.fields
-    |> Enum.reduce(%{}, fn
-      field, acc ->
-        case build_value(field) do
+  defp build_value(%Blueprint.Input.Object{} = node, adapter) do
+    {result, fields} = node.fields
+    |> Enum.reduce({%{}, []}, fn
+      field, {data, fields} ->
+        case build_value(field, adapter) do
           {:ok, identifier, value} ->
-            Map.put(acc, identifier, value)
-          _ ->
-            acc
+            {Map.put(data, identifier, value), [field | fields]}
+          {:error, field} ->
+            {data, [field | fields]}
         end
     end)
-    {:ok, result}
+    missing_fields = Enum.flat_map(node.schema_node.fields, fn
+      {_, %Type.Field{type: %Type.NonNull{}} = schema_field} ->
+        if Enum.any?(fields, &(match?(%Blueprint.Input.Field{schema_node: ^schema_field}, &1))) do
+          []
+        else
+          # Generate a stub field
+          [
+            %Blueprint.Input.Field{
+              name: schema_field.name |> adapter.to_external_name(:field),
+              value: nil,
+              schema_node: schema_field,
+              source_location: node.source_location,
+              flags: [:invalid, :missing]
+            }
+          ]
+        end
+      _ ->
+        []
+    end)
+    fields = fields ++ missing_fields
+    if any_invalid?(fields) do
+      node = %{node | fields: fields}
+      {:error, flag_invalid(node, :bad_fields)}
+    else
+      {:ok, result}
+    end
   end
-  defp build_value(%Blueprint.Input.Field{} = node) do
-    case build_value(node.value) do
+  defp build_value(%Blueprint.Input.Field{} = node, adapter) do
+    case build_value(node.value, adapter) do
       {:ok, value} ->
         {:ok, node.schema_node.__reference__.identifier, value}
-      _ ->
-        :error
+      {:error, node_value} ->
+        node = %{node | value: node_value}
+        {:error, flag_invalid(node, :bad_value)}
     end
   end
-  defp build_value(%{value: value, schema_node: %Type.Scalar{} = schema_node}) do
+  defp build_value(%{schema_node: %Type.Scalar{} = schema_node} = node, _adapter) do
     schema_node = schema_node |> unwrap_non_null
-    Type.Scalar.parse(schema_node, value)
-  end
-  defp build_value(%{value: value, schema_node: %Type.Enum{} = schema_node}) do
-    schema_node = schema_node |> unwrap_non_null
-    case Type.Enum.parse(schema_node, value) do
-      {:ok, %{value: value}} -> {:ok, value}
-      other -> other
+    case Type.Scalar.parse(schema_node, node) do
+      :error ->
+        {:error, flag_invalid(node, :bad_parse)}
+      other ->
+        other
     end
   end
-  defp build_value(%Blueprint.Input.List{values: values, schema_node: schema_node}) do
-    schema_node = schema_node |> unwrap_non_null
-    result = Enum.reduce_while(values, [], fn
-      value, list ->
-        case build_value(value) do
+  defp build_value(%{schema_node: %Type.Enum{} = schema_node} = node, _adapter) do
+    case Type.Enum.parse(schema_node, node) do
+      :error ->
+        {:error, flag_invalid(node, :bad_parse)}
+      other ->
+        other
+    end
+  end
+  defp build_value(%Blueprint.Input.List{} = node, adapter) do
+    {result, list_values} = Enum.reduce(node.values, {[], []}, fn
+      list_value, {data, list_values} ->
+        case build_value(list_value, adapter) do
           {:ok, value} ->
-            {:cont, [value | list]}
-          :error ->
-            {:halt, :error}
+            {[value | data], [list_value | list_values]}
+          {:error, list_value} ->
+            {data, [list_value | list_values]}
         end
     end)
-    case result do
-      :error ->
-        :error
-      values ->
-        {:ok, Enum.reverse(values)}
+    if any_invalid?(list_values) do
+      node = %{node | values: list_values |> Enum.reverse}
+      {:error, flag_invalid(node, :bad_values)}
+    else
+      {:ok, Enum.reverse(result)}
     end
   end
-  defp build_value(result) do
-    :error
+  defp build_value(%{flags: _} = node, _adapter) do
+    {:error, flag_invalid(node, :unknown_data_value)}
+  end
+  defp build_value(node, _adapter) do
+    {:error, node}
+  end
+
+  @spec any_invalid?([Blueprint.Input.t]) :: boolean
+  defp any_invalid?(inputs) do
+    Enum.any?(inputs, &(Enum.member?(&1.flags, :invalid)))
+  end
+
+  defp flag_invalid(node, flag) do
+    %{node | flags: [flag | with_invalid(node.flags)]}
+  end
+  defp with_invalid(flags) do
+    if Enum.member?(flags, :invalid) do
+      flags
+    else
+      [:invalid | flags]
+    end
   end
 
   @spec unwrap_non_null(Type.NonNull.t | Type.t) :: Type.t
@@ -89,6 +180,29 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
   end
   defp unwrap_non_null(other) do
     other
+  end
+
+  defp generate_missing_arguments(node, adapter) do
+    Enum.flat_map(node.schema_node.args, fn
+      {_, %Type.Argument{type: %Type.NonNull{}} = schema_argument} ->
+        if Enum.any?(node.arguments, &(match?(%Blueprint.Input.Argument{schema_node: ^schema_argument}, &1))) do
+          []
+        else
+          # Generate a stub argument
+          [
+            %Blueprint.Input.Argument{
+              name: schema_argument.name |> adapter.to_external_name(:argument),
+              literal_value: nil,
+              data_value: nil,
+              schema_node: schema_argument,
+              source_location: node.source_location,
+              flags: [:invalid, :missing]
+            }
+          ]
+        end
+      _ ->
+        []
+    end)
   end
 
 end

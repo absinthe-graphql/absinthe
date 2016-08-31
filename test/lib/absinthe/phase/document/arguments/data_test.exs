@@ -70,10 +70,10 @@ defmodule Absinthe.Phase.Document.Arguments.DataTest do
       assert %{name: "Bruce", age: 36} == arg.data_value
     end
 
-    it "sets data_value ignoring unknown, provided data" do
+    it "does not set data_value if additional data is provided that does not fit into the schema" do
       result = input(@query, %{"input" => %{"name" => "Bruce", "age" => 36, "other" => 123}})
       arg = named(result, Blueprint.Input.Argument, "input")
-      assert %{name: "Bruce", age: 36} == arg.data_value
+      assert nil == arg.data_value
     end
 
     @tag :pending # Requires validation
@@ -134,12 +134,12 @@ defmodule Absinthe.Phase.Document.Arguments.DataTest do
       assert %{name: "Bruce", age: 36} == arg.data_value
     end
 
-    it "sets data_value ignoring unknown, provided data" do
+    it "does not set data_value when provided data does not fit schema" do
       result = input(@query, %{"input" => %{"name" => "Bruce", "age" => 36, "other" => 123}})
       op = named(result, Blueprint.Document.Operation, "CreateProfileWithVariable")
       profile2 = named(op, Blueprint.Document.Field, "profile2")
       arg = named(profile2, Blueprint.Input.Argument, "input")
-      assert %{name: "Brian", age: 28} == arg.data_value
+      assert nil == arg.data_value
     end
 
     @tag :pending # Requires valiadtion

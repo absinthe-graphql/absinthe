@@ -1,11 +1,16 @@
 defmodule Absinthe.Phase.Document.Schema do
+  @moduledoc """
+  Populate all schema nodes and the adapter for the document.
+
+  Note that no validation occurs in this phase.
+  """
   use Absinthe.Phase
 
   alias Absinthe.{Blueprint, Type}
 
-  @spec run(Blueprint.t, Absinthe.Schema.t) :: {:ok, Blueprint.t}
-  def run(input, schema) do
-    do_run(input, %{schema: schema, adapter: Absinthe.Adapter.LanguageConventions})
+  @spec run(Blueprint.t, Absinthe.Schema.t, Absinthe.Adapter.t) :: {:ok, Blueprint.t}
+  def run(input, schema, adapter \\ Absinthe.Adapter.LanguageConventions) do
+    do_run(input, %{schema: schema, adapter: adapter})
   end
 
   defp do_run(input, %{schema: schema, adapter: adapter}) do
@@ -14,8 +19,8 @@ defmodule Absinthe.Phase.Document.Schema do
   end
 
   @spec handle_node(Blueprint.node_t, Absinthe.Schema.t, Absinthe.Adapter.t) :: Blueprint.node_t
-  defp handle_node(%Blueprint{} = node, schema, _) do
-    %{node | schema: schema}
+  defp handle_node(%Blueprint{} = node, schema, adapter) do
+    %{node | schema: schema, adapter: adapter}
   end
   defp handle_node(%Blueprint.Document.Fragment.Named{} = node, schema, adapter) do
     schema_node = schema.__absinthe_type__(node.type_condition.name)
@@ -121,6 +126,11 @@ defmodule Absinthe.Phase.Document.Schema do
     schema_node = Type.expand(parent_schema_node.type, schema)
     values = Enum.map(node.values, &value_with_schema_node(&1, schema_node, schema, adapter))
     %{node | schema_node: schema_node, values: values}
+  end
+  # Coerce argument-level lists
+  defp value_with_schema_node(%node_type{} = node, %Type.Argument{type: %Type.List{}} = type, schema, adapter) when node_type != Blueprint.Input.List do
+    Blueprint.Input.List.wrap(node)
+    |> value_with_schema_node(type, schema, adapter)
   end
   defp value_with_schema_node(node, parent_schema_node, schema, _) do
     schema_node = Type.expand(parent_schema_node.type, schema)

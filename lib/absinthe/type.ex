@@ -16,6 +16,9 @@ defmodule Absinthe.Type do
   @typedoc "A type identifier"
   @type identifier_t :: atom
 
+  @typedoc "A type reference"
+  @type reference_t :: identifier_t | t | wrapping_t
+
   @doc "Determine if a struct matches one of the types"
   @spec type?(any) :: boolean
   def type?(%{__struct__: mod}) when mod in @type_modules, do: true
@@ -187,13 +190,40 @@ defmodule Absinthe.Type do
   def unwrap(%{of_type: t}), do: unwrap(t)
   def unwrap(type), do: type
 
-  @doc "Expand any atom type references inside a List or NonNull"
-  @spec expand(wrapping_t | t, Schema.t) :: wrapping_t | t
-  def expand(type, schema) when is_atom(type) do
-    schema.__absinthe_type__(type)
+  @doc """
+  Get the GraphQL name for a (possibly wrapped) type, expanding
+  any references if necessary using the provided schema.
+  """
+  @spec name(reference_t, Schema.t) :: String.t
+  def name(ref, schema) do
+    expanded = expand(ref, schema)
+    name(expanded)
   end
-  def expand(%{of_type: t} = node, schema) do
-    %{node | of_type: expand(t, schema)}
+
+  @doc """
+  Get the GraphQL name for a (possibly wrapped) type.
+
+  Note: Use `name/2` if the provided type reference needs to
+  be expanded to resolve any atom type references.
+  """
+  @spec name(wrapping_t | t) :: String.t
+  def name(%Type.NonNull{of_type: contents}) do
+    name(contents) <> "!"
+  end
+  def name(%Type.List{of_type: contents}) do
+    "[" <> name(contents) <> "]"
+  end
+  def name(%{name: name}) do
+    name
+  end
+
+  @doc "Expand any atom type references inside a List or NonNull"
+  @spec expand(reference_t, Schema.t) :: wrapping_t | t
+  def expand(ref, schema) when is_atom(ref) do
+    schema.__absinthe_type__(ref)
+  end
+  def expand(%{of_type: contents} = ref, schema) do
+    %{ref | of_type: expand(contents, schema)}
   end
   def expand(type, _) do
     type

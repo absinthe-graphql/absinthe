@@ -19,9 +19,12 @@ defmodule Absinthe.Language.Argument do
     def convert(node, doc) do
       %Blueprint.Input.Argument{
         name: node.name,
-        literal_value: Absinthe.Blueprint.Draft.convert(node.value, doc)
+        literal_value: Absinthe.Blueprint.Draft.convert(node.value, doc),
+        source_location: source_location(node),
       }
     end
+    defp source_location(%{loc: nil}), do: nil
+    defp source_location(%{loc: loc}), do: Blueprint.Document.SourceLocation.at(loc.start_line)
   end
 
   defimpl Absinthe.Traversal.Node do

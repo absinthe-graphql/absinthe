@@ -5,7 +5,7 @@ defmodule Absinthe.Language.ListValue do
 
   defstruct [
     values: [],
-    loc: %{start_line: nil}
+    loc: nil,
   ]
 
   @type t :: %__MODULE__{
@@ -16,9 +16,12 @@ defmodule Absinthe.Language.ListValue do
   defimpl Blueprint.Draft do
     def convert(node, doc) do
       %Blueprint.Input.List{
-        values: Blueprint.Draft.convert(node.values, doc)
+        values: Blueprint.Draft.convert(node.values, doc),
+        source_location: source_location(node),
       }
     end
+    defp source_location(%{loc: nil}), do: nil
+    defp source_location(%{loc: loc}), do: Blueprint.Document.SourceLocation.at(loc.start_line)
   end
 
 end

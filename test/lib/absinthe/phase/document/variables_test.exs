@@ -23,7 +23,7 @@ defmodule Absinthe.Phase.Document.VariablesTest do
       result = input(@query, %{"name" => "Bruce"})
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
       assert op.provided_values == %{
-        "age" => %Blueprint.Input.Integer{value: 36},
+        "age" => %Blueprint.Input.Integer{value: 36, source_location: %Blueprint.Document.SourceLocation{column: nil, line: 6}},
         "name" => %Blueprint.Input.String{value: "Bruce"},
       }
     end

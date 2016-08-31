@@ -17,8 +17,11 @@ defmodule Absinthe.Language.EnumValue do
     def convert(node, _doc) do
       %Blueprint.Input.Enum{
         value: node.value,
+        source_location: source_location(node),
       }
     end
+    defp source_location(%{loc: nil}), do: nil
+    defp source_location(%{loc: loc}), do: Blueprint.Document.SourceLocation.at(loc.start_line)
   end
 
 end

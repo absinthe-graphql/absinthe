@@ -10,6 +10,7 @@ defmodule Absinthe.Blueprint.Directive do
     source_location: nil,
     # Added by phases
     schema_node: nil,
+    flags: [],
     errors: [],
   ]
 
@@ -18,6 +19,7 @@ defmodule Absinthe.Blueprint.Directive do
     arguments: [Blueprint.Input.Argument.t],
     source_location: nil | Blueprint.Document.SourceLocation.t,
     schema_node: nil | Absinthe.Type.Directive.t,
+    flags: [atom],
     errors: [Phase.Error.t],
   }
 

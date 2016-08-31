@@ -39,22 +39,27 @@ defmodule Absinthe.Phase.Execution.Resolution do
       {:ok, Map.get(source, field.schema_node.__reference__.identifier)}
     end
 
-    field.arguments
-    |> filter_valid_arguments
-    |> resolution_function.(%{info | source: source})
-    |> case do
-      {:ok, result} ->
-        full_type = Type.expand(field.schema_node.type, info.schema)
-        walk_result(result, field, full_type, info)
-      {:error, _} = error ->
-        error
-      other ->
-        raise """
-        Resolution function did not return `{:ok, val}` or `{:error, reason}`
-        Resolving field: #{field.name}
-        Resolving on: #{inspect source}
-        Got: #{inspect other}
-        """
+    case :invalid in field.flags do
+      false ->
+        field.arguments
+        |> filter_valid_arguments
+        |> resolution_function.(%{info | source: source})
+        |> case do
+          {:ok, result} ->
+            full_type = Type.expand(field.schema_node.type, info.schema)
+            walk_result(result, field, full_type, info)
+          {:error, msg} ->
+            {:error, %{message: msg}}
+          other ->
+            raise """
+            Resolution function did not return `{:ok, val}` or `{:error, reason}`
+            Resolving field: #{field.name}
+            Resolving on: #{inspect source}
+            Got: #{inspect other}
+            """
+        end
+      true ->
+        {:error, %{message: "Field has invalid arguments"}}
     end
   end
 

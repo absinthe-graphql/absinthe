@@ -11,8 +11,8 @@ defmodule Absinthe.Execution.ArgumentsTest do
       false => "NO"
     }
 
-    scalar :name do
-      parse fn name -> {:ok, %{first_name: name}} end
+    scalar :input_name do
+      parse fn %{value: value} -> {:ok, %{first_name: value}} end
       serialize fn %{first_name: name} -> name end
     end
 
@@ -43,8 +43,8 @@ defmodule Absinthe.Execution.ArgumentsTest do
         end
       end
 
-      field :names, list_of(:name) do
-        arg :names, list_of(:name)
+      field :names, list_of(:input_name) do
+        arg :names, list_of(:input_name)
 
         resolve fn %{names: names}, _ -> {:ok, names} end
       end
@@ -68,7 +68,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
       field :something,
         type: :string,
         args: [
-          name: [type: :name],
+          name: [type: :input_name],
           flag: [type: :boolean, default_value: false],
         ],
         resolve: fn
@@ -79,9 +79,8 @@ defmodule Absinthe.Execution.ArgumentsTest do
           _, _ ->
             {:error, "No value provided for flag argument"}
         end
-
       field :required_thing, :string do
-        arg :name, non_null(:name)
+        arg :name, non_null(:input_name)
         resolve fn
           %{name: %{first_name: name}}, _ -> {:ok, name}
           args, _ -> {:error, "Got #{inspect args} instead"}
@@ -94,6 +93,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
 
   describe "arguments with variables" do
 
+    @tag :focus
     it "should raise an error when a non null argument variable is null" do
       doc = """
       query GetContacts($contacts:[ContactInput]){contacts(contacts:$contacts)}
@@ -143,6 +143,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         """
         assert_result {:ok, %{data: %{"requiredThing" => "bob"}}}, doc |> Absinthe.run(Schema)
       end
+
       it "works when passed to resolution" do
         assert_result {:ok, %{data: %{"something" => "bob"}}}, "{ something(name: \"bob\") }" |> Absinthe.run(Schema)
       end

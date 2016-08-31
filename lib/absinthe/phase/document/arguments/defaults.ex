@@ -23,29 +23,30 @@ defmodule Absinthe.Phase.Document.Arguments.Defaults do
 
   defp populate_node(%{schema_node: nil} = node), do: node
   defp populate_node(%{arguments: arguments, schema_node: schema_node} = node) do
-    %{node | arguments: fill_defaults(arguments, schema_node.args)}
+    %{node | arguments: fill_defaults(arguments, schema_node.args, node.source_location)}
   end
   defp populate_node(node), do: node
 
-  defp fill_defaults(arguments, schema_args) do
+  defp fill_defaults(arguments, schema_args, source_location) do
     arguments
     |> Enum.filter(&(&1.schema_node))
     |> Enum.reduce(schema_args, &Map.delete(&2, &1.schema_node.__reference__.identifier))
     |> Enum.reduce(arguments, fn
       {_, %{default_value: nil}}, arguments ->
         arguments
-      {_, missing_arg}, arguments ->
-        [build_arg(missing_arg) | arguments]
+      {_, missing_optional_arg_schema_node}, arguments ->
+        [build_optional_argument(missing_optional_arg_schema_node, source_location) | arguments]
     end)
   end
 
-  defp build_arg(schema_node_arg) do
+  defp build_optional_argument(schema_node_arg, source_location) do
     default = schema_node_arg.default_value
     %Blueprint.Input.Argument{
       name: schema_node_arg.name,
       literal_value: default,
       data_value: default,
-      schema_node: schema_node_arg
+      schema_node: schema_node_arg,
+      source_location: source_location
     }
   end
 
