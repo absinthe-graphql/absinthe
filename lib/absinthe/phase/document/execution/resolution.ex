@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Execution.Resolution do
+defmodule Absinthe.Phase.Document.Execution.Resolution do
   @moduledoc """
   Runs resolution functions in a new blueprint.
 
@@ -6,7 +6,7 @@ defmodule Absinthe.Phase.Execution.Resolution do
   """
 
   alias Absinthe.Blueprint.Document
-  alias Absinthe.Phase.Execution
+  alias Absinthe.Phase.Document.Execution
   alias Absinthe.{Type, Schema}
 
   use Absinthe.Phase

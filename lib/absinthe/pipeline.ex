@@ -37,8 +37,8 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Validation.data_pipeline,
       Phase.Document.Directives,
       Phase.Document.Flatten,
-      {Phase.Execution.Resolution, [nil, provided_values[:context], provided_values[:root_value]]},
-      Phase.Execution.Data
+      {Phase.Document.Execution.Resolution, [nil, provided_values[:context], provided_values[:root_value]]},
+      Phase.Document.Execution.Data
     ]
   end
 
@@ -49,6 +49,21 @@ defmodule Absinthe.Pipeline do
       Phase.Blueprint,
       # TODO: More
     ]
+  end
+
+  @doc """
+  Return the part of a pipeline before a specific phase.
+  """
+  @spec before(t, atom) :: t
+  def before(pipeline, phase) do
+    Enum.take_while(List.flatten(pipeline), fn
+      ^phase ->
+        false
+      {^phase, _} ->
+        false
+      _ ->
+        true
+    end)
   end
 
   @bad_return "Phase did not return an {:ok, any} | {:error, %{errors: [Phase.Error.t]} | Phase.Error.t | String.t} tuple"

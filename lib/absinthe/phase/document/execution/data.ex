@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Execution.Data do
+defmodule Absinthe.Phase.Document.Execution.Data do
 
   @moduledoc """
   Produces data fit for external encoding from annotated value tree

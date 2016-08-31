@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Execution.ResultObject do
+defmodule Absinthe.Phase.Document.Execution.ResultObject do
   defstruct [
     :blueprint_node,
     :name,
