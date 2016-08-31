@@ -9,6 +9,7 @@ defmodule Absinthe.Execution.DeprecationTest do
 
       describe "with a nullable deprecated arg" do
 
+        @tag :old_errors
         it "shows a deprecation notice without a reason" do
           query = """
             query ThingByDeprecatedArg {
@@ -22,6 +23,7 @@ defmodule Absinthe.Execution.DeprecationTest do
                          errors: [%{message: "Argument `deprecatedArg' (String): Deprecated"}]}}, result
         end
 
+        @tag :old_errors
         it "shows a deprecation notice with a reason" do
           query = """
             query ThingByDeprecatedArgWithReason {
@@ -39,6 +41,7 @@ defmodule Absinthe.Execution.DeprecationTest do
 
       describe "with a non-null deprecated arg" do
 
+        @tag :old_errors
         it "shows a deprecation notice without a reason" do
           query = """
             query ThingByDeprecatedNonNullArg {
@@ -52,6 +55,7 @@ defmodule Absinthe.Execution.DeprecationTest do
                          errors: [%{locations: [%{column: 0, line: 2}], message: "Argument `deprecatedNonNullArg' (String): Deprecated"}]}}, result
         end
 
+        @tag :old_errors
         it "shows a deprecation notice with a reason" do
           query = """
             query ThingByDeprecatedNonNullArgWithReason {
@@ -73,6 +77,7 @@ defmodule Absinthe.Execution.DeprecationTest do
 
       describe "with a nullable deprecated field" do
 
+        @tag :old_errors
         it "shows a deprecation notice without a reason" do
           query = """
             mutation UpdateThing {
@@ -86,6 +91,7 @@ defmodule Absinthe.Execution.DeprecationTest do
                          errors: [%{message: "Argument `thing.deprecatedField' (String): Deprecated"}]}}, result
         end
 
+        @tag :old_errors
         it "shows a deprecation notice with a reason" do
           query = """
             mutation UpdateThing {
@@ -103,6 +109,7 @@ defmodule Absinthe.Execution.DeprecationTest do
 
       describe "with a non-null deprecated field" do
 
+        @tag :old_errors
         it "shows a deprecation notice without a reason" do
           query = """
             mutation UpdateThing {
@@ -116,6 +123,7 @@ defmodule Absinthe.Execution.DeprecationTest do
                          errors: [%{message: "Argument `thing.deprecatedNonNullField' (String): Deprecated"}]}}, result
         end
 
+        @tag :old_errors
         it "shows a deprecation notice with a reason" do
           query = """
             mutation UpdateThing {
@@ -137,6 +145,7 @@ defmodule Absinthe.Execution.DeprecationTest do
 
   describe "for fields" do
 
+    @tag :old_errors
     it "shows a deprecation notice without a reason" do
       query = """
         query DeprecatedThing {
@@ -150,6 +159,7 @@ defmodule Absinthe.Execution.DeprecationTest do
                      errors: [%{message: "Field `deprecatedThing': Deprecated"}]}}, result
     end
 
+    @tag :old_errors
     it "shows a deprecation notice with a reason" do
       query = """
         query DeprecatedThingWithReason {

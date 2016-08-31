@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Execution do
+defmodule Absinthe.Phase.Document.Execution do
   @moduledoc """
   Executes a blueprint.
 

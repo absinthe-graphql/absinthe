@@ -23,13 +23,14 @@ defmodule Absinthe.Pipeline do
   end
 
   @spec for_document(Absinthe.Schema.t) :: t
-  @spec for_document(Absinthe.Schema.t, map) :: t
+  @spec for_document(Absinthe.Schema.t, Enum.t) :: t
   def for_document(schema, provided_values \\ %{}, adapter \\ Absinthe.Adapter.LanguageConventions) do
+    provided_values = Map.new(provided_values)
     [
       Phase.Parse,
       Phase.Blueprint,
       Phase.Document.Validation.structural_pipeline,
-      {Phase.Document.Variables, provided_values},
+      {Phase.Document.Variables, Map.get(provided_values, :variables, %{})},
       Phase.Document.Arguments.Normalize,
       {Phase.Document.Schema, [schema, adapter]},
       Phase.Document.Arguments.Data,
@@ -37,8 +38,8 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Validation.data_pipeline,
       Phase.Document.Directives,
       Phase.Document.Flatten,
-      {Phase.Execution.Resolution, [nil, provided_values[:context], provided_values[:root_value]]},
-      Phase.Execution.Data
+      {Phase.Document.Execution.Resolution, [nil, provided_values[:context], provided_values[:root_value]]},
+      Phase.Document.Execution.Data
     ]
   end
 
@@ -49,6 +50,35 @@ defmodule Absinthe.Pipeline do
       Phase.Blueprint,
       # TODO: More
     ]
+  end
+
+  @doc """
+  Return the part of a pipeline before a specific phase.
+  """
+  @spec before(t, atom) :: t
+  def before(pipeline, phase) do
+    List.flatten(pipeline)
+    |> Enum.take_while(&(!match_phase?(phase, &1)))
+  end
+
+  # Whether a phase configuration is for a given phase
+  @spec match_phase?(Phase.t, phase_config_t) :: boolean
+  defp match_phase?(phase, phase), do: true
+  defp match_phase?(phase, {phase, _}), do: true
+  defp match_phase?(_, _), do: false
+
+  @doc """
+  Return the part of a pipeline up to and including a specific phase.
+  """
+  @spec upto(t, atom) :: t
+  def upto(pipeline, phase) do
+    index = List.flatten(pipeline)
+    |> Enum.find_index(&(match_phase?(phase, &1)))
+    if index do
+      Enum.take(pipeline, index + 1)
+    else
+      pipeline
+    end
   end
 
   @bad_return "Phase did not return an {:ok, any} | {:error, %{errors: [Phase.Error.t]} | Phase.Error.t | String.t} tuple"

@@ -1,7 +1,7 @@
 defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
   use Absinthe.Case, async: true
 
-  alias Absinthe.{Blueprint, Phase, Pipeline}
+  alias Absinthe.Blueprint
 
   defmodule Schema do
     use Absinthe.Schema
@@ -28,12 +28,7 @@ defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
 
   end
 
-  @pre_pipeline Enum.take_while(Pipeline.for_document(Schema, %{}), fn
-    {Phase.Document.Variables, _} ->
-      false
-    _ ->
-      true
-  end)
+  use Harness.Document.Phase, phase: Absinthe.Phase.Document.Arguments.Normalize, schema: Schema
 
   @query """
     query Foo($id: ID!) {
@@ -50,7 +45,7 @@ defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
 
   describe "when not providing a value for an optional variable with a default value" do
     it "uses the default value" do
-      result = input(@query, %{})
+      {:ok, result} = run_phase(@query, variables: %{})
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
       field = op.selections |> List.first
       age_argument = field.arguments |> Enum.find(&(&1.name == "age"))
@@ -60,10 +55,9 @@ defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
     end
   end
 
-  @tag :focus
   describe "when providing a value for an optional variable with a default value" do
     it "uses the default value" do
-      result = input(@query, %{"age" => 4})
+      {:ok, result} = run_phase(@query, variables: %{"age" => 4})
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
       field = op.selections |> List.first
       age_argument = field.arguments |> Enum.find(&(&1.name == "age"))
@@ -71,18 +65,6 @@ defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
       name_argument = field.arguments |> Enum.find(&(&1.name == "name"))
       assert %Blueprint.Input.String{value: "Bruce", source_location: %Blueprint.Document.SourceLocation{column: nil, line: 7}} == name_argument.normalized_value
     end
-  end
-
-  def input(query, values) do
-    {:ok, result} = blueprint(query, values)
-    |> Phase.Document.Arguments.Normalize.run
-
-    result
-  end
-
-  defp blueprint(query, values) do
-    {:ok, blueprint} = Pipeline.run(query, @pre_pipeline ++ [{Phase.Document.Variables, values}])
-    blueprint
   end
 
 end

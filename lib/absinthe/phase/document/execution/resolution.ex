@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Execution.Resolution do
+defmodule Absinthe.Phase.Document.Execution.Resolution do
   @moduledoc """
   Runs resolution functions in a new blueprint.
 
@@ -6,7 +6,7 @@ defmodule Absinthe.Phase.Execution.Resolution do
   """
 
   alias Absinthe.Blueprint.Document
-  alias Absinthe.Phase.Execution
+  alias Absinthe.Phase.Document.Execution
   alias Absinthe.{Type, Schema}
 
   use Absinthe.Phase
@@ -28,10 +28,14 @@ defmodule Absinthe.Phase.Execution.Resolution do
 
   defp filter_valid_arguments(arguments) do
     arguments
-    |> Enum.reject(&Enum.any?(&1.errors))
+    |> Enum.reject(&invalid_argument?/1)
     |> Map.new(fn arg ->
       {arg.schema_node.__reference__.identifier, arg.data_value}
     end)
+  end
+
+  defp invalid_argument?(argument) do
+    Enum.member?(argument.flags, :invalid) || !argument.data_value
   end
 
   def resolve_field(field, info, source) do
