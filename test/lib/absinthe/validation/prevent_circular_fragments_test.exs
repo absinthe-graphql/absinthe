@@ -6,6 +6,8 @@ defmodule Absinthe.Validation.PreventCircularFragmentsTest do
   # https://facebook.github.io/graphql/#sec-Fragment-spreads-must-not-form-cycles
 
   describe "PreventCircularFragments" do
+
+    @tag :old_errors
     it "should error if the named fragment tries to use itself" do
       {:ok, doc} = """
       fragment nameFragment on Dog {
@@ -68,6 +70,7 @@ defmodule Absinthe.Validation.PreventCircularFragmentsTest do
       ] == errors
     end
 
+    @tag :old_errors
     it "should not execute" do
       {:ok, doc} = """
       {

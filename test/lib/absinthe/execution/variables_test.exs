@@ -89,6 +89,7 @@ defmodule Absinthe.Execution.VariablesTest do
       end
     end
 
+    @tag :old_errors
     context "when not provided" do
       it "returns an error" do
         assert {:error, %{variables: %Absinthe.Execution.Variables{raw: %{}}, errors: errors}} = @id_required |> parse
@@ -99,6 +100,7 @@ defmodule Absinthe.Execution.VariablesTest do
   end
 
   describe "scalar variable" do
+    @tag :old_errors
     it "returns an error if it does not parse" do
       doc = """
       query ScalarError($item:Int){foo(bar:$item)}
@@ -134,6 +136,7 @@ defmodule Absinthe.Execution.VariablesTest do
   end
 
   describe "duplicate variable name" do
+    @tag :old_errors
     it "returns an error if a variable is duplicated" do
       doc = """
       query DuplicateError($item: Int, $item: Int) {
@@ -225,6 +228,7 @@ defmodule Absinthe.Execution.VariablesTest do
       assert %{contact: %{email_value: "ben"}} == value
     end
 
+    @tag :old_errors
     it "should return an error if an inner scalar doesn't parse" do
       doc = """
       query FindContact($contact:ContactInput) {contact(contact:$contact)}
@@ -233,6 +237,7 @@ defmodule Absinthe.Execution.VariablesTest do
       assert [%{locations: [%{column: 0, line: 1}], message: "Variable `contact.emailValue' (String): Invalid value provided"}] == errors
     end
 
+    @tag :old_errors
     it "should return an error when a required field is explicitly set to nil" do
       doc = """
       query FindContact($contact:ContactInput) {contact(contact:$contact)}
@@ -241,6 +246,7 @@ defmodule Absinthe.Execution.VariablesTest do
       assert [%{locations: [%{column: 0, line: 1}], message: "Variable `contact.emailValue' (String): Not provided"}] == errors
     end
 
+    @tag :old_errors
     it "tracks extra values" do
       doc = """
       query FindContact($contact:ContactInput) {user(contact:$contact)}
@@ -250,6 +256,7 @@ defmodule Absinthe.Execution.VariablesTest do
       assert %{"user" => "bob"} == data
     end
 
+    @tag :old_errors
     it "returns an error for inner deprecated fields" do
       doc = """
       query FindContact($contact:ContactInput) {contact(contact:$contact)}
@@ -262,6 +269,7 @@ defmodule Absinthe.Execution.VariablesTest do
   end
 
   describe "nested errors" do
+    @tag :old_errors
     it "should return a useful error message for deeply nested errors" do
       doc = """
       query FindContact($contacts:[ContactInput]) {

@@ -129,7 +129,7 @@ defmodule Absinthe.Adapter.LanguageConventionsTest do
     assert {:ok, %{data: %{"fieldTrip" => %{"name" => "Museum", "locationName" => "Portland"}}}} == run(query)
   end
 
-
+  @tag :old_errors
   it "can do a query with an object argument" do
     query = """
     query GimmeMuseum {
@@ -179,7 +179,7 @@ defmodule Absinthe.Adapter.LanguageConventionsTest do
     assert {:ok, %{data: %{"thePlace" => %{"name" => "Museum", "locationName" => "Portland"}}}} == run(query)
   end
 
-
+  @tag :old_errors
   it "can identify a bad field" do
     query = """
     {

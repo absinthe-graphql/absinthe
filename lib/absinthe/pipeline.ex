@@ -56,14 +56,28 @@ defmodule Absinthe.Pipeline do
   """
   @spec before(t, atom) :: t
   def before(pipeline, phase) do
-    Enum.take_while(List.flatten(pipeline), fn
-      ^phase ->
-        false
-      {^phase, _} ->
-        false
-      _ ->
-        true
-    end)
+    List.flatten(pipeline)
+    |> Enum.take_while(&(!match_phase?(phase, &1)))
+  end
+
+  # Whether a phase configuration is for a given phase
+  @spec match_phase?(Phase.t, phase_config_t) :: boolean
+  defp match_phase?(phase, phase), do: true
+  defp match_phase?(phase, {phase, _}), do: true
+  defp match_phase?(_, _), do: false
+
+  @doc """
+  Return the part of a pipeline up to and including a specific phase.
+  """
+  @spec upto(t, atom) :: t
+  def upto(pipeline, phase) do
+    index = List.flatten(pipeline)
+    |> Enum.find_index(&(match_phase?(phase, &1)))
+    if index do
+      Enum.take(pipeline, index + 1)
+    else
+      pipeline
+    end
   end
 
   @bad_return "Phase did not return an {:ok, any} | {:error, %{errors: [Phase.Error.t]} | Phase.Error.t | String.t} tuple"

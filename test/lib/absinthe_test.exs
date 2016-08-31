@@ -25,6 +25,7 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"things" => [%{"name" => "Bar", "id" => "bar"}, %{"name" => "Foo", "id" => "foo"}]}}}, run(query)
   end
 
+  @tag :old_errors
   it "can identify a bad field" do
     query = """
     {
@@ -37,6 +38,7 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: "Field `bad': Not present in schema", locations: [%{line: 4, column: 0}]}]}}, run(query)
   end
 
+  @tag :old_errors
   it "warns of unknown fields" do
     query = """
     {
@@ -57,6 +59,7 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"widget" => %{"name" => "Foo"}}}}, run(query)
   end
 
+  @tag :old_errors
   it "checks for required arguments" do
     query = "{ thing { name } }"
     assert_result {:ok, %{data: %{},
@@ -65,6 +68,7 @@ defmodule AbsintheTest do
 
   end
 
+  @tag :old_errors
   it "checks for extra arguments" do
     query = """
     {
@@ -76,6 +80,7 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: "Argument `extra': Not present in schema"}]}}, run(query)
   end
 
+  @tag :old_errors
   it "checks for badly formed arguments" do
     query = """
     {
@@ -101,6 +106,7 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo", "otherThing" => %{"name" => "Bar"}}}}}, run(query)
   end
 
+  @tag :old_errors
   it "can provide context" do
     query = """
       query GimmeThingByContext {
@@ -139,6 +145,7 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo", "value" => 100}}}}, result
   end
 
+  @tag :old_errors
   it "checks for badly formed nested arguments" do
     query = """
     mutation UpdateThingValueBadly {
@@ -153,6 +160,7 @@ defmodule AbsintheTest do
                                   %{message: "Argument `thing.value' (Int): Invalid value provided"}]}}, run(query)
   end
 
+  @tag :old_errors
   it "reports missing, required variable values" do
     query = """
       query GimmeThingByVariable($thingId: String!, $other: String!) {
@@ -165,6 +173,7 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{}, errors: [%{message: "Variable `other' (String): Not provided"}]}}, result
   end
 
+  @tag :old_errors
   it "reports parser errors from parse" do
     query = """
       {
@@ -174,6 +183,7 @@ defmodule AbsintheTest do
     assert {:error, %{message: "syntax error before: '}'", locations: _}} = Absinthe.parse(query)
   end
 
+  @tag :old_errors
   it "reports parser errors from run" do
     query = """
       {
@@ -210,6 +220,7 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"item" => %{"id" => "foo", "name" => "Foo"}}}}, result
   end
 
+  @tag :old_errors
   it "should wrap all lexer errors" do
     query = """
     {
@@ -220,6 +231,7 @@ defmodule AbsintheTest do
     assert {:error, %{locations: _}} = Absinthe.parse(query)
   end
 
+  @tag :old_errors
   it "should resolve using enums" do
     result = """
       {
@@ -350,10 +362,12 @@ defmodule AbsintheTest do
       assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}}} == Absinthe.run(@multiple_ops_query, Things, operation_name: "ThingFoo")
     end
 
+    @tag :old_errors
     it "should error when no operation name is supplied" do
       assert {:error, "Multiple operations available, but no operation_name provided"} == Absinthe.run(@multiple_ops_query, Things)
     end
 
+    @tag :old_errors
     it "should error when an invalid operation name is supplied" do
       op_name = "invalid"
       assert {:error, "No operation with name: #{op_name}"} == Absinthe.run(@multiple_ops_query, Things, operation_name: op_name)

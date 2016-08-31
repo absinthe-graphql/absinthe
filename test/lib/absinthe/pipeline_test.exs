@@ -14,7 +14,9 @@ defmodule Absinthe.PipelineTest do
     """
 
     it 'can create a blueprint' do
-      assert {:ok, %Blueprint{}} = Pipeline.run(@query, Pipeline.for_document(Schema))
+      pipeline = Pipeline.for_document(Schema)
+      |> Pipeline.upto(Phase.Blueprint)
+      assert {:ok, %Blueprint{}} = Pipeline.run(@query, pipeline)
     end
 
   end
