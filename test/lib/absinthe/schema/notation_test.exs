@@ -75,26 +75,57 @@ defmodule Absinthe.Schema.NotationTest do
       assert error == %{data: %{artifact: "Field Import Cycle Error\n\nField Import in object `foo' `import_fields(:bar) forms a cycle via: (`foo' => `bar' => `foo')", value: :bar}, location: %{file: __ENV__.file, line: 63}, rule: Absinthe.Schema.Rule.NoCircularFieldImports}
     end
 
+    it "can import types from more than one thing" do
+      defmodule Multiples do
+        use Absinthe.Schema
+
+        object :foo do
+          field :name, :string
+        end
+
+        object :bar do
+          field :email, :string
+        end
+
+        query do
+          import_fields :foo
+          import_fields :bar
+          field :age, :integer
+        end
+      end
+
+      assert [:age, :email, :name] == Multiples.__absinthe_type__(:query).fields |> Map.keys |> Enum.sort
+    end
+
     it "can import fields from imported types" do
-      defmodule Source do
+      defmodule Source1 do
         use Absinthe.Schema.Notation
 
         object :foo do
           field :name, :string
         end
       end
+      defmodule Source2 do
+        use Absinthe.Schema.Notation
+
+        object :bar do
+          field :email, :string
+        end
+      end
 
       defmodule Dest do
         use Absinthe.Schema.Notation
 
-        import_types Source
+        import_types Source1
+        import_types Source2
 
-        object :bar do
+        object :baz do
           import_fields :foo
+          import_fields :bar
         end
       end
 
-      assert [:name] = Dest.__absinthe_type__(:bar).fields |> Map.keys
+      assert [:email, :name] = Dest.__absinthe_type__(:baz).fields |> Map.keys |> Enum.sort
     end
   end
 

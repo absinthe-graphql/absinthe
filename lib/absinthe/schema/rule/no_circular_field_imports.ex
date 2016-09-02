@@ -28,20 +28,21 @@ defmodule Absinthe.Schema.Rule.NoCircularFieldImports do
 
   defp check_imports(definition, imports, graph, errors, acc) do
     :digraph.add_vertex(graph, definition.identifier)
-    Enum.reduce(imports, {acc, errors}, fn {ref, _}, {acc, errors} ->
+    Enum.reduce(imports, [], fn {ref, _}, errors ->
       :digraph.add_vertex(graph, ref)
       case :digraph.add_edge(graph, definition.identifier, ref) do
         {:error, {:bad_edge, path}} ->
           # All just error generation logic
-          deps = [definition.identifier | path]
-          |> Enum.map(&"`#{&1}'")
-          |> Enum.join(" => ")
+          deps =
+            [definition.identifier | path]
+            |> Enum.map(&"`#{&1}'")
+            |> Enum.join(" => ")
 
-          msg = """
+          msg = String.strip """
           Field Import Cycle Error
 
           Field Import in object `#{definition.identifier}' `import_fields(#{inspect ref}) forms a cycle via: (#{deps})
-          """ |> String.strip
+          """
 
           error = %{
             rule: __MODULE__,
@@ -49,11 +50,15 @@ defmodule Absinthe.Schema.Rule.NoCircularFieldImports do
             data: %{artifact: msg, value: ref}
           }
 
-          {acc, [error | errors]}
+          [error | errors]
 
         _ ->
-          {[definition | acc], errors}
+          errors
       end
     end)
+    |> case do
+      [] -> {[definition | acc], errors}
+      new_errors -> {acc, new_errors ++ errors}
+    end
   end
 end
