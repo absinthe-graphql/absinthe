@@ -164,26 +164,6 @@ defmodule Absinthe.Type.Field do
     get_in(private, [Absinthe, :resolve])
   end
 
-  defimpl Absinthe.Validation.RequiredInput do
-
-    # Whether the field is required.
-    #
-    # Note this is only useful for input object types.
-    #
-    # * If the field is deprecated, it is never required
-    # * If the argumnet is not deprecated, it is required
-    #   if its type is non-null
-    @doc false
-    @spec required?(Field.t) :: boolean
-    def required?(%Field{type: type, deprecation: nil}) do
-      type
-      |> Absinthe.Validation.RequiredInput.required?
-    end
-    def required?(%Field{}) do
-      false
-    end
-
-  end
 
   defimpl Absinthe.Traversal.Node do
     def children(node, traversal) do
