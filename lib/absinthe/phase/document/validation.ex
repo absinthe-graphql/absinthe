@@ -1,20 +1,20 @@
 defmodule Absinthe.Phase.Document.Validation do
-  alias __MODULE__
 
   @type rule_t :: module
 
-  alias Absinthe.Blueprint
+  alias Absinthe.{Blueprint, Phase}
 
   @structural_rules [
-    Validation.NoFragmentCycles,
+    Phase.Document.Validation.NoFragmentCycles,
   ]
 
   @data_rules [
-    Validation.ArgumentsOfCorrectType,
-    Validation.KnownArgumentNames,
-    Validation.ProvidedNonNullArguments,
-    Validation.UniqueArgumentNames,
-    Validation.UniqueInputFieldNames,
+    Phase.Validation.KnownDirectives,
+    Phase.Document.Validation.ArgumentsOfCorrectType,
+    Phase.Document.Validation.KnownArgumentNames,
+    Phase.Document.Validation.ProvidedNonNullArguments,
+    Phase.Document.Validation.UniqueArgumentNames,
+    Phase.Document.Validation.UniqueInputFieldNames,
   ]
 
   def structural_pipeline do

@@ -80,7 +80,13 @@ defmodule Support.Harness.Validation do
     Pipeline.run(document, pipeline ++ rules)
   end
 
-  defp pre_validation_pipeline(schema, provided_values) do
+  defp pre_validation_pipeline(schema, :schema) do
+    [
+      Phase.Parse,
+      Phase.Blueprint
+    ]
+  end
+  defp pre_validation_pipeline(schema, %{} = provided_values) do
     [
       Phase.Parse,
       Phase.Blueprint,
