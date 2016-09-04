@@ -3,16 +3,29 @@ defmodule Absinthe.Phase.Validation.KnownDirectives do
   alias Absinthe.{Blueprint, Phase}
 
   use Absinthe.Phase
+  use Absinthe.Phase.Validation
 
   @doc """
   Run the validation.
   """
   @spec run(Blueprint.t) :: Phase.result_t
   def run(input) do
-    result = Blueprint.prewalk(input, &handle_node/1)
+    result = Blueprint.postwalk(input, &handle_node/1)
     {:ok, result}
   end
 
+  defp handle_node(%Blueprint.Directive{schema_node: nil} = node) do
+    node
+    |> put_error(error_unknown(node))
+    |> flag_invalid(:no_schema_node)
+    |> IO.inspect
+  end
+  defp handle_node(%Blueprint.Directive{} = node) do
+    node
+  end
+  defp handle_node(%{directives: directives} = node) do
+    inherit_invalid(node, directives, :bad_directive)
+  end
   defp handle_node(node) do
     node
   end

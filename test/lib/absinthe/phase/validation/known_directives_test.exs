@@ -58,6 +58,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
       )
     end
 
+    @tag :now
     it "with unknown directive" do
       assert_fails_rule(@rule,
         """
@@ -69,7 +70,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
         """,
         %{},
         [
-          unknown_directive("unknown", 3)
+          unknown_directive("unknown", 2)
         ]
       )
     end
@@ -91,9 +92,9 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
         """,
         %{},
         [
-          unknown_directive("unknown", 3),
-          unknown_directive("unknown", 6),
-          unknown_directive("unknown", 8)
+          unknown_directive("unknown", 2),
+          unknown_directive("unknown", 5),
+          unknown_directive("unknown", 7)
         ]
       )
     end
@@ -130,10 +131,10 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
         """,
         %{},
         [
-          misplaced_directive("include", "QUERY", 2),
-          misplaced_directive("onQuery", "FIELD", 3),
-          misplaced_directive("onQuery", "FRAGMENT_SPREAD", 4),
-          misplaced_directive("onQuery", "MUTATION", 7)
+          misplaced_directive("include", "QUERY", 1),
+          misplaced_directive("onQuery", "FIELD", 2),
+          misplaced_directive("onQuery", "FRAGMENT_SPREAD", 3),
+          misplaced_directive("onQuery", "MUTATION", 6)
         ]
       )
     end
@@ -200,19 +201,19 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
           """,
           :schema,
           [
-            misplaced_directive("onInterface", "OBJECT", 2),
-            misplaced_directive("onInputFieldDefinition", "ARGUMENT_DEFINITION", 3),
-            misplaced_directive("onInputFieldDefinition", "FIELD_DEFINITION", 3),
-            misplaced_directive("onEnum", "SCALAR", 6),
-            misplaced_directive("onObject", "INTERFACE", 8),
-            misplaced_directive("onInputFieldDefinition", "ARGUMENT_DEFINITION", 9),
-            misplaced_directive("onInputFieldDefinition", "FIELD_DEFINITION", 9),
-            misplaced_directive("onEnumValue", "UNION", 12),
-            misplaced_directive("onScalar", "ENUM", 14),
-            misplaced_directive("onUnion", "ENUM_VALUE", 15),
-            misplaced_directive("onEnum", "INPUT_OBJECT", 18),
-            misplaced_directive("onArgumentDefinition", "INPUT_FIELD_DEFINITION", 19),
-            misplaced_directive("onObject", "SCHEMA", 22),
+            misplaced_directive("onInterface", "OBJECT", 1),
+            misplaced_directive("onInputFieldDefinition", "ARGUMENT_DEFINITION", 2),
+            misplaced_directive("onInputFieldDefinition", "FIELD_DEFINITION", 2),
+            misplaced_directive("onEnum", "SCALAR", 5),
+            misplaced_directive("onObject", "INTERFACE", 7),
+            misplaced_directive("onInputFieldDefinition", "ARGUMENT_DEFINITION", 8),
+            misplaced_directive("onInputFieldDefinition", "FIELD_DEFINITION", 8),
+            misplaced_directive("onEnumValue", "UNION", 11),
+            misplaced_directive("onScalar", "ENUM", 13),
+            misplaced_directive("onUnion", "ENUM_VALUE", 14),
+            misplaced_directive("onEnum", "INPUT_OBJECT", 17),
+            misplaced_directive("onArgumentDefinition", "INPUT_FIELD_DEFINITION", 18),
+            misplaced_directive("onObject", "SCHEMA", 21),
           ]
         )
       end

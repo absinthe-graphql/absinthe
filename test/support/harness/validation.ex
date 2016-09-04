@@ -50,6 +50,7 @@ defmodule Support.Harness.Validation do
   @spec assert_invalid(Schema.t, [Phase.t], Language.Source.t, map, [error_checker_t] | error_checker_t) :: no_return
   def assert_invalid(schema, rules, document, provided_values, error_checkers) do
     {:ok, result} = run(schema, rules, document, provided_values)
+    IO.inspect(result)
     pairs = error_pairs(result)
     List.wrap(error_checkers)
     |> Enum.each(&(&1.(pairs)))
@@ -92,7 +93,7 @@ defmodule Support.Harness.Validation do
       Phase.Blueprint,
       {Phase.Document.Variables, provided_values},
       Phase.Document.Arguments.Normalize,
-      {Phase.Document.Schema, [schema, Absinthe.Adapter.LanguageConventions]},
+      {Phase.Schema, [schema, Absinthe.Adapter.LanguageConventions]},
       Phase.Document.Arguments.Data,
       Phase.Document.Directives
     ]
