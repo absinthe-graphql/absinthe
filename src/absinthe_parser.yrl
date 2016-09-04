@@ -11,7 +11,7 @@ Nonterminals
   OperationType Name NameWithoutOn VariableDefinitions VariableDefinition Directives Directive
   Field Alias Arguments ArgumentList Argument
   FragmentSpread FragmentName InlineFragment
-  VariableDefinitionList Variable DefaultValue
+  VariableDefinitionList Variable DefaultValue NameWithoutOn
   Type TypeCondition NamedTypeList NamedType ListType NonNullType
   Value EnumValue ListValue Values ObjectValue ObjectFields ObjectField.
 
@@ -111,10 +111,10 @@ Argument -> 'on' ':' Value : build_ast_node('Argument', #{name => extract_binary
 
 Directives -> Directive : ['$1'].
 Directives -> Directive Directives : ['$1'|'$2'].
-Directive -> '@' Name : build_ast_node('Directive', #{name => extract_binary('$2')}, #{'start_line' => extract_line('$1')}).
-Directive -> '@' Name Arguments : build_ast_node('Directive', #{name => extract_binary('$2'), 'arguments' => '$3'}, #{'start_line' => extract_line('$1')}).
-Directive -> '@' 'directive' : build_ast_node('Directive', #{name => extract_binary('$2')}, #{'start_line' => extract_line('$1')}).
-Directive -> '@' 'directive' Arguments : build_ast_node('Directive', #{name => extract_binary('$2'), 'arguments' => '$3'}, #{'start_line' => extract_line('$1')}).
+Directive -> '@' NameWithoutOn : build_ast_node('Directive', #{name => extract_binary('$2')}, #{'start_line' => extract_line('$1')}).
+Directive -> '@' NameWithoutOn Arguments : build_ast_node('Directive', #{name => extract_binary('$2'), 'arguments' => '$3'}, #{'start_line' => extract_line('$1')}).
+Directive -> '@' 'on' : build_ast_node('Directive', #{name => extract_binary('$2')}, #{'start_line' => extract_line('$1')}).
+Directive -> '@' 'on' Arguments : build_ast_node('Directive', #{name => extract_binary('$2'), 'arguments' => '$3'}, #{'start_line' => extract_line('$1')}).
 
 NameWithoutOn -> 'name' : '$1'.
 NameWithoutOn -> 'query' : extract_binary('$1').
@@ -130,6 +130,7 @@ NameWithoutOn -> 'enum' : extract_binary('$1').
 NameWithoutOn -> 'input' : extract_binary('$1').
 NameWithoutOn -> 'extend' : extract_binary('$1').
 NameWithoutOn -> 'null' : extract_binary('$1').
+NameWithoutOn -> 'directive' : extract_binary('$1').
 
 Name -> NameWithoutOn : '$1'.
 Name -> 'on' : extract_binary('$1').
