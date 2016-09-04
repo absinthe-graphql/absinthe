@@ -63,4 +63,18 @@ defmodule Absinthe.ParserTest do
     assert {:ok, _} = Absinthe.parse(@query)
   end
 
+  @query """
+  query Something($on: String!) {
+    on(on: "thing") {
+      id
+    }
+    doSomething(on: "thing") @on(on: $on) {
+      id
+    }
+  }
+  """
+  it "can parse 'on' in different contexts" do
+    assert {:ok, _} = Absinthe.parse(@query)
+  end
+
 end

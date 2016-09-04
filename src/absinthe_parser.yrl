@@ -11,7 +11,7 @@ Nonterminals
   OperationType Name NameWithoutOn VariableDefinitions VariableDefinition Directives Directive
   Field Alias Arguments ArgumentList Argument
   FragmentSpread FragmentName InlineFragment
-  VariableDefinitionList Variable DefaultValue Identifier
+  VariableDefinitionList Variable DefaultValue NameWithoutOn
   Type TypeCondition NamedTypeList NamedType ListType NonNullType
   Value EnumValue ListValue Values ObjectValue ObjectFields ObjectField.
 
@@ -113,6 +113,8 @@ Directives -> Directive : ['$1'].
 Directives -> Directive Directives : ['$1'|'$2'].
 Directive -> '@' NameWithoutOn : build_ast_node('Directive', #{name => extract_binary('$2')}, #{'start_line' => extract_line('$1')}).
 Directive -> '@' NameWithoutOn Arguments : build_ast_node('Directive', #{name => extract_binary('$2'), 'arguments' => '$3'}, #{'start_line' => extract_line('$1')}).
+Directive -> '@' 'on' : build_ast_node('Directive', #{name => extract_binary('$2')}, #{'start_line' => extract_line('$1')}).
+Directive -> '@' 'on' Arguments : build_ast_node('Directive', #{name => extract_binary('$2'), 'arguments' => '$3'}, #{'start_line' => extract_line('$1')}).
 
 NameWithoutOn -> 'name' : '$1'.
 NameWithoutOn -> 'query' : extract_binary('$1').
