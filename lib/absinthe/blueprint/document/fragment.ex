@@ -1,4 +1,4 @@
-defmodule Absinthe.Blueprint.Fragment do
+defmodule Absinthe.Blueprint.Document.Fragment do
 
   alias __MODULE__
 

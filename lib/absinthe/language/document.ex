@@ -48,6 +48,7 @@ defmodule Absinthe.Language.Document do
       Language.OperationDefinition,
     ]
     @types [
+      Language.SchemaDefinition,
       Language.EnumTypeDefinition,
       Language.InputObjectTypeDefinition,
       Language.InputValueDefinition,

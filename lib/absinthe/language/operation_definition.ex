@@ -16,6 +16,7 @@ defmodule Absinthe.Language.OperationDefinition do
     operation: :query | :mutation | :subscription,
     name: nil | String.t,
     variable_definitions: [Language.VariableDefinition.t],
+    directives: [Language.Directive.t],
     selection_set: Language.SelectionSet.t,
     loc: Language.loc_t
   }
@@ -25,6 +26,7 @@ defmodule Absinthe.Language.OperationDefinition do
       %Blueprint.Document.Operation{
         name: node.name,
         type: node.operation,
+        directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
         variable_definitions: Blueprint.Draft.convert(node.variable_definitions, doc),
         selections: Blueprint.Draft.convert(node.selection_set.selections, doc),
         source_location: source_location(node.loc),

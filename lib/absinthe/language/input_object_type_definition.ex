@@ -22,7 +22,9 @@ defmodule Absinthe.Language.InputObjectTypeDefinition do
     def convert(node, doc) do
       %Blueprint.Schema.InputObjectTypeDefinition{
         name: node.name,
-        fields: Absinthe.Blueprint.Draft.convert(node.fields, doc),
+        fields: for value <- Absinthe.Blueprint.Draft.convert(node.fields, doc) do
+          %{value | placement: :input_field_definition}
+        end,
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
       }
     end

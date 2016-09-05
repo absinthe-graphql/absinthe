@@ -10,20 +10,19 @@ defmodule Absinthe.Phase.Document.Directives do
 
   @spec run(Blueprint.t) :: {:ok, Blueprint.t}
   def run(input) do
-    {node, _} = Blueprint.prewalk(input, %{}, &handle_node/2)
+    node = Blueprint.prewalk(input, &handle_node/1)
     {:ok, node}
   end
 
-  @spec handle_node(Blueprint.node_t, map) :: {Blueprint.node_t, map}
-  defp handle_node(%{directives: directives} = node, acc) do
-    directives
-    |> Enum.reduce({node, acc}, fn
-      directive, {node, acc} ->
-        Blueprint.Directive.expand(directive, node, acc)
+  @spec handle_node(Blueprint.node_t) :: Blueprint.node_t
+  defp handle_node(%{directives: directives} = node) do
+    Enum.reduce(directives, node, fn
+      directive, acc ->
+        Blueprint.Directive.expand(directive, acc)
     end)
   end
-  defp handle_node(node, acc) do
-    {node, acc}
+  defp handle_node(node) do
+    node
   end
 
 end

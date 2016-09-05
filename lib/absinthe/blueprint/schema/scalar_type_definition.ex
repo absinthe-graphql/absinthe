@@ -7,6 +7,8 @@ defmodule Absinthe.Blueprint.Schema.ScalarTypeDefinition do
     :name,
     description: nil,
     directives: [],
+    # Added by phases
+    flags: [],
     errors: [],
   ]
 
@@ -14,6 +16,8 @@ defmodule Absinthe.Blueprint.Schema.ScalarTypeDefinition do
     name: String.t,
     description: nil | String.t,
     directives: [Blueprint.Directive.t],
+    # Added by phases
+    flags: [atom],
     errors: [Absinthe.Phase.Error.t],
   }
 

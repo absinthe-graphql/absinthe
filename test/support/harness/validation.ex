@@ -77,16 +77,28 @@ defmodule Support.Harness.Validation do
 
   defp run(schema, rules, document, provided_values) do
     pipeline = pre_validation_pipeline(schema, provided_values)
-    Pipeline.run(document, pipeline ++ rules)
+    result = Pipeline.run(document, pipeline ++ rules)
+    if System.get_env("DEBUG_PIPELINE_RESULT") do
+      IO.inspect(result)
+    else
+      result
+    end
   end
 
-  defp pre_validation_pipeline(schema, provided_values) do
+  defp pre_validation_pipeline(schema, :schema) do
+    [
+      Phase.Parse,
+      Phase.Blueprint,
+      {Phase.Schema, [schema, Absinthe.Adapter.LanguageConventions]}
+    ]
+  end
+  defp pre_validation_pipeline(schema, %{} = provided_values) do
     [
       Phase.Parse,
       Phase.Blueprint,
       {Phase.Document.Variables, provided_values},
       Phase.Document.Arguments.Normalize,
-      {Phase.Document.Schema, [schema, Absinthe.Adapter.LanguageConventions]},
+      {Phase.Schema, [schema, Absinthe.Adapter.LanguageConventions]},
       Phase.Document.Arguments.Data,
       Phase.Document.Directives
     ]

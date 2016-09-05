@@ -12,24 +12,11 @@ defmodule Absinthe.Type.BuiltIns.Directives do
 
     on [:field, :fragment_spread, :inline_fragment]
 
-    instruction fn
-      %{if: true} ->
-        :include
-      _ ->
-        :skip
-    end
-
     expand fn
-      %{if: true}, node, acc ->
-        {
-          %{node | flags: [:include | node.flags]},
-          acc
-        }
-      _, node, acc ->
-        {
-          %{node | flags: [:skip | node.flags]},
-          acc
-        }
+      %{if: true}, node ->
+        %{node | flags: [:include | node.flags]}
+      _, node ->
+        %{node | flags: [:skip | node.flags]}
     end
 
   end
@@ -43,24 +30,11 @@ defmodule Absinthe.Type.BuiltIns.Directives do
 
     on [:field, :fragment_spread, :inline_fragment]
 
-    instruction fn
-      %{if: true} ->
-        :skip
-      _ ->
-        :include
-    end
-
     expand fn
-      %{if: true}, node, acc ->
-        {
-          %{node | flags: [:skip | node.flags]},
-          acc
-        }
-      _, node, acc ->
-        {
-          %{node | flags: [:include | node.flags]},
-          acc
-        }
+      %{if: true}, node ->
+        %{node | flags: [:skip | node.flags]}
+      _, node ->
+        %{node | flags: [:include | node.flags]}
     end
 
   end

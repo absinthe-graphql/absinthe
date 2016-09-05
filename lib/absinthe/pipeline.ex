@@ -3,6 +3,8 @@ defmodule Absinthe.Pipeline do
   alias Absinthe.Phase
   alias __MODULE__
 
+  require Logger
+
   @type input_t :: any
   @type output_t :: %{errors: [Phase.Error.t]}
 
@@ -24,6 +26,7 @@ defmodule Absinthe.Pipeline do
 
   @spec for_document(Absinthe.Schema.t) :: t
   @spec for_document(Absinthe.Schema.t, Enum.t) :: t
+  @spec for_document(Absinthe.Schema.t, Enum.t, Absinthe.Adapter.t) :: t
   def for_document(schema, provided_values \\ %{}, adapter \\ Absinthe.Adapter.LanguageConventions) do
     provided_values = Map.new(provided_values)
     [
@@ -32,7 +35,7 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Validation.structural_pipeline,
       {Phase.Document.Variables, Map.get(provided_values, :variables, %{})},
       Phase.Document.Arguments.Normalize,
-      {Phase.Document.Schema, [schema, adapter]},
+      {Phase.Schema, [schema, adapter]},
       Phase.Document.Arguments.Data,
       Phase.Document.Arguments.Defaults,
       Phase.Document.Validation.data_pipeline,
@@ -43,12 +46,14 @@ defmodule Absinthe.Pipeline do
     ]
   end
 
-  @spec for_schema :: t
-  def for_schema do
+  @spec for_schema(nil | Absinthe.Schema.t) :: t
+  @spec for_schema(nil | Absinthe.Schema.t, Absinthe.Adapter.t) :: t
+  def for_schema(prototype_schema, adapter \\ Absinthe.Adapter.LanguageConventions) do
     [
       Phase.Parse,
       Phase.Blueprint,
-      # TODO: More
+      {Phase.Schema, [prototype_schema, adapter]},
+      Phase.Schema.Validation.pipeline
     ]
   end
 

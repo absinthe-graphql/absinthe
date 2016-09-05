@@ -33,33 +33,49 @@ defmodule Absinthe.Phase.Document.Flatten do
 
   @spec selection_to_fields(Blueprint.Document.selection_t, [Blueprint.Document.Fragment.Named.t]) :: [Blueprint.Document.Field.t]
   defp selection_to_fields(%Blueprint.Document.Field{} = node, _) do
-    [node]
+    if include?(node) do
+      [node]
+    else
+      []
+    end
   end
   defp selection_to_fields(%Blueprint.Document.Fragment.Inline{} = node, fragments) do
-    case node.fields do
-      [] ->
-        node.selections
-        |> Enum.map(&selection_to_fields(&1, fragments))
-        |> List.flatten
-        |> inherit_type_condition(node)
-      _ ->
-        node.fields
+    if include?(node) do
+      case node.fields do
+        [] ->
+          node.selections
+          |> Enum.map(&selection_to_fields(&1, fragments))
+          |> List.flatten
+          |> inherit_type_condition(node)
+        _ ->
+          node.fields
+      end
+    else
+      []
     end
   end
   defp selection_to_fields(%Blueprint.Document.Fragment.Named{} = node, fragments) do
-    case node.fields do
-      [] ->
-        node.selections
-        |> Enum.map(&selection_to_fields(&1, fragments))
-        |> List.flatten
-        |> inherit_type_condition(node)
-      _ ->
-        node.fields
+    if include?(node) do
+      case node.fields do
+        [] ->
+          node.selections
+          |> Enum.map(&selection_to_fields(&1, fragments))
+          |> List.flatten
+          |> inherit_type_condition(node)
+        _ ->
+          node.fields
+      end
+    else
+      []
     end
   end
   defp selection_to_fields(%Blueprint.Document.Fragment.Spread{} = node, fragments) do
-    named = fragments |> Enum.find(&(&1.name == node.name))
-    selection_to_fields(named, fragments)
+    if include?(node) do
+      named = fragments |> Enum.find(&(&1.name == node.name))
+      selection_to_fields(named, fragments)
+    else
+      []
+    end
   end
 
   @spec inherit_type_condition([Blueprint.Document.Field.t], Blueprint.Document.t) :: [Blueprint.Document.t]
@@ -74,6 +90,14 @@ defmodule Absinthe.Phase.Document.Flatten do
   end
   defp inherit_type_condition(fields, _) do
     fields
+  end
+
+  @nope [:invalid, :skip]
+  defp include?(%{flags: flags}) do
+    !Enum.any?(@nope, &(&1 in flags))
+  end
+  defp include?(_) do
+    true
   end
 
 end

@@ -8,13 +8,15 @@ defmodule Absinthe.Language.InputValueDefinition do
     :name,
     :type,
     default_value: nil,
+    directives: [],
     loc: %{start_line: nil}
   ]
 
   @type t :: %__MODULE__{
     name: String.t,
     type: Language.input_t,
-    default_value: Blueprint.Input.t,
+    default_value: Language.Input.t,
+    directives: [Language.Directive.t],
     loc: Language.loc_t,
   }
 
@@ -24,6 +26,7 @@ defmodule Absinthe.Language.InputValueDefinition do
         name: node.name,
         type: Blueprint.Draft.convert(node.type, doc),
         default_value: Blueprint.Draft.convert(node.default_value, doc),
+        directives: Blueprint.Draft.convert(node.directives, doc),
       }
     end
   end

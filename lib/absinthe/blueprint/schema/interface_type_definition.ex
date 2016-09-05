@@ -6,6 +6,8 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
     description: nil,
     fields: [],
     directives: [],
+    # Added by phases
+    flags: [],
     errors: [],
   ]
 
@@ -14,6 +16,8 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
     description: nil | String.t,
     fields: [Blueprint.Schema.FieldDefinition.t],
     directives: [Blueprint.Directive.t],
+    # Added by phases
+    flags: [atom],
     errors: [Absinthe.Phase.Error.t],
   }
 

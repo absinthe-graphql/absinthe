@@ -108,7 +108,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
     end
 
     describe "list inputs" do
-      @tag :focus
+
       it "works with basic scalars" do
         doc = """
         query GetNumbers($numbers:[Int!]!){numbers(numbers:$numbers)}

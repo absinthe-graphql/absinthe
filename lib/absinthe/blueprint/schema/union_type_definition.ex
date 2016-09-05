@@ -8,6 +8,8 @@ defmodule Absinthe.Blueprint.Schema.UnionTypeDefinition do
     description: nil,
     directives: [],
     types: [],
+    # Added by phases
+    flags: [],
     errors: [],
   ]
 
@@ -16,6 +18,8 @@ defmodule Absinthe.Blueprint.Schema.UnionTypeDefinition do
     description: nil | String.t,
     directives: [Blueprint.Directive.t],
     types: [Blueprint.TypeReference.Name.t],
+    # Added by phases
+    flags: [atom],
     errors: [Absinthe.Phase.Error.t],
   }
 

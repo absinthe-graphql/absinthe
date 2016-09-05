@@ -29,8 +29,12 @@ defmodule Absinthe.PipelineTest do
     }
     """
 
-    it 'can create a blueprint' do
-      assert {:ok, %Blueprint{}} = Pipeline.run(@query, Pipeline.for_schema)
+    it 'can create a blueprint without a prototype schema' do
+      assert {:ok, %Blueprint{}} = Pipeline.run(@query, Pipeline.for_schema(nil))
+    end
+
+    it 'can create a blueprint with a prototype schema' do
+      assert {:ok, %Blueprint{}} = Pipeline.run(@query, Pipeline.for_schema(Schema))
     end
 
   end

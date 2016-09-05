@@ -286,14 +286,4 @@ defmodule Absinthe do
     end
   end
 
-  #
-  # EXECUTION
-  #
-
-  @spec execute(Absinthe.Schema.t, Absinthe.Language.Document.t, [], Keyword.t) :: Absinthe.Execution.result_t
-  defp execute(schema, document, errors, options) do
-    %Absinthe.Execution{schema: schema, document: document, errors: errors}
-    |> Absinthe.Execution.run(options)
-  end
-
 end

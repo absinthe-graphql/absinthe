@@ -47,12 +47,7 @@ defmodule Absinthe.Phase.Document.SchemaTest do
 
   end
 
-  @pre_pipeline Enum.take_while(Pipeline.for_document(Schema, %{}), fn
-    {Phase.Document.Schema, _} ->
-      false
-    _ ->
-      true
-  end)
+  @pre_pipeline Pipeline.for_document(Schema, %{}) |> Pipeline.before(Phase.Schema)
 
   @nameless_query """
   { books { name } }
@@ -255,7 +250,7 @@ defmodule Absinthe.Phase.Document.SchemaTest do
 
   defp input(query) do
     blueprint(query)
-    |> Phase.Document.Schema.run(Schema)
+    |> Phase.Schema.run(Schema)
   end
 
   defp blueprint(query) do

@@ -9,6 +9,8 @@ defmodule Absinthe.Blueprint.Schema.InputObjectTypeDefinition do
     interfaces: [],
     fields: [],
     directives: [],
+    # Added by phases,
+    flags: [],
     errors: [],
   ]
 
@@ -17,6 +19,8 @@ defmodule Absinthe.Blueprint.Schema.InputObjectTypeDefinition do
     description: nil | String.t,
     fields: [Blueprint.Schema.InputValueDefinition.t],
     directives: [Blueprint.Directive.t],
+    # Added by phases
+    flags: [atom],
     errors: [Absinthe.Phase.Error.t],
   }
 

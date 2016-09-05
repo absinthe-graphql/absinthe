@@ -42,14 +42,13 @@ defmodule Absinthe.Phase.Document.DirectivesTest do
       assert %Blueprint{} = result
     end
 
-    @tag :pending
     it "adds a :skip flag" do
       {:ok, result} = input(@query, %{"cats" => false})
       node = named(result, Blueprint.Document.Field, "categories")
       assert Enum.member?(node.flags, :skip)
     end
 
-    @tag :pending
+    @tag :focus
     it "adds an :include flag" do
       {:ok, result} = input(@query, %{"cats" => true})
       node = named(result, Blueprint.Document.Field, "categories")
@@ -70,13 +69,8 @@ defmodule Absinthe.Phase.Document.DirectivesTest do
 
   # Get the document pipeline up to (but not including) this phase
   defp pre_pipeline(values) do
-    Pipeline.for_document(Schema, values)
-    |> Enum.take_while(fn
-      Phase.Document.Directives ->
-        false
-      _ ->
-        true
-    end)
+    Pipeline.for_document(Schema, variables: values)
+    |> Pipeline.before(Phase.Document.Directives)
   end
 
   defp named(scope, mod, name) do
