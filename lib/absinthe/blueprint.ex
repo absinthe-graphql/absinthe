@@ -50,5 +50,9 @@ defmodule Absinthe.Blueprint do
     found
   end
 
+  @spec fragment(t, String.t) :: nil | Blueprint.Document.Fragment.Named.t
+  def fragment(blueprint, name) do
+    Enum.find(blueprint.fragments, &(&1.name == name))
+  end
 
 end

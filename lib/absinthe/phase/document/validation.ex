@@ -7,6 +7,7 @@ defmodule Absinthe.Phase.Document.Validation do
   @structural_rules [
     Phase.Document.Validation.NoFragmentCycles,
     Phase.Document.Validation.LoneAnonymousOperation,
+    Phase.Document.Validation.KnownFragmentNames,
   ]
 
   @data_rules [
