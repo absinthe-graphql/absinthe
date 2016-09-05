@@ -52,7 +52,8 @@ defmodule Absinthe.Pipeline do
     [
       Phase.Parse,
       Phase.Blueprint,
-      {Phase.Schema, [prototype_schema, adapter]}
+      {Phase.Schema, [prototype_schema, adapter]},
+      Phase.Schema.Validation.pipeline
     ]
   end
 
