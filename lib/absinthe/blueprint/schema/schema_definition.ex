@@ -1,12 +1,9 @@
-defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
+defmodule Absinthe.Blueprint.Schema.SchemaDefinition do
 
   alias Absinthe.Blueprint
 
-  @enforce_keys [:name]
   defstruct [
-    :name,
     description: nil,
-    interfaces: [],
     fields: [],
     directives: [],
     # Added by phases
@@ -15,10 +12,8 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
   ]
 
   @type t :: %__MODULE__{
-    name: String.t,
     description: nil | String.t,
     fields: [Blueprint.Schema.FieldDefinition.t],
-    interfaces: [String.t],
     directives: [Blueprint.Directive.t],
     # Added by phases
     flags: [atom],

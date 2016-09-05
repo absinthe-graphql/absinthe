@@ -8,14 +8,20 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
     :type,
     deprecation: nil,
     arguments: [],
+    directives: [],
+    # Added by phases
+    flags: [],
     errors: [],
   ]
 
   @type t :: %__MODULE__{
     name: String.t,
     deprecation: nil | Blueprint.Schema.Deprecation.t,
-    arguments: Blueprint.Schema.ArgumentDefinition.t,
+    arguments: [Blueprint.Schema.InputValueDefinition.t],
     type: Blueprint.TypeReference.t,
+    directives: [Blueprint.Directive.t],
+    # Added by phases
+    flags: [],
     errors: [Absinthe.Phase.Error.t]
   }
 

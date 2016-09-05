@@ -557,7 +557,6 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
       )
     end
 
-    @tag :focus
     it "Single value of incorrect type" do
       assert_fails_rule(@rule,
         """

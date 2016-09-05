@@ -3,6 +3,8 @@ defmodule Absinthe.Pipeline do
   alias Absinthe.Phase
   alias __MODULE__
 
+  require Logger
+
   @type input_t :: any
   @type output_t :: %{errors: [Phase.Error.t]}
 

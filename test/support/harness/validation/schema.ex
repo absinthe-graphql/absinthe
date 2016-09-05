@@ -189,8 +189,8 @@ defmodule Support.Harness.Validation.Schema do
     on [:fragment_spread]
   end
 
-  directive :on_online_fragment do
-    on [:online_fragment]
+  directive :on_inline_fragment do
+    on [:inline_fragment]
   end
 
   directive :on_schema do

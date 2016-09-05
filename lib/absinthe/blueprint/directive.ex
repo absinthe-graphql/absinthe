@@ -44,6 +44,15 @@ defmodule Absinthe.Blueprint.Directive do
   def placement(%Blueprint.Document.Fragment.Named{}), do: :fragment_definition
   def placement(%Blueprint.Document.Fragment.Spread{}), do: :fragment_spread
   def placement(%Blueprint.Document.Fragment.Inline{}), do: :inline_fragment
-  def placement(_), do: nil
-
+  def placement(%Blueprint.Document.Operation{}), do: :operation_definition
+  def placement(%Blueprint.Schema.SchemaDefinition{}), do: :schema
+  def placement(%Blueprint.Schema.ScalarTypeDefinition{}), do: :scalar
+  def placement(%Blueprint.Schema.ObjectTypeDefinition{}), do: :object
+  def placement(%Blueprint.Schema.FieldDefinition{}), do: :field_definition
+  def placement(%Blueprint.Schema.InterfaceTypeDefinition{}), do: :interface
+  def placement(%Blueprint.Schema.UnionTypeDefinition{}), do: :union
+  def placement(%Blueprint.Schema.EnumTypeDefinition{}), do: :enum
+  def placement(%Blueprint.Schema.EnumValueDefinition{}), do: :enum_value
+  def placement(%Blueprint.Schema.InputObjectTypeDefinition{}), do: :input_object
+  def placement(%Blueprint.Schema.InputValueDefinition{placement: placement}), do: placement
 end

@@ -25,7 +25,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectives do
   defp handle_node(%{directives: []} = node) do
     node
   end
-  defp handle_node(%{directives: dirs} = node) do
+  defp handle_node(%{directives: _} = node) do
     node = check_directives(node)
     inherit_invalid(node, node.directives, :bad_directive)
   end
@@ -36,7 +36,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectives do
   defp check_directives(node) do
     placement = Blueprint.Directive.placement(node)
     directives = for directive <- node.directives do
-      if placement && directive.schema_node do
+      if directive.schema_node do
         if placement in directive.schema_node.locations do
           directive
         else

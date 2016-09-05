@@ -91,7 +91,6 @@ defmodule Absinthe.Phase.Document.Arguments.DataTest do
       assert nil == arg.data_value
     end
 
-    @tag :only
     it "sets data_value that is a list" do
       {:ok, result} = run_phase(@query, variables: %{"ids" => ~w(2 3 4)})
       arg = named(result, Blueprint.Input.Argument, "ids")

@@ -116,7 +116,6 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
       )
     end
 
-    @tag :focus
     it "with misplaced directives" do
       assert_fails_rule(@rule,
         """

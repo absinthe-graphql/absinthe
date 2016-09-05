@@ -9,8 +9,6 @@ defmodule Absinthe.Type.Field do
   See the `t` type below for details and examples of how to define a field.
   """
 
-  alias __MODULE__
-
   alias Absinthe.Type
   alias Absinthe.Type.Deprecation
   alias Absinthe.Schema

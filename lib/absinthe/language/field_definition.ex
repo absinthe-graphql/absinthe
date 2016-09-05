@@ -24,6 +24,7 @@ defmodule Absinthe.Language.FieldDefinition do
       %Blueprint.Schema.FieldDefinition{
         name: node.name,
         arguments: Absinthe.Blueprint.Draft.convert(node.arguments, doc),
+        directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
         type: Absinthe.Blueprint.Draft.convert(node.type, doc),
       }
     end

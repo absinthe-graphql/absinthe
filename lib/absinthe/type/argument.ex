@@ -6,7 +6,6 @@ defmodule Absinthe.Type.Argument do
   Usually these are defined using `Absinthe.Schema.Notation.arg/2`
   """
 
-  alias __MODULE__
   alias Absinthe.Type
 
   use Type.Fetch

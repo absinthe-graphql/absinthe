@@ -176,7 +176,6 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
         )
       end
 
-      @tag :focus
       it "Missing one non-nullable argument using a variable" do
         assert_fails_rule(@rule,
           """
@@ -253,7 +252,6 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
       )
       end
 
-      @tag :focus
       it "with directive with missing types" do
         assert_fails_rule(@rule,
           """

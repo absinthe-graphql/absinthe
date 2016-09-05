@@ -55,12 +55,14 @@ defmodule Absinthe.Blueprint.Transform do
     Blueprint.Input.Object => [:fields],
     Blueprint.Schema.DirectiveDefinition => [:directives, :types],
     Blueprint.Schema.EnumTypeDefinition => [:directives, :values],
-    Blueprint.Schema.FieldDefinition => [:type, :arguments],
+    Blueprint.Schema.EnumValueDefinition => [:directives],
+    Blueprint.Schema.FieldDefinition => [:type, :arguments, :directives],
     Blueprint.Schema.InputObjectTypeDefinition => [:interfaces, :fields, :directives],
-    Blueprint.Schema.InputValueDefinition => [:type, :default_value],
+    Blueprint.Schema.InputValueDefinition => [:type, :default_value, :directives],
     Blueprint.Schema.InterfaceTypeDefinition => [:fields, :directives],
     Blueprint.Schema.ObjectTypeDefinition => [:interfaces, :fields, :directives],
     Blueprint.Schema.ScalarTypeDefinition => [:directives],
+    Blueprint.Schema.SchemaDefinition => [:directives, :fields],
     Blueprint.Schema.UnionTypeDefinition => [:directives, :types],
   }
 

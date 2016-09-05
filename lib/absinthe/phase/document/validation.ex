@@ -2,8 +2,8 @@ defmodule Absinthe.Phase.Document.Validation do
 
   @type rule_t :: module
 
-  alias Absinthe.{Blueprint, Phase}
-
+  alias Absinthe.Phase
+  
   @structural_rules [
     Phase.Document.Validation.NoFragmentCycles,
   ]
