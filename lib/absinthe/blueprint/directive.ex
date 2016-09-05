@@ -23,16 +23,16 @@ defmodule Absinthe.Blueprint.Directive do
     errors: [Phase.Error.t],
   }
 
-  @spec expand(t, Blueprint.node_t, map) :: {t, map}
-  def expand(%__MODULE__{schema_node: %{expand: nil}}, node, acc) do
-    {node, acc}
+  @spec expand(t, Blueprint.node_t) :: {t, map}
+  def expand(%__MODULE__{schema_node: %{expand: nil}}, node) do
+    node
   end
-  def expand(%__MODULE__{schema_node: %{expand: fun}} = directive, node, acc) do
+  def expand(%__MODULE__{schema_node: %{expand: fun}} = directive, node) do
     args = Blueprint.Input.Argument.value_map(directive.arguments)
-    fun.(args, node, acc)
+    fun.(args, node)
   end
-  def expand(%__MODULE__{schema_node: nil}, node, acc) do
-    {node, acc}
+  def expand(%__MODULE__{schema_node: nil}, node) do
+    node
   end
 
   @doc """
