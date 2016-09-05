@@ -35,7 +35,8 @@ defmodule Absinthe.Phase.Schema do
     %{node | schema_node: schema_node, selections: selections_with_schema}
   end
   defp handle_node(%Blueprint.Directive{name: name} = node, schema, adapter) do
-    schema_node = schema.__absinthe_directive__(name)
+    internal_name = adapter.to_internal_name(name, :directive)
+    schema_node = schema.__absinthe_directive__(internal_name)
     arguments = Enum.map(node.arguments, &argument_with_schema_node(&1, schema_node, schema, adapter))
     %{node | schema_node: schema_node, arguments: arguments}
   end

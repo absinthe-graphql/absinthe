@@ -35,4 +35,15 @@ defmodule Absinthe.Blueprint.Directive do
     {node, acc}
   end
 
+  @doc """
+  Determine the placement name for a given Blueprint node
+  """
+  @spec placement(Blueprint.node_t) :: nil | atom
+  def placement(%Blueprint.Document.Operation{type: type}), do: type
+  def placement(%Blueprint.Document.Field{}), do: :field
+  def placement(%Blueprint.Document.Fragment.Named{}), do: :fragment_definition
+  def placement(%Blueprint.Document.Fragment.Spread{}), do: :fragment_spread
+  def placement(%Blueprint.Document.Fragment.Inline{}), do: :inline_fragment
+  def placement(_), do: nil
+
 end

@@ -58,7 +58,6 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
       )
     end
 
-    @tag :now
     it "with unknown directive" do
       assert_fails_rule(@rule,
         """
@@ -117,6 +116,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
       )
     end
 
+    @tag :focus
     it "with misplaced directives" do
       assert_fails_rule(@rule,
         """

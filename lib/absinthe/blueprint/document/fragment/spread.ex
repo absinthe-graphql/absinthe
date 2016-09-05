@@ -8,6 +8,7 @@ defmodule Absinthe.Blueprint.Document.Fragment.Spread do
     directives: [],
     source_location: nil,
     # Populated by phases
+    flags: [],
     errors: [],
   ]
 
@@ -15,6 +16,7 @@ defmodule Absinthe.Blueprint.Document.Fragment.Spread do
     directives: [Blueprint.Document.Directive.t],
     errors: [Absinthe.Phase.Error.t],
     name: String.t,
+    flags: [atom],
     source_location: nil | Blueprint.Document.SourceLocation.t,
   }
 

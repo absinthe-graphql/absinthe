@@ -18,16 +18,37 @@ defmodule Absinthe.Phase.Validation.KnownDirectives do
     node
     |> put_error(error_unknown(node))
     |> flag_invalid(:no_schema_node)
-    |> IO.inspect
   end
   defp handle_node(%Blueprint.Directive{} = node) do
     node
   end
-  defp handle_node(%{directives: directives} = node) do
-    inherit_invalid(node, directives, :bad_directive)
+  defp handle_node(%{directives: []} = node) do
+    node
+  end
+  defp handle_node(%{directives: dirs} = node) do
+    node = check_directives(node)
+    inherit_invalid(node, node.directives, :bad_directive)
   end
   defp handle_node(node) do
     node
+  end
+
+  defp check_directives(node) do
+    placement = Blueprint.Directive.placement(node)
+    directives = for directive <- node.directives do
+      if placement && directive.schema_node do
+        if placement in directive.schema_node.locations do
+          directive
+        else
+          directive
+          |> put_error(error_misplaced(directive, placement))
+          |> flag_invalid(:bad_placement)
+        end
+      else
+        directive
+      end
+    end
+    %{node | directives: directives}
   end
 
   # Generate the error for the node
@@ -40,11 +61,12 @@ defmodule Absinthe.Phase.Validation.KnownDirectives do
     )
   end
 
-  @spec error_misplaced(Blueprint.node_t, String.t) :: Phase.Error.t
+  @spec error_misplaced(Blueprint.node_t, atom) :: Phase.Error.t
   defp error_misplaced(node, placement) do
+    placement_name = placement |> to_string |> String.upcase
     Phase.Error.new(
       __MODULE__,
-      "May not be placed on #{placement}.",
+      "May not be used on #{placement_name}.",
       node.source_location
     )
   end
