@@ -1,15 +1,15 @@
 defmodule Absinthe.Phase.Document.Arguments.Coercion do
   @moduledoc """
-  Populate all arguments in the document with their provided values:
+  Coerce variable string inputs to enums when appropriate.
 
-  - If a literal value is provided for an argument, set the `Argument.t`'s
-    `normalized_value` field to that value.
-  - If a variable is provided for an argument, set the `Argument.t`'s
-    `normalized_value` to the reconciled value for the variable
-    (Note: this requires the `Phase.Document.Variables` phase as a
-    prerequisite).
+  A literal enum like `foo(arg: ENUM)` is parsed as an `Input.Enum` struct.
 
-  Note that no validation occurs in this phase.
+  However when a variable is used `foo(arg: $enumVar)` the variable input ends up
+  being an `Input.String` because the variable handler does not yet know the
+  schema type. This phase coerces string to enum inputs when the schema type
+  is an Enum.
+
+  This may be merged into another phase in the future.
   """
 
   use Absinthe.Phase
