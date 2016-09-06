@@ -48,7 +48,6 @@ defmodule Absinthe.Phase.Document.DirectivesTest do
       assert Enum.member?(node.flags, :skip)
     end
 
-    @tag :focus
     it "adds an :include flag" do
       {:ok, result} = input(@query, %{"cats" => true})
       node = named(result, Blueprint.Document.Field, "categories")

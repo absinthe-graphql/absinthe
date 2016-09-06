@@ -36,6 +36,7 @@ defmodule Absinthe.Pipeline do
       {Phase.Document.Variables, Map.get(provided_values, :variables, %{})},
       Phase.Document.Arguments.Normalize,
       {Phase.Schema, [schema, adapter]},
+      Phase.Validation.KnownTypeNames,
       Phase.Document.Arguments.Data,
       Phase.Document.Arguments.Defaults,
       Phase.Document.Validation.data_pipeline,
@@ -53,6 +54,7 @@ defmodule Absinthe.Pipeline do
       Phase.Parse,
       Phase.Blueprint,
       {Phase.Schema, [prototype_schema, adapter]},
+      Phase.Validation.KnownTypeNames,
       Phase.Schema.Validation.pipeline
     ]
   end

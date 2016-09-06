@@ -144,7 +144,7 @@ defmodule Absinthe.SchemaTest do
       field :name, :string
     end
 
-    subscription name: "SubscriptionRootTypeThing" do
+    subscription name: "RootSubscriptionTypeThing" do
       field :name, :string
     end
 
@@ -162,7 +162,7 @@ defmodule Absinthe.SchemaTest do
     end
 
     it "supports subscriptions" do
-      assert "SubscriptionRootTypeThing" == Schema.lookup_type(RootsSchema, :subscription).name
+      assert "RootSubscriptionTypeThing" == Schema.lookup_type(RootsSchema, :subscription).name
     end
 
 

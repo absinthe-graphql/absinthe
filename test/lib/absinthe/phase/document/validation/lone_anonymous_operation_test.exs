@@ -102,7 +102,6 @@ defmodule Absinthe.Phase.Document.Validation.LoneAnonymousOperationTest do
       )
     end
 
-    @tag :focus
     it "anon operation with a subscription" do
       assert_fails_rule(@rule,
         """

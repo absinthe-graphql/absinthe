@@ -6,7 +6,7 @@ defmodule Absinthe.Phase.Document.FlattenTest do
   defmodule Schema do
     use Absinthe.Schema
 
-    query do
+    query name: "QueryRoot" do
       field :foo, :foo do
         arg :id, non_null(:id)
       end
