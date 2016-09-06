@@ -128,10 +128,10 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
   end
   defp build_value(%{schema_node: %Type.Enum{} = schema_node} = node, _adapter) do
     case Type.Enum.parse(schema_node, node) do
+      {:ok, %{value: value}} ->
+        {:ok, value}
       :error ->
         {:error, flag_invalid(node, :bad_parse)}
-      other ->
-        other
     end
   end
   defp build_value(%Blueprint.Input.List{} = node, adapter) do

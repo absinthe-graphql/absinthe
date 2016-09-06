@@ -170,6 +170,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
     end
 
     describe "enum types" do
+      @tag :focus
       it "should work with valid values" do
         doc = """
         query GetContact($type:ContactType){ contact(type: $type) }
