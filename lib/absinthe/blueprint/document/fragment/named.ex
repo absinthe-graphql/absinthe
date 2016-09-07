@@ -1,6 +1,7 @@
 defmodule Absinthe.Blueprint.Document.Fragment.Named do
 
   alias Absinthe.Blueprint
+  alias __MODULE__
 
   @enforce_keys [:name, :type_condition]
   defstruct [
@@ -27,5 +28,16 @@ defmodule Absinthe.Blueprint.Document.Fragment.Named do
     flags: [atom],
     type_condition: Blueprint.TypeReference.Name.t,
   }
+
+  @doc """
+  Generate a use reference for a fragment.
+  """
+  @spec to_use(t) :: Named.Use.t
+  def to_use(%__MODULE__{} = node) do
+    %Named.Use{
+      name: node.name,
+      source_location: node.source_location
+    }
+  end
 
 end

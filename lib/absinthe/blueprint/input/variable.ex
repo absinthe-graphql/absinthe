@@ -21,13 +21,13 @@ defmodule Absinthe.Blueprint.Input.Variable do
   }
 
   @doc """
-  Generate a reference to a variable
+  Generate a use reference for a variable.
   """
-  @spec to_reference(t) :: Variable.Reference.t
-  def to_reference(%__MODULE__{} = var) do
-    %Variable.Reference{
-      name: var.name,
-      source_location: var.source_location
+  @spec to_use(t) :: Variable.Use.t
+  def to_use(%__MODULE__{} = node) do
+    %Variable.Use{
+      name: node.name,
+      source_location: node.source_location
     }
   end
 

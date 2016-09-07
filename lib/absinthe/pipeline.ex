@@ -37,7 +37,7 @@ defmodule Absinthe.Pipeline do
       Phase.Parse,
       Phase.Blueprint,
       {Phase.Document.CurrentOperation, [operation_name]},
-      Phase.Document.VariablesUsed,
+      Phase.Document.Uses,
       Phase.Document.Validation.structural_pipeline,
       {Phase.Document.Variables, [variables]},
       Phase.Document.Arguments.Normalize,

@@ -34,6 +34,10 @@ defmodule Absinthe.Blueprint do
     | Blueprint.Input.t
     | Blueprint.TypeReference.t
 
+  @type use_t ::
+      Blueprint.Document.Fragment.Named.Use.t
+    | Blueprint.Input.Variable.Use.t 
+
   defdelegate prewalk(blueprint, fun), to: Absinthe.Blueprint.Transform
   defdelegate prewalk(blueprint, acc, fun), to: Absinthe.Blueprint.Transform
   defdelegate postwalk(blueprint, fun), to: Absinthe.Blueprint.Transform

@@ -1,4 +1,4 @@
-defmodule Absinthe.Blueprint.Input.Variable.Reference do
+defmodule Absinthe.Blueprint.Document.Fragment.Named.Use do
 
   @enforce_keys [:name, :source_location]
   defstruct [

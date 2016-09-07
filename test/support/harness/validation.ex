@@ -124,8 +124,12 @@ defmodule Support.Harness.Validation do
       Phase.Parse,
       Phase.Blueprint,
       {Phase.Document.CurrentOperation, [operation_name]},
-      Phase.Document.Validation.NoFragmentCycles,
-      Phase.Document.VariablesUsed,
+      # Note: NoFragmentCyles is disabled because some validation examples
+      # from graphql-js include cycles, but they can be safely ignored.
+      #
+      # Phase.Document.Validation.NoFragmentCycles,
+      #
+      Phase.Document.Uses,
       {Phase.Document.Variables, Map.get(options, :variables, %{})},
       Phase.Document.Arguments.Normalize,
       {Phase.Schema, [schema, Absinthe.Adapter.LanguageConventions]},
