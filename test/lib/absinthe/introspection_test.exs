@@ -40,7 +40,7 @@ defmodule Absinthe.IntrospectionTest do
         ContactSchema
       )
       names = types |> Enum.map(&(&1["name"])) |> Enum.sort
-      expected = ~w(Int ID String Boolean Float Contact Person Business ProfileInput SearchResult NamedEntity RootMutationType RootQueryType __Schema __Directive __DirectiveLocation __EnumValue __Field __InputValue __Type) |> Enum.sort
+      expected = ~w(Int ID String Boolean Float Contact Person Business ProfileInput SearchResult NamedEntity RootMutationType RootQueryType RootSubscriptionType __Schema __Directive __DirectiveLocation __EnumValue __Field __InputValue __Type) |> Enum.sort
       assert expected == names
     end
 
@@ -52,6 +52,11 @@ defmodule Absinthe.IntrospectionTest do
     it "can use __schema to get the mutation type" do
       result = "{ __schema { mutationType { name kind } } }" |> Absinthe.run(ContactSchema)
       assert_result {:ok, %{data: %{"__schema" => %{"mutationType" => %{"name" => "RootMutationType", "kind" => "OBJECT"}}}}}, result
+    end
+
+    it "can use __schema to get the subscription type" do
+      result = "{ __schema { subscriptionType { name kind } } }" |> Absinthe.run(ContactSchema)
+      assert_result {:ok, %{data: %{"__schema" => %{"subscriptionType" => %{"name" => "RootSubscriptionType", "kind" => "OBJECT"}}}}}, result
     end
 
     it "can use __schema to get the directives" do
