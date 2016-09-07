@@ -14,22 +14,35 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariables do
   """
   @spec run(Blueprint.t) :: Phase.result_t
   def run(input) do
-    result = Blueprint.prewalk(input, &handle_node(&1, input.variables))
+    result = Blueprint.prewalk(input, &handle_node(&1, input.operations))
     {:ok, result}
   end
 
-  defp handle_node(node, _) do
+  def handle_node(%Blueprint.Input.Variable{} = node, operations) do
+    errors = for op <- operations do
+      for var <- op.variable_uses, var.name == node.name do
+        if Enum.find(op.variable_definitions, &(&1.name == var.name)) do
+          []
+        else
+          [error(node, op)]
+        end
+      end
+    end
+    |> List.flatten
+    %{node | errors: errors ++ node.errors}
+    |> flag_invalid(:no_definition)
+  end
+  def handle_node(node, _) do
     node
   end
 
   # Generate the error for the node
-  @spec error(Blueprint.node_t, String.t, String.t) :: Phase.Error.t
-  @spec error(Blueprint.node_t, String.t, nil) :: Phase.Error.t
-  defp error(node, name, operation_name \\ nil) do
+  @spec error(Blueprint.Input.Variable.t, Blueprint.Operation.t) :: Phase.Error.t
+  defp error(node, operation) do
     Phase.Error.new(
       __MODULE__,
-      error_message(name, operation_name),
-      node.source_location
+      error_message(node.name, operation.name),
+      [node.source_location, operation.source_location]
     )
   end
 

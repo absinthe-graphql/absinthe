@@ -7,9 +7,11 @@ defmodule Absinthe.Blueprint do
     types: [],
     directives: [],
     fragments: [],
-    errors: [],
     schema: nil,
-    adapter: nil
+    adapter: nil,
+    # Added by phases
+    flags: [],
+    errors: [],
   ]
 
   @type t :: %__MODULE__{
@@ -17,9 +19,11 @@ defmodule Absinthe.Blueprint do
     types: [Blueprint.Schema.t],
     directives: [Blueprint.Schema.DirectiveDefinition.t],
     fragments: [Blueprint.Document.Fragment.Named.t],
-    errors: [Blueprint.Phase.Error.t],
     schema: nil | Absinthe.Schema.t,
     adapter: nil | Absinthe.Adapter.t,
+    # Added by phases
+    errors: [Blueprint.Phase.Error.t],
+    flags: [atom]
   }
 
   @type node_t ::

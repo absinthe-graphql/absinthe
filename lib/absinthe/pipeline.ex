@@ -25,15 +25,21 @@ defmodule Absinthe.Pipeline do
   end
 
   @spec for_document(Absinthe.Schema.t) :: t
-  @spec for_document(Absinthe.Schema.t, Enum.t) :: t
-  @spec for_document(Absinthe.Schema.t, Enum.t, Absinthe.Adapter.t) :: t
-  def for_document(schema, provided_values \\ %{}, adapter \\ Absinthe.Adapter.LanguageConventions) do
-    provided_values = Map.new(provided_values)
+  @spec for_document(Absinthe.Schema.t, Keyword.t) :: t
+  def for_document(schema, options \\ []) do
+    options = Map.new(options)
+    adapter = Map.get(options, :adapter, Absinthe.Adapter.LanguageConventions)
+    variables = Map.new(Map.get(options, :variables, []))
+    operation_name = Map.get(options, :operation_name)
+    context = options[:context]
+    root_value = options[:root_value]
     [
       Phase.Parse,
       Phase.Blueprint,
+      {Phase.Document.CurrentOperation, [operation_name]},
+      Phase.Document.VariablesUsed,
       Phase.Document.Validation.structural_pipeline,
-      {Phase.Document.Variables, Map.get(provided_values, :variables, %{})},
+      {Phase.Document.Variables, [variables]},
       Phase.Document.Arguments.Normalize,
       {Phase.Schema, [schema, adapter]},
       Phase.Validation.KnownTypeNames,
@@ -42,7 +48,7 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Validation.data_pipeline,
       Phase.Document.Directives,
       Phase.Document.Flatten,
-      {Phase.Document.Execution.Resolution, [nil, provided_values[:context], provided_values[:root_value]]},
+      {Phase.Document.Execution.Resolution, [nil, context, root_value]},
       Phase.Document.Execution.Data
     ]
   end

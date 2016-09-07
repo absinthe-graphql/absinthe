@@ -10,7 +10,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
     bad_value(
       Blueprint.Input.Variable,
       @rule.error_message(name, operation_name),
-      variable_line,
+      [variable_line, operation_line],
       name: name
     )
   end
@@ -148,7 +148,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
         """,
         %{},
         [
-          undefined_variable("d", 3, "Foo", 2)
+          undefined_variable("d", 2, "Foo", 1)
         ]
       )
     end
@@ -162,7 +162,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
         """,
         %{},
         [
-          undefined_variable("a", 3, nil, 2)
+          undefined_variable("a", 2, nil, 1)
         ]
       )
     end
@@ -176,8 +176,8 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
         """,
         %{},
         [
-          undefined_variable("a", 3, "Foo", 2),
-          undefined_variable("c", 3, "Foo", 2)
+          undefined_variable("a", 2, "Foo", 1),
+          undefined_variable("c", 2, "Foo", 1)
         ]
       )
     end
@@ -194,7 +194,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
         """,
         %{},
         [
-          undefined_variable("a", 6, nil, 2)
+          undefined_variable("a", 5, nil, 1)
         ]
       )
     end
@@ -221,7 +221,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
         """,
         %{},
         [
-          undefined_variable("c", 16, "Foo", 2)
+          undefined_variable("c", 15, "Foo", 1)
         ]
       )
     end
@@ -248,8 +248,8 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
         """,
         %{},
         [
-          undefined_variable("a", 6, "Foo", 2),
-          undefined_variable("c", 16, "Foo", 2)
+          undefined_variable("a", 5, "Foo", 1),
+          undefined_variable("c", 15, "Foo", 1)
         ]
       )
     end
@@ -269,8 +269,8 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
         """,
         %{},
         [
-          undefined_variable("b", 9, "Foo", 2),
-          undefined_variable("b", 9, "Bar", 5)
+          undefined_variable("b", 8, "Foo", 1),
+          undefined_variable("b", 8, "Bar", 4)
         ]
       )
     end
@@ -290,8 +290,8 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
         """,
         %{},
         [
-          undefined_variable("a", 9, "Foo", 2),
-          undefined_variable("b", 9, "Bar", 5)
+          undefined_variable("a", 8, "Foo", 1),
+          undefined_variable("b", 8, "Bar", 4)
         ]
       )
     end
@@ -314,8 +314,8 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
         """,
         %{},
         [
-          undefined_variable("a", 9, "Foo", 2),
-          undefined_variable("b", 12, "Bar", 5)
+          undefined_variable("a", 8, "Foo", 1),
+          undefined_variable("b", 11, "Bar", 4)
         ]
       )
     end
@@ -340,12 +340,12 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
         """,
         %{},
         [
-          undefined_variable("a", 9, "Foo", 2),
-          undefined_variable("a", 11, "Foo", 2),
-          undefined_variable("c", 14, "Foo", 2),
-          undefined_variable("b", 9, "Bar", 5),
-          undefined_variable("b", 11, "Bar", 5),
-          undefined_variable("c", 14, "Bar", 5),
+          undefined_variable("a", 8, "Foo", 1),
+          undefined_variable("a", 10, "Foo", 1),
+          undefined_variable("c", 13, "Foo", 1),
+          undefined_variable("b", 8, "Bar", 4),
+          undefined_variable("b", 10, "Bar", 4),
+          undefined_variable("c", 13, "Bar", 4),
         ]
       )
     end

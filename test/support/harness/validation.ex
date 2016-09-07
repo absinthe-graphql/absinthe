@@ -9,21 +9,46 @@ defmodule Support.Harness.Validation do
     quote do
       import unquote(__MODULE__)
       def bad_value(node_kind, message, line, check \\ []) do
-        expectation_banner = "\nExpected #{node_kind} node with error (from line ##{line}):\n---\n#{message}\n---"
+        location = case List.wrap(line) do
+          [single] ->
+            "(from line ##{single})"
+          multiple when is_list(multiple) ->
+            numbers = multiple |> Enum.join(", #")
+            "(from lines ##{numbers})"
+          nil ->
+            "(at any line number)"
+        end
+        expectation_banner = "\nExpected #{node_kind} node with error #{location}:\n---\n#{message}\n---"
         check_fun = node_check_function(check)
         fn
           pairs ->
             assert !Enum.empty?(pairs), "No errors were found.\n#{expectation_banner}"
             matched = Enum.any?(pairs, fn
-              {%str{} = node, %Phase.Error{phase: @rule, message: ^message, locations: [%{line: ^line}]}} when str == node_kind ->
-                Enum.member?(node.flags, :invalid) && check_fun.(node)
+              {%str{} = node, %Phase.Error{phase: @rule, message: ^message} = err} when str == node_kind ->
+                if Enum.member?(node.flags, :invalid) && check_fun.(node) do
+                  if !line do
+                    true
+                  else
+                    List.wrap(line)
+                    |> Enum.all?(fn
+                      l ->
+                        Enum.any?(err.locations, fn
+                          %{line: ^l} ->
+                            true
+                          _ ->
+                            false
+                        end)
+                    end)
+                  end
+                else
+                  false
+                end
               _ ->
                 false
             end)
             assert matched, "Could not find error.\n#{expectation_banner}"
         end
       end
-
       defp node_check_function(check) when is_list(check) do
         fn
           node ->
@@ -38,8 +63,8 @@ defmodule Support.Harness.Validation do
   end
 
   @spec assert_valid(Schema.t, [Phase.t], Language.Source.t, map) :: no_return
-  def assert_valid(schema, rules, document, provided_values) do
-    {:ok, result} = run(schema, rules, document, provided_values)
+  def assert_valid(schema, rules, document, options) do
+    {:ok, result} = run(schema, rules, document, options)
     formatted_errors = Enum.map(error_pairs(result), fn
       {_, error} ->
         error.message
@@ -48,35 +73,35 @@ defmodule Support.Harness.Validation do
   end
 
   @spec assert_invalid(Schema.t, [Phase.t], Language.Source.t, map, [error_checker_t] | error_checker_t) :: no_return
-  def assert_invalid(schema, rules, document, provided_values, error_checkers) do
-    {:ok, result} = run(schema, rules, document, provided_values)
+  def assert_invalid(schema, rules, document, options, error_checkers) do
+    {:ok, result} = run(schema, rules, document, options)
     pairs = error_pairs(result)
     List.wrap(error_checkers)
     |> Enum.each(&(&1.(pairs)))
   end
 
   @spec assert_passes_rule(Phase.t, Language.Source.t, map) :: no_return
-  def assert_passes_rule(rule, document, provided_values) do
-    assert_valid(Support.Harness.Validation.Schema, [rule], document, provided_values)
+  def assert_passes_rule(rule, document, options) do
+    assert_valid(Support.Harness.Validation.Schema, [rule], document, options)
   end
 
   @spec assert_fails_rule(Phase.t, Language.Source.t, map, [error_checker_t] | error_checker_t) :: no_return
-  def assert_fails_rule(rule, document, provided_values, error_checker) do
-    assert_invalid(Support.Harness.Validation.Schema, [rule], document, provided_values, error_checker)
+  def assert_fails_rule(rule, document, options, error_checker) do
+    assert_invalid(Support.Harness.Validation.Schema, [rule], document, options, error_checker)
   end
 
   @spec assert_passes_rule_with_schema(Schema.t, Phase.t, Language.Source.t, map) :: no_return
-  def assert_passes_rule_with_schema(schema, rule, document, provided_values) do
-    assert_valid(schema, [rule], document, provided_values)
+  def assert_passes_rule_with_schema(schema, rule, document, options) do
+    assert_valid(schema, [rule], document, options)
   end
 
   @spec assert_fails_rule_with_schema(Schema.t, Phase.t, Language.Source.t, map, error_checker_t) :: no_return
-  def assert_fails_rule_with_schema(schema, rule, document, provided_values, error_checker) do
-    assert_invalid(schema, [rule], document, provided_values, error_checker)
+  def assert_fails_rule_with_schema(schema, rule, document, options, error_checker) do
+    assert_invalid(schema, [rule], document, options, error_checker)
   end
 
-  defp run(schema, rules, document, provided_values) do
-    pipeline = pre_validation_pipeline(schema, provided_values)
+  defp run(schema, rules, document, options) do
+    pipeline = pre_validation_pipeline(schema, options)
     result = Pipeline.run(document, pipeline ++ rules)
     if System.get_env("DEBUG_PIPELINE_RESULT") do
       IO.inspect(result)
@@ -92,11 +117,16 @@ defmodule Support.Harness.Validation do
       {Phase.Schema, [schema, Absinthe.Adapter.LanguageConventions]}
     ]
   end
-  defp pre_validation_pipeline(schema, %{} = provided_values) do
+  defp pre_validation_pipeline(schema, options) do
+    options = Map.new(options)
+    operation_name = Map.get(options, :operation_name, nil)
     [
       Phase.Parse,
       Phase.Blueprint,
-      {Phase.Document.Variables, provided_values},
+      {Phase.Document.CurrentOperation, [operation_name]},
+      Phase.Document.Validation.NoFragmentCycles,
+      Phase.Document.VariablesUsed,
+      {Phase.Document.Variables, Map.get(options, :variables, %{})},
       Phase.Document.Arguments.Normalize,
       {Phase.Schema, [schema, Absinthe.Adapter.LanguageConventions]},
       Phase.Document.Arguments.Data,
