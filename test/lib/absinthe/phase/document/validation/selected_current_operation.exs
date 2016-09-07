@@ -30,7 +30,6 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
       )
     end
 
-    @tag :focus
     it "fails when the operation is not provided" do
       assert_fails_rule(@rule,
         """

@@ -93,7 +93,7 @@ defmodule Absinthe.Phase.Document.Flatten do
   end
 
   @nope [:invalid, :skip]
-  defp include?(%{flags: flags} = node) do
+  defp include?(%{flags: flags}) do
     !Enum.any?(@nope, &(&1 in flags))
   end
   defp include?(_) do

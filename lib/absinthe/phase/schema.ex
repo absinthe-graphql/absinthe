@@ -30,7 +30,7 @@ defmodule Absinthe.Phase.Schema do
     %{node | schema_node: schema_node, selections: selections_with_schema}
   end
   # Inline fragment without type condition
-  defp handle_node(%Blueprint.Document.Fragment.Inline{type_condition: nil} = node, schema, adapter) do
+  defp handle_node(%Blueprint.Document.Fragment.Inline{type_condition: nil} = node, _, _) do
     node
   end
   defp handle_node(%Blueprint.Document.Fragment.Inline{} = node, schema, adapter) do
