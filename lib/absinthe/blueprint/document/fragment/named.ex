@@ -1,6 +1,7 @@
 defmodule Absinthe.Blueprint.Document.Fragment.Named do
 
   alias Absinthe.Blueprint
+  alias __MODULE__
 
   @enforce_keys [:name, :type_condition]
   defstruct [
@@ -12,6 +13,7 @@ defmodule Absinthe.Blueprint.Document.Fragment.Named do
     # Populated by phases
     schema_node: nil,
     fields: [],
+    flags: [],
     errors: [],
   ]
 
@@ -23,7 +25,19 @@ defmodule Absinthe.Blueprint.Document.Fragment.Named do
     selections: [Blueprint.Document.selection_t],
     schema_node: nil | Absinthe.Type.t,
     source_location: nil | Blueprint.Document.SourceLocation.t,
+    flags: [atom],
     type_condition: Blueprint.TypeReference.Name.t,
   }
+
+  @doc """
+  Generate a use reference for a fragment.
+  """
+  @spec to_use(t) :: Named.Use.t
+  def to_use(%__MODULE__{} = node) do
+    %Named.Use{
+      name: node.name,
+      source_location: node.source_location
+    }
+  end
 
 end

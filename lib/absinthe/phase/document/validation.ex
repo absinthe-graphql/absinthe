@@ -3,9 +3,16 @@ defmodule Absinthe.Phase.Document.Validation do
   @type rule_t :: module
 
   alias Absinthe.Phase
-  
+
   @structural_rules [
     Phase.Document.Validation.NoFragmentCycles,
+    Phase.Document.Validation.LoneAnonymousOperation,
+    Phase.Document.Validation.KnownFragmentNames,
+    Phase.Document.Validation.NoUndefinedVariables,
+    Phase.Document.Validation.NoUnusedVariables,
+    Phase.Document.Validation.UniqueFragmentNames,
+    Phase.Document.Validation.UniqueOperationNames,
+    Phase.Document.Validation.UniqueVariableNames,
   ]
 
   @data_rules [

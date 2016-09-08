@@ -11,7 +11,7 @@ Nonterminals
   OperationType Name NameWithoutOn VariableDefinitions VariableDefinition Directives Directive
   Field Alias Arguments ArgumentList Argument
   FragmentSpread FragmentName InlineFragment
-  VariableDefinitionList Variable DefaultValue NameWithoutOn
+  VariableDefinitionList Variable DefaultValue
   Type TypeCondition NamedTypeList NamedType ListType NonNullType
   Value EnumValue ListValue Values ObjectValue ObjectFields ObjectField SchemaDefinition.
 
@@ -38,6 +38,8 @@ OperationType -> 'subscription' : extract_atom('$1').
 
 OperationDefinition -> SelectionSet : build_ast_node('OperationDefinition', #{'operation' => 'query', 'selection_set' => '$1'}, #{'start_line' => extract_child_line('$1')}).
 OperationDefinition -> OperationType SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'selection_set' => '$2'}, #{'start_line' => extract_line('$2')}).
+OperationDefinition -> OperationType VariableDefinitions SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'variable_definitions' => '$2', 'selection_set' => '$3'}, #{'start_line' => extract_line('$2')}).
+OperationDefinition -> OperationType VariableDefinitions Directives SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'variable_definitions' => '$2', 'directives' => '$3', 'selection_set' => '$4'}, #{'start_line' => extract_line('$2')}).
 OperationDefinition -> OperationType Name SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => extract_binary('$2'), 'selection_set' => '$3'}, #{'start_line' => extract_line('$2')}).
 OperationDefinition -> OperationType Name VariableDefinitions SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => extract_binary('$2'), 'variable_definitions' => '$3', 'selection_set' => '$4'}, #{'start_line' => extract_line('$2')}).
 OperationDefinition -> OperationType Name Directives SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => extract_binary('$2'), 'directives' => '$3', 'selection_set' => '$4'}, #{'start_line' => extract_line('$2')}).
@@ -81,6 +83,7 @@ FragmentSpread -> '...' FragmentName Directives : build_ast_node('FragmentSpread
 InlineFragment -> '...' 'on' TypeCondition SelectionSet : build_ast_node('InlineFragment', #{'type_condition' => '$3', 'selection_set' => '$4'}, #{'start_line' => extract_line('$1')}).
 InlineFragment -> '...' 'on' TypeCondition Directives SelectionSet : build_ast_node('InlineFragment', #{'type_condition' => '$3', 'directives' => '$4', 'selection_set' => '$5'}, #{'start_line' => extract_line('$1')}).
 InlineFragment -> '...' Directives SelectionSet : build_ast_node('InlineFragment', #{'directives' => '$2', 'selection_set' => '$3'}, #{'start_line' => extract_line('$1')}).
+InlineFragment -> '...' SelectionSet : build_ast_node('InlineFragment', #{'selection_set' => '$2'}, #{'start_line' => extract_line('$1')}).
 
 FragmentName -> NameWithoutOn : extract_binary('$1').
 

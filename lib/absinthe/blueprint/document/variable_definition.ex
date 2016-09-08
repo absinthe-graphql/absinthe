@@ -9,6 +9,7 @@ defmodule Absinthe.Blueprint.Document.VariableDefinition do
     default_value: nil,
     source_location: nil,
     # Added by phases
+    flags: [],
     provided_value: nil,
     errors: [],
     schema_type: nil,
@@ -21,6 +22,7 @@ defmodule Absinthe.Blueprint.Document.VariableDefinition do
     source_location: nil | Blueprint.Document.SourceLocation.t,
     provided_value: nil | Blueprint.Input.t,
     errors: [Absinthe.Phase.Error.t],
+    flags: [atom],
     schema_type: Type.t,
   }
 

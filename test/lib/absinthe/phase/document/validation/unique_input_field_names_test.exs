@@ -6,13 +6,12 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNamesTest do
   use Support.Harness.Validation
   alias Absinthe.{Blueprint}
 
-  @message "Duplicate input field name."
 
   defp duplicate(name, line, values) do
     List.wrap(values)
     |> Enum.map(fn
       value ->
-        bad_value(Blueprint.Input.Field, @message, line, literal_value_check(name, value))
+        bad_value(Blueprint.Input.Field, @rule.error_message, line, literal_value_check(name, value))
     end)
   end
 
