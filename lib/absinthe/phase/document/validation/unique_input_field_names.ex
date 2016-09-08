@@ -52,9 +52,17 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNames do
   defp error(node) do
     Phase.Error.new(
       __MODULE__,
-      "Duplicate input field name.",
+      error_message,
       node.source_location
     )
+  end
+
+  @doc """
+  Generate the error message.
+  """
+  @spec error_message :: String.t
+  def error_message do
+    "Duplicate input field name."
   end
 
 end
