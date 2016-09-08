@@ -12,6 +12,7 @@ defmodule Absinthe.Phase.Document.Validation do
     Phase.Document.Validation.NoUnusedVariables,
     Phase.Document.Validation.UniqueFragmentNames,
     Phase.Document.Validation.UniqueOperationNames,
+    Phase.Document.Validation.UniqueVariableNames,
   ]
 
   @data_rules [
