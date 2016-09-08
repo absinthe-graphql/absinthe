@@ -43,6 +43,7 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Arguments.Normalize,
       {Phase.Schema, [schema, adapter]},
       Phase.Validation.KnownTypeNames,
+      Phase.Document.Arguments.Coercion,
       Phase.Document.Arguments.Data,
       Phase.Document.Arguments.Defaults,
       Phase.Document.Validation.data_pipeline,

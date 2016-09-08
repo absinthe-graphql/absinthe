@@ -96,6 +96,9 @@ defmodule Absinthe.Blueprint.Input do
   def inspect(%Input.Field{} = node) do
     node.name <> ": " <> inspect(node.value)
   end
+  def inspect(%Input.Variable{} = node) do
+    "Variable " <> node.name
+  end
   def inspect(nil) do
     "null"
   end
