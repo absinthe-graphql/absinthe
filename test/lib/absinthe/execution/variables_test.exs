@@ -13,6 +13,21 @@ defmodule Absinthe.Execution.VariablesTest.Schema do
     field :contact, :contact_input
   end
 
+  input_object :with_custom_scalar do
+    field :field, :null_or_integer
+  end
+
+  scalar :null_or_integer do
+    parse fn
+      "null" -> {:ok, nil}
+      s -> {:ok, s |> String.to_integer}
+    end
+    serialize fn
+      nil -> "null"
+      int -> int |> to_string
+    end
+  end
+
   query do
     field :nullable, :string do
       arg :thing, :string
@@ -49,6 +64,33 @@ defmodule Absinthe.Execution.VariablesTest.Schema do
           {:error, "got: #{inspect args}"}
       end
     end
+
+    field :null_or_integer_in_arg, :string do
+      arg :null_or_integer, :null_or_integer
+
+      resolve fn
+        %{null_or_integer: nil}, _ ->
+          {:ok, "Got nil"}
+        %{null_or_integer: val}, _ ->
+          {:ok, "Got #{val}"}
+        args, _ ->
+          {:ok, "Got #{inspect args}"}
+      end
+    end
+
+    field :null_or_integer_in_input, :string do
+      arg :input, :with_custom_scalar
+
+      resolve fn
+        %{input: %{field: nil}}, _ ->
+          {:ok, "Got nil"}
+        %{input: %{field: val}}, _ ->
+          {:ok, "Got #{val}"}
+        args, _ ->
+          {:ok, "Got #{inspect args}"}
+      end
+    end
+
   end
 end
 
@@ -284,6 +326,61 @@ defmodule Absinthe.Execution.VariablesTest do
       assert %{} == processed
       assert {:ok, %{data: data}} = doc |> Absinthe.run(__MODULE__.Schema, variables: %{"thing" => nil})
       assert %{"nullable" => "Got nothing"} == data
+    end
+  end
+
+  describe "custom scalars parsing to nil" do
+    it "should return variable when not nil" do
+      doc = """
+      query WithNullOrInteger($val:NullOrInteger) {nullOrIntegerInArg(nullOrInteger:$val)}
+      """
+      assert {:ok, %{errors: errors, variables: %Absinthe.Execution.Variables{
+        processed: processed}}} = doc |> parse(__MODULE__.Schema, %{"val" => "1"})
+      assert [] == errors
+      assert %{"val" => %{value: 1}} = processed
+      assert {:ok, %{data: data}} = doc |> Absinthe.run(__MODULE__.Schema,
+        variables: %{"val" => "1"})
+      assert %{"nullOrIntegerInArg" => "Got 1"} == data
+    end
+
+    it "should return nil as variable" do
+      doc = """
+      query WithNullOrInteger($val:NullOrInteger) {nullOrIntegerInArg(nullOrInteger:$val)}
+      """
+      assert {:ok, %{errors: errors, variables: %Absinthe.Execution.Variables{
+        processed: processed}}} = doc |> parse(__MODULE__.Schema, %{"val" => "null"})
+      assert [] == errors
+      assert %{"val" => %{value: nil}} = processed
+      assert {:ok, %{data: data}} = doc |> Absinthe.run(__MODULE__.Schema, variables: %{"val" => "null"})
+      assert %{"nullOrIntegerInArg" => "Got nil"} == data
+    end
+
+    it "should return variable when not nil when used in input object" do
+      doc = """
+      query WithNullOrInteger($val:WithCustomScalar) {nullOrIntegerInInput(input:$val)}
+      """
+      assert {:ok, %{errors: errors, variables: %Absinthe.Execution.Variables{
+        processed: processed}}} = doc |> parse(__MODULE__.Schema, %{"val" => %{"field" => "1"}})
+      assert [] == errors
+      assert %{"val" => %{value: value}} = processed
+      assert %{field: 1} == value
+      assert {:ok, %{data: data}} = doc |> Absinthe.run(__MODULE__.Schema,
+        variables: %{"val" => %{"field" => "1"}})
+      assert %{"nullOrIntegerInInput" => "Got 1"} == data
+    end
+
+    it "should return nil as variable when used in input object" do
+      doc = """
+      query WithNullOrInteger($val:WithCustomScalar) {nullOrIntegerInInput(input:$val)}
+      """
+      assert {:ok, %{errors: errors, variables: %Absinthe.Execution.Variables{
+        processed: processed}}} = doc |> parse(__MODULE__.Schema, %{"val" => %{"field" => "null"}})
+      assert [] == errors
+      assert %{"val" => %{value: value}} = processed
+      assert %{field: nil} == value
+      assert {:ok, %{data: data}} = doc |> Absinthe.run(__MODULE__.Schema,
+        variables: %{"val" => %{"field" => "null"}})
+      assert %{"nullOrIntegerInInput" => "Got nil"} == data
     end
   end
 
