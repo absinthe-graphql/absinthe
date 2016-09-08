@@ -63,6 +63,9 @@ defmodule ContactSchema do
 
   end
 
+  subscription do
+  end
+
   input_object :profile_input do
     description "The basic details for a person"
 
