@@ -11,7 +11,7 @@ Nonterminals
   OperationType Name NameWithoutOn VariableDefinitions VariableDefinition Directives Directive
   Field Alias Arguments ArgumentList Argument
   FragmentSpread FragmentName InlineFragment
-  VariableDefinitionList Variable DefaultValue NameWithoutOn
+  VariableDefinitionList Variable DefaultValue
   Type TypeCondition NamedTypeList NamedType ListType NonNullType
   Value EnumValue ListValue Values ObjectValue ObjectFields ObjectField SchemaDefinition.
 
