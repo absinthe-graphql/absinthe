@@ -25,7 +25,7 @@ defmodule Support.Harness.Validation do
             assert !Enum.empty?(pairs), "No errors were found.\n#{expectation_banner}"
             matched = Enum.any?(pairs, fn
               {%str{} = node, %Phase.Error{phase: @rule, message: ^message} = err} when str == node_kind ->
-                if Enum.member?(node.flags, :invalid) && check_fun.(node) do
+                if check_fun.(node) do
                   if !line do
                     true
                   else

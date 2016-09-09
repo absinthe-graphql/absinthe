@@ -9,7 +9,7 @@ defmodule Absinthe.Blueprint.Schema.EnumValueDefinition do
     directives: [],
     source_location: nil,
     # Added by phases
-    flags: [],
+    flags: %{},
     errors: [],
   ]
 
@@ -19,7 +19,7 @@ defmodule Absinthe.Blueprint.Schema.EnumValueDefinition do
     directives: [Blueprint.Directive.t],
     source_location: nil | Blueprint.Document.SourceLocation.t,
     # Added by phases
-    flags: [],
+    flags: Blueprint.flags_t,
     errors: [Absinthe.Phase.Error.t],
   }
 

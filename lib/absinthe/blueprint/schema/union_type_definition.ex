@@ -9,7 +9,7 @@ defmodule Absinthe.Blueprint.Schema.UnionTypeDefinition do
     directives: [],
     types: [],
     # Added by phases
-    flags: [],
+    flags: %{},
     errors: [],
   ]
 
@@ -19,7 +19,7 @@ defmodule Absinthe.Blueprint.Schema.UnionTypeDefinition do
     directives: [Blueprint.Directive.t],
     types: [Blueprint.TypeReference.Name.t],
     # Added by phases
-    flags: [atom],
+    flags: Blueprint.flags_t,
     errors: [Absinthe.Phase.Error.t],
   }
 

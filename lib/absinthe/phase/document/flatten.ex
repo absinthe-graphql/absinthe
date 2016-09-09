@@ -92,12 +92,8 @@ defmodule Absinthe.Phase.Document.Flatten do
     fields
   end
 
-  @nope [:invalid, :skip]
-  defp include?(%{flags: flags}) do
-    !Enum.any?(@nope, &(&1 in flags))
-  end
-  defp include?(_) do
-    true
-  end
+  defp include?(%{flags: %{invalid: _}}), do: false
+  defp include?(%{flags: %{skip: _}}), do: false
+  defp include?(_), do: true
 
 end

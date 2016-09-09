@@ -8,7 +8,7 @@ defmodule Absinthe.Blueprint.Input.Variable do
     :name,
     source_location: nil,
     # Added by phases
-    flags: [],
+    flags: %{},
     errors: [],
   ]
 
@@ -16,7 +16,7 @@ defmodule Absinthe.Blueprint.Input.Variable do
     name: String.t,
     source_location: nil | Blueprint.Document.SourceLocation.t,
     # Added by phases
-    flags: [atom],
+    flags: Blueprint.flags_t,
     errors: [Phase.Error.t],
   }
 

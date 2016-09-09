@@ -22,7 +22,6 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNames do
   defp handle_node(%Blueprint.Input.Object{} = node) do
     fields = Enum.map(node.fields, &(process(&1, node.fields)))
     %{node | fields: fields}
-    |> inherit_invalid(fields, :duplicate_fields)
   end
   defp handle_node(node) do
     node
@@ -40,11 +39,9 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNames do
     field
   end
   defp check_duplicates(field, _multiple) do
-    %{
-      field |
-      flags: [:invalid, :duplicate_name] ++ field.flags,
-      errors: [error(field) | field.errors]
-    }
+    field
+    |> flag_invalid(:duplicate_name)
+    |> put_error(error(field))
   end
 
   # Generate an error for an input field

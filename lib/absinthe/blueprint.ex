@@ -10,7 +10,7 @@ defmodule Absinthe.Blueprint do
     schema: nil,
     adapter: nil,
     # Added by phases
-    flags: [],
+    flags: %{},
     errors: [],
   ]
 
@@ -23,7 +23,7 @@ defmodule Absinthe.Blueprint do
     adapter: nil | Absinthe.Adapter.t,
     # Added by phases
     errors: [Blueprint.Phase.Error.t],
-    flags: [atom]
+    flags: Blueprint.flags_t
   }
 
   @type node_t ::
@@ -36,7 +36,9 @@ defmodule Absinthe.Blueprint do
 
   @type use_t ::
       Blueprint.Document.Fragment.Named.Use.t
-    | Blueprint.Input.Variable.Use.t 
+    | Blueprint.Input.Variable.Use.t
+
+  @type flags_t :: %{atom => module}
 
   defdelegate prewalk(blueprint, fun), to: Absinthe.Blueprint.Transform
   defdelegate prewalk(blueprint, acc, fun), to: Absinthe.Blueprint.Transform
@@ -61,6 +63,22 @@ defmodule Absinthe.Blueprint do
   @spec fragment(t, String.t) :: nil | Blueprint.Document.Fragment.Named.t
   def fragment(blueprint, name) do
     Enum.find(blueprint.fragments, &(&1.name == name))
+  end
+
+  @doc """
+  Add a flag to a node.
+  """
+  @spec put_flag(node_t, atom, module) :: node_t
+  def put_flag(node, flag, mod) do
+    update_in(node.flags, &Map.put(&1, flag, mod))
+  end
+
+  @doc """
+  Determine whether a flag has been set on a node.
+  """
+  @spec flagged?(node_t, atom) :: boolean
+  def flagged?(node, flag) do
+    Map.has_key?(node.flags, flag)
   end
 
 end

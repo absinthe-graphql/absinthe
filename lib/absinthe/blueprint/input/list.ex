@@ -7,14 +7,14 @@ defmodule Absinthe.Blueprint.Input.List do
     :values,
     :source_location,
     # Added by phases
-    flags: [],
+    flags: %{},
     schema_node: nil,
     errors: [],
   ]
 
   @type t :: %__MODULE__{
     values: [Blueprint.Input.t],
-    flags: [],
+    flags: Blueprint.flags_t,
     schema_node: nil | Absinthe.Type.t,
     source_location: Blueprint.Document.SourceLocation.t,
     errors: [Phase.Error.t],

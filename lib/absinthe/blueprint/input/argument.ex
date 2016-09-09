@@ -11,7 +11,7 @@ defmodule Absinthe.Blueprint.Input.Argument do
     schema_node: nil,
     normalized_value: nil, # Value after having variable values inlined
     data_value: nil, # Value converted to native elixir value
-    flags: [],
+    flags: %{},
     errors: [],
   ]
 
@@ -22,7 +22,7 @@ defmodule Absinthe.Blueprint.Input.Argument do
     schema_node: nil | Absinthe.Type.Argument.t,
     normalized_value: Blueprint.Input.t,
     data_value: any,
-    flags: [atom],
+    flags: Blueprint.flags_t,
     errors: [Absinthe.Phase.Error.t],
   }
 

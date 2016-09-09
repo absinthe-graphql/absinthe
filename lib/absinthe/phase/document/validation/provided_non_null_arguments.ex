@@ -18,14 +18,10 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArguments do
 
   # Find the missing arguments
   @spec handle_node(Blueprint.node_t, Schema.t) :: Blueprint.node_t
-  defp handle_node(%Blueprint.Input.Argument{data_value: nil} = node, schema) do
-    if Enum.member?(node.flags, :missing) do
-      %{node | errors: [error(node, node.schema_node.type, schema) | node.errors]}
-    else
-      node
-    end
+  defp handle_node(%Blueprint.Input.Argument{data_value: nil, flags: %{missing: _}} = node, schema) do
+    node
+    |> put_error(error(node, node.schema_node.type, schema))
   end
-  # Skip
   defp handle_node(node, _) do
     node
   end
@@ -36,9 +32,17 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArguments do
     type_name = Type.name(type, schema)
     Phase.Error.new(
       __MODULE__,
-      ~s(Expected type "#{type_name}", found null.),
+      error_message(type_name),
       node.source_location
     )
+  end
+
+  @doc """
+  Generate the error message.
+  """
+  @spec error_message(String.t) :: String.t
+  def error_message(type_name) do
+    ~s(Expected type "#{type_name}", found null.)
   end
 
 end
