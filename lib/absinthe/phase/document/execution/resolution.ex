@@ -7,14 +7,14 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   alias Absinthe.Blueprint.Document
   alias Absinthe.Phase.Document.Execution
-  alias Absinthe.{Type, Schema}
+  alias Absinthe.{Blueprint, Type, Schema}
 
   use Absinthe.Phase
 
   # Assumes the blueprint has a schema
-  def run(blueprint, selected_operation, context \\ %{}, root_value \\ %{}) do
-    blueprint.operations
-    |> hd
+  def run(blueprint, context, root_value) do
+    blueprint
+    |> Blueprint.current_operation
     |> resolve_operation(%Absinthe.Execution.Field{context: context, root_value: root_value, schema: blueprint.schema}, root_value)
   end
 
@@ -26,45 +26,31 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     }}
   end
 
-  defp filter_valid_arguments(arguments) do
-    arguments
-    |> Enum.reject(&invalid_argument?/1)
-    |> Map.new(fn arg ->
-      {arg.schema_node.__reference__.identifier, arg.data_value}
-    end)
-  end
-
-  defp invalid_argument?(%{flags: %{invalid: _}}), do: true
-  defp invalid_argument?(%{data_value: nil}), do: true
-  defp invalid_argument?(_), do: false
-
   def resolve_field(field, info, source) do
     resolution_function = field.schema_node.resolve || fn _, _ ->
       {:ok, Map.get(source, field.schema_node.__reference__.identifier)}
     end
 
-    case field.flags do
-      %{invalid: _} ->
-        {:error, %{message: "Field has invalid arguments"}}
-      _ ->
-        field.arguments
-        |> filter_valid_arguments
-        |> resolution_function.(%{info | source: source})
-        |> case do
-          {:ok, result} ->
-            full_type = Type.expand(field.schema_node.type, info.schema)
-            walk_result(result, field, full_type, info)
-          {:error, msg} ->
-            {:error, %{message: msg}}
-          other ->
-            raise """
-            Resolution function did not return `{:ok, val}` or `{:error, reason}`
-            Resolving field: #{field.name}
-            Resolving on: #{inspect source}
-            Got: #{inspect other}
-            """
-        end
-    end
+    field.arguments
+    |> Absinthe.Blueprint.Input.Argument.value_map
+    |> resolution_function.(%{info | source: source})
+    |> build_result(field, info, source)
+  end
+
+  defp build_result({:ok, result}, field, info, source) do
+    full_type = Type.expand(field.schema_node.type, info.schema)
+    walk_result(result, field, full_type, info)
+  end
+  defp build_result({:error, msg}, _, _, _) do
+    {:error, %{message: msg}}
+  end
+  defp build_result(other, field, info, source) do
+    raise """
+    Resolution function did not return `{:ok, val}` or `{:error, reason}`
+    Resolving field: #{field.name}
+    Resolving on: #{inspect source}
+    Got: #{inspect other}
+    """
   end
 
   @doc """
@@ -128,13 +114,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     walk_result(val, bp, inner_type, info)
   end
   def walk_result(a, b, c, d) do
-    IO.inspect [
-      a: a,
-      b: b,
-      c: c,
-      d: d
-    ]
-    raise "dead"
+    raise "Could not walk result"
   end
 
   defp walk_results(items, bp, inner_type, info, acc \\ [])

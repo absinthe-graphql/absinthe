@@ -81,4 +81,12 @@ defmodule Absinthe.Blueprint do
     Map.has_key?(node.flags, flag)
   end
 
+  @doc """
+  Get the currently selected operation.
+  """
+  @spec current_operation(t) :: nil | Blueprint.Operation.t
+  def current_operation(blueprint) do
+    Enum.find(blueprint.operations, &(&1.current == true))
+  end
+
 end
