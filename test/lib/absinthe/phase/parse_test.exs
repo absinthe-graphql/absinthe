@@ -1,12 +1,13 @@
-defmodule Absinthe.ParserTest do
+defmodule Absinthe.Phase.ParseTest do
   use Absinthe.Case, async: true
 
+  @tag :simple
   it "parses a simple query" do
-    assert {:ok, _} = Absinthe.parse("{ user(id: 2) { name } }")
+    assert {:ok, _} = run("{ user(id: 2) { name } }") |> IO.inspect
   end
 
   it "fails gracefully" do
-    assert {:error, _} = Absinthe.parse("{ user(id: 2 { name } }")
+    assert {:error, _} = run("{ user(id: 2 { name } }")
   end
 
   @reserved ~w(query mutation fragment on implements interface union scalar enum input extend null)
@@ -14,7 +15,7 @@ defmodule Absinthe.ParserTest do
     @reserved
     |> Enum.each(fn
       name ->
-        assert {:ok, _} = Absinthe.parse("""
+        assert {:ok, _} = run("""
         mutation CreateThing($#{name}: Int!) {
           createThing(#{name}: $#{name}) { clientThingId }
         }
@@ -35,7 +36,7 @@ defmodule Absinthe.ParserTest do
   }
   """
   it "can parse mutations and subscriptions without names" do
-    assert {:ok, _} = Absinthe.parse(@query)
+    assert {:ok, _} = run(@query)
   end
 
   @query """
@@ -46,7 +47,7 @@ defmodule Absinthe.ParserTest do
   }
   """
   it "can parse UTF-8" do
-    assert {:ok, _} = Absinthe.parse(@query)
+    assert {:ok, _} = run(@query)
   end
 
   @query """
@@ -60,7 +61,7 @@ defmodule Absinthe.ParserTest do
   }
   """
   it "can parse identifiers in different contexts" do
-    assert {:ok, _} = Absinthe.parse(@query)
+    assert {:ok, _} = run(@query)
   end
 
   @query """
@@ -74,7 +75,13 @@ defmodule Absinthe.ParserTest do
   }
   """
   it "can parse 'on' in different contexts" do
-    assert {:ok, _} = Absinthe.parse(@query)
+    assert {:ok, _} = run(@query)
   end
+
+  def run(input) do
+    Absinthe.Phase.Parse.run(input)
+  end
+
+
 
 end

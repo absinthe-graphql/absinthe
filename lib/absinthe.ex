@@ -151,56 +151,8 @@ defmodule Absinthe do
     end
   end
 
-  @doc false
-  @spec tokenize(binary) :: {:ok, [tuple]} | {:error, binary}
-  def tokenize(input) do
-    chars = :erlang.binary_to_list(input)
-    case :absinthe_lexer.string(chars) do
-      {:ok, tokens, _line_count} ->
-        {:ok, tokens}
-      {:error, raw_error, _} ->
-        {:error, format_raw_parse_error(raw_error)}
-    end
-  end
-
-  @doc false
-  @spec parse(binary) :: {:ok, Absinthe.Language.Document.t} | {:error, tuple}
-  @spec parse(Absinthe.Language.Source.t) :: {:ok, Absinthe.Language.Document.t} | {:error, tuple}
-  def parse(input) when is_binary(input) do
-    parse(%Absinthe.Language.Source{body: input})
-  end
   def parse(input) do
-    try do
-      case input.body |> tokenize do
-        {:ok, []} -> {:ok, %Absinthe.Language.Document{}}
-        {:ok, tokens} ->
-
-          case :absinthe_parser.parse(tokens) do
-            {:ok, _doc} = result ->
-              result
-            {:error, raw_error} ->
-              {:error, format_raw_parse_error(raw_error)}
-          end
-        other -> other
-      end
-    rescue
-      error ->
-        {:error, format_raw_parse_error(error)}
-    end
-  end
-
-  @doc false
-  @spec parse!(binary) :: Absinthe.Language.Document.t
-  @spec parse!(Absinthe.Language.Source.t) :: Absinthe.Language.Document.t
-  def parse!(input) when is_binary(input) do
-    parse!(%Absinthe.Language.Source{body: input})
-  end
-  def parse!(input) do
-    case parse(input) do
-      {:ok, result} -> result
-      {:error, err} ->
-        raise Absinthe.SyntaxError, source: input, message: err.message, location: err.locations |> List.first
-    end
+    Absinthe.Phase.Parse.run(input)
   end
 
   @doc """
@@ -245,30 +197,6 @@ defmodule Absinthe do
   def run(document, schema, options \\ []) do
     pipeline = Absinthe.Pipeline.for_document(schema, Map.new(options))
     Absinthe.Pipeline.run(document, pipeline)
-  end
-
-  # TODO: Support modification by adapter
-  # Convert a raw parser error into an `Execution.error_t`
-  @doc false
-  @spec format_raw_parse_error({integer, :absinthe_parser, [char_list]}) :: Execution.error_t
-  defp format_raw_parse_error({line, :absinthe_parser, msgs}) do
-    message = msgs |> Enum.map(&to_string/1) |> Enum.join("")
-    %{message: message, locations: [%{line: line, column: 0}]}
-  end
-  @spec format_raw_parse_error({integer, :absinthe_lexer, {atom, char_list}}) :: Execution.error_t
-  defp format_raw_parse_error({line, :absinthe_lexer, {problem, field}}) do
-    message = "#{problem}: #{field}"
-    %{message: message, locations: [%{line: line, column: 0}]}
-  end
-  @unknown_error_msg "An unknown error occurred during parsing"
-  @spec format_raw_parse_error(map) :: Execution.error_t
-  defp format_raw_parse_error(%{} = error) do
-    detail = if Exception.exception?(error) do
-      ": " <> Exception.message(error)
-    else
-      ""
-    end
-    %{message: @unknown_error_msg <> detail}
   end
 
   @doc """
