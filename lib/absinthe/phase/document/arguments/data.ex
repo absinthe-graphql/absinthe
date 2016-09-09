@@ -83,7 +83,7 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
         end
     end)
     missing_fields = Enum.flat_map(node.schema_node.fields, fn
-      {_, %Type.Field{type: %Type.NonNull{}} = schema_field} ->
+      {_, %Type.Field{type: %Type.NonNull{}, deprecation: nil} = schema_field} ->
         if Enum.any?(fields, &(match?(%Blueprint.Input.Field{schema_node: ^schema_field}, &1))) do
           []
         else
@@ -169,7 +169,7 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
 
   defp generate_missing_arguments(node, adapter) do
     Enum.flat_map(node.schema_node.args, fn
-      {_, %Type.Argument{type: %Type.NonNull{}} = schema_argument} ->
+      {_, %Type.Argument{type: %Type.NonNull{}, deprecation: nil} = schema_argument} ->
         if Enum.any?(node.arguments, &(match?(%Blueprint.Input.Argument{schema_node: ^schema_argument}, &1))) do
           []
         else

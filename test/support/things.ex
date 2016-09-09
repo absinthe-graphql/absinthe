@@ -130,7 +130,7 @@ defmodule Things do
     field :deprecated_field, :string, deprecate: true
     field :deprecated_field_with_reason, :string, deprecate: "reason"
     field :deprecated_non_null_field, non_null(:string), deprecate: true
-    field :deprecated_non_null_field_with_reason, :string, deprecate: "reason"
+    field :deprecated_field_with_reason, :string, deprecate: "reason"
   end
 
   object :thing do
