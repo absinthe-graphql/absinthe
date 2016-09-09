@@ -21,16 +21,13 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNames do
     {:ok, result}
   end
 
-
   # Find any arguments that have been marked as invalid due to a missing
   # associated schema node.
   @spec handle_node(Blueprint.node_t) :: Blueprint.node_t
   defp handle_node(%Blueprint.Input.Argument{schema_node: nil} = node) do
-    %{
-      node |
-      flags: [:invalid, :no_schema_node] ++ node.flags,
-      errors: [error(node) | node.errors]
-    }
+    node
+    |> flag_invalid(:no_schema_node)
+    |> put_error(error(node))
   end
   defp handle_node(node) do
     node

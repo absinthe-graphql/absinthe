@@ -13,7 +13,7 @@ defmodule Absinthe.Blueprint.Document.Fragment.Named do
     # Populated by phases
     schema_node: nil,
     fields: [],
-    flags: [],
+    flags: %{},
     errors: [],
   ]
 
@@ -25,7 +25,7 @@ defmodule Absinthe.Blueprint.Document.Fragment.Named do
     selections: [Blueprint.Document.selection_t],
     schema_node: nil | Absinthe.Type.t,
     source_location: nil | Blueprint.Document.SourceLocation.t,
-    flags: [atom],
+    flags: Blueprint.flags_t,
     type_condition: Blueprint.TypeReference.Name.t,
   }
 

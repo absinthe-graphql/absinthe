@@ -8,7 +8,7 @@ defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
     values: [],
     directives: [],
     # Added by phases,
-    flags: [],
+    flags: %{},
     errors: [],
   ]
 
@@ -17,7 +17,7 @@ defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
     values: [String.t],
     directives: [Blueprint.Directive.t],
     # Added by phases
-    flags: [atom],
+    flags: Blueprint.flags_t,
     errors: [Absinthe.Phase.Error.t],
   }
 

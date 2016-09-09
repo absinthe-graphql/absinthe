@@ -12,7 +12,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
     List.wrap(values)
     |> Enum.map(fn
       value ->
-        bad_value(Blueprint.Input.Argument, @message, line, literal_value_check(name, value))
+        bad_value(Blueprint.Input.Argument, @rule.error_message, line, literal_value_check(name, value))
     end)
   end
 

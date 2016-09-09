@@ -7,7 +7,7 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
     fields: [],
     directives: [],
     # Added by phases
-    flags: [],
+    flags: %{},
     errors: [],
   ]
 
@@ -17,7 +17,7 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
     fields: [Blueprint.Schema.FieldDefinition.t],
     directives: [Blueprint.Directive.t],
     # Added by phases
-    flags: [atom],
+    flags: Blueprint.flags_t,
     errors: [Absinthe.Phase.Error.t],
   }
 

@@ -2,6 +2,7 @@ defmodule Absinthe.Type.BuiltIns.Directives do
   @moduledoc false
 
   use Absinthe.Schema.Notation
+  alias Absinthe.Blueprint
 
   directive :include do
     description """
@@ -14,9 +15,9 @@ defmodule Absinthe.Type.BuiltIns.Directives do
 
     expand fn
       %{if: true}, node ->
-        %{node | flags: [:include | node.flags]}
+        Blueprint.put_flag(node, :include, __MODULE__)
       _, node ->
-        %{node | flags: [:skip | node.flags]}
+        Blueprint.put_flag(node, :skip, __MODULE__)
     end
 
   end
@@ -32,9 +33,9 @@ defmodule Absinthe.Type.BuiltIns.Directives do
 
     expand fn
       %{if: true}, node ->
-        %{node | flags: [:skip | node.flags]}
+        Blueprint.put_flag(node, :skip, __MODULE__)
       _, node ->
-        %{node | flags: [:include | node.flags]}
+        Blueprint.put_flag(node, :include, __MODULE__)
     end
 
   end

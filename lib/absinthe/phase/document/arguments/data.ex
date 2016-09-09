@@ -23,6 +23,7 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
   """
 
   alias Absinthe.{Blueprint, Type}
+  use Absinthe.Phase
 
   def run(input) do
     result = Blueprint.prewalk(input, &(handle_node(&1, input.adapter)))
@@ -92,9 +93,9 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
               name: schema_field.name |> adapter.to_external_name(:field),
               value: nil,
               schema_node: schema_field,
-              source_location: node.source_location,
-              flags: [:invalid, :missing]
+              source_location: node.source_location
             }
+            |> flag_invalid(:missing)
           ]
         end
       _ ->
@@ -158,22 +159,6 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
     {:error, node}
   end
 
-  @spec any_invalid?([Blueprint.Input.t]) :: boolean
-  defp any_invalid?(inputs) do
-    Enum.any?(inputs, &(Enum.member?(&1.flags, :invalid)))
-  end
-
-  defp flag_invalid(node, flag) do
-    %{node | flags: [flag | with_invalid(node.flags)]}
-  end
-  defp with_invalid(flags) do
-    if Enum.member?(flags, :invalid) do
-      flags
-    else
-      [:invalid | flags]
-    end
-  end
-
   @spec unwrap_non_null(Type.NonNull.t | Type.t) :: Type.t
   defp unwrap_non_null(%Type.NonNull{of_type: type}) do
     type
@@ -195,9 +180,9 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
               literal_value: nil,
               data_value: nil,
               schema_node: schema_argument,
-              source_location: node.source_location,
-              flags: [:invalid, :missing]
+              source_location: node.source_location
             }
+            |> flag_invalid(:missing)
           ]
         end
       _ ->

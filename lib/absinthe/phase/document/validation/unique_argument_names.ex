@@ -28,7 +28,6 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNames do
   defp handle_node(%argument_host{} = node) when argument_host in @argument_hosts do
     arguments = Enum.map(node.arguments, &(process(&1, node.arguments)))
     %{node | arguments: arguments}
-    |> inherit_invalid(arguments, :duplicate_arguments)
   end
   defp handle_node(node) do
     node
@@ -46,11 +45,9 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNames do
     argument
   end
   defp check_duplicates(argument, _multiple) do
-    %{
-      argument |
-      flags: [:invalid, :duplicate_name] ++ argument.flags,
-      errors: [error(argument) | argument.errors]
-    }
+    argument
+    |> flag_invalid(:duplicate_name)
+    |> put_error(error(argument))
   end
 
   # Generate an error for a duplicate argument.
@@ -58,9 +55,17 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNames do
   defp error(node) do
     Phase.Error.new(
       __MODULE__,
-      "Duplicate argument name.",
+      error_message,
       node.source_location
     )
+  end
+
+  @doc """
+  Generate the error message.
+  """
+  @spec error_message :: String.t
+  def error_message do
+    "Duplicate argument name."
   end
 
 end

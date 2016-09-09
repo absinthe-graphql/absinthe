@@ -13,7 +13,7 @@ defmodule Absinthe.Blueprint.Schema.InputValueDefinition do
     default_value: nil,
     directives: [],
     # Added by phases
-    flags: [],
+    flags: %{},
     errors: [],
   ]
 
@@ -25,7 +25,7 @@ defmodule Absinthe.Blueprint.Schema.InputValueDefinition do
     # The struct module of the parent
     placement: :argument_definition | :input_field_definition,
     # Added by phases
-    flags: [atom],
+    flags: Blueprint.flags_t,
     errors: [Absinthe.Phase.Error.t],
   }
 

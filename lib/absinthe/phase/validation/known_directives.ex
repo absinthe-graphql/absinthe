@@ -17,7 +17,6 @@ defmodule Absinthe.Phase.Validation.KnownDirectives do
   defp handle_node(%Blueprint.Directive{schema_node: nil} = node) do
     node
     |> put_error(error_unknown(node))
-    |> flag_invalid(:no_schema_node)
   end
   defp handle_node(%Blueprint.Directive{} = node) do
     node
@@ -26,8 +25,8 @@ defmodule Absinthe.Phase.Validation.KnownDirectives do
     node
   end
   defp handle_node(%{directives: _} = node) do
-    node = check_directives(node)
-    inherit_invalid(node, node.directives, :bad_directive)
+    check_directives(node)
+    |> inherit_invalid(node.directives, :bad_directive)
   end
   defp handle_node(node) do
     node

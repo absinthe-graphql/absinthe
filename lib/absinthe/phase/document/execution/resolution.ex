@@ -34,17 +34,19 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     end)
   end
 
-  defp invalid_argument?(argument) do
-    Enum.member?(argument.flags, :invalid) || !argument.data_value
-  end
+  defp invalid_argument?(%{flags: %{invalid: _}}), do: true
+  defp invalid_argument?(%{data_value: nil}), do: true
+  defp invalid_argument?(_), do: false
 
   def resolve_field(field, info, source) do
     resolution_function = field.schema_node.resolve || fn _, _ ->
       {:ok, Map.get(source, field.schema_node.__reference__.identifier)}
     end
 
-    case :invalid in field.flags do
-      false ->
+    case field.flags do
+      %{invalid: _} ->
+        {:error, %{message: "Field has invalid arguments"}}
+      _ ->
         field.arguments
         |> filter_valid_arguments
         |> resolution_function.(%{info | source: source})
@@ -62,8 +64,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
             Got: #{inspect other}
             """
         end
-      true ->
-        {:error, %{message: "Field has invalid arguments"}}
     end
   end
 

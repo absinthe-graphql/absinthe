@@ -45,13 +45,13 @@ defmodule Absinthe.Phase.Document.DirectivesTest do
     it "adds a :skip flag" do
       {:ok, result} = input(@query, %{"cats" => false})
       node = named(result, Blueprint.Document.Field, "categories")
-      assert Enum.member?(node.flags, :skip)
+      assert Blueprint.flagged?(node, :skip)
     end
 
     it "adds an :include flag" do
       {:ok, result} = input(@query, %{"cats" => true})
       node = named(result, Blueprint.Document.Field, "categories")
-      assert Enum.member?(node.flags, :include)
+      assert Blueprint.flagged?(node, :include)
     end
 
   end

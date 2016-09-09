@@ -19,41 +19,26 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
   # Check arguments, objects, fields, and lists
   @spec handle_node(Blueprint.node_t, Schema.t) :: Blueprint.node_t
   defp handle_node(%Blueprint.Input.Argument{schema_node: %{type: _}, normalized_value: norm, data_value: nil} = node, schema) when not is_nil(norm) do
-    flags = [:invalid | node.flags]
-    err = error(node, error_message(node, schema))
-    %{node | flags: flags, errors: [err | node.errors]}
+    node
+    |> put_error(error(node, error_message(node, schema)))
   end
-  defp handle_node(%Blueprint.Input.Object{} = node, schema) do
-    if Enum.member?(node.flags, :invalid) do
-      fields = Enum.map(node.fields, fn
-        field ->
-          if Enum.member?(field.flags, :invalid) do
-            err = error(field, error_message(field, schema))
-            field = %{field | errors: [err | field.errors]}
-          end
-      end)
-      %{node | fields: Enum.reverse(fields)}
-    else
-      node
-    end
+  defp handle_node(%Blueprint.Input.Object{flags: %{invalid: _}} = node, schema) do
+    fields = Enum.map(node.fields, &handle_value(&1, schema))
+    %{node | fields: Enum.reverse(fields)}
   end
-  defp handle_node(%Blueprint.Input.List{} = node, schema) do
-    if Enum.member?(node.flags, :invalid) do
-      values = Enum.map(node.values, fn
-        value_node ->
-          if Enum.member?(value_node.flags, :invalid) do
-            err = error(value_node, error_message(value_node, schema))
-            %{value_node | errors: [err | value_node.errors]}
-          else
-            value_node
-          end
-      end)
-      %{node | values: Enum.reverse(values)}
-    else
-      node
-    end
+  defp handle_node(%Blueprint.Input.List{flags: %{invalid: _}} = node, schema) do
+    values = Enum.map(node.values, &handle_value(&1, schema))
+    %{node | values: Enum.reverse(values)}
   end
   defp handle_node(node, _) do
+    node
+  end
+
+  defp handle_value(%{flags: %{invalid: _}} = node, schema) do
+    node
+    |> put_error(error(node, error_message(node, schema)))
+  end
+  defp handle_value(node, _) do
     node
   end
 

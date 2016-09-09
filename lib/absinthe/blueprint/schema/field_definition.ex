@@ -10,7 +10,7 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
     arguments: [],
     directives: [],
     # Added by phases
-    flags: [],
+    flags: %{},
     errors: [],
   ]
 
@@ -21,7 +21,7 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
     type: Blueprint.TypeReference.t,
     directives: [Blueprint.Directive.t],
     # Added by phases
-    flags: [],
+    flags: Blueprint.flags_t,
     errors: [Absinthe.Phase.Error.t]
   }
 

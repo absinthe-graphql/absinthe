@@ -14,7 +14,7 @@ defmodule Absinthe.Blueprint.Document.Operation do
     fragment_uses: [],
     source_location: nil,
     # Populated by phases
-    flags: [],
+    flags: %{},
     schema_node: nil,
     provided_values: %{},
     fields: [],
@@ -33,7 +33,7 @@ defmodule Absinthe.Blueprint.Document.Operation do
     source_location: nil | Blueprint.Document.SourceLocation.t,
     schema_node: nil | Absinthe.Type.Object.t,
     provided_values: %{String.t => nil | Blueprint.Input.t},
-    flags: [atom],
+    flags: Blueprint.flags_t,
     fields: [Blueprint.Document.Field.t],
     errors: [Absinthe.Phase.Error.t],
   }
