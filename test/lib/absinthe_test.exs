@@ -207,19 +207,6 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"item" => %{"id" => "foo", "name" => "Foo"}}}}, result
   end
 
-  it "Should be retrievable using the ID type as a bare value" do
-    result = """
-    {
-      item(id: foo) {
-        id
-        name
-      }
-    }
-    """
-    |> Absinthe.run(Absinthe.IdTestSchema)
-    assert_result {:ok, %{data: %{"item" => %{"id" => "foo", "name" => "Foo"}}}}, result
-  end
-
   @tag :old_errors
   it "should wrap all lexer errors" do
     query = """
@@ -310,6 +297,7 @@ defmodule AbsintheTest do
       assert_result {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}}, Absinthe.run(@simple_fragment, ContactSchema)
     end
 
+    @tag :focus
     it "returns the correct result using fragments for introspection" do
       assert {:ok, %{data: %{"__type" => %{"name" => "ProfileInput", "kind" => "INPUT_OBJECT", "fields" => nil, "inputFields" => input_fields}}}} = Absinthe.run(@introspection_fragment, ContactSchema)
       correct = [%{"name" => "code"}, %{"name" => "name"}, %{"name" => "age"}]

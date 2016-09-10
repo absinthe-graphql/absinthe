@@ -4,23 +4,36 @@ defmodule Absinthe.Phase.Document.Execution.Data do
   Produces data fit for external encoding from annotated value tree
   """
 
+  alias Absinthe.Blueprint
   use Absinthe.Phase
 
-  def run(tree) do
-    errors = []
-    {data, errors} = get_field_data(tree.fields, errors)
-    results = case errors do
-      [_ | _] -> %{data: data, errors: errors}
-      _ -> %{data: data}
-    end
-    {:ok, results}
+  def run(blueprint) do
+    result = blueprint
+    |> Blueprint.current_operation
+    |> process
+    |> clean
+    {:ok, result}
   end
 
-  #Leaf
+  defp process(%Blueprint.Document.Operation{resolution: tree}) do
+    {data, errors} = get_field_data(tree.fields, [])
+    %{data: data, errors: errors}
+  end
+
+  defp clean(%{data: data} = result) when map_size(data) == 0 do
+    Map.delete(result, :data)
+  end
+  defp clean(%{errors: []} = result) do
+    Map.delete(result, :errors)
+  end
+
+  # Leaf
   def get_data(%{value: value}, errors), do: {value, errors}
-  #Object
+
+  # Object
   def get_data(%{fields: fields}, errors), do: get_field_data(fields, errors)
-  #List
+
+  # List
   def get_data(%{values: values}, errors), do: get_list_data(values, errors)
 
   def get_list_data(fields, errors, acc \\ [])
