@@ -125,7 +125,10 @@ defmodule Absinthe.Phase.Schema do
     %{node | schema_node: parent_schema_node}
   end
   defp value_with_schema_node(%Blueprint.Input.Object{} = node, parent_schema_node, schema, adapter) do
-    schema_node = Type.expand(parent_schema_node.type, schema)
+    schema_node = case parent_schema_node do
+      %{type: type} -> Type.expand(type, schema)
+      type -> type
+    end
     fields = Enum.map(node.fields, &input_field_with_schema_node(&1, schema_node, schema, adapter))
     %{node | schema_node: schema_node, fields: fields}
   end
