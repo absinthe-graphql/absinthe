@@ -21,8 +21,21 @@ defmodule Absinthe.Phase.Document.Arguments.Coercion do
     {:ok, node}
   end
 
-  defp coerce_node(%Blueprint.Input.String{schema_node: %Type.Enum{}} = node) do
-    Map.put(node, :__struct__, Blueprint.Input.Enum)
+  defp coerce_node(%Blueprint.Input.String{schema_node: type} = node) do
+    case Type.unwrap(type) do
+      %Type.Enum{} ->
+        Map.put(node, :__struct__, Blueprint.Input.Enum)
+      _ ->
+        node
+    end
+  end
+  defp coerce_node(%Blueprint.Input.Enum{schema_node: type} = node) do
+    case Type.unwrap(type) do
+      %Type.Scalar{} ->
+        Map.put(node, :__struct__, Blueprint.Input.String)
+      _ ->
+        node
+    end
   end
   defp coerce_node(node), do: node
 

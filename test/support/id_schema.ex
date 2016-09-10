@@ -14,8 +14,9 @@ defmodule Absinthe.IdTestSchema do
       args: [
         id: [type: non_null(:id)]
       ],
-      resolve: fn %{id: item_id}, _ ->
-        {:ok, @items[item_id]}
+      resolve: fn
+        %{id: item_id}, _ ->
+          {:ok, @items[item_id]}
       end
 
   end
