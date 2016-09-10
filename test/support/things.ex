@@ -20,7 +20,7 @@ defmodule Things do
           {:ok, %{found | value: val}}
         %{id: id, thing: fields}, _ ->
           found = @db |> Map.get(id)
-        {:ok, found |> Map.merge(fields)}
+          {:ok, found |> Map.merge(fields)}
       end
 
   end

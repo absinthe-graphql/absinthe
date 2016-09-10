@@ -3,7 +3,7 @@ defmodule Absinthe.Phase.ParseTest do
 
   @tag :simple
   it "parses a simple query" do
-    assert {:ok, _} = run("{ user(id: 2) { name } }") |> IO.inspect
+    assert {:ok, _} = run("{ user(id: 2) { name } }")
   end
 
   it "fails gracefully" do

@@ -83,7 +83,7 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
         end
     end)
     missing_fields = Enum.flat_map(node.schema_node.fields, fn
-      {_, %Type.Field{type: %Type.NonNull{}} = schema_field} ->
+      {_, %Type.Field{type: %Type.NonNull{}, deprecation: nil} = schema_field} ->
         if Enum.any?(fields, &(match?(%Blueprint.Input.Field{schema_node: ^schema_field}, &1))) do
           []
         else
