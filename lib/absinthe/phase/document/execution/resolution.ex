@@ -13,7 +13,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   # Assumes the blueprint has a schema
   def run(blueprint, _selected_operation, context \\ %{}, root_value \\ %{}) do
     blueprint.operations
-    |> hd
+    |> Enum.find(&(&1.current))
     |> resolve_operation(%Absinthe.Execution.Field{context: context, root_value: root_value, schema: blueprint.schema}, root_value)
   end
 
