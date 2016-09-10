@@ -3,8 +3,6 @@ defmodule Absinthe.Execution.ArgumentsTest do
 
   import AssertResult
 
-  alias Absinthe.{Pipeline, Phase}
-
   defmodule Schema do
     use Absinthe.Schema
 

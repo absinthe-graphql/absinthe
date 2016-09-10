@@ -5,19 +5,20 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   While this phase starts with a blueprint, it returns an annotated value tree.
   """
 
-  alias Absinthe.Blueprint.Document
-  alias Absinthe.Phase.Document.Execution
-  alias Absinthe.{Blueprint, Type, Schema}
+  alias Absinthe.{Blueprint, Type}
+
+  alias __MODULE__
 
   use Absinthe.Phase
 
   def run(bp_root, context, root_value) do
     bp_root = Blueprint.update_current(bp_root, fn
       op ->
-        field = %Absinthe.Execution.Field{
+        field = %Resolution.Info{
           context: context,
           root_value: root_value,
-          schema: bp_root.schema
+          schema: bp_root.schema,
+          source: root_value,
         }
         resolution = resolve_operation(op, bp_root, field, root_value)
         %{op | resolution: resolution}
@@ -43,14 +44,14 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     |> build_result(bp_root, field, info, source)
   end
 
-  defp build_result({:ok, result}, bp_root, field, info, source) do
+  defp build_result({:ok, result}, bp_root, field, info, _) do
     full_type = Type.expand(field.schema_node.type, info.schema)
     walk_result(result, bp_root, field, full_type, info)
   end
-  defp build_result({:error, msg}, bp_root, _, _, _) do
+  defp build_result({:error, msg}, _, _, _, _) do
     {:error, %{message: msg}}
   end
-  defp build_result(other, _, field, info, source) do
+  defp build_result(other, _, field, _, source) do
     raise """
     Resolution function did not return `{:ok, val}` or `{:error, reason}`
     Resolving field: #{field.name}
@@ -82,14 +83,28 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     }}
   end
   # Resolve Enum type
-  def walk_result(value, bp_root, bp_node, %Type.Enum{} = schema_type, info) do
+  def walk_result(value, _, bp_node, %Type.Enum{} = schema_type, _) do
     {:ok, %Blueprint.Document.Result.Leaf{
       name: bp_node.alias || bp_node.name,
       value: Type.Enum.serialize!(schema_type, value)
     }}
   end
 
-  def walk_result(value, bp_root, bp_node, %Type.Object{} = type, info) do
+  def walk_result(value, bp_root, bp_node, %Type.Object{}, info) do
+    {:ok, %Blueprint.Document.Result.Object{
+      name: bp_node.alias || bp_node.name,
+      fields: resolve_fields(bp_node, bp_root, info, value),
+    }}
+  end
+
+  def walk_result(value, bp_root, bp_node, %Type.Interface{}, info) do
+    {:ok, %Blueprint.Document.Result.Object{
+      name: bp_node.alias || bp_node.name,
+      fields: resolve_fields(bp_node, bp_root, info, value),
+    }}
+  end
+
+  def walk_result(value, bp_root, bp_node, %Type.Union{}, info) do
     {:ok, %Blueprint.Document.Result.Object{
       name: bp_node.alias || bp_node.name,
       fields: resolve_fields(bp_node, bp_root, info, value),
@@ -115,12 +130,12 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   def walk_result(val, bp_root, bp_node, %Type.NonNull{of_type: inner_type}, info) do
     walk_result(val, bp_root, bp_node, inner_type, info)
   end
-  def walk_result(_, _, _, _, _) do
-    raise "Could not walk result"
+  def walk_result(value, bp_root, bp_node, schema_node, info) do
+    raise "Could not walk result."
   end
 
   defp walk_results(values, bp_root, bp_node, inner_type, info, acc \\ [])
-  defp walk_results([], bp_root, _, _, _, acc), do: :lists.reverse(acc)
+  defp walk_results([], _, _, _, _, acc), do: :lists.reverse(acc)
   defp walk_results([value | values], bp_root, bp_node, inner_type, info, acc) do
     result = walk_result(value, bp_root, bp_node, inner_type, info)
     walk_results(values, bp_root, bp_node, inner_type, info, [result | acc])
@@ -142,10 +157,10 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     do_resolve_fields(fields, bp_root, info, source, [result | acc])
   end
 
-  def field_applies?(%{type_conditions: []}, _, _, _) do
+  def field_applies?(%{type_conditions: []} = node, _, _, _) do
     true
   end
-  def field_applies?(field, bp_root, source, schema_type) do
+  def field_applies?(field, bp_root, _, schema_type) do
     target_type = find_target_type(schema_type, bp_root.schema)
     field.type_conditions
     |> Enum.map(&(bp_root.schema.__absinthe_type__(&1.name)))
@@ -160,7 +175,15 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   # TODO: Interface, etc
-  def passes_type_condition?(equal, equal), do: true
-  def passes_type_condition?(_, _), do: false
+  defp passes_type_condition?(equal, equal), do: true
+  defp passes_type_condition?(%Type.Object{} = type, %Type.Union{} = condition) do
+    Type.Union.member?(condition, type)
+  end
+  defp passes_type_condition?(%Type.Object{} = type, %Type.Interface{} = condition) do
+    Type.Interface.member?(condition, type)
+  end
+  defp passes_type_condition?(_, _) do
+    false
+  end
 
 end

@@ -297,7 +297,6 @@ defmodule AbsintheTest do
       assert_result {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}}, Absinthe.run(@simple_fragment, ContactSchema)
     end
 
-    @tag :focus
     it "returns the correct result using fragments for introspection" do
       assert {:ok, %{data: %{"__type" => %{"name" => "ProfileInput", "kind" => "INPUT_OBJECT", "fields" => nil, "inputFields" => input_fields}}}} = Absinthe.run(@introspection_fragment, ContactSchema)
       correct = [%{"name" => "code"}, %{"name" => "name"}, %{"name" => "age"}]

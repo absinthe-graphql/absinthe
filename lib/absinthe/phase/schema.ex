@@ -29,10 +29,6 @@ defmodule Absinthe.Phase.Schema do
     selections_with_schema = Enum.map(node.selections, &selection_with_schema_node(&1, schema_node, schema, adapter))
     %{node | schema_node: schema_node, selections: selections_with_schema}
   end
-  # Inline fragment without type condition
-  defp handle_node(%Blueprint.Document.Fragment.Inline{type_condition: nil} = node, _, _) do
-    node
-  end
   defp handle_node(%Blueprint.Document.Fragment.Inline{} = node, schema, adapter) do
     schema_node = schema.__absinthe_type__(node.type_condition.name)
     selections_with_schema = Enum.map(node.selections, &selection_with_schema_node(&1, schema_node, schema, adapter))
@@ -63,6 +59,14 @@ defmodule Absinthe.Phase.Schema do
     selections = Enum.map(node.selections, &selection_with_schema_node(&1, schema_node, schema, adapter))
     arguments = Enum.map(node.arguments, &argument_with_schema_node(&1, schema_node, schema, adapter))
     %{node | schema_node: schema_node, selections: selections, arguments: arguments}
+  end
+  # Inline fragments use their type condition to determine child field schema
+  # nodes. For inline fragments without type conditions, we set it to that of
+  # its parent here so the `handle_node` that takes care of the inline fragment
+  #
+  defp selection_with_schema_node(%Blueprint.Document.Fragment.Inline{type_condition: nil} = node, parent_schema_node, schema, _) do
+    type = Type.unwrap(Type.expand(parent_schema_node.type, schema))
+    %{node | type_condition: %Blueprint.TypeReference.Name{name: type.name}}
   end
   defp selection_with_schema_node(node, _, _, _) do
     node
@@ -125,12 +129,12 @@ defmodule Absinthe.Phase.Schema do
     %{node | schema_node: parent_schema_node}
   end
   defp value_with_schema_node(%Blueprint.Input.Object{} = node, parent_schema_node, schema, adapter) do
-    schema_node = Type.expand(parent_schema_node.type, schema)
+    schema_node = expand_type(parent_schema_node, schema)
     fields = Enum.map(node.fields, &input_field_with_schema_node(&1, schema_node, schema, adapter))
     %{node | schema_node: schema_node, fields: fields}
   end
   defp value_with_schema_node(%Blueprint.Input.List{} = node, parent_schema_node, schema, adapter) do
-    schema_node = Type.expand(parent_schema_node.type, schema)
+    schema_node = expand_type(parent_schema_node.type, schema)
     values = Enum.map(node.values, &value_with_schema_node(&1, schema_node, schema, adapter))
     %{node | schema_node: schema_node, values: values}
   end
@@ -140,8 +144,17 @@ defmodule Absinthe.Phase.Schema do
     |> value_with_schema_node(type, schema, adapter)
   end
   defp value_with_schema_node(node, parent_schema_node, schema, _) do
-    schema_node = Type.expand(parent_schema_node.type, schema)
+    schema_node = expand_type(parent_schema_node.type, schema)
     %{node | schema_node: schema_node}
+  end
+
+  # Expand type, but strip wrapping argument node
+  @spec expand_type(Type.t, Schema.t) :: Type.t
+  defp expand_type(%Type.Argument{} = type, schema) do
+    Type.expand(type.type, schema)
+  end
+  defp expand_type(type, schema) do
+    Type.expand(type, schema)
   end
 
   @spec input_field_with_schema_node(Blueprint.Input.Field.t, Type.t, Absinthe.Schema.t, Absinthe.Adapter.t) :: Type.t

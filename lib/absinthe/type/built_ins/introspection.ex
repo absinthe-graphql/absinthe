@@ -109,7 +109,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       arg :include_deprecated, :boolean, default_value: false
       resolve fn
         %{include_deprecated: show_deprecated}, %{source: %{__struct__: str, fields: fields}} when str in [Absinthe.Type.Object, Absinthe.Type.Interface] ->
-          fields
+          result = fields
           |> Enum.flat_map(fn
             {_, %{deprecation: is_deprecated} = field} ->
             if !is_deprecated || (is_deprecated && show_deprecated) do
@@ -118,7 +118,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
               []
             end
           end)
-          |> Absinthe.Flag.as(:ok)
+          {:ok, result}
         _, _ ->
           {:ok, nil}
       end
@@ -160,7 +160,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       ],
       resolve: fn
         %{include_deprecated: show_deprecated}, %{source: %Absinthe.Type.Enum{values: values}} ->
-          values
+          result = values
           |> Enum.flat_map(fn
             {_, %{deprecation: is_deprecated} = value} ->
               if !is_deprecated || (is_deprecated && show_deprecated) do
@@ -169,7 +169,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
                 []
               end
           end)
-          |> Absinthe.Flag.as(:ok)
+          {:ok, result}
         _, _ ->
           {:ok, nil}
       end
@@ -188,8 +188,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       type: :__type,
       resolve: fn
         _, %{schema: schema, source: %{of_type: type}} ->
-          Absinthe.Schema.lookup_type(schema, type, unwrap: false)
-          |> Absinthe.Flag.as(:ok)
+          {:ok, Absinthe.Schema.lookup_type(schema, type, unwrap: false)}
         _, _ ->
           {:ok, nil}
       end
@@ -202,9 +201,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       type: :string,
       resolve: fn
         _, %{adapter: adapter, source: source} ->
-          source.name
-          |> adapter.to_external_name(:field)
-          |> Absinthe.Flag.as(:ok)
+          {:ok, adapter.to_external_name(source.name, :field)}
       end
 
     field :description, :string
@@ -220,13 +217,13 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       type: :__type,
       resolve: fn
         _, %{schema: schema, source: source} ->
-          case source.type do
+          result = case source.type do
             type when is_atom(type) ->
               Absinthe.Schema.lookup_type(schema, source.type)
             type ->
               type
           end
-          |> Absinthe.Flag.as(:ok)
+          {:ok, result}
       end
 
     field :is_deprecated,
@@ -255,9 +252,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       type: :string,
       resolve: fn
         _, %{adapter: adapter, source: source} ->
-          source.name
-          |> adapter.to_external_name(:field)
-          |> Absinthe.Flag.as(:ok)
+          {:ok, adapter.to_external_name(source.name, :field)}
       end
 
     field :description, :string
