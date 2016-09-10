@@ -5,14 +5,13 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   While this phase starts with a blueprint, it returns an annotated value tree.
   """
 
-  alias Absinthe.Blueprint.Document
   alias Absinthe.Phase.Document.Execution
-  alias Absinthe.{Type, Schema}
+  alias Absinthe.{Type}
 
   use Absinthe.Phase
 
   # Assumes the blueprint has a schema
-  def run(blueprint, selected_operation, context \\ %{}, root_value \\ %{}) do
+  def run(blueprint, _selected_operation, context \\ %{}, root_value \\ %{}) do
     blueprint.operations
     |> hd
     |> resolve_operation(%Absinthe.Execution.Field{context: context, root_value: root_value, schema: blueprint.schema}, root_value)
@@ -84,7 +83,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     }}
   end
   # Resolve item of type scalar
-  def walk_result(item, bp, %Type.Scalar{} = schema_type, _) do
+  def walk_result(item, bp, %Type.Scalar{} = schema_type, _info) do
     {:ok, %Execution.Result{
       # blueprint_node: bp,
       name: bp.alias || bp.name,
@@ -92,7 +91,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     }}
   end
   # Resolve Enum type
-  def walk_result(item, bp, %Type.Enum{} = schema_type, info) do
+  def walk_result(item, bp, %Type.Enum{} = schema_type, _info) do
     {:ok, %Execution.Result{
       # blueprint_node: bp,
       name: bp.alias || bp.name,
@@ -100,7 +99,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     }}
   end
 
-  def walk_result(item, bp, %Type.Object{} = type, info) do
+  def walk_result(item, bp, %Type.Object{}, info) do
     {:ok, %Execution.ResultObject{
       # blueprint_node: bp,
       name: bp.alias || bp.name,
