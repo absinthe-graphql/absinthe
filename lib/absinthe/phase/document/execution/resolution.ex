@@ -38,9 +38,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp invalid_argument?(_), do: false
 
   def resolve_field(field, info, source) do
-    resolution_function = field.schema_node.resolve || fn _, _ ->
-      {:ok, Map.get(source, field.schema_node.__reference__.identifier)}
-    end
+    info = update_info(info, field, source)
 
     case field.flags do
       %{invalid: _} ->
@@ -48,7 +46,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       _ ->
         field.arguments
         |> filter_valid_arguments
-        |> resolution_function.(%{info | source: source})
+        |> call_resolution_function(field, info, source)
         |> case do
           {:ok, result} ->
             full_type = Type.expand(field.schema_node.type, info.schema)
@@ -64,6 +62,24 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
             """
         end
     end
+  end
+
+  def call_resolution_function(args, %{schema_node: %{resolve: nil}} = field, info, source) do
+    case info.schema.__absinthe_custom_default_resolve__ do
+      nil ->
+        {:ok, Map.get(source, field.schema_node.__reference__.identifier)}
+      fun ->
+        fun.(args, info)
+    end
+  end
+  def call_resolution_function(args, field, info, _source) do
+    field.schema_node.resolve.(args, info)
+  end
+
+  defp update_info(info, field, source) do
+    info
+    |> Map.put(:source, source)
+    |> Map.put(:definition, %{name: field.name}) # This is so that the function can know what field it's in.
   end
 
   @doc """
