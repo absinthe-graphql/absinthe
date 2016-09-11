@@ -5,12 +5,13 @@ defmodule Absinthe.IntrospectionTest do
   alias Absinthe.Schema
 
   describe "introspection of an object" do
-    it "returns the name of the object type currently being queried" do
-      # Without an alias
-      result = "{ person { __typename name } }" |> Absinthe.run(ContactSchema)
+    @tag :focus
+    it "returns the name of the object type currently being queried without an alias" do
+      result = "{ person { __typename name } }" |> run(ContactSchema)
       assert_result {:ok, %{data: %{"person" => %{"name" => "Bruce", "__typename" => "Person"}}}}, result
-      # With an alias
-      result = "{ person { kind: __typename name } }" |> Absinthe.run(ContactSchema)
+    end
+    it "returns the name of the object type currently being queried witho an alias" do
+      result = "{ person { kind: __typename name } }" |> run(ContactSchema)
       assert_result {:ok, %{data: %{"person" => %{"name" => "Bruce", "kind" => "Person"}}}}, result
     end
   end
@@ -18,10 +19,10 @@ defmodule Absinthe.IntrospectionTest do
   describe "introspection of an interface" do
     it "returns the name of the object type currently being queried" do
       # Without an alias
-      result = "{ contact { entity { __typename name } } }" |> Absinthe.run(ContactSchema)
+      result = "{ contact { entity { __typename name } } }" |> run(ContactSchema)
       assert_result {:ok, %{data: %{"contact" => %{"entity" => %{"name" => "Bruce", "__typename" => "Person"}}}}}, result
       # With an alias
-      result = "{ contact { entity { kind: __typename name } } }" |> Absinthe.run(ContactSchema)
+      result = "{ contact { entity { kind: __typename name } } }" |> run(ContactSchema)
       assert_result {:ok, %{data: %{"contact" => %{"entity" => %{"name" => "Bruce", "kind" => "Person"}}}}}, result
     end
   end
@@ -35,7 +36,7 @@ defmodule Absinthe.IntrospectionTest do
   describe "introspection of a schema" do
 
     it "can use __schema to get types" do
-      {:ok, %{data: %{"__schema" => %{"types" => types}}}} = Absinthe.run(
+      {:ok, %{data: %{"__schema" => %{"types" => types}}}} = run(
         "{ __schema { types { name } } }",
         ContactSchema
       )
@@ -45,23 +46,22 @@ defmodule Absinthe.IntrospectionTest do
     end
 
     it "can use __schema to get the query type" do
-      result = "{ __schema { queryType { name kind } } }" |> Absinthe.run(ContactSchema)
+      result = "{ __schema { queryType { name kind } } }" |> run(ContactSchema)
       assert_result {:ok, %{data: %{"__schema" => %{"queryType" => %{"name" => "RootQueryType", "kind" => "OBJECT"}}}}}, result
     end
 
     it "can use __schema to get the mutation type" do
-      result = "{ __schema { mutationType { name kind } } }" |> Absinthe.run(ContactSchema)
+      result = "{ __schema { mutationType { name kind } } }" |> run(ContactSchema)
       assert_result {:ok, %{data: %{"__schema" => %{"mutationType" => %{"name" => "RootMutationType", "kind" => "OBJECT"}}}}}, result
     end
 
     it "can use __schema to get the directives" do
-      result = "{ __schema { directives { name args { name type { kind ofType { name kind } } } locations onField onFragment onOperation } } }" |> Absinthe.run(ContactSchema)
+      result = "{ __schema { directives { name args { name type { kind ofType { name kind } } } locations onField onFragment onOperation } } }" |> run(ContactSchema)
       assert {:ok,
-              %{errors: _,
-                data: %{"__schema" => %{
+              %{data: %{"__schema" => %{
                          "directives" => [
                          %{"args" => [%{"name" => "if", "type" => %{"kind" => "NON_NULL", "ofType" => %{"kind" => "SCALAR", "name" => "Boolean"}}}], "name" => "include", "locations" => ["INLINE_FRAGMENT", "FRAGMENT_SPREAD", "FIELD"], "onField" => true, "onFragment" => true, "onOperation" => false},
-                         %{"args" => [%{"name" => "if", "type" => %{"kind" => "NON_NULL", "ofType" => %{"kind" => "SCALAR", "name" => "Boolean"}}}], "name" => "skip", "locations" => ["INLINE_FRAGMENT", "FRAGMENT_SPREAD", "FIELD"], "onField" => true, "onFragment" => true, "onOperation" => false}]}}}} = result
+                         %{"args" => [%{"name" => "if", "type" => %{"kind" => "NON_NULL", "ofType" => %{"kind" => "SCALAR", "name" => "Boolean"}}}], "name" => "skip", "locations" => ["INLINE_FRAGMENT", "FRAGMENT_SPREAD", "FIELD"], "onField" => true, "onFragment" => true, "onOperation" => false}]}}}} == result
     end
 
   end
@@ -84,7 +84,7 @@ defmodule Absinthe.IntrospectionTest do
         }
       }
       """
-      |> Absinthe.run(ColorSchema)
+      |> run(ColorSchema)
       assert {:ok, %{data: %{"__type" => %{"name" => "Channel", "description" => "A color channel", "kind" => "ENUM", "enumValues" => values}}}} = result
       assert [
         %{"name" => "BLUE", "description" => "The color blue", "isDeprecated" => false, "deprecationReason" => nil},
@@ -108,7 +108,7 @@ defmodule Absinthe.IntrospectionTest do
         }
       }
       """
-      |> Absinthe.run(ColorSchema)
+      |> run(ColorSchema)
       assert {:ok, %{data: %{"__type" => %{"name" => "Channel", "description" => "A color channel", "kind" => "ENUM", "enumValues" => values}}}} = result
       assert [
         %{"name" => "BLUE", "description" => "The color blue"},
@@ -144,7 +144,7 @@ defmodule Absinthe.IntrospectionTest do
         }
       }
       """
-      |> Absinthe.run(ContactSchema)
+      |> run(ContactSchema)
       assert_result {:ok, %{data: %{"__type" => %{"description" => "The basic details for a person",
              "inputFields" => [%{"defaultValue" => "43", "description" => "The person's age", "name" => "age", "type" => %{"kind" => "SCALAR", "name" => "Int", "ofType" => nil}},
               %{"defaultValue" => nil, "description" => nil, "name" => "code", "type" => %{"kind" => "NON_NULL", "name" => nil, "ofType" => %{"kind" => "SCALAR", "name" => "String"}}},
@@ -170,7 +170,7 @@ defmodule Absinthe.IntrospectionTest do
         }
       }
       """
-      |> Absinthe.run(ContactSchema)
+      |> run(ContactSchema)
       assert_result {:ok, %{data: %{"__type" => %{"description" => "A named entity", "kind" => "INTERFACE", "name" => "NamedEntity", "possibleTypes" => [%{"name" => "Person"}, %{"name" => "Business"}]}}}}, result
     end
 
@@ -196,7 +196,7 @@ defmodule Absinthe.IntrospectionTest do
         }
       }
       """
-      |> Absinthe.run(ContactSchema)
+      |> run(ContactSchema)
       assert_result {:ok,
                      %{data:
                        %{"__type" => %{
@@ -226,7 +226,7 @@ defmodule Absinthe.IntrospectionTest do
         }
       }
       """
-      |> Absinthe.run(ContactSchema)
+      |> run(ContactSchema)
       assert_result {:ok, %{data: %{"__type" => %{"name" => "Person", "description" => "A person", "kind" => "OBJECT", "fields" => [%{"name" => "age"}, %{"name" => "name"}, %{"name" => "others"}]}}}}, result
     end
 
@@ -245,7 +245,7 @@ defmodule Absinthe.IntrospectionTest do
         }
       }
       """
-      |> Absinthe.run(ContactSchema)
+      |> run(ContactSchema)
       assert_result {:ok, %{data: %{"__type" => %{"description" => "A person",
                  "fields" => [%{"deprecationReason" => "change of privacy policy", "isDeprecated" => true, "name" => "address"}, %{"deprecationReason" => nil, "isDeprecated" => false, "name" => "age"},
                   %{"deprecationReason" => nil, "isDeprecated" => false, "name" => "name"}, %{"deprecationReason" => nil, "isDeprecated" => false, "name" => "others"}], "kind" => "OBJECT", "name" => "Person"}}}}, result
@@ -261,7 +261,7 @@ defmodule Absinthe.IntrospectionTest do
         }
       }
       """
-      |> Absinthe.run(ContactSchema)
+      |> run(ContactSchema)
       assert_result {:ok, %{data: %{"__type" => %{"interfaces" => [%{"name" => "NamedEntity"}]}}}}, result
     end
 
@@ -294,7 +294,7 @@ defmodule Absinthe.IntrospectionTest do
         }
       }
       """
-      |> Absinthe.run(KindSchema)
+      |> run(KindSchema)
       assert {:ok, %{data: %{"__type" => %{"fields" => [%{"name" => "kind", "type" => %{"kind" => "SCALAR", "name" => "String"}}, %{"name" => "name", "type" => %{"kind" => "SCALAR", "name" => "String"}}], "name" => "Foo"}}}} = result
     end
 
@@ -314,7 +314,7 @@ defmodule Absinthe.IntrospectionTest do
           }
         }
       """
-      |> Absinthe.run(KindSchema)
+      |> run(KindSchema)
       assert {:ok, %{data: %{"__schema" => %{"queryType" => %{"fields" => [%{"name" => "foo", "type" => %{"name" => "Foo", "kind" => "OBJECT"}}]}}}}} = result
     end
 
@@ -348,7 +348,7 @@ defmodule Absinthe.IntrospectionTest do
         }
       }
       """
-      |> Absinthe.run(MySchema)
+      |> run(MySchema)
       string = Schema.lookup_type(MySchema, :string)
       assert_result {:ok, %{data: %{"__type" => %{"name" => string.name, "description" => string.description, "kind" => "SCALAR", "fields" => nil}}}}, result
     end
@@ -370,11 +370,24 @@ defmodule Absinthe.IntrospectionTest do
         }
       }
       """
-      |> Absinthe.run(ContactSchema)
+      |> run(ContactSchema)
       assert_result {:ok, %{data: %{"__type" => %{"description" => "A search result", "kind" => "UNION", "name" => "SearchResult", "possibleTypes" => [%{"name" => "Business"}, %{"name" => "Person"}]}}}}, result
     end
 
   end
 
+  defp run(document, schema, options \\ []) do
+    pipeline = Absinthe.Pipeline.for_document(schema, Map.new(options))
+    pipeline = if System.get_env("DEBUG") do
+      pipeline
+      |> Absinthe.Pipeline.insert_after(
+        Absinthe.Phase.Document.Flatten,
+        Absinthe.Phase.Debug
+      )
+    else
+      pipeline
+    end
+    Absinthe.Pipeline.run(document, pipeline)
+  end
 
 end

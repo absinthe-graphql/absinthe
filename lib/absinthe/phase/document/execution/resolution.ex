@@ -15,6 +15,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     bp_root = Blueprint.update_current(bp_root, fn
       op ->
         field = %Resolution.Info{
+          adapter: bp_root.adapter,
           context: context,
           root_value: root_value,
           schema: bp_root.schema,
@@ -27,6 +28,10 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   def resolve_operation(operation, bp_root, info, source) do
+    info = %{
+      info |
+      parent_type: bp_root.schema.__absinthe_type__(operation.type)
+    }
     %Blueprint.Document.Result.Object{
       name: operation.name,
       fields: resolve_fields(operation, bp_root, info, source),
@@ -40,6 +45,30 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     |> Absinthe.Blueprint.Input.Argument.value_map
     |> call_resolution_function(field, info, source)
     |> build_result(bp_root, field, info, source)
+  end
+
+  defp resolve_fields(parent, bp_root, info, source) do
+    parent_type = case parent.schema_node do
+      %Type.Field{} = schema_node ->
+        info.schema.__absinthe_type__(schema_node.type)
+      other ->
+        other
+    end
+    info = %{info | parent_type: parent_type}
+
+    parent.fields
+    |> Enum.filter(&field_applies?(&1, bp_root, source, parent.schema_node))
+    |> do_resolve_fields(bp_root, info, source, [])
+  end
+
+  defp do_resolve_fields(fields, bp_root, info, source, acc)
+  defp do_resolve_fields([], _, _, _, acc), do: :lists.reverse(acc)
+  defp do_resolve_fields([%{schema_node: nil} | fields], bp_root, info, source, acc) do
+    do_resolve_fields(fields, bp_root, info, source, acc)
+  end
+  defp do_resolve_fields([field | fields], bp_root, info, source, acc) do
+    result = resolve_field(field, bp_root, info, source)
+    do_resolve_fields(fields, bp_root, info, source, [result | acc])
   end
 
   defp build_result({:ok, result}, bp_root, field, info, _) do
@@ -71,11 +100,13 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp update_info(info, field, source) do
-    info
-    |> Map.put(:source, source)
-    |> Map.put(:definition, %{name: field.name}) # This is so that the function can know what field it's in.
+    %{
+      info |
+      source: source,
+      # This is so that the function can know what field it's in.
+      definition: field.schema_node
+    }
   end
-
 
   @doc """
   Handle the result of a resolution function
@@ -156,22 +187,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp walk_results([value | values], bp_root, bp_node, inner_type, info, acc) do
     result = walk_result(value, bp_root, bp_node, inner_type, info)
     walk_results(values, bp_root, bp_node, inner_type, info, [result | acc])
-  end
-
-  defp resolve_fields(parent, bp_root, info, source) do
-    parent.fields
-    |> Enum.filter(&field_applies?(&1, bp_root, source, parent.schema_node))
-    |> do_resolve_fields(bp_root, info, source, [])
-  end
-
-  defp do_resolve_fields(fields, bp_root, info, source, acc)
-  defp do_resolve_fields([], _, _, _, acc), do: :lists.reverse(acc)
-  defp do_resolve_fields([%{schema_node: nil} | fields], bp_root, info, source, acc) do
-    do_resolve_fields(fields, bp_root, info, source, acc)
-  end
-  defp do_resolve_fields([field | fields], bp_root, info, source, acc) do
-    result = resolve_field(field, bp_root, info, source)
-    do_resolve_fields(fields, bp_root, info, source, [result | acc])
   end
 
   def field_applies?(%{type_conditions: []}, _, _, _) do

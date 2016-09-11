@@ -95,6 +95,11 @@ defmodule Absinthe.Pipeline do
     end
   end
 
+  def insert_after(pipeline, phase, additional) do
+    beginning = upto(pipeline, phase)
+    beginning ++ [additional] ++ (pipeline -- beginning)
+  end
+
   @bad_return "Phase did not return an {:ok, any} | {:error, %{errors: [Phase.Error.t]} | Phase.Error.t | String.t} tuple"
 
   @spec do_run(input_t, t) :: {:ok, output_t} | {:error, Phase.Error.t}
