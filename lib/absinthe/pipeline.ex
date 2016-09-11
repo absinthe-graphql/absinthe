@@ -95,8 +95,8 @@ defmodule Absinthe.Pipeline do
     end
   end
 
-  def insert_after(pipeline, phase, additional) do
-    beginning = upto(pipeline, phase)
+  def insert_before(pipeline, phase, additional) do
+    beginning = before(pipeline, phase)
     beginning ++ [additional] ++ (pipeline -- beginning)
   end
 

@@ -19,12 +19,13 @@ defmodule Absinthe.Execution.SubscriptionTest do
   describe "subscriptions" do
 
     @query """
-    subscription SubscribeToThing($clientID: ID!) {
+    subscription SubscribeToThing($clientId: ID!) {
       thing(clientId: $clientId)
     }
     """
+    @tag :focus
     it "can be executed" do
-      assert {:ok, %{data: %{"thing" => "subscribed-abc"}}} == Absinthe.run(@query, Schema, variables: %{"clientId" => "abc"})
+      assert {:ok, %{data: %{"thing" => "subscribed-abc"}}} == run(@query, Schema, variables: %{"clientId" => "abc"})
     end
   end
 

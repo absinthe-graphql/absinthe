@@ -10,7 +10,7 @@ defmodule AbsintheTest do
       }
     }
     """
-    assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}}}, run(query)
+    assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}}}, run(query, Things)
   end
 
   it "can do a simple query returning a list" do
@@ -22,7 +22,7 @@ defmodule AbsintheTest do
       }
     }
     """
-    assert_result {:ok, %{data: %{"things" => [%{"name" => "Bar", "id" => "bar"}, %{"name" => "Foo", "id" => "foo"}]}}}, run(query)
+    assert_result {:ok, %{data: %{"things" => [%{"name" => "Bar", "id" => "bar"}, %{"name" => "Foo", "id" => "foo"}]}}}, run(query, Things)
   end
 
   @tag :old_errors
@@ -35,7 +35,7 @@ defmodule AbsintheTest do
       }
     }
     """
-    assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: "Field `bad': Not present in schema", locations: [%{line: 4, column: 0}]}]}}, run(query)
+    assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: "Field `bad': Not present in schema", locations: [%{line: 4, column: 0}]}]}}, run(query, Things)
   end
 
   @tag :old_errors
@@ -45,7 +45,7 @@ defmodule AbsintheTest do
       badResolution
     }
     """
-    assert {:ok, %{errors: [%{message: "Field `badResolution': Did not resolve to match {:ok, _} or {:error, _}", locations: _}]}} = run(query)
+    assert {:ok, %{errors: [%{message: "Field `badResolution': Did not resolve to match {:ok, _} or {:error, _}", locations: _}]}} = run(query, Things)
   end
 
   it "returns the correct results for an alias" do
@@ -56,7 +56,7 @@ defmodule AbsintheTest do
       }
     }
     """
-    assert_result {:ok, %{data: %{"widget" => %{"name" => "Foo"}}}}, run(query)
+    assert_result {:ok, %{data: %{"widget" => %{"name" => "Foo"}}}}, run(query, Things)
   end
 
   @tag :old_errors
@@ -64,7 +64,7 @@ defmodule AbsintheTest do
     query = "{ thing { name } }"
     assert_result {:ok, %{data: %{},
                           errors: [%{message: "Field `thing': 1 required argument (`id') not provided", locations: [%{column: 0, line: 1}]},
-                            %{message: "Argument `id' (String): Not provided", locations: [%{column: 0, line: 1}]}]}}, run(query)
+                            %{message: "Argument `id' (String): Not provided", locations: [%{column: 0, line: 1}]}]}}, run(query, Things)
 
   end
 
@@ -77,7 +77,7 @@ defmodule AbsintheTest do
       }
     }
     """
-    assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: "Argument `extra': Not present in schema"}]}}, run(query)
+    assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: "Argument `extra': Not present in schema"}]}}, run(query, Things)
   end
 
   @tag :old_errors
@@ -89,7 +89,7 @@ defmodule AbsintheTest do
     """
     assert_result {:ok, %{data: %{},
                          errors: [%{message: "Field `number': 1 badly formed argument (`val') provided"},
-                                  %{message: "Argument `val' (Int): Invalid value provided"}]}}, run(query)
+                                  %{message: "Argument `val' (Int): Invalid value provided"}]}}, run(query, Things)
   end
 
   it "returns nested objects" do
@@ -103,7 +103,7 @@ defmodule AbsintheTest do
       }
     }
     """
-    assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo", "otherThing" => %{"name" => "Bar"}}}}}, run(query)
+    assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo", "otherThing" => %{"name" => "Bar"}}}}}, run(query, Things)
   end
 
   @tag :old_errors
@@ -117,7 +117,7 @@ defmodule AbsintheTest do
     """
     assert_result {:ok, %{data: %{"thingByContext" => %{"name" => "Bar"}}}}, run(query, context: %{thing: "bar"})
     assert_result {:ok, %{data: %{},
-                          errors: [%{message: "Field `thingByContext': No :id context provided"}]}}, run(query)
+                          errors: [%{message: "Field `thingByContext': No :id context provided"}]}}, run(query, Things)
   end
 
   it "can use variables" do
@@ -128,7 +128,7 @@ defmodule AbsintheTest do
       }
     }
     """
-    result = run(query, variables: %{"thingId" => "bar"})
+    result = run(query, Things, variables: %{"thingId" => "bar"})
     assert_result {:ok, %{data: %{"thing" => %{"name" => "Bar"}}}}, result
   end
 
@@ -141,7 +141,7 @@ defmodule AbsintheTest do
       }
     }
     """
-    result = run(query)
+    result = run(query, Things)
     assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo", "value" => 100}}}}, result
   end
 
@@ -157,7 +157,7 @@ defmodule AbsintheTest do
     """
     assert_result {:ok, %{data: %{},
                          errors: [%{message: "Field `updateThing': 1 badly formed argument (`thing.value') provided"},
-                                  %{message: "Argument `thing.value' (Int): Invalid value provided"}]}}, run(query)
+                                  %{message: "Argument `thing.value' (Int): Invalid value provided"}]}}, run(query, Things)
   end
 
   @tag :old_errors
@@ -190,7 +190,7 @@ defmodule AbsintheTest do
         thing(id: "foo") {}{ name }
       }
     """
-    result = run(query)
+    result = run(query, Things)
     assert_result {:ok, %{errors: [%{message: "syntax error before: '}'"}]}}, result
   end
 
@@ -315,7 +315,7 @@ defmodule AbsintheTest do
     @version "1.4.5"
     @query "{ version }"
     it "is used to resolve toplevel fields" do
-      assert {:ok, %{data: %{"version" => @version}}} == run(@query, root_value: %{version: @version})
+      assert {:ok, %{data: %{"version" => @version}}} == run(@query, Things, root_value: %{version: @version})
     end
 
   end
@@ -326,7 +326,7 @@ defmodule AbsintheTest do
     { _thing123:thing(id: "foo") { name } }
     """
     it "is returned intact" do
-      assert {:ok, %{data: %{"_thing123" => %{"name" => "Foo"}}}} == run(@query)
+      assert {:ok, %{data: %{"_thing123" => %{"name" => "Foo"}}}} == run(@query, Things)
     end
 
   end
@@ -359,11 +359,6 @@ defmodule AbsintheTest do
       op_name = "invalid"
       assert {:error, "No operation with name: #{op_name}"} == Absinthe.run(@multiple_ops_query, Things, operation_name: op_name)
     end
-  end
-
-  defp run(query, options \\ []) do
-    query
-    |> Absinthe.run(Things, options)
   end
 
 end

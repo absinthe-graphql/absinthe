@@ -376,18 +376,4 @@ defmodule Absinthe.IntrospectionTest do
 
   end
 
-  defp run(document, schema, options \\ []) do
-    pipeline = Absinthe.Pipeline.for_document(schema, Map.new(options))
-    pipeline = if System.get_env("DEBUG") do
-      pipeline
-      |> Absinthe.Pipeline.insert_after(
-        Absinthe.Phase.Document.Flatten,
-        Absinthe.Phase.Debug
-      )
-    else
-      pipeline
-    end
-    Absinthe.Pipeline.run(document, pipeline)
-  end
-
 end

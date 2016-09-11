@@ -29,7 +29,7 @@ defmodule Absinthe.Phase.Schema do
     selections_with_schema = Enum.map(node.selections, &selection_with_schema_node(&1, schema_node, schema, adapter))
     %{node | schema_node: schema_node, selections: selections_with_schema}
   end
-  defp handle_node(%Blueprint.Document.Fragment.Inline{} = node, schema, adapter) do
+  defp handle_node(%Blueprint.Document.Fragment.Inline{type_condition: %{name: _}} = node, schema, adapter) do
     schema_node = schema.__absinthe_type__(node.type_condition.name)
     selections_with_schema = Enum.map(node.selections, &selection_with_schema_node(&1, schema_node, schema, adapter))
     %{node | schema_node: schema_node, selections: selections_with_schema}
@@ -56,9 +56,13 @@ defmodule Absinthe.Phase.Schema do
   @spec selection_with_schema_node(Blueprint.Document.selection_t, Type.t, Absinthe.Schema.t, Absinthe.Adapter.t) :: Type.t
   defp selection_with_schema_node(%Blueprint.Document.Field{} = node, parent_schema_node, schema, adapter) do
     schema_node = find_schema_field(parent_schema_node, node.name, schema, adapter)
-    selections = Enum.map(node.selections, &selection_with_schema_node(&1, schema_node, schema, adapter))
-    arguments = Enum.map(node.arguments, &argument_with_schema_node(&1, schema_node, schema, adapter))
-    %{node | schema_node: schema_node, selections: selections, arguments: arguments}
+    if schema_node do
+      selections = Enum.map(node.selections, &selection_with_schema_node(&1, schema_node, schema, adapter))
+      arguments = Enum.map(node.arguments, &argument_with_schema_node(&1, schema_node, schema, adapter))
+      %{node | schema_node: schema_node, selections: selections, arguments: arguments}
+    else
+      node
+    end
   end
   # Inline fragments use their type condition to determine child field schema
   # nodes. For inline fragments without type conditions, we set it to that of
