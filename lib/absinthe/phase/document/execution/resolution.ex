@@ -147,7 +147,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   def walk_result(val, bp_root, bp_node, %Type.NonNull{of_type: inner_type}, info) do
     walk_result(val, bp_root, bp_node, inner_type, info)
   end
-  def walk_result(value, bp_root, bp_node, schema_node, info) do
+  def walk_result(_value, _bp_root, _bp_node, _schema_node, _info) do
     raise "Could not walk result."
   end
 
@@ -174,7 +174,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     do_resolve_fields(fields, bp_root, info, source, [result | acc])
   end
 
-  def field_applies?(%{type_conditions: []} = node, _, _, _) do
+  def field_applies?(%{type_conditions: []}, _, _, _) do
     true
   end
   def field_applies?(field, bp_root, _, schema_type) do
