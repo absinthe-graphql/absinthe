@@ -1,6 +1,6 @@
 defmodule Absinthe.Phase.Validation do
 
-  alias Absinthe.{Blueprint, Phase}
+  alias Absinthe.{Blueprint}
 
   defmacro __using__(_) do
     quote do

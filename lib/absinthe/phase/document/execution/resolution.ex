@@ -34,13 +34,11 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   def resolve_field(field, bp_root, info, source) do
-    resolution_function = field.schema_node.resolve || fn _, _ ->
-      {:ok, Map.get(source, field.schema_node.__reference__.identifier)}
-    end
+    info = update_info(info, field, source)
 
     field.arguments
     |> Absinthe.Blueprint.Input.Argument.value_map
-    |> resolution_function.(%{info | source: source})
+    |> call_resolution_function(field, info, source)
     |> build_result(bp_root, field, info, source)
   end
 
@@ -59,6 +57,25 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     Got: #{inspect other}
     """
   end
+
+  def call_resolution_function(args, %{schema_node: %{resolve: nil}} = field, info, source) do
+    case info.schema.__absinthe_custom_default_resolve__ do
+      nil ->
+        {:ok, Map.get(source, field.schema_node.__reference__.identifier)}
+      fun ->
+        fun.(args, info)
+    end
+  end
+  def call_resolution_function(args, field, info, _source) do
+    field.schema_node.resolve.(args, info)
+  end
+
+  defp update_info(info, field, source) do
+    info
+    |> Map.put(:source, source)
+    |> Map.put(:definition, %{name: field.name}) # This is so that the function can know what field it's in.
+  end
+
 
   @doc """
   Handle the result of a resolution function

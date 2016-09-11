@@ -1,6 +1,6 @@
 defmodule Harness.Document.Phase do
 
-  alias Absinthe.{Phase, Pipeline, Schema}
+  alias Absinthe.{Phase, Pipeline}
 
   defmacro __using__(opts) do
     phase = Keyword.fetch!(opts, :phase)
