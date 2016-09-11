@@ -29,8 +29,13 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariables do
       end
     end
     |> List.flatten
-    %{node | errors: errors ++ node.errors}
-    |> flag_invalid(:no_definition)
+    node = %{node | errors: errors ++ node.errors}
+    case errors do
+      [] ->
+        node
+      _ ->
+        flag_invalid(node, :no_definition)
+    end
   end
   def handle_node(node, _) do
     node

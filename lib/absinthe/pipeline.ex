@@ -49,7 +49,7 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Validation.data_pipeline,
       Phase.Document.Directives,
       Phase.Document.Flatten,
-      {Phase.Document.Execution.Resolution, [nil, context, root_value]},
+      {Phase.Document.Execution.Resolution, [context, root_value]},
       Phase.Document.Execution.Data
     ]
   end
@@ -93,6 +93,11 @@ defmodule Absinthe.Pipeline do
     else
       pipeline
     end
+  end
+
+  def insert_before(pipeline, phase, additional) do
+    beginning = before(pipeline, phase)
+    beginning ++ [additional] ++ (pipeline -- beginning)
   end
 
   @bad_return "Phase did not return an {:ok, any} | {:error, %{errors: [Phase.Error.t]} | Phase.Error.t | String.t} tuple"

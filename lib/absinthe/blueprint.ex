@@ -12,6 +12,7 @@ defmodule Absinthe.Blueprint do
     # Added by phases
     flags: %{},
     errors: [],
+    result: nil
   ]
 
   @type t :: %__MODULE__{
@@ -23,7 +24,8 @@ defmodule Absinthe.Blueprint do
     adapter: nil | Absinthe.Adapter.t,
     # Added by phases
     errors: [Blueprint.Phase.Error.t],
-    flags: Blueprint.flags_t
+    flags: Blueprint.flags_t,
+    result: nil | map
   }
 
   @type node_t ::
@@ -79,6 +81,28 @@ defmodule Absinthe.Blueprint do
   @spec flagged?(node_t, atom) :: boolean
   def flagged?(node, flag) do
     Map.has_key?(node.flags, flag)
+  end
+
+  @doc """
+  Get the currently selected operation.
+  """
+  @spec current_operation(t) :: nil | Blueprint.Operation.t
+  def current_operation(blueprint) do
+    Enum.find(blueprint.operations, &(&1.current == true))
+  end
+
+  @doc """
+  Update the current operation.
+  """
+  @spec update_current(t, (Blueprint.Operation.t -> Blueprint.Operation.t)) :: t
+  def update_current(blueprint, change) do
+    ops = Enum.map(blueprint.operations, fn
+      %{current: true} = op ->
+        change.(op)
+      other ->
+        other
+    end)
+    %{blueprint | operations: ops}
   end
 
 end

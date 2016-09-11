@@ -30,7 +30,12 @@ defmodule Absinthe.Phase.Document.Arguments.Defaults do
   defp fill_defaults(arguments, schema_args, source_location) do
     arguments
     |> Enum.filter(&(&1.schema_node))
-    |> Enum.reduce(schema_args, &Map.delete(&2, &1.schema_node.__reference__.identifier))
+    |> Enum.reduce(schema_args, fn
+      %{schema_node: %{__reference__: %{identifier: id}}} = arg, acc ->
+        Map.delete(acc, id)
+      other, acc ->
+        acc
+    end)
     |> Enum.reduce(arguments, fn
       {_, %{default_value: nil}}, arguments ->
         arguments

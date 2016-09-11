@@ -39,6 +39,7 @@ defmodule Absinthe.Phase.Validation.KnownTypeNamesTest do
 
   describe "Validate: Known type names" do
 
+    @tag :tester
     it "known type names are valid" do
       assert_passes_rule(@rule,
         """

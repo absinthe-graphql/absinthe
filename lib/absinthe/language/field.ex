@@ -29,9 +29,12 @@ defmodule Absinthe.Language.Field do
         selections: Absinthe.Blueprint.Draft.convert(selections(node.selection_set), doc),
         arguments: Absinthe.Blueprint.Draft.convert(node.arguments, doc),
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
-        source_location: Blueprint.Document.SourceLocation.at(node.loc.start_line),
+        source_location: source_location(node),
       }
     end
+    
+    defp source_location(%{loc: nil}), do: nil
+    defp source_location(%{loc: loc}), do: Blueprint.Document.SourceLocation.at(loc.start_line)
 
     @spec selections(nil | Language.SelectionSet.t) :: [Language.Field.t | Language.InlineFragment.t | Language.FragmentSpread.t]
     defp selections(nil), do: []

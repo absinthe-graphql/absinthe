@@ -169,7 +169,7 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
 
   defp generate_missing_arguments(node, adapter) do
     Enum.flat_map(node.schema_node.args, fn
-      {_, %Type.Argument{type: %Type.NonNull{}} = schema_argument} ->
+      {_, %Type.Argument{type: %Type.NonNull{}, deprecation: nil} = schema_argument} ->
         if Enum.any?(node.arguments, &(match?(%Blueprint.Input.Argument{schema_node: ^schema_argument}, &1))) do
           []
         else

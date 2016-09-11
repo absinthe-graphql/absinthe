@@ -141,16 +141,6 @@ defmodule Absinthe do
     defexception message: "execution failed"
   end
 
-  defmodule SyntaxError do
-    @moduledoc """
-    An error during parsing.
-    """
-    defexception source: nil, location: nil, message: ""
-    def message(exception) do
-      "#{exception.message} on line #{exception.location.line}"
-    end
-  end
-
   def parse(input) do
     Absinthe.Phase.Parse.run(input)
   end

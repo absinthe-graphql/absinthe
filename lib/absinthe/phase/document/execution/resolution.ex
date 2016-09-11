@@ -5,63 +5,86 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   While this phase starts with a blueprint, it returns an annotated value tree.
   """
 
-  alias Absinthe.Phase.Document.Execution
-  alias Absinthe.{Type}
+  alias Absinthe.{Blueprint, Type}
+
+  alias __MODULE__
 
   use Absinthe.Phase
 
-  # Assumes the blueprint has a schema
-  def run(blueprint, _selected_operation, context \\ %{}, root_value \\ %{}) do
-    blueprint.operations
-    |> Enum.find(&(&1.current))
-    |> resolve_operation(%Absinthe.Execution.Field{context: context, root_value: root_value, schema: blueprint.schema}, root_value)
-  end
-
-  def resolve_operation(operation, info, source) do
-    {:ok, %Execution.ResultObject{
-      blueprint_node: nil,
-      name: operation.name,
-      fields: resolve_fields(operation.fields, info, source),
-    }}
-  end
-
-  defp filter_valid_arguments(arguments) do
-    arguments
-    |> Enum.reject(&invalid_argument?/1)
-    |> Map.new(fn arg ->
-      {arg.schema_node.__reference__.identifier, arg.data_value}
+  def run(bp_root, context, root_value) do
+    bp_root = Blueprint.update_current(bp_root, fn
+      op ->
+        field = %Resolution.Info{
+          adapter: bp_root.adapter,
+          context: context,
+          root_value: root_value,
+          schema: bp_root.schema,
+          source: root_value,
+        }
+        resolution = resolve_operation(op, bp_root, field, root_value)
+        %{op | resolution: resolution}
     end)
+    {:ok, bp_root}
   end
 
-  defp invalid_argument?(%{flags: %{invalid: _}}), do: true
-  defp invalid_argument?(%{data_value: nil}), do: true
-  defp invalid_argument?(_), do: false
+  def resolve_operation(operation, bp_root, info, source) do
+    info = %{
+      info |
+      parent_type: bp_root.schema.__absinthe_type__(operation.type)
+    }
+    %Blueprint.Document.Result.Object{
+      name: operation.name,
+      fields: resolve_fields(operation, bp_root, info, source),
+    }
+  end
 
-  def resolve_field(field, info, source) do
+  def resolve_field(field, bp_root, info, source) do
     info = update_info(info, field, source)
 
-    case field.flags do
-      %{invalid: _} ->
-        {:error, %{message: "Field has invalid arguments"}}
-      _ ->
-        field.arguments
-        |> filter_valid_arguments
-        |> call_resolution_function(field, info, source)
-        |> case do
-          {:ok, result} ->
-            full_type = Type.expand(field.schema_node.type, info.schema)
-            walk_result(result, field, full_type, info)
-          {:error, msg} ->
-            {:error, %{message: msg}}
-          other ->
-            raise """
-            Resolution function did not return `{:ok, val}` or `{:error, reason}`
-            Resolving field: #{field.name}
-            Resolving on: #{inspect source}
-            Got: #{inspect other}
-            """
-        end
+    field.arguments
+    |> Absinthe.Blueprint.Input.Argument.value_map
+    |> call_resolution_function(field, info, source)
+    |> build_result(bp_root, field, info, source)
+  end
+
+  defp resolve_fields(parent, bp_root, info, source) do
+    parent_type = case parent.schema_node do
+      %Type.Field{} = schema_node ->
+        info.schema.__absinthe_type__(schema_node.type)
+      other ->
+        other
     end
+    info = %{info | parent_type: parent_type}
+
+    parent.fields
+    |> Enum.filter(&field_applies?(&1, bp_root, source, parent.schema_node))
+    |> do_resolve_fields(bp_root, info, source, [])
+  end
+
+  defp do_resolve_fields(fields, bp_root, info, source, acc)
+  defp do_resolve_fields([], _, _, _, acc), do: :lists.reverse(acc)
+  defp do_resolve_fields([%{schema_node: nil} | fields], bp_root, info, source, acc) do
+    do_resolve_fields(fields, bp_root, info, source, acc)
+  end
+  defp do_resolve_fields([field | fields], bp_root, info, source, acc) do
+    result = resolve_field(field, bp_root, info, source)
+    do_resolve_fields(fields, bp_root, info, source, [result | acc])
+  end
+
+  defp build_result({:ok, result}, bp_root, field, info, _) do
+    full_type = Type.expand(field.schema_node.type, info.schema)
+    walk_result(result, bp_root, field, full_type, info)
+  end
+  defp build_result({:error, msg}, _, _, _, _) do
+    {:error, %{message: msg}}
+  end
+  defp build_result(other, _, field, _, source) do
+    raise """
+    Resolution function did not return `{:ok, val}` or `{:error, reason}`
+    Resolving field: #{field.name}
+    Resolving on: #{inspect source}
+    Got: #{inspect other}
+    """
   end
 
   def call_resolution_function(args, %{schema_node: %{resolve: nil}} = field, info, source) do
@@ -77,9 +100,12 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp update_info(info, field, source) do
-    info
-    |> Map.put(:source, source)
-    |> Map.put(:definition, %{name: field.name}) # This is so that the function can know what field it's in.
+    %{
+      info |
+      source: source,
+      # This is so that the function can know what field it's in.
+      definition: field.schema_node
+    }
   end
 
   @doc """
@@ -89,84 +115,107 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   # - No non null checking
   # -
 
-  ## Leaf nodes
+  ## Leaf bp_nodes
 
-  def walk_result(nil, bp, _, _) do
-    {:ok, %Execution.Result{
-      # blueprint_node: bp,
-      name: bp.alias || bp.name,
+  def walk_result(nil, _, bp_node, _, _) do
+    {:ok, %Blueprint.Document.Result.Leaf{
+      name: bp_node.alias || bp_node.name,
       value: nil
     }}
   end
-  # Resolve item of type scalar
-  def walk_result(item, bp, %Type.Scalar{} = schema_type, _info) do
-    {:ok, %Execution.Result{
-      # blueprint_node: bp,
-      name: bp.alias || bp.name,
-      value: Type.Scalar.serialize(schema_type, item)
+  # Resolve value of type scalar
+  def walk_result(value, _, bp_node, %Type.Scalar{} = schema_type, _) do
+    {:ok, %Blueprint.Document.Result.Leaf{
+      name: bp_node.alias || bp_node.name,
+      value: Type.Scalar.serialize(schema_type, value)
     }}
   end
   # Resolve Enum type
-  def walk_result(item, bp, %Type.Enum{} = schema_type, _info) do
-    {:ok, %Execution.Result{
-      # blueprint_node: bp,
-      name: bp.alias || bp.name,
-      value: Type.Enum.serialize!(schema_type, item)
+  def walk_result(value, _, bp_node, %Type.Enum{} = schema_type, _) do
+    {:ok, %Blueprint.Document.Result.Leaf{
+      name: bp_node.alias || bp_node.name,
+      value: Type.Enum.serialize!(schema_type, value)
     }}
   end
 
-  def walk_result(item, bp, %Type.Object{}, info) do
-    {:ok, %Execution.ResultObject{
-      # blueprint_node: bp,
-      name: bp.alias || bp.name,
-      fields: resolve_fields(bp.fields, info, item),
+  def walk_result(value, bp_root, bp_node, %Type.Object{}, info) do
+    {:ok, %Blueprint.Document.Result.Object{
+      name: bp_node.alias || bp_node.name,
+      fields: resolve_fields(bp_node, bp_root, info, value),
     }}
   end
 
-  def walk_result(items, bp, %Type.List{of_type: inner_type}, info) do
+  def walk_result(value, bp_root, bp_node, %Type.Interface{}, info) do
+    {:ok, %Blueprint.Document.Result.Object{
+      name: bp_node.alias || bp_node.name,
+      fields: resolve_fields(bp_node, bp_root, info, value),
+    }}
+  end
+
+  def walk_result(value, bp_root, bp_node, %Type.Union{}, info) do
+    {:ok, %Blueprint.Document.Result.Object{
+      name: bp_node.alias || bp_node.name,
+      fields: resolve_fields(bp_node, bp_root, info, value),
+    }}
+  end
+
+  def walk_result(values, bp_root, bp_node, %Type.List{of_type: inner_type}, info) do
     values =
-      items
-      |> List.wrap # if it's just a single item we're supposed to wrap it in a list anyway.
-      |> walk_results(bp, inner_type, info)
+      values
+      |> List.wrap
+      |> walk_results(bp_root, bp_node, inner_type, info)
 
-    {:ok, %Execution.ResultList{name: bp.name, values: values}}
+    {:ok, %Blueprint.Document.Result.List{name: bp_node.name, values: values}}
   end
 
-  def walk_result(nil, _, %Type.NonNull{}, _) do
+  def walk_result(nil, _, _, %Type.NonNull{}, _) do
     # We may want to raise here because this is a programmer error in some sense
     # not a graphql user error.
     # TODO: handle default value. Are there even default values on output types?
     {:error, "Supposed to be non nil"}
   end
 
-  def walk_result(val, bp, %Type.NonNull{of_type: inner_type}, info) do
-    walk_result(val, bp, inner_type, info)
+  def walk_result(val, bp_root, bp_node, %Type.NonNull{of_type: inner_type}, info) do
+    walk_result(val, bp_root, bp_node, inner_type, info)
   end
-  def walk_result(a, b, c, d) do
-    IO.inspect [
-      a: a,
-      b: b,
-      c: c,
-      d: d
-    ]
-    raise "dead"
+  def walk_result(_value, _bp_root, _bp_node, _schema_node, _info) do
+    raise "Could not walk result."
   end
 
-  defp walk_results(items, bp, inner_type, info, acc \\ [])
-  defp walk_results([], _, _, _, acc), do: :lists.reverse(acc)
-  defp walk_results([item | items], bp, inner_type, info, acc) do
-    result = walk_result(item, bp, inner_type, info)
-    walk_results(items, bp, inner_type, info, [result | acc])
+  defp walk_results(values, bp_root, bp_node, inner_type, info, acc \\ [])
+  defp walk_results([], _, _, _, _, acc), do: :lists.reverse(acc)
+  defp walk_results([value | values], bp_root, bp_node, inner_type, info, acc) do
+    result = walk_result(value, bp_root, bp_node, inner_type, info)
+    walk_results(values, bp_root, bp_node, inner_type, info, [result | acc])
   end
 
-  defp resolve_fields(fields, info, item, acc \\ [])
-  defp resolve_fields([], _, _, acc), do: :lists.reverse(acc)
-  defp resolve_fields([%{schema_node: nil} | fields], info, item, acc) do
-    resolve_fields(fields, info, item, acc)
+  def field_applies?(%{type_conditions: []}, _, _, _) do
+    true
   end
-  defp resolve_fields([field | fields], info, item, acc) do
-    result = resolve_field(field, info, item)
-    resolve_fields(fields, info, item, [result | acc])
+  def field_applies?(field, bp_root, _, schema_type) do
+    target_type = find_target_type(schema_type, bp_root.schema)
+    field.type_conditions
+    |> Enum.map(&(bp_root.schema.__absinthe_type__(&1.name)))
+    |> Enum.all?(&passes_type_condition?(&1, target_type))
+  end
+
+  def find_target_type(schema_type, schema) when is_atom(schema_type) do
+    schema.__absinthe_type__(schema_type)
+  end
+  def find_target_type(%{type: type}, schema) do
+    find_target_type(type, schema)
+  end
+
+  # TODO: Interface, etc
+  defp passes_type_condition?(equal, equal), do: true
+  defp passes_type_condition?(%Type.Object{} = type, %Type.Union{} = condition) do
+    Type.Union.member?(condition, type)
+  end
+  defp passes_type_condition?(%Type.Object{} = type, %Type.Interface{} = condition) do
+    Type.Interface.member?(condition, type)
+  end
+  defp passes_type_condition?(_, _) do
+    false
   end
 
 end
