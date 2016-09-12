@@ -83,7 +83,6 @@ defmodule Absinthe.Type.InterfaceTest do
 
     describe "with the interface as a field type" do
 
-      @tag :iface
       it "can select fields that are declared by the interface" do
         result = """
         { contact { entity { name } } }

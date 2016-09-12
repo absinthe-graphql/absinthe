@@ -180,7 +180,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         _, %{source: %Absinthe.Type.InputObject{fields: fields}} ->
           structs = fields |> Map.values
           {:ok, structs}
-        _, _ ->
+        _, %{source: _} ->
           {:ok, nil}
       end
 

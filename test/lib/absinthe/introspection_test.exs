@@ -5,7 +5,6 @@ defmodule Absinthe.IntrospectionTest do
   alias Absinthe.Schema
 
   describe "introspection of an object" do
-    @tag :focus
     it "returns the name of the object type currently being queried without an alias" do
       result = "{ person { __typename name } }" |> run(ContactSchema)
       assert_result {:ok, %{data: %{"person" => %{"name" => "Bruce", "__typename" => "Person"}}}}, result
