@@ -1,8 +1,8 @@
 defmodule Absinthe.Blueprint.Document.Result.Leaf do
 
-  @enforce_keys [:name, :value]
+  @enforce_keys [:emitter, :value]
   defstruct [
-    :name,
+    :emitter,
     :value
   ]
 

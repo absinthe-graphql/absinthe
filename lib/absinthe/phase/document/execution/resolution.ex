@@ -33,7 +33,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       parent_type: bp_root.schema.__absinthe_type__(operation.type)
     }
     %Blueprint.Document.Result.Object{
-      name: operation.name,
+      emitter: operation,
       fields: resolve_fields(operation, bp_root, info, source),
     }
   end
@@ -119,42 +119,42 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   def walk_result(nil, _, bp_node, _, _) do
     {:ok, %Blueprint.Document.Result.Leaf{
-      name: bp_node.alias || bp_node.name,
+      emitter: bp_node,
       value: nil
     }}
   end
   # Resolve value of type scalar
   def walk_result(value, _, bp_node, %Type.Scalar{} = schema_type, _) do
     {:ok, %Blueprint.Document.Result.Leaf{
-      name: bp_node.alias || bp_node.name,
+      emitter: bp_node,
       value: Type.Scalar.serialize(schema_type, value)
     }}
   end
   # Resolve Enum type
   def walk_result(value, _, bp_node, %Type.Enum{} = schema_type, _) do
     {:ok, %Blueprint.Document.Result.Leaf{
-      name: bp_node.alias || bp_node.name,
+      emitter: bp_node,
       value: Type.Enum.serialize!(schema_type, value)
     }}
   end
 
   def walk_result(value, bp_root, bp_node, %Type.Object{}, info) do
     {:ok, %Blueprint.Document.Result.Object{
-      name: bp_node.alias || bp_node.name,
+      emitter: bp_node,
       fields: resolve_fields(bp_node, bp_root, info, value),
     }}
   end
 
   def walk_result(value, bp_root, bp_node, %Type.Interface{}, info) do
     {:ok, %Blueprint.Document.Result.Object{
-      name: bp_node.alias || bp_node.name,
+      emitter: bp_node,
       fields: resolve_fields(bp_node, bp_root, info, value),
     }}
   end
 
   def walk_result(value, bp_root, bp_node, %Type.Union{}, info) do
     {:ok, %Blueprint.Document.Result.Object{
-      name: bp_node.alias || bp_node.name,
+      emitter: bp_node,
       fields: resolve_fields(bp_node, bp_root, info, value),
     }}
   end
@@ -165,7 +165,9 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       |> List.wrap
       |> walk_results(bp_root, bp_node, inner_type, info)
 
-    {:ok, %Blueprint.Document.Result.List{name: bp_node.name, values: values}}
+    {:ok, %Blueprint.Document.Result.List{
+      emitter: bp_node,
+      values: values}}
   end
 
   def walk_result(nil, _, _, %Type.NonNull{}, _) do
@@ -189,14 +191,15 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     walk_results(values, bp_root, bp_node, inner_type, info, [result | acc])
   end
 
-  def field_applies?(%{type_conditions: []}, _, _, _) do
+  def field_applies?(%{name: name, type_conditions: []}, _, _, _) do
     true
   end
-  def field_applies?(field, bp_root, _, schema_type) do
+  def field_applies?(field, bp_root, source, schema_type) do
     target_type = find_target_type(schema_type, bp_root.schema)
-    field.type_conditions
+    value = field.type_conditions
     |> Enum.map(&(bp_root.schema.__absinthe_type__(&1.name)))
-    |> Enum.all?(&passes_type_condition?(&1, target_type))
+    |> Enum.all?(&passes_type_condition?(&1, target_type, source, bp_root.schema))
+    value
   end
 
   def find_target_type(schema_type, schema) when is_atom(schema_type) do
@@ -207,14 +210,20 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   # TODO: Interface, etc
-  defp passes_type_condition?(equal, equal), do: true
-  defp passes_type_condition?(%Type.Object{} = type, %Type.Union{} = condition) do
-    Type.Union.member?(condition, type)
+  defp passes_type_condition?(equal, equal, _, _), do: true
+  defp passes_type_condition?(%Type.Object{} = condition, %Type.Union{} = type, _, schema) do
+    Type.Union.member?(type, condition)
   end
-  defp passes_type_condition?(%Type.Object{} = type, %Type.Interface{} = condition) do
-    Type.Interface.member?(condition, type)
+  defp passes_type_condition?(%Type.Object{} = condition, %Type.Interface{} = type, source, schema) do
+    case Type.Interface.member?(type, condition) do
+      true ->
+        concrete_type = Type.Interface.resolve_type(type, source, %{schema: schema})
+        passes_type_condition?(condition, concrete_type, source, schema)
+      other ->
+        other
+    end
   end
-  defp passes_type_condition?(_, _) do
+  defp passes_type_condition?(condition, type, _, _) do
     false
   end
 
