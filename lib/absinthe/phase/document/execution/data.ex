@@ -16,7 +16,7 @@ defmodule Absinthe.Phase.Document.Execution.Data do
   end
 
   defp process(%Blueprint.Document.Operation{resolution: tree}) do
-    {data, errors} = get_field_data(tree.fields, [])
+    {data, errors} = field_data(tree.fields, [])
     %{data: data, errors: errors}
   end
 
@@ -28,31 +28,35 @@ defmodule Absinthe.Phase.Document.Execution.Data do
   end
 
   # Leaf
-  def get_data(%{value: value}, errors), do: {value, errors}
+  defp data(%{value: value}, errors), do: {value, errors}
 
   # Object
-  def get_data(%{fields: fields}, errors), do: get_field_data(fields, errors)
+  defp data(%{fields: fields}, errors), do: field_data(fields, errors)
 
   # List
-  def get_data(%{values: values}, errors), do: get_list_data(values, errors)
+  defp data(%{values: values}, errors), do: list_data(values, errors)
 
-  def get_list_data(fields, errors, acc \\ [])
-  def get_list_data([], errors, acc), do: {:lists.reverse(acc), errors}
-  def get_list_data([{:ok, field} | fields], errors, acc) do
-    {value, errors} = get_data(field, errors)
-    get_list_data(fields, errors, [value | acc])
+  defp list_data(fields, errors, acc \\ [])
+  defp list_data([], errors, acc), do: {:lists.reverse(acc), errors}
+  defp list_data([{:ok, field} | fields], errors, acc) do
+    {value, errors} = data(field, errors)
+    list_data(fields, errors, [value | acc])
   end
-  def get_list_data([{:error, error} | fields], errors, acc) do
-    get_list_data(fields, List.wrap(error) ++ errors, acc)
+  defp list_data([{:error, error} | fields], errors, acc) do
+    list_data(fields, List.wrap(error) ++ errors, acc)
   end
 
-  def get_field_data(fields, errors, acc \\ [])
-  def get_field_data([], errors, acc), do: {:maps.from_list(acc), errors}
-  def get_field_data([{:ok, field} | fields], errors, acc) do
-    {value, errors} = get_data(field, errors)
-    get_field_data(fields, errors, [{field.name, value} | acc])
+  defp field_data(fields, errors, acc \\ [])
+  defp field_data([], errors, acc), do: {:maps.from_list(acc), errors}
+  defp field_data([{:ok, field} | fields], errors, acc) do
+    {value, errors} = data(field, errors)
+    field_data(fields, errors, [{field_name(field), value} | acc])
   end
-  def get_field_data([{:error, error} | fields], errors, acc) do
-    get_field_data(fields, List.wrap(error) ++ errors, acc)
+  defp field_data([{:error, error} | fields], errors, acc) do
+    field_data(fields, List.wrap(error) ++ errors, acc)
   end
+
+  defp field_name(%{emitter: %{alias: nil, name: name}}), do: name
+  defp field_name(%{emitter: %{alias: name}}), do: name
+  defp field_name(%{emitter: %{name: name}}), do: name
 end

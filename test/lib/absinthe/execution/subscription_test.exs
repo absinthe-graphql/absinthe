@@ -23,7 +23,6 @@ defmodule Absinthe.Execution.SubscriptionTest do
       thing(clientId: $clientId)
     }
     """
-    @tag :focus
     it "can be executed" do
       assert {:ok, %{data: %{"thing" => "subscribed-abc"}}} == run(@query, Schema, variables: %{"clientId" => "abc"})
     end

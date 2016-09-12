@@ -13,28 +13,27 @@ defmodule Absinthe.Phase.Document.Flatten do
 
   @spec run(Blueprint.t) :: {:ok, Blueprint.t}
   def run(input) do
-    # TODO: Pass a Map of the fragments by name
-    {result, _} = Blueprint.postwalk(input, input.fragments, &flatten/2)
+    fragments = for fragment <- input.fragments do
+      process(fragment, input.fragments)
+    end
+    input = %{input | fragments: fragments}
+    result = input
+    |> Blueprint.update_current(&process(&1, input.fragments))
     {:ok, result}
   end
 
-  defp flatten(%{selections: selections, fields: _} = node, fragments) do
-    fields = Enum.map(selections, &selection_to_fields(&1, fragments))
-    |> List.flatten
+  defp process(%{selections: selections} = node, fragments) do
+    fields = Enum.flat_map(selections, &selection_to_fields(&1, fragments))
     |> inherit_type_condition(node)
-    {
-      %{node | fields: fields},
-      fragments
-    }
-  end
-  defp flatten(node, fragments) do
-    {node, fragments}
+    %{node | fields: fields}
   end
 
   @spec selection_to_fields(Blueprint.Document.selection_t, [Blueprint.Document.Fragment.Named.t]) :: [Blueprint.Document.Field.t]
-  defp selection_to_fields(%Blueprint.Document.Field{} = node, _) do
+  defp selection_to_fields(%Blueprint.Document.Field{} = node, fragments) do
     if include?(node) do
-      [node]
+      [
+        process(node, fragments)
+      ]
     else
       []
     end
@@ -47,6 +46,7 @@ defmodule Absinthe.Phase.Document.Flatten do
           |> Enum.map(&selection_to_fields(&1, fragments))
           |> List.flatten
           |> inherit_type_condition(node)
+          |> Enum.map(&process(&1, fragments))
         _ ->
           node.fields
       end
@@ -62,6 +62,7 @@ defmodule Absinthe.Phase.Document.Flatten do
           |> Enum.map(&selection_to_fields(&1, fragments))
           |> List.flatten
           |> inherit_type_condition(node)
+          |> Enum.map(&process(&1, fragments))
         _ ->
           node.fields
       end
@@ -69,14 +70,15 @@ defmodule Absinthe.Phase.Document.Flatten do
       []
     end
   end
-  defp selection_to_fields(%Blueprint.Document.Fragment.Spread{} = node, fragments) do
-    if include?(node) do
-      named = fragments |> Enum.find(&(&1.name == node.name))
-      selection_to_fields(named, fragments)
-    else
-      []
-    end
-  end
+
+   defp selection_to_fields(%Blueprint.Document.Fragment.Spread{} = node, fragments) do
+     if include?(node) do
+       named = fragments |> Enum.find(&(&1.name == node.name))
+       selection_to_fields(named, fragments)
+     else
+       []
+     end
+   end
 
   @spec inherit_type_condition([Blueprint.Document.Field.t], Blueprint.Document.t) :: [Blueprint.Document.t]
   defp inherit_type_condition(fields, %{type_condition: nil}) do

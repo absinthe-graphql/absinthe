@@ -119,6 +119,40 @@ defmodule Absinthe.Phase.Document.FlattenTest do
     end
   end
 
+  @introspection_query """
+  query Q {
+    __type(name: "ProfileInput") {
+      name
+      kind
+      fields {
+        name
+      }
+      ...Inputs
+    }
+  }
+
+  fragment Inputs on __Type {
+    inputFields { name }
+  }
+  """
+
+  describe "an introspection query" do
+
+    it "has its selections flattened to fields" do
+      pre = Pipeline.for_document(ContactSchema)
+      |> Pipeline.before(Phase.Document.Flatten)
+      {:ok, blueprint} = Pipeline.run(@introspection_query, pre)
+      {:ok, result} = Phase.Document.Flatten.run(blueprint)
+      op = Blueprint.current_operation(result)
+      assert Blueprint.find(op, fn
+        %Blueprint.Document.Field{name: "inputFields", fields: [%{name: "name"}]} ->
+          true
+        _ ->
+          false
+      end), "Could not find the `name` field flattened inside `inputFields`"
+    end
+  end
+
   def input(query, variables \\ %{}) do
     {:ok, result} = blueprint(query, variables)
     |> Phase.Document.Flatten.run

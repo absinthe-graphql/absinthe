@@ -298,7 +298,7 @@ defmodule AbsintheTest do
     end
 
     it "returns the correct result using fragments for introspection" do
-      assert {:ok, %{data: %{"__type" => %{"name" => "ProfileInput", "kind" => "INPUT_OBJECT", "fields" => nil, "inputFields" => input_fields}}}} = Absinthe.run(@introspection_fragment, ContactSchema)
+      assert {:ok, %{data: %{"__type" => %{"name" => "ProfileInput", "kind" => "INPUT_OBJECT", "fields" => nil, "inputFields" => input_fields}}}} = run(@introspection_fragment, ContactSchema)
       correct = [%{"name" => "code"}, %{"name" => "name"}, %{"name" => "age"}]
       sort = &(&1["name"])
       assert Enum.sort_by(input_fields, sort) == Enum.sort_by(correct, sort)
