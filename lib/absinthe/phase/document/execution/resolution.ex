@@ -191,7 +191,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     walk_results(values, bp_root, bp_node, inner_type, info, [result | acc])
   end
 
-  def field_applies?(%{name: name, type_conditions: []}, _, _, _) do
+  def field_applies?(%{name: _, type_conditions: []}, _, _, _) do
     true
   end
   def field_applies?(field, bp_root, source, schema_type) do
@@ -211,7 +211,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   # TODO: Interface, etc
   defp passes_type_condition?(equal, equal, _, _), do: true
-  defp passes_type_condition?(%Type.Object{} = condition, %Type.Union{} = type, _, schema) do
+  defp passes_type_condition?(%Type.Object{} = condition, %Type.Union{} = type, _, _) do
     Type.Union.member?(type, condition)
   end
   defp passes_type_condition?(%Type.Object{} = condition, %Type.Interface{} = type, source, schema) do
@@ -223,7 +223,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
         other
     end
   end
-  defp passes_type_condition?(condition, type, _, _) do
+  defp passes_type_condition?(_, _, _, _) do
     false
   end
 

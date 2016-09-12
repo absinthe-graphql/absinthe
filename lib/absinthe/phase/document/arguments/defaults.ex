@@ -31,9 +31,9 @@ defmodule Absinthe.Phase.Document.Arguments.Defaults do
     arguments
     |> Enum.filter(&(&1.schema_node))
     |> Enum.reduce(schema_args, fn
-      %{schema_node: %{__reference__: %{identifier: id}}} = arg, acc ->
+      %{schema_node: %{__reference__: %{identifier: id}}}, acc ->
         Map.delete(acc, id)
-      other, acc ->
+      _, acc ->
         acc
     end)
     |> Enum.reduce(arguments, fn

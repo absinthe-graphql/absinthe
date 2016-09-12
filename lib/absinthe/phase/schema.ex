@@ -29,7 +29,7 @@ defmodule Absinthe.Phase.Schema do
     selections_with_schema = Enum.map(node.selections, &selection_with_schema_node(&1, schema_node, schema, adapter))
     %{node | schema_node: schema_node, selections: selections_with_schema}
   end
-  defp handle_node(%Blueprint.Document.Fragment.Inline{type_condition: nil} = node, schema, adapter) do
+  defp handle_node(%Blueprint.Document.Fragment.Inline{type_condition: nil} = node, _, _) do
     node
   end
 
