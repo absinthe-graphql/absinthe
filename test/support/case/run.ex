@@ -5,7 +5,7 @@ defmodule Absinthe.Case.Run do
     pipeline = if System.get_env("DEBUG") do
       pipeline
       |> Absinthe.Pipeline.insert_before(
-        Absinthe.Phase.Document.Execution.Resolution,
+        Absinthe.Phase.Document.Execution.Data,
         Absinthe.Phase.Debug
       )
     else
