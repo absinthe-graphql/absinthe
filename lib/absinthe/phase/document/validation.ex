@@ -18,11 +18,13 @@ defmodule Absinthe.Phase.Document.Validation do
 
   @data_rules [
     Phase.Validation.KnownDirectives,
+    Phase.Document.Validation.VariablesAreInputTypes,
     Phase.Document.Validation.ArgumentsOfCorrectType,
     Phase.Document.Validation.KnownArgumentNames,
     Phase.Document.Validation.ProvidedNonNullArguments,
     Phase.Document.Validation.UniqueArgumentNames,
     Phase.Document.Validation.UniqueInputFieldNames,
+    Phase.Document.Validation.FieldsOnCorrectType,
   ]
 
   def structural_pipeline do

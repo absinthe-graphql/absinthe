@@ -34,7 +34,7 @@ defmodule AbsintheTest do
       }
     }
     """
-    assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: "Field `bad': Not present in schema", locations: [%{line: 4, column: 0}]}]}}, run(query, Things)
+    assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: ~s(Cannot query field "bad" on type "Thing".)}]}}, run(query, Things)
   end
 
   it "warns of unknown fields" do
@@ -109,7 +109,7 @@ defmodule AbsintheTest do
         }
       }
     """
-    assert_result {:ok, %{data: %{"thingByContext" => %{"name" => "Bar"}}}}, run(query, context: %{thing: "bar"})
+    assert_result {:ok, %{data: %{"thingByContext" => %{"name" => "Bar"}}}}, run(query, Things, context: %{thing: "bar"})
     assert_result {:ok, %{data: %{},
                           errors: [%{message: "Field `thingByContext': No :id context provided"}]}}, run(query, Things)
   end
@@ -161,7 +161,7 @@ defmodule AbsintheTest do
         }
       }
     """
-    result = run(query, variables: %{"thingId" => "bar"})
+    result = run(query, Things, variables: %{"thingId" => "bar"})
     assert_result {:ok, %{data: %{}, errors: [%{message: "Variable `other' (String): Not provided"}]}}, result
   end
 

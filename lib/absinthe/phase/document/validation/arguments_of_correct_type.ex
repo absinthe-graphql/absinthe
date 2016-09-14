@@ -20,6 +20,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
   @spec handle_node(Blueprint.node_t, Schema.t) :: Blueprint.node_t
   defp handle_node(%Blueprint.Input.Argument{schema_node: %{type: _}, normalized_value: norm, data_value: nil} = node, schema) when not is_nil(norm) do
     node
+    |> flag_invalid(:bad_argument)
     |> put_error(error(node, error_message(node, schema)))
   end
   defp handle_node(%Blueprint.Input.Object{flags: %{invalid: _}} = node, schema) do

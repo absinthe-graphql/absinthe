@@ -8,7 +8,7 @@ defmodule Absinthe.Phase.Schema do
   """
   use Absinthe.Phase
 
-  alias Absinthe.{Blueprint, Type}
+  alias Absinthe.{Blueprint, Type, Schema}
 
   @spec run(Blueprint.t, Absinthe.Schema.t, Absinthe.Adapter.t) :: {:ok, Blueprint.t}
   def run(input, schema, adapter \\ Absinthe.Adapter.LanguageConventions) do
@@ -28,6 +28,14 @@ defmodule Absinthe.Phase.Schema do
     schema_node = schema.__absinthe_type__(node.type_condition.name)
     selections_with_schema = Enum.map(node.selections, &selection_with_schema_node(&1, schema_node, schema, adapter))
     %{node | schema_node: schema_node, selections: selections_with_schema}
+  end
+  defp handle_node(%Blueprint.Document.VariableDefinition{type: type_reference} = node, schema, adapter) do
+    type = type_reference_to_type(type_reference, schema)
+    if Type.unwrap(type) do
+      %{node | schema_node: type}
+    else
+      node
+    end
   end
   defp handle_node(%Blueprint.Document.Fragment.Inline{type_condition: nil} = node, _, _) do
     node
@@ -51,6 +59,20 @@ defmodule Absinthe.Phase.Schema do
   end
   defp handle_node(node, _, _) do
     node
+  end
+
+  @type_mapping %{
+    Blueprint.TypeReference.List => Type.List,
+    Blueprint.TypeReference.NonNull => Type.NonNull
+  }
+  defp type_reference_to_type(%Blueprint.TypeReference.Name{} = node, schema) do
+    Schema.lookup_type(schema, node.name)
+  end
+  for {blueprint_type, core_type} <- @type_mapping do
+    defp type_reference_to_type(%unquote(blueprint_type){} = node, schema) do
+      inner = type_reference_to_type(node.of_type, schema)
+      %unquote(core_type){of_type: inner}
+    end
   end
 
   # Given a blueprint field node, fill in its schema node

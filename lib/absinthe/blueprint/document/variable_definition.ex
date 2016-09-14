@@ -12,7 +12,7 @@ defmodule Absinthe.Blueprint.Document.VariableDefinition do
     flags: %{},
     provided_value: nil,
     errors: [],
-    schema_type: nil,
+    schema_node: nil,
   ]
 
   @type t :: %__MODULE__{
@@ -23,7 +23,7 @@ defmodule Absinthe.Blueprint.Document.VariableDefinition do
     provided_value: nil | Blueprint.Input.t,
     errors: [Absinthe.Phase.Error.t],
     flags: Blueprint.flags_t,
-    schema_type: Type.t,
+    schema_node: Type.t,
   }
 
 end

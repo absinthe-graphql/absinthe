@@ -5,7 +5,9 @@ defmodule Absinthe.Phase.Debug do
 
   @spec run(any) :: {:ok, Blueprint.t}
   def run(input) do
-    IO.inspect(input)
+    if System.get_env("DEBUG") do
+      IO.inspect(input)
+    end
     {:ok, input}
   end
 

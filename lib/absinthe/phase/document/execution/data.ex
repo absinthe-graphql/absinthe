@@ -84,7 +84,11 @@ defmodule Absinthe.Phase.Document.Execution.Data do
     %{message: error.message}
   end
   defp format_error(%Phase.Error{} = error) do
-    %{message: error.message, locations: error.locations}
+    %{message: error.message, locations: Enum.map(error.locations, &format_location/1)}
+  end
+
+  defp format_location(%{line: line, column: col}) do
+    %{line: line || 0, column: col || 0}
   end
 
 end
