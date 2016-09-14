@@ -71,13 +71,6 @@ defmodule Absinthe.Phase.Document.Arguments.DataTest do
       assert nil == arg.data_value
     end
 
-    @tag :pending # Requires validation
-    it "sets data_value ignoring invalid, provided data" do
-      {:ok, result} = run_phase(@query, variables: %{"input" => %{"name" => [], "age" => 36}})
-      arg = named(result, Blueprint.Input.Argument, "input")
-      assert %{age: 36} == arg.data_value
-    end
-
     it "sets data_value to a scalar value, given one" do
       {:ok, result} = run_phase(@query, variables: %{"id" => "234"})
       arg = named(result, Blueprint.Input.Argument, "id")

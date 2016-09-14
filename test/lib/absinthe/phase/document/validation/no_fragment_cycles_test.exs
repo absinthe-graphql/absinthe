@@ -16,8 +16,6 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
       """
       |> run
     end
-
-    @tag :old_errors
     it "should return an error if the named fragment tries to use itself" do
 
       {:error, blueprint} = """
@@ -35,8 +33,6 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
           false
      end)
     end
-
-    @tag :old_errors
     it "should add errors to named fragments that form a cycle" do
       {:error, blueprint} = """
       {

@@ -19,6 +19,13 @@ defmodule Absinthe.Type do
   @typedoc "A type reference"
   @type reference_t :: identifier_t | t | wrapping_t
 
+  def identifier(%{__reference__: %{identifier: ident}}) do
+    ident
+  end
+  def identifier(_) do
+    nil
+  end
+
   @doc "Determine if a struct matches one of the types"
   @spec type?(any) :: boolean
   def type?(%{__struct__: mod}) when mod in @type_modules, do: true

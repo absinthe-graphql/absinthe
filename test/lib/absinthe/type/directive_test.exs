@@ -34,8 +34,6 @@ defmodule Absinthe.Type.DirectiveTest do
     it "is defined" do
       assert Schema.lookup_directive(ContactSchema, :skip)
     end
-
-    @tag :old_errors
     it "behaves as expected for a field" do
       assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query_field, ContactSchema, variables: %{"skipPerson" => false})
       assert {:ok, %{data: %{}}} == Absinthe.run(@query_field, ContactSchema, variables: %{"skipPerson" => true})
@@ -71,7 +69,6 @@ defmodule Absinthe.Type.DirectiveTest do
     it "is defined" do
       assert Schema.lookup_directive(ContactSchema, :include)
     end
-    @tag :old_errors
     it "behaves as expected for a field" do
       assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query_field, ContactSchema, variables: %{"includePerson" => true})
       assert {:ok, %{data: %{}}} == Absinthe.run(@query_field, ContactSchema, variables: %{"includePerson" => false})
@@ -94,7 +91,6 @@ defmodule Absinthe.Type.DirectiveTest do
       assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query_fragment, ContactSchema, variables: %{"includeAge" => false})
     end
 
-    @tag :pending
     it "should return an error if the variable is not supplied" do
       assert {:ok, %{errors: errors}} = Absinthe.run(@query_fragment, ContactSchema)
       assert [] != errors

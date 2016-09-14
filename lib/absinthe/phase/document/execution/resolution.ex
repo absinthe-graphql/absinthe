@@ -9,6 +9,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   alias __MODULE__
 
+  alias Absinthe.Phase
   use Absinthe.Phase
 
   def run(bp_root, context, root_value) do
@@ -75,8 +76,10 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     full_type = Type.expand(field.schema_node.type, info.schema)
     walk_result(result, bp_root, field, full_type, info)
   end
-  defp build_result({:error, msg}, _, field, _, _) do
-    {:error, %{message: msg}}
+  defp build_result({:error, msg}, _, field, info, _) do
+    full_type = Type.expand(field.schema_node.type, info.schema)
+    to_result(full_type, emitter: field)
+    |> put_error(error(field, msg))
   end
   defp build_result(other, _, field, _, source) do
     raise """
@@ -118,46 +121,51 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   ## Leaf bp_nodes
 
   def walk_result(nil, _, bp_node, _, _) do
-    {:ok, to_result(nil, emitter: bp_node, value: nil)}
+    to_result(
+      nil,
+      emitter: bp_node,
+      value: nil,
+    )
   end
   # Resolve value of type scalar
   def walk_result(value, _, bp_node, %Type.Scalar{} = schema_type, _) do
-    {
-      :ok,
-      to_result(
-        schema_type,
-        emitter: bp_node,
-        value: Type.Scalar.serialize(schema_type, value)
-      )
-    }
+    to_result(
+      schema_type,
+      emitter: bp_node,
+      value: Type.Scalar.serialize(schema_type, value),
+    )
   end
   # Resolve Enum type
   def walk_result(value, _, bp_node, %Type.Enum{} = schema_type, _) do
-    {
-      :ok,
-      to_result(schema_type, emitter: bp_node, value: Type.Enum.serialize!(schema_type, value))
-    }
+    to_result(
+      schema_type,
+      emitter: bp_node,
+      value: Type.Enum.serialize!(schema_type, value),
+    )
   end
 
   def walk_result(value, bp_root, bp_node, %Type.Object{} = schema_type, info) do
-    {
-      :ok,
-      to_result(schema_type, emitter: bp_node, fields: resolve_fields(bp_node, bp_root, info, value))
-    }
+    to_result(
+      schema_type,
+      emitter: bp_node,
+      fields: resolve_fields(bp_node, bp_root, info, value),
+    )
   end
 
   def walk_result(value, bp_root, bp_node, %Type.Interface{} = schema_type, info) do
-    {
-      :ok,
-      to_result(schema_type, emitter: bp_node, fields: resolve_fields(bp_node, bp_root, info, value))
-    }
+    to_result(
+      schema_type,
+      emitter: bp_node,
+      fields: resolve_fields(bp_node, bp_root, info, value),
+    )
   end
 
   def walk_result(value, bp_root, bp_node, %Type.Union{} = schema_type, info) do
-    {
-      :ok,
-      to_result(schema_type, emitter: bp_node, fields: resolve_fields(bp_node, bp_root, info, value))
-    }
+    to_result(
+      schema_type,
+      emitter: bp_node,
+      fields: resolve_fields(bp_node, bp_root, info, value)
+    )
   end
 
   def walk_result(values, bp_root, bp_node, %Type.List{of_type: inner_type} = schema_type, info) do
@@ -166,14 +174,16 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       |> List.wrap
       |> walk_results(bp_root, bp_node, inner_type, info)
 
-    {:ok, to_result(schema_type, emitter: bp_node, values: values)}
+    to_result(
+      schema_type,
+      emitter: bp_node,
+      values: values,
+    )
   end
 
-  def walk_result(nil, _, _, %Type.NonNull{}, _) do
-    # We may want to raise here because this is a programmer error in some sense
-    # not a graphql user error.
-    # TODO: handle default value. Are there even default values on output types?
-    {:error, "Supposed to be non nil"}
+  def walk_result(nil, _, bp_node, %Type.NonNull{} = schema_type, info) do
+    to_result(schema_type, emitter: bp_node)
+    |> put_error(error(node, "Cannot return null for non-nullable field #{info.parent_type.name}.#{bp_node.name}"))
   end
 
   def walk_result(val, bp_root, bp_node, %Type.NonNull{of_type: inner_type}, info) do
@@ -191,6 +201,10 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     Type.Union => Blueprint.Document.Result.Object,
     Type.List => Blueprint.Document.Result.List,
   }
+  defp to_result(type, values \\ [])
+  defp to_result(%Type.NonNull{of_type: inner_type}, values) do
+    to_result(inner_type, values)
+  end
   defp to_result(nil, values) do
     struct(Blueprint.Document.Result.Leaf, values)
   end

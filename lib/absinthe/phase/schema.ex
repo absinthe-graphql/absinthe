@@ -73,7 +73,13 @@ defmodule Absinthe.Phase.Schema do
   # its parent here so the `handle_node` that takes care of the inline fragment
   #
   defp selection_with_schema_node(%Blueprint.Document.Fragment.Inline{type_condition: nil} = node, parent_schema_node, schema, _) do
-    type = Type.unwrap(Type.expand(parent_schema_node.type, schema))
+    base_type = case parent_schema_node do
+      %{type: type} ->
+        type
+      other ->
+        other
+    end
+    type = Type.unwrap(Type.expand(base_type, schema))
     %{node | type_condition: %Blueprint.TypeReference.Name{name: type.name}}
   end
   defp selection_with_schema_node(node, _, _, _) do

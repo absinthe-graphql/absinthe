@@ -95,8 +95,6 @@ defmodule Absinthe.Execution.ArgumentsTest do
   end
 
   describe "arguments with variables" do
-
-    @tag :old_errors
     it "should raise an error when a non null argument variable is null" do
       doc = """
       query GetContacts($contacts:[ContactInput]){contacts(contacts:$contacts)}
@@ -184,26 +182,17 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"user" => "bubba@joe.com"}}}, doc |> run(Schema, variables: %{"contact" => %{"email" => "bubba@joe.com", "contactType" => "Email"}})
       end
 
-      @tag :old_errors
       it "should return an error with invalid values" do
         assert_result {:ok, %{data: %{}, errors: [%{message: "Field `contact': 1 badly formed argument (`type') provided"}, %{message: "Argument `type' (ContactType): Invalid value provided"}]}},
           "{ contact(type: \"bagel\") }" |> run(Schema)
       end
 
-      @tag :old_errors
-      it "should return a deprecation notice if one of the values given is deprecated" do
-        doc = """
-        query GetContact($type:ContactType){ contact(type: $type) }
-        """
-        assert_result {:ok, %{data: %{"contact" => "SMS"}, errors: [%{message: "Variable `type.sms' (ContactType): Deprecated; Use phone instead"}]}}, doc |> run(Schema, variables: %{"type" => "SMS"})
-      end
     end
   end
 
   describe "literal arguments" do
     describe "missing arguments" do
 
-      @tag :old_errors
       it "returns the appropriate error" do
         doc = """
         { requiredThing }
@@ -242,7 +231,6 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "c@d.com"]}}}, doc |> run(Schema)
       end
 
-      @tag :old_errors
       it "returns deeply nested errors" do
         doc = """
         {contacts(contacts: [{email: "a@b.com"}, {foo: "c@d.com"}])}
@@ -264,7 +252,6 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"user" => "bubba@joe.com"}}}, doc |> run(Schema)
       end
 
-      @tag :old_errors
       it "returns the correct error if an inner field is marked non null but is missing" do
         doc = """
         {user(contact: {foo: "buz"})}
@@ -277,7 +264,6 @@ defmodule Absinthe.Execution.ArgumentsTest do
           doc |> run(Schema)
       end
 
-      @tag :focus
       it "returns an error if extra fields are given" do
         doc = """
         {user(contact: {email: "bubba", foo: "buz"})}
@@ -306,8 +292,6 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"something" => "NO"}}}, "{ something(flag: false) }" |> run(Schema)
         assert_result {:ok, %{data: %{"something" => "NO"}}}, "{ something }" |> run(Schema)
       end
-
-      @tag :old_errors
       it "returns a correct error when passed the wrong type" do
         assert_result {:ok, %{data: %{}, errors: [%{message: "Field `something': 1 badly formed argument (`flag') provided"}, %{message: "Argument `flag' (Boolean): Invalid value provided"}]}},
           "{ something(flag: {foo: 1}) }" |> run(Schema)
@@ -318,16 +302,6 @@ defmodule Absinthe.Execution.ArgumentsTest do
       it "should work with valid values" do
         assert_result {:ok, %{data: %{"contact" => "Email"}}}, "{ contact(type: Email) }" |> run(Schema)
       end
-
-      @tag :old_errors
-      it "should return a deprecation notice if one of the values given is deprecated" do
-        doc = """
-        query GetContact { contact(type: SMS) }
-        """
-        assert_result {:ok, %{data: %{"contact" => "SMS"}, errors: [%{message: "Argument `type.sms' (ContactType): Deprecated; Use phone instead"}]}}, doc |> run(Schema)
-      end
-
-      @tag :old_errors
       it "should return an error with invalid values" do
         assert_result {:ok, %{data: %{}, errors: [%{message: "Field `contact': 1 badly formed argument (`type') provided"}, %{message: "Argument `type' (ContactType): Invalid value provided"}]}},
           "{ contact(type: \"bagel\") }" |> run(Schema)
@@ -336,8 +310,6 @@ defmodule Absinthe.Execution.ArgumentsTest do
   end
 
   describe "camelized errors" do
-
-    @tag :old_errors
     it "should adapt internal field names on error" do
       doc = """
       query FindUser {

@@ -89,9 +89,7 @@ defmodule Absinthe.Type.InterfaceTest do
         """ |> Absinthe.run(ContactSchema)
         assert_result {:ok, %{data: %{"contact" => %{"entity" => %{"name" => "Bruce"}}}}}, result
       end
-
-      @tag :old_errors
-      it "can't select fields from an implementing type without 'on'" do
+    it "can't select fields from an implementing type without 'on'" do
         result = """
         { contact { entity { name age } } }
         """ |> Absinthe.run(ContactSchema)

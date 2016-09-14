@@ -46,7 +46,11 @@ defmodule Support.Harness.Validation do
               _ ->
                 false
             end)
-            assert matched, "Could not find error.\n#{expectation_banner}"
+            formatted_errors = Enum.map(pairs, fn
+              {_, error} ->
+                error.message
+            end)
+            assert matched, "Could not find error.\n#{expectation_banner}\n\n  Did find these errors...\n  ---\n  " <> Enum.join(formatted_errors, "\n  ") <> "\n  ---"
         end
       end
       defp node_check_function(check) when is_list(check) do
@@ -103,7 +107,7 @@ defmodule Support.Harness.Validation do
   defp run(schema, rules, document, options) do
     pipeline = pre_validation_pipeline(schema, options)
     result = Pipeline.run(document, pipeline ++ rules)
-    if System.get_env("DEBUG_PIPELINE_RESULT") do
+    if System.get_env("DEBUG") do
       IO.inspect(result)
     else
       result
