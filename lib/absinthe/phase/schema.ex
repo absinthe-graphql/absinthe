@@ -8,7 +8,7 @@ defmodule Absinthe.Phase.Schema do
   """
   use Absinthe.Phase
 
-  alias Absinthe.{Blueprint, Type}
+  alias Absinthe.{Blueprint, Type, Schema}
 
   @spec run(Blueprint.t, Absinthe.Schema.t, Absinthe.Adapter.t) :: {:ok, Blueprint.t}
   def run(input, schema, adapter \\ Absinthe.Adapter.LanguageConventions) do
@@ -28,6 +28,14 @@ defmodule Absinthe.Phase.Schema do
     schema_node = schema.__absinthe_type__(node.type_condition.name)
     selections_with_schema = Enum.map(node.selections, &selection_with_schema_node(&1, schema_node, schema, adapter))
     %{node | schema_node: schema_node, selections: selections_with_schema}
+  end
+  defp handle_node(%Blueprint.Document.VariableDefinition{type: type_reference} = node, schema, adapter) do
+    type = type_reference_to_type(type_reference, schema)
+    if Type.unwrap(type) do
+      %{node | schema_node: type}
+    else
+      node
+    end
   end
   defp handle_node(%Blueprint.Document.Fragment.Inline{type_condition: nil} = node, _, _) do
     node
@@ -53,6 +61,20 @@ defmodule Absinthe.Phase.Schema do
     node
   end
 
+  @type_mapping %{
+    Blueprint.TypeReference.List => Type.List,
+    Blueprint.TypeReference.NonNull => Type.NonNull
+  }
+  defp type_reference_to_type(%Blueprint.TypeReference.Name{} = node, schema) do
+    Schema.lookup_type(schema, node.name)
+  end
+  for {blueprint_type, core_type} <- @type_mapping do
+    defp type_reference_to_type(%unquote(blueprint_type){} = node, schema) do
+      inner = type_reference_to_type(node.of_type, schema)
+      %unquote(core_type){of_type: inner}
+    end
+  end
+
   # Given a blueprint field node, fill in its schema node
   #
   # (If it's a fragment spread or inline fragment, we skip it, as the
@@ -73,7 +95,13 @@ defmodule Absinthe.Phase.Schema do
   # its parent here so the `handle_node` that takes care of the inline fragment
   #
   defp selection_with_schema_node(%Blueprint.Document.Fragment.Inline{type_condition: nil} = node, parent_schema_node, schema, _) do
-    type = Type.unwrap(Type.expand(parent_schema_node.type, schema))
+    base_type = case parent_schema_node do
+      %{type: type} ->
+        type
+      other ->
+        other
+    end
+    type = Type.unwrap(Type.expand(base_type, schema))
     %{node | type_condition: %Blueprint.TypeReference.Name{name: type.name}}
   end
   defp selection_with_schema_node(node, _, _, _) do

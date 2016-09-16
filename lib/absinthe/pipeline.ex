@@ -48,8 +48,10 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Arguments.Defaults,
       Phase.Document.Validation.data_pipeline,
       Phase.Document.Directives,
+      Phase.Document.CascadeInvalid,
       Phase.Document.Flatten,
       {Phase.Document.Execution.Resolution, [context, root_value]},
+      Phase.Debug,
       Phase.Document.Execution.Data
     ]
   end
@@ -71,8 +73,14 @@ defmodule Absinthe.Pipeline do
   """
   @spec before(t, atom) :: t
   def before(pipeline, phase) do
-    List.flatten(pipeline)
+    result = List.flatten(pipeline)
     |> Enum.take_while(&(!match_phase?(phase, &1)))
+    case result do
+      ^pipeline ->
+        raise RuntimeError, "Could not find phase #{phase}"
+      _ ->
+        result
+    end
   end
 
   # Whether a phase configuration is for a given phase
@@ -86,13 +94,9 @@ defmodule Absinthe.Pipeline do
   """
   @spec upto(t, atom) :: t
   def upto(pipeline, phase) do
-    index = List.flatten(pipeline)
-    |> Enum.find_index(&(match_phase?(phase, &1)))
-    if index do
-      Enum.take(pipeline, index + 1)
-    else
-      pipeline
-    end
+    beginning = before(pipeline, phase)
+    item = get_in(pipeline, [Access.at(length(beginning))])
+    beginning ++ [item]
   end
 
   def insert_before(pipeline, phase, additional) do
@@ -142,7 +146,8 @@ defmodule Absinthe.Pipeline do
     result
   end
   defp result_with_errors(phase, err) do
-    Pipeline.ErrorResult.new(phase_error(phase, err))
+    error = phase_error(phase, err)
+    %{errors: [%{message: error.message}]}
   end
 
   @spec phase_error(Phase.t, Phase.Error.t | String.t) :: Phase.Error.t

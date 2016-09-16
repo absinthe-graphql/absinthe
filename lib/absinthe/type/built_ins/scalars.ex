@@ -118,6 +118,10 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   defp parse_boolean(value) when is_boolean(value) do
     {:ok, value}
   end
+  defp parse_boolean(_) do
+    :error
+  end
+
 
   # Parse, supporting pulling values out of blueprint Input nodes
   defp parse_with(node_types, coercion) do

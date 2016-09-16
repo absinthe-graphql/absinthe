@@ -19,27 +19,56 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
   # Check arguments, objects, fields, and lists
   @spec handle_node(Blueprint.node_t, Schema.t) :: Blueprint.node_t
   defp handle_node(%Blueprint.Input.Argument{schema_node: %{type: _}, normalized_value: norm, data_value: nil} = node, schema) when not is_nil(norm) do
+    descendant_errors = collect_child_errors(node.normalized_value, schema)
+    message = error_message(
+      node.name,
+      Blueprint.Input.inspect(node.literal_value),
+      descendant_errors
+    )
     node
-    |> put_error(error(node, error_message(node, schema)))
-  end
-  defp handle_node(%Blueprint.Input.Object{flags: %{invalid: _}} = node, schema) do
-    fields = Enum.map(node.fields, &handle_value(&1, schema))
-    %{node | fields: Enum.reverse(fields)}
-  end
-  defp handle_node(%Blueprint.Input.List{flags: %{invalid: _}} = node, schema) do
-    values = Enum.map(node.values, &handle_value(&1, schema))
-    %{node | values: Enum.reverse(values)}
+    |> flag_invalid(:bad_argument)
+    |> put_error(error(node, message))
   end
   defp handle_node(node, _) do
     node
   end
 
-  defp handle_value(%{flags: %{invalid: _}} = node, schema) do
-    node
-    |> put_error(error(node, error_message(node, schema)))
+  defp collect_child_errors(%Blueprint.Input.List{} = node, schema) do
+    node.values
+    |> Enum.with_index
+    |> Enum.flat_map(fn
+      {%{flags: %{invalid: _}} = child, idx} ->
+        child_type_name = Type.value_type(child.schema_node, schema)
+        |> Type.name(schema)
+        child_inspected_value = Blueprint.Input.inspect(child)
+        [
+          value_error_message(idx, child_type_name, child_inspected_value) |
+          collect_child_errors(child, schema)
+        ]
+      {child, _} ->
+        collect_child_errors(child, schema)
+    end)
   end
-  defp handle_value(node, _) do
-    node
+  defp collect_child_errors(%Blueprint.Input.Object{} = node, schema) do
+    node.fields
+    |> Enum.with_index
+    |> Enum.flat_map(fn
+      {%{flags: %{invalid: _}, schema_node: nil} = child, idx} ->
+        [unknown_field_error_message(child.name)]
+      {%{flags: %{invalid: _}} = child, idx} ->
+        child_type_name = Type.value_type(child.schema_node, schema)
+        |> Type.name(schema)
+        child_inspected_value = Blueprint.Input.inspect(child.value)
+        [
+          value_error_message(child.name, child_type_name, child_inspected_value) |
+          collect_child_errors(child.value, schema)
+        ]
+      {child, _} ->
+        collect_child_errors(child, schema)
+    end)
+  end
+  defp collect_child_errors(_, _) do
+    []
   end
 
   # Generate the error for the node
@@ -52,26 +81,30 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
     )
   end
 
-  # Generate the error message
-  @spec error_message(Blueprint.Input.t, Schema.t) :: String.t
-  defp error_message(%Blueprint.Input.Argument{} = node, schema) do
-    error_message(node.schema_node.type, node.literal_value, schema)
+  def error_message(arg_name, inspected_value, verbose_errors \\ [])
+  def error_message(arg_name, inspected_value, []) do
+    ~s(Argument "#{arg_name}" has invalid value #{inspected_value}.)
   end
-  defp error_message(%Blueprint.Input.Field{schema_node: nil}, _) do
-    "Unknown field."
-  end
-  defp error_message(%Blueprint.Input.Field{} = node, schema) do
-    error_message(node.schema_node.type, node.value, schema)
-  end
-  defp error_message(node, schema) do
-    error_message(node.schema_node, node, schema)
+  def error_message(arg_name, inspected_value, verbose_errors) do
+    error_message(arg_name, inspected_value)
+     <> "\n" <> Enum.join(verbose_errors, "\n")
   end
 
-  # Generate an error message detailing the expected type and given value
-  @spec error_message(Type.t, any, Schema.t) :: String.t
-  defp error_message(type, value, schema) do
-    type_name = Type.name(type, schema)
-    ~s(Expected type "#{type_name}", found #{Blueprint.Input.inspect value})
+  def value_error_message(id, expected_type_name, inspected_value) when is_integer(id) do
+    ~s(In element ##{id + 1}: )
+      <> expected_type_error_message(expected_type_name, inspected_value)
+  end
+  def value_error_message(id, expected_type_name, inspected_value) do
+    ~s(In field "#{id}": )
+      <> expected_type_error_message(expected_type_name, inspected_value)
+  end
+
+  def unknown_field_error_message(field_name) do
+    ~s(In field "#{field_name}": Unknown field.)
+  end
+
+  defp expected_type_error_message(expected_type_name, inspected_value) do
+    ~s(Expected type "#{expected_type_name}", found #{inspected_value}.)
   end
 
 end

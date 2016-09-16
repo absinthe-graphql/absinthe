@@ -32,17 +32,17 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArguments do
     type_name = Type.name(type, schema)
     Phase.Error.new(
       __MODULE__,
-      error_message(type_name),
+      error_message(node.name, type_name),
       node.source_location
     )
   end
 
   @doc """
-  Generate the error message.
+  Generate the argument error.
   """
-  @spec error_message(String.t) :: String.t
-  def error_message(type_name) do
-    ~s(Expected type "#{type_name}", found null.)
+  @spec error_message(String.t, String.t) :: String.t
+  def error_message(name, type_name) do
+    ~s(In argument "#{name}": Expected type "#{type_name}", found null.)
   end
 
 end

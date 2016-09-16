@@ -27,7 +27,6 @@ defmodule Absinthe.IntrospectionTest do
   end
 
   describe "when querying against a union" do
-    @tag :pending
     it "returns the name of the object type currently being queried" do
     end
   end
@@ -40,7 +39,7 @@ defmodule Absinthe.IntrospectionTest do
         ContactSchema
       )
       names = types |> Enum.map(&(&1["name"])) |> Enum.sort
-      expected = ~w(Int ID String Boolean Float Contact Person Business ProfileInput SearchResult NamedEntity RootMutationType RootQueryType __Schema __Directive __DirectiveLocation __EnumValue __Field __InputValue __Type) |> Enum.sort
+      expected = ~w(Int ID String Boolean Float Contact Person Business ProfileInput SearchResult Name NamedEntity RootMutationType RootQueryType __Schema __Directive __DirectiveLocation __EnumValue __Field __InputValue __Type) |> Enum.sort
       assert expected == names
     end
 
@@ -343,7 +342,9 @@ defmodule Absinthe.IntrospectionTest do
           kind
           name
           description,
-          fields
+          fields {
+            name
+          }
         }
       }
       """
