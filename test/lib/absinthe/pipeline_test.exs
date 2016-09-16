@@ -90,4 +90,46 @@ defmodule Absinthe.PipelineTest do
     end
   end
 
+  @pipeline [A, B, C, D, {E, []}, F]
+
+  describe ".before" do
+
+    it "raises an exception if one can't be found" do
+      assert_raise RuntimeError, fn -> Pipeline.before([], Anything) end
+    end
+
+    it "returns the phases before" do
+      assert [] == Pipeline.before(@pipeline, A)
+      assert [A, B, C] == Pipeline.before(@pipeline, D)
+      assert [A, B, C, D] == Pipeline.before(@pipeline, E)
+    end
+
+  end
+
+  describe ".insert_before" do
+
+    it "raises an exception if one can't be found" do
+      assert_raise RuntimeError, fn -> Pipeline.insert_before([], Anything, X) end
+    end
+
+    it "inserts the phase before" do
+      assert [X, A, B, C, D, {E, []}, F] == Pipeline.insert_before(@pipeline, A, X)
+      assert [A, B, C, D, X, {E, []}, F] == Pipeline.insert_before(@pipeline, E, X)
+    end
+
+  end
+
+  describe ".upto" do
+
+    it "raises an exception if one can't be found" do
+      assert_raise RuntimeError, fn -> Pipeline.upto([], Anything) end
+    end
+
+    it "returns the phases upto the match" do
+      assert [A, B, C] == Pipeline.upto(@pipeline, C)
+      assert [A, B, C, D, {E, []}] == Pipeline.upto(@pipeline, E)
+    end
+
+  end
+
 end

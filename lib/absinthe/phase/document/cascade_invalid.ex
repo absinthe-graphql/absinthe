@@ -8,8 +8,6 @@ defmodule Absinthe.Phase.Document.CascadeInvalid do
 
   alias Absinthe.Blueprint
 
-  use Absinthe.Phase
-
   @spec run(Blueprint.t) :: {:ok, Blueprint.t}
   def run(input) do
     result = Blueprint.update_current(input, &process(&1, input.schema))

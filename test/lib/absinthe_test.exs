@@ -40,7 +40,9 @@ defmodule AbsintheTest do
   it "blows up on bad resolutions" do
     query = """
     {
-      badResolution
+      badResolution {
+        name
+      }
     }
     """
     assert_raise Absinthe.ExecutionError, fn -> run(query, Things) end

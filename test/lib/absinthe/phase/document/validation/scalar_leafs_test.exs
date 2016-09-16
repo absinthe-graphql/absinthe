@@ -72,7 +72,6 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
       )
     end
 
-    @tag :focus
     it "scalar selection not allowed on Boolean" do
       assert_fails_rule(@rule,
         """

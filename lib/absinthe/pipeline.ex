@@ -73,8 +73,14 @@ defmodule Absinthe.Pipeline do
   """
   @spec before(t, atom) :: t
   def before(pipeline, phase) do
-    List.flatten(pipeline)
+    result = List.flatten(pipeline)
     |> Enum.take_while(&(!match_phase?(phase, &1)))
+    case result do
+      ^pipeline ->
+        raise RuntimeError, "Could not find phase #{phase}"
+      _ ->
+        result
+    end
   end
 
   # Whether a phase configuration is for a given phase
@@ -88,13 +94,9 @@ defmodule Absinthe.Pipeline do
   """
   @spec upto(t, atom) :: t
   def upto(pipeline, phase) do
-    index = List.flatten(pipeline)
-    |> Enum.find_index(&(match_phase?(phase, &1)))
-    if index do
-      Enum.take(pipeline, index + 1)
-    else
-      pipeline
-    end
+    beginning = before(pipeline, phase)
+    item = get_in(pipeline, [Access.at(length(beginning))])
+    beginning ++ [item]
   end
 
   def insert_before(pipeline, phase, additional) do

@@ -342,7 +342,9 @@ defmodule Absinthe.IntrospectionTest do
           kind
           name
           description,
-          fields
+          fields {
+            name
+          }
         }
       }
       """

@@ -192,7 +192,6 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"user" => "bubba@joe.com"}}}, doc |> run(Schema, variables: %{"contact" => %{"email" => "bubba@joe.com", "contactType" => "Email"}})
       end
 
-      @tag :focus
       it "should return an error with invalid values" do
         assert_result {:ok, %{data: %{}, errors: [%{message: ~s(Argument "type" has invalid value "bagel".)}]}},
           "{ contact(type: \"bagel\") }" |> run(Schema)
@@ -299,7 +298,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"something" => "NO"}}}, "{ something(flag: false) }" |> run(Schema)
         assert_result {:ok, %{data: %{"something" => "NO"}}}, "{ something }" |> run(Schema)
       end
-      @tag :wrong
+
       it "returns a correct error when passed the wrong type" do
         assert_result {:ok, %{data: %{}, errors: [%{message: ~s(Argument "flag" has invalid value {foo: 1}.)}]}},
           "{ something(flag: {foo: 1}) }" |> run(Schema)

@@ -18,6 +18,7 @@ defmodule Absinthe.Phase.Document.Validation do
 
   @data_rules [
     Phase.Validation.KnownDirectives,
+    Phase.Document.Validation.ScalarLeafs,    
     Phase.Document.Validation.VariablesAreInputTypes,
     Phase.Document.Validation.ArgumentsOfCorrectType,
     Phase.Document.Validation.KnownArgumentNames,
