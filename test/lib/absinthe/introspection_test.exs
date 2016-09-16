@@ -53,6 +53,11 @@ defmodule Absinthe.IntrospectionTest do
       assert_result {:ok, %{data: %{"__schema" => %{"mutationType" => %{"name" => "RootMutationType", "kind" => "OBJECT"}}}}}, result
     end
 
+    it "can use __schema to get the subscription type" do
+      result = "{ __schema { subscriptionType { name kind } } }" |> Absinthe.run(ContactSchema)
+      assert_result {:ok, %{data: %{"__schema" => %{"subscriptionType" => %{"name" => "RootSubscriptionType", "kind" => "OBJECT"}}}}}, result
+    end
+
     it "can use __schema to get the directives" do
       result = "{ __schema { directives { name args { name type { kind ofType { name kind } } } locations onField onFragment onOperation } } }" |> run(ContactSchema)
       assert {:ok,

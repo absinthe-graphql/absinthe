@@ -48,9 +48,10 @@ defmodule Absinthe.Schema.Notation.Writer do
   end
 
   def build_info(env) do
-    descriptions = env.module
-    |> Module.get_attribute(:absinthe_descriptions)
-    |> Map.new
+    descriptions =
+      env.module
+      |> Module.get_attribute(:absinthe_descriptions)
+      |> Map.new
 
     definitions =
       env.module
