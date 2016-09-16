@@ -33,7 +33,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperation do
   end
 
   def error_message do
-    ~s(Must provide operation name if query contains multiple operations.)
+    ~s(Must provide a valid operation name if query contains multiple operations.)
   end
 
 end

@@ -144,7 +144,8 @@ defmodule Absinthe.Pipeline do
     result
   end
   defp result_with_errors(phase, err) do
-    Pipeline.ErrorResult.new(phase_error(phase, err))
+    error = phase_error(phase, err)
+    %{errors: [%{message: error.message}]}
   end
 
   @spec phase_error(Phase.t, Phase.Error.t | String.t) :: Phase.Error.t

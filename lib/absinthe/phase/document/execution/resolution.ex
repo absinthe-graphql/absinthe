@@ -77,12 +77,13 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     walk_result(result, bp_root, field, full_type, info)
   end
   defp build_result({:error, msg}, _, field, info, _) do
+    message = ~s(In field "#{field.name}": #{msg})
     full_type = Type.expand(field.schema_node.type, info.schema)
     to_result(full_type, emitter: field)
-    |> put_error(error(field, msg))
+    |> put_error(error(field, message))
   end
   defp build_result(other, _, field, _, source) do
-    raise """
+    raise Absinthe.ExecutionError, """
     Resolution function did not return `{:ok, val}` or `{:error, reason}`
     Resolving field: #{field.name}
     Resolving on: #{inspect source}

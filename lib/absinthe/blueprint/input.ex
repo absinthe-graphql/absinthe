@@ -102,5 +102,8 @@ defmodule Absinthe.Blueprint.Input do
   def inspect(nil) do
     "null"
   end
+  def inspect(other) do
+    Kernel.inspect(other)
+  end
 
 end

@@ -16,6 +16,16 @@ defmodule Absinthe.Execution.ArgumentsTest do
       serialize fn %{first_name: name} -> name end
     end
 
+    scalar :name do
+      serialize &to_string/1
+      parse fn
+        %Absinthe.Blueprint.Input.String{} = string ->
+          string.value
+        _ ->
+          :error
+      end
+    end
+
     input_object :contact_input do
       field :email, non_null(:string)
       field :contact_type, :contact_type
@@ -99,7 +109,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
       doc = """
       query GetContacts($contacts:[ContactInput]){contacts(contacts:$contacts)}
       """
-      assert_result {:ok, %{data: %{}, errors: [%{message: "Field `contacts': 1 required argument (`contacts') not provided"}, %{message: "Argument `contacts' (ContactInput): Not provided"}]}},
+      assert_result {:ok, %{data: %{}, errors: [%{message: ~s(In argument "contacts": Expected type "[ContactInput]!", found null.)}]}},
         doc |> run(Schema)
     end
 
@@ -182,8 +192,9 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"user" => "bubba@joe.com"}}}, doc |> run(Schema, variables: %{"contact" => %{"email" => "bubba@joe.com", "contactType" => "Email"}})
       end
 
+      @tag :focus
       it "should return an error with invalid values" do
-        assert_result {:ok, %{data: %{}, errors: [%{message: "Field `contact': 1 badly formed argument (`type') provided"}, %{message: "Argument `type' (ContactType): Invalid value provided"}]}},
+        assert_result {:ok, %{data: %{}, errors: [%{message: ~s(Argument "type" has invalid value "bagel".)}]}},
           "{ contact(type: \"bagel\") }" |> run(Schema)
       end
 
@@ -197,7 +208,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         doc = """
         { requiredThing }
         """
-        assert_result {:ok, %{data: %{}, errors: [%{message: "Field `requiredThing': 1 required argument (`name') not provided"}, %{message: "Argument `name' (Name): Not provided"}]}}, doc |> run(Schema)
+        assert_result {:ok, %{data: %{}, errors: [%{message: ~s(In argument "name": Expected type "InputName!", found null.)}]}}, doc |> run(Schema)
       end
     end
 
@@ -236,9 +247,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         {contacts(contacts: [{email: "a@b.com"}, {foo: "c@d.com"}])}
         """
         assert_result {:ok, %{data: %{}, errors: [
-          %{message: "Field `contacts': 1 required argument (`contacts[].email') not provided"},
-          %{message: "Argument `contacts[].foo': Not present in schema"},
-          %{message: "Argument `contacts[].email' (String): Not provided"},
+          %{message: ~s(Argument "contacts" has invalid value [{email: "a@b.com"}, {foo: "c@d.com"}].\nIn element #2: Expected type "ContactInput", found {foo: "c@d.com", email: null}.\nIn field "foo": Unknown field.\nIn field "email": Expected type "String!", found null.)},
         ]}},
           doc |> run(Schema)
       end
@@ -257,9 +266,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         {user(contact: {foo: "buz"})}
         """
         assert_result {:ok, %{data: %{}, errors: [
-          %{message: "Field `user': 1 required argument (`contact.email') not provided"},
-          %{message: "Argument `contact.foo': Not present in schema"},
-          %{message: "Argument `contact.email' (String): Not provided"},
+          %{message: ~s(Argument "contact" has invalid value {foo: "buz"}.\nIn field "foo": Unknown field.\nIn field "email": Expected type "String!", found null.)},
         ]}},
           doc |> run(Schema)
       end
@@ -268,7 +275,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         doc = """
         {user(contact: {email: "bubba", foo: "buz"})}
         """
-        assert_result {:ok, %{data: %{"user" => "bubba"}, errors: [%{message: "Argument `contact.foo': Not present in schema"}]}},
+        assert_result {:ok, %{data: %{}, errors: [%{message: "Argument \"contact\" has invalid value {email: \"bubba\", foo: \"buz\"}.\nIn field \"foo\": Unknown field."}]}},
           doc |> run(Schema)
       end
     end
@@ -292,8 +299,9 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"something" => "NO"}}}, "{ something(flag: false) }" |> run(Schema)
         assert_result {:ok, %{data: %{"something" => "NO"}}}, "{ something }" |> run(Schema)
       end
+      @tag :wrong
       it "returns a correct error when passed the wrong type" do
-        assert_result {:ok, %{data: %{}, errors: [%{message: "Field `something': 1 badly formed argument (`flag') provided"}, %{message: "Argument `flag' (Boolean): Invalid value provided"}]}},
+        assert_result {:ok, %{data: %{}, errors: [%{message: ~s(Argument "flag" has invalid value {foo: 1}.)}]}},
           "{ something(flag: {foo: 1}) }" |> run(Schema)
       end
     end
@@ -303,7 +311,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"contact" => "Email"}}}, "{ contact(type: Email) }" |> run(Schema)
       end
       it "should return an error with invalid values" do
-        assert_result {:ok, %{data: %{}, errors: [%{message: "Field `contact': 1 badly formed argument (`type') provided"}, %{message: "Argument `type' (ContactType): Invalid value provided"}]}},
+        assert_result {:ok, %{data: %{}, errors: [%{message: ~s(Argument "type" has invalid value "bagel".)}]}},
           "{ contact(type: \"bagel\") }" |> run(Schema)
       end
     end
@@ -316,8 +324,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         user(contact: {email: "bubba@joe.com", contactType: 1})
       }
       """
-      assert {:ok, %{errors: errors}} = doc |> run(Schema)
-      assert [%{message: "Field `user': 1 badly formed argument (`contact.contactType') provided"}, %{message: "Argument `contact.contactType' (ContactType): Invalid value provided"}] = errors
+      assert_result {:ok, %{data: %{}, errors: [%{message: ~s(Argument "contact" has invalid value {email: "bubba@joe.com", contactType: 1}.\nIn field "contactType": Expected type "ContactType", found 1.)}]}}, run(doc, Schema)
     end
   end
 

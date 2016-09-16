@@ -236,6 +236,16 @@ defmodule Absinthe.Type do
     type
   end
 
+  # VALUE TYPE
+
+  @spec value_type(t, Schema.t) :: Type.t
+  def value_type(%Type.Field{} = node, schema) do
+    Type.expand(node.type, schema)
+  end
+  def value_type(type, schema) do
+    Type.expand(type, schema)
+  end
+
   # VALID TYPE
 
   def valid_input?(%Type.NonNull{}, nil) do

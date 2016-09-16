@@ -13,25 +13,18 @@ defmodule Absinthe.Phase.Document.Execution.Data do
   end
 
   defp process(%Blueprint{} = blueprint) do
-    blueprint
-    |> Blueprint.current_operation
-    |> do_process(blueprint.errors)
-  end
-  defp do_process(nil, top_errors) do
-    format_result(nil, top_errors)
-  end
-  defp do_process(%Blueprint.Document.Operation{resolution: tree} = operation, top_errors) do
-    document_errors = Enum.reduce(operation.fields, [], fn
-      field, acc ->
-        {_, acc} = Blueprint.prewalk(field, acc, &document_errors/2)
-        acc
-    end)
-    {data, resolution_errors} = field_data(tree.fields, [])
-    format_result(data, top_errors ++ document_errors ++ resolution_errors)
+    {_, document_errors} = Blueprint.prewalk(blueprint, [], &document_errors/2)
+    {data, errors} = case Blueprint.current_operation(blueprint) do
+      nil ->
+        {nil, document_errors}
+      op ->
+        field_data(op.resolution.fields, document_errors)
+    end
+    {:ok, format_result(data, errors |> Enum.uniq)}
   end
 
   defp format_result(nil, errors) do
-    %{errors: Enum.map(errors, &format_error/1)}
+    %{data: %{}, errors: Enum.map(errors, &format_error/1)}
   end
   defp format_result(data, []) do
     %{data: data}

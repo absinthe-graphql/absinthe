@@ -37,13 +37,13 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: ~s(Cannot query field "bad" on type "Thing".)}]}}, run(query, Things)
   end
 
-  it "warns of unknown fields" do
+  it "blows up on bad resolutions" do
     query = """
     {
       badResolution
     }
     """
-    assert {:ok, %{errors: [%{message: "Field `badResolution': Did not resolve to match {:ok, _} or {:error, _}", locations: _}]}} = run(query, Things)
+    assert_raise Absinthe.ExecutionError, fn -> run(query, Things) end
   end
 
   it "returns the correct results for an alias" do
@@ -60,8 +60,7 @@ defmodule AbsintheTest do
   it "checks for required arguments" do
     query = "{ thing { name } }"
     assert_result {:ok, %{data: %{},
-                          errors: [%{message: "Field `thing': 1 required argument (`id') not provided", locations: [%{column: 0, line: 1}]},
-                            %{message: "Argument `id' (String): Not provided", locations: [%{column: 0, line: 1}]}]}}, run(query, Things)
+                          errors: [%{message: ~s(In argument "id": Expected type "String!", found null.)}]}}, run(query, Things)
 
   end
 
@@ -73,7 +72,7 @@ defmodule AbsintheTest do
       }
     }
     """
-    assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: ~s(Unknown argument "extra" on field "thing" of type "RootQueryType".)}]}}, run(query, Things)
+    assert_result {:ok, %{data: %{}, errors: [%{message: ~s(Unknown argument "extra" on field "thing" of type "RootQueryType".)}]}}, run(query, Things)
   end
 
   it "checks for badly formed arguments" do
@@ -83,8 +82,7 @@ defmodule AbsintheTest do
     }
     """
     assert_result {:ok, %{data: %{},
-                         errors: [%{message: "Field `number': 1 badly formed argument (`val') provided"},
-                                  %{message: "Argument `val' (Int): Invalid value provided"}]}}, run(query, Things)
+                         errors: [%{message: ~s(Argument "val" has invalid value "AAA".)}]}}, run(query, Things)
   end
 
   it "returns nested objects" do
@@ -111,7 +109,7 @@ defmodule AbsintheTest do
     """
     assert_result {:ok, %{data: %{"thingByContext" => %{"name" => "Bar"}}}}, run(query, Things, context: %{thing: "bar"})
     assert_result {:ok, %{data: %{},
-                          errors: [%{message: "Field `thingByContext': No :id context provided"}]}}, run(query, Things)
+                          errors: [%{message: ~s(In field "thingByContext": No :id context provided)}]}}, run(query, Things)
   end
 
   it "can use variables" do
@@ -149,11 +147,10 @@ defmodule AbsintheTest do
     }
     """
     assert_result {:ok, %{data: %{},
-                         errors: [%{message: "Field `updateThing': 1 badly formed argument (`thing.value') provided"},
-                                  %{message: "Argument `thing.value' (Int): Invalid value provided"}]}}, run(query, Things)
+                         errors: [%{message: ~s(Argument "thing" has invalid value {value: "BAD"}.\nIn field "value": Expected type "Int", found "BAD".)}]}}, run(query, Things)
   end
 
-  it "reports missing, required variable values" do
+  it "reports variables that are never used" do
     query = """
       query GimmeThingByVariable($thingId: String!, $other: String!) {
         thing(id: $thingId) {
@@ -162,7 +159,7 @@ defmodule AbsintheTest do
       }
     """
     result = run(query, Things, variables: %{"thingId" => "bar"})
-    assert_result {:ok, %{data: %{}, errors: [%{message: "Variable `other' (String): Not provided"}]}}, result
+    assert_result {:ok, %{data: %{"thing" => %{"name" => "Bar"}}, errors: [%{message: ~s(Variable "other" is never used in operation "GimmeThingByVariable".)}]}}, result
   end
 
   it "reports parser errors from parse" do
@@ -338,11 +335,11 @@ defmodule AbsintheTest do
     end
 
     it "should error when no operation name is supplied" do
-      assert {:ok, %{errors: [%{message: "Must provide operation name if query contains multiple operations."}]}} == run(@multiple_ops_query, Things)
+      assert {:ok, %{data: %{}, errors: [%{message: "Must provide a valid operation name if query contains multiple operations."}]}} == run(@multiple_ops_query, Things)
     end
     it "should error when an invalid operation name is supplied" do
       op_name = "invalid"
-      assert {:error, "No operation with name: #{op_name}"} == run(@multiple_ops_query, Things, operation_name: op_name)
+      assert_result {:ok, %{data: %{}, errors: [%{message: "Must provide a valid operation name if query contains multiple operations."}]}}, run(@multiple_ops_query, Things, operation_name: op_name)
     end
   end
 

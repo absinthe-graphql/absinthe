@@ -71,7 +71,7 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
         other
     end
   end
-  defp build_value(%Blueprint.Input.Object{} = node, adapter) do
+  defp build_value(%Blueprint.Input.Object{schema_node: %{fields: _}} = node, adapter) do
     {result, fields} = node.fields
     |> Enum.reduce({%{}, []}, fn
       field, {data, fields} ->
