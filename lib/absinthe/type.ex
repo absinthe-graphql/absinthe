@@ -4,7 +4,7 @@ defmodule Absinthe.Type do
 
   alias __MODULE__
 
-  alias Absinthe.Introspection
+  alias Absinthe.{Introspection, Schema}
 
   # ALL TYPES
 
@@ -15,6 +15,16 @@ defmodule Absinthe.Type do
 
   @typedoc "A type identifier"
   @type identifier_t :: atom
+
+  @typedoc "A type reference"
+  @type reference_t :: identifier_t | t | wrapping_t
+
+  def identifier(%{__reference__: %{identifier: ident}}) do
+    ident
+  end
+  def identifier(_) do
+    nil
+  end
 
   @doc "Determine if a struct matches one of the types"
   @spec type?(any) :: boolean
@@ -186,6 +196,55 @@ defmodule Absinthe.Type do
   @spec unwrap(wrapping_t | t) :: t
   def unwrap(%{of_type: t}), do: unwrap(t)
   def unwrap(type), do: type
+
+  @doc """
+  Get the GraphQL name for a (possibly wrapped) type, expanding
+  any references if necessary using the provided schema.
+  """
+  @spec name(reference_t, Schema.t) :: String.t
+  def name(ref, schema) do
+    expanded = expand(ref, schema)
+    name(expanded)
+  end
+
+  @doc """
+  Get the GraphQL name for a (possibly wrapped) type.
+
+  Note: Use `name/2` if the provided type reference needs to
+  be expanded to resolve any atom type references.
+  """
+  @spec name(wrapping_t | t) :: String.t
+  def name(%Type.NonNull{of_type: contents}) do
+    name(contents) <> "!"
+  end
+  def name(%Type.List{of_type: contents}) do
+    "[" <> name(contents) <> "]"
+  end
+  def name(%{name: name}) do
+    name
+  end
+
+  @doc "Expand any atom type references inside a List or NonNull"
+  @spec expand(reference_t, Schema.t) :: wrapping_t | t
+  def expand(ref, schema) when is_atom(ref) do
+    schema.__absinthe_type__(ref)
+  end
+  def expand(%{of_type: contents} = ref, schema) do
+    %{ref | of_type: expand(contents, schema)}
+  end
+  def expand(type, _) do
+    type
+  end
+
+  # VALUE TYPE
+
+  @spec value_type(t, Schema.t) :: Type.t
+  def value_type(%Type.Field{} = node, schema) do
+    Type.expand(node.type, schema)
+  end
+  def value_type(type, schema) do
+    Type.expand(type, schema)
+  end
 
   # VALID TYPE
 

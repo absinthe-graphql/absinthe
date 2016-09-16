@@ -6,7 +6,7 @@ defmodule Absinthe.Mixfile do
   def project do
     [app: :absinthe,
      version: @version,
-     elixir: "~> 1.2",
+     elixir: "~> 1.3",
      elixirc_paths: elixirc_paths(Mix.env),
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -51,6 +51,8 @@ defmodule Absinthe.Mixfile do
       {:ex_doc, "~> 0.11.0", only: :dev},
       {:earmark, "~> 0.1.19", only: :dev},
       {:benchfella, "~> 0.3.0", only: :dev},
+      {:dialyze, "~> 0.2", only: :dev},
+      {:mix_test_watch, "~> 0.2.6", only: [:test, :dev]}
     ]
   end
 end

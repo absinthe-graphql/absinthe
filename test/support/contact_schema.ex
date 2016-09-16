@@ -127,4 +127,14 @@ defmodule ContactSchema do
     field :address, :string
   end
 
+  scalar :name do
+    serialize &to_string/1
+    parse fn
+      %Absinthe.Blueprint.Input.String{} = string ->
+        string.value
+      _ ->
+        :error
+    end
+  end
+
 end

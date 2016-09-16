@@ -698,6 +698,30 @@ defmodule Absinthe.Schema.Notation do
     :ok
   end
 
+  @placement {:expand, [under: :directive]}
+  @doc """
+  Define the expansion for a directive
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+  """
+  defmacro expand(func_ast) do
+    __CALLER__
+    |> recordable!(:expand, @placement[:expand])
+    |> record_expand!(func_ast)
+  end
+
+  @doc false
+  # Record a directive expand function in the current scope
+  def record_expand!(env, func_ast) do
+    Scope.put_attribute(env.module, :expand, func_ast)
+    Scope.recorded!(env.module, :attr, :expand)
+    :ok
+  end
+
+
+
   # INPUT OBJECTS
 
   @placement {:input_object, [toplevel: true]}

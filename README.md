@@ -7,7 +7,7 @@
 
 Goals:
 
-- Complete implementation of the [GraphQL Working Draft](https://facebook.github.io/graphql), dated April 2016.
+- Working towards complete implementation of the [GraphQL Working Draft](https://facebook.github.io/graphql), dated April 2016.
 - An idiomatic, readable, and comfortable API for Elixir developers
 - Detailed error messages and documentation
 - A focus on robustness and production-level performance
@@ -36,7 +36,7 @@ Please see the website at [http://absinthe-graphql.org](http://absinthe-graphql.
   - [Adapter](http://absinthe-graphql.org/guides/adapters/) mechanism to support conversion between camelCase query documents
     and snake_cased schema definition.
 - Client support
-  - Generation of JSON and GraphQL (IDL) introspection documents for use by client frameworks
+  - Generation of JSON introspection documents for use by client frameworks
 
 ## Installation
 
@@ -56,7 +56,7 @@ def application do
 end
 ```
 
-Note: Absinthe requires Elixir 1.2 or higher.
+Note: Absinthe requires Elixir 1.3 or higher.
 
 ## Upgrading
 

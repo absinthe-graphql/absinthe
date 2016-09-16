@@ -1,5 +1,7 @@
 # Changelog
 
+## v1.2.0
+
 ## v1.1.7
 
 Bugfixes
