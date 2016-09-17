@@ -178,6 +178,43 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"something" => "NO"}}}, doc |> run(Schema, variables: %{"flag" => false})
       end
 
+      it "If a variable is not provided schema default value is used" do
+        doc = """
+        query DoSomething($flag: Boolean!) {
+          something(flag: $flag)
+        }
+        """
+        assert_result {:ok, %{data: %{"something" => "NO"}}}, doc |> Absinthe.run(Schema, variables: %{})
+      end
+
+      it "works with input objects with inner variables" do
+        doc = """
+        query Blah($email: String){contacts(contacts: [{email: $email}, {email: $email}])}
+        """
+        assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "c@d.com"]}}}, doc |> run(Schema, variables: %{"email" => "a@b.com"})
+      end
+
+      it "works with input objects with inner variables when no variables are given" do
+        doc = """
+        query Blah($email: String){contacts(contacts: [{email: $email}, {email: $email}])}
+        """
+        assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "c@d.com"]}}}, doc |> run(Schema, variables: %{})
+      end
+
+      it "works with lists with inner variables" do
+        doc = """
+        query Blah($contact: ContactInput){contacts(contacts: [$contact, $contact])}
+        """
+        assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "c@d.com"]}}}, doc |> run(Schema, variables: %{"contact" => %{"email" => "a@b.com"}})
+      end
+
+      it "works with lists with inner variables when no variables are given" do
+        doc = """
+        query Blah($contact: ContactInput){contacts(contacts: [$contact, $contact])}
+        """
+        assert_result {:ok, %{data: %{"contacts" => []}}}, doc |> run(Schema, variables: %{})
+      end
+
     end
 
     describe "enum types" do
