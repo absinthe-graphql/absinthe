@@ -16,7 +16,7 @@
   otherwise customize the changes that occur to the intermediate representation,
   and how that intermediate representation turns into a result. Future releases
   will further this model and continue to make it easier to modify Absinthe's
-  processing to support specific needs by developers.
+  processing to support the unique needs of developers.
 
 ### Performance
 
@@ -32,7 +32,7 @@ passes will be a focus of the beta/rc releases).
   - Int: Disallowing automatic coercion of, eg, `"1"` to `1`
   - String: Disallowing automatic coercion of, eg, `1` to `"1"`
   - Enum: Disallowing quoted values, eg, `"RED"` vs `RED`
-- Scalar `parse` functions now receive their value as `Absinthe.Input.t`
+- Scalar `parse` functions now receive their value as `Absinthe.Blueprint.Input.t`
   structs. If you have defined your own custom scalar types, you may need to
   modify them; see `lib/absinthe/type/built_ins/scalars.ex` for examples.
 - Adapters now only use `to_internal_name/2` and `to_external_name/2` as the
