@@ -13,7 +13,7 @@ defmodule Absinthe.Blueprint.Document.Result.List do
 
   @type t :: %__MODULE__{
     emitter: Blueprint.Document.Field.t,
-    values: [Blueprint.Document.Result.t],
+    values: [Blueprint.Document.Result.node_t],
     errors: [Phase.Error.t],
     flags: [Blueprint.flag_t],
   }

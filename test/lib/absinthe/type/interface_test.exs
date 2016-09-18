@@ -93,8 +93,7 @@ defmodule Absinthe.Type.InterfaceTest do
         result = """
         { contact { entity { name age } } }
         """ |> Absinthe.run(ContactSchema)
-        assert_result {:ok, %{data: %{"contact" => %{"entity" => %{"name" => "Bruce"}}},
-                              errors: [%{message: ~s(Cannot query field "age" on type "NamedEntity". Did you mean to use an inline fragment on "Person"?)}]}}, result
+        assert_result {:ok, %{errors: [%{message: ~s(Cannot query field "age" on type "NamedEntity". Did you mean to use an inline fragment on "Person"?)}]}}, result
       end
 
       it "can select fields from an implementing type with 'on'" do

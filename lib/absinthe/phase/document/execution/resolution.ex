@@ -13,7 +13,9 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   use Absinthe.Phase
 
   def run(bp_root, context, root_value) do
-    bp_root = Blueprint.update_current(bp_root, fn
+    result = case Blueprint.current_operation(bp_root) do
+      nil ->
+        bp_root
       op ->
         field = %Resolution.Info{
           adapter: bp_root.adapter,
@@ -23,9 +25,9 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
           source: root_value,
         }
         resolution = resolve_operation(op, bp_root, field, root_value)
-        %{op | resolution: resolution}
-    end)
-    {:ok, bp_root}
+        put_in(bp_root.result.resolution, resolution)
+    end
+    {:ok, result}
   end
 
   def resolve_operation(operation, bp_root, info, source) do

@@ -47,12 +47,13 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Arguments.Data,
       Phase.Document.Arguments.Defaults,
       Phase.Document.Validation.data_pipeline,
+      Phase.Document.Validation.Result,
       Phase.Document.Directives,
       Phase.Document.CascadeInvalid,
       Phase.Document.Flatten,
       {Phase.Document.Execution.Resolution, [context, root_value]},
       Phase.Debug,
-      Phase.Document.Execution.Data
+      Phase.Document.Result
     ]
   end
 
