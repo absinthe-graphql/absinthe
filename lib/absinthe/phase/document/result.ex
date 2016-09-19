@@ -21,7 +21,7 @@ defmodule Absinthe.Phase.Document.Result do
       %{validation: errors} ->
         {:validation_failed, errors}
     end
-    {:ok, format_result(result)}
+    format_result(result)
   end
 
   defp format_result(:execution_failed) do

@@ -17,16 +17,13 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
   @spec run(Blueprint.t) :: Phase.result_t
   def run(input) do
     {fragments, error_count} = check(input.fragments)
-    {
-      instruction(error_count),
-      put_in(input.fragments, fragments)
-    }
+    result = put_in(input.fragments, fragments)
+    if error_count > 0 do
+      {:jump, result, Phase.Document.Validation.Result}
+    else
+      {:ok, result}
+    end
   end
-
-  # Determine whether any errors have occurred
-  @spec instruction(integer) :: :ok | :error
-  defp instruction(0), do: :ok
-  defp instruction(_), do: :error
 
   # Check a list of fragments for cycles
   @spec check([Blueprint.Document.Fragment.Named.t]) :: {[Blueprint.Document.Fragment.Named.t], integer}

@@ -342,4 +342,18 @@ defmodule AbsintheTest do
     end
   end
 
+  it "handles cycles" do
+    cycler = """
+    fragment Foo on Blag {
+      name
+      ...Bar
+    }
+    fragment Bar on Blah {
+      age
+      ...Foo
+    }
+    """
+    assert_result {:ok, %{errors: [%{message: "forms a cycle via: (`Foo' => `Bar' => `Foo')"}]}}, run(cycler, Things)
+  end
+
 end

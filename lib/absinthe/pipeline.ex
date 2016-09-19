@@ -5,23 +5,16 @@ defmodule Absinthe.Pipeline do
 
   require Logger
 
-  @type input_t :: any
-  @type output_t :: %{errors: [Phase.Error.t]}
+  @type data_t :: any
 
   @type phase_config_t :: Phase.t | {Phase.t, [any]}
 
   @type t :: [phase_config_t | [phase_config_t]]
 
-  @spec run(input_t, t) :: {:ok, output_t} | {:error, String.t}
+  @spec run(data_t, t) :: {:ok, data_t, [Phase.t]} | {:error, String.t, [Phase.t]}
   def run(input, pipeline) do
-    case do_run(input, pipeline) do
-      {:ok, _} = halted_with_user_errors ->
-        halted_with_user_errors
-      {:error, _} = halted_with_developer_errors ->
-        halted_with_developer_errors
-      completed ->
-        {:ok, completed}
-    end
+    List.flatten(pipeline)
+    |> run_phase(input)
   end
 
   @spec for_document(Absinthe.Schema.t) :: t
@@ -84,6 +77,21 @@ defmodule Absinthe.Pipeline do
     end
   end
 
+  @doc """
+  Return the part of a pipeline after (and including) a specific phase.
+  """
+  @spec from(t, atom) :: t
+  def from(pipeline, phase) do
+    result = List.flatten(pipeline)
+    |> Enum.drop_while(&(!match_phase?(phase, &1)))
+    case result do
+      [] ->
+        raise RuntimeError, "Could not find phase #{phase}"
+      _ ->
+        result
+    end
+  end
+
   # Whether a phase configuration is for a given phase
   @spec match_phase?(Phase.t, phase_config_t) :: boolean
   defp match_phase?(phase, phase), do: true
@@ -105,33 +113,27 @@ defmodule Absinthe.Pipeline do
     beginning ++ [additional] ++ (pipeline -- beginning)
   end
 
-  @bad_return "Phase did not return an {:ok, any} | {:error, %{errors: [Phase.Error.t]} | Phase.Error.t | String.t} tuple"
-
-  @spec do_run(input_t, t) :: {:ok, output_t} | {:error, Phase.Error.t}
-  defp do_run(input, pipeline) do
-    List.flatten(pipeline)
-    |> Enum.reduce_while(input, fn config, input ->
-      {phase, args} = phase_invocation(config)
-      case apply(phase, :run, [input | args]) do
-        {:ok, value} ->
-          {:cont, value}
-        {:error, value} when is_binary(value) ->
-          halt_with_error_result(phase, value)
-        {:error, %Phase.Error{} = value} ->
-          halt_with_error_result(phase, value)
-        {:error, %{errors: _} = value} ->
-          halt_with_error_result(phase, value)
-        {:pipeline_error, message} ->
-          {:halt, {:error, message}}
-        _ ->
-          {:halt, {:error, phase_error(phase, @bad_return)}}
-      end
-    end)
+  @spec run_phase(t, data_t, [Phase.t]) :: {:ok, data_t, [Phase.t]} | {:error, String.t, [Phase.t]}
+  defp run_phase(pipeline, input, done \\ [])
+  defp run_phase([], input, done) do
+    {:ok, input, done}
   end
-
-  @spec halt_with_error_result(Phase.t, output_t | Phase.Error.t | [Phase.Error.t]) :: {:halt, {:ok, output_t}}
-  defp halt_with_error_result(phase, error) do
-    {:halt, {:ok, result_with_errors(phase, error)}}
+  defp run_phase([phase_config | todo], input, done) do
+    {phase, args} = phase_invocation(phase_config)
+    case apply(phase, :run, [input | args]) do
+      {:ok, result} ->
+        run_phase(todo, result, [phase | done])
+      {:jump, result, destination_phase} ->
+        run_phase(from(todo, destination_phase), result, [phase | done])
+      {:insert, result, extra_pipeline} ->
+        run_phase(List.wrap(extra_pipeline) ++ todo, result, [phase | done])
+      {:replace, result, final_pipeline} ->
+        run_phase(List.wrap(final_pipeline), result, [phase | done])
+      {:error, message} = err ->
+        {:error, message, [phase | done]}
+      _ ->
+        {:error, "Last phase did not return a valid result tuple.", [phase | done]}
+    end
   end
 
   @spec phase_invocation(phase_config_t) :: {Phase.t, list}
@@ -140,26 +142,6 @@ defmodule Absinthe.Pipeline do
   end
   defp phase_invocation(phase) do
     {phase, []}
-  end
-
-  @spec result_with_errors(Phase.t, output_t | Phase.Error.t | [Phase.Error.t]) :: output_t
-  defp result_with_errors(_, %{errors: _} = result) do
-    result
-  end
-  defp result_with_errors(phase, err) do
-    error = phase_error(phase, err)
-    %{errors: [%{message: error.message}]}
-  end
-
-  @spec phase_error(Phase.t, Phase.Error.t | String.t) :: Phase.Error.t
-  defp phase_error(_, %Phase.Error{} = err) do
-    err
-  end
-  defp phase_error(phase, message) when is_binary(message) do
-    %Phase.Error{
-      message: message,
-      phase: phase,
-    }
   end
 
 end

@@ -13,10 +13,10 @@ defmodule Absinthe.PipelineTest do
     { foo { bar } }
     """
 
-    it 'can create a blueprint' do
+    it "can create a blueprint" do
       pipeline = Pipeline.for_document(Schema)
       |> Pipeline.upto(Phase.Blueprint)
-      assert {:ok, %Blueprint{}} = Pipeline.run(@query, pipeline)
+      assert {:ok, %Blueprint{}, [Phase.Blueprint, Phase.Parse]} = Pipeline.run(@query, pipeline)
     end
 
   end
@@ -30,11 +30,11 @@ defmodule Absinthe.PipelineTest do
     """
 
     it 'can create a blueprint without a prototype schema' do
-      assert {:ok, %Blueprint{}} = Pipeline.run(@query, Pipeline.for_schema(nil))
+      assert {:ok, %Blueprint{}, _} = Pipeline.run(@query, Pipeline.for_schema(nil))
     end
 
     it 'can create a blueprint with a prototype schema' do
-      assert {:ok, %Blueprint{}} = Pipeline.run(@query, Pipeline.for_schema(Schema))
+      assert {:ok, %Blueprint{}, _} = Pipeline.run(@query, Pipeline.for_schema(Schema))
     end
 
   end
@@ -72,8 +72,8 @@ defmodule Absinthe.PipelineTest do
 
   describe ".run with options" do
     it "should work" do
-      assert {:ok, "oof.oof.oof"} == Pipeline.run("foo", [Phase1, {Phase2, %{times: 3}}, {Phase3, %{reverse: false}}])
-      assert {:ok, "foo.foo.foo"} == Pipeline.run("foo", [Phase1, {Phase2, %{times: 3}}, {Phase3, %{reverse: true}}])
+      assert {:ok, "oof.oof.oof", [Phase3, Phase2, Phase1]} == Pipeline.run("foo", [Phase1, {Phase2, %{times: 3}}, {Phase3, %{reverse: false}}])
+      assert {:ok, "foo.foo.foo", [Phase3, Phase2, Phase1]} == Pipeline.run("foo", [Phase1, {Phase2, %{times: 3}}, {Phase3, %{reverse: true}}])
     end
   end
 
@@ -86,7 +86,7 @@ defmodule Absinthe.PipelineTest do
 
   describe ".run with a bad phase result" do
     it "should return a nice error object" do
-      assert {:error, %Phase.Error{phase: BadPhase, message: "Phase did not return an {:ok, any} | {:error, %{errors: [Phase.Error.t]} | Phase.Error.t | String.t} tuple"}} = Pipeline.run("foo", [BadPhase])
+      assert {:error, "Last phase did not return a valid result tuple.", [BadPhase]} == Pipeline.run("foo", [BadPhase])
     end
   end
 
