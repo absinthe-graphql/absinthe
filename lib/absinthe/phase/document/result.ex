@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Document.Execution.Data do
+defmodule Absinthe.Phase.Document.Result do
 
   @moduledoc """
   Produces data fit for external encoding from annotated value tree
@@ -7,37 +7,43 @@ defmodule Absinthe.Phase.Document.Execution.Data do
   alias Absinthe.{Blueprint, Phase}
   use Absinthe.Phase
 
-  def run(blueprint) do
-    result = blueprint |> process
+  @spec run(Blueprint.t | Phase.Error.t, Keyword.t) :: {:ok, map}
+  def run(input, _options \\ []) do
+    result = input |> process
     {:ok, result}
   end
 
+  defp process(%Phase.Error{} = error) do
+    format_result({:parse_failed, error})
+  end
   defp process(%Blueprint{} = blueprint) do
-    {_, document_errors} = Blueprint.prewalk(blueprint, [], &document_errors/2)
-    {data, errors} = case Blueprint.current_operation(blueprint) do
-      nil ->
-        {nil, document_errors}
-      op ->
-        field_data(op.resolution.fields, document_errors)
+    result = case blueprint.result do
+      %{validation: [], resolution: nil} ->
+        :execution_failed
+      %{validation: [], resolution: res} ->
+        {:ok, field_data(res.fields, [])}
+      %{validation: errors} ->
+        {:validation_failed, errors}
     end
-    {:ok, format_result(data, errors |> Enum.uniq)}
+    format_result(result)
   end
 
-  defp format_result(nil, errors) do
-    %{data: %{}, errors: Enum.map(errors, &format_error/1)}
+  defp format_result(:execution_failed) do
+    %{data: nil}
   end
-  defp format_result(data, []) do
+  defp format_result({:ok, {data, []}}) do
     %{data: data}
   end
-  defp format_result(data, errors) do
-    %{data: data, errors: Enum.map(errors, &format_error/1)}
+  defp format_result({:ok, {data, errors}}) do
+    errors = errors |> Enum.uniq |> Enum.map(&format_error/1)
+    %{data: data, errors: errors}
   end
-
-  defp document_errors(%{errors: errs} = node, acc) do
-    {node, acc ++ errs}
+  defp format_result({:validation_failed, errors}) do
+    errors = errors |> Enum.uniq |> Enum.map(&format_error/1)
+    %{errors: errors}
   end
-  defp document_errors(node, acc) do
-    {node, acc}
+  defp format_result({:parse_failed, error}) do
+    %{errors: [format_error(error)]}
   end
 
   # Leaf
@@ -55,7 +61,7 @@ defmodule Absinthe.Phase.Document.Execution.Data do
     {value, errors} = data(field, errors)
     list_data(fields, errors, [value | acc])
   end
-  defp list_data([%{errors: errs} = field | fields], errors, acc) when length(errs) > 0 do
+  defp list_data([%{errors: errs} | fields], errors, acc) when length(errs) > 0 do
     list_data(fields, errs ++ errors, acc)
   end
 
@@ -65,7 +71,7 @@ defmodule Absinthe.Phase.Document.Execution.Data do
     {value, errors} = data(field, errors)
     field_data(fields, errors, [{field_name(field), value} | acc])
   end
-  defp field_data([%{errors: errs} = field | fields], errors, acc) when length(errs) > 0 do
+  defp field_data([%{errors: errs} | fields], errors, acc) when length(errs) > 0 do
     field_data(fields, errs ++ errors, acc)
   end
 

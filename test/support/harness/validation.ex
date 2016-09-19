@@ -68,7 +68,13 @@ defmodule Support.Harness.Validation do
 
   @spec assert_valid(Schema.t, [Phase.t], Language.Source.t, map) :: no_return
   def assert_valid(schema, rules, document, options) do
-    {:ok, result} = run(schema, rules, document, options)
+    result = case run(schema, rules, document, options) do
+      {:ok, result} ->
+        result
+      # :jump, etc
+      {_other, result, _config} ->
+        result
+    end
     formatted_errors = Enum.map(error_pairs(result), fn
       {_, error} ->
         error.message
@@ -78,7 +84,13 @@ defmodule Support.Harness.Validation do
 
   @spec assert_invalid(Schema.t, [Phase.t], Language.Source.t, map, [error_checker_t] | error_checker_t) :: no_return
   def assert_invalid(schema, rules, document, options, error_checkers) do
-    {:ok, result} = run(schema, rules, document, options)
+    result = case run(schema, rules, document, options) do
+      {:ok, result} ->
+        result
+      # :jump, etc
+      {_other, result, _config} ->
+        result
+    end
     pairs = error_pairs(result)
     List.wrap(error_checkers)
     |> Enum.each(&(&1.(pairs)))
@@ -118,7 +130,7 @@ defmodule Support.Harness.Validation do
     [
       Phase.Parse,
       Phase.Blueprint,
-      {Phase.Schema, [schema, Absinthe.Adapter.LanguageConventions]}
+      {Phase.Schema, schema: schema}
     ]
   end
   defp pre_validation_pipeline(schema, options) do
@@ -127,7 +139,7 @@ defmodule Support.Harness.Validation do
     [
       Phase.Parse,
       Phase.Blueprint,
-      {Phase.Document.CurrentOperation, [operation_name]},
+      {Phase.Document.CurrentOperation, operation_name},
       # Note: NoFragmentCyles is disabled because some validation examples
       # from graphql-js include cycles, but they can be safely ignored.
       #
@@ -136,7 +148,7 @@ defmodule Support.Harness.Validation do
       Phase.Document.Uses,
       {Phase.Document.Variables, Map.get(options, :variables, %{})},
       Phase.Document.Arguments.Normalize,
-      {Phase.Schema, [schema, Absinthe.Adapter.LanguageConventions]},
+      {Phase.Schema, schema: schema},
       Phase.Document.Arguments.Data,
       Phase.Document.Directives
     ]

@@ -109,7 +109,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
       doc = """
       query GetContacts($contacts:[ContactInput]){contacts(contacts:$contacts)}
       """
-      assert_result {:ok, %{data: %{}, errors: [%{message: ~s(In argument "contacts": Expected type "[ContactInput]!", found null.)}]}},
+      assert_result {:ok, %{errors: [%{message: ~s(In argument "contacts": Expected type "[ContactInput]!", found null.)}]}},
         doc |> run(Schema)
     end
 
@@ -193,7 +193,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
       end
 
       it "should return an error with invalid values" do
-        assert_result {:ok, %{data: %{}, errors: [%{message: ~s(Argument "type" has invalid value "bagel".)}]}},
+        assert_result {:ok, %{errors: [%{message: ~s(Argument "type" has invalid value "bagel".)}]}},
           "{ contact(type: \"bagel\") }" |> run(Schema)
       end
 
@@ -207,7 +207,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         doc = """
         { requiredThing }
         """
-        assert_result {:ok, %{data: %{}, errors: [%{message: ~s(In argument "name": Expected type "InputName!", found null.)}]}}, doc |> run(Schema)
+        assert_result {:ok, %{errors: [%{message: ~s(In argument "name": Expected type "InputName!", found null.)}]}}, doc |> run(Schema)
       end
     end
 
@@ -245,7 +245,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         doc = """
         {contacts(contacts: [{email: "a@b.com"}, {foo: "c@d.com"}])}
         """
-        assert_result {:ok, %{data: %{}, errors: [
+        assert_result {:ok, %{errors: [
           %{message: ~s(Argument "contacts" has invalid value [{email: "a@b.com"}, {foo: "c@d.com"}].\nIn element #2: Expected type "ContactInput", found {foo: "c@d.com", email: null}.\nIn field "foo": Unknown field.\nIn field "email": Expected type "String!", found null.)},
         ]}},
           doc |> run(Schema)
@@ -264,7 +264,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         doc = """
         {user(contact: {foo: "buz"})}
         """
-        assert_result {:ok, %{data: %{}, errors: [
+        assert_result {:ok, %{errors: [
           %{message: ~s(Argument "contact" has invalid value {foo: "buz"}.\nIn field "foo": Unknown field.\nIn field "email": Expected type "String!", found null.)},
         ]}},
           doc |> run(Schema)
@@ -274,7 +274,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         doc = """
         {user(contact: {email: "bubba", foo: "buz"})}
         """
-        assert_result {:ok, %{data: %{}, errors: [%{message: "Argument \"contact\" has invalid value {email: \"bubba\", foo: \"buz\"}.\nIn field \"foo\": Unknown field."}]}},
+        assert_result {:ok, %{errors: [%{message: "Argument \"contact\" has invalid value {email: \"bubba\", foo: \"buz\"}.\nIn field \"foo\": Unknown field."}]}},
           doc |> run(Schema)
       end
     end
@@ -300,7 +300,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
       end
 
       it "returns a correct error when passed the wrong type" do
-        assert_result {:ok, %{data: %{}, errors: [%{message: ~s(Argument "flag" has invalid value {foo: 1}.)}]}},
+        assert_result {:ok, %{errors: [%{message: ~s(Argument "flag" has invalid value {foo: 1}.)}]}},
           "{ something(flag: {foo: 1}) }" |> run(Schema)
       end
     end
@@ -310,7 +310,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"contact" => "Email"}}}, "{ contact(type: Email) }" |> run(Schema)
       end
       it "should return an error with invalid values" do
-        assert_result {:ok, %{data: %{}, errors: [%{message: ~s(Argument "type" has invalid value "bagel".)}]}},
+        assert_result {:ok, %{errors: [%{message: ~s(Argument "type" has invalid value "bagel".)}]}},
           "{ contact(type: \"bagel\") }" |> run(Schema)
       end
     end
@@ -323,7 +323,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         user(contact: {email: "bubba@joe.com", contactType: 1})
       }
       """
-      assert_result {:ok, %{data: %{}, errors: [%{message: ~s(Argument "contact" has invalid value {email: "bubba@joe.com", contactType: 1}.\nIn field "contactType": Expected type "ContactType", found 1.)}]}}, run(doc, Schema)
+      assert_result {:ok, %{errors: [%{message: ~s(Argument "contact" has invalid value {email: "bubba@joe.com", contactType: 1}.\nIn field "contactType": Expected type "ContactType", found 1.)}]}}, run(doc, Schema)
     end
   end
 

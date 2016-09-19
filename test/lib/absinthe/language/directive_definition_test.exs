@@ -19,7 +19,7 @@ defmodule Absinthe.Language.DirectiveDefinitionTest do
   end
 
   defp from_input(text) do
-    {:ok, doc} = Phase.Parse.run(text)
+    {:ok, doc} = Phase.Parse.run(text, nil)
 
     doc
     |> extract_ast_node

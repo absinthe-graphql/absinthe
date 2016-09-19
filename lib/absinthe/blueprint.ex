@@ -12,7 +12,7 @@ defmodule Absinthe.Blueprint do
     # Added by phases
     flags: %{},
     errors: [],
-    result: nil
+    result: Blueprint.Document.Result.new
   ]
 
   @type t :: %__MODULE__{
@@ -25,7 +25,7 @@ defmodule Absinthe.Blueprint do
     # Added by phases
     errors: [Blueprint.Phase.Error.t],
     flags: Blueprint.flags_t,
-    result: nil | map
+    result: Blueprint.Document.Result.t
   }
 
   @type node_t ::

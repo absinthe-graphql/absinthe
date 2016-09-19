@@ -14,7 +14,7 @@ defmodule Harness.Document.Phase do
       def run_phase(query, provided_values, additional_args \\ []) do
         pipeline = Pipeline.for_document(unquote(schema), provided_values)
         |> Pipeline.before(unquote(phase))
-        with {:ok, blueprint} <- Pipeline.run(query, pipeline) do
+        with {:ok, blueprint, _} <- Pipeline.run(query, pipeline) do
           apply(unquote(phase), :run, [blueprint | additional_args])
         end
       end

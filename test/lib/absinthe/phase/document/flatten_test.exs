@@ -121,7 +121,7 @@ defmodule Absinthe.Phase.Document.FlattenTest do
     it "has its selections flattened to fields" do
       pre = Pipeline.for_document(ContactSchema)
       |> Pipeline.before(Phase.Document.Flatten)
-      {:ok, blueprint} = Pipeline.run(@introspection_query, pre)
+      {:ok, blueprint, _} = Pipeline.run(@introspection_query, pre)
       {:ok, result} = Phase.Document.Flatten.run(blueprint)
       op = Blueprint.current_operation(result)
       assert Blueprint.find(op, fn
@@ -141,7 +141,7 @@ defmodule Absinthe.Phase.Document.FlattenTest do
   end
 
   defp blueprint(query, variables) do
-    {:ok, blueprint} = Pipeline.run(query, pre_pipeline(variables))
+    {:ok, blueprint, _phases} = Pipeline.run(query, pre_pipeline(variables))
     blueprint
   end
 

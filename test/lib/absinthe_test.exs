@@ -34,7 +34,7 @@ defmodule AbsintheTest do
       }
     }
     """
-    assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}, errors: [%{message: ~s(Cannot query field "bad" on type "Thing".)}]}}, run(query, Things)
+    assert_result {:ok, %{errors: [%{message: ~s(Cannot query field "bad" on type "Thing".)}]}}, run(query, Things)
   end
 
   it "blows up on bad resolutions" do
@@ -61,8 +61,7 @@ defmodule AbsintheTest do
 
   it "checks for required arguments" do
     query = "{ thing { name } }"
-    assert_result {:ok, %{data: %{},
-                          errors: [%{message: ~s(In argument "id": Expected type "String!", found null.)}]}}, run(query, Things)
+    assert_result {:ok, %{errors: [%{message: ~s(In argument "id": Expected type "String!", found null.)}]}}, run(query, Things)
 
   end
 
@@ -74,7 +73,7 @@ defmodule AbsintheTest do
       }
     }
     """
-    assert_result {:ok, %{data: %{}, errors: [%{message: ~s(Unknown argument "extra" on field "thing" of type "RootQueryType".)}]}}, run(query, Things)
+    assert_result {:ok, %{errors: [%{message: ~s(Unknown argument "extra" on field "thing" of type "RootQueryType".)}]}}, run(query, Things)
   end
 
   it "checks for badly formed arguments" do
@@ -83,8 +82,7 @@ defmodule AbsintheTest do
       number(val: "AAA")
     }
     """
-    assert_result {:ok, %{data: %{},
-                         errors: [%{message: ~s(Argument "val" has invalid value "AAA".)}]}}, run(query, Things)
+    assert_result {:ok, %{errors: [%{message: ~s(Argument "val" has invalid value "AAA".)}]}}, run(query, Things)
   end
 
   it "returns nested objects" do
@@ -148,8 +146,7 @@ defmodule AbsintheTest do
       }
     }
     """
-    assert_result {:ok, %{data: %{},
-                         errors: [%{message: ~s(Argument "thing" has invalid value {value: "BAD"}.\nIn field "value": Expected type "Int", found "BAD".)}]}}, run(query, Things)
+    assert_result {:ok, %{errors: [%{message: ~s(Argument "thing" has invalid value {value: "BAD"}.\nIn field "value": Expected type "Int", found "BAD".)}]}}, run(query, Things)
   end
 
   it "reports variables that are never used" do
@@ -161,7 +158,7 @@ defmodule AbsintheTest do
       }
     """
     result = run(query, Things, variables: %{"thingId" => "bar"})
-    assert_result {:ok, %{data: %{"thing" => %{"name" => "Bar"}}, errors: [%{message: ~s(Variable "other" is never used in operation "GimmeThingByVariable".)}]}}, result
+    assert_result {:ok, %{errors: [%{message: ~s(Variable "other" is never used in operation "GimmeThingByVariable".)}]}}, result
   end
 
   it "reports parser errors from parse" do
@@ -170,7 +167,7 @@ defmodule AbsintheTest do
         thing(id: "foo") {}{ name }
       }
     """
-    assert {:error, %{message: "syntax error before: '}'", locations: _}} = Absinthe.parse(query)
+    assert_result {:ok, %{errors: [%{message: "syntax error before: '}'"}]}}, run(query, Things)
   end
 
   it "reports parser errors from run" do
@@ -196,14 +193,14 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"item" => %{"id" => "foo", "name" => "Foo"}}}}, result
   end
 
-  it "should wrap all lexer errors" do
+  it "should wrap all lexer errors and return if not aborting to a phase" do
     query = """
     {
       item(this-won't-parse)
     }
     """
 
-    assert {:error, %{locations: _}} = Absinthe.parse(query)
+    assert {:error, "illegal: -w, on line 2", [Absinthe.Phase.Parse]} == Absinthe.Pipeline.run(query, [{Absinthe.Phase.Parse, nil}])
   end
 
   it "should resolve using enums" do
@@ -275,7 +272,7 @@ defmodule AbsintheTest do
     """
 
     it "can be parsed" do
-      {:ok, doc} = Absinthe.parse(@simple_fragment)
+      {:ok, doc, _} = Absinthe.Pipeline.run(@simple_fragment, [Absinthe.Phase.Parse])
       assert %{definitions: [%Absinthe.Language.OperationDefinition{},
                              %Absinthe.Language.Fragment{name: "NamedPerson"}]} = doc
     end
@@ -337,12 +334,26 @@ defmodule AbsintheTest do
     end
 
     it "should error when no operation name is supplied" do
-      assert {:ok, %{data: %{}, errors: [%{message: "Must provide a valid operation name if query contains multiple operations."}]}} == run(@multiple_ops_query, Things)
+      assert {:ok, %{errors: [%{message: "Must provide a valid operation name if query contains multiple operations."}]}} == run(@multiple_ops_query, Things)
     end
     it "should error when an invalid operation name is supplied" do
       op_name = "invalid"
-      assert_result {:ok, %{data: %{}, errors: [%{message: "Must provide a valid operation name if query contains multiple operations."}]}}, run(@multiple_ops_query, Things, operation_name: op_name)
+      assert_result {:ok, %{errors: [%{message: "Must provide a valid operation name if query contains multiple operations."}]}}, run(@multiple_ops_query, Things, operation_name: op_name)
     end
+  end
+
+  it "handles cycles" do
+    cycler = """
+    fragment Foo on Blag {
+      name
+      ...Bar
+    }
+    fragment Bar on Blah {
+      age
+      ...Foo
+    }
+    """
+    assert_result {:ok, %{errors: [%{message: "Cannot spread fragment \"Foo\" within itself via \"Bar\", \"Foo\"."}, %{message: "Cannot spread fragment \"Bar\" within itself via \"Foo\", \"Bar\"."}]}}, run(cycler, Things)
   end
 
 end

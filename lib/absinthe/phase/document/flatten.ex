@@ -11,8 +11,8 @@ defmodule Absinthe.Phase.Document.Flatten do
   use Absinthe.Phase
   alias Absinthe.Blueprint
 
-  @spec run(Blueprint.t) :: {:ok, Blueprint.t}
-  def run(input) do
+  @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
+  def run(input, _options \\ []) do
     fragments = for fragment <- input.fragments do
       process(fragment, input.fragments)
     end

@@ -146,10 +146,6 @@ defmodule Absinthe do
     defexception message: "execution failed"
   end
 
-  def parse(input) do
-    Absinthe.Phase.Parse.run(input)
-  end
-
   @type result_selection_t :: %{
     String.t =>
         nil
@@ -213,7 +209,12 @@ defmodule Absinthe do
   @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, run_opts) :: {:ok, result_t} | {:error, any}
   def run(document, schema, options \\ []) do
     pipeline = Absinthe.Pipeline.for_document(schema, Map.new(options))
-    Absinthe.Pipeline.run(document, pipeline)
+    case Absinthe.Pipeline.run(document, pipeline) do
+      {:ok, result, _phases} ->
+        {:ok, result}
+      other ->
+        other
+    end
   end
 
   @doc """

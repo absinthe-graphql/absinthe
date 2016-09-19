@@ -11,8 +11,8 @@ defmodule Absinthe.Phase.Document.Validation.UniqueFragmentNames do
   @doc """
   Run the validation.
   """
-  @spec run(Blueprint.t) :: Phase.result_t
-  def run(input) do
+  @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
+  def run(input, _options \\ []) do
     fragments = for fragment <- input.fragments do
       process(fragment, input.fragments)
     end

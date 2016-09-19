@@ -277,7 +277,7 @@ defmodule Absinthe.Schema do
   def concrete_types(schema, %Type.Interface{} = type) do
     implementors(schema, type)
   end
-  def concrete_types(schema, %Type.Object{} = type) do
+  def concrete_types(_, %Type.Object{} = type) do
     [type]
   end
 
