@@ -5,14 +5,17 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   While this phase starts with a blueprint, it returns an annotated value tree.
   """
 
-  alias Absinthe.{Blueprint, Type}
+  alias Absinthe.{Blueprint, Type, Phase}
 
   alias __MODULE__
 
   alias Absinthe.Phase
   use Absinthe.Phase
 
-  def run(bp_root, context, root_value) do
+  @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
+  def run(bp_root, options \\ []) do
+    context = Keyword.get(options, :context, %{})
+    root_value = Keyword.get(options, :root_value, %{})
     result = case Blueprint.current_operation(bp_root) do
       nil ->
         bp_root

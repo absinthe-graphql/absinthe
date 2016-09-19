@@ -41,7 +41,7 @@ defmodule Absinthe.PipelineTest do
 
   defmodule Phase1 do
     use Phase
-    def run(input) do
+    def run(input, _) do
       {:ok, String.reverse(input)}
     end
   end
@@ -79,7 +79,7 @@ defmodule Absinthe.PipelineTest do
 
   defmodule BadPhase do
     use Phase
-    def run(input) do
+    def run(input, _) do
       input
     end
   end

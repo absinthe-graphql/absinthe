@@ -3,6 +3,8 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
 
   alias Absinthe.{Phase, Pipeline}
 
+  @rule Absinthe.Phase.Document.Validation.NoFragmentCycles
+
   describe ".run" do
 
     it "should return ok if a fragment does not cycle" do
@@ -18,7 +20,7 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
     end
     it "should return an error if the named fragment tries to use itself" do
 
-      {:error, blueprint} = """
+      {:jump, blueprint, _} = """
       fragment nameFragment on Dog {
         name
         ...nameFragment
@@ -26,15 +28,16 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
       """
       |> run
 
+      message = @rule.error_message("nameFragment", ["nameFragment"])
       assert Enum.find(blueprint.fragments, fn
-        %{name: "nameFragment", errors: [%{message: "forms a cycle with itself"}]} ->
+        %{name: "nameFragment", errors: [%{message: ^message}]} ->
           true
         _ ->
           false
      end)
     end
     it "should add errors to named fragments that form a cycle" do
-      {:error, blueprint} = """
+      {:jump, blueprint, _} = """
       {
         dog {
           ...foo
@@ -65,8 +68,10 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
       """
       |> run
 
-      quux_msg = "forms a cycle via: (`quux' => `foo' => `bar' => `baz' => `quux')"
-      baz_msg = "forms a cycle via: (`baz' => `quux' => `foo' => `bar' => `baz')"
+
+
+      quux_msg = @rule.error_message("quux", ~w(quux foo bar baz quux))
+      baz_msg = @rule.error_message("baz", ~w(baz quux foo bar baz))
 
       assert Enum.find(blueprint.fragments, fn
         %{name: "baz", errors: [%{message: ^baz_msg}]} ->
@@ -86,7 +91,7 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
   end
 
   def run(input) do
-    {:ok, blueprint} = input
+    {:ok, blueprint, _phases} = input
     |> Pipeline.run([
       Phase.Parse,
       Phase.Blueprint

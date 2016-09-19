@@ -15,8 +15,8 @@ defmodule Absinthe.Phase.Document.Arguments.Normalize do
   use Absinthe.Phase
   alias Absinthe.Blueprint
 
-  @spec run(Blueprint.t) :: {:ok, Blueprint.t}
-  def run(input) do
+  @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
+  def run(input, _options \\ []) do
     acc = %{provided_values: %{}}
     {node, _} = Blueprint.prewalk(input, acc, &handle_node/2)
     {:ok, node}

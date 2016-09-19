@@ -13,8 +13,8 @@ defmodule Absinthe.Phase.Document.Uses do
     variables: [Blueprint.Input.Variable.Use.t]
   }
 
-  @spec run(Blueprint.t) :: {:ok, Blueprint.t}
-  def run(input) do
+  @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
+  def run(input, _options \\ []) do
     ops = Enum.map(input.operations, &add_uses(&1, input))
     node = %{input | operations: ops}
     {:ok, node}

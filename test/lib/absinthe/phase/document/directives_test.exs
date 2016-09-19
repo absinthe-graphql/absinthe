@@ -62,13 +62,13 @@ defmodule Absinthe.Phase.Document.DirectivesTest do
   end
 
   defp blueprint(query, values) do
-    {:ok, blueprint} = Pipeline.run(query, pre_pipeline(values))
+    {:ok, blueprint, _} = Pipeline.run(query, pre_pipeline(values))
     blueprint
   end
 
   # Get the document pipeline up to (but not including) this phase
   defp pre_pipeline(values) do
-    Pipeline.for_document(Schema, variables: values)
+    Pipeline.for_document(Schema, variables: values, abort_to_phase: nil)
     |> Pipeline.before(Phase.Document.Directives)
   end
 

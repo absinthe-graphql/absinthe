@@ -7,11 +7,15 @@ defmodule Absinthe.Phase.Document.Result do
   alias Absinthe.{Blueprint, Phase}
   use Absinthe.Phase
 
-  def run(blueprint) do
-    result = blueprint |> process
+  @spec run(Blueprint.t | Phase.Error.t, Keyword.t) :: {:ok, map}
+  def run(input, _options \\ []) do
+    result = input |> process
     {:ok, result}
   end
 
+  defp process(%Phase.Error{} = error) do
+    format_result({:parse_failed, error})
+  end
   defp process(%Blueprint{} = blueprint) do
     result = case blueprint.result do
       %{validation: [], resolution: nil} ->
@@ -38,6 +42,9 @@ defmodule Absinthe.Phase.Document.Result do
     errors = errors |> Enum.uniq |> Enum.map(&format_error/1)
     %{errors: errors}
   end
+  defp format_result({:parse_failed, error}) do
+    %{errors: [format_error(error)]}
+  end
 
   # Leaf
   defp data(%{value: value}, errors), do: {value, errors}
@@ -54,7 +61,7 @@ defmodule Absinthe.Phase.Document.Result do
     {value, errors} = data(field, errors)
     list_data(fields, errors, [value | acc])
   end
-  defp list_data([%{errors: errs} = field | fields], errors, acc) when length(errs) > 0 do
+  defp list_data([%{errors: errs} | fields], errors, acc) when length(errs) > 0 do
     list_data(fields, errs ++ errors, acc)
   end
 
@@ -64,7 +71,7 @@ defmodule Absinthe.Phase.Document.Result do
     {value, errors} = data(field, errors)
     field_data(fields, errors, [{field_name(field), value} | acc])
   end
-  defp field_data([%{errors: errs} = field | fields], errors, acc) when length(errs) > 0 do
+  defp field_data([%{errors: errs} | fields], errors, acc) when length(errs) > 0 do
     field_data(fields, errs ++ errors, acc)
   end
 

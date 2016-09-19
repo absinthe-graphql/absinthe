@@ -10,8 +10,8 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
   @doc """
   Run the validation.
   """
-  @spec run(Blueprint.t) :: Phase.result_t
-  def run(input) do
+  @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
+  def run(input, _options \\ []) do
     result = Blueprint.prewalk(input, &handle_node(&1, input))
     {:ok, result}
   end
@@ -49,7 +49,6 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
 
   # Generate the error for a field
   @spec error(Blueprint.node_t, String.t, [String.t], [String.t]) :: Phase.Error.t
-  defp error(field_node, parent_type_name, type_suggestions \\ [], field_suggestions \\ [])
   defp error(field_node, parent_type_name, type_suggestions, field_suggestions) do
     Phase.Error.new(
       __MODULE__,
@@ -80,7 +79,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
     <> to_quoted_or_list(type_suggestions |> Enum.take(@suggest))
     <> "?"
   end
-  def error_message(field_name, type_name, type_suggestions, field_suggestions) do
+  def error_message(field_name, type_name, type_suggestions, _) do
     error_message(field_name, type_name, type_suggestions)
   end
 

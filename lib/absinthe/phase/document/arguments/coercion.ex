@@ -15,8 +15,8 @@ defmodule Absinthe.Phase.Document.Arguments.Coercion do
   use Absinthe.Phase
   alias Absinthe.{Blueprint, Type}
 
-  @spec run(Blueprint.t) :: {:ok, Blueprint.t}
-  def run(input) do
+  @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
+  def run(input, _options \\ []) do
     node = Blueprint.prewalk(input, &coerce_node/1)
     {:ok, node}
   end

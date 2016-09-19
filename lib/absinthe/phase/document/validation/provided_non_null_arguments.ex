@@ -10,8 +10,8 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArguments do
   @doc """
   Run the validation.
   """
-  @spec run(Blueprint.t) :: Phase.result_t
-  def run(input) do
+  @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
+  def run(input, _options \\ []) do
     result = Blueprint.prewalk(input, &(handle_node(&1, input.schema)))
     {:ok, result}
   end

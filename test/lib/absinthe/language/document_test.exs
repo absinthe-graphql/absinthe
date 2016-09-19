@@ -1,4 +1,4 @@
-defmodule Absinthe.Languguage.DocumentTest do
+defmodule Absinthe.Language.DocumentTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.Blueprint
@@ -37,7 +37,7 @@ defmodule Absinthe.Languguage.DocumentTest do
     end
 
     describe "given a non-existing operation name" do
-      {:ok, doc} = Absinthe.Phase.Parse.run(@input)
+      {:ok, doc} = Absinthe.Phase.Parse.run(@input, nil)
       result = Document.get_operation(doc, "DoesNotExist")
       assert nil == result
     end
@@ -174,7 +174,7 @@ defmodule Absinthe.Languguage.DocumentTest do
   end
 
   def ir(input) do
-    {:ok, blueprint} = Absinthe.Pipeline.run(input, [Absinthe.Phase.Parse, Absinthe.Phase.Blueprint])
+    {:ok, blueprint, _} = Absinthe.Pipeline.run(input, [Absinthe.Phase.Parse, Absinthe.Phase.Blueprint])
     blueprint
   end
 

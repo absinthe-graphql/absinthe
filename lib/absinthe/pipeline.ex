@@ -1,13 +1,12 @@
 defmodule Absinthe.Pipeline do
 
   alias Absinthe.Phase
-  alias __MODULE__
 
   require Logger
 
   @type data_t :: any
 
-  @type phase_config_t :: Phase.t | {Phase.t, [any]}
+  @type phase_config_t :: Phase.t | {Phase.t, any}
 
   @type t :: [phase_config_t | [phase_config_t]]
 
@@ -16,6 +15,8 @@ defmodule Absinthe.Pipeline do
     List.flatten(pipeline)
     |> run_phase(input)
   end
+
+  @default_abort_phase Phase.Document.Result
 
   @spec for_document(Absinthe.Schema.t) :: t
   @spec for_document(Absinthe.Schema.t, Keyword.t) :: t
@@ -26,27 +27,28 @@ defmodule Absinthe.Pipeline do
     operation_name = Map.get(options, :operation_name)
     context = options[:context]
     root_value = options[:root_value]
+    abort_to_phase = Map.get(options, :abort_to_phase, @default_abort_phase)
     [
-      Phase.Parse,
+      {Phase.Parse, abort_to_phase},
       Phase.Blueprint,
-      {Phase.Document.CurrentOperation, [operation_name]},
+      {Phase.Document.CurrentOperation, operation_name},
       Phase.Document.Uses,
       Phase.Document.Validation.structural_pipeline,
-      {Phase.Document.Variables, [variables]},
+      {Phase.Document.Variables, variables},
       Phase.Document.Arguments.Normalize,
-      {Phase.Schema, [schema, adapter]},
+      {Phase.Schema, schema: schema, adapter: adapter},
       Phase.Validation.KnownTypeNames,
       Phase.Document.Arguments.Coercion,
       Phase.Document.Arguments.Data,
       Phase.Document.Arguments.Defaults,
       Phase.Document.Validation.data_pipeline,
-      Phase.Document.Validation.Result,
+      {Phase.Document.Validation.Result, abort_to_phase},
       Phase.Document.Directives,
       Phase.Document.CascadeInvalid,
       Phase.Document.Flatten,
-      {Phase.Document.Execution.Resolution, [context, root_value]},
+      {Phase.Document.Execution.Resolution, context: context, root_value: root_value},
       Phase.Debug,
-      Phase.Document.Result
+      @default_abort_phase
     ]
   end
 
@@ -56,7 +58,7 @@ defmodule Absinthe.Pipeline do
     [
       Phase.Parse,
       Phase.Blueprint,
-      {Phase.Schema, [prototype_schema, adapter]},
+      {Phase.Schema, schema: prototype_schema, adapter: adapter},
       Phase.Validation.KnownTypeNames,
       Phase.Schema.Validation.pipeline
     ]
@@ -119,8 +121,8 @@ defmodule Absinthe.Pipeline do
     {:ok, input, done}
   end
   defp run_phase([phase_config | todo], input, done) do
-    {phase, args} = phase_invocation(phase_config)
-    case apply(phase, :run, [input | args]) do
+    {phase, options} = phase_invocation(phase_config)
+    case phase.run(input, options) do
       {:ok, result} ->
         run_phase(todo, result, [phase | done])
       {:jump, result, destination_phase} ->
@@ -129,7 +131,7 @@ defmodule Absinthe.Pipeline do
         run_phase(List.wrap(extra_pipeline) ++ todo, result, [phase | done])
       {:replace, result, final_pipeline} ->
         run_phase(List.wrap(final_pipeline), result, [phase | done])
-      {:error, message} = err ->
+      {:error, message} ->
         {:error, message, [phase | done]}
       _ ->
         {:error, "Last phase did not return a valid result tuple.", [phase | done]}
@@ -137,8 +139,8 @@ defmodule Absinthe.Pipeline do
   end
 
   @spec phase_invocation(phase_config_t) :: {Phase.t, list}
-  defp phase_invocation({phase, args}) do
-    {phase, List.wrap(args)}
+  defp phase_invocation({phase, options}) do
+    {phase, options}
   end
   defp phase_invocation(phase) do
     {phase, []}

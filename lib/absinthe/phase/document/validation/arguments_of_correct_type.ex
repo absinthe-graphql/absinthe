@@ -10,8 +10,8 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
   @doc """
   Run this validation.
   """
-  @spec run(Blueprint.t) :: Phase.result_t
-  def run(input) do
+  @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
+  def run(input, _options \\ []) do
     result = Blueprint.prewalk(input, &(handle_node(&1, input.schema)))
     {:ok, result}
   end
@@ -51,11 +51,10 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
   end
   defp collect_child_errors(%Blueprint.Input.Object{} = node, schema) do
     node.fields
-    |> Enum.with_index
     |> Enum.flat_map(fn
-      {%{flags: %{invalid: _}, schema_node: nil} = child, idx} ->
+      %{flags: %{invalid: _}, schema_node: nil} = child ->
         [unknown_field_error_message(child.name)]
-      {%{flags: %{invalid: _}} = child, idx} ->
+      %{flags: %{invalid: _}} = child ->
         child_type_name = Type.value_type(child.schema_node, schema)
         |> Type.name(schema)
         child_inspected_value = Blueprint.Input.inspect(child.value)
@@ -63,7 +62,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
           value_error_message(child.name, child_type_name, child_inspected_value) |
           collect_child_errors(child.value, schema)
         ]
-      {child, _} ->
+      child ->
         collect_child_errors(child, schema)
     end)
   end

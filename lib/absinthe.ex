@@ -146,10 +146,6 @@ defmodule Absinthe do
     defexception message: "execution failed"
   end
 
-  def parse(input) do
-    Absinthe.Phase.Parse.run(input)
-  end
-
   @type result_selection_t :: %{
     String.t =>
         nil

@@ -8,17 +8,17 @@ defmodule Absinthe.Phase.Document.CascadeInvalid do
 
   alias Absinthe.Blueprint
 
-  @spec run(Blueprint.t) :: {:ok, Blueprint.t}
-  def run(input) do
-    result = Blueprint.update_current(input, &process(&1, input.schema))
+  @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
+  def run(input, _options \\ []) do
+    result = Blueprint.update_current(input, &process/1)
     {:ok, result}
   end
 
-  defp process(operation, schema) do
-    Blueprint.prewalk(operation, &handle_node(&1, schema))
+  defp process(operation) do
+    Blueprint.prewalk(operation, &handle_node/1)
   end
 
-  defp handle_node(%Blueprint.Document.Field{} = node, schema) do
+  defp handle_node(%Blueprint.Document.Field{} = node) do
     node = if any_invalid?(node.arguments) do
       node |> flag_invalid(:bad_arguments)
     else
@@ -31,7 +31,7 @@ defmodule Absinthe.Phase.Document.CascadeInvalid do
     end
     node
   end
-  defp handle_node(node, _) do
+  defp handle_node(node) do
     node
   end
 

@@ -12,15 +12,15 @@ defmodule Absinthe.Phase.Document.Validation.VariablesAreInputTypes do
   @doc """
   Run the validation.
   """
-  @spec run(Blueprint.t) :: Phase.result_t
-  def run(input) do
+  @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
+  def run(input, _options \\ []) do
     result = Blueprint.prewalk(input, &handle_node(&1, input.schema))
     {:ok, result}
   end
 
   # Find variable definitions
   @spec handle_node(Blueprint.node_t, Schema.t) :: Blueprint.node_t
-  defp handle_node(%Blueprint.Document.VariableDefinition{schema_node: nil} = node, schema) do
+  defp handle_node(%Blueprint.Document.VariableDefinition{schema_node: nil} = node, _) do
     node
   end
   defp handle_node(%Blueprint.Document.VariableDefinition{} = node, schema) do

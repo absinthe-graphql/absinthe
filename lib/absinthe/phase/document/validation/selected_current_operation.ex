@@ -11,8 +11,8 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperation do
   @doc """
   Run the validation.
   """
-  @spec run(Blueprint.t) :: Phase.result_t
-  def run(input) do
+  @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
+  def run(input, _options \\ []) do
     node = if Enum.count(input.operations, &(&1.current)) == 1 do
       input
     else

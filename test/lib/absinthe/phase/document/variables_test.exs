@@ -48,7 +48,7 @@ defmodule Absinthe.Phase.Document.VariablesTest do
   end
 
   defp blueprint(query) do
-    {:ok, blueprint} = Pipeline.run(query, @pre_pipeline)
+    {:ok, blueprint, _} = Pipeline.run(query, @pre_pipeline)
     blueprint
   end
 

@@ -12,8 +12,8 @@ defmodule Absinthe.Phase.Document.Validation.UniqueVariableNames do
   @doc """
   Run the validation.
   """
-  @spec run(Blueprint.t) :: Phase.result_t
-  def run(input) do
+  @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
+  def run(input, _options \\ []) do
     operations = for operation <- input.operations do
       variable_definitions = for variable <- operation.variable_definitions do
         process(variable, operation.variable_definitions)

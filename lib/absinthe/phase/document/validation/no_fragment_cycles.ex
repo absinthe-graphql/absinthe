@@ -14,8 +14,8 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
   @doc """
   Run the validation.
   """
-  @spec run(Blueprint.t) :: Phase.result_t
-  def run(input) do
+  @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
+  def run(input, _options \\ []) do
     {fragments, error_count} = check(input.fragments)
     result = put_in(input.fragments, fragments)
     if error_count > 0 do
@@ -68,13 +68,20 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
   defp cycle_errors(_, false) do
     []
   end
-  defp cycle_errors(fragment, [_]) do
-    [cycle_error(fragment, "forms a cycle with itself")]
+  defp cycle_errors(fragment, cycles) do
+    [cycle_error(fragment, error_message(fragment.name, cycles))]
   end
-  defp cycle_errors(fragment, cycle) do
-    deps = Enum.map(cycle, &"`#{&1}'")
-    |> Enum.join(" => ")
-    [cycle_error(fragment, "forms a cycle via: (#{deps})")]
+
+  @doc """
+  Generate the error message.
+  """
+  @spec error_message(String.t, [String.t]) :: String.t
+  def error_message(fragment_name, [fragment_name]) do
+    ~s(Cannot spread fragment "#{fragment_name}" within itself.)
+  end
+  def error_message(fragment_name, [_fragment_name | cycles]) do
+    deps = Enum.map(cycles, &~s("#{&1}")) |> Enum.join(", ")
+    ~s(Cannot spread fragment "#{fragment_name}" within itself via #{deps}.)
   end
 
   # Generate the error for a fragment cycle

@@ -167,7 +167,7 @@ defmodule AbsintheTest do
         thing(id: "foo") {}{ name }
       }
     """
-    assert {:error, %{message: "syntax error before: '}'", locations: _}} = Absinthe.parse(query)
+    assert_result {:ok, %{errors: [%{message: "syntax error before: '}'"}]}}, run(query, Things)
   end
 
   it "reports parser errors from run" do
@@ -193,14 +193,14 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"item" => %{"id" => "foo", "name" => "Foo"}}}}, result
   end
 
-  it "should wrap all lexer errors" do
+  it "should wrap all lexer errors and return if not aborting to a phase" do
     query = """
     {
       item(this-won't-parse)
     }
     """
 
-    assert {:error, %{locations: _}} = Absinthe.parse(query)
+    assert {:error, "illegal: -w, on line 2", [Absinthe.Phase.Parse]} == Absinthe.Pipeline.run(query, [{Absinthe.Phase.Parse, nil}])
   end
 
   it "should resolve using enums" do
@@ -272,7 +272,7 @@ defmodule AbsintheTest do
     """
 
     it "can be parsed" do
-      {:ok, doc} = Absinthe.parse(@simple_fragment)
+      {:ok, doc, _} = Absinthe.Pipeline.run(@simple_fragment, [Absinthe.Phase.Parse])
       assert %{definitions: [%Absinthe.Language.OperationDefinition{},
                              %Absinthe.Language.Fragment{name: "NamedPerson"}]} = doc
     end
@@ -353,7 +353,7 @@ defmodule AbsintheTest do
       ...Foo
     }
     """
-    assert_result {:ok, %{errors: [%{message: "forms a cycle via: (`Foo' => `Bar' => `Foo')"}]}}, run(cycler, Things)
+    assert_result {:ok, %{errors: [%{message: "Cannot spread fragment \"Foo\" within itself via \"Bar\", \"Foo\"."}, %{message: "Cannot spread fragment \"Bar\" within itself via \"Foo\", \"Bar\"."}]}}, run(cycler, Things)
   end
 
 end

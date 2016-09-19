@@ -3,7 +3,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafs do # [sic]
   Validates an operation name was provided when needed.
   """
 
-  alias Absinthe.{Blueprint, Phase, Type, Schema}
+  alias Absinthe.{Blueprint, Phase, Type}
 
   use Absinthe.Phase
   use Absinthe.Phase.Validation
@@ -11,8 +11,8 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafs do # [sic]
   @doc """
   Run the validation.
   """
-  @spec run(Blueprint.t) :: Phase.result_t
-  def run(input) do
+  @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
+  def run(input, _options \\ []) do
     result = Blueprint.prewalk(input, &handle_node(&1, input.schema))
     {:ok, result}
   end
@@ -50,14 +50,6 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafs do # [sic]
     node
     |> flag_invalid(flag)
     |> put_error(error(node, required_subselection_message(node.name, Type.name(type))))
-  end
-
-  @spec named_type(Type.t, Schema.t) :: Type.named_t
-  defp named_type(%Type.Field{} = node, schema) do
-    Schema.lookup_type(schema, node.type)
-  end
-  defp named_type(%{name: _} = node, _) do
-    node
   end
 
   # Generate the error

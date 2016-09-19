@@ -10,8 +10,10 @@ defmodule Absinthe.Phase.Schema do
 
   alias Absinthe.{Blueprint, Type, Schema}
 
-  @spec run(Blueprint.t, Absinthe.Schema.t, Absinthe.Adapter.t) :: {:ok, Blueprint.t}
-  def run(input, schema, adapter \\ Absinthe.Adapter.LanguageConventions) do
+  @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
+  def run(input, options \\ []) do
+    schema = Keyword.fetch!(options, :schema)
+    adapter = Keyword.get(options, :adapter, Absinthe.Adapter.LanguageConventions)
     do_run(input, %{schema: schema, adapter: adapter})
   end
 
@@ -29,7 +31,7 @@ defmodule Absinthe.Phase.Schema do
     selections_with_schema = Enum.map(node.selections, &selection_with_schema_node(&1, schema_node, schema, adapter))
     %{node | schema_node: schema_node, selections: selections_with_schema}
   end
-  defp handle_node(%Blueprint.Document.VariableDefinition{type: type_reference} = node, schema, adapter) do
+  defp handle_node(%Blueprint.Document.VariableDefinition{type: type_reference} = node, schema, _) do
     type = type_reference_to_type(type_reference, schema)
     if Type.unwrap(type) do
       %{node | schema_node: type}

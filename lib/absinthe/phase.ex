@@ -1,17 +1,18 @@
 defmodule Absinthe.Phase do
 
   @type t :: module
-  @type result_t :: {:cont | :halt, any}
+  @type result_t ::
+      {:ok, any}
+    | {:jump, any, t}
+    | {:insert, any, t | [t]}
+    | {:replace, any, t | [t]}
+    | {:error, String.t}
 
   alias __MODULE__
 
   defmacro __using__(_) do
     quote do
       @behaviour Phase
-
-      def run(input), do: {:ok, input}
-
-      defoverridable run: 1
 
       @spec flag_invalid(Blueprint.node_t) :: Blueprint.node_t
       def flag_invalid(%{flags: _} = node) do
@@ -49,6 +50,6 @@ defmodule Absinthe.Phase do
     end
   end
 
-  @callback run(any) :: {:ok, any} | {:error, Phase.Error.t}
+  @callback run(any, any) :: result_t
 
 end

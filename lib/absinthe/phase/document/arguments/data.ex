@@ -25,7 +25,7 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
   alias Absinthe.{Blueprint, Type}
   use Absinthe.Phase
 
-  def run(input) do
+  def run(input, _options \\ []) do
     result = Blueprint.prewalk(input, &(handle_node(&1, input.adapter)))
     {:ok, result}
   end
