@@ -22,7 +22,7 @@ defmodule Absinthe.Pipeline do
   @spec for_document(Absinthe.Schema.t, Keyword.t) :: t
   def for_document(schema, options \\ []) do
     options = Map.new(options)
-    adapter = Map.get(options, :adapter, Absinthe.Adapter.LanguageConventions)
+    adapter = Map.get(options, :adapter) || Absinthe.Adapter.LanguageConventions
     variables = Map.new(Map.get(options, :variables, []))
     operation_name = Map.get(options, :operation_name)
     context = options[:context]
@@ -47,7 +47,6 @@ defmodule Absinthe.Pipeline do
       Phase.Document.CascadeInvalid,
       Phase.Document.Flatten,
       {Phase.Document.Execution.Resolution, context: context, root_value: root_value},
-      Phase.Debug,
       @default_abort_phase
     ]
   end
@@ -112,6 +111,11 @@ defmodule Absinthe.Pipeline do
 
   def insert_before(pipeline, phase, additional) do
     beginning = before(pipeline, phase)
+    beginning ++ [additional] ++ (pipeline -- beginning)
+  end
+
+  def insert_after(pipeline, phase, additional) do
+    beginning = upto(pipeline, phase)
     beginning ++ [additional] ++ (pipeline -- beginning)
   end
 
