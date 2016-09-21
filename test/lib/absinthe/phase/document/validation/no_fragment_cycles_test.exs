@@ -68,8 +68,6 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
       """
       |> run
 
-
-
       quux_msg = @rule.error_message("quux", ~w(quux foo bar baz quux))
       baz_msg = @rule.error_message("baz", ~w(baz quux foo bar baz))
 
@@ -96,7 +94,7 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
       Phase.Parse,
       Phase.Blueprint
     ])
-    Phase.Document.Validation.NoFragmentCycles.run(blueprint)
+    Phase.Document.Validation.NoFragmentCycles.run(blueprint, validation_result_phase: :stub)
   end
 
 end

@@ -24,7 +24,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
           field(a: $a, b: $b, c: $c)
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -39,7 +39,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -58,7 +58,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
           }
         }
         """,
-        %{}
+        []
         )
     end
 
@@ -82,7 +82,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
           field(c: $c)
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -99,7 +99,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
           field(a: $a)
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -119,7 +119,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
           field(b: $b)
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -135,7 +135,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -146,7 +146,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
           field(a: $a, b: $b, c: $c, d: $d)
         }
         """,
-        %{},
+        [],
         [
           undefined_variable("d", 2, "Foo", 1)
         ]
@@ -160,7 +160,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
           field(a: $a)
         }
         """,
-        %{},
+        [],
         [
           undefined_variable("a", 2, nil, 1)
         ]
@@ -174,7 +174,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
           field(a: $a, b: $b, c: $c)
         }
         """,
-        %{},
+        [],
         [
           undefined_variable("a", 2, "Foo", 1),
           undefined_variable("c", 2, "Foo", 1)
@@ -192,7 +192,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
           field(a: $a)
         }
         """,
-        %{},
+        [],
         [
           undefined_variable("a", 5, nil, 1)
         ]
@@ -219,7 +219,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
           field(c: $c)
         }
         """,
-        %{},
+        [],
         [
           undefined_variable("c", 15, "Foo", 1)
         ]
@@ -246,7 +246,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
           field(c: $c)
         }
         """,
-        %{},
+        [],
         [
           undefined_variable("a", 5, "Foo", 1),
           undefined_variable("c", 15, "Foo", 1)
@@ -267,7 +267,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
           field(a: $a, b: $b)
         }
         """,
-        %{},
+        [],
         [
           undefined_variable("b", 8, "Foo", 1),
           undefined_variable("b", 8, "Bar", 4)
@@ -288,7 +288,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
           field(a: $a, b: $b)
         }
         """,
-        %{},
+        [],
         [
           undefined_variable("a", 8, "Foo", 1),
           undefined_variable("b", 8, "Bar", 4)
@@ -312,7 +312,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
           field(b: $b)
         }
         """,
-        %{},
+        [],
         [
           undefined_variable("a", 8, "Foo", 1),
           undefined_variable("b", 11, "Bar", 4)
@@ -338,7 +338,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
           field2(c: $c)
         }
         """,
-        %{},
+        [],
         [
           undefined_variable("a", 8, "Foo", 1),
           undefined_variable("a", 10, "Foo", 1),

@@ -48,7 +48,10 @@ defmodule Absinthe.PipelineTest do
 
   defmodule Phase2 do
     use Phase
-    def run(input, %{times: times}) do
+    def run(input, options) do
+      do_run(input, Map.new(options))
+    end
+    def do_run(input, %{times: times}) do
       result = (1..times)
       |> Enum.map(fn _ -> input end)
       |> Enum.join(".")
@@ -72,8 +75,8 @@ defmodule Absinthe.PipelineTest do
 
   describe ".run with options" do
     it "should work" do
-      assert {:ok, "oof.oof.oof", [Phase3, Phase2, Phase1]} == Pipeline.run("foo", [Phase1, {Phase2, %{times: 3}}, {Phase3, %{reverse: false}}])
-      assert {:ok, "foo.foo.foo", [Phase3, Phase2, Phase1]} == Pipeline.run("foo", [Phase1, {Phase2, %{times: 3}}, {Phase3, %{reverse: true}}])
+      assert {:ok, "oof.oof.oof", [Phase3, Phase2, Phase1]} == Pipeline.run("foo", [Phase1, {Phase2, times: 3}, {Phase3, reverse: false}])
+      assert {:ok, "foo.foo.foo", [Phase3, Phase2, Phase1]} == Pipeline.run("foo", [Phase1, {Phase2, times: 3}, {Phase3, reverse: true}])
     end
   end
 

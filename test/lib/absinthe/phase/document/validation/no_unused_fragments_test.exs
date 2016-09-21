@@ -39,7 +39,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedFragmentsTest do
           name
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -68,7 +68,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedFragmentsTest do
           name
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -102,7 +102,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedFragmentsTest do
           name
         }
         """,
-        %{},
+        [],
         [
           unused_fragment("Unused1", 21),
           unused_fragment("Unused2", 24),
@@ -142,7 +142,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedFragmentsTest do
           ...Unused1
         }
         """,
-        %{},
+        [],
         [
           unused_fragment("Unused1", 21),
           unused_fragment("Unused2", 25),
@@ -162,7 +162,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedFragmentsTest do
           name
         }
         """,
-        %{},
+        [],
         [
           unused_fragment("foo", 6),
         ]

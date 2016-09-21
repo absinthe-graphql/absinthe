@@ -25,7 +25,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
           name
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -37,7 +37,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
           otherName : name
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -49,7 +49,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
           name
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -60,7 +60,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
           otherName : name
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -71,7 +71,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
           name : nickname
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -82,7 +82,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
           unknownField
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -97,7 +97,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         [
           undefined_field("unknown_pet_field", "Pet", [], [], 2),
           undefined_field("unknown_cat_field", "Cat", [], [], 4)
@@ -112,7 +112,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
           meowVolume
         }
         """,
-        %{},
+        [],
         undefined_field("meowVolume", "Dog", [], ["barkVolume"], 2)
       )
     end
@@ -126,7 +126,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         undefined_field("unknown_field", "Dog", [], [], 2)
       )
     end
@@ -140,7 +140,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         undefined_field("unknown_field", "Pet", [], [], 3)
       )
     end
@@ -154,7 +154,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         undefined_field("meowVolume", "Dog", [], ["barkVolume"], 3)
       )
     end
@@ -166,7 +166,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
           volume : mooVolume
         }
         """,
-        %{},
+        [],
         undefined_field("mooVolume", "Dog", [], ["barkVolume"], 2)
       )
     end
@@ -178,7 +178,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
           barkVolume : kawVolume
         }
         """,
-        %{},
+        [],
         undefined_field("kawVolume", "Dog", [], ["barkVolume"], 2)
       )
     end
@@ -190,7 +190,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
           tailLength
         }
         """,
-        %{},
+        [],
         undefined_field("tailLength", "Pet", [], [], 2)
       )
     end
@@ -202,7 +202,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
           nickname
         }
         """,
-        %{},
+        [],
         undefined_field("nickname", "Pet", ["Dog", "Cat"], ["name"], 2)
       )
     end
@@ -214,7 +214,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
           __typename
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -225,7 +225,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
           directField
         }
         """,
-        %{},
+        [],
         undefined_field("directField", "CatOrDog", [], [], 2)
       )
     end
@@ -237,7 +237,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
           name
         }
         """,
-        %{},
+        [],
         undefined_field("name", "CatOrDog", ["Being", "Pet", "Canine", "Dog", "Cat"], [], 2)
       )
     end
@@ -254,7 +254,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 

@@ -24,7 +24,7 @@ defmodule Absinthe.Phase.Document.Validation.VariablesAreInputTypesTest do
           field(a: $a, b: $b, c: $c)
         }
       """,
-      %{}
+      []
     )
     end
 
@@ -35,7 +35,7 @@ defmodule Absinthe.Phase.Document.Validation.VariablesAreInputTypesTest do
           field(a: $a, b: $b, c: $c)
         }
         """,
-        %{},
+        [],
         [
           non_input_type("a", "Dog", 1),
           non_input_type("b", "[[CatOrDog!]]!", 1),

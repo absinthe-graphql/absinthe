@@ -17,7 +17,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
           doesKnowCommand(dogCommand: SIT)
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -28,7 +28,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
           multipleReqs(req1: 1, req2: 2)
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -39,7 +39,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
           multipleReqs(req2: 2, req1: 1)
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -50,7 +50,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
           isHousetrained
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -70,7 +70,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -81,7 +81,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
           dog @skip(if: true)
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -96,7 +96,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
           dog @skip(unless: true)
         }
         """,
-        %{},
+        [],
         [
           bad_value(Blueprint.Input.Argument, @rule.directive_error_message("unless", "skip"), 2, name: "unless")
         ]
@@ -110,7 +110,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
           doesKnowCommand(unknown: true)
         }
         """,
-        %{},
+        [],
         [
           bad_value(Blueprint.Input.Argument, @rule.field_error_message("unknown", "doesKnowCommand", "Dog"), 2, name: "unknown")
         ]
@@ -124,7 +124,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
           doesKnowCommand(whoknows: 1, dogCommand: SIT, unknown: true)
         }
         """,
-        %{},
+        [],
         [
           bad_value(Blueprint.Input.Argument, @rule.field_error_message("unknown", "doesKnowCommand", "Dog"), 2, name: "unknown"),
           bad_value(Blueprint.Input.Argument, @rule.field_error_message("whoknows", "doesKnowCommand", "Dog"), 2, name: "whoknows")
@@ -148,7 +148,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
           }
         }
         """,
-        %{},
+        [],
         [
           bad_value(Blueprint.Input.Argument, @rule.field_error_message("unknown", "doesKnowCommand", "Dog"), 3, name: "unknown"),
           bad_value(Blueprint.Input.Argument,@rule.field_error_message("unknown", "doesKnowCommand", "Dog"), 8, name: "unknown")

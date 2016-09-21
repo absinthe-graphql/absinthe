@@ -24,7 +24,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
           field(a: $a, b: $b, c: $c)
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -39,7 +39,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -58,7 +58,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -82,7 +82,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
           field(c: $c)
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -102,7 +102,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
           field(b: $b)
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -118,7 +118,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -129,7 +129,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
           field(a: $a, b: $b)
         }
         """,
-        %{},
+        [],
         [
           unused_variable("c", nil, 1)
         ]
@@ -143,7 +143,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
           field(b: $b)
         }
         """,
-        %{},
+        [],
         [
           unused_variable("a", "Foo", 1),
           unused_variable("c", "Foo", 1)
@@ -171,7 +171,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
           field
         }
         """,
-        %{},
+        [],
         [
           unused_variable("c", "Foo", 1)
         ]
@@ -198,7 +198,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
           field
         }
         """,
-        %{},
+        [],
         [
           unused_variable("a", "Foo", 1),
           unused_variable("c", "Foo", 1)
@@ -219,7 +219,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
           field(b: $b)
         }
         """,
-        %{},
+        [],
         [
           unused_variable("b", "Foo", 1)
         ]
@@ -242,7 +242,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
           field(b: $b)
         }
         """,
-        %{},
+        [],
         [
           unused_variable("b", "Foo", 1),
           unused_variable("a", "Bar", 4)

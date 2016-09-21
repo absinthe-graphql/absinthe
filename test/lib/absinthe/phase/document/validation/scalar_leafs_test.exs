@@ -33,7 +33,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
           barks
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -44,7 +44,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
           human
         }
         """,
-        %{},
+        [],
         missing_obj_subselection("human", "Human", 2)
       )
     end
@@ -56,7 +56,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
           human { pets }
         }
         """,
-        %{},
+        [],
         missing_obj_subselection("pets", "[Pet]", 2)
       )
     end
@@ -68,7 +68,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
           doesKnowCommand(dogCommand: SIT)
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -79,7 +79,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
           barks { sinceWhen }
         }
         """,
-        %{},
+        [],
         no_scalar_subselection("barks", "Boolean", 2)
       )
     end
@@ -91,7 +91,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
           furColor { inHexdec }
         }
         """,
-        %{},
+        [],
         no_scalar_subselection("furColor", "FurColor", 2)
       )
     end
@@ -103,7 +103,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
           doesKnowCommand(dogCommand: SIT) { sinceWhen }
         }
         """,
-        %{},
+        [],
         no_scalar_subselection("doesKnowCommand", "Boolean", 2)
       )
     end
@@ -115,7 +115,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
           name @include(if: true) { isAlsoHumanName }
         }
         """,
-        %{},
+        [],
         no_scalar_subselection("name", "String", 2)
       )
     end
@@ -127,7 +127,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
           doesKnowCommand(dogCommand: SIT) @include(if: true) { sinceWhen }
         }
         """,
-        %{},
+        [],
         no_scalar_subselection("doesKnowCommand", "Boolean", 2)
       )
     end

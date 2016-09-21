@@ -200,7 +200,7 @@ defmodule AbsintheTest do
     }
     """
 
-    assert {:error, "illegal: -w, on line 2", [Absinthe.Phase.Parse]} == Absinthe.Pipeline.run(query, [{Absinthe.Phase.Parse, nil}])
+    assert {:error, "illegal: -w, on line 2"} == Absinthe.Phase.Parse.run(query, jump_phases: false)
   end
 
   it "should resolve using enums" do

@@ -23,7 +23,7 @@ defmodule Absinthe.Phase.Document.Validation.LoneAnonymousOperationTest do
           field
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -34,7 +34,7 @@ defmodule Absinthe.Phase.Document.Validation.LoneAnonymousOperationTest do
           field
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -49,7 +49,7 @@ defmodule Absinthe.Phase.Document.Validation.LoneAnonymousOperationTest do
           field
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -63,7 +63,7 @@ defmodule Absinthe.Phase.Document.Validation.LoneAnonymousOperationTest do
           field
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -77,7 +77,7 @@ defmodule Absinthe.Phase.Document.Validation.LoneAnonymousOperationTest do
           fieldB
         }
         """,
-        %{},
+        [],
         [
           anon_not_alone(1),
           anon_not_alone(4)
@@ -95,7 +95,7 @@ defmodule Absinthe.Phase.Document.Validation.LoneAnonymousOperationTest do
           fieldB
         }
         """,
-        %{},
+        [],
         [
           anon_not_alone(1)
         ]
@@ -112,7 +112,7 @@ defmodule Absinthe.Phase.Document.Validation.LoneAnonymousOperationTest do
           fieldB
         }
         """,
-        %{},
+        [],
         [
           anon_not_alone(1)
         ]

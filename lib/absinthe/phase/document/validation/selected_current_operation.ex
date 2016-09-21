@@ -13,14 +13,15 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperation do
   """
   @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
   def run(input, _options \\ []) do
-    node = if Enum.count(input.operations, &(&1.current)) == 1 do
-      input
-    else
-      input
-      |> flag_invalid(:no_current_operation)
-      |> put_error(error)
+    result = case {Blueprint.current_operation(input), length(input.operations)} do
+      {nil, count} when count > 1 ->
+        input
+        |> flag_invalid(:no_current_operation)
+        |> put_error(error)
+      _ ->
+        input
     end
-    {:ok, node}
+    {:ok, result}
   end
 
   # Generate the error

@@ -6,7 +6,7 @@ defmodule Absinthe.Pipeline do
 
   @type data_t :: any
 
-  @type phase_config_t :: Phase.t | {Phase.t, any}
+  @type phase_config_t :: Phase.t | {Phase.t, Keyword.t}
 
   @type t :: [phase_config_t | [phase_config_t]]
 
@@ -16,50 +16,91 @@ defmodule Absinthe.Pipeline do
     |> run_phase(input)
   end
 
-  @default_abort_phase Phase.Document.Result
+  @defaults [
+    adapter: Absinthe.Adapter.LanguageConventions,
+    operation_name: nil,
+    variables: %{},
+    context: %{},
+    root_value: %{},
+    validation_result_phase: Phase.Document.Validation.Result,
+    result_phase: Phase.Document.Result,
+    jump_phases: true,
+  ]
 
   @spec for_document(Absinthe.Schema.t) :: t
   @spec for_document(Absinthe.Schema.t, Keyword.t) :: t
   def for_document(schema, options \\ []) do
-    options = Map.new(options)
-    adapter = Map.get(options, :adapter) || Absinthe.Adapter.LanguageConventions
-    variables = Map.new(Map.get(options, :variables, []))
-    operation_name = Map.get(options, :operation_name)
-    context = options[:context]
-    root_value = options[:root_value]
-    abort_to_phase = Map.get(options, :abort_to_phase, @default_abort_phase)
+    options = @defaults
+    |> Keyword.merge(Keyword.put(options, :schema, schema))
     [
-      {Phase.Parse, abort_to_phase},
+      # Parse Document
+      {Phase.Parse, options},
+      # Convert to Blueprint
       Phase.Blueprint,
-      {Phase.Document.CurrentOperation, operation_name},
+      # Find Current Operation (if any)
+      {Phase.Document.CurrentOperation, options},
+      # Mark Fragment/Variable Usage
       Phase.Document.Uses,
-      Phase.Document.Validation.structural_pipeline,
-      {Phase.Document.Variables, variables},
+      # Validate Document Structure
+      {Phase.Document.Validation.NoFragmentCycles, options},
+      Phase.Document.Validation.LoneAnonymousOperation,
+      Phase.Document.Validation.SelectedCurrentOperation,
+      Phase.Document.Validation.KnownFragmentNames,
+      Phase.Document.Validation.NoUndefinedVariables,
+      Phase.Document.Validation.NoUnusedVariables,
+      Phase.Document.Validation.UniqueFragmentNames,
+      Phase.Document.Validation.UniqueOperationNames,
+      Phase.Document.Validation.UniqueVariableNames,
+      # Apply Input
+      {Phase.Document.Variables, options},
       Phase.Document.Arguments.Normalize,
-      {Phase.Schema, schema: schema, adapter: adapter},
+      # Map to Schema
+      {Phase.Schema, options},
+      # Ensure Types
       Phase.Validation.KnownTypeNames,
+      # Process Arguments
       Phase.Document.Arguments.Coercion,
       Phase.Document.Arguments.Data,
       Phase.Document.Arguments.Defaults,
-      Phase.Document.Validation.data_pipeline,
-      {Phase.Document.Validation.Result, abort_to_phase},
+      # Validate Full Document
+      Phase.Validation.KnownDirectives,
+      Phase.Document.Validation.ScalarLeafs,
+      Phase.Document.Validation.VariablesAreInputTypes,
+      Phase.Document.Validation.ArgumentsOfCorrectType,
+      Phase.Document.Validation.KnownArgumentNames,
+      Phase.Document.Validation.ProvidedNonNullArguments,
+      Phase.Document.Validation.UniqueArgumentNames,
+      Phase.Document.Validation.UniqueInputFieldNames,
+      Phase.Document.Validation.FieldsOnCorrectType,
+      # Check Validation
+      {Phase.Document.Validation.Result, options},
+      # Apply Directives
       Phase.Document.Directives,
+      # Prepare for Execution
       Phase.Document.CascadeInvalid,
       Phase.Document.Flatten,
-      {Phase.Document.Execution.Resolution, context: context, root_value: root_value},
-      @default_abort_phase
+      # Execution
+      {Phase.Document.Execution.Resolution, options},
+      # Format Result
+      Phase.Document.Result
     ]
   end
 
+  @defaults [
+    adapter: Absinthe.Adapter.LanguageConventions
+  ]
+
   @spec for_schema(nil | Absinthe.Schema.t) :: t
-  @spec for_schema(nil | Absinthe.Schema.t, Absinthe.Adapter.t) :: t
-  def for_schema(prototype_schema, adapter \\ Absinthe.Adapter.LanguageConventions) do
+  @spec for_schema(nil | Absinthe.Schema.t, Keyword.t) :: t
+  def for_schema(prototype_schema, options \\ []) do
+    options = @defaults
+    |> Keyword.merge(Keyword.put(options, :schema, prototype_schema))
     [
       Phase.Parse,
       Phase.Blueprint,
-      {Phase.Schema, schema: prototype_schema, adapter: adapter},
+      {Phase.Schema, options},
       Phase.Validation.KnownTypeNames,
-      Phase.Schema.Validation.pipeline
+      Phase.Validation.KnownDirectives
     ]
   end
 
@@ -109,27 +150,45 @@ defmodule Absinthe.Pipeline do
     beginning ++ [item]
   end
 
+  @spec without(t, Phase.t) :: t
+  def without(pipeline, phase) do
+    pipeline
+    |> Enum.filter(&(match_phase?(phase, &1)))
+  end
+
+  @spec insert_before(t, Phase.t, Phase.t) :: t
   def insert_before(pipeline, phase, additional) do
     beginning = before(pipeline, phase)
     beginning ++ [additional] ++ (pipeline -- beginning)
   end
 
+  @spec insert_before(t, Phase.t, Phase.t) :: t
   def insert_after(pipeline, phase, additional) do
     beginning = upto(pipeline, phase)
     beginning ++ [additional] ++ (pipeline -- beginning)
   end
 
+  @spec reject(t, Regex.t) :: t
+  def reject(pipeline, pattern) do
+    Enum.reject(pipeline, fn
+      {phase, _} ->
+        Regex.match?(pattern, Atom.to_string(phase))
+      phase ->
+        Regex.match?(pattern, Atom.to_string(phase))
+    end)
+  end
+
   @spec run_phase(t, data_t, [Phase.t]) :: {:ok, data_t, [Phase.t]} | {:error, String.t, [Phase.t]}
-  defp run_phase(pipeline, input, done \\ [])
-  defp run_phase([], input, done) do
+  def run_phase(pipeline, input, done \\ [])
+  def run_phase([], input, done) do
     {:ok, input, done}
   end
-  defp run_phase([phase_config | todo], input, done) do
+  def run_phase([phase_config | todo], input, done) do
     {phase, options} = phase_invocation(phase_config)
     case phase.run(input, options) do
       {:ok, result} ->
         run_phase(todo, result, [phase | done])
-      {:jump, result, destination_phase} ->
+      {:jump, result, destination_phase} when is_atom(destination_phase) ->
         run_phase(from(todo, destination_phase), result, [phase | done])
       {:insert, result, extra_pipeline} ->
         run_phase(List.wrap(extra_pipeline) ++ todo, result, [phase | done])
@@ -143,7 +202,7 @@ defmodule Absinthe.Pipeline do
   end
 
   @spec phase_invocation(phase_config_t) :: {Phase.t, list}
-  defp phase_invocation({phase, options}) do
+  defp phase_invocation({phase, options}) when is_list(options) do
     {phase, options}
   end
   defp phase_invocation(phase) do

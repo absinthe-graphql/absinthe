@@ -38,7 +38,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
           name
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -54,7 +54,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -67,7 +67,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
           }
         }
         """,
-        %{},
+        [],
         [
           unknown_directive("unknown", 2)
         ]
@@ -89,7 +89,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
           }
         }
         """,
-        %{},
+        [],
         [
           unknown_directive("unknown", 2),
           unknown_directive("unknown", 5),
@@ -112,7 +112,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
           someField
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -128,7 +128,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
           someField
         }
         """,
-        %{},
+        [],
         [
           misplaced_directive("include", "QUERY", 1),
           misplaced_directive("onQuery", "FIELD", 2),

@@ -37,7 +37,7 @@ defmodule Absinthe.Language.DocumentTest do
     end
 
     describe "given a non-existing operation name" do
-      {:ok, doc} = Absinthe.Phase.Parse.run(@input, nil)
+      {:ok, doc} = Absinthe.Phase.Parse.run(@input)
       result = Document.get_operation(doc, "DoesNotExist")
       assert nil == result
     end

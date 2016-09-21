@@ -47,7 +47,7 @@ defmodule Absinthe.Phase.Document.SchemaTest do
 
   end
 
-  @pre_pipeline Pipeline.for_document(Schema, %{}) |> Pipeline.before(Phase.Schema)
+  @pre_pipeline Pipeline.for_document(Schema) |> Pipeline.before(Phase.Schema)
 
   @nameless_query """
   { books { name } }

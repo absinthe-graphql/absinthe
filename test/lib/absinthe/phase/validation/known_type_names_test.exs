@@ -51,7 +51,7 @@ defmodule Absinthe.Phase.Validation.KnownTypeNamesTest do
           name
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -68,7 +68,7 @@ defmodule Absinthe.Phase.Validation.KnownTypeNamesTest do
           name
         }
         """,
-        %{},
+        [],
         [
          unknown_type(:variable_definition, "JumbledUpLetters", 1),
          unknown_type(:inline_type_condition, "Badger", 4),
@@ -96,7 +96,7 @@ defmodule Absinthe.Phase.Validation.KnownTypeNamesTest do
           }
         }
         """,
-        %{},
+        [],
         unknown_type(:variable_definition, "NotInTheSchema", 11)
       )
     end
