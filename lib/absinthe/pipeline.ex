@@ -80,6 +80,7 @@ defmodule Absinthe.Pipeline do
       # Prepare for Execution
       Phase.Document.CascadeInvalid,
       Phase.Document.Flatten,
+      Phase.Debug,
       # Execution
       {Phase.Document.Execution.Resolution, options},
       # Format Result
