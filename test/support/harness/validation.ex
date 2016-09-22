@@ -86,7 +86,6 @@ defmodule Support.Harness.Validation do
   def assert_invalid(schema, rules, document, options, error_checkers) do
     result = case run(schema, rules, document, options) do
       {:ok, result, _} ->
-        IO.inspect(result: result)
         result
       # :jump, etc
       {_other, result, _config} ->

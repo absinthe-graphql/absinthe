@@ -1,7 +1,7 @@
-defmodule Absinthe.Phase.Document.Validation.ProvidedOperationsTest do
+defmodule Absinthe.Phase.Document.Validation.ProvidedAnOperationTest do
   use Absinthe.Case, async: true
 
-  @rule Absinthe.Phase.Document.Validation.ProvidedOperations
+  @rule Absinthe.Phase.Document.Validation.ProvidedAnOperation
 
   use Support.Harness.Validation
   alias Absinthe.Blueprint

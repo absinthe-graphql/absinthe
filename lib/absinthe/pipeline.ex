@@ -38,6 +38,7 @@ defmodule Absinthe.Pipeline do
       # Convert to Blueprint
       Phase.Blueprint,
       # Find Current Operation (if any)
+      {Phase.Document.Validation.ProvidedAnOperation, options},
       {Phase.Document.CurrentOperation, options},
       # Mark Fragment/Variable Usage
       Phase.Document.Uses,

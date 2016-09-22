@@ -344,6 +344,9 @@ defmodule AbsintheTest do
 
   it "handles cycles" do
     cycler = """
+    query Foo {
+      name
+    }
     fragment Foo on Blag {
       name
       ...Bar
