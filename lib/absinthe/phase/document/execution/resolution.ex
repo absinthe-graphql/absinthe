@@ -271,11 +271,16 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     )
   end
 
-  # TODO: Interface, etc
+  @spec passes_type_condition?(Type.t, Type.t, any, Schema.t) :: boolean
   defp passes_type_condition?(equal, equal, _, _), do: true
+  # The condition in an Object type and the current scope is a Union; Verify
+  # that the Union has the Object type as a member.
   defp passes_type_condition?(%Type.Object{} = condition, %Type.Union{} = type, _, _) do
     Type.Union.member?(type, condition)
   end
+  # The condition is an Object type and the current scope is an Interface; verify
+  # that the Object type is a member of the Interface and that the current source
+  # object's concrete type matched the condition Object type.
   defp passes_type_condition?(%Type.Object{} = condition, %Type.Interface{} = type, source, schema) do
     case Type.Interface.member?(type, condition) do
       true ->
@@ -285,6 +290,12 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
         other
     end
   end
+  # The condition in an Interface type and the current scope is an Object type;
+  # verify that the Object type is a member of the Interface.
+  defp passes_type_condition?(%Type.Interface{} = condition, %Type.Object{} = type, _, _) do
+    Type.Interface.member?(condition, type)
+  end
+  # Otherwise, nope.
   defp passes_type_condition?(_, _, _, _) do
     false
   end
