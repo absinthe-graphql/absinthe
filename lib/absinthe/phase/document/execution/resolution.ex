@@ -96,7 +96,24 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     """
   end
 
-  def call_resolution_function(args, %{schema_node: %{resolve: nil}} = field, info, source) do
+  # Introspection Field
+  defp call_resolution_function(args, %{schema_node: %{name: "__" <> _}} = field, info, _) do
+    field.schema_node.resolve.(args, info)
+  end
+  # Interface Field
+  defp call_resolution_function(args, %{schema_node: schema_node} = field, %{parent_type: %Type.Interface{}} = info, source) when not is_nil(schema_node) do
+    concrete_type = Type.Interface.resolve_type(info.parent_type, source, info)
+    concrete_schema_node = Map.fetch!(concrete_type.fields, field.schema_node.__reference__.identifier)
+    # Try again, using the concrete type/field schema node
+    call_resolution_function(
+      args,
+      put_in(field.schema_node, concrete_schema_node),
+      put_in(info.parent_type, concrete_type),
+      source
+    )
+  end
+  # Field without a resolver
+  defp call_resolution_function(args, %{schema_node: %{resolve: nil}} = field, info, source) do
     case info.schema.__absinthe_custom_default_resolve__ do
       nil ->
         {:ok, Map.get(source, field.schema_node.__reference__.identifier)}
@@ -104,8 +121,9 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
         fun.(args, info)
     end
   end
-  def call_resolution_function(args, field, info, _source) do
-    field.schema_node.resolve.(args, info)
+  # Everything else
+  defp call_resolution_function(args, field, info, _source) do
+    Type.Field.resolve(field.schema_node, args, info)
   end
 
   defp update_info(info, field, source) do
