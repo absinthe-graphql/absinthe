@@ -1,6 +1,7 @@
 defmodule Absinthe.SchemaTest do
   use Absinthe.Case, async: true
   use SupportSchemas
+  import AssertResult
 
   alias Absinthe.Schema
   alias Absinthe.Type
@@ -214,7 +215,7 @@ defmodule Absinthe.SchemaTest do
     fragment F1 on Viewer{id,...F0}
     """
     it "builds the correct result" do
-      assert {:ok, %{data: %{"viewer" => %{"id" => "ABCD", "name" => "Bruce"}}}} == Absinthe.run(@query, FragmentSpreadSchema)
+      assert_result {:ok, %{data: %{"viewer" => %{"id" => "ABCD", "name" => "Bruce"}}}}, run(@query, FragmentSpreadSchema)
     end
 
   end

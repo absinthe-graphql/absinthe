@@ -12,32 +12,28 @@ defmodule Absinthe.Phase.Document.CurrentOperation do
   use Absinthe.Phase
   alias Absinthe.Blueprint
 
-  @spec run(Blueprint.t, nil | String.t) :: {:ok, Blueprint.t}
-  def run(input, operation_name) do
-    node = Blueprint.postwalk(input, &handle_node(&1, operation_name))
-    |> default_operation(operation_name)
-    {:ok, node}
+  @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
+  def run(input, options \\ []) do
+    operations = process(input.operations, Map.new(options))
+    result = %{input | operations: operations}
+    {:ok, result}
   end
 
-  @spec handle_node(Blueprint.node_t, nil | String.t) :: Blueprint.node_t
-  defp handle_node(%Blueprint.Document.Operation{name: name} = node, name) do
-    %{node | current: true}
-  end
-  defp handle_node(node, _) do
-    node
-  end
-
-  @spec default_operation(Blueprint.t, nil | String.t) :: Blueprint.t
-  defp default_operation(blueprint, operation_name) do
-    ops = do_default_operation(blueprint.operations, operation_name)
-    %{blueprint | operations: ops}
-  end
-
-  @spec do_default_operation([Blueprint.Document.Operation.t], nil | String.t) :: [Blueprint.Document.Operation.t]
-  defp do_default_operation([op], nil) do
+  defp process([op],  %{operation_name: nil}) do
     [%{op | current: true}]
   end
-  defp do_default_operation(ops, _) do
+  defp process([%{name: name} = op], %{operation_name: name}) do
+    [%{op | current: true}]
+  end
+  defp process(ops, %{operation_name: name}) do
+    Enum.map(ops, fn
+      %{name: ^name} = op ->
+        %{op | current: true}
+      op ->
+        op
+    end)
+  end
+  defp process(ops, _) do
     ops
   end
 

@@ -3,18 +3,22 @@ defmodule Absinthe.Phase.Parse do
 
   alias Absinthe.{Language, Phase}
 
-  @spec run(Language.Source.t, nil | Phase.t) :: {:ok, Language.Document.t} | {:error, Phase.Error.t}
-  def run(input, abort_phase \\ nil) do
-    case {parse(input), abort_phase} do
-     {{:error, %{message: msg, locations: [%{line: line}]}}, nil} ->
-       {:error, msg <> ", on line #{line}"}
-     {{:error, %{message: msg}}, nil} ->
-       {:error, msg}
-     {{:error, error}, abort_phase} ->
-       {:jump, error, abort_phase}
-     {other, _} ->
-       other
-    end
+  @spec run(Language.Source.t, Keyword.t) :: Phase.result_t
+  def run(input, options \\ []) do
+    result(parse(input), Map.new(options))
+  end
+
+  defp result({:error, %{message: msg, locations: [%{line: line}]}}, %{jump_phases: false}) do
+    {:error, msg <> ", on line #{line}"}
+  end
+  defp result({:error, %{message: msg}}, %{jump_phases: false}) do
+    {:error, msg}
+  end
+  defp result({:error, error}, %{jump_phases: true, result_phase: abort_phase}) do
+    {:jump, error, abort_phase}
+  end
+  defp result(res, _) do
+    res
   end
 
   @spec tokenize(binary) :: {:ok, [tuple]} | {:error, binary}

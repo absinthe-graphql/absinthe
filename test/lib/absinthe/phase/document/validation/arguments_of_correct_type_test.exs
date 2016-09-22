@@ -35,7 +35,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -49,7 +49,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -62,7 +62,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -75,7 +75,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -88,7 +88,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -101,7 +101,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -114,7 +114,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -127,7 +127,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -145,7 +145,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("stringArg", "String", "1", 3, [])
       )
     end
@@ -159,7 +159,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("stringArg", "String", "1.0", 3, [])
       )
     end
@@ -173,7 +173,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("stringArg", "String", "true", 3, [])
       )
     end
@@ -187,7 +187,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("stringArg", "String", "BAR", 3, [])
       )
     end
@@ -205,7 +205,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("intArg", "Int", ~s("3"), 3, [])
       )
     end
@@ -219,7 +219,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("intArg", "Int", "829384293849283498239482938", 3, [])
       )
     end
@@ -233,7 +233,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("intArg", "Int", "FOO", 3, [])
       )
     end
@@ -247,7 +247,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("intArg", "Int", "3.0", 3, [])
       )
     end
@@ -261,7 +261,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("intArg", "Int", "3.333", 3, [])
       )
     end
@@ -279,7 +279,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("floatArg", "Float", ~s("3.333"), 3, [])
       )
     end
@@ -293,7 +293,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("floatArg", "Float", "true", 3, [])
       )
     end
@@ -307,7 +307,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("floatArg", "Float", "FOO", 3, [])
       )
     end
@@ -325,7 +325,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("booleanArg", "Boolean", "2", 3, [])
       )
     end
@@ -339,7 +339,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("booleanArg", "Boolean", "1.0", 3, [])
       )
     end
@@ -353,7 +353,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("booleanArg", "Boolean", ~s("true"), 3, [])
       )
     end
@@ -367,7 +367,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("booleanArg", "Boolean", "TRUE", 3, [])
       )
     end
@@ -386,7 +386,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("idArg", "ID", "1.0", 3, [])
       )
     end
@@ -400,7 +400,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("idArg", "ID", "true", 3, [])
       )
     end
@@ -414,7 +414,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("idArg", "ID", "SOMETHING", 3, [])
       )
     end
@@ -432,7 +432,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("dogCommand", "DogCommand", "2", 3, [])
       )
     end
@@ -446,11 +446,17 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("dogCommand", "DogCommand", "1.0", 3, [])
       )
     end
 
+    # TODO: At the moment we're coercing all `Blueprint.Input.String.t`s to
+    # `Blueprint.Input.Enum.t`s so that enums given as variables are handled
+    # correctly. As a result, the requirement for Enums to be provided w/out
+    # quotes is temporarily relaxed until the Argument coercion and defaulting
+    # logic is reworked. - Bruce, 2016-09-21
+    @tag :pending
     it "String into Enum" do
       assert_fails_rule(@rule,
         """
@@ -460,7 +466,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("dogCommand", "DogCommand", ~s("SIT"), 3, [])
       )
     end
@@ -474,7 +480,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("dogCommand", "DogCommand", "true", 3, [])
       )
     end
@@ -488,7 +494,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("dogCommand", "DogCommand", "JUGGLE", 3, [])
       )
     end
@@ -502,7 +508,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("dogCommand", "DogCommand", "sit", 3, [])
       )
     end
@@ -520,7 +526,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -533,7 +539,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -546,7 +552,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -563,7 +569,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         [
           bad_argument("stringListArg", "[String]", ~s(["one", 2]), 3,
             [
@@ -583,7 +589,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         [
           bad_argument("stringListArg", "[String]", "1", 3,
             [
@@ -607,7 +613,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -620,7 +626,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -633,7 +639,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -646,7 +652,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -659,7 +665,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -672,7 +678,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -685,7 +691,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -698,7 +704,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -711,7 +717,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -724,7 +730,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -741,7 +747,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         [
           bad_argument("req2", "Int!", ~s("two"), 3, []),
           bad_argument("req1", "Int!", ~s("one"), 3, [])
@@ -758,7 +764,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("req1", "Int!", ~s("one"), 3, [])
       )
     end
@@ -776,7 +782,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -789,7 +795,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -802,7 +808,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -815,7 +821,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -834,7 +840,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -853,7 +859,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -870,7 +876,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         [
           bad_argument("complexArg", "ComplexInput", "{intField: 4}", 3,
             [
@@ -893,7 +899,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         [
           bad_argument("complexArg", "ComplexInput", ~s({stringListField: ["one", 2], requiredField: true}), 3,
             [
@@ -917,7 +923,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         bad_argument("complexArg", "ComplexInput", ~s({requiredField: true, unknownField: "value"}), 3,
           [
             @rule.unknown_field_error_message("unknownField")
@@ -942,7 +948,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -955,7 +961,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           }
         }
         """,
-        %{},
+        [],
         [
           bad_argument("if", "Boolean!", ~s("yes"), 2, []),
           bad_argument("if", "Boolean!", "ENUM", 3, [])

@@ -26,7 +26,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
           name
         }
         """,
-        %{operation_name: "Foo"}
+        [operation_name: "Foo"]
       )
     end
 
@@ -40,7 +40,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
           name
         }
         """,
-        %{operation_name: "Nothere"},
+        [operation_name: "Nothere"],
         no_current_operation
       )
     end
@@ -56,7 +56,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
           name
         }
         """,
-        %{}
+        []
       )
     end
     it "passes when only one operation is given anonymously" do
@@ -66,7 +66,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
           name
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -80,7 +80,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
           name
         }
         """,
-        %{},
+        [],
         no_current_operation
       )
     end

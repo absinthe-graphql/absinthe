@@ -33,7 +33,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNamesTest do
           field(arg: { f: true })
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -44,7 +44,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNamesTest do
           field(arg1: { f: true }, arg2: { f: true })
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -55,7 +55,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNamesTest do
           field(arg: { f1: "value", f2: "value", f3: "value" })
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -74,7 +74,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNamesTest do
           })
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -85,7 +85,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNamesTest do
           field(arg: { f1: "value1", f1: "value2" })
         }
         """,
-        %{},
+        [],
         duplicate("f1", 2, ~w(value1 value2))
       )
     end
@@ -97,7 +97,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNamesTest do
           field(arg: { f1: "value1", f1: "value2", f1: "value3" })
         }
         """,
-        %{},
+        [],
         duplicate("f1", 2, ~w(value1 value2 value3))
       )
     end

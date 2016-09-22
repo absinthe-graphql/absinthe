@@ -42,7 +42,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownFragmentNamesTest do
           name
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -62,7 +62,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownFragmentNamesTest do
           ...UnknownFragment3
         }
         """,
-        %{},
+        [],
         [
           undefined_fragment("UnknownFragment1", 3),
           undefined_fragment("UnknownFragment2", 5),

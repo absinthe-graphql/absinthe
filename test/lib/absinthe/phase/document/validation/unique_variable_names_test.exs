@@ -23,7 +23,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueVariableNamesTest do
         query A($x: Int, $y: String) { __typename }
         query B($x: String, $y: Int) { __typename }
         """,
-        %{}
+        []
       )
     end
 
@@ -34,7 +34,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueVariableNamesTest do
         query B($x: String, $x: Int) { __typename }
         query C($x: Int, $x: Int) { __typename }
         """,
-        %{},
+        [],
         [
           duplicate_variable("x", 1),
           duplicate_variable("x", 2),

@@ -24,7 +24,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNamesTest do
           field
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -35,7 +35,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNamesTest do
           field
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -46,7 +46,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNamesTest do
           field
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -61,7 +61,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNamesTest do
           field
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -80,7 +80,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNamesTest do
           field
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -94,7 +94,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNamesTest do
           field
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -108,7 +108,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNamesTest do
           fieldB
         }
         """,
-        %{},
+        [],
         [
           duplicate_operation("Foo", 1),
           duplicate_operation("Foo", 4)
@@ -126,7 +126,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNamesTest do
           fieldB
         }
         """,
-        %{},
+        [],
         [
           duplicate_operation("Foo", 1),
           duplicate_operation("Foo", 4)
@@ -144,7 +144,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNamesTest do
           fieldB
         }
         """,
-        %{},
+        [],
         [
           duplicate_operation("Foo", 1),
           duplicate_operation("Foo", 4)

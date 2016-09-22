@@ -43,8 +43,12 @@ defmodule Absinthe.Phase.Document.Variables do
   use Absinthe.Phase
   alias Absinthe.Blueprint
 
-  @spec run(Blueprint.t, %{String.t => any}) :: {:ok, Blueprint.t}
-  def run(input, values) do
+  @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
+  def run(input, options \\ []) do
+    do_run(input, Map.new(options))
+  end
+
+  def do_run(input, %{variables: values}) do
     acc = %{raw: values, processed: %{}}
     {node, _} = Blueprint.postwalk(input, acc, &handle_node/2)
     {:ok, node}

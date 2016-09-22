@@ -85,7 +85,7 @@ defmodule Support.Harness.Validation do
   @spec assert_invalid(Schema.t, [Phase.t], Language.Source.t, map, [error_checker_t] | error_checker_t) :: no_return
   def assert_invalid(schema, rules, document, options, error_checkers) do
     result = case run(schema, rules, document, options) do
-      {:ok, result} ->
+      {:ok, result, _} ->
         result
       # :jump, etc
       {_other, result, _config} ->
@@ -118,40 +118,17 @@ defmodule Support.Harness.Validation do
 
   defp run(schema, rules, document, options) do
     pipeline = pre_validation_pipeline(schema, options)
-    result = Pipeline.run(document, pipeline ++ rules)
-    if System.get_env("DEBUG") do
-      IO.inspect(result)
-    else
-      result
-    end
+    Pipeline.run(document, pipeline ++ rules)
   end
 
   defp pre_validation_pipeline(schema, :schema) do
-    [
-      Phase.Parse,
-      Phase.Blueprint,
-      {Phase.Schema, schema: schema}
-    ]
+    Pipeline.for_schema(schema)
+    |> Pipeline.upto(Phase.Schema)
   end
   defp pre_validation_pipeline(schema, options) do
-    options = Map.new(options)
-    operation_name = Map.get(options, :operation_name, nil)
-    [
-      Phase.Parse,
-      Phase.Blueprint,
-      {Phase.Document.CurrentOperation, operation_name},
-      # Note: NoFragmentCyles is disabled because some validation examples
-      # from graphql-js include cycles, but they can be safely ignored.
-      #
-      # Phase.Document.Validation.NoFragmentCycles,
-      #
-      Phase.Document.Uses,
-      {Phase.Document.Variables, Map.get(options, :variables, %{})},
-      Phase.Document.Arguments.Normalize,
-      {Phase.Schema, schema: schema},
-      Phase.Document.Arguments.Data,
-      Phase.Document.Directives
-    ]
+    Pipeline.for_document(schema, options)
+    |> Pipeline.upto(Phase.Document.Directives)
+    |> Pipeline.reject(~r/Validation/)
   end
 
   # Build a map of node => errors

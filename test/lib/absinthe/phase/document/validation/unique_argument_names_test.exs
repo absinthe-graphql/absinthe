@@ -34,7 +34,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
           field
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -45,7 +45,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
           field @directive
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -56,7 +56,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
           field(arg: "value")
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -67,7 +67,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
           field @directive(arg: "value")
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -79,7 +79,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
           two: field(arg: "value")
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -90,7 +90,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
           field(arg: "value") @directive(arg: "value")
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -101,7 +101,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
           field @directive1(arg: "value") @directive2(arg: "value")
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -112,7 +112,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
           field(arg1: "value", arg2: "value", arg3: "value")
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -123,7 +123,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
           field @directive(arg1: "value", arg2: "value", arg3: "value")
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -134,7 +134,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
           field(arg1: "value1", arg1: "value2")
         }
         """,
-        %{},
+        [],
         duplicate("arg1", 2, ~w(value1 value2))
       )
     end
@@ -146,7 +146,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
           field(arg1: "value1", arg1: "value2", arg1: "value3")
         }
         """,
-        %{},
+        [],
         duplicate("arg1", 2, ~w(value1 value2 value3))
       )
     end
@@ -158,7 +158,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
           field @directive(arg1: "value1", arg1: "value2")
         }
         """,
-        %{},
+        [],
         duplicate("arg1", 2, ~w(value1 value2))
       )
     end
@@ -170,7 +170,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
           field @directive(arg1: "value1", arg1: "value2", arg1: "value3")
         }
         """,
-        %{},
+        [],
         duplicate("arg1", 2, ~w(value1 value2 value3))
       )
     end

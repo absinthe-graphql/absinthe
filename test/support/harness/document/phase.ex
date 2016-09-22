@@ -9,14 +9,10 @@ defmodule Harness.Document.Phase do
       @doc """
       Execute the pipeline up to and through a phase.
       """
-      @spec run_phase(String.t, map) :: Phase.result_t
-      @spec run_phase(String.t, map, [any]) :: Phase.result_t
-      def run_phase(query, provided_values, additional_args \\ []) do
-        pipeline = Pipeline.for_document(unquote(schema), provided_values)
-        |> Pipeline.before(unquote(phase))
-        with {:ok, blueprint, _} <- Pipeline.run(query, pipeline) do
-          apply(unquote(phase), :run, [blueprint | additional_args])
-        end
+      @spec run_phase(String.t, Keyword.t) :: Phase.result_t
+      def run_phase(query, options) do
+        pipeline = Pipeline.for_document(unquote(schema), options)
+        Pipeline.run(query, pipeline |> Pipeline.upto(unquote(phase)))
       end
     end
   end

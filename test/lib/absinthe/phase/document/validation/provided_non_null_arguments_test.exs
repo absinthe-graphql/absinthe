@@ -17,7 +17,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
           }
         }
         """,
-        %{}
+        []
       )
     end
 
@@ -32,7 +32,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
             }
           }
           """,
-          %{}
+          []
         )
       end
 
@@ -45,7 +45,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
             }
           }
           """,
-          %{}
+          []
         )
       end
 
@@ -58,7 +58,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
             }
           }
           """,
-          %{}
+          []
         )
       end
 
@@ -71,7 +71,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
             }
           }
           """,
-          %{}
+          []
         )
       end
 
@@ -84,7 +84,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
             }
           }
           """,
-          %{}
+          []
         )
       end
 
@@ -97,7 +97,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
             }
           }
           """,
-          %{}
+          []
         )
       end
 
@@ -110,7 +110,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
             }
           }
           """,
-          %{}
+          []
         )
       end
 
@@ -123,7 +123,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
             }
           }
           """,
-          %{}
+          []
         )
       end
 
@@ -136,7 +136,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
             }
           }
           """,
-          %{}
+          []
         )
       end
 
@@ -149,7 +149,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
             }
           }
           """,
-          %{}
+          []
         )
       end
 
@@ -167,7 +167,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
             }
           }
           """,
-          %{},
+          [],
           bad_value(Blueprint.Input.Argument, @rule.error_message("req1", "Int!"), 3, name: "req1")
         )
       end
@@ -181,7 +181,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
             }
           }
           """,
-          %{},
+          [],
           bad_value(Blueprint.Input.Argument, @rule.error_message("req1", "Int!"), 3, name: "req1")
         )
       end
@@ -195,7 +195,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
             }
           }
           """,
-          %{},
+          [],
           [
             bad_value(Blueprint.Input.Argument, @rule.error_message("req1", "Int!"), 3, name: "req1"),
             bad_value(Blueprint.Input.Argument, @rule.error_message("req2", "Int!"), 3, name: "req2")
@@ -212,7 +212,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
             }
           }
           """,
-          %{},
+          [],
           bad_value(Blueprint.Input.Argument, @rule.error_message("req2", "Int!"), 3, name: "req2")
         )
       end
@@ -228,7 +228,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
             dog @unknown
           }
           """,
-        %{}
+        []
       )
       end
 
@@ -244,7 +244,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
             }
           }
           """,
-        %{}
+        []
       )
       end
 
@@ -257,7 +257,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
             }
           }
           """,
-          %{},
+          [],
           [
             bad_value(Blueprint.Input.Argument, @rule.error_message("if", "Boolean!"), 2, name: "if"),
             bad_value(Blueprint.Input.Argument, @rule.error_message("if", "Boolean!"), 3, name: "if"),

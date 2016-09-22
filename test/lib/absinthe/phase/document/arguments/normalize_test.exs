@@ -45,7 +45,7 @@ defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
 
   describe "when not providing a value for an optional variable with a default value" do
     it "uses the default value" do
-      {:ok, result} = run_phase(@query, variables: %{})
+      {:ok, result, _} = run_phase(@query, variables: %{})
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
       field = op.selections |> List.first
       age_argument = field.arguments |> Enum.find(&(&1.name == "age"))
@@ -57,7 +57,7 @@ defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
 
   describe "when providing a value for an optional variable with a default value" do
     it "uses the default value" do
-      {:ok, result} = run_phase(@query, variables: %{"age" => 4})
+      {:ok, result, _} = run_phase(@query, variables: %{"age" => 4})
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
       field = op.selections |> List.first
       age_argument = field.arguments |> Enum.find(&(&1.name == "age"))

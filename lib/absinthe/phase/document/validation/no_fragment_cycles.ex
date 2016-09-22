@@ -15,11 +15,16 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
   Run the validation.
   """
   @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
-  def run(input, _options \\ []) do
+  def run(input, options \\ []) do
+    do_run(input, Map.new(options))
+  end
+
+  @spec do_run(Blueprint.t, %{validation_result_phase: Phase.t}) :: Phase.result_t
+  def do_run(input, %{validation_result_phase: abort_phase}) do
     {fragments, error_count} = check(input.fragments)
     result = put_in(input.fragments, fragments)
     if error_count > 0 do
-      {:jump, result, Phase.Document.Validation.Result}
+      {:jump, result, abort_phase}
     else
       {:ok, result}
     end
