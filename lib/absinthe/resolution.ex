@@ -1,15 +1,18 @@
-defmodule Absinthe.Phase.Document.Execution.Resolution.Info do
+defmodule Absinthe.Resolution do
+  @moduledoc """
+  The primary piece of metadata passed to aid resolution functions, describing
+  the current field's execution environment.
+  """
 
   alias Absinthe.{Schema, Type}
 
-  @moduledoc """
-  Information passed to aid resolution functions, describing the current field's
-  execution environment.
-  """
-
   @typedoc """
+  Information about the current resolution.
 
   ## Options
+  - `:adapter` - The adapter used for any name conversions.
+  - `:definition` - The Blueprint definition for this field. To access the
+                    schema type for this field, see the `definition.schema_node`.
   - `:context` - The context passed to `Absinthe.run`.
   - `:root_value` - The root value passed to `Absinthe.run`, if any.
   - `:parent_type` - The parent type for the field.
@@ -21,7 +24,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution.Info do
     context: map,
     root_value: any,
     schema: Schema.t,
-    definition: any,
+    definition: Blueprint.node_t,
     parent_type: Type.t,
     source: any,
   }

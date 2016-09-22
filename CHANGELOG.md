@@ -20,13 +20,12 @@
 
 ### Performance
 
-TODO (Note that composing phases so that tree traversals are grouped into less
-passes will be a focus of the beta/rc releases).
+TODO (Note that performance will be a focus of the beta/rc releases).
 
 ### Breaking Changes:
 
 - Absinthe no longer automatically adds deprecations to result errors. (Although
-  this is possible with the addition of a custom phase).
+  this is possible with the addition of custom phases.)
 - Absinthe now more closely adheres to the GraphQL specification's rules
   about input value coercion, to include:
   - Int: Disallowing automatic coercion of, eg, `"1"` to `1`
@@ -240,11 +239,11 @@ The following changes are required if you're upgrading from the previous version
 
 The second argument passed to resolution functions has changed from
 `Absinthe.Execution.t` to a flatter, simpler data structure,
-`Absinthe.Execution.Field.t`. This struct will be a more carefully curated
+`Absinthe.Resolution.t`. This struct will be a more carefully curated
 selection of metadata and match more closely to values in the JS
 reference implementation.
 
-See the typedoc for information about `Absinthe.Execution.Field.t`, and change
+See the typedoc for information about `Absinthe.Resolution.t`, and change
 any advanced resolvers to use this new struct. The most likely change will be
 the use of `source` instead of `resolution.target`.
 

@@ -20,7 +20,7 @@ defmodule Absinthe.Type.Field do
 
   See the `Absinthe.Type.Field.t` explanation of `:resolve` for more information.
   """
-  @type resolver_t :: ((%{atom => any}, Absinthe.Execution.Field.t) -> {:ok, any} | {:error, binary})
+  @type resolver_t :: ((%{atom => any}, Absinthe.Resolution.t) -> {:ok, any} | {:error, binary})
 
   @typedoc """
   The configuration for a field.
@@ -76,7 +76,7 @@ defmodule Absinthe.Type.Field do
 
   1. A map of the arguments for the field, filled in with values from the
      provided query document/variables.
-  2. An `Absinthe.Execution.Field` struct, containing the execution environment
+  2. An `Absinthe.Resolution` struct, containing the execution environment
      for the field (and useful for complex resolutions using the resolved source
      object, etc)
 

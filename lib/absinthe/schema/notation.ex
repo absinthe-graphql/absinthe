@@ -348,7 +348,7 @@ defmodule Absinthe.Schema.Notation do
   call that returns a 2 arity anonymous function. See examples for more information.
 
   The first argument to the function are the GraphQL arguments, and the latter
-  is an `Absinthe.Execution.Field` struct. It is where you can access the GraphQL
+  is an `Absinthe.Resolution` struct. It is where you can access the GraphQL
   context and other execution data.
 
   Note that when using a hard coded anonymous function, the function will not

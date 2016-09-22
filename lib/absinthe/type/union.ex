@@ -59,7 +59,7 @@ defmodule Absinthe.Type.Union do
   end
 
   @doc false
-  @spec resolve_type(t, any, Execution.Field.t) :: Type.t | nil
+  @spec resolve_type(t, any, Absinthe.Resolution.t) :: Type.t | nil
   def resolve_type(%{resolve_type: nil, types: types}, obj, %{schema: schema}) do
     Enum.find(types, fn
       %{is_type_of: nil} ->

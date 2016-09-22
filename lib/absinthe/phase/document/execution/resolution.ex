@@ -7,8 +7,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   alias Absinthe.{Blueprint, Type, Phase}
 
-  alias __MODULE__
-
   alias Absinthe.Phase
   use Absinthe.Phase
 
@@ -20,7 +18,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       nil ->
         bp_root
       op ->
-        field = %Resolution.Info{
+        field = %Absinthe.Resolution{
           adapter: bp_root.adapter,
           context: context,
           root_value: root_value,

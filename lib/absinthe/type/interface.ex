@@ -57,7 +57,6 @@ defmodule Absinthe.Type.Interface do
   use Absinthe.Introspection.Kind
 
   alias Absinthe.Type
-  alias Absinthe.Execution
   alias Absinthe.Schema
 
   @type t :: %{name: binary, description: binary, fields: map, resolve_type: ((any, Absinthe.Execution.t) -> atom | nil), __reference__: Type.Reference.t}
@@ -68,7 +67,7 @@ defmodule Absinthe.Type.Interface do
     quote do: %unquote(__MODULE__){unquote_splicing(attrs), fields: unquote(fields)}
   end
 
-  @spec resolve_type(Type.Interface.t, any, Execution.Field.t) :: Type.t | nil
+  @spec resolve_type(Type.Interface.t, any, Absinthe.Resolution.t) :: Type.t | nil
   def resolve_type(%{resolve_type: nil, __reference__: %{identifier: ident}}, obj, %{schema: schema}) do
     implementors = Schema.implementors(schema, ident)
     Enum.find(implementors, fn
