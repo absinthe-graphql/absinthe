@@ -191,8 +191,8 @@ defmodule Absinthe.Phase.Schema do
 
   # Expand type, but strip wrapping argument node
   @spec expand_type(Type.t, Schema.t) :: Type.t
-  defp expand_type(%Type.Argument{} = type, schema) do
-    Type.expand(type.type, schema)
+  defp expand_type(%{type: type}, schema) do
+    Type.expand(type, schema)
   end
   defp expand_type(type, schema) do
     Type.expand(type, schema)

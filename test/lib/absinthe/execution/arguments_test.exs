@@ -29,6 +29,11 @@ defmodule Absinthe.Execution.ArgumentsTest do
     input_object :contact_input do
       field :email, non_null(:string)
       field :contact_type, :contact_type
+      field :nested_contact_input, :nested_contact_input
+    end
+
+    input_object :nested_contact_input do
+      field :email, non_null(:string)
     end
 
     enum :contact_type do
@@ -256,6 +261,13 @@ defmodule Absinthe.Execution.ArgumentsTest do
       it "works in a basic case" do
         doc = """
         {user(contact: {email: "bubba@joe.com"})}
+        """
+        assert_result {:ok, %{data: %{"user" => "bubba@joe.com"}}}, doc |> run(Schema)
+      end
+
+      it "works in a nested case" do
+        doc = """
+        {user(contact: {email: "bubba@joe.com", nestedContactInput: {email: "foo"}})}
         """
         assert_result {:ok, %{data: %{"user" => "bubba@joe.com"}}}, doc |> run(Schema)
       end
