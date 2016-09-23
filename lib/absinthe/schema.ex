@@ -268,6 +268,20 @@ defmodule Absinthe.Schema do
   end
 
   @doc """
+  Get all concrete types for union, interface, or object
+  """
+  @spec concrete_types(t, Type.t) :: [Type.t]
+  def concrete_types(schema, %Type.Union{} = type) do
+    Enum.map(type.types, &lookup_type(schema, &1))
+  end
+  def concrete_types(schema, %Type.Interface{} = type) do
+    implementors(schema, type)
+  end
+  def concrete_types(_, %Type.Object{} = type) do
+    [type]
+  end
+
+  @doc """
   List all directives on a schema
   """
   @spec directives(t) :: [Type.Directive.t]

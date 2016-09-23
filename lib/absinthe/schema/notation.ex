@@ -348,7 +348,7 @@ defmodule Absinthe.Schema.Notation do
   call that returns a 2 arity anonymous function. See examples for more information.
 
   The first argument to the function are the GraphQL arguments, and the latter
-  is an `Absinthe.Execution.Field` struct. It is where you can access the GraphQL
+  is an `Absinthe.Resolution` struct. It is where you can access the GraphQL
   context and other execution data.
 
   Note that when using a hard coded anonymous function, the function will not
@@ -697,6 +697,30 @@ defmodule Absinthe.Schema.Notation do
     Scope.recorded!(env.module, :attr, :instruction)
     :ok
   end
+
+  @placement {:expand, [under: :directive]}
+  @doc """
+  Define the expansion for a directive
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+  """
+  defmacro expand(func_ast) do
+    __CALLER__
+    |> recordable!(:expand, @placement[:expand])
+    |> record_expand!(func_ast)
+  end
+
+  @doc false
+  # Record a directive expand function in the current scope
+  def record_expand!(env, func_ast) do
+    Scope.put_attribute(env.module, :expand, func_ast)
+    Scope.recorded!(env.module, :attr, :expand)
+    :ok
+  end
+
+
 
   # INPUT OBJECTS
 

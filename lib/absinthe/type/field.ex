@@ -9,8 +9,6 @@ defmodule Absinthe.Type.Field do
   See the `t` type below for details and examples of how to define a field.
   """
 
-  alias __MODULE__
-
   alias Absinthe.Type
   alias Absinthe.Type.Deprecation
   alias Absinthe.Schema
@@ -22,7 +20,7 @@ defmodule Absinthe.Type.Field do
 
   See the `Absinthe.Type.Field.t` explanation of `:resolve` for more information.
   """
-  @type resolver_t :: ((%{atom => any}, Absinthe.Execution.Field.t) -> {:ok, any} | {:error, binary})
+  @type resolver_t :: ((%{atom => any}, Absinthe.Resolution.t) -> {:ok, any} | {:error, binary})
 
   @typedoc """
   The configuration for a field.
@@ -78,7 +76,7 @@ defmodule Absinthe.Type.Field do
 
   1. A map of the arguments for the field, filled in with values from the
      provided query document/variables.
-  2. An `Absinthe.Execution.Field` struct, containing the execution environment
+  2. An `Absinthe.Resolution` struct, containing the execution environment
      for the field (and useful for complex resolutions using the resolved source
      object, etc)
 
@@ -116,9 +114,11 @@ defmodule Absinthe.Type.Field do
     quoted_empty_map = quote do: %{}
     ast = for {field_name, field_attrs} <- fields do
       name = field_name |> Atom.to_string
+      default_ref = field_attrs[:__reference__]
+
       field_data = [name: name] ++ Keyword.update(field_attrs, :args, quoted_empty_map, fn
         raw_args ->
-          args = for {name, attrs} <- raw_args, do: {name, ensure_reference(attrs, field_attrs[:__reference__])}
+          args = for {name, attrs} <- raw_args, do: {name, ensure_reference(attrs, name, default_ref)}
           Type.Argument.build(args || [])
       end)
       field_ast = quote do: %Absinthe.Type.Field{unquote_splicing(field_data |> Absinthe.Type.Deprecation.from_attribute)}
@@ -127,12 +127,15 @@ defmodule Absinthe.Type.Field do
     quote do: %{unquote_splicing(ast)}
   end
 
-  defp ensure_reference(arg_attrs, default_reference) do
+  defp ensure_reference(arg_attrs, name, default_reference) do
     case Keyword.has_key?(arg_attrs, :__reference__) do
       true ->
         arg_attrs
       false ->
-        Keyword.put(arg_attrs, :__reference__, default_reference)
+        # default_reference is map AST, hence the gymnastics to build it nicely.
+        {a, b, args} = default_reference
+
+        Keyword.put(arg_attrs, :__reference__, {a, b, Keyword.put(args, :identifier, name)})
     end
   end
 
@@ -159,26 +162,6 @@ defmodule Absinthe.Type.Field do
     get_in(private, [Absinthe, :resolve])
   end
 
-  defimpl Absinthe.Validation.RequiredInput do
-
-    # Whether the field is required.
-    #
-    # Note this is only useful for input object types.
-    #
-    # * If the field is deprecated, it is never required
-    # * If the argumnet is not deprecated, it is required
-    #   if its type is non-null
-    @doc false
-    @spec required?(Field.t) :: boolean
-    def required?(%Field{type: type, deprecation: nil}) do
-      type
-      |> Absinthe.Validation.RequiredInput.required?
-    end
-    def required?(%Field{}) do
-      false
-    end
-
-  end
 
   defimpl Absinthe.Traversal.Node do
     def children(node, traversal) do

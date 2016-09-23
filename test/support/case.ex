@@ -4,6 +4,7 @@ defmodule Absinthe.Case do
       use ExUnit.Case, unquote(opts)
       import ExUnit.Case, except: [describe: 2]
       import ExSpec
+      import Absinthe.Case.Run
 
       Module.put_attribute(__MODULE__, :ex_spec_contexts, [])
     end

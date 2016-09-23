@@ -10,12 +10,14 @@ defmodule Absinthe.Adapter.LanguageConventions do
 
   For example, this document:
 
-      {
-        myUser: createUser(userId: 2) {
-          firstName
-          lastName
-        }
-      }
+  ```
+  {
+    myUser: createUser(userId: 2) {
+      firstName
+      lastName
+    }
+  }
+  ```
 
   Would map to an internal schema that used the following names:
 
@@ -28,13 +30,16 @@ defmodule Absinthe.Adapter.LanguageConventions do
   (snakecase) schema would have its names transformed back into camelcase on the
   way out:
 
-      %{
-        data: %{
-          "myUser" => %{
-            "firstName" => "Joe",
-            "lastName" => "Black"}
-        }
+  ```
+  %{
+    data: %{
+      "myUser" => %{
+        "firstName" => "Joe",
+        "lastName" => "Black"
       }
+    }
+  }
+  ```
 
   Note variables are a client-facing concern (they may be provided as
   parameters), so variable names should match the convention of the query

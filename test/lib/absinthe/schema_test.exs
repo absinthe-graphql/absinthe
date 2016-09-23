@@ -1,6 +1,7 @@
 defmodule Absinthe.SchemaTest do
   use Absinthe.Case, async: true
   use SupportSchemas
+  import AssertResult
 
   alias Absinthe.Schema
   alias Absinthe.Type
@@ -21,7 +22,7 @@ defmodule Absinthe.SchemaTest do
       end)
       int = ValidSchema.__absinthe_type__(:integer)
       assert 1 == Type.Scalar.serialize(int, 1)
-      assert {:ok, 1} == Type.Scalar.parse(int, "1.0")
+      assert {:ok, 1} == Type.Scalar.parse(int, 1)
     end
 
   end
@@ -144,7 +145,7 @@ defmodule Absinthe.SchemaTest do
       field :name, :string
     end
 
-    subscription name: "SubscriptionRootTypeThing" do
+    subscription name: "RootSubscriptionTypeThing" do
       field :name, :string
     end
 
@@ -162,7 +163,7 @@ defmodule Absinthe.SchemaTest do
     end
 
     it "supports subscriptions" do
-      assert "SubscriptionRootTypeThing" == Schema.lookup_type(RootsSchema, :subscription).name
+      assert "RootSubscriptionTypeThing" == Schema.lookup_type(RootsSchema, :subscription).name
     end
 
 
@@ -213,10 +214,8 @@ defmodule Absinthe.SchemaTest do
     fragment F0 on Viewer{name,id}
     fragment F1 on Viewer{id,...F0}
     """
-
-    @tag :fragment1
     it "builds the correct result" do
-      assert {:ok, %{data: %{"viewer" => %{"id" => "ABCD", "name" => "Bruce"}}}} == Absinthe.run(@query, FragmentSpreadSchema)
+      assert_result {:ok, %{data: %{"viewer" => %{"id" => "ABCD", "name" => "Bruce"}}}}, run(@query, FragmentSpreadSchema)
     end
 
   end
