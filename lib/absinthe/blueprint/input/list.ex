@@ -2,9 +2,9 @@ defmodule Absinthe.Blueprint.Input.List do
 
   alias Absinthe.{Blueprint, Phase}
 
-  @enforce_keys [:values]
+  @enforce_keys [:items]
   defstruct [
-    :values,
+    :items,
     :source_location,
     # Added by phases
     flags: %{},
@@ -13,7 +13,7 @@ defmodule Absinthe.Blueprint.Input.List do
   ]
 
   @type t :: %__MODULE__{
-    values: [Blueprint.Input.t],
+    items: [Blueprint.Input.List.Item.t],
     flags: Blueprint.flags_t,
     schema_node: nil | Absinthe.Type.t,
     source_location: Blueprint.Document.SourceLocation.t,
@@ -24,10 +24,8 @@ defmodule Absinthe.Blueprint.Input.List do
   Wrap another input node in a list.
   """
   @spec wrap(Blueprint.Input.t) :: t
-  def wrap(%str{} = node) when str != __MODULE__ do
-    %__MODULE__{values: [node], source_location: node.source_location}
-  end
+  def wrap(%__MODULE__{} = list), do: list
   def wrap(node) do
-    node
+    %__MODULE__{items: [node], source_location: node.source_location}
   end
 end

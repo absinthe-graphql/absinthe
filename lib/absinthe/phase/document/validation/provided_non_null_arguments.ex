@@ -18,10 +18,10 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArguments do
 
   # Find the missing arguments
   @spec handle_node(Blueprint.node_t, Schema.t) :: Blueprint.node_t
-  defp handle_node(%Blueprint.Input.Argument{data_value: nil, flags: %{missing: _}} = node, schema) do
-    node
-    |> put_error(error(node, node.schema_node.type, schema))
-  end
+  # defp handle_node(%Blueprint.Input.Argument{data_value: nil, flags: %{missing: _}} = node, schema) do
+  #   node
+  #   |> put_error(error(node, node.schema_node.type, schema))
+  # end
   defp handle_node(node, _) do
     node
   end

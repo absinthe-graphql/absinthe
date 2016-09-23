@@ -16,7 +16,7 @@ defmodule Absinthe.Language.ListValue do
   defimpl Blueprint.Draft do
     def convert(node, doc) do
       %Blueprint.Input.List{
-        values: Blueprint.Draft.convert(node.values, doc),
+        items: Blueprint.Draft.convert(node.values, doc),
         source_location: source_location(node),
       }
     end

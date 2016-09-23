@@ -145,12 +145,12 @@ defmodule Absinthe.Phase.Schema do
   end
   defp argument_with_schema_node(%{name: name} = node, parent_schema_node, schema, adapter) do
     schema_node = find_schema_argument(parent_schema_node, name, adapter)
-    normalized_value = value_with_schema_node(node.normalized_value, schema_node, schema, adapter)
-    %{node | schema_node: schema_node, normalized_value: normalized_value}
+    input_value = value_with_schema_node(node.input_value, schema_node, schema, adapter)
+    %{node | schema_node: schema_node, input_value: input_value}
   end
 
   # Given a blueprint provided value node, fill in its schema node
-  @spec value_with_schema_node(Blueprint.Input.t, Type.t, Absinthe.Schema.t, Absinthe.Adapter.t) :: Type.Input.t
+  @spec value_with_schema_node(Blueprint.Input.Value.t, Type.t, Absinthe.Schema.t, Absinthe.Adapter.t) :: Type.Input.t
   defp value_with_schema_node(node, nil, _, _) do
     node
   end

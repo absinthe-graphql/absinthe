@@ -42,16 +42,16 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
     missing = generate_missing_arguments(node, adapter)
     %{node | arguments: missing ++ node.arguments}
   end
-  defp handle_node(%Blueprint.Input.Argument{normalized_value: nil, schema_node: %{type: %Type.NonNull{}}} = node, _adapter) do
-    flag_invalid(node, :missing)
-  end
+  # defp handle_node(%Blueprint.Input.Argument{normalized_value: nil, schema_node: %{type: %Type.NonNull{}}} = node, _adapter) do
+  #   flag_invalid(node, :missing)
+  # end
 
-  defp handle_node(%Blueprint.Input.Argument{} = node, adapter) do
-    case build_value(node.normalized_value, adapter) do
+  defp handle_node(%{input_value: %Blueprint.Input.Value{} = input} = node, adapter) do
+    case build_value(input.normalized, adapter) do
       {:ok, value} ->
         %{node | data_value: value}
       {:error, normalized_value} ->
-        %{node | normalized_value: normalized_value}
+        %{node | input_value: %{ input | normalized: normalized_value}}
     end
   end
   defp handle_node(node, _adapter) do
@@ -92,6 +92,7 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
             %Blueprint.Input.Field{
               name: schema_field.name |> adapter.to_external_name(:field),
               value: nil,
+              input_value: %Blueprint.Input.Value{literal: nil},
               schema_node: schema_field,
               source_location: node.source_location
             }
@@ -177,8 +178,8 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
           [
             %Blueprint.Input.Argument{
               name: schema_argument.name |> adapter.to_external_name(:argument),
-              literal_value: nil,
-              data_value: nil,
+              input_value: %Blueprint.Input.Value{literal: nil},
+              value: nil,
               schema_node: schema_argument,
               source_location: node.source_location
             }

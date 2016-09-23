@@ -2,26 +2,24 @@ defmodule Absinthe.Blueprint.Input.Argument do
 
   alias Absinthe.Blueprint
 
-  @enforce_keys [:name, :literal_value, :source_location]
+  @enforce_keys [:name, :source_location, :input_value]
   defstruct [
     :name,
-    :literal_value, # the value from the query doc. May be a pointer to a variable
+    :input_value,
     :source_location,
     # Added by phases
     schema_node: nil,
-    normalized_value: nil, # Value after having variable values inlined
-    data_value: nil, # Value converted to native elixir value
+    value: nil, # Value converted to native elixir value
     flags: %{},
     errors: [],
   ]
 
   @type t :: %__MODULE__{
     name: String.t,
-    literal_value: Blueprint.Input.t,
+    input_value: Blueprint.Input.Value.t,
     source_location: Blueprint.Document.SourceLocation.t,
     schema_node: nil | Absinthe.Type.Argument.t,
-    normalized_value: Blueprint.Input.t,
-    data_value: any,
+    value: any,
     flags: Blueprint.flags_t,
     errors: [Absinthe.Phase.Error.t],
   }
@@ -32,7 +30,7 @@ defmodule Absinthe.Blueprint.Input.Argument do
     |> Enum.flat_map(fn
       %__MODULE__{schema_node: nil} ->
         []
-      %__MODULE__{schema_node: schema_node, data_value: value} ->
+      %__MODULE__{schema_node: schema_node, value: value} ->
         [{
           schema_node.__reference__.identifier,
           value

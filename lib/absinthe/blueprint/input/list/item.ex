@@ -1,27 +1,25 @@
-defmodule Absinthe.Blueprint.Input.Field do
+defmodule Absinthe.Blueprint.Input.List.Item do
 
-  alias Absinthe.{Blueprint, Type}
+  alias Absinthe.{Blueprint, Phase}
 
-  @enforce_keys [:name, :input_value]
+  @enforce_keys [:input_value]
   defstruct [
-    :name,
     :input_value,
+    :value,
+    :source_location,
     # Added by phases
-    value: nil,
     flags: %{},
-    source_location: nil,
     schema_node: nil,
     errors: [],
   ]
 
   @type t :: %__MODULE__{
-    name: String.t,
     input_value: Blueprint.Input.Value.t,
     value: any,
     flags: Blueprint.flags_t,
-    schema_node: nil | Type.Field.t,
+    schema_node: nil | Absinthe.Type.t,
     source_location: Blueprint.Document.SourceLocation.t,
-    errors: [Absinthe.Phase.Error.t],
+    errors: [Phase.Error.t],
   }
 
 end

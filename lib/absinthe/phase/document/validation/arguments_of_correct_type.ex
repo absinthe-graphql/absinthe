@@ -18,17 +18,17 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
 
   # Check arguments, objects, fields, and lists
   @spec handle_node(Blueprint.node_t, Schema.t) :: Blueprint.node_t
-  defp handle_node(%Blueprint.Input.Argument{schema_node: %{type: _}, normalized_value: norm, data_value: nil} = node, schema) when not is_nil(norm) do
-    descendant_errors = collect_child_errors(node.normalized_value, schema)
-    message = error_message(
-      node.name,
-      Blueprint.Input.inspect(node.literal_value),
-      descendant_errors
-    )
-    node
-    |> flag_invalid(:bad_argument)
-    |> put_error(error(node, message))
-  end
+  # defp handle_node(%Blueprint.Input.Argument{schema_node: %{type: _}, normalized_value: norm, data_value: nil} = node, schema) when not is_nil(norm) do
+  #   descendant_errors = collect_child_errors(node.normalized_value, schema)
+  #   message = error_message(
+  #     node.name,
+  #     Blueprint.Input.inspect(node.literal_value),
+  #     descendant_errors
+  #   )
+  #   node
+  #   |> flag_invalid(:bad_argument)
+  #   |> put_error(error(node, message))
+  # end
   defp handle_node(node, _) do
     node
   end

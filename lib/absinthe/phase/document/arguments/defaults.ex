@@ -48,8 +48,8 @@ defmodule Absinthe.Phase.Document.Arguments.Defaults do
     default = schema_node_arg.default_value
     %Blueprint.Input.Argument{
       name: schema_node_arg.name,
-      literal_value: default,
-      data_value: default,
+      input_value: %Blueprint.Input.Value{literal: nil},
+      value: default,
       schema_node: schema_node_arg,
       source_location: source_location
     }
