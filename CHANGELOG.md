@@ -31,6 +31,13 @@ TODO (Note that performance will be a focus of the beta/rc releases).
   - Int: Disallowing automatic coercion of, eg, `"1"` to `1`
   - String: Disallowing automatic coercion of, eg, `1` to `"1"`
   - Enum: Disallowing quoted values, eg, `"RED"` vs `RED`
+- The raw AST nodes are no longer provided as part of the "info" argument passed
+  to resolve functions. If you have built logic (eg, Ecto preloading) based on
+  the AST information, look at the `definition` instead, which is a Blueprint
+  `Field` struct containing a `fields` array of subfields. These fields have
+  passed validation and have been flattened from any fragments that may have
+  been used in the original document (you just may want to pay attention to
+  each field's `type_conditions`).
 - Scalar `parse` functions now receive their value as `Absinthe.Blueprint.Input.t`
   structs. If you have defined your own custom scalar types, you may need to
   modify them; see `lib/absinthe/type/built_ins/scalars.ex` for examples.
