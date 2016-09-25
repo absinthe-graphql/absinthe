@@ -116,6 +116,12 @@ defmodule Things do
           {:ok, @db |> Map.get(id)}
       end
 
+    field :things,
+      type: list_of(:thing),
+      resolve: fn
+        _, _ ->
+          {:ok, Map.values(@db)}
+      end
   end
 
   input_object :input_thing do
