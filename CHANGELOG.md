@@ -1,6 +1,13 @@
 # Changelog
 
-## v1.2.0
+## v1.2.0-alpha.1
+
+- Enable support for 3 arity resolution functions. The arguments are:
+  ```
+  fn parent, args, field_info ->
+  ```
+
+## v1.2 (Overview)
 
 ### Internals
 
