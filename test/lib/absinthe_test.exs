@@ -13,6 +13,17 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}}}, run(query)
   end
 
+  it "can do a simple query with an all caps alias" do
+    query = """
+    query GimmeFoo {
+      thing(id: "foo") {
+        FOO: name
+      }
+    }
+    """
+    assert_result {:ok, %{data: %{"thing" => %{"FOO" => "Foo"}}}}, run(query)
+  end
+
   it "can identify a bad field" do
     query = """
     {
