@@ -110,18 +110,8 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       source
     )
   end
-  # Field without a resolver
-  defp call_resolution_function(args, %{schema_node: %{resolve: nil}} = field, info, source) do
-    case info.schema.__absinthe_custom_default_resolve__ do
-      nil ->
-        {:ok, Map.get(source, field.schema_node.__reference__.identifier)}
-      fun ->
-        fun.(args, info)
-    end
-  end
-  # Everything else
-  defp call_resolution_function(args, field, info, _source) do
-    Type.Field.resolve(field.schema_node, args, info)
+  defp call_resolution_function(args, field, info, parent) do
+    Type.Field.resolve(field.schema_node, args, parent, info)
   end
 
   defp update_info(info, field, source) do

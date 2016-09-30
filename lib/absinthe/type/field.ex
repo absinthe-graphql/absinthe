@@ -139,29 +139,63 @@ defmodule Absinthe.Type.Field do
     end
   end
 
-  def resolve(%{resolve: nil} = field, args, %{schema: schema} = field_info) do
-    %{field | resolve: schema.__absinthe_custom_default_resolve__}
-    |> resolve(args, field_info)
-  end
-  def resolve(%{resolve: designer_resolve, __private__: private}, args, field_info) do
-    do_resolve(system_resolve(private), designer_resolve, args, field_info)
+  def resolve(field, args, parent, field_info) do
+    field =
+      field
+      |> maybe_add_default(field_info.schema.__absinthe_custom_default_resolve__)
+      |> maybe_add_default(system_default(field.__reference__.identifier))
+      |> maybe_wrap_with_private
+
+    call field.resolve, args, parent, field_info
   end
 
-  # No system resolver, so just invoke the schema designer's resolver
-  defp do_resolve(nil, designer_fn, args, field_info) do
-    designer_fn.(args, field_info)
-  end
-  # If a system resolver is set, we resolve by passing it the schema designer
-  # resolver; it's responsible for returning the result.
-  defp do_resolve(system_fn, designer_fn, args, field_info) do
-    system_fn.(args, field_info, designer_fn)
+  def call(resolution_function, args, parent, field_info) do
+    cond do
+      is_function(resolution_function, 2) ->
+        resolution_function.(args, field_info)
+      is_function(resolution_function, 3) ->
+        resolution_function.(parent, args, field_info)
+      true ->
+        raise Absinthe.ExecutionError, """
+        Field resolve property not a 2 or 3 arity function:
+        #{inspect field_info}
+        """
+    end
   end
 
-  # Get the registered resolve helper, if any
-  defp system_resolve(private) do
-    get_in(private, [Absinthe, :resolve])
+  def call(function, args, info) do
+    call(function, args, info.source, info)
   end
 
+  defp maybe_add_default(%{resolve: nil} = node, resolution_function) do
+    %{node | resolve: resolution_function}
+  end
+  defp maybe_add_default(node, _) do
+    node
+  end
+
+  defp maybe_wrap_with_private(%{resolve: resolve, __private__: private} = node) do
+    resolve =
+      private
+      |> Keyword.values
+      |> Enum.reduce(resolve, fn private, resolve ->
+        if constructor = private[:resolve] do
+          constructor.(resolve)
+        else
+          resolve
+        end
+      end)
+
+    %{resolve: resolve}
+  end
+
+  # TODO: Optimize to avoid anonymous function closure
+  # Maybe optimize w/ Map.take
+  defp system_default(field_name) do
+    fn parent, _, _ ->
+      {:ok, Map.get(parent, field_name)}
+    end
+  end
 
   defimpl Absinthe.Traversal.Node do
     def children(node, traversal) do
