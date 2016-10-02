@@ -247,7 +247,12 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   def find_target_type(schema_type, schema) when is_atom(schema_type) do
     schema.__absinthe_type__(schema_type)
   end
+  # For fields
   def find_target_type(%{type: type}, schema) do
+    find_target_type(type, schema)
+  end
+  # For lists and non-nulls
+  def find_target_type(%{of_type: type}, schema) do
     find_target_type(type, schema)
   end
 

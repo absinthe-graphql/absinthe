@@ -381,4 +381,16 @@ defmodule Absinthe.IntrospectionTest do
 
   end
 
+  describe "full introspection" do
+
+    @filename "graphql/introspection.graphql"
+    @query File.read!(Path.join([:code.priv_dir(:absinthe), @filename]))
+
+    it "runs" do
+      result = @query |> run(ContactSchema)
+      assert {:ok, %{data: %{"__schema" => _}}} = result
+    end
+
+  end
+
 end
