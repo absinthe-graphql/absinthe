@@ -119,7 +119,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       info |
       source: source,
       # This is so that the function can know what field it's in.
-      definition: field.schema_node
+      definition: field
     }
   end
 
