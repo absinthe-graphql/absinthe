@@ -55,14 +55,15 @@ defmodule Absinthe.Pipeline do
       # Apply Input
       {Phase.Document.Variables, options},
       Phase.Document.Arguments.Normalize,
+      Phase.Debug,
       # Map to Schema
       {Phase.Schema, options},
       # Ensure Types
       Phase.Validation.KnownTypeNames,
       # Process Arguments
       Phase.Document.Arguments.Coercion,
+      Phase.Document.Arguments.FillMissing,
       Phase.Document.Arguments.Data,
-      Phase.Document.Arguments.Defaults,
       # Validate Full Document
       Phase.Validation.KnownDirectives,
       Phase.Document.Validation.ScalarLeafs,
@@ -80,7 +81,6 @@ defmodule Absinthe.Pipeline do
       # Prepare for Execution
       Phase.Document.CascadeInvalid,
       Phase.Document.Flatten,
-      Phase.Debug,
       # Execution
       {Phase.Document.Execution.Resolution, options},
       # Format Result

@@ -7,7 +7,12 @@ defmodule Absinthe.Blueprint.Transform do
   """
   @spec prewalk(Blueprint.t, (Blueprint.t -> Blueprint.t)) :: Blueprint.t
   def prewalk(node, fun) when is_function(fun, 1) do
-    {node, _} = prewalk(node, nil, fn x, nil -> {fun.(x), nil} end)
+    {node, _} = prewalk(node, nil, fn x, nil ->
+      case fun.(x) do
+        {:halt, x} -> {:halt, x, nil}
+        x -> {x, nil}
+      end
+    end)
     node
   end
 
@@ -18,7 +23,7 @@ defmodule Absinthe.Blueprint.Transform do
   """
   @spec prewalk(Blueprint.t, any, ((Blueprint.t, any) -> {Blueprint.t, any})) :: {Blueprint.t, any}
   def prewalk(node, acc, fun) when is_function(fun, 2) do
-    walk(node, acc, fun, fn x, acc -> {x, acc} end)
+    walk(node, acc, fun, &pass/2)
   end
 
   @doc """
@@ -35,8 +40,10 @@ defmodule Absinthe.Blueprint.Transform do
   """
   @spec prewalk(Blueprint.t, any, ((Blueprint.t, any) -> {Blueprint.t, any})) :: {Blueprint.t, any}
   def postwalk(node, acc, fun) when is_function(fun, 2) do
-    walk(node, acc, fn x, acc -> {x, acc} end, fun)
+    walk(node, acc, &pass/2, fun)
   end
+
+  defp pass(x, acc), do: {x, acc}
 
   nodes_with_children = %{
     Blueprint => [:fragments, :operations, :types, :directives],
@@ -54,7 +61,7 @@ defmodule Absinthe.Blueprint.Transform do
     Blueprint.Input.List.Item => [:input_value],
     Blueprint.Input.Object => [:fields],
     Blueprint.Input.List => [:items],
-    Blueprint.Input.Value => [:literal],
+    Blueprint.Input.Value => [:normalized],
     Blueprint.Schema.DirectiveDefinition => [:directives, :types],
     Blueprint.Schema.EnumTypeDefinition => [:directives, :values],
     Blueprint.Schema.EnumValueDefinition => [:directives],
@@ -81,13 +88,20 @@ defmodule Absinthe.Blueprint.Transform do
     Enum.map_reduce(nodes, acc, &walk(&1, &2, pre, post))
   end
   def walk(leaf_node, acc, pre, post) do
-    {leaf_node, acc} = pre.(leaf_node, acc)
+    {leaf_node, acc} = case pre.(leaf_node, acc) do
+      {:halt, leaf_node, acc} -> {leaf_node, acc}
+      val -> val
+    end
     post.(leaf_node, acc)
   end
 
   defp node_with_children(node, children, acc, pre, post) do
-    {node, acc} = pre.(node, acc)
-    {node, acc} = walk_children(node, children, acc, pre, post)
+    {node, acc} = case pre.(node, acc) do
+      {:halt, node, acc} ->
+        {node, acc}
+      {node, acc} ->
+        walk_children(node, children, acc, pre, post)
+    end
     post.(node, acc)
   end
 

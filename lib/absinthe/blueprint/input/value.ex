@@ -7,8 +7,10 @@ defmodule Absinthe.Blueprint.Input.Value do
 
   @enforce_keys [:literal]
   defstruct [
+    :schema_node,
     :literal,
     :normalized,
+    :data,
   ]
 
   alias Absinthe.Blueprint.Input
@@ -27,5 +29,6 @@ defmodule Absinthe.Blueprint.Input.Value do
   @type t :: %__MODULE__{
     literal: literals | variable,
     normalized: literals,
+    data: term,
   }
 end
