@@ -64,9 +64,19 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
   end
   defp handle_node(node), do: node
 
+  defp build_value(%Input.List{items: items} = node) do
+    data = for %{data: data} <- items, do: data
+    {:ok, data}
+  end
+  defp build_value(%Input.Object{fields: fields} = node) do
+    data = Map.new(fields, &{&1.__reference__.identifier, &1.input_value.data})
+    |> IO.inspect
+    {:ok, data}
+  end
   defp build_value(%{schema_node: %Type.Scalar{} = schema_node} = node) do
     case Type.Scalar.parse(schema_node, node) do
       :error ->
+        raise "boom"
         {:error, flag_invalid(node, :bad_parse)}
       other ->
         other
@@ -79,9 +89,6 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
       :error ->
         {:error, flag_invalid(node, :bad_parse)}
     end
-  end
-  defp build_value(%{schema_node: %Type.Object{} = schema_node} = node) do
-    node |> IO.inspect
   end
 
 end

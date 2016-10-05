@@ -50,9 +50,7 @@ defmodule Absinthe.Blueprint.Input do
   def parse(value) when is_list(value) do
     %Input.List{
       items: Enum.map(value, fn item ->
-        %Input.List.Item{
-          input_value: %Input.Value{literal: parse(value)}
-        }
+        %Input.Value{literal: parse(value)}
       end)
     }
   end
