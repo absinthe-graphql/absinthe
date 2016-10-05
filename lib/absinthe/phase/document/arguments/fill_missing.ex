@@ -13,22 +13,22 @@ defmodule Absinthe.Phase.Document.Arguments.FillMissing do
 
   @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
   def run(input, _options \\ []) do
-    node = Blueprint.prewalk(input, &populate_node(&1, input.adapter))
+    node = Blueprint.prewalk(input, &populate_node(&1, input.adapter, input.schema))
     {:ok, node}
   end
 
-  defp populate_node(%{schema_node: nil} = node, _adapter), do: node
-  defp populate_node(%{arguments: arguments, schema_node: schema_node} = node, adapter) do
-    arguments = fill_missing_nodes(Blueprint.Input.Argument, arguments, schema_node.args, node.source_location, adapter)
+  defp populate_node(%{schema_node: nil} = node, _adapter, _schema), do: node
+  defp populate_node(%{arguments: arguments, schema_node: schema_node} = node, adapter, schema) do
+    arguments = fill_missing_nodes(Blueprint.Input.Argument, arguments, schema_node.args, node.source_location, adapter, schema)
     %{node | arguments: arguments}
   end
-  defp populate_node(%Blueprint.Input.Object{fields: fields, schema_node: schema_node} = node, adapter) do
-    fields = fill_missing_nodes(Blueprint.Input.Field, fields, schema_node.args, node.source_location, adapter)
+  defp populate_node(%Blueprint.Input.Object{fields: fields, schema_node: schema_node} = node, adapter, schema) do
+    fields = fill_missing_nodes(Blueprint.Input.Field, fields, schema_node.args, node.source_location, adapter, schema)
     %{node | fields: fields}
   end
-  defp populate_node(node, _adapter), do: node
+  defp populate_node(node, _adapter, _schema), do: node
 
-  defp fill_missing_nodes(type, arguments, schema_args, source_location, adapter) do
+  defp fill_missing_nodes(type, arguments, schema_args, source_location, adapter, schema) do
     missing_schema_args = find_missing_schema_nodes(arguments, schema_args)
 
     missing_schema_args
@@ -36,8 +36,8 @@ defmodule Absinthe.Phase.Document.Arguments.FillMissing do
     |> Enum.reduce(arguments, fn
       # If the schema node says the argument is non null we want to always add it.
       # Later validations will check if it's both non null and with a nil default value
-      %{schema_node: %Type.NonNull{}} = missing_mandatory_arg_schema_node, arguments ->
-        arg = build_optional_node(type, missing_mandatory_arg_schema_node, missing_mandatory_arg_schema_node.default_value, source_location, adapter)
+      %{type: %Type.NonNull{}} = missing_mandatory_arg_schema_node, arguments ->
+        arg = build_optional_node(type, missing_mandatory_arg_schema_node, missing_mandatory_arg_schema_node.default_value, source_location, adapter, schema)
         [arg | arguments]
 
       # If it isn't non null, and there's no default value, there's no point in having it around
@@ -46,7 +46,7 @@ defmodule Absinthe.Phase.Document.Arguments.FillMissing do
 
       # Has a default value, we want it.
       missing_optional_arg_schema_node, arguments ->
-        arg = build_optional_node(type, missing_optional_arg_schema_node, missing_optional_arg_schema_node.default_value, source_location, adapter)
+        arg = build_optional_node(type, missing_optional_arg_schema_node, missing_optional_arg_schema_node.default_value, source_location, adapter, schema)
         [arg | arguments]
     end)
   end
@@ -64,15 +64,21 @@ defmodule Absinthe.Phase.Document.Arguments.FillMissing do
     end)
   end
 
-  defp build_optional_node(type, schema_node_arg, default, source_location, adapter) do
+  defp build_optional_node(type, schema_node_arg, default, source_location, adapter, schema) do
     struct!(type, %{
       name: schema_node_arg.name |> build_name(adapter, type),
-      input_value: %Blueprint.Input.Value{literal: nil},
+      input_value: %Blueprint.Input.Value{literal: nil, schema_node: Type.expand(schema_node_arg.type, schema)},
       value: default,
       schema_node: schema_node_arg,
       source_location: source_location
     })
+    |> maybe_flag_missing(schema_node_arg)
   end
+
+  defp maybe_flag_missing(%{value: nil} = node, %{type: %Type.NonNull{}}) do
+    node |> flag_invalid(:missing)
+  end
+  defp maybe_flag_missing(node, _), do: node
 
   defp build_name(name, adapter, Blueprint.Input.Argument) do
     adapter.to_external_name(name, :argument)
