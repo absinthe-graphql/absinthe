@@ -29,6 +29,7 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
   def run(input, _options \\ []) do
     # By using a postwalk we can worry about leaf nodes first (scalars, enums),
     # and then for list and objects merely grab the data values.
+    input |> IO.inspect
     result = Blueprint.postwalk(input, &handle_node/1)
     {:ok, result}
   end
