@@ -110,6 +110,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
   end
 
   describe "arguments with variables" do
+    @tag :error
     it "should raise an error when a non null argument variable is null" do
       doc = """
       query GetContacts($contacts:[ContactInput]){contacts(contacts:$contacts)}
@@ -191,21 +192,21 @@ defmodule Absinthe.Execution.ArgumentsTest do
         doc = """
         query Blah($email: String){contacts(contacts: [{email: $email}, {email: $email}])}
         """
-        assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "c@d.com"]}}}, doc |> run(Schema, variables: %{"email" => "a@b.com"})
+        assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "a@b.com"]}}}, doc |> run(Schema, variables: %{"email" => "a@b.com"})
       end
 
       it "works with input objects with inner variables when no variables are given" do
         doc = """
         query Blah($email: String){contacts(contacts: [{email: $email}, {email: $email}])}
         """
-        assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "c@d.com"]}}}, doc |> run(Schema, variables: %{})
+        assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "a@b.com"]}}}, doc |> run(Schema, variables: %{})
       end
 
       it "works with lists with inner variables" do
         doc = """
         query Blah($contact: ContactInput){contacts(contacts: [$contact, $contact])}
         """
-        assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "c@d.com"]}}}, doc |> run(Schema, variables: %{"contact" => %{"email" => "a@b.com"}})
+        assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "a@b.com"]}}}, doc |> run(Schema, variables: %{"contact" => %{"email" => "a@b.com"}})
       end
 
       it "works with lists with inner variables when no variables are given" do
@@ -234,6 +235,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"user" => "bubba@joe.com"}}}, doc |> run(Schema, variables: %{"contact" => %{"email" => "bubba@joe.com", "contactType" => "Email"}})
       end
 
+      @tag :error
       it "should return an error with invalid values" do
         assert_result {:ok, %{errors: [%{message: ~s(Argument "type" has invalid value "bagel".)}]}},
           "{ contact(type: \"bagel\") }" |> run(Schema)
@@ -244,7 +246,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
 
   describe "literal arguments" do
     describe "missing arguments" do
-
+      @tag :error
       it "returns the appropriate error" do
         doc = """
         { requiredThing }
@@ -283,6 +285,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "c@d.com"]}}}, doc |> run(Schema)
       end
 
+      @tag :error
       it "returns deeply nested errors" do
         doc = """
         {contacts(contacts: [{email: "a@b.com"}, {foo: "c@d.com"}])}
@@ -309,6 +312,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"user" => "bubba@joe.com"}}}, doc |> run(Schema)
       end
 
+      @tag :error
       it "returns the correct error if an inner field is marked non null but is missing" do
         doc = """
         {user(contact: {foo: "buz"})}
@@ -319,6 +323,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
           doc |> run(Schema)
       end
 
+      @tag :error
       it "returns an error if extra fields are given" do
         doc = """
         {user(contact: {email: "bubba", foo: "buz"})}
@@ -348,6 +353,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"something" => "NO"}}}, "{ something }" |> run(Schema)
       end
 
+      @tag :error
       it "returns a correct error when passed the wrong type" do
         assert_result {:ok, %{errors: [%{message: ~s(Argument "flag" has invalid value {foo: 1}.)}]}},
           "{ something(flag: {foo: 1}) }" |> run(Schema)
@@ -358,6 +364,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
       it "should work with valid values" do
         assert_result {:ok, %{data: %{"contact" => "Email"}}}, "{ contact(type: Email) }" |> run(Schema)
       end
+      @tag :error
       it "should return an error with invalid values" do
         assert_result {:ok, %{errors: [%{message: ~s(Argument "type" has invalid value "bagel".)}]}},
           "{ contact(type: \"bagel\") }" |> run(Schema)
@@ -366,6 +373,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
   end
 
   describe "camelized errors" do
+    @tag :error
     it "should adapt internal field names on error" do
       doc = """
       query FindUser {

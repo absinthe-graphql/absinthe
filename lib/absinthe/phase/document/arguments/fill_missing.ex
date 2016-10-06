@@ -76,8 +76,7 @@ defmodule Absinthe.Phase.Document.Arguments.FillMissing do
   defp build_node(type, schema_node_arg, default, source_location, adapter, schema) do
     struct!(type, %{
       name: schema_node_arg.name |> build_name(adapter, type),
-      input_value: %Blueprint.Input.Value{literal: nil, schema_node: Type.expand(schema_node_arg.type, schema)},
-      value: default,
+      input_value: %Blueprint.Input.Value{literal: nil, schema_node: Type.expand(schema_node_arg.type, schema), data: default},
       schema_node: schema_node_arg,
       source_location: source_location
     })
