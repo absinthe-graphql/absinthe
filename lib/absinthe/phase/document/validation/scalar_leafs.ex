@@ -1,6 +1,37 @@
 defmodule Absinthe.Phase.Document.Validation.ScalarLeafs do # [sic]
   @moduledoc """
-  Validates an operation name was provided when needed.
+  Validates that all leaf nodes are scalars.
+
+  # Examples:
+  Assume `user` field is an object, and `email` is a scalar.
+
+  ## DO NOT
+  ```
+  {
+    user
+  }
+  ```
+
+  ## DO
+  ```
+  {
+    user {name email}
+  }
+  ```
+
+  ## DO NOT
+  ```
+  {
+    email { fields on scalar }
+  }
+  ```
+
+  ## DO
+  ```
+  {
+    email
+  }
+  ```
   """
 
   alias Absinthe.{Blueprint, Phase, Type}
@@ -17,7 +48,8 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafs do # [sic]
     {:ok, result}
   end
 
-  defp handle_node(%Blueprint.Document.Field{schema_node: schema_node} = node, schema) when not is_nil(schema_node) do
+  defp handle_node(%{schema_node: nil} = node), do: {:halt, node}
+  defp handle_node(%Blueprint.Document.Field{schema_node: schema_node} = node, schema) do
     type = Type.expand(node.schema_node.type, schema)
     process(node, Type.unwrap(type), type)
   end

@@ -18,23 +18,26 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
 
   # Check arguments, objects, fields, and lists
   @spec handle_node(Blueprint.node_t, Schema.t) :: Blueprint.node_t
-  # defp handle_node(%Blueprint.Input.Argument{schema_node: %{type: _}, normalized_value: norm, data_value: nil} = node, schema) when not is_nil(norm) do
-  #   descendant_errors = collect_child_errors(node.normalized_value, schema)
-  #   message = error_message(
-  #     node.name,
-  #     Blueprint.Input.inspect(node.literal_value),
-  #     descendant_errors
-  #   )
-  #   node
-  #   |> flag_invalid(:bad_argument)
-  #   |> put_error(error(node, message))
-  # end
+  defp handle_node(%Blueprint.Input.Argument{schema_node: %{type: _}, input_value: %{normalized: norm}} = node, schema) when not is_nil(norm) do
+    descendant_errors = collect_child_errors(norm, schema)
+    message = error_message(
+      node.name,
+      Blueprint.Input.inspect(node.input_value.literal),
+      descendant_errors
+    )
+    node =
+      node
+      |> flag_invalid(:bad_argument)
+      |> put_error(error(node, message))
+
+    {:halt, node}
+  end
   defp handle_node(node, _) do
     node
   end
 
   defp collect_child_errors(%Blueprint.Input.List{} = node, schema) do
-    node.values
+    node.items
     |> Enum.with_index
     |> Enum.flat_map(fn
       {%{flags: %{invalid: _}} = child, idx} ->
@@ -65,6 +68,9 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
       child ->
         collect_child_errors(child, schema)
     end)
+  end
+  defp collect_child_errors(%{flags: %{invalid: _}} = node, schema) do
+
   end
   defp collect_child_errors(_, _) do
     []

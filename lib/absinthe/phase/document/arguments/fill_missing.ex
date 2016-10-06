@@ -6,6 +6,8 @@ defmodule Absinthe.Phase.Document.Arguments.FillMissing do
 
   Only those arguments which are non null and / or have a default value are filled
   out.
+
+  If an argument or input object field is non null and missing, it is marked invalid
   """
 
   use Absinthe.Phase
@@ -23,7 +25,7 @@ defmodule Absinthe.Phase.Document.Arguments.FillMissing do
     %{node | arguments: arguments}
   end
   defp populate_node(%Blueprint.Input.Object{fields: fields, schema_node: schema_node} = node, adapter, schema) do
-    fields = fill_missing_nodes(Blueprint.Input.Field, fields, schema_node.args, node.source_location, adapter, schema)
+    fields = fill_missing_nodes(Blueprint.Input.Field, fields, schema_node.fields, node.source_location, adapter, schema)
     %{node | fields: fields}
   end
   defp populate_node(node, _adapter, _schema), do: node
@@ -34,20 +36,27 @@ defmodule Absinthe.Phase.Document.Arguments.FillMissing do
     missing_schema_args
     |> Map.values
     |> Enum.reduce(arguments, fn
-      # If the schema node says the argument is non null we want to always add it.
-      # Later validations will check if it's both non null and with a nil default value
-      %{type: %Type.NonNull{}} = missing_mandatory_arg_schema_node, arguments ->
-        arg = build_optional_node(type, missing_mandatory_arg_schema_node, missing_mandatory_arg_schema_node.default_value, source_location, adapter, schema)
-        [arg | arguments]
-
-      # If it isn't non null, and there's no default value, there's no point in having it around
-      %{default_value: nil}, arguments ->
+      # If it's deprecated without a default, ignore it
+      %{deprecation: %{}, default_value: nil}, arguments ->
         arguments
 
-      # Has a default value, we want it.
-      missing_optional_arg_schema_node, arguments ->
-        arg = build_optional_node(type, missing_optional_arg_schema_node, missing_optional_arg_schema_node.default_value, source_location, adapter, schema)
+      # If it has a default value, we want it.
+      %{default_value: val} = schema_node, arguments when not is_nil(val) ->
+        arg = build_node(type, schema_node, val, source_location, adapter, schema)
         [arg | arguments]
+
+      # It isn't deprecated, it is null, and there's no default value. It's missing
+      %{type: %Type.NonNull{}} = missing_mandatory_arg_schema_node, arguments ->
+        arg =
+          type
+          |> build_node(missing_mandatory_arg_schema_node, missing_mandatory_arg_schema_node.default_value, source_location, adapter, schema)
+          |> flag_invalid(:missing)
+        [arg | arguments]
+
+      # No default value, and it's allowed to be null. Ignore it.
+      _, arguments ->
+        arguments
+
     end)
   end
 
@@ -64,7 +73,7 @@ defmodule Absinthe.Phase.Document.Arguments.FillMissing do
     end)
   end
 
-  defp build_optional_node(type, schema_node_arg, default, source_location, adapter, schema) do
+  defp build_node(type, schema_node_arg, default, source_location, adapter, schema) do
     struct!(type, %{
       name: schema_node_arg.name |> build_name(adapter, type),
       input_value: %Blueprint.Input.Value{literal: nil, schema_node: Type.expand(schema_node_arg.type, schema)},
@@ -72,13 +81,7 @@ defmodule Absinthe.Phase.Document.Arguments.FillMissing do
       schema_node: schema_node_arg,
       source_location: source_location
     })
-    |> maybe_flag_missing(schema_node_arg)
   end
-
-  defp maybe_flag_missing(%{value: nil} = node, %{type: %Type.NonNull{}}) do
-    node |> flag_invalid(:missing)
-  end
-  defp maybe_flag_missing(node, _), do: node
 
   defp build_name(name, adapter, Blueprint.Input.Argument) do
     adapter.to_external_name(name, :argument)

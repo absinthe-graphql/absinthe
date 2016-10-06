@@ -62,21 +62,22 @@ defmodule Absinthe.Pipeline do
       Phase.Validation.KnownTypeNames,
       # Process Arguments
       Phase.Document.Arguments.Coercion,
+      Phase.Document.Arguments.Parse,
       Phase.Document.Arguments.FillMissing,
-      Phase.Document.Arguments.Data,
       # Validate Full Document
       Phase.Validation.KnownDirectives,
       Phase.Document.Validation.ScalarLeafs,
       Phase.Document.Validation.VariablesAreInputTypes,
-      Phase.Document.Validation.ArgumentsOfCorrectType,
+      # Phase.Document.Validation.ArgumentsOfCorrectType,
       Phase.Document.Validation.KnownArgumentNames,
-      Phase.Document.Validation.ProvidedNonNullArguments,
+      # Phase.Document.Validation.ProvidedNonNullArguments,
       Phase.Document.Validation.UniqueArgumentNames,
       Phase.Document.Validation.UniqueInputFieldNames,
       Phase.Document.Validation.FieldsOnCorrectType,
       # Check Validation
       {Phase.Document.Validation.Result, options},
       # Apply Directives
+      Phase.Document.Arguments.Data,
       Phase.Document.Directives,
       # Prepare for Execution
       Phase.Document.CascadeInvalid,

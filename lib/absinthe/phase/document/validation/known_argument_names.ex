@@ -22,14 +22,17 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNames do
   end
 
   @spec handle_node(Blueprint.node_t, Schema.t) :: Blueprint.node_t
-  defp handle_node(%{selections: _, schema_node: schema_node} = node, schema) when not is_nil(schema_node) do
+  defp handle_node(%{schema_node: nil} = node) do
+    node
+  end
+  defp handle_node(%{selections: _, schema_node: schema_node} = node, schema)do
     selections = Enum.map(node.selections, fn
       %{arguments: arguments} = field ->
         arguments = Enum.map(arguments, fn
           %{schema_node: nil} = arg ->
             arg
             |> flag_invalid(:no_schema_node)
-            |> put_error(field_error(arg, field, type_name(node.schema_node, schema)))
+            |> put_error(field_error(arg, field, type_name(schema_node, schema)))
           other ->
             other
         end)
