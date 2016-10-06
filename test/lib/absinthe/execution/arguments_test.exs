@@ -29,6 +29,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
     input_object :contact_input do
       field :email, non_null(:string)
       field :contact_type, :contact_type
+      field :foo, :string, default_value: "asdf"
       field :nested_contact_input, :nested_contact_input
     end
 
@@ -76,8 +77,8 @@ defmodule Absinthe.Execution.ArgumentsTest do
       field :user, :string do
         arg :contact, :contact_input
         resolve fn
-          %{contact: %{email: email}}, _ ->
-            {:ok, email}
+          %{contact: %{email: email} = contact}, _ ->
+            {:ok, "#{email}#{contact[:foo]}"}
           args, _ ->
             {:error, "Got #{inspect args} instead"}
         end
@@ -150,7 +151,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
           user(contact:$contact)
         }
         """
-        assert_result {:ok, %{data: %{"user" => "bubba@joe.com"}}}, doc |> run(Schema, variables: %{"contact" => %{"email" => "bubba@joe.com"}})
+        assert_result {:ok, %{data: %{"user" => "bubba@joe.comasdf"}}}, doc |> run(Schema, variables: %{"contact" => %{"email" => "bubba@joe.com"}})
       end
     end
 
@@ -181,7 +182,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
 
       it "If a variable is not provided schema default value is used" do
         doc = """
-        query DoSomething($flag: Boolean!) {
+        query DoSomething($flag: Boolean) {
           something(flag: $flag)
         }
         """
@@ -195,11 +196,21 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "a@b.com"]}}}, doc |> run(Schema, variables: %{"email" => "a@b.com"})
       end
 
+      it "can set input object default values" do
+        doc = """
+        query FooIsMissing($email: String, $foo: String) {
+          user(contact: {email: $email, foo: $foo})
+        }
+        """
+        assert_result {:ok, %{data: %{"user" => "bubba@joe.comasdf"}}}, doc |> run(Schema, variables: %{"email" => "bubba@joe.com"})
+      end
+
+      @tag :error
       it "works with input objects with inner variables when no variables are given" do
         doc = """
         query Blah($email: String){contacts(contacts: [{email: $email}, {email: $email}])}
         """
-        assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "a@b.com"]}}}, doc |> run(Schema, variables: %{})
+        assert_result {:ok, %{error: %{"contacts" => ["a@b.com", "a@b.com"]}}}, doc |> run(Schema, variables: %{})
       end
 
       it "works with lists with inner variables" do
@@ -232,7 +243,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
           user(contact:$contact)
         }
         """
-        assert_result {:ok, %{data: %{"user" => "bubba@joe.com"}}}, doc |> run(Schema, variables: %{"contact" => %{"email" => "bubba@joe.com", "contactType" => "Email"}})
+        assert_result {:ok, %{data: %{"user" => "bubba@joe.comasdf"}}}, doc |> run(Schema, variables: %{"contact" => %{"email" => "bubba@joe.com", "contactType" => "Email"}})
       end
 
       @tag :error
@@ -302,14 +313,14 @@ defmodule Absinthe.Execution.ArgumentsTest do
         doc = """
         {user(contact: {email: "bubba@joe.com"})}
         """
-        assert_result {:ok, %{data: %{"user" => "bubba@joe.com"}}}, doc |> run(Schema)
+        assert_result {:ok, %{data: %{"user" => "bubba@joe.comasdf"}}}, doc |> run(Schema)
       end
 
       it "works in a nested case" do
         doc = """
         {user(contact: {email: "bubba@joe.com", nestedContactInput: {email: "foo"}})}
         """
-        assert_result {:ok, %{data: %{"user" => "bubba@joe.com"}}}, doc |> run(Schema)
+        assert_result {:ok, %{data: %{"user" => "bubba@joe.comasdf"}}}, doc |> run(Schema)
       end
 
       @tag :error

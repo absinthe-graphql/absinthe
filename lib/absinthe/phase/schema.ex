@@ -111,6 +111,9 @@ defmodule Absinthe.Phase.Schema do
         %{node | schema_node: type |> Type.expand(schema)}
     end
   end
+  defp set_schema_node(node, %Blueprint.Input.Value{normalized: nil} = parent, _schema, _) do
+    node
+  end
   defp set_schema_node(%{schema_node: nil} = node, %Blueprint.Input.Value{} = parent, _schema, _) do
     %{node | schema_node: Type.unwrap(parent.schema_node)}
   end

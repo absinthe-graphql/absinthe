@@ -27,16 +27,15 @@ defmodule Absinthe.Blueprint.Input.Argument do
   @spec value_map([t]) :: %{atom => any}
   def value_map(arguments) do
     arguments
-    |> Enum.flat_map(fn
+    |> Enum.filter(fn
       %__MODULE__{schema_node: nil} ->
-        []
-      %__MODULE__{schema_node: schema_node, value: value} ->
-        [{
-          schema_node.__reference__.identifier,
-          value
-        }]
+        false
+      %__MODULE__{value: nil} ->
+        false
+      arg ->
+        arg
     end)
-    |> Enum.into(%{})
+    |> Map.new(&{&1.schema_node.__reference__.identifier, &1.value})
   end
 
 end
