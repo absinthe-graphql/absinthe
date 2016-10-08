@@ -186,7 +186,7 @@ defmodule Absinthe.Type.Field do
         end
       end)
 
-    %{resolve: resolve}
+    %{node | resolve: resolve}
   end
 
   # TODO: Optimize to avoid anonymous function closure

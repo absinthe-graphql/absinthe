@@ -23,7 +23,7 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
   """
 
   alias Absinthe.Blueprint.Input
-  alias Absinthe.{Blueprint, Type}
+  alias Absinthe.{Blueprint}
   use Absinthe.Phase
 
   def run(input, _options \\ []) do

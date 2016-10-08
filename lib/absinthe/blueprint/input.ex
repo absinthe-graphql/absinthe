@@ -84,19 +84,25 @@ defmodule Absinthe.Blueprint.Input do
     node.value
   end
   def inspect(%Input.List{} = node) do
-    contents = node.values
-    |> Enum.map(&inspect/1)
-    |> Enum.join(", ")
+    contents =
+      node.items
+      |> Enum.map(&inspect/1)
+      |> Enum.join(", ")
     "[#{contents}]"
   end
   def inspect(%Input.Object{} = node) do
-    contents = node.fields
-    |> Enum.map(&inspect/1)
-    |> Enum.join(", ")
+    contents =
+      node.fields
+      |> Enum.filter(&(&1.input_value.literal))
+      |> Enum.map(&inspect/1)
+      |> Enum.join(", ")
     "{#{contents}}"
   end
   def inspect(%Input.Field{} = node) do
-    node.name <> ": " <> inspect(node.value)
+    node.name <> ": " <> inspect(node.input_value)
+  end
+  def inspect(%Input.Value{} = node) do
+    inspect(node.literal)
   end
   def inspect(%Input.Variable{} = node) do
     "Variable " <> node.name

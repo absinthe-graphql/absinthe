@@ -18,17 +18,18 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
 
   # Check arguments, objects, fields, and lists
   @spec handle_node(Blueprint.node_t, Schema.t) :: Blueprint.node_t
-  defp handle_node(%Blueprint.Input.Argument{schema_node: %{type: _}, input_value: %{normalized: norm}} = node, schema) when not is_nil(norm) do
-    descendant_errors = collect_child_errors(norm, schema)
+  defp handle_node(%Blueprint.Input.Argument{flags: %{invalid: _}} = node, schema) do
+    descendant_errors = collect_child_errors(node.input_value, schema)
+
     message = error_message(
       node.name,
       Blueprint.Input.inspect(node.input_value.literal),
       descendant_errors
     )
-    node =
-      node
-      |> flag_invalid(:bad_argument)
-      |> put_error(error(node, message))
+
+    error = error(node, message)
+
+    node = node |> put_error(error)
 
     {:halt, node}
   end
@@ -38,16 +39,22 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
 
   defp collect_child_errors(%Blueprint.Input.List{} = node, schema) do
     node.items
+    |> Enum.map(&(&1.normalized))
     |> Enum.with_index
     |> Enum.flat_map(fn
       {%{flags: %{invalid: _}} = child, idx} ->
-        child_type_name = Type.value_type(child.schema_node, schema)
-        |> Type.name(schema)
+        child_type_name =
+          child.schema_node
+          |> Type.value_type(schema)
+          |> Type.name(schema)
+
         child_inspected_value = Blueprint.Input.inspect(child)
+
         [
-          value_error_message(idx, child_type_name, child_inspected_value) |
+          value_error_message(idx, child_type_name, child_inspected_value) |> IO.inspect |
           collect_child_errors(child, schema)
         ]
+
       {child, _} ->
         collect_child_errors(child, schema)
     end)
@@ -57,22 +64,27 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
     |> Enum.flat_map(fn
       %{flags: %{invalid: _}, schema_node: nil} = child ->
         [unknown_field_error_message(child.name)]
+
       %{flags: %{invalid: _}} = child ->
         child_type_name = Type.value_type(child.schema_node, schema)
         |> Type.name(schema)
-        child_inspected_value = Blueprint.Input.inspect(child.value)
+
+        child |> IO.inspect
+        child_inspected_value = Blueprint.Input.inspect(child.input_value.literal)
         [
           value_error_message(child.name, child_type_name, child_inspected_value) |
           collect_child_errors(child.value, schema)
         ]
+
       child ->
-        collect_child_errors(child, schema)
+        collect_child_errors(child.input_value.normalized, schema)
     end)
   end
-  defp collect_child_errors(%{flags: %{invalid: _}} = node, schema) do
-
+  defp collect_child_errors(%Blueprint.Input.Value{normalized: norm}, schema) do
+    collect_child_errors(norm, schema)
   end
-  defp collect_child_errors(_, _) do
+  defp collect_child_errors(node, _) do
+    # node |> IO.inspect
     []
   end
 

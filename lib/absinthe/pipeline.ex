@@ -64,11 +64,12 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Arguments.Parse,
       Phase.Document.MissingVariables,
       Phase.Document.MissingLiterals,
+      Phase.Document.Arguments.FlagInvalid,
       # Validate Full Document
       Phase.Validation.KnownDirectives,
       Phase.Document.Validation.ScalarLeafs,
       Phase.Document.Validation.VariablesAreInputTypes,
-      # Phase.Document.Validation.ArgumentsOfCorrectType,
+      Phase.Document.Validation.ArgumentsOfCorrectType,
       Phase.Document.Validation.KnownArgumentNames,
       # Phase.Document.Validation.ProvidedNonNullArguments,
       Phase.Document.Validation.UniqueArgumentNames,

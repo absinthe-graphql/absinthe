@@ -22,7 +22,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNames do
   end
 
   @spec handle_node(Blueprint.node_t, Schema.t) :: Blueprint.node_t
-  defp handle_node(%{schema_node: nil} = node) do
+  defp handle_node(%{schema_node: nil} = node, _schema) do
     node
   end
   defp handle_node(%{selections: _, schema_node: schema_node} = node, schema)do

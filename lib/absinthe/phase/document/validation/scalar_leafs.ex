@@ -48,9 +48,9 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafs do # [sic]
     {:ok, result}
   end
 
-  defp handle_node(%{schema_node: nil} = node), do: {:halt, node}
+  defp handle_node(%{schema_node: nil} = node, _schema), do: {:halt, node}
   defp handle_node(%Blueprint.Document.Field{schema_node: schema_node} = node, schema) do
-    type = Type.expand(node.schema_node.type, schema)
+    type = Type.expand(schema_node.type, schema)
     process(node, Type.unwrap(type), type)
   end
   defp handle_node(node, _) do
