@@ -19,7 +19,7 @@ defmodule Absinthe.Phase.Document.Arguments.FlagInvalid do
   end
 
   defp handle_node(%{schema_node: nil, flags: %{}} = node) do
-    node |> flag_invalid(:no_schema)
+    node |> flag_invalid(:extra)
   end
   defp handle_node(%Blueprint.Input.Argument{} = node) do
     check_children(node, node.input_value.normalized, :bad_argument)

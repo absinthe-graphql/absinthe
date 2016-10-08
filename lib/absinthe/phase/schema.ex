@@ -162,6 +162,9 @@ defmodule Absinthe.Phase.Schema do
     |> schema.__absinthe_type__
     find_schema_field(type, name, schema, adapter)
   end
+  defp find_schema_field(_, _, _, _) do
+    nil
+  end
 
   @type_mapping %{
     Blueprint.TypeReference.List => Type.List,

@@ -49,9 +49,9 @@ defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
       field = op.selections |> List.first
       age_argument = field.arguments |> Enum.find(&(&1.name == "age"))
-      assert %Blueprint.Input.Integer{value: 36, source_location: %Blueprint.Document.SourceLocation{column: nil, line: 6}} == age_argument.normalized_value
+      assert %Blueprint.Input.Integer{value: 36, source_location: %Blueprint.Document.SourceLocation{column: nil, line: 6}} == age_argument.input_value.normalized
       name_argument = field.arguments |> Enum.find(&(&1.name == "name"))
-      assert %Blueprint.Input.String{value: "Bruce", source_location: %Blueprint.Document.SourceLocation{column: nil, line: 7}} == name_argument.normalized_value
+      assert %Blueprint.Input.String{value: "Bruce", source_location: %Blueprint.Document.SourceLocation{column: nil, line: 7}} == name_argument.input_value.normalized
     end
   end
 
@@ -61,9 +61,9 @@ defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
       field = op.selections |> List.first
       age_argument = field.arguments |> Enum.find(&(&1.name == "age"))
-      assert %Blueprint.Input.Integer{value: 4} == age_argument.normalized_value
+      assert %Blueprint.Input.Integer{value: 4} == age_argument.input_value.normalized
       name_argument = field.arguments |> Enum.find(&(&1.name == "name"))
-      assert %Blueprint.Input.String{value: "Bruce", source_location: %Blueprint.Document.SourceLocation{column: nil, line: 7}} == name_argument.normalized_value
+      assert %Blueprint.Input.String{value: "Bruce", source_location: %Blueprint.Document.SourceLocation{column: nil, line: 7}} == name_argument.input_value.normalized
     end
   end
 

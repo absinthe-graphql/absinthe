@@ -71,7 +71,7 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Validation.VariablesAreInputTypes,
       Phase.Document.Validation.ArgumentsOfCorrectType,
       Phase.Document.Validation.KnownArgumentNames,
-      # Phase.Document.Validation.ProvidedNonNullArguments,
+      Phase.Document.Validation.ProvidedNonNullArguments,
       Phase.Document.Validation.UniqueArgumentNames,
       Phase.Document.Validation.UniqueInputFieldNames,
       Phase.Document.Validation.FieldsOnCorrectType,
