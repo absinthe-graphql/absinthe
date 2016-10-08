@@ -7,7 +7,7 @@ defmodule Absinthe.PipelineTest do
     use Absinthe.Schema
   end
 
-  describe '.run an operation' do
+  describe ".run an operation" do
 
     @query """
     { foo { bar } }
@@ -21,7 +21,7 @@ defmodule Absinthe.PipelineTest do
 
   end
 
-  describe '.run an idl' do
+  describe ".run an idl" do
 
     @query """
     type Person {
@@ -29,11 +29,11 @@ defmodule Absinthe.PipelineTest do
     }
     """
 
-    it 'can create a blueprint without a prototype schema' do
+    it "can create a blueprint without a prototype schema" do
       assert {:ok, %Blueprint{}, _} = Pipeline.run(@query, Pipeline.for_schema(nil))
     end
 
-    it 'can create a blueprint with a prototype schema' do
+    it "can create a blueprint with a prototype schema" do
       assert {:ok, %Blueprint{}, _} = Pipeline.run(@query, Pipeline.for_schema(Schema))
     end
 
