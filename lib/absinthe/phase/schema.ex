@@ -117,12 +117,20 @@ defmodule Absinthe.Phase.Schema do
   defp set_schema_node(%{schema_node: nil} = node, %Blueprint.Input.Value{} = parent, _schema, _) do
     %{node | schema_node: Type.unwrap(parent.schema_node)}
   end
+  defp set_schema_node(nil, _, _, _) do
+    nil
+  end
   defp set_schema_node(node, parent, _schema, _) do
-    IO.inspect [
-      node: node,
-      parent: parent
-    ]
-    raise "how did I get here?"
+    case Map.has_key?(node, :schema_node) do
+      false ->
+        node
+      true ->
+        IO.inspect [
+          node: node,
+          parent: parent
+        ]
+        raise "how did I get here?"
+    end
   end
 
   # Expand type, but strip wrapping argument node
