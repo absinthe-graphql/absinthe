@@ -14,30 +14,38 @@ defmodule Absinthe.Phase.Document.Arguments.FlagInvalid do
   """
   @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
   def run(input, _options \\ []) do
-    result = Blueprint.prewalk(input, &handle_node/1)
+    result = Blueprint.postwalk(input, &handle_node/1)
     {:ok, result}
   end
 
-  defp handle_node(%Blueprint.Input.Argument{input_value: input_value} = node) do
-    node = if valid?(input_value) do
-      node
-    else
-      node |> flag_invalid(:bad_argument)
+  defp handle_node(%{schema_node: nil, flags: %{}} = node) do
+    node |> flag_invalid(:no_schema)
+  end
+  defp handle_node(%Blueprint.Input.Argument{} = node) do
+    check_children(node, node.input_value.normalized, :bad_argument)
+  end
+  defp handle_node(%Blueprint.Input.Field{} = node) do
+    check_children(node, node.input_value.normalized, :bad_field)
+  end
+  defp handle_node(%Blueprint.Input.List{} = node) do
+    check_children(node, node.items |> Enum.map(&(&1.normalized)), :bad_list)
+  end
+  defp handle_node(%Blueprint.Input.Object{} = node) do
+    check_children(node, node.fields, :bad_object)
+  end
+  defp handle_node(node), do: node
+
+  defp check_children(node, children, flag) do
+    children
+    |> Blueprint.prewalk(true, fn
+      %{flags: %{invalid: _}} = child, _ ->
+        {:halt, child, false}
+      node, acc ->
+        {:halt, node, acc}
+    end)
+    |> case do
+      {_, true} -> node
+      {_, false} -> node |> flag_invalid(flag)
     end
-
-    {:halt, node}
   end
-  defp handle_node(node) do
-    node
-  end
-
-  defp valid?(node) do
-    {_, result} = Blueprint.prewalk(node, true, &check_child/2)
-    result
-  end
-
-  defp check_child(%{flags: %{invalid: _}} = node, _) do
-    {:halt, node, false}
-  end
-  defp check_child(node, acc), do: {node, acc}
 end

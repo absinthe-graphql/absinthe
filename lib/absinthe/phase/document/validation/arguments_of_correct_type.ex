@@ -51,7 +51,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
         child_inspected_value = Blueprint.Input.inspect(child)
 
         [
-          value_error_message(idx, child_type_name, child_inspected_value) |> IO.inspect |
+          value_error_message(idx, child_type_name, child_inspected_value) |
           collect_child_errors(child, schema)
         ]
 
@@ -69,11 +69,10 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
         child_type_name = Type.value_type(child.schema_node, schema)
         |> Type.name(schema)
 
-        child |> IO.inspect
         child_inspected_value = Blueprint.Input.inspect(child.input_value.literal)
         [
           value_error_message(child.name, child_type_name, child_inspected_value) |
-          collect_child_errors(child.value, schema)
+          collect_child_errors(child.input_value, schema)
         ]
 
       child ->
@@ -84,7 +83,6 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
     collect_child_errors(norm, schema)
   end
   defp collect_child_errors(node, _) do
-    # node |> IO.inspect
     []
   end
 
