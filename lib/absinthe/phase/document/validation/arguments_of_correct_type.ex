@@ -69,10 +69,16 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
         child_type_name = Type.value_type(child.schema_node, schema)
         |> Type.name(schema)
 
+        child_errors = case child.schema_node do
+          %Type.Scalar{} -> []
+          %Type.Enum{} -> []
+          _ -> collect_child_errors(child.input_value, schema)
+        end
+
         child_inspected_value = Blueprint.Input.inspect(child.input_value.literal)
         [
           value_error_message(child.name, child_type_name, child_inspected_value) |
-          collect_child_errors(child.input_value, schema)
+          child_errors
         ]
 
       child ->

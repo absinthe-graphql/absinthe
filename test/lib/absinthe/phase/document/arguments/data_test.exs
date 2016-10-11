@@ -1,7 +1,7 @@
 defmodule Absinthe.Phase.Document.Arguments.DataTest do
   use Absinthe.Case, async: true
 
-  @moduletag :pending
+  @moduletag :obselete
 
   alias Absinthe.{Blueprint, Phase}
 
