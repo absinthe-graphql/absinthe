@@ -323,7 +323,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         {user(contact: {foo: "buz"})}
         """
         assert_result {:ok, %{errors: [
-          %{message: ~s(Argument "contact" has invalid value {foo: "buz"}.\nIn field "foo": Unknown field.\nIn field "email": Expected type "String!", found null.)},
+          %{message: ~s(Argument "contact" has invalid value {foo: "buz"}.\nIn field "email": Expected type "String!", found null.\nIn field "foo": Unknown field.)},
         ]}},
           doc |> run(Schema)
       end

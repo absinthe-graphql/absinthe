@@ -34,7 +34,20 @@ defmodule Absinthe.Phase.Schema do
   defp handle_node(%Absinthe.Blueprint.Document.VariableDefinition{} = node, _, _) do
     {:halt, node}
   end
-  defp handle_node(%{schema_node: nil} = node, _, _) do
+  defp handle_node(%{schema_node: nil} = node, schema, adapter) do
+    # We can't continue the normal way if we dont' have a schema node.
+    # However, if one of our children has an inline fragment with a type condition
+    # we can carry on from there.
+    node = Blueprint.prewalk(node, fn
+      ^node -> node
+      %Blueprint.Document.Fragment.Inline{type_condition: %{name: type_name}} = node when not is_nil(type_name) ->
+        inner_node =
+          %{node | schema_node: schema.__absinthe_type__(type_name)}
+          |> Blueprint.prewalk(&handle_node(&1, schema, adapter))
+        {:halt, inner_node}
+
+      node -> node
+    end)
     {:halt, node}
   end
   defp handle_node(node, schema, adapter) do

@@ -29,10 +29,10 @@ defmodule Absinthe.Phase.Document.MissingVariables do
 
   defp handle_defaults(node, schema_node) do
     case schema_node do
-      %{deprecation: %{}, default_value: nil} ->
-        node
-      %{default_value: val} ->
+      %{default_value: val} when not is_nil(val) ->
         fill_default(node, val)
+      %{deprecation: %{}} ->
+        node
       %{type: %Type.NonNull{}} ->
         node |> flag_invalid(:missing)
       _ ->
