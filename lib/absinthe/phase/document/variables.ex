@@ -30,7 +30,7 @@ defmodule Absinthe.Phase.Document.Variables do
 
   ```
   run(blueprint, %{})
-  ``
+  ```
 
   - The operation's `variables` field would have an `"id"` value set to
     `nil`

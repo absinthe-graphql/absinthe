@@ -92,7 +92,7 @@ defmodule Absinthe do
 
   Now we'll execute a query document against it with
   `run/2` or `run/3` (which return tuples), or their exception-raising
-  equivalents, `run!/2` and `run!/3.
+  equivalents, `run!/2` and `run!/3`.
 
   Let's get the `name` of an `item` with `id` `"foo"`:
 
