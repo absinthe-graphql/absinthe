@@ -127,7 +127,7 @@ defmodule Support.Harness.Validation do
   end
   defp pre_validation_pipeline(schema, options) do
     Pipeline.for_document(schema, options)
-    |> Pipeline.upto(Phase.Document.Directives)
+    |> Pipeline.upto(Phase.Document.Validation.Result)
     |> Pipeline.reject(~r/Validation/)
   end
 

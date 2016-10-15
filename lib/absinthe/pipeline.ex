@@ -61,8 +61,10 @@ defmodule Absinthe.Pipeline do
       Phase.Validation.KnownTypeNames,
       # Process Arguments
       Phase.Document.Arguments.Coercion,
-      Phase.Document.Arguments.Data,
-      Phase.Document.Arguments.Defaults,
+      Phase.Document.Arguments.Parse,
+      Phase.Document.MissingVariables,
+      Phase.Document.MissingLiterals,
+      Phase.Document.Arguments.FlagInvalid,
       # Validate Full Document
       Phase.Validation.KnownDirectives,
       Phase.Document.Validation.ScalarLeafs,
@@ -76,11 +78,11 @@ defmodule Absinthe.Pipeline do
       # Check Validation
       {Phase.Document.Validation.Result, options},
       # Apply Directives
+      Phase.Document.Arguments.Data,
       Phase.Document.Directives,
       # Prepare for Execution
       Phase.Document.CascadeInvalid,
       Phase.Document.Flatten,
-      Phase.Debug,
       # Execution
       {Phase.Document.Execution.Resolution, options},
       # Format Result
@@ -187,6 +189,7 @@ defmodule Absinthe.Pipeline do
   end
   def run_phase([phase_config | todo], input, done) do
     {phase, options} = phase_invocation(phase_config)
+    # phase |> IO.puts
     case phase.run(input, options) do
       {:ok, result} ->
         run_phase(todo, result, [phase | done])

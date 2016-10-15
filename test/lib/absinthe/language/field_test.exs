@@ -2,6 +2,7 @@ defmodule Absinthe.Language.FieldTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.Blueprint
+  alias Absinthe.Blueprint.{Input}
 
   @query """
   {
@@ -22,11 +23,11 @@ defmodule Absinthe.Language.FieldTest do
   describe "converting to Blueprint" do
 
     it "builds a Field.t" do
-      assert %Blueprint.Document.Field{name: "foo", arguments: [%Blueprint.Input.Argument{name: "input", literal_value: %Blueprint.Input.Object{fields: [%Blueprint.Input.Field{name: "foo", value: %Blueprint.Input.Integer{value: 2}}]}}], source_location: %Blueprint.Document.SourceLocation{line: 2}} = from_input(@query)
+      assert %Blueprint.Document.Field{name: "foo", arguments: [%Input.Argument{name: "input", input_value: %Input.Value{literal: %Input.Object{fields: [%Input.Field{name: "foo", input_value: %Input.Value{literal: %Input.Integer{value: 2}}}]}}}], source_location: %Blueprint.Document.SourceLocation{line: 2}} = from_input(@query)
     end
 
     it "builds a Field.t when using a directive" do
-      assert %Blueprint.Document.Field{name: "foo", directives: [%Blueprint.Directive{name: "include", arguments: [%Blueprint.Input.Argument{name: "if", literal_value: %Blueprint.Input.Variable{name: "showFoo"}}], source_location: %Blueprint.Document.SourceLocation{line: 2}}], arguments: [%Blueprint.Input.Argument{name: "input", literal_value: %Blueprint.Input.Object{fields: [%Blueprint.Input.Field{name: "foo", value: %Blueprint.Input.Integer{value: 2}}]}}], source_location: %Blueprint.Document.SourceLocation{line: 2}} = from_input(@query_with_directive)
+      assert %Blueprint.Document.Field{name: "foo", directives: [%Blueprint.Directive{name: "include", arguments: [%Input.Argument{name: "if", input_value: %Input.Value{literal: %Input.Variable{name: "showFoo"}}}], source_location: %Blueprint.Document.SourceLocation{line: 2}}], arguments: [%Input.Argument{name: "input", input_value: %Input.Value{literal: %Input.Object{fields: [%Input.Field{name: "foo", input_value: %Input.Value{literal: %Input.Integer{value: 2}}}]}}}], source_location: %Blueprint.Document.SourceLocation{line: 2}} = from_input(@query_with_directive)
     end
 
   end

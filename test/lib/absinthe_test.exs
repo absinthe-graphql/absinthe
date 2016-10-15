@@ -13,6 +13,17 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}}}, run(query, Things)
   end
 
+  it "can do a simple query with a weird alias" do
+    query = """
+    query GimmeFoo {
+      thing(id: "foo") {
+        fOO_Bar_baz: name
+      }
+    }
+    """
+    assert_result {:ok, %{data: %{"thing" => %{"fOO_Bar_baz" => "Foo"}}}}, run(query, Things)
+  end
+
   it "can do a simple query returning a list" do
     query = """
     query AllTheThings {

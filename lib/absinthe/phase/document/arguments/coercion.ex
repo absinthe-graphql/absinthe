@@ -9,7 +9,16 @@ defmodule Absinthe.Phase.Document.Arguments.Coercion do
   schema type. This phase coerces string to enum inputs when the schema type
   is an Enum.
 
-  This may be merged into another phase in the future.
+  This will also coerce non list inputs into list inputs IE
+  ```
+  foo(ids: 1)
+  ```
+  becomes
+  ```
+  foo(ids: [1])
+  ```
+
+  if `ids` is a list type.
   """
 
   use Absinthe.Phase
@@ -23,6 +32,10 @@ defmodule Absinthe.Phase.Document.Arguments.Coercion do
 
   defp coerce_node(%Blueprint.Input.String{schema_node: %Type.Enum{}} = node) do
     Map.put(node, :__struct__, Blueprint.Input.Enum)
+  end
+  # Coerce non lists to lists in inputs.
+  defp coerce_node(%Blueprint.Input.Value{schema_node: %Type.List{} = list_schema_node} = node) do
+    %{node | normalized: Blueprint.Input.List.wrap(node.normalized, list_schema_node)}
   end
   defp coerce_node(node), do: node
 

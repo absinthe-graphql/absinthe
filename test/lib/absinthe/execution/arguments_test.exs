@@ -29,6 +29,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
     input_object :contact_input do
       field :email, non_null(:string)
       field :contact_type, :contact_type
+      field :default_with_string, :string, default_value: "asdf"
       field :nested_contact_input, :nested_contact_input
     end
 
@@ -76,8 +77,8 @@ defmodule Absinthe.Execution.ArgumentsTest do
       field :user, :string do
         arg :contact, :contact_input
         resolve fn
-          %{contact: %{email: email}}, _ ->
-            {:ok, email}
+          %{contact: %{email: email} = contact}, _ ->
+            {:ok, "#{email}#{contact[:default_with_string]}"}
           args, _ ->
             {:error, "Got #{inspect args} instead"}
         end
@@ -149,7 +150,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
           user(contact:$contact)
         }
         """
-        assert_result {:ok, %{data: %{"user" => "bubba@joe.com"}}}, doc |> run(Schema, variables: %{"contact" => %{"email" => "bubba@joe.com"}})
+        assert_result {:ok, %{data: %{"user" => "bubba@joe.comasdf"}}}, doc |> run(Schema, variables: %{"contact" => %{"email" => "bubba@joe.com"}})
       end
     end
 
@@ -178,6 +179,52 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"something" => "NO"}}}, doc |> run(Schema, variables: %{"flag" => false})
       end
 
+      it "If a variable is not provided schema default value is used" do
+        doc = """
+        query DoSomething($flag: Boolean) {
+          something(flag: $flag)
+        }
+        """
+        assert_result {:ok, %{data: %{"something" => "NO"}}}, doc |> Absinthe.run(Schema, variables: %{})
+      end
+
+      it "works with input objects with inner variables" do
+        doc = """
+        query Blah($email: String){contacts(contacts: [{email: $email}, {email: $email}])}
+        """
+        assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "a@b.com"]}}}, doc |> run(Schema, variables: %{"email" => "a@b.com"})
+      end
+
+      it "can set input object default values" do
+        doc = """
+        query FooIsMissing($email: String, $defaultWithString: String) {
+          user(contact: {email: $email, defaultWithString: $defaultWithString})
+        }
+        """
+        assert_result {:ok, %{data: %{"user" => "bubba@joe.comasdf"}}}, doc |> run(Schema, variables: %{"email" => "bubba@joe.com"})
+      end
+
+      it "works with input objects with inner variables when no variables are given" do
+        doc = """
+        query Blah($email: String){contacts(contacts: [{email: $email}, {email: $email}])}
+        """
+        assert_result {:ok, %{errors: [%{message: "Argument \"contacts\" has invalid value [{email: $email}, {email: $email}].\nIn element #1: Expected type \"ContactInput\", found {email: $email}.\nIn field \"email\": Expected type \"String!\", found $email.\nIn element #2: Expected type \"ContactInput\", found {email: $email}.\nIn field \"email\": Expected type \"String!\", found $email."}]}}, doc |> run(Schema, variables: %{})
+      end
+
+      it "works with lists with inner variables" do
+        doc = """
+        query Blah($contact: ContactInput){contacts(contacts: [$contact, $contact])}
+        """
+        assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "a@b.com"]}}}, doc |> run(Schema, variables: %{"contact" => %{"email" => "a@b.com"}})
+      end
+
+      it "works with lists with inner variables when no variables are given" do
+        doc = """
+        query Blah($contact: ContactInput){contacts(contacts: [$contact, $contact])}
+        """
+        assert_result {:ok, %{data: %{"contacts" => []}}}, doc |> run(Schema, variables: %{})
+      end
+
     end
 
     describe "enum types" do
@@ -194,11 +241,11 @@ defmodule Absinthe.Execution.ArgumentsTest do
           user(contact:$contact)
         }
         """
-        assert_result {:ok, %{data: %{"user" => "bubba@joe.com"}}}, doc |> run(Schema, variables: %{"contact" => %{"email" => "bubba@joe.com", "contactType" => "Email"}})
+        assert_result {:ok, %{data: %{"user" => "bubba@joe.comasdf"}}}, doc |> run(Schema, variables: %{"contact" => %{"email" => "bubba@joe.com", "contactType" => "Email"}})
       end
 
       it "should return an error with invalid values" do
-        assert_result {:ok, %{errors: [%{message: ~s(Argument "type" has invalid value "bagel".)}]}},
+        assert_result {:ok, %{errors: [%{message: ~s(Argument "type" has invalid value bagel.)}]}},
           "{ contact(type: \"bagel\") }" |> run(Schema)
       end
 
@@ -207,7 +254,6 @@ defmodule Absinthe.Execution.ArgumentsTest do
 
   describe "literal arguments" do
     describe "missing arguments" do
-
       it "returns the appropriate error" do
         doc = """
         { requiredThing }
@@ -251,7 +297,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         {contacts(contacts: [{email: "a@b.com"}, {foo: "c@d.com"}])}
         """
         assert_result {:ok, %{errors: [
-          %{message: ~s(Argument "contacts" has invalid value [{email: "a@b.com"}, {foo: "c@d.com"}].\nIn element #2: Expected type "ContactInput", found {foo: "c@d.com", email: null}.\nIn field "foo": Unknown field.\nIn field "email": Expected type "String!", found null.)},
+          %{message: "Argument \"contacts\" has invalid value [{email: \"a@b.com\"}, {foo: \"c@d.com\"}].\nIn element #2: Expected type \"ContactInput\", found {foo: \"c@d.com\"}.\nIn field \"email\": Expected type \"String!\", found null.\nIn field \"foo\": Unknown field."},
         ]}},
           doc |> run(Schema)
       end
@@ -262,14 +308,14 @@ defmodule Absinthe.Execution.ArgumentsTest do
         doc = """
         {user(contact: {email: "bubba@joe.com"})}
         """
-        assert_result {:ok, %{data: %{"user" => "bubba@joe.com"}}}, doc |> run(Schema)
+        assert_result {:ok, %{data: %{"user" => "bubba@joe.comasdf"}}}, doc |> run(Schema)
       end
 
       it "works in a nested case" do
         doc = """
         {user(contact: {email: "bubba@joe.com", nestedContactInput: {email: "foo"}})}
         """
-        assert_result {:ok, %{data: %{"user" => "bubba@joe.com"}}}, doc |> run(Schema)
+        assert_result {:ok, %{data: %{"user" => "bubba@joe.comasdf"}}}, doc |> run(Schema)
       end
 
       it "returns the correct error if an inner field is marked non null but is missing" do
@@ -277,7 +323,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         {user(contact: {foo: "buz"})}
         """
         assert_result {:ok, %{errors: [
-          %{message: ~s(Argument "contact" has invalid value {foo: "buz"}.\nIn field "foo": Unknown field.\nIn field "email": Expected type "String!", found null.)},
+          %{message: ~s(Argument "contact" has invalid value {foo: "buz"}.\nIn field "email": Expected type "String!", found null.\nIn field "foo": Unknown field.)},
         ]}},
           doc |> run(Schema)
       end
@@ -312,7 +358,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
       end
 
       it "returns a correct error when passed the wrong type" do
-        assert_result {:ok, %{errors: [%{message: ~s(Argument "flag" has invalid value {foo: 1}.)}]}},
+        assert_result {:ok, %{errors: [%{message: ~s(Argument "flag" has invalid value {foo: 1}.\nIn field \"foo\": Unknown field.)}]}},
           "{ something(flag: {foo: 1}) }" |> run(Schema)
       end
     end
@@ -322,7 +368,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"contact" => "Email"}}}, "{ contact(type: Email) }" |> run(Schema)
       end
       it "should return an error with invalid values" do
-        assert_result {:ok, %{errors: [%{message: ~s(Argument "type" has invalid value "bagel".)}]}},
+        assert_result {:ok, %{errors: [%{message: ~s(Argument "type" has invalid value bagel.)}]}},
           "{ contact(type: \"bagel\") }" |> run(Schema)
       end
     end

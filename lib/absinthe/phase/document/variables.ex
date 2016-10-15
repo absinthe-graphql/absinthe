@@ -56,8 +56,10 @@ defmodule Absinthe.Phase.Document.Variables do
 
   @spec handle_node(Blueprint.node_t, map) :: {Blueprint.node_t, map}
   defp handle_node(%Blueprint.Document.VariableDefinition{} = node, acc) do
-    provided_value = Map.get(acc.raw, node.name, node.default_value)
-    |> Blueprint.Input.parse
+    provided_value =
+      acc.raw
+      |> Map.get(node.name, node.default_value)
+      |> Blueprint.Input.parse
 
     {
       %{node | provided_value: provided_value},
