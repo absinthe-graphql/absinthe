@@ -45,6 +45,7 @@ defmodule Absinthe.Phase.Document.Variables do
 
   @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
   def run(input, options \\ []) do
+    # input |> IO.inspect
     do_run(input, Map.new(options))
   end
 

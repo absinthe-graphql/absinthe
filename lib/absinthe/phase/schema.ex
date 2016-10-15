@@ -34,22 +34,6 @@ defmodule Absinthe.Phase.Schema do
   defp handle_node(%Absinthe.Blueprint.Document.VariableDefinition{} = node, _, _) do
     {:halt, node}
   end
-  defp handle_node(%{schema_node: nil} = node, schema, adapter) do
-    # We can't continue the normal way if we dont' have a schema node.
-    # However, if one of our children has an inline fragment with a type condition
-    # we can carry on from there.
-    node = Blueprint.prewalk(node, fn
-      ^node -> node
-      %Blueprint.Document.Fragment.Inline{type_condition: %{name: type_name}} = node when not is_nil(type_name) ->
-        inner_node =
-          %{node | schema_node: schema.__absinthe_type__(type_name)}
-          |> Blueprint.prewalk(&handle_node(&1, schema, adapter))
-        {:halt, inner_node}
-
-      node -> node
-    end)
-    {:halt, node}
-  end
   defp handle_node(node, schema, adapter) do
     set_children(node, schema, adapter)
   end
@@ -63,34 +47,6 @@ defmodule Absinthe.Phase.Schema do
   end
 
   # Do note, the `parent` arg is the parent blueprint node, not the parent's schema node.
-  defp set_schema_node(_, %{schema_node: nil}, _, _) do
-    raise "we should not be here"
-  end
-  defp set_schema_node(%Blueprint.Document.Operation{type: op_type} = node, _parent, schema, _adapter) do
-    %{node | schema_node: schema.__absinthe_type__(op_type)}
-  end
-  defp set_schema_node(%Blueprint.Document.Fragment.Named{} = node, _parent, schema, _adapter) do
-    %{node | schema_node: schema.__absinthe_type__(node.type_condition.name)}
-  end
-  defp set_schema_node(%Blueprint.Document.VariableDefinition{type: type_reference} = node, _parent, schema, _adapter) do
-    type_reference
-    |> type_reference_to_type(schema)
-    |> Type.unwrap
-    |> case do
-      nil -> node
-      type -> %{node | schema_node: type}
-    end
-  end
-  defp set_schema_node(%Blueprint.Document.Fragment.Inline{type_condition: nil} = node, parent, schema, adapter) do
-    type = case parent.schema_node do
-        %{type: type} -> type
-        other -> other
-      end
-      |> Type.expand(schema)
-      |> Type.unwrap
-
-    set_schema_node(%{node | type_condition: %Blueprint.TypeReference.Name{name: type.name}}, parent, schema, adapter)
-  end
   defp set_schema_node(%Blueprint.Document.Fragment.Inline{type_condition: %{name: type_name}} = node, _parent, schema, _adapter) do
     %{node | schema_node: schema.__absinthe_type__(type_name)}
   end
@@ -101,6 +57,39 @@ defmodule Absinthe.Phase.Schema do
       |> schema.__absinthe_directive__
 
     %{node | schema_node: schema_node}
+  end
+  defp set_schema_node(%Blueprint.Document.Operation{type: op_type} = node, _parent, schema, _adapter) do
+    %{node | schema_node: schema.__absinthe_type__(op_type)}
+  end
+  defp set_schema_node(%Blueprint.Document.Fragment.Named{} = node, _parent, schema, _adapter) do
+    %{node | schema_node: schema.__absinthe_type__(node.type_condition.name)}
+  end
+  defp set_schema_node(%Blueprint.Document.VariableDefinition{type: type_reference} = node, _parent, schema, _adapter) do
+    wrapped =
+      type_reference
+      |> type_reference_to_type(schema)
+
+    wrapped
+    |> Type.unwrap
+    |> case do
+      nil -> node
+      type -> %{node | schema_node: wrapped}
+    end
+  end
+  defp set_schema_node(node, %{schema_node: nil}, _, _) do
+    # if we don't know the parent schema node, and we aren't one of the earlier nodes,
+    # then we can't know our schema node.
+    node
+  end
+  defp set_schema_node(%Blueprint.Document.Fragment.Inline{type_condition: nil} = node, parent, schema, adapter) do
+    type = case parent.schema_node do
+        %{type: type} -> type
+        other -> other
+      end
+      |> Type.expand(schema)
+      |> Type.unwrap
+
+    set_schema_node(%{node | type_condition: %Blueprint.TypeReference.Name{name: type.name}}, parent, schema, adapter)
   end
   defp set_schema_node(%Blueprint.Document.Field{} = node, parent, schema, adapter) do
     %{node | schema_node: find_schema_field(parent.schema_node, node.name, schema, adapter)}
@@ -133,17 +122,8 @@ defmodule Absinthe.Phase.Schema do
   defp set_schema_node(nil, _, _, _) do
     nil
   end
-  defp set_schema_node(node, parent, _schema, _) do
-    case Map.has_key?(node, :schema_node) do
-      false ->
-        node
-      true ->
-        IO.inspect [
-          node: node,
-          parent: parent
-        ]
-        raise "how did I get here?"
-    end
+  defp set_schema_node(node, _, _schema, _) do
+    node
   end
 
   # Expand type, but strip wrapping argument node
