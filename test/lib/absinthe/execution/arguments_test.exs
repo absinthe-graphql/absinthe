@@ -208,7 +208,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         doc = """
         query Blah($email: String){contacts(contacts: [{email: $email}, {email: $email}])}
         """
-        assert_result {:ok, %{error: %{"contacts" => ["a@b.com", "a@b.com"]}}}, doc |> run(Schema, variables: %{})
+        assert_result {:ok, %{errors: [%{message: "Argument \"contacts\" has invalid value [{email: $email}, {email: $email}].\nIn element #1: Expected type \"ContactInput\", found {email: $email}.\nIn field \"email\": Expected type \"String!\", found $email.\nIn element #2: Expected type \"ContactInput\", found {email: $email}.\nIn field \"email\": Expected type \"String!\", found $email."}]}}, doc |> run(Schema, variables: %{})
       end
 
       it "works with lists with inner variables" do
@@ -297,7 +297,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         {contacts(contacts: [{email: "a@b.com"}, {foo: "c@d.com"}])}
         """
         assert_result {:ok, %{errors: [
-          %{message: ~s(Argument "contacts" has invalid value [{email: "a@b.com"}, {foo: "c@d.com"}].\nIn element #2: Expected type "ContactInput", found {foo: "c@d.com", email: null}.\nIn field "foo": Unknown field.\nIn field "email": Expected type "String!", found null.)},
+          %{message: "Argument \"contacts\" has invalid value [{email: \"a@b.com\"}, {foo: \"c@d.com\"}].\nIn element #2: Expected type \"ContactInput\", found {foo: \"c@d.com\"}.\nIn field \"email\": Expected type \"String!\", found null.\nIn field \"foo\": Unknown field."},
         ]}},
           doc |> run(Schema)
       end
@@ -358,7 +358,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
       end
 
       it "returns a correct error when passed the wrong type" do
-        assert_result {:ok, %{errors: [%{message: ~s(Argument "flag" has invalid value {foo: 1}.)}]}},
+        assert_result {:ok, %{errors: [%{message: ~s(Argument "flag" has invalid value {foo: 1}.\nIn field \"foo\": Unknown field.)}]}},
           "{ something(flag: {foo: 1}) }" |> run(Schema)
       end
     end
