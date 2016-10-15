@@ -73,7 +73,7 @@ defmodule Absinthe.Phase.Schema do
     |> Type.unwrap
     |> case do
       nil -> node
-      type -> %{node | schema_node: wrapped}
+      _ -> %{node | schema_node: wrapped}
     end
   end
   defp set_schema_node(node, %{schema_node: nil}, _, _) do
@@ -113,7 +113,7 @@ defmodule Absinthe.Phase.Schema do
         %{node | schema_node: type |> Type.expand(schema)}
     end
   end
-  defp set_schema_node(node, %Blueprint.Input.Value{normalized: nil} = parent, _schema, _) do
+  defp set_schema_node(node, %Blueprint.Input.Value{normalized: nil}, _schema, _) do
     node
   end
   defp set_schema_node(%{schema_node: nil} = node, %Blueprint.Input.Value{} = parent, _schema, _) do
@@ -124,15 +124,6 @@ defmodule Absinthe.Phase.Schema do
   end
   defp set_schema_node(node, _, _schema, _) do
     node
-  end
-
-  # Expand type, but strip wrapping argument node
-  @spec expand_type(Type.t, Schema.t) :: Type.t
-  defp expand_type(%{type: type}, schema) do
-    Type.expand(type, schema)
-  end
-  defp expand_type(type, schema) do
-    Type.expand(type, schema)
   end
 
   # Given a schema field or directive, lookup a child argument definition
@@ -152,7 +143,7 @@ defmodule Absinthe.Phase.Schema do
   defp find_schema_field(%{of_type: type}, name, schema, adapter) do
     find_schema_field(type, name, schema, adapter)
   end
-  defp find_schema_field(%{fields: fields}, name, schema, adapter) do
+  defp find_schema_field(%{fields: fields}, name, _schema, adapter) do
     internal_name = adapter.to_internal_name(name, :field)
     fields
     |> Map.values

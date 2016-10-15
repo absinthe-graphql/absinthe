@@ -96,7 +96,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
   defp collect_child_errors(%Blueprint.Input.Value{normalized: norm}, schema) do
     collect_child_errors(norm, schema)
   end
-  defp collect_child_errors(node, _) do
+  defp collect_child_errors(_node, _) do
     []
   end
 
