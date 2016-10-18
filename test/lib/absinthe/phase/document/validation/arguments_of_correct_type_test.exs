@@ -451,12 +451,6 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
       )
     end
 
-    # TODO: At the moment we're coercing all `Blueprint.Input.String.t`s to
-    # `Blueprint.Input.Enum.t`s so that enums given as variables are handled
-    # correctly. As a result, the requirement for Enums to be provided w/out
-    # quotes is temporarily relaxed until the Argument coercion and defaulting
-    # logic is reworked. - Bruce, 2016-09-21
-    @tag :pending
     it "String into Enum" do
       assert_fails_rule(@rule,
         """
