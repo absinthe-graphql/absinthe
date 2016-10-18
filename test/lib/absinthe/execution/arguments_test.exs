@@ -245,7 +245,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
       end
 
       it "should return an error with invalid values" do
-        assert_result {:ok, %{errors: [%{message: ~s(Argument "type" has invalid value bagel.)}]}},
+        assert_result {:ok, %{errors: [%{message: ~s(Argument "type" has invalid value "bagel".)}]}},
           "{ contact(type: \"bagel\") }" |> run(Schema)
       end
 
@@ -368,7 +368,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"contact" => "Email"}}}, "{ contact(type: Email) }" |> run(Schema)
       end
       it "should return an error with invalid values" do
-        assert_result {:ok, %{errors: [%{message: ~s(Argument "type" has invalid value bagel.)}]}},
+        assert_result {:ok, %{errors: [%{message: ~s(Argument "type" has invalid value "bagel".)}]}},
           "{ contact(type: \"bagel\") }" |> run(Schema)
       end
     end

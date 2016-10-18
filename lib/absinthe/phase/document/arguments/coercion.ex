@@ -23,6 +23,7 @@ defmodule Absinthe.Phase.Document.Arguments.Coercion do
 
   use Absinthe.Phase
   alias Absinthe.{Blueprint, Type}
+  alias Absinthe.Blueprint.Input
 
   @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
   def run(input, _options \\ []) do
@@ -30,12 +31,19 @@ defmodule Absinthe.Phase.Document.Arguments.Coercion do
     {:ok, node}
   end
 
-  defp coerce_node(%Blueprint.Input.String{schema_node: %Type.Enum{}} = node) do
-    Map.put(node, :__struct__, Blueprint.Input.Enum)
+  defp coerce_node(%{literal: %Input.Variable{}} = node) do
+    node = Blueprint.prewalk(node, fn
+      %Input.String{schema_node: %Type.Enum{}} = input ->
+        Map.put(input, :__struct__, Input.Enum)
+
+      node ->
+        node
+    end)
+    {:halt, node}
   end
   # Coerce non lists to lists in inputs.
-  defp coerce_node(%Blueprint.Input.Value{schema_node: %Type.List{} = list_schema_node} = node) do
-    %{node | normalized: Blueprint.Input.List.wrap(node.normalized, list_schema_node)}
+  defp coerce_node(%Input.Value{schema_node: %Type.List{} = list_schema_node} = node) do
+    %{node | normalized: Input.List.wrap(node.normalized, list_schema_node)}
   end
   defp coerce_node(node), do: node
 
