@@ -54,7 +54,9 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp resolve_fields(parent, bp_root, info, source) do
     parent_type = case parent.schema_node do
       %Type.Field{} = schema_node ->
-        info.schema.__absinthe_type__(schema_node.type)
+        schema_node.type
+        |> Type.unwrap
+        |> info.schema.__absinthe_type__
       other ->
         other
     end

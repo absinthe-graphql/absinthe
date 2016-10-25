@@ -28,6 +28,12 @@ defmodule Absinthe.IntrospectionTest do
 
   describe "when querying against a union" do
     it "returns the name of the object type currently being queried" do
+      # Simple type
+      result = "{ firstSearchResult { __typename } }" |> run(ContactSchema)
+      assert_result {:ok, %{data: %{"firstSearchResult" => %{"__typename" => "Person"}}}}, result
+      # Wrapped type
+      result = "{ searchResults { __typename } }" |> run(ContactSchema)
+      assert_result {:ok, %{data: %{"searchResults" => [%{"__typename" => "Person"}, %{"__typename" => "Business"}]}}}, result
     end
   end
 

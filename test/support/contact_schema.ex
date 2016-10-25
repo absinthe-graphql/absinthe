@@ -36,6 +36,13 @@ defmodule ContactSchema do
           {:ok, @bruce}
       end
 
+    field :search_results,
+      type: non_null(list_of(non_null(:search_result))),
+      resolve: fn
+        _, _ ->
+          {:ok, [@bruce, @business]}
+      end
+
     field :profile,
       type: :person,
       args: [name: [type: non_null(:string)]],
