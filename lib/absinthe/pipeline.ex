@@ -157,7 +157,7 @@ defmodule Absinthe.Pipeline do
   @spec without(t, Phase.t) :: t
   def without(pipeline, phase) do
     pipeline
-    |> Enum.filter(&(match_phase?(phase, &1)))
+    |> Enum.filter(&(not match_phase?(phase, &1)))
   end
 
   @spec insert_before(t, Phase.t, Phase.t) :: t
