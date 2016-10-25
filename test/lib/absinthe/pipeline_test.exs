@@ -135,4 +135,13 @@ defmodule Absinthe.PipelineTest do
 
   end
 
+  describe ".upto" do
+
+    it "returns the pipeline without specified phase" do
+      assert [A, B, D, {E, []}, F] == Pipeline.without(@pipeline, C)
+      assert [A, B, C, D, F] == Pipeline.without(@pipeline, E)
+    end
+
+  end
+
 end
