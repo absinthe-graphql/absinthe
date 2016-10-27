@@ -2,8 +2,9 @@ defmodule Absinthe.Blueprint.Document.Result.Object do
 
   alias Absinthe.{Blueprint, Phase}
 
-  @enforce_keys [:emitter, :fields]
+  @enforce_keys [:emitter, :root_value]
   defstruct [
+    :root_value,
     :emitter,
     :fields,
     # Added by phases

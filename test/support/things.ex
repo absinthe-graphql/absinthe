@@ -92,6 +92,7 @@ defmodule Things do
       resolve: fn
         %{id: id}, _ ->
           {:ok, @db |> Map.get(id)}
+          # {:async, Task.async(fn -> {:ok, @db |> Map.get(id)} end)}
       end
 
     field :deprecated_thing,

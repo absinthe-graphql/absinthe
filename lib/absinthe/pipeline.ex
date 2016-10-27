@@ -85,6 +85,7 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Flatten,
       # Execution
       {Phase.Document.Execution.Resolution, options},
+      {Phase.Document.Execution.Resolution, options},
       # Format Result
       Phase.Document.Result
     ]

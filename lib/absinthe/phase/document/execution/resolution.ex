@@ -6,6 +6,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   """
 
   alias Absinthe.{Blueprint, Type, Phase}
+  alias Blueprint.Document.{Result}
 
   alias Absinthe.Phase
   use Absinthe.Phase
@@ -18,37 +19,53 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       nil ->
         bp_root
       op ->
-        field = %Absinthe.Resolution{
+        info = %Absinthe.Resolution{
           adapter: bp_root.adapter,
           context: context,
           root_value: root_value,
           schema: bp_root.schema,
           source: root_value,
         }
-        resolution = resolve_operation(op, bp_root, field, root_value)
+        current_resolution = case bp_root.result.resolution do
+          nil ->
+            %Result.Object{
+              root_value: root_value,
+              emitter: op,
+            }
+          resolution ->
+            resolution
+        end
+        resolution = walk_result(current_resolution, bp_root, op, op.schema_node, info)
         put_in(bp_root.result.resolution, resolution)
     end
     {:ok, result}
   end
 
-  def resolve_operation(operation, bp_root, info, source) do
-    info = %{
-      info |
-      parent_type: bp_root.schema.__absinthe_type__(operation.type)
-    }
-    %Blueprint.Document.Result.Object{
-      emitter: operation,
-      fields: resolve_fields(operation, bp_root, info, source),
-    }
+  def walk_result(%{fields: nil} = result, bp_root, bp_node, schema_type, info) do
+    %{result | fields: resolve_fields(bp_node, bp_root, info, result.root_value)}
+  end
+  def walk_result(%{fields: fields} = result, bp_root, bp_node, schema_type, info) do
+    %{result | fields: walk_results(fields, bp_root, bp_node, schema_type, info)}
+  end
+  def walk_result(%{task: task} = result, bp_root, bp_node, schema_type, info) do
+    task
+    |> Task.await
+    |> build_result(result.bp_root, result.bp_field, result.info, result.source)
+  end
+  def walk_result(%Result.Leaf{} = result, _, _, _, _) do
+    result
+  end
+  def walk_result(%{values: values} = result, bp_root, bp_node, schema_type, info) do
+    %{result | values: walk_results(values, bp_root, bp_node, schema_type, info)}
   end
 
-  def resolve_field(field, bp_root, info, source) do
-    info = update_info(info, field, source)
+  def resolve_field(bp_field, bp_parent, info, source) do
+    info = update_info(info, bp_field, source)
 
-    field.arguments
+    bp_field.arguments
     |> Absinthe.Blueprint.Input.Argument.value_map
-    |> call_resolution_function(field, info, source)
-    |> build_result(bp_root, field, info, source)
+    |> call_resolution_function(bp_field, info, source)
+    |> build_result(bp_parent, bp_field, info, source)
   end
 
   defp resolve_fields(parent, bp_root, info, source) do
@@ -61,7 +78,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     info = %{info | parent_type: parent_type}
 
     parent.fields
-    |> Enum.filter(&field_applies?(&1, bp_root, source, parent.schema_node))
+    |> Enum.filter(&field_applies?(&1, info, source, parent.schema_node))
     |> do_resolve_fields(bp_root, info, source, [])
   end
 
@@ -75,15 +92,21 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     do_resolve_fields(fields, bp_root, info, source, [result | acc])
   end
 
-  defp build_result({:ok, result}, bp_root, field, info, _) do
-    full_type = Type.expand(field.schema_node.type, info.schema)
-    walk_result(result, bp_root, field, full_type, info)
+  defp build_result({:ok, result}, bp_root, bp_field, info, _) do
+    full_type = Type.expand(bp_field.schema_node.type, info.schema)
+
+    result
+    |> to_result(bp_field, full_type)
+    |> walk_result(bp_root, bp_field, full_type, info)
   end
-  defp build_result({:error, msg}, _, field, info, _) do
-    message = ~s(In field "#{field.name}": #{msg})
-    full_type = Type.expand(field.schema_node.type, info.schema)
-    to_result(full_type, emitter: field)
-    |> put_error(error(field, message))
+  defp build_result({:async, task}, bp_root, bp_field, info, source) do
+    %{task: task, bp_root: bp_root, bp_field: bp_field, info: info, source: source}
+  end
+  defp build_result({:error, msg}, _, bp_field, info, _) do
+    message = ~s(In field "#{bp_field.name}": #{msg})
+    full_type = Type.expand(bp_field.schema_node.type, info.schema)
+    to_result(nil, bp_field, full_type)
+    |> put_error(error(bp_field, message))
   end
   defp build_result(other, _, field, _, source) do
     raise Absinthe.ExecutionError, """
@@ -123,107 +146,44 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     }
   end
 
-  @doc """
-  Handle the result of a resolution function
-  """
-  ## Limitations
-  # - No non null checking
-  # -
-
-  ## Leaf bp_nodes
-
-  def walk_result(nil, _, bp_node, _, _) do
-    to_result(
-      nil,
-      emitter: bp_node,
-      value: nil,
-    )
+  @spec to_result(resolution_result :: term, emitter :: Blueprint.t, schema_type :: Type.t) :: Result.t
+  defp to_result(nil, emitter, %Type.NonNull{} = schema_type) do
+    raise Absinthe.ExecutionError, nil_value_error(emitter, schema_type)
   end
-  # Resolve value of type scalar
-  def walk_result(value, _, bp_node, %Type.Scalar{} = schema_type, _) do
-    to_result(
-      schema_type,
-      emitter: bp_node,
-      value: Type.Scalar.serialize(schema_type, value),
-    )
+  defp to_result(nil, emitter, _) do
+    %Result.Leaf{emitter: emitter, value: nil}
   end
-  # Resolve Enum type
-  def walk_result(value, _, bp_node, %Type.Enum{} = schema_type, _) do
-    to_result(
-      schema_type,
-      emitter: bp_node,
-      value: Type.Enum.serialize!(schema_type, value),
-    )
+  defp to_result(root_value, emitter, %Type.NonNull{of_type: inner_type}) do
+    to_result(root_value, emitter, inner_type)
   end
-
-  def walk_result(value, bp_root, bp_node, %Type.Object{} = schema_type, info) do
-    to_result(
-      schema_type,
-      emitter: bp_node,
-      fields: resolve_fields(bp_node, bp_root, info, value),
-    )
+  defp to_result(root_value, emitter, %Type.Scalar{} = schema_type) do
+    %Result.Leaf{
+      emitter: emitter,
+      value: Type.Scalar.serialize(schema_type, root_value)
+    }
   end
-
-  def walk_result(value, bp_root, bp_node, %Type.Interface{} = schema_type, info) do
-    to_result(
-      schema_type,
-      emitter: bp_node,
-      fields: resolve_fields(bp_node, bp_root, info, value),
-    )
+  defp to_result(root_value, emitter, %Type.Enum{} = schema_type) do
+    %Result.Leaf{
+      emitter: emitter,
+      value: Type.Enum.serialize(schema_type, root_value)
+    }
   end
-
-  def walk_result(value, bp_root, bp_node, %Type.Union{} = schema_type, info) do
-    to_result(
-      schema_type,
-      emitter: bp_node,
-      fields: resolve_fields(bp_node, bp_root, info, value)
-    )
+  defp to_result(root_value, emitter, %Type.Object{}) do
+    %Result.Object{root_value: root_value, emitter: emitter}
   end
-
-  def walk_result(values, bp_root, bp_node, %Type.List{of_type: inner_type} = schema_type, info) do
+  defp to_result(root_value, emitter, %Type.Interface{}) do
+    %Result.Object{root_value: root_value, emitter: emitter}
+  end
+  defp to_result(root_value, emitter, %Type.Union{}) do
+    %Result.Object{root_value: root_value, emitter: emitter}
+  end
+  defp to_result(root_value, emitter, %Type.List{of_type: inner_type}) do
     values =
-      values
+      root_value
       |> List.wrap
-      |> walk_results(bp_root, bp_node, inner_type, info)
+      |> Enum.map(&to_result(&1, emitter, inner_type))
 
-    to_result(
-      schema_type,
-      emitter: bp_node,
-      values: values,
-    )
-  end
-
-  def walk_result(nil, _, bp_node, %Type.NonNull{} = schema_type, info) do
-    to_result(schema_type, emitter: bp_node)
-    |> put_error(error(node, "Cannot return null for non-nullable field #{info.parent_type.name}.#{bp_node.name}"))
-  end
-
-  def walk_result(val, bp_root, bp_node, %Type.NonNull{of_type: inner_type}, info) do
-    walk_result(val, bp_root, bp_node, inner_type, info)
-  end
-  def walk_result(_value, _bp_root, _bp_node, _schema_node, _info) do
-    raise "Could not walk result."
-  end
-
-  @result_modules %{
-    Type.Scalar => Blueprint.Document.Result.Leaf,
-    Type.Enum => Blueprint.Document.Result.Leaf,
-    Type.Object => Blueprint.Document.Result.Object,
-    Type.Interface => Blueprint.Document.Result.Object,
-    Type.Union => Blueprint.Document.Result.Object,
-    Type.List => Blueprint.Document.Result.List,
-  }
-  defp to_result(type, values \\ [])
-  defp to_result(%Type.NonNull{of_type: inner_type}, values) do
-    to_result(inner_type, values)
-  end
-  defp to_result(nil, values) do
-    struct(Blueprint.Document.Result.Leaf, values)
-  end
-  for {schema_module, result_module} <- @result_modules do
-    defp to_result(%unquote(schema_module){}, values) do
-      struct(unquote(result_module), values)
-    end
+    %Result.List{values: values, emitter: emitter}
   end
 
   defp walk_results(values, bp_root, bp_node, inner_type, info, acc \\ [])
@@ -236,12 +196,12 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   def field_applies?(%{name: _, type_conditions: []}, _, _, _) do
     true
   end
-  def field_applies?(field, bp_root, source, schema_type) do
-    target_type = find_target_type(schema_type, bp_root.schema)
-    value = field.type_conditions
-    |> Enum.map(&(bp_root.schema.__absinthe_type__(&1.name)))
-    |> Enum.all?(&passes_type_condition?(&1, target_type, source, bp_root.schema))
-    value
+  def field_applies?(field, info, source, schema_type) do
+    target_type = find_target_type(schema_type, info.schema)
+
+    field.type_conditions
+    |> Enum.map(&info.schema.__absinthe_type__(&1.name))
+    |> Enum.all?(&passes_type_condition?(&1, target_type, source, info.schema))
   end
 
   def find_target_type(schema_type, schema) when is_atom(schema_type) do
@@ -293,4 +253,11 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     false
   end
 
+  defp nil_value_error(_emitter, _schema_type) do
+    """
+    Tried to return nil value of field marked non null!
+
+    TODO: More detailed error message
+    """
+  end
 end
