@@ -190,7 +190,7 @@ defmodule Absinthe.Type.Field do
   end
 
   # TODO: Optimize to avoid anonymous function closure
-  # Maybe optimize w/ Map.take
+  # Maybe optimize w/ Map.take (hard because order matters)
   defp system_default(field_name) do
     fn parent, _, _ ->
       {:ok, Map.get(parent, field_name)}
