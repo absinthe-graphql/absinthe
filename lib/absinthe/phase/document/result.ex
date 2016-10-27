@@ -79,8 +79,13 @@ defmodule Absinthe.Phase.Document.Result do
     Map.merge(left, right, &do_deep_resolve/3)
   end
 
-  defp do_deep_resolve(_key, [%{} = left], [%{} = right]) do
-    [do_deep_merge(right, left)]
+  defp do_deep_resolve(_key, %{} = left, %{} = right) do
+    do_deep_merge(left, right)
+  end
+
+  defp do_deep_resolve(_key, [_|_] = left, [_|_] = right) when length(left) == length(right) do
+    Enum.zip(left, right)
+    |> Enum.map(fn {l, r} -> do_deep_merge(l, r) end)
   end
 
   defp do_deep_resolve(_key, _left, right) do

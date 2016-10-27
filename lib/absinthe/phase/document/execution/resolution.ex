@@ -270,8 +270,14 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp passes_type_condition?(equal, equal, _, _), do: true
   # The condition in an Object type and the current scope is a Union; Verify
   # that the Union has the Object type as a member.
-  defp passes_type_condition?(%Type.Object{} = condition, %Type.Union{} = type, _, _) do
-    Type.Union.member?(type, condition)
+  defp passes_type_condition?(%Type.Object{} = condition, %Type.Union{} = type, source, schema) do
+    case Type.Union.member?(type, condition) do
+      true ->
+        source_type = Type.Union.resolve_type(type, source, %{schema: schema})
+        passes_type_condition?(condition, source_type, source, schema)
+      false ->
+        false
+    end
   end
   # The condition is an Object type and the current scope is an Interface; verify
   # that the Object type is a member of the Interface and that the current source
