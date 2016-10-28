@@ -2,10 +2,10 @@ defmodule Absinthe.Blueprint.Document.Resolution.Object do
 
   alias Absinthe.{Blueprint, Phase}
 
-  @enforce_keys [:blueprint, :root_value]
+  @enforce_keys [:emitter, :root_value]
   defstruct [
     :root_value,
-    :blueprint,
+    :emitter,
     :fields,
     # Added by phases
     errors: [],
@@ -13,7 +13,7 @@ defmodule Absinthe.Blueprint.Document.Resolution.Object do
   ]
 
   @type t :: %__MODULE__{
-    blueprint: Blueprint.Document.Field.t,
+    emitter: Blueprint.Document.Field.t,
     fields: [Blueprint.Document.Resolution.node_t],
     errors: [Phase.Error.t],
     flags: [Blueprint.flag_t]

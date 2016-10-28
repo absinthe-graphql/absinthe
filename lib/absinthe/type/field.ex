@@ -193,13 +193,7 @@ defmodule Absinthe.Type.Field do
   # Maybe optimize w/ Map.take (hard because order matters)
   defp system_default(field_name) do
     fn parent, _, _ ->
-      # {:async, Task.async(fn ->
-      #   {:ok, Map.get(parent, field_name)}
-      # end)}
-      Absinthe.Resolution.Helpers.async(fn ->
-        {:ok, Map.get(parent, field_name)}
-      end)
-        # {:ok, Map.get(parent, field_name)}
+      {:ok, Map.get(parent, field_name)}
     end
   end
 

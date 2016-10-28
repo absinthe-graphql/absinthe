@@ -1,9 +1,6 @@
 defmodule Absinthe.Resolution.Plugin.Async do
   defstruct [
     :task,
-    :source,
-    :blueprint,
-    :info,
   ]
 
   def before_resolution(acc) do
@@ -17,16 +14,11 @@ defmodule Absinthe.Resolution.Plugin.Async do
   end
   def add_phases(pipeline, _), do: pipeline
 
-  def build_result(result, acc, blueprint, info, source) do
-    result = %{result |
-      source: source,
-      blueprint: blueprint,
-      info: info,
-    }
-    {result, Map.put(acc, __MODULE__, true)}
+  def init(async, acc) do
+    {async, Map.put(acc, __MODULE__, true)}
   end
 
-  def walk_result(%{task: task}, acc) do
+  def resolve(%{task: task}, acc) do
     {Task.await(task), acc}
   end
 end

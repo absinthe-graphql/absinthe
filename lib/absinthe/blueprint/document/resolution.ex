@@ -24,7 +24,7 @@ defmodule Absinthe.Blueprint.Document.Resolution do
   def get_result(%__MODULE__{result: nil}, operation, root_value) do
     %Absinthe.Blueprint.Document.Resolution.Object{
       root_value: root_value,
-      blueprint: operation,
+      emitter: operation,
     }
   end
   def get_result(%{result: result}, _, _) do

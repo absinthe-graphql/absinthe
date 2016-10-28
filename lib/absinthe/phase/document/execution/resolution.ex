@@ -92,14 +92,14 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     {values, acc} = walk_results(values, acc, bp_node, schema_type, info)
     {%{result | values: values}, acc}
   end
-  def walk_result(%struct{} = node, acc, _bp_node, _schema_type, _info) do
-    {result, acc} = struct.walk_result(node, acc)
+  def walk_result(%Resolution.PluginInvocation{} = node, acc, _bp_node, _schema_type, _info) do
+    {result, acc} = Resolution.PluginInvocation.resolve(node, acc)
 
-    build_result(result, acc, node.blueprint, node.info, node.source)
+    build_result(result, acc, node.emitter, node.info, node.source)
   end
 
   def resolve_field(bp_field, acc, info, source) do
-    info = update_info(info, bp_field, source)
+    info = %{info | definition: bp_field}
 
     bp_field.arguments
     |> Absinthe.Blueprint.Input.Argument.value_map
@@ -114,7 +114,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       other ->
         other
     end
-    info = %{info | parent_type: parent_type}
+    info = %{info | parent_type: parent_type, source: source}
 
     parent.fields
     |> Enum.filter(&field_applies?(&1, info, source, parent.schema_node))
@@ -151,8 +151,8 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     {result, acc}
   end
-  defp build_result({:plugin, %struct{} = result}, acc, bp_field, info, source) do
-    struct.build_result(result, acc, bp_field, info, source)
+  defp build_result({:plugin, plugin_invocation}, acc, emitter, info, source) do
+    Resolution.PluginInvocation.init(plugin_invocation, acc, emitter, info, source)
   end
   defp build_result(other, _, field, _, source) do
     raise Absinthe.ExecutionError, """
@@ -197,31 +197,31 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     raise Absinthe.ExecutionError, nil_value_error(blueprint, schema_type)
   end
   defp to_result(nil, blueprint, _) do
-    %Resolution.Leaf{blueprint: blueprint, value: nil}
+    %Resolution.Leaf{emitter: blueprint, value: nil}
   end
   defp to_result(root_value, blueprint, %Type.NonNull{of_type: inner_type}) do
     to_result(root_value, blueprint, inner_type)
   end
   defp to_result(root_value, blueprint, %Type.Scalar{} = schema_type) do
     %Resolution.Leaf{
-      blueprint: blueprint,
+      emitter: blueprint,
       value: Type.Scalar.serialize(schema_type, root_value)
     }
   end
   defp to_result(root_value, blueprint, %Type.Enum{} = schema_type) do
     %Resolution.Leaf{
-      blueprint: blueprint,
+      emitter: blueprint,
       value: Type.Enum.serialize(schema_type, root_value)
     }
   end
   defp to_result(root_value, blueprint, %Type.Object{}) do
-    %Resolution.Object{root_value: root_value, blueprint: blueprint}
+    %Resolution.Object{root_value: root_value, emitter: blueprint}
   end
   defp to_result(root_value, blueprint, %Type.Interface{}) do
-    %Resolution.Object{root_value: root_value, blueprint: blueprint}
+    %Resolution.Object{root_value: root_value, emitter: blueprint}
   end
   defp to_result(root_value, blueprint, %Type.Union{}) do
-    %Resolution.Object{root_value: root_value, blueprint: blueprint}
+    %Resolution.Object{root_value: root_value, emitter: blueprint}
   end
   defp to_result(root_value, blueprint, %Type.List{of_type: inner_type}) do
     values =
@@ -229,7 +229,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       |> List.wrap
       |> Enum.map(&to_result(&1, blueprint, inner_type))
 
-    %Resolution.List{values: values, blueprint: blueprint}
+    %Resolution.List{values: values, emitter: blueprint}
   end
 
   defp walk_results(values, res_acc, bp_node, inner_type, info, acc \\ [])
@@ -250,9 +250,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     |> Enum.all?(&passes_type_condition?(&1, target_type, source, info.schema))
   end
 
-  def find_target_type(schema_type, schema) when is_atom(schema_type) do
-    schema.__absinthe_type__(schema_type)
-  end
   # For fields
   def find_target_type(%{type: type}, schema) do
     find_target_type(type, schema)
@@ -260,6 +257,9 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   # For lists and non-nulls
   def find_target_type(%{of_type: type}, schema) do
     find_target_type(type, schema)
+  end
+  def find_target_type(schema_type, schema) do
+    schema.__absinthe_type__(schema_type)
   end
 
   def error(node, message) do

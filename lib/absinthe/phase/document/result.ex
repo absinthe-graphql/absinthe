@@ -97,9 +97,9 @@ defmodule Absinthe.Phase.Document.Result do
     field_data(fields, errs ++ errors, acc)
   end
 
-  defp field_name(%{blueprint: %{alias: nil, name: name}}), do: name
-  defp field_name(%{blueprint: %{alias: name}}), do: name
-  defp field_name(%{blueprint: %{name: name}}), do: name
+  defp field_name(%{emitter: %{alias: nil, name: name}}), do: name
+  defp field_name(%{emitter: %{alias: name}}), do: name
+  defp field_name(%{emitter: %{name: name}}), do: name
 
   defp format_error(%Phase.Error{locations: []} = error) do
     %{message: error.message}
