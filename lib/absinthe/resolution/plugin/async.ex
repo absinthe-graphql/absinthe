@@ -6,12 +6,25 @@ defmodule Absinthe.Resolution.Plugin.Async do
 
   # Example Usage:
 
+  Using the `Absinthe.Resolution.Helpers.async/1` helper function:
   ```elixir
   field :time_consuming, :thing do
     resolve fn _, _, _ ->
       async(fn ->
-
+        {:ok, long_time_consuming_function()}
       end)
+    end
+  end
+  ```
+
+  Using the bare plugin API
+  ```elixir
+  field :time_consuming, :thing do
+    resolve fn _, _, _ ->
+      task = Task.async(fn ->
+        {:ok, long_time_consuming_function()}
+      end
+      {:plugin, #{__MODULE__}, task}
     end
   end
   ```

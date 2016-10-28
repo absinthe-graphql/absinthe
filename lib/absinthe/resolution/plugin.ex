@@ -46,7 +46,7 @@ defmodule Absinthe.Resolution.Plugin do
   {:plugin, PluginModule, plugin_data}
   ```
 
-  The first argument to `init` is whatever plugin_data is. The second is the
+  The first argument to `init` is whatever `plugin_data` is. The second is the
   resolution accumulator.
 
   NOTE: This function is given the full accumulator. Namespacing is suggested to
