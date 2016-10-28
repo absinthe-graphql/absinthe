@@ -7,45 +7,69 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   """
 
   alias Absinthe.{Blueprint, Type, Phase}
-  alias Blueprint.Document.{Result}
+  alias Absinthe.Resolution.Plugin
+  alias Blueprint.Document.Resolution
 
   alias Absinthe.Phase
   use Absinthe.Phase
 
   @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
   def run(bp_root, options \\ []) do
-    context = Keyword.get(options, :context, %{})
+    case Blueprint.current_operation(bp_root) do
+      nil -> bp_root
+      op -> resolve_current(bp_root, op, options)
+    end
+  end
+
+  defp resolve_current(bp_root, operation, options) do
+    resolution = perform_resolution(bp_root, operation, options)
+
+    blueprint = %{bp_root | resolution: resolution}
+
+    bp_root.schema.resolution_plugins
+    |> Plugin.additional_phases(resolution)
+    |> case do
+      [] ->
+        {:ok, blueprint}
+      pipeline ->
+        {:insert, blueprint, pipeline}
+    end
+  end
+
+  defp perform_resolution(bp_root, operation, options) do
     root_value = Keyword.get(options, :root_value, %{})
-    {result, acc} = case Blueprint.current_operation(bp_root) do
-      nil ->
-        bp_root
-      op ->
-        info = %Absinthe.Resolution{
-          adapter: bp_root.adapter,
-          context: context,
-          root_value: root_value,
-          schema: bp_root.schema,
-          source: root_value,
-        }
-        current_resolution = case bp_root.result.resolution do
-          nil ->
-            %Result.Object{
-              root_value: root_value,
-              emitter: op,
-            }
-          resolution ->
-            resolution
-        end
-        acc = %{resolve_again: false}
-        {resolution, acc} = walk_result(current_resolution, acc, op, op.schema_node, info)
-        {put_in(bp_root.result.resolution, resolution), acc}
-    end
-    case acc do
-      %{resolve_again: true} ->
-        {:insert, result, {__MODULE__, options}}
-      _ ->
-        {:ok, result}
-    end
+
+    info   = build_info(bp_root, root_value, options)
+    acc    = bp_root.resolution.acc
+    result = bp_root.resolution |> Resolution.get_result(operation, root_value)
+
+    acc = bp_root.schema |> before_resolution(acc)
+
+    {result, acc} = walk_result(result, acc, operation, operation.schema_node, info)
+
+    acc = bp_root.schema |> after_resolution(acc)
+
+    Resolution.update(bp_root.resolution, result, acc)
+  end
+
+  defp before_resolution(schema, acc) do
+    schema.resolution_plugins |> Enum.reduce(acc, &(&1.before_resolution(&2)))
+  end
+
+  defp after_resolution(schema, acc) do
+    schema.resolution_plugins |> Enum.reduce(acc, &(&1.after_resolution(&2)))
+  end
+
+  defp build_info(bp_root, root_value, options) do
+    context = Keyword.get(options, :context, %{})
+
+    %Absinthe.Resolution{
+      adapter: bp_root.adapter,
+      context: context,
+      root_value: root_value,
+      schema: bp_root.schema,
+      source: root_value,
+    }
   end
 
   @doc """
@@ -61,17 +85,17 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     {%{result | fields: fields}, acc}
   end
-  def walk_result(%{task: task} = result, acc, _bp_node, _schema_type, _info) do
-    task
-    |> Task.await
-    |> build_result(acc, result.bp_node, result.info, result.source)
-  end
-  def walk_result(%Result.Leaf{} = result, acc, _, _, _) do
+  def walk_result(%Resolution.Leaf{} = result, acc, _, _, _) do
     {result, acc}
   end
   def walk_result(%{values: values} = result, acc, bp_node, schema_type, info) do
     {values, acc} = walk_results(values, acc, bp_node, schema_type, info)
     {%{result | values: values}, acc}
+  end
+  def walk_result(%struct{} = node, acc, _bp_node, _schema_type, _info) do
+    {result, acc} = struct.walk_result(node, acc)
+
+    build_result(result, acc, node.blueprint, node.info, node.source)
   end
 
   def resolve_field(bp_field, acc, info, source) do
@@ -116,9 +140,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     |> to_result(bp_field, full_type)
     |> walk_result(acc, bp_field, full_type, info)
   end
-  defp build_result({:async, task}, acc, bp_field, info, source) do
-    {%{task: task, source: source, bp_node: bp_field, info: info}, Map.put(acc, :resolve_again, true)}
-  end
   defp build_result({:error, msg}, acc, bp_field, info, _) do
     message = ~s(In field "#{bp_field.name}": #{msg})
     full_type = Type.expand(bp_field.schema_node.type, info.schema)
@@ -129,6 +150,9 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       |> put_error(error(bp_field, message))
 
     {result, acc}
+  end
+  defp build_result({:plugin, %struct{} = result}, acc, bp_field, info, source) do
+    struct.build_result(result, acc, bp_field, info, source)
   end
   defp build_result(other, _, field, _, source) do
     raise Absinthe.ExecutionError, """
@@ -168,44 +192,44 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     }
   end
 
-  @spec to_result(resolution_result :: term, emitter :: Blueprint.t, schema_type :: Type.t) :: Result.t
-  defp to_result(nil, emitter, %Type.NonNull{} = schema_type) do
-    raise Absinthe.ExecutionError, nil_value_error(emitter, schema_type)
+  @spec to_result(resolution_result :: term, blueprint :: Blueprint.t, schema_type :: Type.t) :: Resolution.t
+  defp to_result(nil, blueprint, %Type.NonNull{} = schema_type) do
+    raise Absinthe.ExecutionError, nil_value_error(blueprint, schema_type)
   end
-  defp to_result(nil, emitter, _) do
-    %Result.Leaf{emitter: emitter, value: nil}
+  defp to_result(nil, blueprint, _) do
+    %Resolution.Leaf{blueprint: blueprint, value: nil}
   end
-  defp to_result(root_value, emitter, %Type.NonNull{of_type: inner_type}) do
-    to_result(root_value, emitter, inner_type)
+  defp to_result(root_value, blueprint, %Type.NonNull{of_type: inner_type}) do
+    to_result(root_value, blueprint, inner_type)
   end
-  defp to_result(root_value, emitter, %Type.Scalar{} = schema_type) do
-    %Result.Leaf{
-      emitter: emitter,
+  defp to_result(root_value, blueprint, %Type.Scalar{} = schema_type) do
+    %Resolution.Leaf{
+      blueprint: blueprint,
       value: Type.Scalar.serialize(schema_type, root_value)
     }
   end
-  defp to_result(root_value, emitter, %Type.Enum{} = schema_type) do
-    %Result.Leaf{
-      emitter: emitter,
+  defp to_result(root_value, blueprint, %Type.Enum{} = schema_type) do
+    %Resolution.Leaf{
+      blueprint: blueprint,
       value: Type.Enum.serialize(schema_type, root_value)
     }
   end
-  defp to_result(root_value, emitter, %Type.Object{}) do
-    %Result.Object{root_value: root_value, emitter: emitter}
+  defp to_result(root_value, blueprint, %Type.Object{}) do
+    %Resolution.Object{root_value: root_value, blueprint: blueprint}
   end
-  defp to_result(root_value, emitter, %Type.Interface{}) do
-    %Result.Object{root_value: root_value, emitter: emitter}
+  defp to_result(root_value, blueprint, %Type.Interface{}) do
+    %Resolution.Object{root_value: root_value, blueprint: blueprint}
   end
-  defp to_result(root_value, emitter, %Type.Union{}) do
-    %Result.Object{root_value: root_value, emitter: emitter}
+  defp to_result(root_value, blueprint, %Type.Union{}) do
+    %Resolution.Object{root_value: root_value, blueprint: blueprint}
   end
-  defp to_result(root_value, emitter, %Type.List{of_type: inner_type}) do
+  defp to_result(root_value, blueprint, %Type.List{of_type: inner_type}) do
     values =
       root_value
       |> List.wrap
-      |> Enum.map(&to_result(&1, emitter, inner_type))
+      |> Enum.map(&to_result(&1, blueprint, inner_type))
 
-    %Result.List{values: values, emitter: emitter}
+    %Resolution.List{values: values, blueprint: blueprint}
   end
 
   defp walk_results(values, res_acc, bp_node, inner_type, info, acc \\ [])
@@ -275,7 +299,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     false
   end
 
-  defp nil_value_error(_emitter, _schema_type) do
+  defp nil_value_error(_blueprint, _schema_type) do
     """
     Tried to return nil value of field marked non null!
 

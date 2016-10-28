@@ -13,6 +13,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro __using__(opts \\ []) do
     import_opts = opts |> Keyword.put(:only, :macros)
     quote do
+      import Absinthe.Resolution.Helpers, only: [async: 1]
       import unquote(__MODULE__), unquote(import_opts)
       Module.register_attribute __MODULE__, :absinthe_definitions, accumulate: true
       Module.register_attribute(__MODULE__, :absinthe_descriptions, accumulate: true)

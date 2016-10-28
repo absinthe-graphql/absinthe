@@ -151,8 +151,11 @@ defmodule Absinthe.Schema do
       import unquote(__MODULE__), only: :macros
       import_types Absinthe.Type.BuiltIns
       @after_compile unquote(__MODULE__)
+      @behaviour unquote(__MODULE__)
     end
   end
+
+  @callback resolution_plugins() :: [Absinthe.Resolution.Plugin.t]
 
   @doc false
   def __after_compile__(env, _bytecode) do

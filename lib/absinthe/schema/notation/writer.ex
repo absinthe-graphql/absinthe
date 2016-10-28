@@ -43,8 +43,13 @@ defmodule Absinthe.Schema.Notation.Writer do
         def __absinthe_interface_implementors__, do: unquote(implementors)
         def __absinthe_exports__, do: unquote(exports)
       end,
-      custom_default_resolve(default_resolve_func)
-    ]
+      custom_default_resolve(default_resolve_func),
+      quote do
+        def resolution_plugins do
+          unquote(Absinthe.Resolution.Plugin.defaults())
+        end
+        defoverridable(resolution_plugins: 0)
+      end    ]
   end
 
   def build_info(env) do
