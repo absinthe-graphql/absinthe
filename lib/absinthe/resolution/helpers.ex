@@ -6,6 +6,8 @@ defmodule Absinthe.Resolution.Helpers do
   or (by extension) `Absinthe.Schema`.
   """
 
+  alias Absinthe.Resolution.Plugin
+
   @doc """
   Execute resolution field asynchronously.
 
@@ -14,10 +16,16 @@ defmodule Absinthe.Resolution.Helpers do
   Forbidden in mutation fields. (TODO: actually enforce this)
   """
   def async(fun) do
-    {:plugin, Absinthe.Resolution.Plugin.Async, Task.async(fun)}
+    {:plugin, Plugin.Async, Task.async(fun)}
   end
 
   @doc """
+  Batch the resolution of several functions together.
+
+  Helper function for creating `Absinthe.Resolution.Plugin.Batch`
+
+  # Example
+  Raw usage:
   ```elixir
   object :post do
     field :title, :string
@@ -35,8 +43,10 @@ defmodule Absinthe.Resolution.Helpers do
   batch({EctoBatch, :by_id}, [])
   ```
   """
-  def batch(batch_fun, batch_data, post_batch_fun) do
-    batch_config = {batch_fun, batch_data, post_batch_fun}
-    {:plugin, Absinthe.Resolution.Plugin.Batch, batch_config}
+  @spec batch(Plugin.Batch.batch_fun, term, Plugin.Batch.post_batch_fun) :: {:plugin, Plugin.Batch, term}
+  @spec batch(Plugin.Batch.batch_fun, term, Plugin.Batch.post_batch_fun, opts :: Keyword.t):: {:plugin, Plugin.Batch, term}
+  def batch(batch_fun, batch_data, post_batch_fun, opts \\ []) do
+    batch_config = {batch_fun, batch_data, post_batch_fun, opts}
+    {:plugin, Plugin.Batch, batch_config}
   end
 end
