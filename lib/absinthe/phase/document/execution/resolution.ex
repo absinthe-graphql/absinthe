@@ -27,7 +27,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     blueprint = %{bp_root | resolution: resolution}
 
     bp_root.schema.resolution_plugins
-    |> Plugin.additional_phases(resolution)
+    |> Plugin.pipeline(resolution)
     |> case do
       [] ->
         {:ok, blueprint}
@@ -151,8 +151,8 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     {result, acc}
   end
-  defp build_result({:plugin, plugin_invocation}, acc, emitter, info, source) do
-    Resolution.PluginInvocation.init(plugin_invocation, acc, emitter, info, source)
+  defp build_result({:plugin, plugin, data}, acc, emitter, info, source) do
+    Resolution.PluginInvocation.init(plugin, data, acc, emitter, info, source)
   end
   defp build_result(other, _, field, _, source) do
     raise Absinthe.ExecutionError, """
@@ -181,15 +181,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
   defp call_resolution_function(args, field, info, parent) do
     Type.Field.resolve(field.schema_node, args, parent, info)
-  end
-
-  defp update_info(info, field, source) do
-    %{
-      info |
-      source: source,
-      # This is so that the function can know what field it's in.
-      definition: field
-    }
   end
 
   @spec to_result(resolution_result :: term, blueprint :: Blueprint.t, schema_type :: Type.t) :: Resolution.t

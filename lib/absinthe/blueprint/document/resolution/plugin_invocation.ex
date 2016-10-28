@@ -7,7 +7,7 @@ defmodule Absinthe.Blueprint.Document.Resolution.PluginInvocation do
     :source,
   ]
 
-  def init(%plugin_module{} = data, acc, blueprint, info, source) do
+  def init(plugin_module, data, acc, blueprint, info, source) do
     {data, acc} = plugin_module.init(data, acc)
 
     invocation = %__MODULE__{

@@ -1,19 +1,19 @@
 defmodule Absinthe.Resolution.Helpers do
   @moduledoc """
-  Some handy functions for returning async or batched resolution functions
+  Handy functions for returning async or batched resolution functions
 
-  Generally used via `import #{__MODULE__}`
+  It is automatically imported into all modules using `Absinthe.Schema.Notation`
+  or (by extension) `Absinthe.Schema`.
   """
 
   @doc """
   Execute resolution field asynchronously.
 
-  Forbidden in mutation fields.
+  This is a helper function for using the `Absinthe.Resolution.Plugin.Async`.
+
+  Forbidden in mutation fields. (TODO: actually enforce this)
   """
   def async(fun) do
-    async = %Absinthe.Resolution.Plugin.Async{
-      task: Task.async(fun)
-    }
-    {:plugin, async}
+    {:plugin, Absinthe.Resolution.Plugin.Async, Task.async(fun)}
   end
 end
