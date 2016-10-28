@@ -22,9 +22,9 @@ defmodule Absinthe.Resolution.Plugin.AsyncTest do
 
     def cool_async(fun) do
       fn source, args, info ->
-        async(Task.async(fn ->
+        async(fn ->
           fun.(source, args, info)
-        end))
+        end)
       end
     end
 
@@ -41,7 +41,7 @@ defmodule Absinthe.Resolution.Plugin.AsyncTest do
     doc = """
     {otherAsyncThing}
     """
-    assert {:ok, %{data: %{"asyncThing" => "magic"}}} == Absinthe.run(doc, Schema)
+    assert {:ok, %{data: %{"otherAsyncThing" => "magic"}}} == Absinthe.run(doc, Schema)
   end
 
 end
