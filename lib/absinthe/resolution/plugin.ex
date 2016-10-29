@@ -58,7 +58,7 @@ defmodule Absinthe.Resolution.Plugin do
   The default list of resolution plugins
   """
   def defaults do
-    [Absinthe.Resolution.Plugin.Async]
+    [Absinthe.Resolution.Plugin.Batch, Absinthe.Resolution.Plugin.Async]
   end
 
   @doc false
