@@ -20,7 +20,12 @@ defmodule Absinthe.Type.Field do
 
   See the `Absinthe.Type.Field.t` explanation of `:resolve` for more information.
   """
-  @type resolver_t :: ((%{atom => any}, Absinthe.Resolution.t) -> {:ok, any} | {:error, binary})
+  @type resolver_t :: ((%{atom => any}, Absinthe.Resolution.t) -> resolver_output)
+  @type resolver_output :: ok_output | error_output | plugin_output
+
+  @type ok_output :: {:ok, any}
+  @type error_output :: {:error, binary}
+  @type plugin_output :: {:plugin, Absinthe.Resolution.Plugin.t, term}
 
   @typedoc """
   The configuration for a field.
@@ -190,7 +195,7 @@ defmodule Absinthe.Type.Field do
   end
 
   # TODO: Optimize to avoid anonymous function closure
-  # Maybe optimize w/ Map.take
+  # Maybe optimize w/ Map.take (hard because order matters)
   defp system_default(field_name) do
     fn parent, _, _ ->
       {:ok, Map.get(parent, field_name)}

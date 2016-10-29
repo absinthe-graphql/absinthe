@@ -100,8 +100,8 @@ defmodule Absinthe.Type.Enum do
 
   # Get the external representation of an enum value
   @doc false
-  @spec serialize!(t, any) :: binary
-  def serialize!(enum, internal_value) do
+  @spec serialize(t, any) :: binary
+  def serialize(enum, internal_value) do
     Map.fetch!(enum.values_by_internal_value, internal_value).name
   end
 end

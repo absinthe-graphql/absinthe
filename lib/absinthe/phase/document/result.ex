@@ -17,11 +17,11 @@ defmodule Absinthe.Phase.Document.Result do
     format_result({:parse_failed, error})
   end
   defp process(%Blueprint{} = blueprint) do
-    result = case blueprint.result do
-      %{validation: [], resolution: nil} ->
+    result = case blueprint.resolution do
+      %{validation: [], result: nil} ->
         :execution_failed
-      %{validation: [], resolution: res} ->
-        {:ok, field_data(res.fields, [])}
+      %{validation: [], result: result} ->
+        {:ok, field_data(result.fields, [])}
       %{validation: errors} ->
         {:validation_failed, errors}
     end

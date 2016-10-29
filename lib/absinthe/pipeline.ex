@@ -12,7 +12,8 @@ defmodule Absinthe.Pipeline do
 
   @spec run(data_t, t) :: {:ok, data_t, [Phase.t]} | {:error, String.t, [Phase.t]}
   def run(input, pipeline) do
-    List.flatten(pipeline)
+    pipeline
+    |> List.flatten
     |> run_phase(input)
   end
 
@@ -189,8 +190,7 @@ defmodule Absinthe.Pipeline do
   end
   def run_phase([phase_config | todo], input, done) do
     {phase, options} = phase_invocation(phase_config)
-    # phase |> IO.puts
-    case phase.run(input, options) do
+    case phase.run(input, options)do
       {:ok, result} ->
         run_phase(todo, result, [phase | done])
       {:jump, result, destination_phase} when is_atom(destination_phase) ->

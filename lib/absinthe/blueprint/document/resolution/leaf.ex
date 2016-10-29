@@ -1,4 +1,4 @@
-defmodule Absinthe.Blueprint.Document.Result.Leaf do
+defmodule Absinthe.Blueprint.Document.Resolution.Leaf do
 
   alias Absinthe.{Blueprint, Phase}
 
@@ -12,7 +12,7 @@ defmodule Absinthe.Blueprint.Document.Result.Leaf do
 
   @type t :: %__MODULE__{
     emitter: Blueprint.Document.Field.t,
-    value: Blueprint.Document.Result.node_t,
+    value: Blueprint.Document.Resolution.node_t,
     errors: [Phase.Error.t],
     flags: [Blueprint.flag_t],
   }
