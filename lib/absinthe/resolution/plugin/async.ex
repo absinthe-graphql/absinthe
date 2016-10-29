@@ -63,7 +63,7 @@ defmodule Absinthe.Resolution.Plugin.Async do
 
   # In a later resolution phase we've now come across an invocation of this plugin
   # left behind by a prior phase. It needs to be resolved to a real value now.
-  def resolve(task, acc) do
-    {Task.await(task), acc}
+  def resolve({task, opts}, acc) do
+    {Task.await(task, Keyword.get(opts, :timeout, 30_000)), acc}
   end
 end
