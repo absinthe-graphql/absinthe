@@ -36,6 +36,17 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"things" => [%{"name" => "Bar", "id" => "bar"}, %{"name" => "Foo", "id" => "foo"}]}}}, run(query, Things)
   end
 
+  it "can do a simple query with an all caps alias" do
+    query = """
+    query GimmeFoo {
+      thing(id: "foo") {
+        FOO: name
+      }
+    }
+    """
+    assert_result {:ok, %{data: %{"thing" => %{"FOO" => "Foo"}}}}, run(query)
+  end
+
   it "can identify a bad field" do
     query = """
     {
@@ -237,6 +248,16 @@ defmodule AbsintheTest do
     """
     |> run(ColorSchema)
     assert_result {:ok, %{data: %{"red" => %{"name" => "RED", "value" => 100}, "green" => %{"name" => "GREEN", "value" => 200}, "blue" => %{"name" => "BLUE", "value" => 300}, "puce" => %{"name" => "PUCE", "value" => -100}}}}, result
+  end
+
+  it "should return an error when not specifying subfields" do
+    query = """
+      {
+        things
+      }
+    """
+    result = run(query)
+    assert_result {:ok, %{errors: [%{message: "Field `things': of type \"[Thing]\" must have a selection of subfields. Did you mean \"things { ... }\"?"}], data: %{}}}, result
   end
 
   describe "fragments" do

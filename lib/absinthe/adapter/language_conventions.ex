@@ -68,6 +68,9 @@ defmodule Absinthe.Adapter.LanguageConventions do
   def to_external_name("__" <> underscored_name, role) do
     "__" <> to_external_name(underscored_name, role)
   end
+  def to_external_name(<< c :: utf8, _ :: binary>> = name, _) when c in ?A..?Z do
+    name |> Utils.camelize
+  end
   def to_external_name(underscored_name, _role) do
     underscored_name
     |> Utils.camelize(lower: true)
