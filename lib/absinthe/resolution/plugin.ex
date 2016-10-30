@@ -1,4 +1,29 @@
 defmodule Absinthe.Resolution.Plugin do
+  @moduledoc """
+  Defines Resolution Plugin Behaviour
+
+  Plugins enable custom resolution behaviour on a field. A plugin is activated
+  on field if its resolution function returns the following tuple instead of one
+  of the usual `{:ok, value}` or `{:error, reason}` tuples:
+
+  ```elixir
+  {:plugin, NameOfPluginModule, term}
+  ```
+
+  Often a plugin will provide a helper function to return this, see `Absinthe.Resolution.Helpers.async/1`
+  for an example.
+
+  Plugins use the information placed in the third element of the plugin tuple
+  along with values in the resolution accumulator to perform whatever logic they need.
+
+  NOTE: All plugins that will be used must be listed on the schema.
+
+  ## The Resolution Accumulator
+  The resolution accumulator is just a map that is carried through the resolution process.
+  The `Async` plugin uses it to flag whether or not a field has been executed asynchronously,
+  which indicates that another resolution pass is needed to await that field. The `Batch`
+  plugin uses it to hold all the information that will be used for batching.
+  """
 
   alias Absinthe.Blueprint.Document
 
