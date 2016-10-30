@@ -44,7 +44,7 @@ defmodule AbsintheTest do
       }
     }
     """
-    assert_result {:ok, %{data: %{"thing" => %{"FOO" => "Foo"}}}}, run(query)
+    assert_result {:ok, %{data: %{"thing" => %{"FOO" => "Foo"}}}}, run(query, Things)
   end
 
   it "can identify a bad field" do
@@ -256,8 +256,8 @@ defmodule AbsintheTest do
         things
       }
     """
-    result = run(query)
-    assert_result {:ok, %{errors: [%{message: "Field `things': of type \"[Thing]\" must have a selection of subfields. Did you mean \"things { ... }\"?"}], data: %{}}}, result
+    result = run(query, Things)
+    assert_result {:ok, %{errors: [%{message: "Field \"things\" of type \"[Thing]\" must have a selection of subfields. Did you mean \"things { ... }\"?"}]}}, result
   end
 
   describe "fragments" do
