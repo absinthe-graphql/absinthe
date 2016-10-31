@@ -1,5 +1,12 @@
 defmodule Absinthe.Blueprint do
 
+  @moduledoc """
+  Represents the graphql document to be executed.
+
+  Please see the code itself for more information on individual blueprint sub
+  modules.
+  """
+
   alias __MODULE__
 
   defstruct [

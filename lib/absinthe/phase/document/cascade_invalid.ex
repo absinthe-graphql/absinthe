@@ -1,8 +1,8 @@
 defmodule Absinthe.Phase.Document.CascadeInvalid do
-  @moduledoc """
-  Ensure any nodes whose children are invalid that need to be made
-  invalid is marked invalid.
-  """
+  # Ensure any nodes whose children are invalid that need to be made
+  # invalid is marked invalid.
+
+  @moduledoc false
 
   use Absinthe.Phase
 

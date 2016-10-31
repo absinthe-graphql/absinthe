@@ -1,8 +1,8 @@
 defmodule Absinthe.Phase.Document.Validation.UniqueVariableNames do
-  @moduledoc """
-  Validates document to ensure that all variable definitions for an operation
-  have unique names.
-  """
+  @moduledoc false
+
+  # Validates document to ensure that all variable definitions for an operation
+  # have unique names.
 
   alias Absinthe.{Blueprint, Phase}
 

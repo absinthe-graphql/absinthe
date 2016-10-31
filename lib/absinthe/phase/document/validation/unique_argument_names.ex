@@ -1,8 +1,8 @@
 defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNames do
-  @moduledoc """
-  Validates document to ensure that all arguments for a field or directive
-  have unique names.
-  """
+  @moduledoc false
+
+  # Validates document to ensure that all arguments for a field or directive
+  # have unique names.
 
   alias Absinthe.{Blueprint, Phase}
 

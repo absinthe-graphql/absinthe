@@ -1,8 +1,8 @@
 defmodule Absinthe.Phase.Document.Validation.KnownFragmentNames do
-  @moduledoc """
-  Validates document to ensure that only fragment spreads reference named
-  fragments that exist.
-  """
+  @moduledoc false
+
+  # Validates document to ensure that only fragment spreads reference named
+  # fragments that exist.
 
   alias Absinthe.{Blueprint, Phase}
 

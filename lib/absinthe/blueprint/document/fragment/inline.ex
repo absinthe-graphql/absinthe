@@ -1,5 +1,7 @@
 defmodule Absinthe.Blueprint.Document.Fragment.Inline do
 
+  @moduledoc false
+
   alias Absinthe.Blueprint
 
   @enforce_keys [:type_condition]

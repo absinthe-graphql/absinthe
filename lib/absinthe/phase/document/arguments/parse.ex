@@ -1,7 +1,8 @@
 defmodule Absinthe.Phase.Document.Arguments.Parse do
-  @moduledoc """
-  Parses Leaf Node inputs
-  """
+
+  @moduledoc false
+
+  # Parses Leaf Node inputs
 
   alias Absinthe.Blueprint.Input
   alias Absinthe.{Blueprint, Type}

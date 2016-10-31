@@ -1,11 +1,11 @@
 defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
-  @moduledoc """
-  Ensure that document doesn't have any fragment cycles that could
-  result in a loop during execution.
+  @moduledoc false
 
-  Note that if this phase fails, an error should immediately be given to
-  the user.
-  """
+  # Ensure that document doesn't have any fragment cycles that could
+  # result in a loop during execution.
+  #
+  # Note that if this phase fails, an error should immediately be given to
+  # the user.
 
   alias Absinthe.{Blueprint, Phase}
 

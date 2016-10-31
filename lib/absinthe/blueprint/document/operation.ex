@@ -1,5 +1,7 @@
 defmodule Absinthe.Blueprint.Document.Operation do
 
+  @moduledoc false
+
   alias Absinthe.Blueprint
 
   @enforce_keys [:name, :type]

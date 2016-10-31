@@ -1,9 +1,9 @@
 defmodule Absinthe.Phase.Document.Arguments.FlagInvalid do
-  @moduledoc """
-  Marks arguments as bad if they have any invalid children.
+  @moduledoc false
 
-  This is later used by the ArgumentsOfCorrectType phase.
-  """
+  # Marks arguments as bad if they have any invalid children.
+  #
+  # This is later used by the ArgumentsOfCorrectType phase.
 
   alias Absinthe.{Blueprint, Phase}
 

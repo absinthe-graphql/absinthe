@@ -1,7 +1,7 @@
 defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArguments do
-  @moduledoc """
-  Validates document to ensure that all non-null arguments are provided.
-  """
+  @moduledoc false
+
+  # Validates document to ensure that all non-null arguments are provided.
 
   alias Absinthe.{Blueprint, Phase, Schema, Type}
 

@@ -1,5 +1,7 @@
 defmodule Absinthe.Blueprint.Schema.EnumValueDefinition do
 
+  @moduledoc false
+
   alias Absinthe.Blueprint
 
   @enforce_keys [:value]

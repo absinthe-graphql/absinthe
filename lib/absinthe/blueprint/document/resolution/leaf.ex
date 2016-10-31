@@ -1,5 +1,7 @@
 defmodule Absinthe.Blueprint.Document.Resolution.Leaf do
 
+  @moduledoc false
+
   alias Absinthe.{Blueprint, Phase}
 
   @enforce_keys [:emitter, :value]

@@ -1,8 +1,7 @@
 defmodule Absinthe.Phase.Document.Validation.Result do
+  @moduledoc false
 
-  @moduledoc """
-  Collects validation errors into the result.
-  """
+  # Collects validation errors into the result.
 
   alias Absinthe.{Blueprint, Phase}
 

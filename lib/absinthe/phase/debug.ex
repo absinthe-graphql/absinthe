@@ -1,6 +1,8 @@
 defmodule Absinthe.Phase.Debug do
   use Absinthe.Phase
 
+  @moduledoc false
+
   alias Absinthe.Blueprint
 
   @spec run(any, Keyword.t) :: {:ok, Blueprint.t}

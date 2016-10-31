@@ -1,6 +1,9 @@
 defmodule Absinthe.Traversal do
   # Graph traversal utilities for dealing with ASTs and schemas using the
   # `Absinthe.Traversal.Node` protocol.
+  # Note this really only exists to handle some Schema rules stuff and is generally
+  # considered legacy code. See `Absinthe.Blueprint.Transform` for information
+  # on how to walk blueprint trees.
 
   @moduledoc false
 

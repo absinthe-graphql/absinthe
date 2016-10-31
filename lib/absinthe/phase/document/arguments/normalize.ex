@@ -1,16 +1,16 @@
 defmodule Absinthe.Phase.Document.Arguments.Normalize do
-  @moduledoc """
-  Populate all arguments in the document with their provided values:
+  @moduledoc false
 
-  - If a literal value is provided for an argument, set the `Argument.t`'s
-    `normalized_value` field to that value.
-  - If a variable is provided for an argument, set the `Argument.t`'s
-    `normalized_value` to the reconciled value for the variable
-    (Note: this requires the `Phase.Document.Variables` phase as a
-    prerequisite).
-
-  Note that no validation occurs in this phase.
-  """
+  # Populate all arguments in the document with their provided values:
+  #
+  # - If a literal value is provided for an argument, set the `Argument.t`'s
+  #   `normalized_value` field to that value.
+  # - If a variable is provided for an argument, set the `Argument.t`'s
+  #   `normalized_value` to the reconciled value for the variable
+  #   (Note: this requires the `Phase.Document.Variables` phase as a
+  #   prerequisite).
+  #
+  # Note that no validation occurs in this phase.
 
   use Absinthe.Phase
   alias Absinthe.Blueprint

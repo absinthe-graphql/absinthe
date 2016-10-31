@@ -1,9 +1,10 @@
 defmodule Absinthe.Phase.Document.Directives do
-  @moduledoc """
-  Expand all directives in the document.
 
-  Note that no validation occurs in this phase.
-  """
+  @moduledoc false
+
+  # Expand all directives in the document.
+  #
+  # Note that no validation occurs in this phase.
 
   use Absinthe.Phase
   alias Absinthe.Blueprint

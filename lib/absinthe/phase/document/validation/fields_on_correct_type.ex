@@ -1,7 +1,7 @@
 defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
-  @moduledoc """
-  Validates document to ensure that all fields are provided on the correct type.
-  """
+  @moduledoc false
+
+  # Validates document to ensure that all fields are provided on the correct type.
 
   alias Absinthe.{Blueprint, Phase, Schema, Type}
 

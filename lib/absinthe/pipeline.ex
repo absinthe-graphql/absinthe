@@ -1,5 +1,12 @@
 defmodule Absinthe.Pipeline do
 
+  @moduledoc """
+  Execute a pipeline of phases.
+
+  A pipeline is merely a list of phases. This module contains functions for building,
+  modifying, and executing pipelines of phases.
+  """
+
   alias Absinthe.Phase
 
   require Logger

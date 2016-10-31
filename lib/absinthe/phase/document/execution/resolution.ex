@@ -1,10 +1,11 @@
 defmodule Absinthe.Phase.Document.Execution.Resolution do
-  @moduledoc """
-  Runs resolution functions in a blueprint.
 
-  Blueprint results are placed under `blueprint.result.resolution`. This is
-  because the results form basically a new tree from the original blueprint.
-  """
+  @moduledoc false
+
+  # Runs resolution functions in a blueprint.
+  #
+  # Blueprint results are placed under `blueprint.result.resolution`. This is
+  # because the results form basically a new tree from the original blueprint.
 
   alias Absinthe.{Blueprint, Type, Phase}
   alias Absinthe.Resolution.Plugin

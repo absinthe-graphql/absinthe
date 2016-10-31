@@ -1,5 +1,7 @@
 defmodule Absinthe.Blueprint.Schema.Deprecation do
 
+  @moduledoc false
+
   defstruct [
     reason: nil
   ]

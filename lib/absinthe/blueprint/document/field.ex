@@ -1,5 +1,7 @@
 defmodule Absinthe.Blueprint.Document.Field do
 
+  @moduledoc false
+
   alias Absinthe.{Blueprint, Phase, Type}
 
   @enforce_keys [:name]

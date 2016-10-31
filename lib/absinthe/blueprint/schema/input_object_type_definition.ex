@@ -1,5 +1,7 @@
 defmodule Absinthe.Blueprint.Schema.InputObjectTypeDefinition do
 
+  @moduledoc false
+
   alias Absinthe.Blueprint
 
   @enforce_keys [:name]

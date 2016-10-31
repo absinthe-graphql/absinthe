@@ -1,9 +1,10 @@
 defmodule Absinthe.Blueprint.Input.Value do
-  @moduledoc """
-  An input in a document.
 
-  Used by arguments, input object fields, and input lists.
-  """
+  @moduledoc false
+
+  # An input in a document.
+  #
+  # Used by arguments, input object fields, and input lists.
 
   @enforce_keys [:literal]
   defstruct [

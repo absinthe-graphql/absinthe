@@ -1,7 +1,7 @@
 defmodule Absinthe.Phase.Document.Validation.UniqueFragmentNames do
-  @moduledoc """
-  Validates document to ensure that all fragments have unique names.
-  """
+  @moduledoc false
+
+  # Validates document to ensure that all fragments have unique names.
 
   alias Absinthe.{Blueprint, Phase}
 

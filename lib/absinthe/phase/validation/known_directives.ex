@@ -1,5 +1,7 @@
 defmodule Absinthe.Phase.Validation.KnownDirectives do
 
+  @moduledoc false
+
   alias Absinthe.{Blueprint, Phase}
 
   use Absinthe.Phase

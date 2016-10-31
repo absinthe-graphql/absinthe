@@ -1,4 +1,7 @@
 defmodule Absinthe.Phase.Parse do
+
+  @moduledoc false
+
   use Absinthe.Phase
 
   alias Absinthe.{Language, Phase}

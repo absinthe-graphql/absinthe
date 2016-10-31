@@ -1,4 +1,7 @@
 defmodule Absinthe.Blueprint.Input do
+
+  @moduledoc false
+
   alias Absinthe.Blueprint
   alias __MODULE__
 

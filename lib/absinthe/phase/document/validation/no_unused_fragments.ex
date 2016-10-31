@@ -1,7 +1,7 @@
 defmodule Absinthe.Phase.Document.Validation.NoUnusedFragments do
-  @moduledoc """
-  Validates document to ensure that all named fragments are used.
-  """
+  @moduledoc false
+
+  # Validates document to ensure that all named fragments are used.
 
   alias Absinthe.{Blueprint, Phase}
 

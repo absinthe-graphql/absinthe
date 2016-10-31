@@ -1,5 +1,7 @@
 defmodule Absinthe.Blueprint.Input.List.Item do
 
+  @moduledoc false
+
   alias Absinthe.{Blueprint, Phase}
 
   @enforce_keys [:input_value]

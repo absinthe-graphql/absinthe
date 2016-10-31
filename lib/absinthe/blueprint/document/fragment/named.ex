@@ -1,5 +1,7 @@
 defmodule Absinthe.Blueprint.Document.Fragment.Named do
 
+  @moduledoc false
+
   alias Absinthe.Blueprint
   alias __MODULE__
 

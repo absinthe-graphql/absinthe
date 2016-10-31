@@ -1,4 +1,6 @@
-defmodule Blueprint.Document do
+defmodule Absinthe.Blueprint.Document do
+
+  @moduledoc false
 
   @type t ::
       Blueprint.Document.Field.t

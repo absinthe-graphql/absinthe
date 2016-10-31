@@ -1,4 +1,7 @@
 defmodule Absinthe.Blueprint.Document.Resolution.PluginInvocation do
+
+  @moduledoc false
+
   defstruct [
     :plugin_module,
     :data,
