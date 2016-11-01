@@ -41,6 +41,17 @@ Furthermore scalar type `parse` functions now receive their value as
 custom scalar types, you may need to modify them; see
 `lib/absinthe/type/built_ins/scalars.ex` for examples.
 
+#### Validation Errors Prevent Resolution
+
+In accordance with the GraphQL Specification, if any errors are added
+during document validation, no resolution will occur. In the past,
+because validation was done on-the-fly during resolution, partial
+resolution, just returning `null` for fields (in a way that would be
+invalid, according to the spec) was possible.
+
+(Notably, this release includes a very large number of new document
+validations.)
+
 #### No AST Nodes in Resolution
 
 The raw AST nodes are no longer provided as part of the "info" argument passed
