@@ -26,6 +26,10 @@ defmodule Absinthe.Execution.ArgumentsTest do
       end
     end
 
+    input_object :boolean_input_object do
+      field :flag, :boolean
+    end
+
     input_object :contact_input do
       field :email, non_null(:string)
       field :contact_type, :contact_type
@@ -44,6 +48,14 @@ defmodule Absinthe.Execution.ArgumentsTest do
     end
 
     query do
+
+      field :test_boolean_input_object, :boolean do
+        arg :input, non_null(:boolean_input_object)
+
+        resolve fn %{input: input}, _ ->
+          {:ok, input[:flag]}
+        end
+      end
 
       field :contact, :contact_type do
         arg :type, :contact_type
@@ -309,6 +321,15 @@ defmodule Absinthe.Execution.ArgumentsTest do
         {user(contact: {email: "bubba@joe.com"})}
         """
         assert_result {:ok, %{data: %{"user" => "bubba@joe.comasdf"}}}, doc |> run(Schema)
+      end
+
+      it "works with inner booleans set to false" do
+        # This makes sure we don't accidentally filter out booleans when trying
+        # to filter out nils
+        doc = """
+        {testBooleanInputObject(input: {flag: false})}
+        """
+        assert_result {:ok, %{data: %{"testBooleanInputObject" => false}}}, doc |> run(Schema)
       end
 
       it "works in a nested case" do

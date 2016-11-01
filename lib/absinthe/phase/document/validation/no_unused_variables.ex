@@ -29,8 +29,14 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariables do
       end
     end
     |> List.flatten
-    %{node | errors: errors ++ node.errors}
-    |> flag_invalid(:unused)
+
+    case errors do
+      [] ->
+        node
+      errors ->
+        %{node | errors: errors ++ node.errors}
+        |> flag_invalid(:unused)
+    end
   end
   def handle_node(node, _) do
     node
