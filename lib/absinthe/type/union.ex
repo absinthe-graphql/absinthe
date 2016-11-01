@@ -22,7 +22,13 @@ defmodule Absinthe.Type.Union do
     end
   end
   ```
+  """
 
+  use Absinthe.Introspection.Kind
+
+  alias Absinthe.{Schema, Type}
+
+  @typedoc """
   * `:name` - The name of the union type. Should be a TitleCased `binary`. Set automatically.
   * `:description` - A nice description for introspection.
   * `:types` - The list of possible types.
@@ -30,20 +36,26 @@ defmodule Absinthe.Type.Union do
 
   The `:resolve_type` function will be passed two arguments; the object whose type needs to be identified, and the `Absinthe.Execution` struct providing the full execution context.
 
-  The `:__reference__` key is for internal use.
+  The `__private__` and `:__reference__` keys are for internal use.
+
   """
+  @type t :: %{
+    name: binary,
+    description: binary,
+    types: [Type.identifier_t],
+    resolve_type: ((any, Absinthe.Execution.t) -> atom | nil),
+    __private__: Keyword.t,
+    __reference__: Type.Reference.t,
+  }
 
-  use Absinthe.Introspection.Kind
-
-  alias Absinthe.{Schema, Type}
-
-  @type t :: %{name: binary,
-               description: binary,
-               types: [Type.identifier_t],
-               resolve_type: ((any, Absinthe.Execution.t) -> atom | nil),
-               __reference__: Type.Reference.t}
-
-  defstruct name: nil, description: nil, resolve_type: nil, types: [], __reference__: nil
+  defstruct [
+    name: nil,
+    description: nil,
+    resolve_type: nil,
+    types: [],
+    __private__: [],
+    __reference__: nil,
+  ]
 
   def build(%{attrs: attrs}) do
     quote do: %unquote(__MODULE__){unquote_splicing(attrs)}

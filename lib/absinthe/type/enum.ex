@@ -65,10 +65,26 @@ defmodule Absinthe.Type.Enum do
   * `:description` - A nice description for introspection.
   * `:values` - The enum values, usually provided using the `Absinthe.Schema.Notation.values/1` or `Absinthe.Schema.Notation.value/1` macro.
 
-  The `:__reference__` key is for internal use.
+
+  The `__private__` and `:__reference__` fields are for internal use.
   """
-  @type t :: %{name: binary, description: binary, values: %{binary => Type.Enum.Value.t}, __reference__: Type.Reference.t}
-  defstruct name: nil, description: nil, values: %{}, values_by_internal_value: %{}, values_by_name: %{}, __reference__: nil
+  @type t :: %{
+    name: binary,
+    description: binary,
+    values: %{binary => Type.Enum.Value.t},
+    __private__: Keyword.t,
+    __reference__: Type.Reference.t,
+  }
+
+  defstruct [
+    name: nil,
+    description: nil,
+    values: %{},
+    values_by_internal_value: %{},
+    values_by_name: %{},
+    __private__: [],
+    __reference__: nil,
+  ]
 
 
   def build(%{attrs: attrs}) do

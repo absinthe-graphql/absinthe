@@ -53,14 +53,29 @@ defmodule Absinthe.Type.Scalar do
   * `:serialize` - A function used to convert a value to a form suitable for JSON serialization
   * `:parse` - A function used to convert the raw, incoming form of a scalar to the canonical internal format.
 
-  The `:__reference__` key is for internal use.
+  The `:__private__` and `:__reference__` keys are for internal use.
   """
-  @type t :: %{name: binary, description: binary, serialize: (value_t -> any), parse: (any -> {:ok, value_t} | :error), __reference__: Type.Reference.t}
+  @type t :: %{
+    name: binary,
+    description: binary,
+    serialize: (value_t -> any),
+    parse: (any -> {:ok, value_t} | :error),
+    __private__: Keyword.t,
+    __reference__: Type.Reference.t,
+  }
+
+  defstruct [
+    name: nil,
+    description: nil,
+    serialize: nil,
+    parse: nil,
+    __private__: [],
+    __reference__: nil,
+  ]
+
 
   @typedoc "The internal, canonical representation of a scalar value"
   @type value_t :: any
-
-  defstruct name: nil, description: nil, serialize: nil, parse: nil, __reference__: nil
 
   if System.get_env("DEBUG_INSPECT") do
     defimpl Inspect do
