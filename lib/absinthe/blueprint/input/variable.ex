@@ -1,5 +1,7 @@
 defmodule Absinthe.Blueprint.Input.Variable do
 
+  @moduledoc false
+
   alias __MODULE__
   alias Absinthe.{Blueprint, Phase}
 

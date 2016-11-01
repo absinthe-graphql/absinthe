@@ -1,7 +1,7 @@
 defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperation do
-  @moduledoc """
-  Validates an operation name was provided when needed.
-  """
+  @moduledoc false
+
+  # Validates an operation name was provided when needed.
 
   alias Absinthe.{Blueprint, Phase}
 

@@ -1,5 +1,7 @@
 defmodule Absinthe.Blueprint.TypeReference.Name do
 
+  @moduledoc false
+
   alias Absinthe.Phase
 
   @enforce_keys [:name]

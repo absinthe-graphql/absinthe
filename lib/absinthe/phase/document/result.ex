@@ -1,8 +1,8 @@
 defmodule Absinthe.Phase.Document.Result do
 
-  @moduledoc """
-  Produces data fit for external encoding from annotated value tree
-  """
+  @moduledoc false
+
+  # Produces data fit for external encoding from annotated value tree
 
   alias Absinthe.{Blueprint, Phase}
   use Absinthe.Phase

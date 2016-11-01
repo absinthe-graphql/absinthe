@@ -1,7 +1,7 @@
 defmodule Absinthe.Phase.Document.Validation.ProvidedAnOperation do
-  @moduledoc """
-  Validates document to ensure that at least one operation is given.
-  """
+  @moduledoc false
+
+  # Validates document to ensure that at least one operation is given.
 
   alias Absinthe.{Blueprint, Phase}
 

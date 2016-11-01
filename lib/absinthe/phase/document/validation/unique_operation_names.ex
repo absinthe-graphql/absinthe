@@ -1,7 +1,7 @@
 defmodule Absinthe.Phase.Document.Validation.UniqueOperationNames do
-  @moduledoc """
-  Validates document to ensure that all operations have unique names.
-  """
+  @moduledoc false
+
+  # Validates document to ensure that all operations have unique names.
 
   alias Absinthe.{Blueprint, Phase}
 

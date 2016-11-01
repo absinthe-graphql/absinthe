@@ -1,13 +1,14 @@
 defmodule Absinthe.Phase.Document.CurrentOperation do
-  @moduledoc """
-  Selects the current operation.
 
-  - If an operation name is given, the matching operation is marked as current.
-  - If no operation name is provided and the there is only one operation,
-    it is set as current.
+  @moduledoc false
 
-  Note that no validation occurs in this phase.
-  """
+  # Selects the current operation.
+  #
+  # - If an operation name is given, the matching operation is marked as current.
+  # - If no operation name is provided and the there is only one operation,
+  #   it is set as current.
+  #
+  # Note that no validation occurs in this phase.
 
   use Absinthe.Phase
   alias Absinthe.Blueprint

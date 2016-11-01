@@ -1,7 +1,7 @@
 defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
-  @moduledoc """
-  Validates document to ensure that all arguments are of the correct type.
-  """
+  @moduledoc false
+
+  # Validates document to ensure that all arguments are of the correct type.
 
   alias Absinthe.{Blueprint, Phase, Schema, Type}
 

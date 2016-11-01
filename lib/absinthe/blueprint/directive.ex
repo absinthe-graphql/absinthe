@@ -1,5 +1,7 @@
 defmodule Absinthe.Blueprint.Directive do
 
+  @moduledoc false
+
   alias Absinthe.{Blueprint, Phase}
 
   @enforce_keys [:name]

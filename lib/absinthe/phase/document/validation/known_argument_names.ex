@@ -1,12 +1,12 @@
 defmodule Absinthe.Phase.Document.Validation.KnownArgumentNames do
-  @moduledoc """
-  Validates document to ensure that all arguments are in the schema.
+  @moduledoc false
 
-  Note: while graphql-js doesn't add errors to unknown arguments that
-  are provided to unknown fields, Absinthe does -- but when the errors
-  are harvested from the Blueprint tree, only the first layer of unknown
-  errors (eg, the field) should be presented to the user.
-  """
+  # Validates document to ensure that all arguments are in the schema.
+  #
+  # Note: while graphql-js doesn't add errors to unknown arguments that
+  # are provided to unknown fields, Absinthe does -- but when the errors
+  # are harvested from the Blueprint tree, only the first layer of unknown
+  # errors (eg, the field) should be presented to the user.
 
   alias Absinthe.{Blueprint, Phase, Schema, Type}
 

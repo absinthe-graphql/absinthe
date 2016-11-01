@@ -1,14 +1,14 @@
 defmodule Absinthe.Phase.Document.MissingVariables do
-  @moduledoc """
-  Fills out missing arguments and input object fields.
+  @moduledoc false
 
-  Filling out means inserting a stubbed `Input.Argument` or `Input.Field` struct.
-
-  Only those arguments which are non null and / or have a default value are filled
-  out.
-
-  If an argument or input object field is non null and missing, it is marked invalid
-  """
+  # Fills out missing arguments and input object fields.
+  #
+  # Filling out means inserting a stubbed `Input.Argument` or `Input.Field` struct.
+  #
+  # Only those arguments which are non null and / or have a default value are filled
+  # out.
+  #
+  # If an argument or input object field is non null and missing, it is marked invalid
 
   use Absinthe.Phase
   alias Absinthe.{Blueprint, Type}

@@ -1,38 +1,38 @@
 defmodule Absinthe.Phase.Document.Validation.ScalarLeafs do # [sic]
-  @moduledoc """
-  Validates that all leaf nodes are scalars.
+  @moduledoc false
 
-  # Examples:
-  Assume `user` field is an object, and `email` is a scalar.
-
-  ## DO NOT
-  ```
-  {
-    user
-  }
-  ```
-
-  ## DO
-  ```
-  {
-    user {name email}
-  }
-  ```
-
-  ## DO NOT
-  ```
-  {
-    email { fields on scalar }
-  }
-  ```
-
-  ## DO
-  ```
-  {
-    email
-  }
-  ```
-  """
+  # Validates that all leaf nodes are scalars.
+  #
+  # # Examples:
+  # Assume `user` field is an object, and `email` is a scalar.
+  #
+  # ## DO NOT
+  # ```
+  # {
+  #   user
+  # }
+  # ```
+  #
+  # ## DO
+  # ```
+  # {
+  #   user {name email}
+  # }
+  # ```
+  #
+  # ## DO NOT
+  # ```
+  # {
+  #   email { fields on scalar }
+  # }
+  # ```
+  #
+  # ## DO
+  # ```
+  # {
+  #   email
+  # }
+  # ```
 
   alias Absinthe.{Blueprint, Phase, Type}
 

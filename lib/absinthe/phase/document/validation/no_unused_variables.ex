@@ -1,8 +1,8 @@
 defmodule Absinthe.Phase.Document.Validation.NoUnusedVariables do
-  @moduledoc """
-  Validates document to ensure that the only variables that are used in a
-  document are defined on the operation.
-  """
+  @moduledoc false
+
+  # Validates document to ensure that the only variables that are used in a
+  # document are defined on the operation.
 
   alias Absinthe.{Blueprint, Phase}
 

@@ -1,44 +1,44 @@
 defmodule Absinthe.Phase.Document.Variables do
-  @moduledoc """
-  Provided a set of variable values:
+  @moduledoc false
 
-  - Set the `variables` field on the `Blueprint.Document.Operation.t` to the reconciled
-    mapping of variable values, supporting defined default values.
-
-  ## Examples
-
-  Given a GraphQL document that looks like:
-
-  ```
-  query Item($id: ID!, $text = String = "Another") {
-    item(id: $id, category: "Things") {
-      name
-    }
-  }
-  ```
-
-  And this phase configuration:
-
-  ```
-  run(blueprint, %{"id" => "1234"})
-  ``
-
-  - The operation's `variables` field would have an `"id"` value set to
-    `%Blueprint.Input.StringValue{value: "1234"}`
-  - The operation's `variables` field would have an `"text"` value set to
-    `%Blueprint.Input.StringValue{value: "Another"}`
-
-  ```
-  run(blueprint, %{})
-  ```
-
-  - The operation's `variables` field would have an `"id"` value set to
-    `nil`
-  - The operation's `variables` field would have an `"text"` value set to
-    `%Blueprint.Input.StringValue{value: "Another"}`
-
-  Note that no validation occurs in this phase.
-  """
+  # Provided a set of variable values:
+  #
+  # - Set the `variables` field on the `Blueprint.Document.Operation.t` to the reconciled
+  #   mapping of variable values, supporting defined default values.
+  #
+  # ## Examples
+  #
+  # Given a GraphQL document that looks like:
+  #
+  # ```
+  # query Item($id: ID!, $text = String = "Another") {
+  #   item(id: $id, category: "Things") {
+  #     name
+  #   }
+  # }
+  # ```
+  #
+  # And this phase configuration:
+  #
+  # ```
+  # run(blueprint, %{"id" => "1234"})
+  # ``
+  #
+  # - The operation's `variables` field would have an `"id"` value set to
+  #   `%Blueprint.Input.StringValue{value: "1234"}`
+  # - The operation's `variables` field would have an `"text"` value set to
+  #   `%Blueprint.Input.StringValue{value: "Another"}`
+  #
+  # ```
+  # run(blueprint, %{})
+  # ```
+  #
+  # - The operation's `variables` field would have an `"id"` value set to
+  #   `nil`
+  # - The operation's `variables` field would have an `"text"` value set to
+  #   `%Blueprint.Input.StringValue{value: "Another"}`
+  #
+  # Note that no validation occurs in this phase.
 
   use Absinthe.Phase
   alias Absinthe.Blueprint

@@ -1,8 +1,8 @@
 defmodule Absinthe.Phase.Document.Validation.VariablesAreInputTypes do
-  @moduledoc """
-  Validates document to ensure that all variable definitions are for
-  input types.
-  """
+  @moduledoc false
+
+  # Validates document to ensure that all variable definitions are for
+  # input types.
 
   alias Absinthe.{Blueprint, Phase, Schema, Type}
 

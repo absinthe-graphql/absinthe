@@ -1,7 +1,7 @@
 defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNames do
-  @moduledoc """
-  Validates document to ensure that all input fields have unique names.
-  """
+  @moduledoc false
+
+  # Validates document to ensure that all input fields have unique names.
 
   alias Absinthe.{Blueprint, Phase}
 

@@ -1,5 +1,7 @@
 defmodule Absinthe.Blueprint.Transform do
 
+  @moduledoc false
+
   alias Absinthe.Blueprint
 
   @doc """

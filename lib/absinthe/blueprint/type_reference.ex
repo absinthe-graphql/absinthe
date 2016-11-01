@@ -1,5 +1,7 @@
 defmodule Absinthe.Blueprint.TypeReference do
 
+  @moduledoc false
+
   alias __MODULE__
 
   @type t ::

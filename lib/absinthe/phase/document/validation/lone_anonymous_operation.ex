@@ -1,8 +1,8 @@
 defmodule Absinthe.Phase.Document.Validation.LoneAnonymousOperation do
-  @moduledoc """
-  Validates document to ensure that only one operation is provided without
-  a name.
-  """
+  @moduledoc false
+
+  # Validates document to ensure that only one operation is provided without
+  # a name.
 
   alias Absinthe.{Blueprint, Phase}
 

@@ -1,5 +1,7 @@
 defmodule Absinthe.Phase.Error do
 
+  @moduledoc false
+
   @enforce_keys [:message, :phase]
   defstruct [
     :message,

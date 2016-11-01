@@ -1,5 +1,7 @@
 defmodule Absinthe.Blueprint.Input.Field do
 
+  @moduledoc false
+
   alias Absinthe.{Blueprint, Type}
 
   @enforce_keys [:name, :input_value]

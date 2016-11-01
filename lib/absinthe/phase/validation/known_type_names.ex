@@ -1,16 +1,16 @@
 defmodule Absinthe.Phase.Validation.KnownTypeNames do
 
-  @moduledoc """
-  Ensure type names actually exist in the schema.
+  @moduledoc false
 
-  Type names show up for example in fragments:
-
-  ```
-  fragment foo on Foo {
-    name
-  }
-  ```
-  """
+  # Ensure type names actually exist in the schema.
+  #
+  # Type names show up for example in fragments:
+  #
+  # ```
+  # fragment foo on Foo {
+  #   name
+  # }
+  # ```
 
   alias Absinthe.{Blueprint, Phase}
 

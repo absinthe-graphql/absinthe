@@ -1,5 +1,7 @@
 defmodule Absinthe.Blueprint.Input.Variable.Use do
 
+  @moduledoc false
+
   @enforce_keys [:name, :source_location]
   defstruct [
     :name,

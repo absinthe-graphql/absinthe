@@ -1,9 +1,10 @@
 defmodule Absinthe.Phase.Document.Uses do
-  @moduledoc """
-  Tracks uses of:
-  - Variables
-  - Fragments
-  """
+  @moduledoc false
+
+  # Tracks uses of:
+  # - Variables
+  # - Fragments
+
   use Absinthe.Phase
   alias Absinthe.Blueprint
 

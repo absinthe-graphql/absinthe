@@ -1,5 +1,14 @@
 defmodule Absinthe.Phase do
 
+  @moduledoc """
+  Behaviour for Absinthe Phases.
+
+  A phase takes an `Absinthe.Blueprint` document and returns another blueprint document.
+  All validation, resolution, and result bulding happens via phases. See
+  `Absinthe.Pipeline` for information on how to run phases. See the code under
+  this namespace for information on individual phases.
+  """
+
   @type t :: module
   @type result_t ::
       {:ok, any}

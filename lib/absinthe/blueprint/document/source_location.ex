@@ -1,5 +1,7 @@
 defmodule Absinthe.Blueprint.Document.SourceLocation do
 
+  @moduledoc false
+
   defstruct [
     line: nil,
     column: nil,

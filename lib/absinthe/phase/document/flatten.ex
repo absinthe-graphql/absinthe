@@ -1,12 +1,13 @@
 defmodule Absinthe.Phase.Document.Flatten do
-  @moduledoc """
-  Flatten inline fragment contents and named fragments (via fragment spreads)
-  from operation and field selections into their fields list. Resulting fields
-  are tagged with the source fragment type conditions.
+  @moduledoc false
 
-  Note that no field merging occurs in this phase and that validation should
-  occur before it is run (to, eg, prevent circular fragments).
-  """
+  # Flatten inline fragment contents and named fragments (via fragment spreads)
+  # from operation and field selections into their fields list. Resulting fields
+  # are tagged with the source fragment type conditions.
+  #
+  # Note that no field merging occurs in this phase and that validation should
+  # occur before it is run (to, eg, prevent circular fragments).
+
 
   use Absinthe.Phase
   alias Absinthe.Blueprint
