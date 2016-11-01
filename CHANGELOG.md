@@ -62,6 +62,10 @@ passed validation and have been flattened from any fragments that may have
 been used in the original document (you just may want to pay attention to
 each field's `type_conditions`).
 
+#### List Coercion
+
+TODO: BEN
+
 #### Simpler Adapters
 
 Adapters now only use `to_internal_name/2` and `to_external_name/2` as the
@@ -90,6 +94,10 @@ The following resolutions functions are equivalent:
 fn source, args, info -> {:ok, source.foo} end
 fn args, %{source: source} -> {:ok, source.foo} end
 ```
+
+#### Resolution Plugins (+ Async & Batching)
+
+TODO: BEN
 
 #### Resolution Info
 
