@@ -113,6 +113,14 @@ In previous versions, the last argument to resolution functions was an
 While the struct has most of the same information available, the AST nodes
 is no longer provided. See "Breaking Changes" above.
 
+#### Custom Type Metadata
+
+To further support extensibility, types and fields can be annotated using the
+`Absinthe.Schema.Notation.meta/2` macro, and metadata extracted using
+`Absinthe.Type.meta/1` and `Absinthe.Type.meta/1`. This metadata facility has
+been added for objects, input objects, enums, scalars, unions, interfaces, and
+fields.
+
 ## v1.1.7
 
 ### Bugfixes
