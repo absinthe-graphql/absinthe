@@ -151,25 +151,7 @@ defmodule Absinthe.Type.Field do
       |> maybe_add_default(system_default(field.__reference__.identifier))
       |> maybe_wrap_with_private
 
-    call field.resolve, args, parent, field_info
-  end
-
-  def call(resolution_function, args, parent, field_info) do
-    cond do
-      is_function(resolution_function, 2) ->
-        resolution_function.(args, field_info)
-      is_function(resolution_function, 3) ->
-        resolution_function.(parent, args, field_info)
-      true ->
-        raise Absinthe.ExecutionError, """
-        Field resolve property not a 2 or 3 arity function:
-        #{inspect field_info}
-        """
-    end
-  end
-
-  def call(function, args, info) do
-    call(function, args, info.source, info)
+    Absinthe.Resolution.call field.resolve, parent, args, field_info
   end
 
   defp maybe_add_default(%{resolve: nil} = node, resolution_function) do

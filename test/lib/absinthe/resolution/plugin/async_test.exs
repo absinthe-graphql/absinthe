@@ -29,7 +29,7 @@ defmodule Absinthe.Resolution.Plugin.AsyncTest do
     def cool_async(fun) do
       fn source, args, info ->
         async(fn ->
-          fun.(source, args, info)
+          Absinthe.Resolution.call(fun, source, args, info)
         end)
       end
     end
