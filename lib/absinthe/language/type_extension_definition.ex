@@ -1,6 +1,16 @@
 defmodule Absinthe.Language.TypeExtensionDefinition do
-
   @moduledoc false
 
-  defstruct definition: nil, loc: %{start_line: nil}
+  alias Absinthe.Language
+
+  defstruct [
+    definition: nil,
+    loc: %{start_line: nil}
+  ]
+
+  @type t :: %__MODULE__{
+    definition: Language.ObjectTypeDefinition.t,
+    loc: Language.loc_t
+  }
+
 end

@@ -20,7 +20,7 @@ defmodule Things do
           {:ok, %{found | value: val}}
         %{id: id, thing: fields}, _ ->
           found = @db |> Map.get(id)
-        {:ok, found |> Map.merge(fields)}
+          {:ok, found |> Map.merge(fields)}
       end
 
   end
@@ -54,6 +54,12 @@ defmodule Things do
           {:error, "No :id context provided"}
       end
 
+    field :things, list_of(:thing) do
+      resolve fn _, _ ->
+        {:ok, @db |> Map.values |> Enum.sort_by(&(&1.id))}
+      end
+    end
+
     field :thing,
       type: :thing,
       args: [
@@ -85,7 +91,11 @@ defmodule Things do
       ],
       resolve: fn
         %{id: id}, _ ->
-          {:ok, @db |> Map.get(id)}
+          # {:ok, @db |> Map.get(id)}
+          Absinthe.Resolution.Helpers.async(fn ->
+            {:ok, @db |> Map.get(id)}
+          end)
+
       end
 
     field :deprecated_thing,
@@ -130,7 +140,7 @@ defmodule Things do
     field :deprecated_field, :string, deprecate: true
     field :deprecated_field_with_reason, :string, deprecate: "reason"
     field :deprecated_non_null_field, non_null(:string), deprecate: true
-    field :deprecated_non_null_field_with_reason, :string, deprecate: "reason"
+    field :deprecated_field_with_reason, :string, deprecate: "reason"
   end
 
   object :thing do

@@ -13,6 +13,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro __using__(opts \\ []) do
     import_opts = opts |> Keyword.put(:only, :macros)
     quote do
+      import Absinthe.Resolution.Helpers, only: [async: 1, batch: 3]
       import unquote(__MODULE__), unquote(import_opts)
       Module.register_attribute __MODULE__, :absinthe_definitions, accumulate: true
       Module.register_attribute(__MODULE__, :absinthe_descriptions, accumulate: true)
@@ -348,7 +349,7 @@ defmodule Absinthe.Schema.Notation do
   call that returns a 2 arity anonymous function. See examples for more information.
 
   The first argument to the function are the GraphQL arguments, and the latter
-  is an `Absinthe.Execution.Field` struct. It is where you can access the GraphQL
+  is an `Absinthe.Resolution` struct. It is where you can access the GraphQL
   context and other execution data.
 
   Note that when using a hard coded anonymous function, the function will not
@@ -550,12 +551,22 @@ defmodule Absinthe.Schema.Notation do
     :ok
   end
 
-  @placement {:private, [under: [:field, :object]]}
+  @placement {:private, [under: [:field, :object, :input_object, :enum, :scalar, :interface, :union]]}
   @doc false
   defmacro private(owner, key, value) do
     __CALLER__
     |> recordable!(:private, @placement[:private])
     |> record_private!(owner, key, value)
+  end
+
+  @placement {:meta, [under: [:field, :object, :input_object, :enum, :scalar, :interface, :union]]}
+  @doc """
+  Defines a metadata key/value pair for a custom type.
+  """
+  defmacro meta(key, value) do
+    __CALLER__
+    |> recordable!(:meta, @placement[:meta])
+    |> record_private!(:meta, key, value)
   end
 
   @doc false
@@ -697,6 +708,30 @@ defmodule Absinthe.Schema.Notation do
     Scope.recorded!(env.module, :attr, :instruction)
     :ok
   end
+
+  @placement {:expand, [under: :directive]}
+  @doc """
+  Define the expansion for a directive
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+  """
+  defmacro expand(func_ast) do
+    __CALLER__
+    |> recordable!(:expand, @placement[:expand])
+    |> record_expand!(func_ast)
+  end
+
+  @doc false
+  # Record a directive expand function in the current scope
+  def record_expand!(env, func_ast) do
+    Scope.put_attribute(env.module, :expand, func_ast)
+    Scope.recorded!(env.module, :attr, :expand)
+    :ok
+  end
+
+
 
   # INPUT OBJECTS
 

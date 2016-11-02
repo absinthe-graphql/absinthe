@@ -6,7 +6,6 @@ defmodule Absinthe.Type.Argument do
   Usually these are defined using `Absinthe.Schema.Notation.arg/2`
   """
 
-  alias __MODULE__
   alias Absinthe.Type
 
   use Type.Fetch
@@ -55,24 +54,6 @@ defmodule Absinthe.Type.Argument do
     quote do: %{unquote_splicing(ast)}
   end
 
-  defimpl Absinthe.Validation.RequiredInput do
-
-    # Whether the argument is required.
-    #
-    # * If the argument is deprecated, it is never required
-    # * If the argumnet is not deprecated, it is required
-    # if its type is non-null
-    @doc false
-    @spec required?(Argument.t) :: boolean
-    def required?(%Argument{type: type, deprecation: nil}) do
-      type
-      |> Absinthe.Validation.RequiredInput.required?
-    end
-    def required?(%Argument{}) do
-      false
-    end
-
-  end
 
   defimpl Absinthe.Traversal.Node do
     def children(node, _traversal) do

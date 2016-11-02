@@ -22,8 +22,24 @@ defmodule Absinthe.Type.Directive do
 
   The `:__reference__` key is for internal use.
   """
-  @type t :: %{name: binary, description: binary, args: map, locations: [atom], instruction: ((map) -> atom), __reference__: Type.Reference.t}
-  defstruct name: nil, description: nil, args: nil, locations: [], instruction: nil, __reference__: nil
+  @type t :: %{
+    name: binary,
+    description: binary,
+    args: map,
+    locations: [atom],
+    expand: nil | ((Absinthe.Blueprint.node_t, map) -> {Absinthe.Blueprint.t, map}),
+    instruction: ((map) -> atom), __reference__: Type.Reference.t
+  }
+
+  defstruct [
+    name: nil,
+    description: nil,
+    args: nil,
+    locations: [],
+    expand: nil,
+    instruction: nil,
+    __reference__: nil,
+  ]
 
   def build(%{attrs: attrs}) do
     args = attrs
@@ -61,7 +77,7 @@ defmodule Absinthe.Type.Directive do
   defp do_on?(:fragment_definition, %Language.Fragment{}), do: true
   defp do_on?(:fragment_spread, %Language.FragmentSpread{}), do: true
   defp do_on?(:inline_fragment, %Language.InlineFragment{}), do: true
-  # TODO: Schema definitions to support IDL input
+  # TODO: Schema definitions to support Schema input
   defp do_on?(_, _), do: false
 
   # Check a directive and return an instruction

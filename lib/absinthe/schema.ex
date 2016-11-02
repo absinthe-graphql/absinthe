@@ -151,8 +151,11 @@ defmodule Absinthe.Schema do
       import unquote(__MODULE__), only: :macros
       import_types Absinthe.Type.BuiltIns
       @after_compile unquote(__MODULE__)
+      @behaviour unquote(__MODULE__)
     end
   end
+
+  @callback resolution_plugins() :: [Absinthe.Resolution.Plugin.t]
 
   @doc false
   def __after_compile__(env, _bytecode) do
@@ -265,6 +268,20 @@ defmodule Absinthe.Schema do
     schema.__absinthe_types__
     |> Map.keys
     |> Enum.map(&lookup_type(schema, &1))
+  end
+
+  @doc """
+  Get all concrete types for union, interface, or object
+  """
+  @spec concrete_types(t, Type.t) :: [Type.t]
+  def concrete_types(schema, %Type.Union{} = type) do
+    Enum.map(type.types, &lookup_type(schema, &1))
+  end
+  def concrete_types(schema, %Type.Interface{} = type) do
+    implementors(schema, type)
+  end
+  def concrete_types(_, %Type.Object{} = type) do
+    [type]
   end
 
   @doc """

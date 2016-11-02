@@ -9,8 +9,6 @@ defmodule Absinthe.Type.Field do
   See the `t` type below for details and examples of how to define a field.
   """
 
-  alias __MODULE__
-
   alias Absinthe.Type
   alias Absinthe.Type.Deprecation
   alias Absinthe.Schema
@@ -22,7 +20,12 @@ defmodule Absinthe.Type.Field do
 
   See the `Absinthe.Type.Field.t` explanation of `:resolve` for more information.
   """
-  @type resolver_t :: ((%{atom => any}, Absinthe.Execution.Field.t) -> {:ok, any} | {:error, binary})
+  @type resolver_t :: ((%{atom => any}, Absinthe.Resolution.t) -> resolver_output)
+  @type resolver_output :: ok_output | error_output | plugin_output
+
+  @type ok_output :: {:ok, any}
+  @type error_output :: {:error, binary}
+  @type plugin_output :: {:plugin, Absinthe.Resolution.Plugin.t, term}
 
   @typedoc """
   The configuration for a field.
@@ -78,7 +81,7 @@ defmodule Absinthe.Type.Field do
 
   1. A map of the arguments for the field, filled in with values from the
      provided query document/variables.
-  2. An `Absinthe.Execution.Field` struct, containing the execution environment
+  2. An `Absinthe.Resolution` struct, containing the execution environment
      for the field (and useful for complex resolutions using the resolved source
      object, etc)
 
@@ -116,9 +119,11 @@ defmodule Absinthe.Type.Field do
     quoted_empty_map = quote do: %{}
     ast = for {field_name, field_attrs} <- fields do
       name = field_name |> Atom.to_string
+      default_ref = field_attrs[:__reference__]
+
       field_data = [name: name] ++ Keyword.update(field_attrs, :args, quoted_empty_map, fn
         raw_args ->
-          args = for {name, attrs} <- raw_args, do: {name, ensure_reference(attrs, field_attrs[:__reference__])}
+          args = for {name, attrs} <- raw_args, do: {name, ensure_reference(attrs, name, default_ref)}
           Type.Argument.build(args || [])
       end)
       field_ast = quote do: %Absinthe.Type.Field{unquote_splicing(field_data |> Absinthe.Type.Deprecation.from_attribute)}
@@ -127,57 +132,56 @@ defmodule Absinthe.Type.Field do
     quote do: %{unquote_splicing(ast)}
   end
 
-  defp ensure_reference(arg_attrs, default_reference) do
+  defp ensure_reference(arg_attrs, name, default_reference) do
     case Keyword.has_key?(arg_attrs, :__reference__) do
       true ->
         arg_attrs
       false ->
-        Keyword.put(arg_attrs, :__reference__, default_reference)
+        # default_reference is map AST, hence the gymnastics to build it nicely.
+        {a, b, args} = default_reference
+
+        Keyword.put(arg_attrs, :__reference__, {a, b, Keyword.put(args, :identifier, name)})
     end
   end
 
-  def resolve(%{resolve: nil} = field, args, %{schema: schema} = field_info) do
-    %{field | resolve: schema.__absinthe_custom_default_resolve__}
-    |> resolve(args, field_info)
-  end
-  def resolve(%{resolve: designer_resolve, __private__: private}, args, field_info) do
-    do_resolve(system_resolve(private), designer_resolve, args, field_info)
+  def resolve(field, args, parent, field_info) do
+    field =
+      field
+      |> maybe_add_default(field_info.schema.__absinthe_custom_default_resolve__)
+      |> maybe_add_default(system_default(field.__reference__.identifier))
+      |> maybe_wrap_with_private
+
+    Absinthe.Resolution.call field.resolve, parent, args, field_info
   end
 
-  # No system resolver, so just invoke the schema designer's resolver
-  defp do_resolve(nil, designer_fn, args, field_info) do
-    designer_fn.(args, field_info)
+  defp maybe_add_default(%{resolve: nil} = node, resolution_function) do
+    %{node | resolve: resolution_function}
   end
-  # If a system resolver is set, we resolve by passing it the schema designer
-  # resolver; it's responsible for returning the result.
-  defp do_resolve(system_fn, designer_fn, args, field_info) do
-    system_fn.(args, field_info, designer_fn)
+  defp maybe_add_default(node, _) do
+    node
   end
 
-  # Get the registered resolve helper, if any
-  defp system_resolve(private) do
-    get_in(private, [Absinthe, :resolve])
+  defp maybe_wrap_with_private(%{resolve: resolve, __private__: private} = node) do
+    resolve =
+      private
+      |> Keyword.values
+      |> Enum.reduce(resolve, fn private, resolve ->
+        if constructor = private[:resolve] do
+          constructor.(resolve)
+        else
+          resolve
+        end
+      end)
+
+    %{node | resolve: resolve}
   end
 
-  defimpl Absinthe.Validation.RequiredInput do
-
-    # Whether the field is required.
-    #
-    # Note this is only useful for input object types.
-    #
-    # * If the field is deprecated, it is never required
-    # * If the argumnet is not deprecated, it is required
-    #   if its type is non-null
-    @doc false
-    @spec required?(Field.t) :: boolean
-    def required?(%Field{type: type, deprecation: nil}) do
-      type
-      |> Absinthe.Validation.RequiredInput.required?
+  # TODO: Optimize to avoid anonymous function closure
+  # Maybe optimize w/ Map.take (hard because order matters)
+  defp system_default(field_name) do
+    fn parent, _, _ ->
+      {:ok, Map.get(parent, field_name)}
     end
-    def required?(%Field{}) do
-      false
-    end
-
   end
 
   defimpl Absinthe.Traversal.Node do

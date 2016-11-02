@@ -36,6 +36,13 @@ defmodule ContactSchema do
           {:ok, @bruce}
       end
 
+    field :search_results,
+      type: non_null(list_of(non_null(:search_result))),
+      resolve: fn
+        _, _ ->
+          {:ok, [@bruce, @business]}
+      end
+
     field :profile,
       type: :person,
       args: [name: [type: non_null(:string)]],
@@ -125,6 +132,16 @@ defmodule ContactSchema do
     field :entity, :named_entity
     field :phone_number, :string
     field :address, :string
+  end
+
+  scalar :name do
+    serialize &to_string/1
+    parse fn
+      %Absinthe.Blueprint.Input.String{} = string ->
+        string.value
+      _ ->
+        :error
+    end
   end
 
 end

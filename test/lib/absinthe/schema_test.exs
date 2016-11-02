@@ -1,6 +1,7 @@
 defmodule Absinthe.SchemaTest do
   use Absinthe.Case, async: true
   use SupportSchemas
+  import AssertResult
 
   alias Absinthe.Schema
   alias Absinthe.Type
@@ -21,7 +22,7 @@ defmodule Absinthe.SchemaTest do
       end)
       int = ValidSchema.__absinthe_type__(:integer)
       assert 1 == Type.Scalar.serialize(int, 1)
-      assert {:ok, 1} == Type.Scalar.parse(int, "1.0")
+      assert {:ok, 1} == Type.Scalar.parse(int, 1)
     end
 
   end
@@ -144,7 +145,7 @@ defmodule Absinthe.SchemaTest do
       field :name, :string
     end
 
-    subscription name: "SubscriptionRootTypeThing" do
+    subscription name: "RootSubscriptionTypeThing" do
       field :name, :string
     end
 
@@ -162,7 +163,7 @@ defmodule Absinthe.SchemaTest do
     end
 
     it "supports subscriptions" do
-      assert "SubscriptionRootTypeThing" == Schema.lookup_type(RootsSchema, :subscription).name
+      assert "RootSubscriptionTypeThing" == Schema.lookup_type(RootsSchema, :subscription).name
     end
 
 
@@ -213,10 +214,110 @@ defmodule Absinthe.SchemaTest do
     fragment F0 on Viewer{name,id}
     fragment F1 on Viewer{id,...F0}
     """
-
-    @tag :fragment1
     it "builds the correct result" do
-      assert {:ok, %{data: %{"viewer" => %{"id" => "ABCD", "name" => "Bruce"}}}} == Absinthe.run(@query, FragmentSpreadSchema)
+      assert_result {:ok, %{data: %{"viewer" => %{"id" => "ABCD", "name" => "Bruce"}}}}, run(@query, FragmentSpreadSchema)
+    end
+
+  end
+
+
+  defmodule MetadataSchema do
+    use Absinthe.Schema
+
+    object :foo do
+      meta :sql_table, "foos"
+      field :bar, :string do
+        meta :nice, "yup"
+      end
+    end
+
+    input_object :input_foo do
+      meta :is_input, true
+      field :bar, :string do
+        meta :nice, "nope"
+      end
+    end
+
+    enum :color do
+      meta :rgb_only, true
+      value :red
+      value :blue
+      value :green
+    end
+
+    scalar :my_scalar do
+      meta :is_scalar, true
+      # Missing parse and serialize
+    end
+
+    interface :named do
+      meta :is_interface, true
+      field :name, :string do
+        meta :is_name, true
+      end
+    end
+
+    union :result do
+      types [:foo]
+      meta :is_union, true
+    end
+
+  end
+
+  describe "can add metadata to an object" do
+
+    it "sets object metadata" do
+      foo = Schema.lookup_type(MetadataSchema, :foo)
+      assert %{__private__: [meta: [sql_table: "foos"]]} = foo
+      assert Type.meta(foo, :sql_table) == "foos"
+    end
+
+    it "sets field metadata" do
+      foo = Schema.lookup_type(MetadataSchema, :foo)
+      assert %{__private__: [meta: [nice: "yup"]]} = foo.fields[:bar]
+      assert Type.meta(foo.fields[:bar], :nice) == "yup"
+    end
+
+    it "sets input object metadata" do
+      input_foo = Schema.lookup_type(MetadataSchema, :input_foo)
+      assert %{__private__: [meta: [is_input: true]]} = input_foo
+      assert Type.meta(input_foo, :is_input) == true
+    end
+
+    it "sets input object field metadata" do
+      input_foo = Schema.lookup_type(MetadataSchema, :input_foo)
+      assert %{__private__: [meta: [nice: "nope"]]} = input_foo.fields[:bar]
+      assert Type.meta(input_foo.fields[:bar], :nice) == "nope"
+    end
+
+    it "sets enum metadata" do
+      color = Schema.lookup_type(MetadataSchema, :color)
+      assert %{__private__: [meta: [rgb_only: true]]} = color
+      assert Type.meta(color, :rgb_only) == true
+    end
+
+    it "sets scalar metadata" do
+      my_scalar = Schema.lookup_type(MetadataSchema, :my_scalar)
+      assert %{__private__: [meta: [is_scalar: true]]} = my_scalar
+      assert Type.meta(my_scalar, :is_scalar) == true
+    end
+
+    it "sets interface metadata" do
+      named = Schema.lookup_type(MetadataSchema, :named)
+      assert %{__private__: [meta: [is_interface: true]]} = named
+      assert Type.meta(named, :is_interface) == true
+    end
+
+    it "sets interface field metadata" do
+      named = Schema.lookup_type(MetadataSchema, :named)
+      assert %{__private__: [meta: [is_name: true]]} = named.fields[:name]
+      assert Type.meta(named.fields[:name], :is_name) == true
+    end
+
+    it "sets union metadata" do
+      result = Schema.lookup_type(MetadataSchema, :result)
+      assert %{__private__: [meta: [is_union: true]]} = result
+      assert Type.meta(result, :is_union) == true
     end
 
   end

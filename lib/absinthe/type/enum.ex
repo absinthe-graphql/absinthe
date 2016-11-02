@@ -54,7 +54,7 @@ defmodule Absinthe.Type.Enum do
 
   use Absinthe.Introspection.Kind
 
-  alias Absinthe.Type
+  alias Absinthe.{Blueprint, Type}
 
   @typedoc """
   A defined enum type.
@@ -65,10 +65,26 @@ defmodule Absinthe.Type.Enum do
   * `:description` - A nice description for introspection.
   * `:values` - The enum values, usually provided using the `Absinthe.Schema.Notation.values/1` or `Absinthe.Schema.Notation.value/1` macro.
 
-  The `:__reference__` key is for internal use.
+
+  The `__private__` and `:__reference__` fields are for internal use.
   """
-  @type t :: %{name: binary, description: binary, values: %{binary => Type.Enum.Value.t}, __reference__: Type.Reference.t}
-  defstruct name: nil, description: nil, values: %{}, values_by_internal_value: %{}, values_by_name: %{}, __reference__: nil
+  @type t :: %{
+    name: binary,
+    description: binary,
+    values: %{binary => Type.Enum.Value.t},
+    __private__: Keyword.t,
+    __reference__: Type.Reference.t,
+  }
+
+  defstruct [
+    name: nil,
+    description: nil,
+    values: %{},
+    values_by_internal_value: %{},
+    values_by_name: %{},
+    __private__: [],
+    __reference__: nil,
+  ]
 
 
   def build(%{attrs: attrs}) do
@@ -91,14 +107,17 @@ defmodule Absinthe.Type.Enum do
   # Get the internal representation of an enum value
   @doc false
   @spec parse(t, any) :: any
-  def parse(enum, external_value) do
+  def parse(enum, %Blueprint.Input.Enum{value: external_value}) do
     Map.fetch(enum.values_by_name, external_value)
+  end
+  def parse(_, _) do
+    :error
   end
 
   # Get the external representation of an enum value
   @doc false
-  @spec serialize!(t, any) :: binary
-  def serialize!(enum, internal_value) do
+  @spec serialize(t, any) :: binary
+  def serialize(enum, internal_value) do
     Map.fetch!(enum.values_by_internal_value, internal_value).name
   end
 end

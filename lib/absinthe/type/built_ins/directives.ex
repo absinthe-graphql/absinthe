@@ -1,7 +1,8 @@
 defmodule Absinthe.Type.BuiltIns.Directives do
-  use Absinthe.Schema.Notation
-
   @moduledoc false
+
+  use Absinthe.Schema.Notation
+  alias Absinthe.Blueprint
 
   directive :include do
     description """
@@ -12,11 +13,11 @@ defmodule Absinthe.Type.BuiltIns.Directives do
 
     on [:field, :fragment_spread, :inline_fragment]
 
-    instruction fn
-      %{if: true} ->
-        :include
-      _ ->
-        :skip
+    expand fn
+      %{if: true}, node ->
+        Blueprint.put_flag(node, :include, __MODULE__)
+      _, node ->
+        Blueprint.put_flag(node, :skip, __MODULE__)
     end
 
   end
@@ -30,11 +31,11 @@ defmodule Absinthe.Type.BuiltIns.Directives do
 
     on [:field, :fragment_spread, :inline_fragment]
 
-    instruction fn
-      %{if: true} ->
-        :skip
-      _ ->
-        :include
+    expand fn
+      %{if: true}, node ->
+        Blueprint.put_flag(node, :skip, __MODULE__)
+      _, node ->
+        Blueprint.put_flag(node, :include, __MODULE__)
     end
 
   end

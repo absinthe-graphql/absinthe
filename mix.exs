@@ -1,12 +1,12 @@
 defmodule Absinthe.Mixfile do
   use Mix.Project
 
-  @version "1.1.11"
+  @version "1.2.0-rc.1"
 
   def project do
     [app: :absinthe,
      version: @version,
-     elixir: "~> 1.2",
+     elixir: "~> 1.3",
      elixirc_paths: elixirc_paths(Mix.env),
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -48,9 +48,10 @@ defmodule Absinthe.Mixfile do
   defp deps do
     [
       {:ex_spec, "~> 1.0.0", only: :test},
-      {:ex_doc, "~> 0.11.0", only: :dev},
-      {:earmark, "~> 0.1.19", only: :dev},
+      {:ex_doc, "~> 0.14", only: :dev},
       {:benchfella, "~> 0.3.0", only: :dev},
+      {:dialyze, "~> 0.2", only: :dev},
+      {:mix_test_watch, "~> 0.2.6", only: [:test, :dev]}
     ]
   end
 end
