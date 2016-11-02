@@ -43,4 +43,59 @@ defmodule Absinthe.TypeTest do
 
   end
 
+  defmodule MetadataSchema do
+    use Absinthe.Schema
+
+    object :with_meta do
+      meta :foo, "bar"
+    end
+
+    object :without_meta do
+    end
+
+  end
+
+  @with_meta Absinthe.Schema.lookup_type(MetadataSchema, :with_meta)
+  @without_meta Absinthe.Schema.lookup_type(MetadataSchema, :without_meta)
+
+
+  describe ".meta/1" do
+
+    describe "when no metadata is defined" do
+      it "returns an empty map" do
+        assert Type.meta(@without_meta) == %{}
+      end
+    end
+
+    describe "when metadata is defined" do
+      it "returns the metadata as a map" do
+        assert Type.meta(@with_meta) == %{foo: "bar"}
+      end
+    end
+
+  end
+
+  describe ".meta/2" do
+
+    describe "when no metadata field is defined" do
+      it "returns nil" do
+        assert Type.meta(@without_meta, :bar) == nil
+      end
+    end
+
+    describe "when the requested metadata field is not defined" do
+      it "returns nil" do
+        assert Type.meta(@with_meta, :bar) == nil
+      end
+    end
+
+
+    describe "when the metadata is defined" do
+      it "returns the value" do
+        assert Type.meta(@with_meta, :foo) == "bar"
+      end
+    end
+
+  end
+
 end

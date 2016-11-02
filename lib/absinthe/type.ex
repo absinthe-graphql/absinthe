@@ -29,10 +29,17 @@ defmodule Absinthe.Type do
     nil
   end
 
-  @doc "Lookup a metadata field on a type"
+  @doc "Lookup a custom metadata field on a type"
   @spec meta(custom_t, atom) :: nil | any
   def meta(%{__private__: store}, key) do
     get_in(store, [:meta, key])
+  end
+
+  @doc "Return all custom metadata on a type"
+  @spec meta(custom_t) :: map
+  def meta(%{__private__: store}) do
+    Keyword.get(store, :meta, [])
+    |> Enum.into(%{})
   end
 
   @doc "Determine if a struct matches one of the types"
