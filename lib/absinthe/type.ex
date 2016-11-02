@@ -10,8 +10,11 @@ defmodule Absinthe.Type do
 
   @type_modules [Type.Scalar, Type.Object, Type.Interface, Type.Union, Type.Enum, Type.InputObject, Type.List, Type.NonNull]
 
-  @typedoc "These are all of the possible kinds of types."
-  @type t :: Type.Scalar.t | Type.Object.t | Type.Field.t | Type.Interface.t | Type.Union.t | Type.Enum.t | Type.InputObject.t | Type.List.t | Type.NonNull.t
+  @typedoc "The types that can be custom-built in a schema"
+  @type custom_t :: Type.Scalar.t | Type.Object.t | Type.Field.t | Type.Interface.t | Type.Union.t | Type.Enum.t | Type.InputObject.t
+
+  @typedoc "All the possible types"
+  @type t :: custom_t | Type.List.t | Type.NonNull.t
 
   @typedoc "A type identifier"
   @type identifier_t :: atom
@@ -24,6 +27,19 @@ defmodule Absinthe.Type do
   end
   def identifier(_) do
     nil
+  end
+
+  @doc "Lookup a custom metadata field on a type"
+  @spec meta(custom_t, atom) :: nil | any
+  def meta(%{__private__: store}, key) do
+    get_in(store, [:meta, key])
+  end
+
+  @doc "Return all custom metadata on a type"
+  @spec meta(custom_t) :: map
+  def meta(%{__private__: store}) do
+    Keyword.get(store, :meta, [])
+    |> Enum.into(%{})
   end
 
   @doc "Determine if a struct matches one of the types"

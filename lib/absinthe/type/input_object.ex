@@ -36,8 +36,31 @@ defmodule Absinthe.Type.InputObject do
 
   alias Absinthe.Type
 
-  @type t :: %{name: binary, description: binary, fields: map | (() -> map), __reference__: Type.Reference.t}
-  defstruct name: nil, description: nil, fields: %{}, __reference__: nil
+  @typedoc """
+  Note new input object types should be defined using
+  `Absinthe.Schema.Notation.input_object/3`.
+
+  * `:name` - The name of the input object type. Should be a TitleCased `binary`. Set automatically.
+  * `:description` - A nice description for introspection.
+  * `:fields` - A map of `Absinthe.Type.Field` structs. Usually built via `Absinthe.Schema.Notation.field/1`.
+
+  The `__private__` and `:__reference__` fields are for internal use.
+  """
+  @type t :: %{
+    name: binary,
+    description: binary,
+    fields: map | (() -> map),
+    __private__: Keyword.t,
+    __reference__: Type.Reference.t,
+  }
+
+  defstruct [
+    name: nil,
+    description: nil,
+    fields: %{},
+    __private__: [],
+    __reference__: nil,
+  ]
 
   def build(%{attrs: attrs}) do
     fields = Type.Field.build(attrs[:fields] || [])

@@ -551,12 +551,22 @@ defmodule Absinthe.Schema.Notation do
     :ok
   end
 
-  @placement {:private, [under: [:field, :object]]}
+  @placement {:private, [under: [:field, :object, :input_object, :enum, :scalar, :interface, :union]]}
   @doc false
   defmacro private(owner, key, value) do
     __CALLER__
     |> recordable!(:private, @placement[:private])
     |> record_private!(owner, key, value)
+  end
+
+  @placement {:meta, [under: [:field, :object, :input_object, :enum, :scalar, :interface, :union]]}
+  @doc """
+  Defines a metadata key/value pair for a custom type.
+  """
+  defmacro meta(key, value) do
+    __CALLER__
+    |> recordable!(:meta, @placement[:meta])
+    |> record_private!(:meta, key, value)
   end
 
   @doc false
