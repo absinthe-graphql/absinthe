@@ -64,7 +64,13 @@ each field's `type_conditions`).
 
 #### List Coercion
 
-TODO: BEN
+Fields and arguments with list types are now automatically coerced if given a
+single item. For example if you have `arg :ids, list_of(:id)` Absinthe will coerce
+a document like `foo(ids: 1)` into `foo(ids: [1])`.
+
+This is also true for resolution functions. If your field has a return type of
+`list_of(:user)` and your resolution function returns `{:ok, %User{}}`, the value
+is wrapped. It is as though you returned `{:ok, [%User{}]}`.
 
 #### Simpler Adapters
 
@@ -97,7 +103,8 @@ fn args, %{source: source} -> {:ok, source.foo} end
 
 #### Resolution Plugins (+ Async & Batching)
 
-TODO: BEN
+v1.2 features a Resolution Plugin mechanism. See the docs in the
+`Absinthe.Resolution.Plugin` module for more information.
 
 #### Resolution Info
 
