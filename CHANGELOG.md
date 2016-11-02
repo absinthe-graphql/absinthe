@@ -1,61 +1,125 @@
 # Changelog
 
-## v1.2.0-alpha.1
+## v1.2
 
-- Enable support for 3 arity resolution functions. The arguments are:
-  ```
-  fn parent, args, field_info ->
-  ```
+## Overview
 
-## v1.2 (Overview)
+Absinthe now generates a richer "intermediate representation" of query
+documents (see `Absinthe.Blueprint`) from the document AST. This representation
+then serves as the data backbone for processing during later phases.
 
-### Internals
+Rather than the integrated validation-during-execution approach used in
+previous versions-- and rather than using a few "fat" phases (eg, "Parsing",
+"Validation", "Execution") as in other implementations -- Absinthe treats
+all operations (parsing, each individual validation, field resolution, and
+result construction) as a pipeline (see `Absinthe.Pipeline`) of discrete
+and equal phases. This allows developers to insert, remove, switch-out, and
+otherwise customize the changes that occur to the intermediate representation,
+and how that intermediate representation turns into a result. Future releases
+will further this model and continue to make it easier to modify Absinthe's
+processing to support the unique needs of developers.
 
-- Absinthe now generates a richer "intermediate representation" of query
-  documents (see `Absinthe.Blueprint`) from the document AST. This representation
-  then serves as the data backbone for processing during later phases.
-- Rather than the integrated validation-during-execution approach used in
-  previous versions-- and rather than using a few "fat" phases (eg, "Parsing",
-  "Validation", "Execution") as in other implementations -- Absinthe treats
-  all operations (parsing, each individual validation, field resolution, and
-  result construction) as a pipeline (see `Absinthe.Pipeline`) of discrete
-  and equal phases. This allows developers to insert, remove, switch-out, and
-  otherwise customize the changes that occur to the intermediate representation,
-  and how that intermediate representation turns into a result. Future releases
-  will further this model and continue to make it easier to modify Absinthe's
-  processing to support the unique needs of developers.
+### Breaking Changes
 
-### Performance
+#### Deprecations and Errors
 
-TODO (Note that performance will be a focus of the beta/rc releases).
+Absinthe no longer automatically adds deprecations to result
+errors. (Although this is possible with the addition of custom
+phases.)
 
-### Breaking Changes:
+#### More Strict Input Value Parsing
 
-- Absinthe no longer automatically adds deprecations to result errors. (Although
-  this is possible with the addition of custom phases.)
-- Absinthe now more closely adheres to the GraphQL specification's rules
-  about input value coercion, to include:
-  - Int: Disallowing automatic coercion of, eg, `"1"` to `1`
-  - String: Disallowing automatic coercion of, eg, `1` to `"1"`
-  - Enum: Disallowing quoted values, eg, `"RED"` vs `RED`
-- The raw AST nodes are no longer provided as part of the "info" argument passed
-  to resolve functions. If you have built logic (eg, Ecto preloading) based on
-  the AST information, look at the `definition` instead, which is a Blueprint
-  `Field` struct containing a `fields` array of subfields. These fields have
-  passed validation and have been flattened from any fragments that may have
-  been used in the original document (you just may want to pay attention to
-  each field's `type_conditions`).
-- Scalar `parse` functions now receive their value as `Absinthe.Blueprint.Input.t`
-  structs. If you have defined your own custom scalar types, you may need to
-  modify them; see `lib/absinthe/type/built_ins/scalars.ex` for examples.
-- Adapters now only use `to_internal_name/2` and `to_external_name/2` as the
-  `Absinthe.Blueprint` intermediate representation and schema application
-  phase removes the need for whole document conversion. If you have defined
-  your own adapter, you may need to modify it.
-- The IDL generating mix task (`absinthe.schema.graphql`) has been temporarily
-  removed (due to the extent of work needed to modify it for this release), but
-  it will reappear in a future release along with integrated schema compilation
-  from GraphQL IDL.
+Absinthe now more closely adheres to the GraphQL specification's rules
+about input value coercion, to include:
+
+- Int: Disallowing automatic coercion of, eg, `"1"` to `1`
+- String: Disallowing automatic coercion of, eg, `1` to `"1"`
+- Enum: Disallowing quoted values, eg, `"RED"` vs `RED`
+
+Furthermore scalar type `parse` functions now receive their value as
+`Absinthe.Blueprint.Input.t` structs. If you have defined your own
+custom scalar types, you may need to modify them; see
+`lib/absinthe/type/built_ins/scalars.ex` for examples.
+
+#### Validation Errors Prevent Resolution
+
+In accordance with the GraphQL Specification, if any errors are added
+during document validation, no resolution will occur. In the past,
+because validation was done on-the-fly during resolution, partial
+resolution, just returning `null` for fields (in a way that would be
+invalid, according to the spec) was possible.
+
+(Notably, this release includes a very large number of new document
+validations.)
+
+#### No AST Nodes in Resolution
+
+The raw AST nodes are no longer provided as part of the "info" argument passed
+to resolve functions. If you have built logic (eg, Ecto preloading) based on
+the AST information, look at the `definition` instead, which is a Blueprint
+`Field` struct containing a `fields` array of subfields. These fields have
+passed validation and have been flattened from any fragments that may have
+been used in the original document (you just may want to pay attention to
+each field's `type_conditions`).
+
+#### List Coercion
+
+Fields and arguments with list types are now automatically coerced if given a
+single item. For example if you have `arg :ids, list_of(:id)` Absinthe will coerce
+a document like `foo(ids: 1)` into `foo(ids: [1])`.
+
+This is also true for resolution functions. If your field has a return type of
+`list_of(:user)` and your resolution function returns `{:ok, %User{}}`, the value
+is wrapped. It is as though you returned `{:ok, [%User{}]}`.
+
+#### Simpler Adapters
+
+Adapters now only use `to_internal_name/2` and `to_external_name/2` as the
+`Absinthe.Blueprint` intermediate representation and schema application
+phase removes the need for whole document conversion. If you have defined
+your own adapter, you may need to modify it.
+
+#### Mix Task Removal
+
+The IDL generating mix task (`absinthe.schema.graphql`) has been temporarily
+removed (due to the extent of work needed to modify it for this release), but
+it will reappear in a future release along with integrated schema compilation
+from GraphQL IDL.
+
+### Other Changes
+
+#### Resolution Functions
+
+Support for 3-arity resolution functions. Resolution functions accepting 3
+arguments will have the current "source" (or parent) object passed as the
+first argument. 2-arity resolution functions will continue to be supported.
+
+The following resolutions functions are equivalent:
+
+```elixir
+fn source, args, info -> {:ok, source.foo} end
+fn args, %{source: source} -> {:ok, source.foo} end
+```
+
+#### Resolution Plugins (+ Async & Batching)
+
+v1.2 features a Resolution Plugin mechanism. See the docs in the
+`Absinthe.Resolution.Plugin` module for more information.
+
+#### Resolution Info
+
+In previous versions, the last argument to resolution functions was an
+`Absinthe.Execution.Field` struct. It is now an `Absinthe.Resolution` struct.
+While the struct has most of the same information available, the AST nodes
+is no longer provided. See "Breaking Changes" above.
+
+#### Custom Type Metadata
+
+To further support extensibility, types and fields can be annotated using the
+`Absinthe.Schema.Notation.meta/2` macro, and metadata extracted using
+`Absinthe.Type.meta/1` and `Absinthe.Type.meta/1`. This metadata facility has
+been added for objects, input objects, enums, scalars, unions, interfaces, and
+fields.
 
 ## v1.1.7
 
