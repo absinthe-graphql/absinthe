@@ -16,7 +16,7 @@ defmodule Absinthe.FragmentMergeTest do
     query do
       field :viewer, :user do
         resolve fn _, _ ->
-          {:ok, %{todos: %{total_count: 1, completed_count: 2}}}
+          {:ok, %{todos: [%{total_count: 1, completed_count: 2}, %{total_count: 3, completed_count: 4}]}}
         end
       end
     end
@@ -43,6 +43,39 @@ defmodule Absinthe.FragmentMergeTest do
       }
     }
     """
-    assert {:ok, %{data: %{"viewer" => %{"todos" => [%{"totalCount" => 1, "completedCount" => 2}]}}}} == Absinthe.run(doc, Schema)
+    expected = %{"viewer" => %{"todos" => [
+      %{"totalCount" => 1, "completedCount" => 2},
+      %{"totalCount" => 3, "completedCount" => 4}
+    ]}}
+    assert {:ok, %{data: expected}} == Absinthe.run(doc, Schema)
+  end
+
+  test "it deep merges duplicated fields properly" do
+    doc = """
+    {
+      viewer {
+        ...fragmentWithOtherField
+        ...fragmentWithOneField
+      }
+    }
+
+    fragment fragmentWithOneField on User {
+      todos {
+        totalCount,
+        completedCount
+      }
+    }
+
+    fragment fragmentWithOtherField on User {
+      todos {
+        completedCount
+      }
+    }
+    """
+    expected = %{"viewer" => %{"todos" => [
+      %{"totalCount" => 1, "completedCount" => 2},
+      %{"totalCount" => 3, "completedCount" => 4}
+    ]}}
+    assert {:ok, %{data: expected}} == Absinthe.run(doc, Schema)
   end
 end
