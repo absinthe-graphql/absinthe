@@ -132,7 +132,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
     ~s(In field "#{field_name}": Unknown field.)
   end
 
-  defp expected_type_error_message(expected_type_name, inspected_value) do
+  def expected_type_error_message(expected_type_name, inspected_value) do
     ~s(Expected type "#{expected_type_name}", found #{inspected_value}.)
   end
 

@@ -926,6 +926,24 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
       )
     end
 
+    it "Scalar type for input object" do
+      assert_fails_rule(@rule,
+        """
+        {
+          complicatedArgs {
+            complexArgField(complexArg: true)
+          }
+        }
+        """,
+        [],
+        bad_argument("complexArg", "ComplexInput", ~s(true), 3,
+          [
+            @rule.expected_type_error_message("ComplexInput", "true")
+          ]
+        )
+      )
+    end
+
   end
 
   describe "Directive arguments" do
