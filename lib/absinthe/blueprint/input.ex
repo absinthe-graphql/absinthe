@@ -115,7 +115,7 @@ defmodule Absinthe.Blueprint.Input do
   def inspect(%Input.Null{}) do
     "null"
   end
-  def inspect(blank) do
+  def inspect(nil) do
     "null"
   end
   def inspect(other) do
