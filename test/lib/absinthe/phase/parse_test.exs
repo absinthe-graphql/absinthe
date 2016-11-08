@@ -78,7 +78,9 @@ defmodule Absinthe.Phase.ParseTest do
   end
 
   @query """
-  { fieldWithNullLiteralValue(value: null) }
+  query QueryWithNullLiterals($name: String = null) {
+    fieldWithNullLiteral(name: $name, literalNull: null) @direct(arg: null)
+  }
   """
   it "parses null value" do
     assert {:ok, _} = run(@query)
