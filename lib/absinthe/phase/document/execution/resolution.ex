@@ -170,20 +170,16 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp call_resolution_function(args, %{schema_node: %{name: "__" <> _}} = field, info, _) do
     field.schema_node.resolve.(args, info)
   end
-  # Interface Field
-  defp call_resolution_function(args, %{schema_node: schema_node} = field, %{parent_type: %Type.Interface{}} = info, source) when not is_nil(schema_node) do
-    concrete_type = Type.Interface.resolve_type(info.parent_type, source, info)
-    concrete_schema_node = Map.fetch!(concrete_type.fields, field.schema_node.__reference__.identifier)
-    # Try again, using the concrete type/field schema node
-    call_resolution_function(
-      args,
-      put_in(field.schema_node, concrete_schema_node),
-      put_in(info.parent_type, concrete_type),
-      source
-    )
+  # Interface/Union Field
+  defp call_resolution_function(args, field, %{parent_type: %abstract_mod{}} = info, source)
+      when abstract_mod in [Type.Interface, Type.Union] do
+    concrete_type = abstract_mod.resolve_type(info.parent_type, source, info)
+    # Try again, using the concrete type
+    call_resolution_function(args, field, put_in(info.parent_type, concrete_type), source)
   end
-  defp call_resolution_function(args, field, info, parent) do
-    Type.Field.resolve(field.schema_node, args, parent, info)
+  defp call_resolution_function(args, field, %{parent_type: %Type.Object{} = concrete_type} = info, source) do
+    concrete_schema_node = Map.fetch!(concrete_type.fields, field.schema_node.__reference__.identifier)
+    Type.Field.resolve(concrete_schema_node, args, source, info)
   end
 
   @spec to_result(resolution_result :: term, blueprint :: Blueprint.t, schema_type :: Type.t) :: Resolution.t
