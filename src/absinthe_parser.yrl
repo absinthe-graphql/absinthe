@@ -17,9 +17,9 @@ Nonterminals
 
 Terminals
   '{' '}' '(' ')' '[' ']' '!' ':' '@' '$' '=' '|' '...'
-  'query' 'mutation' 'subscription' 'fragment' 'on' 'null' 'directive'
+  'query' 'mutation' 'subscription' 'fragment' 'on' 'directive'
   'type' 'implements' 'interface' 'union' 'scalar' 'enum' 'input' 'extend' 'schema'
-  name int_value float_value string_value boolean_value.
+  name int_value float_value string_value boolean_value null.
 
 Rootsymbol Document.
 
@@ -133,20 +133,21 @@ NameWithoutOn -> 'schema' : extract_binary('$1').
 NameWithoutOn -> 'enum' : extract_binary('$1').
 NameWithoutOn -> 'input' : extract_binary('$1').
 NameWithoutOn -> 'extend' : extract_binary('$1').
-NameWithoutOn -> 'null' : extract_binary('$1').
 NameWithoutOn -> 'directive' : extract_binary('$1').
 
 Name -> NameWithoutOn : '$1'.
 Name -> 'on' : extract_binary('$1').
 
 Value -> Variable : '$1'.
-Value -> int_value : build_ast_node('IntValue', #{'value' => extract_integer('$1')}, #{'start_line' => extract_line('$1')}).
-Value -> float_value : build_ast_node('FloatValue', #{'value' => extract_float('$1')}, #{'start_line' => extract_line('$1')}).
-Value -> string_value : build_ast_node('StringValue', #{'value' => extract_quoted_string_token('$1')}, #{'start_line' => extract_line('$1')}).
-Value -> boolean_value : build_ast_node('BooleanValue', #{'value' => extract_boolean('$1')}, #{'start_line' => extract_line('$1')}).
-Value -> EnumValue : build_ast_node('EnumValue', #{'value' => '$1'}, #{'start_line' => extract_line('$1')}).
-Value -> ListValue : build_ast_node('ListValue', #{'values' => '$1'}, #{'start_line' => extract_child_line('$1')}).
-Value -> ObjectValue : build_ast_node('ObjectValue', #{'fields' => '$1'}, #{'start_line' => extract_child_line('$1')}).
+Value -> int_value :     build_ast_node('IntValue',     #{'value' => extract_integer('$1')},             #{'start_line' => extract_line('$1')}).
+Value -> float_value :   build_ast_node('FloatValue',   #{'value' => extract_float('$1')},               #{'start_line' => extract_line('$1')}).
+Value -> string_value :  build_ast_node('StringValue',  #{'value' => extract_quoted_string_token('$1')}, #{'start_line' => extract_line('$1')}).
+Value -> boolean_value : build_ast_node('BooleanValue', #{'value' => extract_boolean('$1')},             #{'start_line' => extract_line('$1')}).
+Value -> null :          build_ast_node('NullValue',    #{},                 #{'start_line' => extract_line('$1')}).
+Value -> EnumValue :     build_ast_node('EnumValue',    #{'value' => '$1'},  #{'start_line' => extract_line('$1')}).
+Value -> ListValue :     build_ast_node('ListValue',    #{'values' => '$1'}, #{'start_line' => extract_child_line('$1')}).
+Value -> ObjectValue :   build_ast_node('ObjectValue',  #{'fields' => '$1'}, #{'start_line' => extract_child_line('$1')}).
+
 
 EnumValue -> Name : extract_binary('$1').
 
