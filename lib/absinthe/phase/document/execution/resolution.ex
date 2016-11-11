@@ -7,7 +7,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   # Blueprint results are placed under `blueprint.result.resolution`. This is
   # because the results form basically a new tree from the original blueprint.
 
-  alias Absinthe.{Blueprint, Type, Phase}
+  alias Absinthe.{Blueprint, Type, Phase, Error}
   alias Absinthe.Resolution.Plugin
   alias Blueprint.Document.Resolution
 
@@ -143,6 +143,17 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     |> to_result(bp_field, full_type)
     |> walk_result(acc, bp_field, full_type, info)
   end
+  defp build_result({:error, %Error{} = err}, acc, bp_field, info, _) do
+    message = ~s(In field "#{bp_field.name}": #{err.message})
+    full_type = Type.expand(bp_field.schema_node.type, info.schema)
+
+    result =
+      nil
+      |> to_result(bp_field, full_type)
+      |> put_error(error(bp_field, message, err.extra))
+
+    {result, acc}
+  end
   defp build_result({:error, msg}, acc, bp_field, info, _) do
     message = ~s(In field "#{bp_field.name}": #{msg})
     full_type = Type.expand(bp_field.schema_node.type, info.schema)
@@ -256,11 +267,12 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     schema.__absinthe_type__(schema_type)
   end
 
-  def error(node, message) do
+  def error(node, message, extra \\ []) do
     Phase.Error.new(
       __MODULE__,
       message,
-      node.source_location
+      node.source_location,
+      extra
     )
   end
 

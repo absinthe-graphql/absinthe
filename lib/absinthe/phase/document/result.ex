@@ -102,10 +102,15 @@ defmodule Absinthe.Phase.Document.Result do
   defp field_name(%{emitter: %{name: name}}), do: name
 
   defp format_error(%Phase.Error{locations: []} = error) do
-    %{message: error.message}
+    error_object = %{message: error.message}
+    Map.merge(Map.new(error.extra), error_object)
   end
   defp format_error(%Phase.Error{} = error) do
-    %{message: error.message, locations: Enum.map(error.locations, &format_location/1)}
+    error_object = %{
+      message: error.message,
+      locations: Enum.map(error.locations, &format_location/1)
+    }
+    Map.merge(Map.new(error.extra), error_object)
   end
 
   defp format_location(%{line: line, column: col}) do

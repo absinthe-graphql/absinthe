@@ -6,6 +6,10 @@ defmodule Things do
     "bar" => %{id: "bar", name: "Bar", value: 5}
   }
 
+  enum :failure_type do
+    value :with_code
+  end
+
   mutation do
 
     field :update_thing,
@@ -22,6 +26,14 @@ defmodule Things do
           found = @db |> Map.get(id)
           {:ok, found |> Map.merge(fields)}
       end
+
+    field :failing_thing, type: :thing do
+      arg :type, type: :failure_type
+      resolve fn
+        (%{type: :with_code}, _) ->
+          {:error, Absinthe.Error.new("Custom Error", code: 42)}
+      end
+    end
 
   end
 
