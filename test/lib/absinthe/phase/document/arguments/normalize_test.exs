@@ -57,7 +57,7 @@ defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
 
   @fragment_query """
     query Things($id: ID!) {
-      baz {
+      things {
         ... thingsFragment
       }
     }
