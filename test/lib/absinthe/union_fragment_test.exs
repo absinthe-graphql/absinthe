@@ -7,11 +7,14 @@ defmodule Absinthe.UnionFragmentTest do
     object :user do
       field :name, :string
       field :todos, list_of(:todo)
+      interface :named
     end
 
     object :todo do
       field :name, :string
       field :completed, :boolean
+      interface :named
+      interface :completable
     end
 
     union :object do
@@ -19,18 +22,32 @@ defmodule Absinthe.UnionFragmentTest do
       resolve_type fn %{type: type}, _ -> type end
     end
 
+    interface :named do
+      field :name, :string
+      resolve_type fn %{type: type}, _ -> type end
+    end
+
+    interface :completable do
+      field :completed, :boolean
+      resolve_type fn %{type: type}, _ -> type end
+    end
+
     object :viewer do
       field :objects, list_of(:object)
+      field :named_thing, :named
     end
 
     query do
       field :viewer, :viewer do
         resolve fn _, _ ->
-          {:ok, %{objects: [
-            %{type: :user, name: "foo", completed: true},
-            %{type: :todo, name: "do stuff", completed: false},
-            %{type: :user, name: "bar"},
-          ]}}
+          {:ok, %{
+            objects: [
+              %{type: :user, name: "foo", completed: true},
+              %{type: :todo, name: "do stuff", completed: false},
+              %{type: :user, name: "bar"},
+            ],
+            named_thing: %{type: :todo, name: "do stuff", completed: false}
+          }}
         end
       end
     end
@@ -42,11 +59,11 @@ defmodule Absinthe.UnionFragmentTest do
       viewer {
         objects {
           ... on User {
-          __typename
+            __typename
             name
           }
           ... on Todo {
-          __typename
+            __typename
             completed
           }
         }
@@ -62,4 +79,46 @@ defmodule Absinthe.UnionFragmentTest do
     assert {:ok, %{data: expected}} == Absinthe.run(doc, Schema)
   end
 
+  test "it queries an interface implemented by a union type" do
+    doc = """
+    {
+      viewer {
+        objects {
+          ... on Named {
+            __typename
+            name
+          }
+        }
+      }
+    }
+
+    """
+    expected = %{"viewer" => %{"objects" => [
+      %{"__typename" => "User", "name" => "foo"},
+      %{"__typename" => "Todo", "name" => "do stuff"},
+      %{"__typename" => "User", "name" => "bar"},
+    ]}}
+    assert {:ok, %{data: expected}} == Absinthe.run(doc, Schema)
+  end
+
+  test "it queries an interface on an unrelated interface" do
+    doc = """
+    {
+      viewer {
+        namedThing {
+          __typename
+          name
+          ... on Completable {
+            completed
+          }
+        }
+      }
+    }
+
+    """
+    expected = %{"viewer" => %{"namedThing" =>
+      %{"__typename" => "Todo", "name" => "do stuff", "completed" => false},
+    }}
+    assert {:ok, %{data: expected}} == Absinthe.run(doc, Schema)
+  end
 end

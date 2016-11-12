@@ -266,12 +266,13 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   @spec passes_type_condition?(Type.t, Type.t, any, Schema.t) :: boolean
   defp passes_type_condition?(equal, equal, _, _), do: true
-  # The condition in an Object type and the current scope is a Union; Verify
-  # that the Union has the Object type as a member.
+  # The condition is an Object type and the current scope is a Union; Verify
+  # that the Union has the Object type as a member and that the current source
+  # object's concrete type matched the condition Object type.
   defp passes_type_condition?(%Type.Object{} = condition, %Type.Union{} = type, source, schema) do
     with true <- Type.Union.member?(type, condition) do
-      source_type = Type.Union.resolve_type(type, source, %{schema: schema})
-      passes_type_condition?(condition, source_type, source, schema)
+      concrete_type = Type.Union.resolve_type(type, source, %{schema: schema})
+      passes_type_condition?(condition, concrete_type, source, schema)
     end
   end
   # The condition is an Object type and the current scope is an Interface; verify
@@ -283,10 +284,18 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       passes_type_condition?(condition, concrete_type, source, schema)
     end
   end
-  # The condition in an Interface type and the current scope is an Object type;
+  # The condition is an Interface type and the current scope is an Object type;
   # verify that the Object type is a member of the Interface.
   defp passes_type_condition?(%Type.Interface{} = condition, %Type.Object{} = type, _, _) do
     Type.Interface.member?(condition, type)
+  end
+  # The condition is an Interface type and the current scope is an abstract
+  # (Union/Interface) type; Verify that the current source object's concrete
+  # type is a member of the Interface.
+  defp passes_type_condition?(%Type.Interface{} = condition, %abstract_mod{} = type, source, schema)
+      when abstract_mod in [Type.Interface, Type.Union] do
+    concrete_type = Type.Union.resolve_type(type, source, %{schema: schema})
+    passes_type_condition?(condition, concrete_type, source, schema)
   end
   # Otherwise, nope.
   defp passes_type_condition?(_, _, _, _) do
