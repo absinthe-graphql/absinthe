@@ -15,7 +15,7 @@ defmodule Absinthe.Blueprint.Input.List do
   ]
 
   @type t :: %__MODULE__{
-    items: [Blueprint.Input.List.Item.t],
+    items: [Blueprint.Input.Value.t],
     flags: Blueprint.flags_t,
     schema_node: nil | Absinthe.Type.t,
     source_location: Blueprint.Document.SourceLocation.t,
@@ -28,6 +28,16 @@ defmodule Absinthe.Blueprint.Input.List do
   @spec wrap(Blueprint.Input.t, Absinthe.Type.List.t) :: t
   def wrap(%__MODULE__{} = list, _), do: list
   def wrap(node, list_schema_node) do
-    %__MODULE__{items: [%Blueprint.Input.Value{literal: node, normalized: node, schema_node: node.schema_node}], source_location: node.source_location, schema_node: list_schema_node}
+    %__MODULE__{
+      items: [
+        %Blueprint.Input.Value{
+          literal: node,
+          normalized: node,
+          schema_node: node.schema_node.of_type
+        }
+      ],
+      source_location: node.source_location,
+      schema_node: list_schema_node
+    }
   end
 end

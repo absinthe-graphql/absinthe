@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.1
+
+- Bug fix: Fix regression where nested list input types did not work
+
 ## v1.2
 
 ## Overview

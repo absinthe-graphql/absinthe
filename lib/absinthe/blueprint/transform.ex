@@ -60,7 +60,6 @@ defmodule Absinthe.Blueprint.Transform do
     Blueprint.Document.VariableDefinition => [:type, :default_value],
     Blueprint.Input.Argument => [:input_value],
     Blueprint.Input.Field => [:input_value],
-    Blueprint.Input.List.Item => [:input_value],
     Blueprint.Input.Object => [:fields],
     Blueprint.Input.List => [:items],
     Blueprint.Input.Value => [:normalized, :literal],

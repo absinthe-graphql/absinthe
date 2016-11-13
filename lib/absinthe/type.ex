@@ -213,6 +213,11 @@ defmodule Absinthe.Type do
   def unwrap(%{of_type: t}), do: unwrap(t)
   def unwrap(type), do: type
 
+  @doc "Unwrap a type from NonNull"
+  @spec unwrap_non_null(Type.NonNull.t | t) :: t
+  def unwrap_non_null(%Type.NonNull{of_type: t}), do: unwrap_non_null(t)
+  def unwrap_non_null(type), do: type
+
   @doc """
   Get the GraphQL name for a (possibly wrapped) type, expanding
   any references if necessary using the provided schema.

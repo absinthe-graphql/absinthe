@@ -600,7 +600,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         [
           bad_argument("stringListArg", "[String]", "1", 3,
             [
-              @rule.value_error_message(0, "String", "1")
+              @rule.value_error_message(0, "[String]", "1")
             ]
           )
         ]

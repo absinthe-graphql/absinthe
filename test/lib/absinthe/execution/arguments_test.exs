@@ -77,6 +77,14 @@ defmodule Absinthe.Execution.ArgumentsTest do
         resolve fn %{names: names}, _ -> {:ok, names} end
       end
 
+      field :list_of_lists, list_of(list_of(:string)) do
+        arg :items, list_of(list_of(:string))
+
+        resolve fn %{items: items}, _ ->
+          {:ok, items}
+        end
+       end
+
       field :numbers, list_of(:integer) do
         arg :numbers, list_of(:integer)
 
@@ -280,6 +288,15 @@ defmodule Absinthe.Execution.ArgumentsTest do
         {numbers(numbers: [1, 2])}
         """
         assert_result {:ok, %{data: %{"numbers" => [1, 2]}}}, doc |> run(Schema)
+      end
+
+      it "works for nested lists" do
+        doc = """
+        {
+          listOfLists(items: [["foo"], ["bar", "baz"]])
+        }
+        """
+        assert_result {:ok, %{data: %{"listOfLists" => [["foo"], ["bar", "baz"]]}}}, doc |> run(Schema)
       end
 
       it "it will coerce a non list item if it's of the right type" do

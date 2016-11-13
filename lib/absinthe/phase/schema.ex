@@ -105,6 +105,9 @@ defmodule Absinthe.Phase.Schema do
   defp set_schema_node(%Blueprint.Input.Field{} = node, parent, schema, adapter) do
     %{node | schema_node: find_schema_field(parent.schema_node, node.name, schema, adapter)}
   end
+  defp set_schema_node(%Blueprint.Input.List{} = node, parent, _schema, _adapter) do
+    %{node | schema_node: Type.unwrap_non_null(parent.schema_node).of_type}
+  end
   defp set_schema_node(%Blueprint.Input.Value{} = node, parent, schema, _) do
     case parent.schema_node do
       %Type.Argument{type: type} ->
@@ -115,16 +118,10 @@ defmodule Absinthe.Phase.Schema do
         %{node | schema_node: type |> Type.expand(schema)}
     end
   end
-  defp set_schema_node(node, %Blueprint.Input.Value{normalized: nil}, _schema, _) do
-    node
-  end
   defp set_schema_node(%{schema_node: nil} = node, %Blueprint.Input.Value{} = parent, _schema, _) do
-    %{node | schema_node: Type.unwrap(parent.schema_node)}
+    %{node | schema_node: parent.schema_node}
   end
-  defp set_schema_node(nil, _, _, _) do
-    nil
-  end
-  defp set_schema_node(node, _, _schema, _) do
+  defp set_schema_node(node, _, _, _) do
     node
   end
 
