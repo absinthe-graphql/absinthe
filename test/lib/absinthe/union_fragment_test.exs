@@ -52,7 +52,7 @@ defmodule Absinthe.UnionFragmentTest do
               %{type: :user, username: "bar"},
             ],
             me: %{type: :user, username: "baz", todos: [], name: "should not be exposed"},
-            named_thing: %{type: :todo, name: "do stuff", completed: false}
+            named_thing: %{type: :todo, title: "do stuff", completed: false}
           }}
         end
       end
