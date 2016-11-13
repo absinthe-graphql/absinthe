@@ -18,6 +18,7 @@ defmodule Absinthe.UnionFragmentTest do
       end
       field :completed, :boolean
       interface :named
+      interface :completable
     end
 
     union :object do
@@ -30,9 +31,15 @@ defmodule Absinthe.UnionFragmentTest do
       resolve_type fn %{type: type}, _ -> type end
     end
 
+    interface :completable do
+      field :completed, :boolean
+      resolve_type fn %{type: type}, _ -> type end
+    end
+
     object :viewer do
       field :objects, list_of(:object)
       field :me, :user
+      field :named_thing, :named
     end
 
     query do
@@ -45,6 +52,7 @@ defmodule Absinthe.UnionFragmentTest do
               %{type: :user, username: "bar"},
             ],
             me: %{type: :user, username: "baz", todos: [], name: "should not be exposed"},
+            named_thing: %{type: :todo, name: "do stuff", completed: false}
           }}
         end
       end
@@ -92,6 +100,49 @@ defmodule Absinthe.UnionFragmentTest do
 
     """
     expected = %{"viewer" => %{"me" => %{"__typename" => "User", "name" => "baz"}}}
+    assert {:ok, %{data: expected}} == Absinthe.run(doc, Schema)
+  end
+
+  test "it queries an interface implemented by a union type" do
+    doc = """
+    {
+      viewer {
+        objects {
+          ... on Named {
+            __typename
+            name
+          }
+        }
+      }
+    }
+
+    """
+    expected = %{"viewer" => %{"objects" => [
+      %{"__typename" => "User", "name" => "foo"},
+      %{"__typename" => "Todo", "name" => "do stuff"},
+      %{"__typename" => "User", "name" => "bar"},
+    ]}}
+    assert {:ok, %{data: expected}} == Absinthe.run(doc, Schema)
+  end
+
+  test "it queries an interface on an unrelated interface" do
+    doc = """
+    {
+      viewer {
+        namedThing {
+          __typename
+          name
+          ... on Completable {
+            completed
+          }
+        }
+      }
+    }
+
+    """
+    expected = %{"viewer" => %{"namedThing" =>
+      %{"__typename" => "Todo", "name" => "do stuff", "completed" => false},
+    }}
     assert {:ok, %{data: expected}} == Absinthe.run(doc, Schema)
   end
 

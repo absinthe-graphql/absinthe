@@ -263,7 +263,24 @@ extract_atom({Value, _Line}) -> Value.
 extract_binary(Value) when is_binary(Value) -> Value;
 extract_binary({Token, _Line}) -> list_to_binary(atom_to_list(Token));
 extract_binary({_Token, _Line, Value}) -> list_to_binary(Value).
-extract_quoted_string_token({_Token, _Line, Value}) -> list_to_binary(lists:sublist(Value, 2, length(Value) - 2)).
+extract_quoted_string_token({_Token, _Line, Value}) -> iolist_to_binary(unescape(lists:sublist(Value, 2, length(Value) - 2))).
+
+unescape(Escaped) -> unescape(Escaped, []).
+
+unescape([], Acc) -> lists:reverse(Acc);
+unescape([$\\, $" | T], Acc) -> unescape(T, [$" | Acc]);
+unescape([$\\, $\\ | T], Acc) -> unescape(T, [$\\ | Acc]);
+unescape([$\\, $/ | T], Acc) -> unescape(T, [$/ | Acc]);
+unescape([$\\, $b | T], Acc) -> unescape(T, [$\b | Acc]);
+unescape([$\\, $f | T], Acc) -> unescape(T, [$\f | Acc]);
+unescape([$\\, $n | T], Acc) -> unescape(T, [$\n | Acc]);
+unescape([$\\, $r | T], Acc) -> unescape(T, [$\r | Acc]);
+unescape([$\\, $t | T], Acc) -> unescape(T, [$\t | Acc]);
+unescape([$\\, $u, A, B, C, D | T], Acc) -> unescape(T, [hexlist_to_utf8_binary([A, B, C, D]) | Acc]);
+unescape([H | T], Acc) -> unescape(T, [H | Acc]).
+
+hexlist_to_utf8_binary(HexList) -> unicode:characters_to_binary([httpd_util:hexlist_to_integer(HexList)]).
+
 extract_integer({_Token, _Line, Value}) ->
   {Int, []} = string:to_integer(Value), Int.
 extract_float({_Token, _Line, Value}) ->
