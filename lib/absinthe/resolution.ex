@@ -11,13 +11,14 @@ defmodule Absinthe.Resolution do
 
   ## Contents
   - `:adapter` - The adapter used for any name conversions.
-  - `:definition` - The Blueprint definition for this field. To access the
-                    schema type for this field, see the `definition.schema_node`.
+  - `:definition` - The Blueprint definition for this field.
   - `:context` - The context passed to `Absinthe.run`.
   - `:root_value` - The root value passed to `Absinthe.run`, if any.
   - `:parent_type` - The parent type for the field.
   - `:schema` - The current schema.
   - `:source` - The resolved parent object; source of this field.
+
+  To access the schema type for this field, see the `definition.schema_node`.
   """
   @type t :: %__MODULE__{
     adapter: Absinthe.Adapter.t,
@@ -59,6 +60,7 @@ defmodule Absinthe.Resolution do
       end
     end
   end
+  ```
 
   ### DO
   ```elixir
@@ -66,7 +68,7 @@ defmodule Absinthe.Resolution do
     fn parent, args, info ->
       case info.context do
         %{current_user: _} ->
-          #{__MODULE__}.call(fun, parent, args, info) # THIS LINE IS CORRECT
+          Absinthe.Resolution.call(fun, parent, args, info) # THIS LINE IS CORRECT
         _ ->
           {:error, "unauthorized"}
       end
