@@ -2,7 +2,10 @@
 
 ## v1.2.1
 
-- Bug fix: Fix regression where nested list input types did not work
+- Stricter, spec-compliant scalar parsing rules (#194)
+- Bug fix: Fixes to complex resolution using abstract types (#197) (#199)
+- Bug fix: Fix escaped characters in input literals (#165) (#202)
+- Bug fix: Fix regression where nested list input types did not work (#205)
 
 ## v1.2
 
