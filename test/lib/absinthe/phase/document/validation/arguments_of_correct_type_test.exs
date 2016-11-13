@@ -550,6 +550,19 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
       )
     end
 
+    it "List of List" do
+      assert_passes_rule(@rule,
+        """
+        {
+          complicatedArgs {
+            stringListOfListArgField(stringListOfListArg: [["one"], ["two", "three"]])
+          }
+        }
+        """,
+        []
+      )
+    end
+
   end
 
   describe "Invalid List value" do

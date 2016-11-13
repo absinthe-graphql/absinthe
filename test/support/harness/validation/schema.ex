@@ -132,6 +132,9 @@ defmodule Support.Harness.Validation.Schema do
     field :string_list_arg_field, :string do
       arg :string_list_arg, list_of(:string)
     end
+    field :string_list_of_list_arg_field, :string do
+      arg :string_list_of_list_arg, list_of(list_of(:string))
+    end
     field :complex_arg_field, :string do
       arg :complex_arg, :complex_input
     end
