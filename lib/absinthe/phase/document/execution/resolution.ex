@@ -7,7 +7,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   # Blueprint results are placed under `blueprint.result.resolution`. This is
   # because the results form basically a new tree from the original blueprint.
 
-  alias Absinthe.{Blueprint, Type, Phase, Error}
+  alias Absinthe.{Blueprint, Type, Phase}
   alias Absinthe.Resolution.Plugin
   alias Blueprint.Document.Resolution
 
@@ -143,27 +143,13 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     |> to_result(bp_field, full_type)
     |> walk_result(acc, bp_field, full_type, info)
   end
-  defp build_result({:error, %Error{} = err}, acc, bp_field, info, _) do
-    message = ~s(In field "#{bp_field.name}": #{err.message})
-    full_type = Type.expand(bp_field.schema_node.type, info.schema)
-
-    result =
-      nil
-      |> to_result(bp_field, full_type)
-      |> put_error(error(bp_field, message, err.extra))
-
-    {result, acc}
+  defp build_result({:error, params}, acc, bp_field, info, _)
+   when is_list(params) or is_map(params) do
+    {[message: msg], extra} = Keyword.split(Enum.to_list(params), [:message])
+    build_error_result(msg, extra, acc, bp_field, info)
   end
   defp build_result({:error, msg}, acc, bp_field, info, _) do
-    message = ~s(In field "#{bp_field.name}": #{msg})
-    full_type = Type.expand(bp_field.schema_node.type, info.schema)
-
-    result =
-      nil
-      |> to_result(bp_field, full_type)
-      |> put_error(error(bp_field, message))
-
-    {result, acc}
+    build_error_result(msg, [], acc, bp_field, info)
   end
   defp build_result({:plugin, plugin, data}, acc, emitter, info, source) do
     Resolution.PluginInvocation.init(plugin, data, acc, emitter, info, source)
@@ -175,6 +161,18 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     Resolving on: #{inspect source}
     Got: #{inspect other}
     """
+  end
+
+  defp build_error_result(message, extra, acc, bp_field, info) do
+    message = ~s(In field "#{bp_field.name}": #{message})
+    full_type = Type.expand(bp_field.schema_node.type, info.schema)
+
+    result =
+      nil
+      |> to_result(bp_field, full_type)
+      |> put_error(error(bp_field, message, extra))
+
+    {result, acc}
   end
 
   # Introspection Field

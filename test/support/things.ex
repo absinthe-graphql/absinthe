@@ -31,7 +31,7 @@ defmodule Things do
       arg :type, type: :failure_type
       resolve fn
         (%{type: :with_code}, _) ->
-          {:error, Absinthe.Error.new("Custom Error", code: 42)}
+          {:error, [message: "Custom Error", code: 42]}
       end
     end
 
