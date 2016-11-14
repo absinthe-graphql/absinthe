@@ -24,21 +24,10 @@ defmodule Absinthe.Phase.Document.Arguments.Normalize do
 
   @spec fetch_provided_values(Blueprint.t) :: map
   defp fetch_provided_values(input) do
-    default = %{}
-    {_, provided_values} = Blueprint.prewalk(input, default, &find_operation/2)
-    provided_values
+    Enum.reduce(input.operations, %{}, fn (operation, acc) ->
+      Map.merge(acc, operation.provided_values)
+    end)
   end
-
-  @spec find_operation(Blueprint.node_t, map)
-   :: {Blueprint.node_t, map} | {:halt, Blueprint.node_t, map}
-  defp find_operation(%Blueprint.Document.Operation{} = node, _) do
-    {
-      :halt,
-      node,
-      node.provided_values
-    }
-  end
-  defp find_operation(node, acc), do: {node, acc}
 
   @spec handle_node(Blueprint.node_t, map) :: {Blueprint.node_t, map}
   # Argument using a variable: Set provided value
