@@ -17,16 +17,17 @@ defmodule Absinthe.Phase.Document.Arguments.Normalize do
 
   @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
   def run(input, _options \\ []) do
-    acc = %{provided_values: fetch_provided_values(input)}
+    acc = %{provided_values: get_provided_values(input)}
     {node, _} = Blueprint.prewalk(input, acc, &handle_node/2)
     {:ok, node}
   end
 
-  @spec fetch_provided_values(Blueprint.t) :: map
-  defp fetch_provided_values(input) do
-    Enum.reduce(input.operations, %{}, fn (operation, acc) ->
-      Map.merge(acc, operation.provided_values)
-    end)
+  @spec get_provided_values(Blueprint.t) :: map
+  defp get_provided_values(input) do
+    case Blueprint.current_operation(input) do
+      nil -> %{}
+      operation -> operation.provided_values
+    end
   end
 
   @spec handle_node(Blueprint.node_t, map) :: {Blueprint.node_t, map}
