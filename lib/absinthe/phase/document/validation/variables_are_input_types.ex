@@ -43,7 +43,7 @@ defmodule Absinthe.Phase.Document.Validation.VariablesAreInputTypes do
     Phase.Error.new(
       __MODULE__,
       error_message(node.name, type_rep),
-      node.source_location
+      location: node.source_location
     )
   end
 

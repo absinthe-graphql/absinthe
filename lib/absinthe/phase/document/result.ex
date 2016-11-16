@@ -103,7 +103,7 @@ defmodule Absinthe.Phase.Document.Result do
 
   defp format_error(%Phase.Error{locations: []} = error) do
     error_object = %{message: error.message}
-    Map.merge(Map.new(error.extra), error_object)
+    Map.merge(error.extra, error_object)
   end
   defp format_error(%Phase.Error{} = error) do
     error_object = %{

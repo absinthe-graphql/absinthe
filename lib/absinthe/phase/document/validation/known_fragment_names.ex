@@ -40,7 +40,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownFragmentNames do
     Phase.Error.new(
       __MODULE__,
       ~s(Unknown fragment "#{node.name}"),
-      node.source_location
+      location: node.source_location
     )
   end
 

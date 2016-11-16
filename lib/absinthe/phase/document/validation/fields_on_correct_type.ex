@@ -53,7 +53,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
     Phase.Error.new(
       __MODULE__,
       error_message(field_node.name, parent_type_name, type_suggestions, field_suggestions),
-      field_node.source_location
+      location: field_node.source_location
     )
   end
 

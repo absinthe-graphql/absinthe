@@ -51,7 +51,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNames do
     Phase.Error.new(
       __MODULE__,
       error_message,
-      node.source_location
+      location: node.source_location
     )
   end
 

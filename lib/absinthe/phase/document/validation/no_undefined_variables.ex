@@ -47,7 +47,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariables do
     Phase.Error.new(
       __MODULE__,
       error_message(node.name, operation.name),
-      [node.source_location, operation.source_location]
+      location: [node.source_location, operation.source_location]
     )
   end
 
