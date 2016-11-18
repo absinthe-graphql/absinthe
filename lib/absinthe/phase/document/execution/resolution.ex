@@ -143,6 +143,18 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     |> to_result(bp_field, full_type)
     |> walk_result(acc, bp_field, full_type, info)
   end
+  ## Mutation resolver may return a response to update the context
+  defp build_result({:ok, result, context}, acc, bp_field, info, source) do
+    unless is_mutation?(info) do
+      raise Absinthe.ExecutionError, """
+      Only mutation resovers may return `{:ok, val, context}`
+      Resolving field: #{bp_field.name}
+      Resolving on: #{inspect source}
+      Got: #{inspect {:ok, result, context}}
+      """
+    end
+    build_result({:ok, result}, acc, bp_field, %{info | context: context}, source)
+  end
   defp build_result({:error, msg}, acc, bp_field, info, _) do
     message = ~s(In field "#{bp_field.name}": #{msg})
     full_type = Type.expand(bp_field.schema_node.type, info.schema)
@@ -165,6 +177,9 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     Got: #{inspect other}
     """
   end
+
+  defp is_mutation?(%Absinthe.Resolution{parent_type: %Type.Object{__reference__: %{identifier: :mutation}}}), do: true
+  defp is_mutation?(_), do: false
 
   # Introspection Field
   defp call_resolution_function(args, %{schema_node: %{name: "__" <> _}} = field, info, _) do
