@@ -52,7 +52,7 @@ defmodule Absinthe.Phase.Validation.KnownTypeNames do
     Phase.Error.new(
       __MODULE__,
       ~s(Unknown type "#{name}".),
-      node.source_location
+      location: node.source_location
     )
   end
 

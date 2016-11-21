@@ -90,7 +90,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafs do # [sic]
     Phase.Error.new(
       __MODULE__,
       message,
-      node.source_location
+      location: node.source_location
     )
   end
 

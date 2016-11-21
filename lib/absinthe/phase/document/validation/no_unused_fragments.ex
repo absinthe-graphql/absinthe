@@ -41,7 +41,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedFragments do
     Phase.Error.new(
       __MODULE__,
       error_message(node.name),
-      node.source_location
+      location: node.source_location
     )
   end
 

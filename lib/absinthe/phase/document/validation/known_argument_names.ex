@@ -71,7 +71,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNames do
     Phase.Error.new(
       __MODULE__,
       directive_error_message(argument_node.name, directive_node.name),
-      argument_node.source_location
+      location: argument_node.source_location
     )
   end
 
@@ -81,7 +81,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNames do
     Phase.Error.new(
       __MODULE__,
       field_error_message(argument_node.name, field_node.name, type_name),
-      argument_node.source_location
+      location: argument_node.source_location
     )
   end
 

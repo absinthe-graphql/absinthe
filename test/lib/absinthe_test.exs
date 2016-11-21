@@ -2,6 +2,16 @@ defmodule AbsintheTest do
   use Absinthe.Case, async: true
   import AssertResult
 
+  it "can return extra error fields" do
+    query = "mutation { FailingThing(type: WITH_CODE) { name } }"
+    assert_result {:ok, %{data: %{}, errors: [%{code: 42, message: "In field \"FailingThing\": Custom Error"}]}}, run(query, Things)
+  end
+
+  it "requires message in extended errors" do
+    query = "mutation { FailingThing(type: WITHOUT_MESSAGE) { name } }"
+    assert_raise Absinthe.ExecutionError, fn -> run(query, Things) end
+  end
+
   it "can do a simple query" do
     query = """
     query GimmeFoo {

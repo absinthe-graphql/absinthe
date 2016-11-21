@@ -143,27 +143,42 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     |> to_result(bp_field, full_type)
     |> walk_result(acc, bp_field, full_type, info)
   end
+  defp build_result({:error, params} = other, acc, bp_field, info, source) when is_list(params) or is_map(params) do
+    case Keyword.split(Enum.to_list(params), [:message]) do
+      {[], _} -> result_format_error(other, bp_field, source)
+      {[message: msg], extra} ->
+        build_error_result(msg, extra, acc, bp_field, info)
+    end
+  end
   defp build_result({:error, msg}, acc, bp_field, info, _) do
-    message = ~s(In field "#{bp_field.name}": #{msg})
-    full_type = Type.expand(bp_field.schema_node.type, info.schema)
-
-    result =
-      nil
-      |> to_result(bp_field, full_type)
-      |> put_error(error(bp_field, message))
-
-    {result, acc}
+    build_error_result(msg, [], acc, bp_field, info)
   end
   defp build_result({:plugin, plugin, data}, acc, emitter, info, source) do
     Resolution.PluginInvocation.init(plugin, data, acc, emitter, info, source)
   end
   defp build_result(other, _, field, _, source) do
+    result_format_error(other, field, source)
+  end
+
+  defp result_format_error(other, field, source) do
     raise Absinthe.ExecutionError, """
-    Resolution function did not return `{:ok, val}` or `{:error, reason}`
+    Resolution function did not return `{:ok, term}`, `{:error, binary}` or `{:error, map | Keyword.t}`
     Resolving field: #{field.name}
     Resolving on: #{inspect source}
     Got: #{inspect other}
     """
+  end
+
+  defp build_error_result(message, extra, acc, bp_field, info) do
+    message = ~s(In field "#{bp_field.name}": #{message})
+    full_type = Type.expand(bp_field.schema_node.type, info.schema)
+
+    result =
+      nil
+      |> to_result(bp_field, full_type)
+      |> put_error(error(bp_field, message, extra))
+
+    {result, acc}
   end
 
   # Introspection Field
@@ -252,11 +267,12 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     schema.__absinthe_type__(schema_type)
   end
 
-  def error(node, message) do
+  def error(node, message, extra \\ []) do
     Phase.Error.new(
       __MODULE__,
       message,
-      node.source_location
+      location: node.source_location,
+      extra: extra
     )
   end
 
