@@ -8,6 +8,7 @@ defmodule Things do
 
   enum :failure_type do
     value :with_code
+    value :without_message
   end
 
   mutation do
@@ -32,6 +33,8 @@ defmodule Things do
       resolve fn
         (%{type: :with_code}, _) ->
           {:error, message: "Custom Error", code: 42}
+        (%{type: :without_message}, _) ->
+          {:error, code: 42}
       end
     end
 
