@@ -58,7 +58,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectives do
     Phase.Error.new(
       __MODULE__,
       "Unknown directive.",
-      node.source_location
+      location: node.source_location
     )
   end
 
@@ -68,7 +68,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectives do
     Phase.Error.new(
       __MODULE__,
       "May not be used on #{placement_name}.",
-      node.source_location
+      location: node.source_location
     )
   end
 

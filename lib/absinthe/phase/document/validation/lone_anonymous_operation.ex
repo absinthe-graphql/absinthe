@@ -53,7 +53,7 @@ defmodule Absinthe.Phase.Document.Validation.LoneAnonymousOperation do
     Phase.Error.new(
       __MODULE__,
       "This anonymous operation must be the only defined operation.",
-      node.source_location
+      location: node.source_location
     )
   end
 

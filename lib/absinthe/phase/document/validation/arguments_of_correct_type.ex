@@ -106,7 +106,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
     Phase.Error.new(
       __MODULE__,
       message,
-      node.source_location
+      location: node.source_location
     )
   end
 

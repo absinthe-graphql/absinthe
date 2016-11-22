@@ -24,7 +24,7 @@ defmodule Absinthe.Type.Field do
   @type resolver_output :: ok_output | error_output | plugin_output
 
   @type ok_output :: {:ok, any}
-  @type error_output :: {:error, binary}
+  @type error_output :: {:error, binary} | {:error, map | Keyword.t}
   @type plugin_output :: {:plugin, Absinthe.Resolution.Plugin.t, term}
 
   @typedoc """
