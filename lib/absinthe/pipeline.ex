@@ -68,7 +68,8 @@ defmodule Absinthe.Pipeline do
       # Ensure Types
       Phase.Validation.KnownTypeNames,
       # Process Arguments
-      Phase.Document.Arguments.Coercion,
+      Phase.Document.Arguments.CoerceEnums,
+      Phase.Document.Arguments.CoerceLists,
       Phase.Document.Arguments.Parse,
       Phase.Document.MissingVariables,
       Phase.Document.MissingLiterals,

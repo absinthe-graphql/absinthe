@@ -2,7 +2,7 @@ defmodule Absinthe.Blueprint.Input.List do
 
   @moduledoc false
 
-  alias Absinthe.{Blueprint, Phase}
+  alias Absinthe.{Blueprint, Phase, Type}
 
   @enforce_keys [:items]
   defstruct [
@@ -33,7 +33,7 @@ defmodule Absinthe.Blueprint.Input.List do
         %Blueprint.Input.Value{
           literal: node,
           normalized: node,
-          schema_node: node.schema_node.of_type
+          schema_node: Type.unwrap(node.schema_node),
         }
       ],
       source_location: node.source_location,
