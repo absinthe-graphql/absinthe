@@ -3,7 +3,7 @@ defmodule Absinthe.Schema.Notation.Blueprint do
 
   alias Absinthe.Blueprint
 
-  def append(blueprint, {:type, scope}, %Blueprint.Schema.FieldDefinition{} = field) do
+  def add(blueprint, {:type, scope}, %Blueprint.Schema.FieldDefinition{} = field) do
     types = Enum.map(blueprint.types, fn
       %{identifier: ^scope} = type ->
         %{type | fields: [field | type.fields]}
@@ -12,7 +12,7 @@ defmodule Absinthe.Schema.Notation.Blueprint do
     end)
     %{blueprint | types: types}
   end
-  def append(blueprint, nil, type) do
+  def add(blueprint, nil, type) do
     %{blueprint | types: [type | blueprint.types]}
   end
 
@@ -34,7 +34,7 @@ defmodule Absinthe.Schema.Notation.Blueprint do
           identifier: unquote(identifier)
         }
         @absinthe_scope nil
-        @absinthe_blueprint unquote(__MODULE__).append(@absinthe_blueprint, @absinthe_scope, item)
+        @absinthe_blueprint unquote(__MODULE__).add(@absinthe_blueprint, @absinthe_scope, item)
         @absinthe_scope {:type, unquote(identifier)}
       end,
       body
@@ -46,7 +46,7 @@ defmodule Absinthe.Schema.Notation.Blueprint do
     [
       quote do
         item = %Absinthe.Blueprint.Schema.FieldDefinition{name: unquote(name), identifier: unquote(identifier), type: unquote(type)}
-        @absinthe_blueprint unquote(__MODULE__).append(@absinthe_blueprint, @absinthe_scope, item)
+        @absinthe_blueprint unquote(__MODULE__).add(@absinthe_blueprint, @absinthe_scope, item)
         @absinthe_scope {:field, @absinthe_scope, unquote(identifier)}
       end,
       body
