@@ -4,9 +4,10 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
 
   alias Absinthe.Blueprint
 
-  @enforce_keys [:name, :type]
+  @enforce_keys [:name, :identifier, :type]
   defstruct [
     :name,
+    :identifier,
     :type,
     deprecation: nil,
     arguments: [],
@@ -18,6 +19,7 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
 
   @type t :: %__MODULE__{
     name: String.t,
+    identifier: atom,
     deprecation: nil | Blueprint.Schema.Deprecation.t,
     arguments: [Blueprint.Schema.InputValueDefinition.t],
     type: Blueprint.TypeReference.t,

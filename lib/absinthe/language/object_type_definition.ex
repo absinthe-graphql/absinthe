@@ -23,6 +23,7 @@ defmodule Absinthe.Language.ObjectTypeDefinition do
     def convert(node, doc) do
       %Blueprint.Schema.ObjectTypeDefinition{
         name: node.name,
+        identifier: Macro.underscore(node.name) |> String.to_atom,
         fields: Absinthe.Blueprint.Draft.convert(node.fields, doc),
         interfaces: Absinthe.Blueprint.Draft.convert(node.interfaces, doc),
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
