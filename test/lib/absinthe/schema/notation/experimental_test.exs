@@ -1,8 +1,8 @@
-defmodule Absinthe.Schema.Notation.BlueprintTest do
+defmodule Absinthe.Schema.Notation.ExperimentalTest do
   use Absinthe.Case
 
   defmodule Schema do
-    use Absinthe.Schema.Notation.Blueprint
+    use Absinthe.Schema.Notation.Experimental
 
     object :foo do
       field :bar, :string do

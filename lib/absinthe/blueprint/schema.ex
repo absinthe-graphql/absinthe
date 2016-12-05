@@ -4,7 +4,7 @@ defmodule Absinthe.Blueprint.Schema do
 
   alias __MODULE__
 
-  @type t ::
+  @type type_t ::
       Schema.EnumTypeDefinition.t
     | Schema.InputObjectTypeDefinition.t
     | Schema.InterfaceTypeDefinition.t
@@ -12,4 +12,5 @@ defmodule Absinthe.Blueprint.Schema do
     | Schema.ScalarTypeDefinition.t
     | Schema.UnionTypeDefinition.t
 
+  @type t :: type_t | Schema.DirectiveDefinition.t
 end

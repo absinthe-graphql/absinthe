@@ -1,11 +1,11 @@
 # TODO: This will become Absinthe.Schema.Notation before release
-defmodule Absinthe.Schema.Notation.Blueprint do
+defmodule Absinthe.Schema.Notation.Experimental do
 
   alias Absinthe.Blueprint
 
   @typep scope_t :: {:type, atom} | {:field, {:type, atom}, atom}
 
-  @spec lookup_type(Blueprint.t, atom) :: nil | Blueprint.Schema.t
+  @spec lookup_type(Blueprint.t, atom) :: nil | Blueprint.Schema.type_t
   @doc false
   def lookup_type(blueprint, identifier) do
     Enum.find(blueprint.types, fn
@@ -16,7 +16,7 @@ defmodule Absinthe.Schema.Notation.Blueprint do
     end)
   end
 
-  @spec update_type(Blueprint.t, atom, (Blueprint.Schema.t -> Blueprint.Schema.t)) :: Blueprint.t
+  @spec update_type(Blueprint.t, atom, (Blueprint.Schema.type_t -> Blueprint.Schema.type_t)) :: Blueprint.t
   @doc false
   def update_type(blueprint, identifier, fun) do
     update_in(blueprint, [Access.key(:types), Access.all()], fn
@@ -27,7 +27,7 @@ defmodule Absinthe.Schema.Notation.Blueprint do
     end)
   end
 
-  @spec put_type(Blueprint.t, Blueprint.Schema.t) :: Blueprint.t
+  @spec put_type(Blueprint.t, Blueprint.Schema.type_t) :: Blueprint.t
   @doc false
   def put_type(blueprint, type) do
     update_in(blueprint.types, &[type | &1])
