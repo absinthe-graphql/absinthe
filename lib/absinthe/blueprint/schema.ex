@@ -12,5 +12,19 @@ defmodule Absinthe.Blueprint.Schema do
     | Schema.ScalarTypeDefinition.t
     | Schema.UnionTypeDefinition.t
 
-  @type t :: type_t | Schema.DirectiveDefinition.t
+    @type t :: type_t | Schema.DirectiveDefinition.t
+
+    @doc """
+    Lookup a type definition that is part of a schema.
+    """
+    @spec lookup_type(Blueprint.t, atom) :: nil | Blueprint.Schema.type_t
+    def lookup_type(blueprint, identifier) do
+      Enum.find(blueprint.types, fn
+        %{identifier: ^identifier} ->
+          true
+        _ ->
+          false
+      end)
+    end
+
 end

@@ -1,20 +1,9 @@
-# TODO: This will become Absinthe.Schema.Notation before release
+# TODO: This will become Absinthe.Schema.Notatigon before release
 defmodule Absinthe.Schema.Notation.Experimental do
 
   alias Absinthe.Blueprint
 
   @typep scope_t :: {:type, atom} | {:field, {:type, atom}, atom}
-
-  @spec lookup_type(Blueprint.t, atom) :: nil | Blueprint.Schema.type_t
-  @doc false
-  def lookup_type(blueprint, identifier) do
-    Enum.find(blueprint.types, fn
-      %{identifier: ^identifier} ->
-        true
-      _ ->
-        false
-    end)
-  end
 
   @spec update_type(Blueprint.t, atom, (Blueprint.Schema.type_t -> Blueprint.Schema.type_t)) :: Blueprint.t
   @doc false
@@ -59,6 +48,33 @@ defmodule Absinthe.Schema.Notation.Experimental do
     end)
   end
 
+  def concat_types(blueprint, other) do
+    %{
+      blueprint
+      |
+      types: other.types ++ blueprint.types,
+      directives: other.directives ++ blueprint.directives
+    }
+  end
+
+
+  def concat_fields(blueprint, {:type, _} = scope, {mod, source_type_identifier} = criteria) do
+    Blueprint.Schema.lookup_type(mod.__absinthe_blueprint__(), source_type_identifier)
+    |> do_concat_fields(blueprint, scope, criteria)
+  end
+  def concat_fields(blueprint, {:type, _} = scope, source_type_identifier = criteria) when is_atom(source_type_identifier) do
+    Blueprint.Schema.lookup_type(blueprint, source_type_identifier)
+    |> do_concat_fields(blueprint, scope, criteria)
+  end
+
+  defp do_concat_fields(%{fields: fields}, blueprint, scope, _) do
+    Enum.reduce(fields, blueprint, &put_field(&2, scope, &1))
+  end
+  defp do_concat_fields(_, _, _, criteria) do
+    raise "Not a valid source for fields: #{inspect(criteria)}"
+  end
+
+
   defmacro __using__(_opts) do
     quote do
       @absinthe_blueprint %Absinthe.Blueprint{}
@@ -83,6 +99,28 @@ defmodule Absinthe.Schema.Notation.Experimental do
       end,
       body
     ]
+  end
+
+
+  @spec import_types(atom) :: Macro.t
+  defmacro import_types(module) do
+    quote do
+      @absinthe_blueprint unquote(__MODULE__).concat_types(
+        @absinthe_blueprint,
+        unquote(module).__absinthe_blueprint__()
+      )
+    end
+  end
+
+  @spec import_fields(atom | {module, atom}) :: Macro.t
+  defmacro import_fields(source_criteria) do
+    quote do
+      @absinthe_blueprint unquote(__MODULE__).concat_fields(
+        @absinthe_blueprint,
+        @absinthe_scope,
+        unquote(source_criteria)
+      )
+    end
   end
 
   defmacro field(identifier, type, do: body) do
