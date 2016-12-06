@@ -105,6 +105,27 @@ defmodule Absinthe.Schema.Notation.Experimental do
     end
   end
 
+  defmacro query(do: body) do
+    object_definition(:query, [name: "RootQueryType"], body)
+  end
+  defmacro query(attrs, do: body) when is_list(attrs) do
+    object_definition(:query, attrs, body)
+  end
+
+  defmacro mutation(do: body) do
+    object_definition(:mutation, [name: "RootMutationType"], body)
+  end
+  defmacro mutation(attrs, do: body) when is_list(attrs) do
+    object_definition(:mutation, attrs, body)
+  end
+
+  defmacro subscription(do: body) do
+    object_definition(:subscription, [name: "RootSubscriptionType"], body)
+  end
+  defmacro subscription(attrs, do: body) when is_list(attrs) do
+    object_definition(:subscription, attrs, body)
+  end
+
   defmacro object(identifier, do: body) do
     object_definition(identifier, [], body)
   end
