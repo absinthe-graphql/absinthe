@@ -77,7 +77,7 @@ defmodule Absinthe.Schema.Notation.Experimental do
     selected = select_import(fields, Map.new(opts))
     Enum.reduce(selected, blueprint, &put_field(&2, scope, &1))
   end
-  defp do_concat_fields(_, _, _, criteria) do
+  defp do_concat_fields(_, _, _, criteria, _) do
     raise "Not a valid source for fields: #{inspect(criteria)}"
   end
 
@@ -99,34 +99,35 @@ defmodule Absinthe.Schema.Notation.Experimental do
     quote do
       @absinthe_blueprint %Absinthe.Blueprint{}
       @absinthe_scopes []
+      @desc nil
       import unquote(__MODULE__), only: :macros
       @before_compile unquote(__MODULE__)
     end
   end
 
   defmacro object(identifier, do: body) do
-    record_object!(identifier, [], body)
+    object_definition(identifier, [], body)
   end
 
   defmacro object(identifier, attrs, do: body) do
-    record_object!(identifier, attrs, body)
+    object_definition(identifier, attrs, body)
   end
 
-  def record_object!(identifier, attrs, body) do
-    name = Keyword.get(attrs, :name)
-    attrs = Keyword.delete(attrs, :name)
+  def object_definition(identifier, attrs, body) do
     [
       quote do
         @absinthe_blueprint unquote(__MODULE__).put_type(
           @absinthe_blueprint,
           %Absinthe.Blueprint.Schema.ObjectTypeDefinition{
             unquote_splicing(attrs),
-            name: unquote(name || default_object_name(identifier)),
+            name: unquote(attrs[:name] || default_object_name(identifier)),
+            description: @desc || unquote(attrs[:description]),
             identifier: unquote(identifier)
           }
-      )
+        )
+        @desc nil
       end,
-      body |> scoped({:type, identifier})
+      body |> scoped({:type, identifier}),
     ]
   end
 
@@ -161,24 +162,22 @@ defmodule Absinthe.Schema.Notation.Experimental do
 
   @spec field(atom, atom | Keyword.t) :: Macro.t
   defmacro field(identifier, attrs) when is_list(attrs) do
-    record_field!(identifier, attrs, nil)
+    field_definition(identifier, attrs, nil)
   end
   defmacro field(identifier, type) when is_atom(type) do
-    record_field!(identifier, [type: type], nil)
+    field_definition(identifier, [type: type], nil)
   end
 
   @spec field(atom, atom | Keyword.t, [do: Macro.t]) :: Macro.t
   defmacro field(identifier, attrs, do: body) when is_list(attrs) do
-    record_field!(identifier, attrs, body)
+    field_definition(identifier, attrs, body)
   end
   defmacro field(identifier, type, do: body) when is_atom(type) do
-    record_field!(identifier, [type: type], body)
+    field_definition(identifier, [type: type], body)
   end
 
-  @spec record_field!(atom, Keyword.t, Macro.t) :: Macro.t
-  def record_field!(identifier, attrs, body) do
-    name = Keyword.get(attrs, :name)
-    attrs = Keyword.delete(attrs, :name)
+  @spec field_definition(atom, Keyword.t, Macro.t) :: Macro.t
+  def field_definition(identifier, attrs, body) do
     [
       quote do
         @absinthe_blueprint unquote(__MODULE__).put_field(
@@ -186,11 +185,13 @@ defmodule Absinthe.Schema.Notation.Experimental do
           hd(@absinthe_scopes),
           %Absinthe.Blueprint.Schema.FieldDefinition{
             unquote_splicing(attrs),
-            name: unquote(name || default_field_name(identifier)),
+            name: unquote(attrs[:name] || default_field_name(identifier)),
+            description: @desc || unquote(attrs[:description]),
             identifier: unquote(identifier),
           }
         )
         @absinthe_scopes [{:field, hd(@absinthe_scopes), unquote(identifier)} | @absinthe_scopes]
+        @desc nil
       end,
       body,
       pop_scope

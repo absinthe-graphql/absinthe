@@ -13,6 +13,7 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
     arguments: [],
     directives: [],
     # Added by DSL
+    description: nil,
     resolve_ast: nil,
     # Added by phases
     flags: %{},
@@ -27,6 +28,7 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
     type: Blueprint.TypeReference.t,
     directives: [Blueprint.Directive.t],
     # Added by DSL
+    description: nil | String.t,
     resolve_ast: nil | Macro.t,
     # Added by phases
     flags: Blueprint.flags_t,
