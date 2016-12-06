@@ -48,105 +48,166 @@ defmodule Absinthe.Schema.Notation.Experimental do
     end)
   end
 
-  def concat_types(blueprint, other) do
-    %{
-      blueprint
-      |
-      types: other.types ++ blueprint.types,
-      directives: other.directives ++ blueprint.directives
-    }
+  @spec concat_types(Blueprint.t, Blueprint.t, Keyword.t) :: Blueprint.t
+  def concat_types(blueprint, other, opts) do
+    selected = select_import(other.types, Map.new(opts))
+    update_in(blueprint.types, &(selected ++ &1))
   end
 
+  defp select_import(collection, %{only: ids}) when is_list(ids) do
+    Enum.filter(collection, &(&1.identifier in ids))
+  end
+  defp select_import(collection, %{except: ids}) when is_list(ids) do
+    collection -- select_import(collection, %{only: ids})
+  end
+  defp select_import(collection, opts) when map_size(opts) == 0 do
+    collection
+  end
 
-  def concat_fields(blueprint, {:type, _} = scope, {mod, source_type_identifier} = criteria) do
+  def concat_fields(blueprint, {:type, _} = scope, {mod, source_type_identifier} = criteria, opts) do
     Blueprint.Schema.lookup_type(mod.__absinthe_blueprint__(), source_type_identifier)
-    |> do_concat_fields(blueprint, scope, criteria)
+    |> do_concat_fields(blueprint, scope, criteria, opts)
   end
-  def concat_fields(blueprint, {:type, _} = scope, source_type_identifier = criteria) when is_atom(source_type_identifier) do
+  def concat_fields(blueprint, {:type, _} = scope, source_type_identifier = criteria, opts) when is_atom(source_type_identifier) do
     Blueprint.Schema.lookup_type(blueprint, source_type_identifier)
-    |> do_concat_fields(blueprint, scope, criteria)
+    |> do_concat_fields(blueprint, scope, criteria, opts)
   end
 
-  defp do_concat_fields(%{fields: fields}, blueprint, scope, _) do
-    Enum.reduce(fields, blueprint, &put_field(&2, scope, &1))
+  defp do_concat_fields(%{fields: fields}, blueprint, scope, _criteria, opts) do
+    selected = select_import(fields, Map.new(opts))
+    Enum.reduce(selected, blueprint, &put_field(&2, scope, &1))
   end
   defp do_concat_fields(_, _, _, criteria) do
     raise "Not a valid source for fields: #{inspect(criteria)}"
   end
 
+  defp push_scope(scope) do
+    quote do: @absinthe_scopes [unquote(scope) | @absinthe_scopes]
+  end
+  defp pop_scope do
+    quote do: @absinthe_scopes tl(@absinthe_scopes)
+  end
+  defp scoped(body, scope) do
+    [
+      push_scope(scope),
+      body,
+      pop_scope
+    ]
+  end
 
   defmacro __using__(_opts) do
     quote do
       @absinthe_blueprint %Absinthe.Blueprint{}
-      @absinthe_scope nil
+      @absinthe_scopes []
       import unquote(__MODULE__), only: :macros
       @before_compile unquote(__MODULE__)
     end
   end
 
   defmacro object(identifier, do: body) do
-    name = identifier |> Atom.to_string |> Absinthe.Utils.camelize
+    record_object!(identifier, [], body)
+  end
+
+  defmacro object(identifier, attrs, do: body) do
+    record_object!(identifier, attrs, body)
+  end
+
+  def record_object!(identifier, attrs, body) do
+    name = Keyword.get(attrs, :name)
+    attrs = Keyword.delete(attrs, :name)
     [
       quote do
         @absinthe_blueprint unquote(__MODULE__).put_type(
           @absinthe_blueprint,
           %Absinthe.Blueprint.Schema.ObjectTypeDefinition{
-            name: unquote(name),
+            unquote_splicing(attrs),
+            name: unquote(name || default_object_name(identifier)),
             identifier: unquote(identifier)
           }
-        )
-        @absinthe_scope {:type, unquote(identifier)}
+      )
       end,
-      body
+      body |> scoped({:type, identifier})
     ]
   end
 
+  defp default_object_name(identifier) do
+    identifier
+    |> Atom.to_string
+    |> Absinthe.Utils.camelize
+  end
 
   @spec import_types(atom) :: Macro.t
-  defmacro import_types(module) do
+  defmacro import_types(module, opts \\ []) do
     quote do
       @absinthe_blueprint unquote(__MODULE__).concat_types(
         @absinthe_blueprint,
-        unquote(module).__absinthe_blueprint__()
+        unquote(module).__absinthe_blueprint__(),
+        unquote(opts)
       )
     end
   end
 
-  @spec import_fields(atom | {module, atom}) :: Macro.t
-  defmacro import_fields(source_criteria) do
+  @spec import_fields(atom | {module, atom}, Keyword.t) :: Macro.t
+  defmacro import_fields(source_criteria, opts \\ []) do
     quote do
       @absinthe_blueprint unquote(__MODULE__).concat_fields(
         @absinthe_blueprint,
-        @absinthe_scope,
-        unquote(source_criteria)
+        hd(@absinthe_scopes),
+        unquote(source_criteria),
+        unquote(opts)
       )
     end
   end
 
-  defmacro field(identifier, type, do: body) do
-    name = identifier |> Atom.to_string |> Absinthe.Utils.camelize(lower: true)
+  @spec field(atom, atom | Keyword.t) :: Macro.t
+  defmacro field(identifier, attrs) when is_list(attrs) do
+    record_field!(identifier, attrs, nil)
+  end
+  defmacro field(identifier, type) when is_atom(type) do
+    record_field!(identifier, [type: type], nil)
+  end
+
+  @spec field(atom, atom | Keyword.t, [do: Macro.t]) :: Macro.t
+  defmacro field(identifier, attrs, do: body) when is_list(attrs) do
+    record_field!(identifier, attrs, body)
+  end
+  defmacro field(identifier, type, do: body) when is_atom(type) do
+    record_field!(identifier, [type: type], body)
+  end
+
+  @spec record_field!(atom, Keyword.t, Macro.t) :: Macro.t
+  def record_field!(identifier, attrs, body) do
+    name = Keyword.get(attrs, :name)
+    attrs = Keyword.delete(attrs, :name)
     [
       quote do
         @absinthe_blueprint unquote(__MODULE__).put_field(
           @absinthe_blueprint,
-          @absinthe_scope,
+          hd(@absinthe_scopes),
           %Absinthe.Blueprint.Schema.FieldDefinition{
-            name: unquote(name),
+            unquote_splicing(attrs),
+            name: unquote(name || default_field_name(identifier)),
             identifier: unquote(identifier),
-            type: unquote(type)
           }
         )
-        @absinthe_scope {:field, @absinthe_scope, unquote(identifier)}
+        @absinthe_scopes [{:field, hd(@absinthe_scopes), unquote(identifier)} | @absinthe_scopes]
       end,
-      body
+      body,
+      pop_scope
     ]
+  end
+
+  defp default_field_name(identifier) do
+    identifier
+    |> Atom.to_string
+    |> Absinthe.Utils.camelize(lower: true)
   end
 
   defmacro resolve(fun) do
     quote do
       @absinthe_blueprint unquote(__MODULE__).put_attrs(
         @absinthe_blueprint,
-        @absinthe_scope,
+        hd(@absinthe_scopes),
         resolve_ast: unquote(Macro.escape(fun))
       )
     end
