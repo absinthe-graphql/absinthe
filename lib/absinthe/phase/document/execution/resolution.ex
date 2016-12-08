@@ -17,7 +17,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
   def run(bp_root, options \\ []) do
     case Blueprint.current_operation(bp_root) do
-      nil -> bp_root
+      nil -> {:ok, bp_root}
       op -> resolve_current(bp_root, op, options)
     end
   end
