@@ -23,6 +23,7 @@ defmodule Absinthe.Schema.Rule do
   @callback explanation(Absithe.Error.detail_t) :: binary
 
   @rules [
+    Rule.QueryTypeMustBeObject,
     Rule.TypeNamesAreReserved,
     Rule.TypeNamesAreValid,
     Rule.ObjectInterfacesMustBeValid,
