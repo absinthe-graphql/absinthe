@@ -488,10 +488,9 @@ defmodule Absinthe.Schema.Notation do
 
   ## Examples
   ```
-  scalar :time do
-    description "ISOz time"
-    parse &Timex.DateFormat.parse(&1, "{ISOz}")
-    serialize &Timex.DateFormat.format!(&1, "{ISOz}")
+  scalar :time, description: "ISOz time" do
+    parse &Timex.parse(&1.value, "{ISOz}")
+    serialize &Timex.format!(&1, "{ISOz}")
   end
   ```
   """
