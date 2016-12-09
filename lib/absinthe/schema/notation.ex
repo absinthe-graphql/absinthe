@@ -995,6 +995,9 @@ defmodule Absinthe.Schema.Notation do
     type_module_ast
     |> Macro.expand(env)
     |> do_import_types(env)
+    # this macro does not produce any code to be expanded
+    # do_import_types was used to put caller module attributes
+    nil
   end
 
   defp do_import_types(type_module, env) when is_atom(type_module) do
