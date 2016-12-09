@@ -10,10 +10,10 @@ defmodule Absinthe.Mixfile do
      elixirc_paths: elixirc_paths(Mix.env),
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     package: package,
+     package: package(),
      source_url: "https://github.com/absinthe-graphql/absinthe",
      docs: [source_ref: "v#{@version}", main: "Absinthe"],
-     deps: deps
+     deps: deps()
     ]
   end
 
