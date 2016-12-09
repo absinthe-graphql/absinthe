@@ -17,7 +17,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperation do
       {nil, count} when count > 1 ->
         input
         |> flag_invalid(:no_current_operation)
-        |> put_error(error)
+        |> put_error(error())
       _ ->
         input
     end
@@ -29,7 +29,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperation do
   defp error do
     Phase.Error.new(
       __MODULE__,
-      error_message
+      error_message()
     )
   end
 

@@ -55,7 +55,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNames do
   defp error(node) do
     Phase.Error.new(
       __MODULE__,
-      error_message,
+      error_message(),
       location: node.source_location
     )
   end
