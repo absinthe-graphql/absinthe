@@ -314,7 +314,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     false
   end
 
-  defp nil_value_error(_blueprint, _schema_type) do
+  defp nil_value_error(blueprint, _schema_type) do
     """
     The field '#{blueprint.name}' resolved to nil, but it is marked non-null in your schema.
     Please ensure that '#{blueprint.name}' always resolves to a non-null value.
