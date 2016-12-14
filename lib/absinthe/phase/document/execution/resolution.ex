@@ -316,9 +316,11 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   defp nil_value_error(_blueprint, _schema_type) do
     """
-    Tried to return nil value of field marked non null!
+    The field '#{blueprint.name}' resolved to nil, but it is marked non-null in your schema.
+    Please ensure that '#{blueprint.name}' always resolves to a non-null value.
 
-    TODO: More detailed error message
+    The corresponding Absinthe blueprint is:
+    #{inspect blueprint}
     """
   end
 end
