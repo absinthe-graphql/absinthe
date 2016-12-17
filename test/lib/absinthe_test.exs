@@ -23,6 +23,21 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}}}, run(query, Things)
   end
 
+  it "can do a simple query with fragments" do
+    query = """
+    {
+      ... Fields
+    }
+
+    fragment Fields on RootQueryType {
+      thing(id: "foo") {
+        name
+      }
+    }
+    """
+    assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}}}, run(query, Things)
+  end
+
   it "can do a simple query with a weird alias" do
     query = """
     query GimmeFoo {
