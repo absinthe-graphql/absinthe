@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.2.2
+- Enhancement: Improved exception when returning `nil` from a field marked `non_null`
+- Enhancement: Allow returning complex errors from resolution functions.
+- Enhancement: Minor tweaks to support the in-progress Elixir 1.4 release
+- Bug fix: Handle fragments on the root query and root mutation types
+- Bug fix: Handle errors on variables when no operation name.
+- Assorted other bug fixes
+
 ## v1.2.1
 
 - Stricter, spec-compliant scalar parsing rules (#194)
