@@ -1,6 +1,8 @@
 # Changelog
 
 ## v1.2.2
+- Enhancement: Enable `import_fields` for input objects. In the future we will
+enforce that `input_objects` can only import fields from other `input_objects`.
 - Enhancement: Improved exception when returning `nil` from a field marked `non_null`
 - Enhancement: Allow returning complex errors from resolution functions.
 - Enhancement: Minor tweaks to support the in-progress Elixir 1.4 release

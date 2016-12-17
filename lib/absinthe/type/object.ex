@@ -102,7 +102,7 @@ defmodule Absinthe.Type.Object do
     is_type_of: nil,
     __private__: [],
     __reference__: nil,
-    field_imports: []
+    field_imports: [],
   ]
 
   def build(%{attrs: attrs}) do
@@ -119,9 +119,10 @@ defmodule Absinthe.Type.Object do
     end
   end
 
-  defp handle_imports(fields, []), do: fields
-  defp handle_imports(fields, nil), do: fields
-  defp handle_imports(fields, imports) do
+  @doc false
+  def handle_imports(fields, []), do: fields
+  def handle_imports(fields, nil), do: fields
+  def handle_imports(fields, imports) do
     quote do
       Enum.reduce(unquote(imports), unquote(fields), &Absinthe.Type.Object.import_fields(__MODULE__, &1, &2))
     end
