@@ -20,6 +20,7 @@ defmodule Absinthe.Phase.Document.Flatten do
     input = %{input | fragments: fragments}
     result = input
     |> Blueprint.update_current(&process(&1, input.fragments))
+
     {:ok, result}
   end
 
