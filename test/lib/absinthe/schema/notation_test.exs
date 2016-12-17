@@ -19,6 +19,25 @@ defmodule Absinthe.Schema.NotationTest do
       assert [:email, :name] = Foo.__absinthe_type__(:bar).fields |> Map.keys |> Enum.sort
     end
 
+    it "works for input objects" do
+      defmodule InputFoo do
+        use Absinthe.Schema.Notation
+
+        input_object :foo do
+          field :name, :string
+        end
+
+        input_object :bar do
+          import_fields :foo
+          field :email, :string
+        end
+      end
+
+      fields = InputFoo.__absinthe_type__(:bar).fields
+
+      assert [:email, :name] = fields |> Map.keys |> Enum.sort
+    end
+
     it "can work transitively" do
       defmodule Bar do
         use Absinthe.Schema.Notation
@@ -52,7 +71,7 @@ defmodule Absinthe.Schema.NotationTest do
       end
 
       assert [error] = ErrorSchema.__absinthe_errors__
-      assert error == %{data: %{artifact: "Field Import Erro\n\nObject :bar imports fields from :asdf but\n:asdf does not exist in the schema!", value: :asdf}, location: %{file: __ENV__.file, line: 48}, rule: Absinthe.Schema.Rule.FieldImportsExist}
+      assert %{data: %{artifact: "Field Import Erro\n\nObject :bar imports fields from :asdf but\n:asdf does not exist in the schema!", value: :asdf}, location: %{file: _, line: _}, rule: Absinthe.Schema.Rule.FieldImportsExist} = error
 
     end
 
@@ -72,7 +91,7 @@ defmodule Absinthe.Schema.NotationTest do
       end
 
       assert [error] = Circles.__absinthe_errors__
-      assert error == %{data: %{artifact: "Field Import Cycle Error\n\nField Import in object `foo' `import_fields(:bar) forms a cycle via: (`foo' => `bar' => `foo')", value: :bar}, location: %{file: __ENV__.file, line: 63}, rule: Absinthe.Schema.Rule.NoCircularFieldImports}
+      assert %{data: %{artifact: "Field Import Cycle Error\n\nField Import in object `foo' `import_fields(:bar) forms a cycle via: (`foo' => `bar' => `foo')", value: :bar}, location: %{file: _, line: _}, rule: Absinthe.Schema.Rule.NoCircularFieldImports} = error
     end
 
     it "can import types from more than one thing" do
