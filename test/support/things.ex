@@ -13,16 +13,6 @@ defmodule Things do
 
   mutation do
 
-    field :update_stuff,
-      type: :integer,
-      args: [
-        stuff: [type: non_null(:input_stuff)]
-      ],
-      resolve: fn
-        %{}, _ ->
-          {:ok, 14}
-      end
-
     field :update_thing,
       type: :thing,
       args: [
@@ -68,6 +58,16 @@ defmodule Things do
       resolve: fn
        %{val: v}, _ -> {:ok, v |> to_string}
        args, _ -> {:error, "got #{inspect args}"}
+      end
+
+    field :stuff,
+      type: :integer,
+      args: [
+        stuff: [type: non_null(:input_stuff)]
+      ],
+      resolve: fn
+        %{}, _ ->
+          {:ok, 14}
       end
 
     field :thing_by_context,

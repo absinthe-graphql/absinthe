@@ -202,8 +202,8 @@ defmodule AbsintheTest do
 
   it "enforces non_null fields in input passed as variable" do
     query = """
-    mutation UpdateStuff($input: InputStuff!) {
-      stuff_result: update_stuff(stuff: $input)
+    query Stuff($input: InputStuff!) {
+      stuff_result: stuff(stuff: $input)
     }
     """
     result = run(query, Things, variables: %{"input" => %{"value" => 5, "nonNullField" => nil}})
