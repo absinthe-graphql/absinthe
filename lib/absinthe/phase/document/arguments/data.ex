@@ -33,6 +33,12 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
     {:ok, result}
   end
 
+  def handle_node(%Blueprint.Document.Field{arguments: []} = node) do
+    node
+  end
+  def handle_node(%Blueprint.Document.Field{arguments: args} = node) do
+    %{node | argument_data: Input.Argument.value_map(args)}
+  end
   def handle_node(%Input.Argument{input_value: input} = node) do
     %{node | value: input.data}
   end

@@ -102,8 +102,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   def resolve_field(bp_field, acc, info, source) do
     info = %{info | definition: bp_field}
 
-    bp_field.arguments
-    |> Absinthe.Blueprint.Input.Argument.value_map
+    bp_field.argument_data
     |> call_resolution_function(bp_field, info, source)
     |> build_result(acc, bp_field, info, source)
   end
