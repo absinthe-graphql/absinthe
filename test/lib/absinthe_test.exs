@@ -200,6 +200,19 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo", "value" => 100}}}}, result
   end
 
+  it "enforces non_null fields in input passed as variable" do
+    query = """
+    query Stuff($input: InputStuff!) {
+      stuff_result: stuff(stuff: $input)
+    }
+    """
+    result = run(query, Things, variables: %{"input" => %{"value" => 5, "nonNullField" => nil}})
+    assert_result {:ok, %{errors: [%{message: ~s(Argument "stuff" has invalid value $input.\nIn field "nonNullField": Expected type "String!", found null.)}]}}, result
+
+    result = run(query, Things, variables: %{"input" => %{"value" => 5}})
+    assert_result {:ok, %{errors: [%{message: ~s(Argument "stuff" has invalid value $input.\nIn field "nonNullField": Expected type "String!", found null.)}]}}, result
+  end
+
   it "checks for badly formed nested arguments" do
     query = """
     mutation UpdateThingValueBadly {
