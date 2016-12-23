@@ -8,6 +8,7 @@ enforce that `input_objects` can only import fields from other `input_objects`.
 - Enhancement: Minor tweaks to support the in-progress Elixir 1.4 release
 - Bug fix: Handle fragments on the root query and root mutation types
 - Bug fix: Handle errors on variables when no operation name.
+- Bug fix: input objects passed in as variables with missing internal fields marked non null are correctly caught
 - Assorted other bug fixes
 
 ## v1.2.1
