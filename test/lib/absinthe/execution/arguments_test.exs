@@ -71,7 +71,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
       field :contact, :contact_type do
         arg :type, :contact_type
 
-        resolve fn %{type: val}, _ -> {:ok, val} end
+        resolve fn args, _ -> {:ok, Map.get(args, :type)} end
       end
 
       field :contacts, list_of(:string) do
@@ -269,6 +269,15 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"contacts" => []}}}, doc |> run(Schema, variables: %{})
       end
 
+    end
+
+    describe "nullable arguments" do
+      it "if omitted should still be passed as an argument map to the resolver" do
+        doc = """
+        query GetContact{ contact }
+        """
+        assert_result {:ok, %{data: %{"contact" => nil}}}, doc |> run(Schema)
+      end
     end
 
     describe "enum types" do
