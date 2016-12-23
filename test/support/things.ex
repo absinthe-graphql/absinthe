@@ -60,6 +60,16 @@ defmodule Things do
        args, _ -> {:error, "got #{inspect args}"}
       end
 
+    field :stuff,
+      type: :integer,
+      args: [
+        stuff: [type: non_null(:input_stuff)]
+      ],
+      resolve: fn
+        %{}, _ ->
+          {:ok, 14}
+      end
+
     field :thing_by_context,
       type: :thing,
       resolve: fn
@@ -156,6 +166,11 @@ defmodule Things do
     field :deprecated_field_with_reason, :string, deprecate: "reason"
     field :deprecated_non_null_field, non_null(:string), deprecate: true
     field :deprecated_field_with_reason, :string, deprecate: "reason"
+  end
+
+  input_object :input_stuff do
+    field :value, :integer
+    field :non_null_field, non_null(:string)
   end
 
   object :thing do
