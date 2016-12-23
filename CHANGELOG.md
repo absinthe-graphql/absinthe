@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.2.3
+- Bug Fix: When there are no arguments, an empty map should be passed to the resolution functions not `nil`
+
 ## v1.2.2
 - Enhancement: Enable `import_fields` for input objects. In the future we will
 enforce that `input_objects` can only import fields from other `input_objects`.
