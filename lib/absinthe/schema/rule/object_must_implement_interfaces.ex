@@ -43,7 +43,8 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfaces do
   end
 
   def check(schema) do
-    Schema.types(schema)
+    schema
+    |> Schema.types
     |> Enum.flat_map(&check_type(schema, &1))
   end
 

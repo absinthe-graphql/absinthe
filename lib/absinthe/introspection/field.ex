@@ -12,7 +12,7 @@ defmodule Absinthe.Introspection.Field do
       name: "__typename",
       type: :string,
       description: "The name of the object type currently being queried.",
-      resolve: fn
+      middleware: [{Absinthe.Resolution, fn
         _, %{parent_type: %Type.Object{} = type} ->
           {:ok, type.name}
         _, %{source: source, parent_type: %Type.Interface{} = iface} = env ->
@@ -29,7 +29,7 @@ defmodule Absinthe.Introspection.Field do
             type ->
               {:ok, type.name}
           end
-      end
+      end}]
     }
   end
 
@@ -48,10 +48,10 @@ defmodule Absinthe.Introspection.Field do
           }
         }
       },
-      resolve: fn
+      middleware: [{Absinthe.Resolution, fn
         %{name: name}, %{schema: schema} ->
           {:ok, Schema.lookup_type(schema, name)}
-      end
+      end}]
     }
   end
 
@@ -60,10 +60,10 @@ defmodule Absinthe.Introspection.Field do
       name: "__schema",
       type: :__schema,
       description: "Represents the schema",
-      resolve: fn
+      middleware: [{Absinthe.Resolution, fn
         _, %{schema: schema} ->
           {:ok, schema}
-      end
+      end}]
     }
   end
 

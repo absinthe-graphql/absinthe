@@ -6,6 +6,30 @@ defmodule Absinthe.Resolution do
 
   alias Absinthe.{Blueprint, Schema, Type}
 
+  @type field_state :: :resolving | :halted | :suspended
+
+  def call(res, resolution_function) do
+    result = case resolution_function do
+      fun when is_function(fun, 2) ->
+        fun.(res.arguments, res)
+      fun when is_function(fun, 3) ->
+        fun.(res.source, res.arguments, res)
+      {mod, fun} ->
+        apply(mod, fun, [res.source, res.arguments, res])
+      _ ->
+        raise Absinthe.ExecutionError, """
+        Field resolve property must be a 2 arity anonymous function, 3 arity
+        anonymous function, or a `{Module, :function}` tuple.
+
+        Instead got: #{inspect resolution_function}
+
+        Info: #{inspect res}
+        """
+    end
+
+    %{res | state: :halted, result: result}
+  end
+
   @typedoc """
   Information about the current resolution.
 
@@ -28,10 +52,12 @@ defmodule Absinthe.Resolution do
     definition: Blueprint.node_t,
     parent_type: Type.t,
     source: any,
+    state: field_state,
   }
 
   @enforce_keys [:adapter, :context, :root_value, :schema, :source]
   defstruct [
+    :result,
     :adapter,
     :context,
     :parent_type,
@@ -39,6 +65,8 @@ defmodule Absinthe.Resolution do
     :definition,
     :schema,
     :source,
+    arguments: %{},
+    state: :resolving,
   ]
 
   @doc """

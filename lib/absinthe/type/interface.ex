@@ -134,6 +134,7 @@ defmodule Absinthe.Type.Interface do
       {keypath, val} when val != nil ->
         flat = keypath |> List.flatten
         ignore_implementing_keypath?(flat) || (safe_get_in(type.fields, flat) == val)
+        true
       {_keypath, nil} ->
         true
     end)

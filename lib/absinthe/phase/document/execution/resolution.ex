@@ -151,12 +151,30 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     build_result(result, acc, node.emitter, node.info, node.source)
   end
 
-  def resolve_field(bp_field, acc, info, source) do
-    info = %{info | definition: bp_field}
+  def resolve_field(bp_field, acc, res, source) do
+    # bp_field.argument_data
+    # |> call_resolution_function(bp_field, res, source)
+    # |> IO.inspect
+    # |> build_result(acc, bp_field, info, source)
 
-    bp_field.argument_data
-    |> call_resolution_function(bp_field, info, source)
-    |> build_result(acc, bp_field, info, source)
+    concrete_type = res.parent_type
+
+    concrete_schema_node = Map.fetch!(concrete_type.fields, bp_field.schema_node.__reference__.identifier)
+
+    bp_field = %{bp_field | schema_node: concrete_schema_node}
+
+    res = %{res |
+      definition: bp_field,
+      arguments: bp_field.argument_data,
+    }
+
+    Enum.reduce(concrete_schema_node.middleware, res, fn {middleware, opts}, res ->
+      middleware.call(res, opts)
+    end)
+    |> case do
+      %{state: :halted} = res ->
+        build_result(res.result, acc, bp_field, res, source)
+      end
   end
 
   defp resolve_fields(parent, acc, info, source) do

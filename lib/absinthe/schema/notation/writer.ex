@@ -49,7 +49,8 @@ defmodule Absinthe.Schema.Notation.Writer do
           unquote(Absinthe.Resolution.Plugin.defaults())
         end
         defoverridable(resolution_plugins: 0)
-      end    ]
+      end
+    ]
   end
 
   def build_info(env) do
@@ -88,9 +89,28 @@ defmodule Absinthe.Schema.Notation.Writer do
     ast = build(:type, definition)
     identifier = definition.identifier
     name = definition.attrs[:name]
-    quote do
-      def __absinthe_type__(unquote(identifier)), do: unquote(ast)
-      def __absinthe_type__(unquote(name)), do: __absinthe_type__(unquote(identifier))
+
+    result = [
+      quote do: def __absinthe_type__(unquote(name)), do: __absinthe_type__(unquote(identifier))
+    ]
+
+    if definition.builder == Absinthe.Type.Object do
+      [
+        quote do
+          def __absinthe_type__(unquote(identifier)) do
+            unquote(ast)
+            |> Absinthe.Type.Field.set_resolution_function(__MODULE__)
+          end
+        end,
+        result
+      ]
+    else
+      [
+        quote do
+          def __absinthe_type__(unquote(identifier)), do: unquote(ast)
+        end,
+        result
+      ]
     end
   end
 

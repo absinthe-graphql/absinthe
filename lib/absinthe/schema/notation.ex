@@ -412,7 +412,9 @@ defmodule Absinthe.Schema.Notation do
   defmacro resolve(func_ast) do
     __CALLER__
     |> recordable!(:resolve, @placement[:resolve])
-    |> record_resolve!(func_ast)
+    quote do
+      plug Absinthe.Resolution, unquote(func_ast)
+    end
   end
 
   @doc false
@@ -436,6 +438,17 @@ defmodule Absinthe.Schema.Notation do
     Scope.put_attribute(env.module, :complexity, func_ast)
     Scope.recorded!(env.module, :attr, :complexity)
     :ok
+  end
+
+  defmacro plug(module, opts \\ []) do
+    env = __CALLER__
+    module = Macro.expand(module, env)
+
+    middleware = Scope.current(env.module).attrs
+    |> Keyword.get(:middleware, [])
+
+    Scope.put_attribute(env.module, :middleware, [{module, opts} | middleware])
+    nil
   end
 
   @placement {:is_type_of, [under: [:object]]}

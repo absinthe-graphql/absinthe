@@ -189,13 +189,23 @@ defmodule Absinthe.Type.Field do
                deprecation: Deprecation.t | nil,
                default_value: any,
                args: %{(binary | atom) => Absinthe.Type.Argument.t} | nil,
-               resolve: resolver_t | nil,
+               middleware: [],
                complexity: complexity_t | nil,
                __private__: Keyword.t,
                __reference__: Type.Reference.t}
 
-  defstruct name: nil, description: nil, type: nil, deprecation: nil, args: %{},
-  resolve: nil, complexity: nil, default_value: nil, __private__: [], __reference__: nil
+  defstruct [
+    name: nil,
+    description: nil,
+    type: nil,
+    deprecation: nil,
+    args: %{},
+    middleware: [],
+    complexity: nil,
+    default_value: nil,
+    __private__: [],
+    __reference__: nil,
+  ]
 
   @doc """
   Build an AST of the field map for inclusion in other types
@@ -220,6 +230,15 @@ defmodule Absinthe.Type.Field do
       name = field_name |> Atom.to_string
       default_ref = field_attrs[:__reference__]
 
+      field_attrs = case Keyword.pop(field_attrs, :resolve) do
+        {nil, field_attrs} ->
+          field_attrs
+        {resolution_function_ast, field_attrs} ->
+          Keyword.put(field_attrs, :middleware, [{Absinthe.Resolution, resolution_function_ast}])
+      end
+
+      field_attrs = Keyword.update(field_attrs, :middleware, [], &Enum.reverse/1)
+
       field_data = [name: name] ++ Keyword.update(field_attrs, :args, quoted_empty_map, fn
         raw_args ->
           args = for {name, attrs} <- raw_args, do: {name, ensure_reference(attrs, name, default_ref)}
@@ -243,18 +262,38 @@ defmodule Absinthe.Type.Field do
     end
   end
 
+  def set_resolution_function(object, schema) do
+    fields = Map.new(object.fields, fn
+      {identifier, %{middleware: []} = field} ->
+        field =
+          field
+          |> maybe_add_default(schema.__absinthe_custom_default_resolve__)
+          |> maybe_add_default(system_default(identifier))
+
+        {identifier, field}
+
+      {identifier, %{middleware: [_|_]} = field} ->
+        {identifier, field}
+    end)
+
+    %{object | fields: fields}
+  end
+
   def resolve(field, args, parent, field_info) do
     field =
       field
       |> maybe_add_default(field_info.schema.__absinthe_custom_default_resolve__)
       |> maybe_add_default(system_default(field.__reference__.identifier))
-      |> maybe_wrap_with_private
+      # |> maybe_wrap_with_private
 
     Absinthe.Resolution.call field.resolve, parent, args, field_info
   end
 
-  defp maybe_add_default(%{resolve: nil} = node, resolution_function) do
-    %{node | resolve: resolution_function}
+  defp maybe_add_default(node, nil) do
+    node
+  end
+  defp maybe_add_default(%{middleware: []} = node, resolution_function) do
+    %{node | middleware: [{Absinthe.Resolution, resolution_function}]}
   end
   defp maybe_add_default(node, _) do
     node
