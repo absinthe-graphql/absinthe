@@ -14,7 +14,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   alias Absinthe.Phase
   use Absinthe.Phase
 
-  @resultdoc """
+  @error_detail """
   ## For a data result
 
   `{:ok, any}` result will do.
@@ -65,32 +65,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   See `Absinthe.Resolution.Plugin` for more information.
       
   """
-
-  @typedoc @resultdoc
-  @type result :: {:ok, any} | {:error, error_value}
-
-  @typedoc """
-  An error message is a human-readable string describing the error that occurred.
-  """
-  @type error_message :: String.t
-
-  @typedoc """
-  Any serializable value.
-  """
-  @type serializable :: any  
-
-  @typedoc """
-  A custom error may be a `map` or a `Keyword.t`, but must contain a `:message` key.
-
-  Note that the values that make up a custom error must be serializable.
-  """
-  @type custom_error :: %{required(:message) => error_message, optional(atom) => serializable} | Keyword.t
-
-  @typedoc """
-  An error value is a simple error message, a custom error, or a list of either/both of them.
-  """
-  @type error_value :: error_message | custom_error | [error_message | custom_error]
-
+  
   @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
   def run(bp_root, options \\ []) do
     case Blueprint.current_operation(bp_root) do
@@ -278,7 +253,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     The result must be one of the following...
 
-    #{@resultdoc}
+    #{@error_detail}
     """
   end
 
