@@ -220,11 +220,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     |> to_result(bp_field, full_type)
     |> walk_result(acc, bp_field, full_type, info)
   end
-  # Error result; force wrap of single, single-value Keyword.t errors
-  defp build_result({:error, [{_, _}] = error_value} = err, acc, bp_field, info, source) do
-    build_error_result(err, [error_value], acc, bp_field, info, source)
-  end
-  # Error result; force wrap of single, multiple-value Keyword.t errors
+  # Error result; force wrap of single Keyword.t errors
   defp build_result({:error, [{_, _} | _] = error_value} = err, acc, bp_field, info, source) do
     build_error_result(err, [error_value], acc, bp_field, info, source)
   end  
