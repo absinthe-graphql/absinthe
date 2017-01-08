@@ -57,6 +57,12 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   Three errors of mixed types:
 
       {:error, ["Simple message", [message: "A keyword list error", code: 1], %{message: "A map error"}]}
+
+  ## To activate a plugin
+
+  `{:plugin, NameOfPluginModule, term}` to activate a plugin.
+
+  See `Absinthe.Resolution.Plugin` for more information.
       
   """
 
