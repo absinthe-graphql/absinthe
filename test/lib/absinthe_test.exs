@@ -2,6 +2,11 @@ defmodule AbsintheTest do
   use Absinthe.Case, async: true
   import AssertResult
 
+  it "can return multiple errors" do
+    query = "mutation { FailingThing(type: MULTIPLE) { name } }"
+    assert_result {:ok, %{data: %{}, errors: [%{message: "In field \"FailingThing\": one"}, %{message: "In field \"FailingThing\": two"}]}}, run(query, Things)    
+  end
+
   it "can return extra error fields" do
     query = "mutation { FailingThing(type: WITH_CODE) { name } }"
     assert_result {:ok, %{data: %{}, errors: [%{code: 42, message: "In field \"FailingThing\": Custom Error"}]}}, run(query, Things)
@@ -11,6 +16,16 @@ defmodule AbsintheTest do
     query = "mutation { FailingThing(type: WITHOUT_MESSAGE) { name } }"
     assert_raise Absinthe.ExecutionError, fn -> run(query, Things) end
   end
+
+  it "can return multiple errors, with extra error fields" do
+    query = "mutation { FailingThing(type: MULTIPLE_WITH_CODE) { name } }"
+    assert_result {:ok, %{data: %{}, errors: [%{code: 1, message: "In field \"FailingThing\": Custom Error 1"}, %{code: 2, message: "In field \"FailingThing\": Custom Error 2"}]}}, run(query, Things)
+  end
+
+  it "requires message in extended errors, when multiple errors are given" do
+    query = "mutation { FailingThing(type: MULTIPLE_WITHOUT_MESSAGE) { name } }"
+    assert_raise Absinthe.ExecutionError, fn -> run(query, Things) end
+  end  
 
   it "can do a simple query" do
     query = """
