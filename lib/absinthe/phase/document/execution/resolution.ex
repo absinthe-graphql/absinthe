@@ -218,6 +218,10 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       extensions: extensions
     } = res
 
+    with %{identifier: :mutation} <- info.parent_type do
+      Absinthe.Subscriptions.publish_from_mutation(Chat.Endpoint, info, result)
+    end
+
     full_type = Type.expand(bp_field.schema_node.type, info.schema)
 
     bp_field = put_in(bp_field.schema_node.type, full_type)
