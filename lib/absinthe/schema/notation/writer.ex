@@ -100,8 +100,8 @@ defmodule Absinthe.Schema.Notation.Writer do
       mut_fields = mutation.attrs[:fields]
       |> Enum.map(fn {mut_field_name, mut_field_attrs} ->
         triggers =
-          for {sub_field_name, sub_field_attrs} <- subscription.attrs[:fields],
-          {mutation_names, config} <- sub_field_attrs[:triggers],
+          for {sub_field_name, sub_field_attrs} <- (subscription.attrs[:fields] || []),
+          {mutation_names, config} <- (sub_field_attrs[:triggers] || []),
           mut_field_name in mutation_names,
           do: {sub_field_name, config}
 

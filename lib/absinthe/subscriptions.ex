@@ -26,7 +26,7 @@ defmodule Absinthe.Subscriptions do
   end
 
   defp get_subscription_fields(field_res) do
-    field_res.definition.schema_node.triggers
+    field_res.definition.schema_node.triggers || []
   end
 
   defp get_docs(endpoint, field, mutation_result, [topic: topic_fun]) do
