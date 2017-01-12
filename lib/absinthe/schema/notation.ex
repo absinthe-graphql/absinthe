@@ -33,6 +33,18 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
+  defmacro topic(topic_fun) do
+    __CALLER__.module
+    |> Scope.put_attribute(:topic, topic_fun)
+    :ok
+  end
+
+  defmacro trigger(mutations, attrs) do
+    env = __CALLER__
+    Scope.put_attribute(env.module, :triggers, {List.wrap(mutations), attrs}, accumulate: true)
+    :ok
+  end
+
   # OBJECT
 
   @placement {:object, [toplevel: true]}
