@@ -4,7 +4,7 @@ defmodule AbsintheTest do
 
   it "can return multiple errors" do
     query = "mutation { FailingThing(type: MULTIPLE) { name } }"
-    assert_result {:ok, %{data: %{}, errors: [%{message: "In field \"FailingThing\": one"}, %{message: "In field \"FailingThing\": two"}]}}, run(query, Things)    
+    assert_result {:ok, %{data: %{}, errors: [%{message: "In field \"FailingThing\": one"}, %{message: "In field \"FailingThing\": two"}]}}, run(query, Things)
   end
 
   it "can return extra error fields" do
@@ -25,7 +25,7 @@ defmodule AbsintheTest do
   it "requires message in extended errors, when multiple errors are given" do
     query = "mutation { FailingThing(type: MULTIPLE_WITHOUT_MESSAGE) { name } }"
     assert_raise Absinthe.ExecutionError, fn -> run(query, Things) end
-  end  
+  end
 
   it "can do a simple query" do
     query = """
