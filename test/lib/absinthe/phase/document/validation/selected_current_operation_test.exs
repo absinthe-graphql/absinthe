@@ -41,7 +41,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
         }
         """,
         [operation_name: "Nothere"],
-        no_current_operation
+        no_current_operation()
       )
     end
 
@@ -81,7 +81,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
         }
         """,
         [],
-        no_current_operation
+        no_current_operation()
       )
     end
 

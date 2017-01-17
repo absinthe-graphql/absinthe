@@ -161,7 +161,7 @@ defmodule Absinthe.Type do
 
   # NULLABLE TYPES
 
-  @nullable_type_modules [Type.Scalar, Type.Object, Type.Interface, Type.Union, Type.Enum, Type.InputObject, Type.List]
+  # @nullable_type_modules [Type.Scalar, Type.Object, Type.Interface, Type.Union, Type.Enum, Type.InputObject, Type.List]
 
   @typedoc "These types can all accept null as a value."
   @type nullable_t :: Type.Scalar.t | Type.Object.t | Type.Interface.t | Type.Union.t | Type.Enum.t | Type.InputObject.t | Type.List.t

@@ -13,7 +13,7 @@ defmodule Absinthe.SchemaTest do
     end
 
     it "are loaded" do
-      load_valid_schema
+      load_valid_schema()
       assert map_size(Absinthe.Type.BuiltIns.__absinthe_types__) > 0
       Absinthe.Type.BuiltIns.__absinthe_types__
       |> Enum.each(fn

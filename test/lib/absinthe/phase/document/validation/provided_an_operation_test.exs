@@ -35,7 +35,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedAnOperationTest do
       assert_fails_rule(@rule,
         "",
         [],
-        no_operation
+        no_operation()
       )
     end
 
@@ -51,7 +51,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedAnOperationTest do
         }
         """,
         [],
-        no_operation
+        no_operation()
       )
     end
 

@@ -88,15 +88,15 @@ defmodule Absinthe.Phase.ParseTest do
   it "can parse escaped strings as inputs" do
     assert {:ok, res} = run(@query)
     path = [
-      Access.key(:definitions),
+      Access.key!(:definitions),
       Access.at(0),
-      Access.key(:selection_set),
-      Access.key(:selections),
+      Access.key!(:selection_set),
+      Access.key!(:selections),
       Access.at(0),
-      Access.key(:arguments),
+      Access.key!(:arguments),
       Access.at(0),
-      Access.key(:value),
-      Access.key(:value)
+      Access.key!(:value),
+      Access.key!(:value)
     ]
     assert ~s({"foo": "bar"}) == get_in(res, path)
   end
@@ -113,15 +113,15 @@ defmodule Absinthe.Phase.ParseTest do
   it "can parse escaped characters in inputs" do
     assert {:ok, res} = run(@query)
     path = [
-      Access.key(:definitions),
+      Access.key!(:definitions),
       Access.at(0),
-      Access.key(:selection_set),
-      Access.key(:selections),
+      Access.key!(:selection_set),
+      Access.key!(:selections),
       Access.at(0),
-      Access.key(:arguments),
+      Access.key!(:arguments),
       Access.at(0),
-      Access.key(:value),
-      Access.key(:value)
+      Access.key!(:value),
+      Access.key!(:value)
     ]
     assert ~s(foo\nbar) == get_in(res, path)
   end
@@ -137,15 +137,15 @@ defmodule Absinthe.Phase.ParseTest do
   it "can parse all types of characters escaped according to GraphQL spec as inputs" do
     assert {:ok, res} = run(@query)
     path = [
-      Access.key(:definitions),
+      Access.key!(:definitions),
       Access.at(0),
-      Access.key(:selection_set),
-      Access.key(:selections),
+      Access.key!(:selection_set),
+      Access.key!(:selections),
       Access.at(0),
-      Access.key(:arguments),
+      Access.key!(:arguments),
       Access.at(0),
-      Access.key(:value),
-      Access.key(:value)
+      Access.key!(:value),
+      Access.key!(:value)
     ]
 
     assert ~s(\" \\ \/ \b \f \n \r \t ó ó ӹ) == get_in(res, path)

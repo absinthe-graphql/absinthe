@@ -6,8 +6,6 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
   use Support.Harness.Validation
   alias Absinthe.{Blueprint}
 
-  @unknown_argument_message "Unknown argument."
-
   describe "Valid" do
 
     it "single arg is known" do

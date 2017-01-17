@@ -57,8 +57,8 @@ defmodule Absinthe.Phase.Document.FlattenTest do
   describe "a deeply fragment-nested document" do
     it "has its selections flattened to fields" do
       result = input(@query, %{"id" => 4})
-      assert ~w(foo more) == get_in(result.operations, [Access.at(0), Access.key(:fields), Access.all(), Access.key(:name)])
-      assert ~w(gender name name age age) == get_in(result.operations, [Access.at(0), Access.key(:fields), Access.at(0), Access.key(:fields), Access.all(), Access.key(:name)])
+      assert ~w(foo more) == get_in(result.operations, [Access.at(0), Access.key!(:fields), Access.all(), Access.key!(:name)])
+      assert ~w(gender name name age age) == get_in(result.operations, [Access.at(0), Access.key!(:fields), Access.at(0), Access.key!(:fields), Access.all(), Access.key!(:name)])
     end
   end
 
@@ -94,8 +94,8 @@ defmodule Absinthe.Phase.Document.FlattenTest do
     it "has its selections flattened to fields" do
       result = input(@query, %{"id" => 4, "inc" => false})
       op = result.operations |> List.first
-      assert ~w(foo more) == get_in(op.fields, [Access.all(), Access.key(:name)])
-      assert ~w(name) == get_in(op.fields, [Access.at(0), Access.key(:fields), Access.all(), Access.key(:name)])
+      assert ~w(foo more) == get_in(op.fields, [Access.all(), Access.key!(:name)])
+      assert ~w(name) == get_in(op.fields, [Access.at(0), Access.key!(:fields), Access.all(), Access.key!(:name)])
     end
   end
 
