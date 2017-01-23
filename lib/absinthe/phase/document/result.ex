@@ -68,7 +68,6 @@ defmodule Absinthe.Phase.Document.Result do
   defp deep_merge(list) when is_list(list) and length(list) <= 1 do
     :maps.from_list(list)
   end
-
   defp deep_merge(list) when is_list(list) do
     list
     |> Enum.map(&Map.new([&1]))
@@ -82,7 +81,9 @@ defmodule Absinthe.Phase.Document.Result do
   defp do_deep_resolve(_key, [%{} = left], [%{} = right]) do
     [do_deep_merge(right, left)]
   end
-
+  defp do_deep_resolve(_key, %{} = left, %{} = right) do
+    do_deep_merge(right, left)
+  end
   defp do_deep_resolve(_key, _left, right) do
    right
   end
