@@ -342,18 +342,35 @@ defmodule Absinthe.Schema.Notation do
   @doc """
   Defines a resolve function for a field
 
-  Specify a 2 arity function to call when resolving a field. Resolve functions
-  must return either `{:ok, term}` or `{:error, binary | [binary, ...]}`.
+  Specify a 2 or 3 arity function to call when resolving a field.
 
   You can either hard code a particular anonymous function, or have a function
-  call that returns a 2 arity anonymous function. See examples for more information.
-
-  The first argument to the function are the GraphQL arguments, and the latter
-  is an `Absinthe.Resolution` struct. It is where you can access the GraphQL
-  context and other execution data.
+  call that returns a 2 or 3 arity anonymous function. See examples for more information.
 
   Note that when using a hard coded anonymous function, the function will not
   capture local variables.
+
+  ### 3 Arity Functions
+
+  The first argument to the function is the parent entity.
+  ```
+  {
+    user(id: 1) {
+      name
+    }
+  }
+  ```
+  A resolution function on the `name` field would have the result of the `user(id: 1)` field
+  as its first argument. Top level fields have the `root_value` as their first argument.
+  Unless otherwise specified, this defaults to an empty map.
+
+  The second argument to the resolution function is the field arguments. The final
+  argument is an `Absinthe.Resolution` struct, which includes information like
+  the `context` and other execution data.
+
+  ### 2 Arity Function
+
+  Exactly the same as the 3 arity version, but without the first argument (the parent entity)
 
   ## Placement
 
@@ -372,7 +389,7 @@ defmodule Absinthe.Schema.Notation do
   query do
     field :person, :person do
       resolve fn %{id: id}, _ ->
-        Person.find(id)
+        {:ok, Person.find(id)}
       end
     end
   end
@@ -387,7 +404,7 @@ defmodule Absinthe.Schema.Notation do
 
   def lookup(:person) do
     fn %{id: id}, _ ->
-      Person.find(id)
+      {:ok, Person.find(id)}
     end
   end
   ```
