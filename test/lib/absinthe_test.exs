@@ -76,6 +76,18 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"things" => [%{"name" => "Bar", "id" => "bar"}, %{"name" => "Foo", "id" => "foo"}]}}}, run(query, Things)
   end
 
+  it "Invalid arguments on children of a list field are correctly handled" do
+    query = """
+    query AllTheThings {
+      things {
+        id(x: 1)
+        name
+      }
+    }
+    """
+    assert_result {:ok, %{errors: [%{message: "Unknown argument \"x\" on field \"id\" of type \"Thing\"."}]}}, run(query, Things)
+  end
+
   it "can do a simple query with an all caps alias" do
     query = """
     query GimmeFoo {
