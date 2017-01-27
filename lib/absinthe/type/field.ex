@@ -39,7 +39,7 @@ defmodule Absinthe.Type.Field do
   @typedoc """
   Any serializable value.
   """
-  @type serializable :: any  
+  @type serializable :: any
 
   @typedoc """
   A custom error may be a `map` or a `Keyword.t`, but must contain a `:message` key.

@@ -22,13 +22,13 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   ### Examples:
 
   A simple integer result:
-  
+
       {:ok, 1}
 
   Something more complex:
-  
+
       {:ok, %Model.Thing{some: %{complex: :data}}}
-  
+
   ## For an error result
 
   One or more errors for a field can be returned in a single `{:error, error_value}` tuple.
@@ -63,9 +63,9 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   `{:plugin, NameOfPluginModule, term}` to activate a plugin.
 
   See `Absinthe.Resolution.Plugin` for more information.
-      
+
   """
-  
+
   @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
   def run(bp_root, options \\ []) do
     case Blueprint.current_operation(bp_root) do
@@ -198,9 +198,9 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   # Error result; force wrap of single Keyword.t errors
   defp build_result({:error, [{_, _} | _] = error_value} = err, acc, bp_field, info, source) do
     build_error_result(err, [error_value], acc, bp_field, info, source)
-  end  
+  end
   # Error result; put errors
-  defp build_result({:error, error_value} = err, acc, bp_field, info, source) do  
+  defp build_result({:error, error_value} = err, acc, bp_field, info, source) do
     build_error_result(err, List.wrap(error_value), acc, bp_field, info, source)
   end
   # Plugin result; init
@@ -222,27 +222,27 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     raise_result_error!(
       value, field, source,
       "Did you forget to return a valid `{:ok, any}` | `{:error, error_value}` tuple?"
-    )    
+    )
   end
 
   defp raise_result_error!(value, field, source, guess) do
-    raise Absinthe.ExecutionError, """    
+    raise Absinthe.ExecutionError, """
     Invalid value returned from resolver.
-    
+
     Resolving field:
-    
+
         #{field.name}
-        
+
     Defined at:
-    
+
         #{field.schema_node.__reference__.location.file}:#{field.schema_node.__reference__.location.line}
-    
+
     Resolving on:
-    
+
         #{inspect source}
 
     Got value:
-    
+
         #{inspect value}
 
     ...

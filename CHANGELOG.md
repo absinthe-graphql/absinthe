@@ -1,5 +1,7 @@
 # Changelog
 
+## v1.2.4
+
 ## v1.2.3
 - Bug Fix: When there are no arguments, an empty map should be passed to the resolution functions not `nil`
 
