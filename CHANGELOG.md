@@ -1,6 +1,9 @@
 # Changelog
 
 ## v1.2.4
+- Enhancement: Complex errors. You can now return `{:error, %{message: "...", other_key: value}}`
+- Bug Fix: Invalid Arguments on a field that is under a list field doesn't error.
+- Bug Fix: Deeper fragment merging.
 
 ## v1.2.3
 - Bug Fix: When there are no arguments, an empty map should be passed to the resolution functions not `nil`
