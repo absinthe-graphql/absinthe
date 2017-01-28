@@ -81,6 +81,16 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     parse parse_with([Absinthe.Blueprint.Input.NaiveDateTime], &parse_datetime/1)
   end
 
+  scalar :date do
+    description """
+    The `Date` scalar type represents a date. The Date appears in a JSON
+    response as an ISO8601 formatted string.
+    """
+
+    serialize &Date.to_iso8601/1
+    parse parse_with([Absinthe.Blueprint.Input.Date], &parse_date/1)
+  end
+
   # Integers are only safe when between -(2^53 - 1) and 2^53 - 1 due to being
   # encoded in JavaScript and represented in JSON as double-precision floating
   # point numbers, as specified by IEEE 754.
@@ -152,6 +162,17 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     end
   end
   defp parse_datetime(_) do
+    :error
+  end
+
+  @spec parse_date(any) :: {:ok, Date.t} | :error
+  defp parse_date(value) when is_binary(value) do
+    case Date.from_iso8601(value) do
+      {:ok, date} -> {:ok, date}
+      _error -> :error
+    end
+  end
+  defp parse_date(_) do
     :error
   end
 

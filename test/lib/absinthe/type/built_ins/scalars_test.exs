@@ -15,6 +15,7 @@ defmodule Absinthe.Type.BuliltIns.ScalarsTest do
     time_zone: "Etc/UTC", zone_abbr: "UTC", utc_offset: 0, std_offset: 0,
   }
   @datetime ~N[2017-01-27 20:31:55]
+  @date ~D[2017-01-27]
 
   defp serialize(type, value) do
     TestSchema.__absinthe_type__(type)
@@ -194,7 +195,7 @@ defmodule Absinthe.Type.BuliltIns.ScalarsTest do
     it "cannot be parsed from a binary not formatted according to ISO8601" do
       assert :error == parse(:datetime, "abc123")
       assert :error == parse(:datetime, "01/25/2017 20:31:55")
-      assert :error == parse(:datetime, "2017-15-42T31:71:95Z")
+      assert :error == parse(:datetime, "2017-15-42T31:71:95")
     end
 
     it "cannot be parsed from a number" do
@@ -205,6 +206,42 @@ defmodule Absinthe.Type.BuliltIns.ScalarsTest do
     it "cannot be parsed from a boolean" do
       assert :error == parse(:datetime, true)
       assert :error == parse(:datetime, false)
+    end
+  end
+
+  describe ":date" do
+    it "serializes as an ISO8601 date string" do
+      assert "2017-01-27" == serialize(:date, @date)
+    end
+
+    it "can be parsed from an ISO8601 date string" do
+      assert {:ok, @date} == parse(:date, "2017-01-27")
+    end
+
+    it "cannot be parsed when time is included" do
+      assert :error == parse(:date, "2017-01-27T20:31:55Z")
+      assert :error == parse(:date, "2017-01-27 20:31:55Z")
+      assert :error == parse(:date, "2017-01-27 20:31:55")
+    end
+
+    it "cannot be parsed when date is missing" do
+      assert :error == parse(:date, "20:31:55")
+    end
+
+    it "cannot be parsed from a binary not formatted according to ISO8601" do
+      assert :error == parse(:date, "abc123")
+      assert :error == parse(:date, "01/25/2017 20:31:55")
+      assert :error == parse(:date, "2017-15-42T31:71:95Z")
+    end
+
+    it "cannot be parsed from a number" do
+      assert :error == parse(:date, 0)
+      assert :error == parse(:date, 0.0)
+    end
+
+    it "cannot be parsed from a boolean" do
+      assert :error == parse(:date, true)
+      assert :error == parse(:date, false)
     end
   end
 end
