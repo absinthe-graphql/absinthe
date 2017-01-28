@@ -14,6 +14,7 @@ defmodule Absinthe.Type.BuliltIns.ScalarsTest do
     hour: 20, minute: 31, second: 55,
     time_zone: "Etc/UTC", zone_abbr: "UTC", utc_offset: 0, std_offset: 0,
   }
+  @datetime ~N[2017-01-27 20:31:55]
 
   defp serialize(type, value) do
     TestSchema.__absinthe_type__(type)
@@ -138,7 +139,7 @@ defmodule Absinthe.Type.BuliltIns.ScalarsTest do
   end
 
   describe ":utc_datetime" do
-    it "serializes as an ISO8601 date and time string" do
+    it "serializes as an ISO8601 date and time string with UTC timezone marker" do
       assert "2017-01-27T20:31:55Z" == serialize(:utc_datetime, @utc_datetime)
     end
 
@@ -174,4 +175,36 @@ defmodule Absinthe.Type.BuliltIns.ScalarsTest do
     end
   end
 
+  describe ":datetime" do
+    it "serializes as an ISO8601 date and time string" do
+      assert "2017-01-27T20:31:55" == serialize(:datetime, @datetime)
+    end
+
+    it "can be parsed from an ISO8601 date and time string" do
+      assert {:ok, @datetime} == parse(:datetime, "2017-01-27T20:31:55Z")
+      assert {:ok, @datetime} == parse(:datetime, "2017-01-27 20:31:55Z")
+      assert {:ok, @datetime} == parse(:datetime, "2017-01-27 20:31:55")
+    end
+
+    it "cannot be parsed when date or time is missing" do
+      assert :error == parse(:datetime, "2017-01-27")
+      assert :error == parse(:datetime, "20:31:55")
+    end
+
+    it "cannot be parsed from a binary not formatted according to ISO8601" do
+      assert :error == parse(:datetime, "abc123")
+      assert :error == parse(:datetime, "01/25/2017 20:31:55")
+      assert :error == parse(:datetime, "2017-15-42T31:71:95Z")
+    end
+
+    it "cannot be parsed from a number" do
+      assert :error == parse(:datetime, 0)
+      assert :error == parse(:datetime, 0.0)
+    end
+
+    it "cannot be parsed from a boolean" do
+      assert :error == parse(:datetime, true)
+      assert :error == parse(:datetime, false)
+    end
+  end
 end

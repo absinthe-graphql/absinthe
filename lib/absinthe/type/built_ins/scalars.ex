@@ -70,6 +70,17 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     parse parse_with([Absinthe.Blueprint.Input.DateTime], &parse_utc_datetime/1)
   end
 
+  scalar :datetime, name: "NaiveDateTime" do
+    description """
+    The `DateTime` scalar type represents a naive date and time without
+    timezone. The DateTime appears in a JSON response as an ISO8601 formatted
+    string.
+    """
+
+    serialize &NaiveDateTime.to_iso8601/1
+    parse parse_with([Absinthe.Blueprint.Input.NaiveDateTime], &parse_datetime/1)
+  end
+
   # Integers are only safe when between -(2^53 - 1) and 2^53 - 1 due to being
   # encoded in JavaScript and represented in JSON as double-precision floating
   # point numbers, as specified by IEEE 754.
@@ -130,6 +141,17 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     end
   end
   defp parse_utc_datetime(_) do
+    :error
+  end
+
+  @spec parse_datetime(any) :: {:ok, NaiveDateTime.t} | :error
+  defp parse_datetime(value) when is_binary(value) do
+    case NaiveDateTime.from_iso8601(value) do
+      {:ok, datetime} -> {:ok, datetime}
+      _error -> :error
+    end
+  end
+  defp parse_datetime(_) do
     :error
   end
 
