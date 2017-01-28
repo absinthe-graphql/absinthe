@@ -59,6 +59,17 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     parse parse_with([Absinthe.Blueprint.Input.Boolean], &parse_boolean/1)
   end
 
+  scalar :utc_datetime, name: "DateTime" do
+    description """
+    The `UTC DateTime` scalar type represents a date and time in the UTC
+    timezone. The DateTime appears in a JSON response as an ISO8601 formatted
+    string, including UTC timezone ("Z").
+    """
+
+    serialize &DateTime.to_iso8601/1
+    parse parse_with([Absinthe.Blueprint.Input.DateTime], &parse_utc_datetime/1)
+  end
+
   # Integers are only safe when between -(2^53 - 1) and 2^53 - 1 due to being
   # encoded in JavaScript and represented in JSON as double-precision floating
   # point numbers, as specified by IEEE 754.
@@ -108,6 +119,17 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     {:ok, value}
   end
   defp parse_boolean(_) do
+    :error
+  end
+
+  @spec parse_utc_datetime(any) :: {:ok, DateTime.t} | :error
+  defp parse_utc_datetime(value) when is_binary(value) do
+    case DateTime.from_iso8601(value) do
+      {:ok, utc_datetime, _offset} -> {:ok, utc_datetime}
+      _error -> :error
+    end
+  end
+  defp parse_utc_datetime(_) do
     :error
   end
 
