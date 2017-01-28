@@ -39,8 +39,13 @@ defmodule Absinthe.Type.Scalar do
     serializer.(value)
   end
 
-  def parse(%{parse: parser}, value) do
-    parser.(value)
+  def parse(%{parse: parser}, value, context \\ %{}) do
+    case parser do
+      parser when is_function(parser, 1) ->
+        parser.(value)
+      parser when is_function(parser, 2) ->
+        parser.(value, context)
+    end
   end
 
   @typedoc """

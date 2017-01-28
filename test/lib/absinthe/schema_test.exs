@@ -22,7 +22,7 @@ defmodule Absinthe.SchemaTest do
       end)
       int = ValidSchema.__absinthe_type__(:integer)
       assert 1 == Type.Scalar.serialize(int, 1)
-      assert {:ok, 1} == Type.Scalar.parse(int, 1)
+      assert {:ok, 1} == Type.Scalar.parse(int, 1, %{})
     end
 
   end
