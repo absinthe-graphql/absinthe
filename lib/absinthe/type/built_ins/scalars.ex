@@ -91,6 +91,16 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     parse parse_with([Absinthe.Blueprint.Input.Date], &parse_date/1)
   end
 
+  scalar :time do
+    description """
+    The `Time` scalar type represents a time. The Time appears in a JSON
+    response as an ISO8601 formatted string.
+    """
+
+    serialize &Time.to_iso8601/1
+    parse parse_with([Absinthe.Blueprint.Input.Time], &parse_time/1)
+  end
+
   # Integers are only safe when between -(2^53 - 1) and 2^53 - 1 due to being
   # encoded in JavaScript and represented in JSON as double-precision floating
   # point numbers, as specified by IEEE 754.
@@ -173,6 +183,17 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     end
   end
   defp parse_date(_) do
+    :error
+  end
+
+  @spec parse_time(any) :: {:ok, Time.t} | :error
+  defp parse_time(value) when is_binary(value) do
+    case Time.from_iso8601(value) do
+      {:ok, time} -> {:ok, time}
+      _error -> :error
+    end
+  end
+  defp parse_time(_) do
     :error
   end
 

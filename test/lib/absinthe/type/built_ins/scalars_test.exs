@@ -16,6 +16,7 @@ defmodule Absinthe.Type.BuliltIns.ScalarsTest do
   }
   @datetime ~N[2017-01-27 20:31:55]
   @date ~D[2017-01-27]
+  @time ~T[20:31:55]
 
   defp serialize(type, value) do
     TestSchema.__absinthe_type__(type)
@@ -242,6 +243,42 @@ defmodule Absinthe.Type.BuliltIns.ScalarsTest do
     it "cannot be parsed from a boolean" do
       assert :error == parse(:date, true)
       assert :error == parse(:date, false)
+    end
+  end
+
+  describe ":time" do
+    it "serializes as an ISO8601 time string" do
+      assert "20:31:55" == serialize(:time, @time)
+    end
+
+    it "can be parsed from an ISO8601 date string" do
+      assert {:ok, @time} == parse(:time, "20:31:55")
+    end
+
+    it "cannot be parsed when date is included" do
+      assert :error == parse(:time, "2017-01-27T20:31:55Z")
+      assert :error == parse(:time, "2017-01-27 20:31:55Z")
+      assert :error == parse(:time, "2017-01-27 20:31:55")
+    end
+
+    it "cannot be parsed when time is missing" do
+      assert :error == parse(:time, "2017-01-27")
+    end
+
+    it "cannot be parsed from a binary not formatted according to ISO8601" do
+      assert :error == parse(:time, "abc123")
+      assert :error == parse(:time, "01/25/2017 20:31:55")
+      assert :error == parse(:time, "2017-15-42T31:71:95Z")
+    end
+
+    it "cannot be parsed from a number" do
+      assert :error == parse(:time, 0)
+      assert :error == parse(:time, 0.0)
+    end
+
+    it "cannot be parsed from a boolean" do
+      assert :error == parse(:time, true)
+      assert :error == parse(:time, false)
     end
   end
 end
