@@ -48,7 +48,6 @@ defmodule Absinthe.Schema.NotationTest do
 
     it "can work transitively" do
       defmodule Bar do
-        use Absinthe.Schema.Notation
         use Absinthe.Schema
 
         query do
@@ -75,7 +74,6 @@ defmodule Absinthe.Schema.NotationTest do
 
     it "raises errors nicely" do
       defmodule ErrorSchema do
-        use Absinthe.Schema.Notation
         use Absinthe.Schema
 
         query do
@@ -111,7 +109,7 @@ defmodule Absinthe.Schema.NotationTest do
           field :email, :string
         end
       end
-      
+
       assert [error] = Circles.__absinthe_errors__
       assert %{data: %{artifact: "Field Import Cycle Error\n\nField Import in object `foo' `import_fields(:bar) forms a cycle via: (`foo' => `bar' => `foo')", value: :bar}, location: %{file: _, line: _}, rule: Absinthe.Schema.Rule.NoCircularFieldImports} = error
     end
@@ -140,7 +138,6 @@ defmodule Absinthe.Schema.NotationTest do
 
     it "can import fields from imported types" do
       defmodule Source1 do
-        use Absinthe.Schema.Notation
         use Absinthe.Schema
 
         query do
@@ -152,7 +149,6 @@ defmodule Absinthe.Schema.NotationTest do
         end
       end
       defmodule Source2 do
-        use Absinthe.Schema.Notation
         use Absinthe.Schema
 
         query do
@@ -165,7 +161,6 @@ defmodule Absinthe.Schema.NotationTest do
       end
 
       defmodule Dest do
-        use Absinthe.Schema.Notation
         use Absinthe.Schema
 
         query do
