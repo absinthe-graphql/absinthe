@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.2.5
+
+- Enhancement: Scalar type parse functions can access the context. This enables
+uploaded files with Absinthe.Plug
+
 ## v1.2.4
 - Enhancement: Complex errors. You can now return `{:error, %{message: "...", other_key: value}}`
 - Bug Fix: Invalid Arguments on a field that is under a list field doesn't error.
