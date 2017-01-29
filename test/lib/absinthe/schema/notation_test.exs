@@ -4,7 +4,11 @@ defmodule Absinthe.Schema.NotationTest do
   describe "import fields" do
     it "fields can be imported" do
       defmodule Foo do
-        use Absinthe.Schema.Notation
+        use Absinthe.Schema
+
+        query do
+          #Query type must exist
+        end
 
         object :foo do
           field :name, :string
@@ -21,7 +25,11 @@ defmodule Absinthe.Schema.NotationTest do
 
     it "works for input objects" do
       defmodule InputFoo do
-        use Absinthe.Schema.Notation
+        use Absinthe.Schema
+
+        query do
+          #Query type must exist
+        end
 
         input_object :foo do
           field :name, :string
@@ -41,6 +49,11 @@ defmodule Absinthe.Schema.NotationTest do
     it "can work transitively" do
       defmodule Bar do
         use Absinthe.Schema.Notation
+        use Absinthe.Schema
+
+        query do
+          #Query type must exist
+        end
 
         object :foo do
           field :name, :string
@@ -63,6 +76,11 @@ defmodule Absinthe.Schema.NotationTest do
     it "raises errors nicely" do
       defmodule ErrorSchema do
         use Absinthe.Schema.Notation
+        use Absinthe.Schema
+
+        query do
+          #Query type must exist
+        end
 
         object :bar do
           import_fields :asdf
@@ -77,7 +95,11 @@ defmodule Absinthe.Schema.NotationTest do
 
     it "handles circular errors" do
       defmodule Circles do
-        use Absinthe.Schema.Notation
+        use Absinthe.Schema
+
+        query do
+          #Query type must exist
+        end
 
         object :foo do
           import_fields :bar
@@ -89,7 +111,7 @@ defmodule Absinthe.Schema.NotationTest do
           field :email, :string
         end
       end
-
+      
       assert [error] = Circles.__absinthe_errors__
       assert %{data: %{artifact: "Field Import Cycle Error\n\nField Import in object `foo' `import_fields(:bar) forms a cycle via: (`foo' => `bar' => `foo')", value: :bar}, location: %{file: _, line: _}, rule: Absinthe.Schema.Rule.NoCircularFieldImports} = error
     end
@@ -119,6 +141,11 @@ defmodule Absinthe.Schema.NotationTest do
     it "can import fields from imported types" do
       defmodule Source1 do
         use Absinthe.Schema.Notation
+        use Absinthe.Schema
+
+        query do
+          #Query type must exist
+        end
 
         object :foo do
           field :name, :string
@@ -126,6 +153,11 @@ defmodule Absinthe.Schema.NotationTest do
       end
       defmodule Source2 do
         use Absinthe.Schema.Notation
+        use Absinthe.Schema
+
+        query do
+          #Query type must exist
+        end
 
         object :bar do
           field :email, :string
@@ -134,6 +166,11 @@ defmodule Absinthe.Schema.NotationTest do
 
       defmodule Dest do
         use Absinthe.Schema.Notation
+        use Absinthe.Schema
+
+        query do
+          #Query type must exist
+        end
 
         import_types Source1
         import_types Source2
@@ -550,6 +587,11 @@ defmodule Absinthe.Schema.NotationTest do
       """
       defmodule MyTestSchema.#{name} do
         use Absinthe.Schema
+
+        query do
+          #Query type must exist
+        end
+
         #{text}
       end
       """
@@ -561,6 +603,11 @@ defmodule Absinthe.Schema.NotationTest do
     assert """
     defmodule MyTestSchema.#{name} do
       use Absinthe.Schema
+
+      query do
+        #Query type must exist
+      end
+
       #{text}
     end
     """
