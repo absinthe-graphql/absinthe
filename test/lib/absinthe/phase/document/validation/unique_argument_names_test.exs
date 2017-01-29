@@ -6,8 +6,6 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
   use Support.Harness.Validation
   alias Absinthe.{Blueprint}
 
-  @message "Duplicate argument name."
-
   defp duplicate(name, line, values) do
     List.wrap(values)
     |> Enum.map(fn

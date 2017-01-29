@@ -47,7 +47,18 @@ defmodule Absinthe.Execution.ArgumentsTest do
       value :sms, deprecate: "Use phone instead"
     end
 
+    input_object :input_stuff do
+      field :value, :integer
+      field :non_null_field, non_null(:string)
+    end
+
     query do
+      field :stuff, :integer do
+        arg :stuff, non_null(:input_stuff)
+        resolve fn _, _ ->
+          {:ok, 14}
+        end
+      end
 
       field :test_boolean_input_object, :boolean do
         arg :input, non_null(:boolean_input_object)
@@ -60,7 +71,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
       field :contact, :contact_type do
         arg :type, :contact_type
 
-        resolve fn %{type: val}, _ -> {:ok, val} end
+        resolve fn args, _ -> {:ok, Map.get(args, :type)} end
       end
 
       field :contacts, list_of(:string) do
@@ -215,6 +226,19 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "a@b.com"]}}}, doc |> run(Schema, variables: %{"email" => "a@b.com"})
       end
 
+      it "enforces non_null fields in input passed as variable" do
+        query = """
+        query Stuff($input: InputStuff!) {
+          stuff(stuff: $input)
+        }
+        """
+        result = run(query, Schema, variables: %{"input" => %{"value" => 5, "nonNullField" => nil}})
+        assert_result {:ok, %{errors: [%{message: ~s(Argument "stuff" has invalid value $input.\nIn field "nonNullField": Expected type "String!", found null.)}]}}, result
+
+        result = run(query, Schema, variables: %{"input" => %{"value" => 5}})
+        assert_result {:ok, %{errors: [%{message: ~s(Argument "stuff" has invalid value $input.\nIn field "nonNullField": Expected type "String!", found null.)}]}}, result
+      end
+
       it "can set input object default values" do
         doc = """
         query FooIsMissing($email: String, $defaultWithString: String) {
@@ -245,6 +269,15 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"contacts" => []}}}, doc |> run(Schema, variables: %{})
       end
 
+    end
+
+    describe "nullable arguments" do
+      it "if omitted should still be passed as an argument map to the resolver" do
+        doc = """
+        query GetContact{ contact }
+        """
+        assert_result {:ok, %{data: %{"contact" => nil}}}, doc |> run(Schema)
+      end
     end
 
     describe "enum types" do

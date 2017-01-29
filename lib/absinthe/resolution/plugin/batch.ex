@@ -85,7 +85,7 @@ defmodule Absinthe.Resolution.Plugin.Batch do
   It could also be used to set options unique to the execution of a particular
   batching function.
   """
-  @type batch_fun :: {Module.t, :atom} | {Module.t, :atom, term}
+  @type batch_fun :: {module, atom} | {module, atom, term}
 
   @type post_batch_fun :: (term -> Absinthe.Type.Field.resolver_output)
 

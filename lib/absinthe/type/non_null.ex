@@ -31,6 +31,8 @@ defmodule Absinthe.Type.NonNull do
 
   * `:of_type` -- the underlying type to wrap
   """
-  @type t :: %{of_type: Absinthe.Type.nullable_t}
   defstruct of_type: nil
+
+  @type t :: %__MODULE__{of_type: Absinthe.Type.nullable_t}
+  @type t(x) :: %__MODULE__{of_type: x}
 end

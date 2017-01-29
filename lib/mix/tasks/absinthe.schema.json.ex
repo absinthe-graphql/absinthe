@@ -6,7 +6,6 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   @shortdoc "Generate a schema.json file for an Absinthe schema"
 
   @default_filename "./schema.json"
-  @default_codec Poison
   @default_codec_name "Poison"
 
   @moduledoc """

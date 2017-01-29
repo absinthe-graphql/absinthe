@@ -10,6 +10,7 @@ defmodule Absinthe.Blueprint.Document.Field do
     alias: nil,
     selections: [],
     arguments: [],
+    argument_data: %{},
     directives: [],
     # Added by phases
     flags: %{},

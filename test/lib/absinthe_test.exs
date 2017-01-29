@@ -2,6 +2,11 @@ defmodule AbsintheTest do
   use Absinthe.Case, async: true
   import AssertResult
 
+  it "can return multiple errors" do
+    query = "mutation { FailingThing(type: MULTIPLE) { name } }"
+    assert_result {:ok, %{data: %{}, errors: [%{message: "In field \"FailingThing\": one"}, %{message: "In field \"FailingThing\": two"}]}}, run(query, Things)
+  end
+
   it "can return extra error fields" do
     query = "mutation { FailingThing(type: WITH_CODE) { name } }"
     assert_result {:ok, %{data: %{}, errors: [%{code: 42, message: "In field \"FailingThing\": Custom Error"}]}}, run(query, Things)
@@ -12,9 +17,34 @@ defmodule AbsintheTest do
     assert_raise Absinthe.ExecutionError, fn -> run(query, Things) end
   end
 
+  it "can return multiple errors, with extra error fields" do
+    query = "mutation { FailingThing(type: MULTIPLE_WITH_CODE) { name } }"
+    assert_result {:ok, %{data: %{}, errors: [%{code: 1, message: "In field \"FailingThing\": Custom Error 1"}, %{code: 2, message: "In field \"FailingThing\": Custom Error 2"}]}}, run(query, Things)
+  end
+
+  it "requires message in extended errors, when multiple errors are given" do
+    query = "mutation { FailingThing(type: MULTIPLE_WITHOUT_MESSAGE) { name } }"
+    assert_raise Absinthe.ExecutionError, fn -> run(query, Things) end
+  end
+
   it "can do a simple query" do
     query = """
     query GimmeFoo {
+      thing(id: "foo") {
+        name
+      }
+    }
+    """
+    assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}}}, run(query, Things)
+  end
+
+  it "can do a simple query with fragments" do
+    query = """
+    {
+      ... Fields
+    }
+
+    fragment Fields on RootQueryType {
       thing(id: "foo") {
         name
       }
@@ -44,6 +74,18 @@ defmodule AbsintheTest do
     }
     """
     assert_result {:ok, %{data: %{"things" => [%{"name" => "Bar", "id" => "bar"}, %{"name" => "Foo", "id" => "foo"}]}}}, run(query, Things)
+  end
+
+  it "Invalid arguments on children of a list field are correctly handled" do
+    query = """
+    query AllTheThings {
+      things {
+        id(x: 1)
+        name
+      }
+    }
+    """
+    assert_result {:ok, %{errors: [%{message: "Unknown argument \"x\" on field \"id\" of type \"Thing\"."}]}}, run(query, Things)
   end
 
   it "can do a simple query with an all caps alias" do
@@ -154,6 +196,22 @@ defmodule AbsintheTest do
     """
     result = run(query, Things, variables: %{"thingId" => "bar"})
     assert_result {:ok, %{data: %{"thing" => %{"name" => "Bar"}}}}, result
+  end
+
+  it "can handle variable errors without an operation name" do
+    query = """
+    query($userId: String, $test: String) {
+        user(id: $userId) {
+            id
+        }
+    }
+    """
+    assert_result {:ok,
+      %{errors: [
+        %{message: "Cannot query field \"user\" on type \"RootQueryType\". Did you mean \"number\"?"},
+        %{message: "Unknown argument \"id\" on field \"user\" of type \"RootQueryType\"."},
+        %{message: "Variable \"test\" is never used."}]}
+    }, run(query, Things, variables: %{"id" => "foo"})
   end
 
   it "can use input objects" do

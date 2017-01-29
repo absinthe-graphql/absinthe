@@ -14,6 +14,58 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   alias Absinthe.Phase
   use Absinthe.Phase
 
+  @error_detail """
+  ## For a data result
+
+  `{:ok, any}` result will do.
+
+  ### Examples:
+
+  A simple integer result:
+
+      {:ok, 1}
+
+  Something more complex:
+
+      {:ok, %Model.Thing{some: %{complex: :data}}}
+
+  ## For an error result
+
+  One or more errors for a field can be returned in a single `{:error, error_value}` tuple.
+
+  `error_value` can be:
+  - A simple error message string.
+  - A map containing `:message` key, plus any additional serializable metadata.
+  - A keyword list containing a `:message` key, plus any additional serializable metadata.
+  - A list containing multiple of any/all of these.
+
+  ### Examples
+
+  A simple error message:
+
+      {:error, "Something bad happened"}
+
+  Multiple error messages:
+
+      {:error, ["Something bad", "Even worse"]
+
+  Single custom errors (note the required `:message` keys):
+
+      {:error, message: "Unknown user", code: 21}
+      {:error, %{message: "A database error occurred", details: format_db_error(some_value)}}
+
+  Three errors of mixed types:
+
+      {:error, ["Simple message", [message: "A keyword list error", code: 1], %{message: "A map error"}]}
+
+  ## To activate a plugin
+
+  `{:plugin, NameOfPluginModule, term}` to activate a plugin.
+
+  See `Absinthe.Resolution.Plugin` for more information.
+
+  """
+
   @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
   def run(bp_root, options \\ []) do
     case Blueprint.current_operation(bp_root) do
@@ -102,8 +154,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   def resolve_field(bp_field, acc, info, source) do
     info = %{info | definition: bp_field}
 
-    bp_field.arguments
-    |> Absinthe.Blueprint.Input.Argument.value_map
+    bp_field.argument_data
     |> call_resolution_function(bp_field, info, source)
     |> build_result(acc, bp_field, info, source)
   end
@@ -136,6 +187,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     do_resolve_fields(fields, res_acc, info, source, [result | acc])
   end
 
+  # Normal :ok result
   defp build_result({:ok, result}, acc, bp_field, info, _) do
     full_type = Type.expand(bp_field.schema_node.type, info.schema)
 
@@ -143,42 +195,90 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     |> to_result(bp_field, full_type)
     |> walk_result(acc, bp_field, full_type, info)
   end
-  defp build_result({:error, params} = other, acc, bp_field, info, source) when is_list(params) or is_map(params) do
-    case Keyword.split(Enum.to_list(params), [:message]) do
-      {[], _} -> result_format_error(other, bp_field, source)
-      {[message: msg], extra} ->
-        build_error_result(msg, extra, acc, bp_field, info)
-    end
+  # Error result; force wrap of single Keyword.t errors
+  defp build_result({:error, [{_, _} | _] = error_value} = err, acc, bp_field, info, source) do
+    build_error_result(err, [error_value], acc, bp_field, info, source)
   end
-  defp build_result({:error, msg}, acc, bp_field, info, _) do
-    build_error_result(msg, [], acc, bp_field, info)
+  # Error result; put errors
+  defp build_result({:error, error_value} = err, acc, bp_field, info, source) do
+    build_error_result(err, List.wrap(error_value), acc, bp_field, info, source)
   end
+  # Plugin result; init
   defp build_result({:plugin, plugin, data}, acc, emitter, info, source) do
     Resolution.PluginInvocation.init(plugin, data, acc, emitter, info, source)
   end
+  # Everything else; raise
   defp build_result(other, _, field, _, source) do
-    result_format_error(other, field, source)
+    raise_result_error!(other, field, source)
   end
 
-  defp result_format_error(other, field, source) do
+  defp raise_result_error!({:error, _} = value, field, source) do
+    raise_result_error!(
+      value, field, source,
+      "You're returning an :error tuple, but did you forget to include a `:message`\nkey in every custom error (map or keyword list)?"
+    )
+  end
+  defp raise_result_error!(value, field, source) do
+    raise_result_error!(
+      value, field, source,
+      "Did you forget to return a valid `{:ok, any}` | `{:error, error_value}` tuple?"
+    )
+  end
+
+  defp raise_result_error!(value, field, source, guess) do
     raise Absinthe.ExecutionError, """
-    Resolution function did not return `{:ok, term}`, `{:error, binary}` or `{:error, map | Keyword.t}`
-    Resolving field: #{field.name}
-    Resolving on: #{inspect source}
-    Got: #{inspect other}
+    Invalid value returned from resolver.
+
+    Resolving field:
+
+        #{field.name}
+
+    Defined at:
+
+        #{field.schema_node.__reference__.location.file}:#{field.schema_node.__reference__.location.line}
+
+    Resolving on:
+
+        #{inspect source}
+
+    Got value:
+
+        #{inspect value}
+
+    ...
+
+    #{guess}
+
+    ...
+
+    The result must be one of the following...
+
+    #{@error_detail}
     """
   end
 
-  defp build_error_result(message, extra, acc, bp_field, info) do
-    message = ~s(In field "#{bp_field.name}": #{message})
+  defp build_error_result(original_value, error_values, acc, bp_field, info, source) do
     full_type = Type.expand(bp_field.schema_node.type, info.schema)
-
-    result =
-      nil
-      |> to_result(bp_field, full_type)
-      |> put_error(error(bp_field, message, extra))
-
+    result = to_result(nil, bp_field, full_type)
+    result = Enum.reduce(Enum.reverse(error_values), result, &put_result_error_value(&1, &2, original_value, bp_field, source))
     {result, acc}
+  end
+
+  defp put_result_error_value(error_value, result, original_value, bp_field, source) do
+    case split_error_value(error_value) do
+      {[], _} ->
+        raise_result_error!(original_value, bp_field, source)
+      {[message: message], extra} ->
+        message = ~s(In field "#{bp_field.name}": #{message})
+        put_error(result, error(bp_field, message, extra))
+    end
+  end
+
+  defp split_error_value(error_value) when is_list(error_value) or is_map(error_value) do
+    Keyword.split(Enum.to_list(error_value), [:message])
+  end
+  defp split_error_value(error_value) when is_binary(error_value) do
+    {[message: error_value], []}
   end
 
   # Introspection Field
@@ -263,8 +363,11 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   def find_target_type(%{of_type: type}, schema) do
     find_target_type(type, schema)
   end
-  def find_target_type(schema_type, schema) do
+  def find_target_type(schema_type, schema) when is_atom(schema_type) or is_binary(schema_type) do
     schema.__absinthe_type__(schema_type)
+  end
+  def find_target_type(type, _schema) do
+    type
   end
 
   def error(node, message, extra \\ []) do
@@ -277,7 +380,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   @spec passes_type_condition?(Type.t, Type.t, any, Schema.t) :: boolean
-  defp passes_type_condition?(equal, equal, _, _), do: true
+  defp passes_type_condition?(%{name: name}, %{name: name}, _, _), do: true
   # The condition is an Object type and the current scope is a Union; Verify
   # that the Union has the Object type as a member and that the current source
   # object's concrete type matched the condition Object type.
@@ -314,11 +417,13 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     false
   end
 
-  defp nil_value_error(_blueprint, _schema_type) do
+  defp nil_value_error(blueprint, _schema_type) do
     """
-    Tried to return nil value of field marked non null!
+    The field '#{blueprint.name}' resolved to nil, but it is marked non-null in your schema.
+    Please ensure that '#{blueprint.name}' always resolves to a non-null value.
 
-    TODO: More detailed error message
+    The corresponding Absinthe blueprint is:
+    #{inspect blueprint}
     """
   end
 end

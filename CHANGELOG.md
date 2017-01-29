@@ -1,5 +1,29 @@
 # Changelog
 
+## v1.2.5
+
+- Enhancement: Scalar type parse functions can access the context. This enables
+uploaded files with Absinthe.Plug
+
+## v1.2.4
+- Enhancement: Complex errors. You can now return `{:error, %{message: "...", other_key: value}}`
+- Bug Fix: Invalid Arguments on a field that is under a list field doesn't error.
+- Bug Fix: Deeper fragment merging.
+
+## v1.2.3
+- Bug Fix: When there are no arguments, an empty map should be passed to the resolution functions not `nil`
+
+## v1.2.2
+- Enhancement: Enable `import_fields` for input objects. In the future we will
+enforce that `input_objects` can only import fields from other `input_objects`.
+- Enhancement: Improved exception when returning `nil` from a field marked `non_null`
+- Enhancement: Allow returning complex errors from resolution functions.
+- Enhancement: Minor tweaks to support the in-progress Elixir 1.4 release
+- Bug fix: Handle fragments on the root query and root mutation types
+- Bug fix: Handle errors on variables when no operation name.
+- Bug fix: input objects passed in as variables with missing internal fields marked non null are correctly caught
+- Assorted other bug fixes
+
 ## v1.2.1
 
 - Stricter, spec-compliant scalar parsing rules (#194)

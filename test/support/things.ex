@@ -7,8 +7,11 @@ defmodule Things do
   }
 
   enum :failure_type do
+    value :multiple
     value :with_code
     value :without_message
+    value :multiple_with_code
+    value :multiple_without_message
   end
 
   mutation do
@@ -31,10 +34,16 @@ defmodule Things do
     field :failing_thing, type: :thing do
       arg :type, type: :failure_type
       resolve fn
-        (%{type: :with_code}, _) ->
+        %{type: :multiple}, _ ->
+          {:error, ["one", "two"]}
+        %{type: :with_code}, _ ->
           {:error, message: "Custom Error", code: 42}
-        (%{type: :without_message}, _) ->
+        %{type: :without_message}, _ ->
           {:error, code: 42}
+        %{type: :multiple_with_code}, _ ->
+          {:error, [%{message: "Custom Error 1", code: 1}, %{message: "Custom Error 2", code: 2}]}
+        %{type: :multiple_without_message}, _ ->
+          {:error, [%{message: "Custom Error 1", code: 1}, %{code: 2}]}
       end
     end
 

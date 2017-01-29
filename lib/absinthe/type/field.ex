@@ -20,18 +20,44 @@ defmodule Absinthe.Type.Field do
 
   See the `Absinthe.Type.Field.t` explanation of `:resolve` for more information.
   """
-  @type resolver_t :: ((%{atom => any}, Absinthe.Resolution.t) -> resolver_output)
-  @type resolver_output :: ok_output | error_output | plugin_output
+  @type resolver_t :: ((%{atom => any}, Absinthe.Resolution.t) -> result)
 
-  @type ok_output :: {:ok, any}
-  @type error_output :: {:error, binary} | {:error, map | Keyword.t}
-  @type plugin_output :: {:plugin, Absinthe.Resolution.Plugin.t, term}
+  @typedoc """
+  The result of a resolver.
+  """
+  @type result :: ok_result | error_result | plugin_result
+
+  @type ok_result :: {:ok, any}
+  @type error_result :: {:error, error_value}
+  @type plugin_result :: {:plugin, Absinthe.Resolution.Plugin.t, term}
+
+  @typedoc """
+  An error message is a human-readable string describing the error that occurred.
+  """
+  @type error_message :: String.t
+
+  @typedoc """
+  Any serializable value.
+  """
+  @type serializable :: any
+
+  @typedoc """
+  A custom error may be a `map` or a `Keyword.t`, but must contain a `:message` key.
+
+  Note that the values that make up a custom error must be serializable.
+  """
+  @type custom_error :: %{required(:message) => error_message, optional(atom) => serializable} | Keyword.t
+
+  @typedoc """
+  An error value is a simple error message, a custom error, or a list of either/both of them.
+  """
+  @type error_value :: error_message | custom_error | [error_message | custom_error]
 
   @typedoc """
   The configuration for a field.
 
   * `:name` - The name of the field, usually assigned automatically by
-  the `Absinthe.Schema.Notation.field/1`.
+     the `Absinthe.Schema.Notation.field/1`.
   * `:description` - Description of a field, useful for introspection.
   * `:deprecation` - Deprecation information for a field, usually
      set-up using `Absinthe.Schema.Notation.deprecate/1`.
