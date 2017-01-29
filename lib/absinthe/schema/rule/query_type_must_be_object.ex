@@ -2,7 +2,6 @@ defmodule Absinthe.Schema.Rule.QueryTypeMustBeObject do
   use Absinthe.Schema.Rule
 
   alias Absinthe.Schema
-  alias Absinthe.Type
   require IEx
 
   @moduledoc false
