@@ -74,11 +74,7 @@ defmodule Absinthe.Schema.NotationTest do
 
     it "raises errors nicely" do
       defmodule ErrorSchema do
-        use Absinthe.Schema
-
-        query do
-          #Query type must exist
-        end
+        use Absinthe.Schema.Notation
 
         object :bar do
           import_fields :asdf
@@ -93,12 +89,8 @@ defmodule Absinthe.Schema.NotationTest do
 
     it "handles circular errors" do
       defmodule Circles do
-        use Absinthe.Schema
-
-        query do
-          #Query type must exist
-        end
-
+        use Absinthe.Schema.Notation
+        
         object :foo do
           import_fields :bar
           field :name, :string
