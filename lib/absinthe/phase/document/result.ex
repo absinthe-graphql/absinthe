@@ -46,6 +46,9 @@ defmodule Absinthe.Phase.Document.Result do
     %{errors: [format_error(error)]}
   end
 
+  defp data(%{errors: [], value: value}, errors), do: {value, errors}
+  defp data(%{errors: field_errors, value: _}, errors), do: {nil, field_errors ++ errors}
+
   # Leaf
   defp data(%{value: value}, errors), do: {value, errors}
 
@@ -90,12 +93,9 @@ defmodule Absinthe.Phase.Document.Result do
 
   defp field_data(fields, errors, acc \\ [])
   defp field_data([], errors, acc), do: {deep_merge(acc), errors}
-  defp field_data([%{errors: []} = field | fields], errors, acc) do
+  defp field_data([field | fields], errors, acc) do
     {value, errors} = data(field, errors)
     field_data(fields, errors, [{field_name(field), value} | acc])
-  end
-  defp field_data([%{errors: errs} | fields], errors, acc) when length(errs) > 0 do
-    field_data(fields, errs ++ errors, acc)
   end
 
   defp field_name(%{emitter: %{alias: nil, name: name}}), do: name

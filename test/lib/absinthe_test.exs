@@ -3,13 +3,13 @@ defmodule AbsintheTest do
   import AssertResult
 
   it "can return multiple errors" do
-    query = "mutation { FailingThing(type: MULTIPLE) { name } }"
-    assert_result {:ok, %{data: %{}, errors: [%{message: "In field \"FailingThing\": one"}, %{message: "In field \"FailingThing\": two"}]}}, run(query, Things)
+    query = "mutation { failingThing(type: MULTIPLE) { name } }"
+    assert_result {:ok, %{data: %{"failingThing" => nil}, errors: [%{message: "In field \"failingThing\": one"}, %{message: "In field \"failingThing\": two"}]}}, run(query, Things)
   end
 
   it "can return extra error fields" do
-    query = "mutation { FailingThing(type: WITH_CODE) { name } }"
-    assert_result {:ok, %{data: %{}, errors: [%{code: 42, message: "In field \"FailingThing\": Custom Error"}]}}, run(query, Things)
+    query = "mutation { failingThing(type: WITH_CODE) { name } }"
+    assert_result {:ok, %{data: %{"failingThing" => nil}, errors: [%{code: 42, message: "In field \"failingThing\": Custom Error"}]}}, run(query, Things)
   end
 
   it "requires message in extended errors" do
@@ -18,12 +18,12 @@ defmodule AbsintheTest do
   end
 
   it "can return multiple errors, with extra error fields" do
-    query = "mutation { FailingThing(type: MULTIPLE_WITH_CODE) { name } }"
-    assert_result {:ok, %{data: %{}, errors: [%{code: 1, message: "In field \"FailingThing\": Custom Error 1"}, %{code: 2, message: "In field \"FailingThing\": Custom Error 2"}]}}, run(query, Things)
+    query = "mutation { failingThing(type: MULTIPLE_WITH_CODE) { name } }"
+    assert_result {:ok, %{data: %{"failingThing" => nil}, errors: [%{code: 1, message: "In field \"failingThing\": Custom Error 1"}, %{code: 2, message: "In field \"failingThing\": Custom Error 2"}]}}, run(query, Things)
   end
 
   it "requires message in extended errors, when multiple errors are given" do
-    query = "mutation { FailingThing(type: MULTIPLE_WITHOUT_MESSAGE) { name } }"
+    query = "mutation { failingThing(type: MULTIPLE_WITHOUT_MESSAGE) { name } }"
     assert_raise Absinthe.ExecutionError, fn -> run(query, Things) end
   end
 
@@ -182,7 +182,7 @@ defmodule AbsintheTest do
       }
     """
     assert_result {:ok, %{data: %{"thingByContext" => %{"name" => "Bar"}}}}, run(query, Things, context: %{thing: "bar"})
-    assert_result {:ok, %{data: %{},
+    assert_result {:ok, %{data: %{"thingByContext" => nil},
                           errors: [%{message: ~s(In field "thingByContext": No :id context provided)}]}}, run(query, Things)
   end
 

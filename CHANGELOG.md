@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.6 (Unreleased)
+
+- Bug fix: Fields with runtime errors are presented with `null` values in the result data instead of elided entirely.
+
 ## v1.2.5
 
 - Enhancement: Scalar type parse functions can access the context. This enables
