@@ -27,6 +27,14 @@ defmodule Absinthe.Type.Field do
   """
   @type result :: ok_result | error_result | plugin_result
 
+  @typedoc """
+  A complexity function.
+
+  See the `Absinthe.Type.Field/t` explanation of `:complexity` for more
+  information.
+  """
+  @type complexity_t :: ((%{atom => any}, non_neg_integer) -> non_neg_integer)
+
   @type ok_result :: {:ok, any}
   @type error_result :: {:error, error_value}
   @type plugin_result :: {:plugin, Absinthe.Resolution.Plugin.t, term}
@@ -64,6 +72,7 @@ defmodule Absinthe.Type.Field do
   * `:type` - The type the value of the field should resolve to
   * `:args` - The arguments of the field, usually created by using `Absinthe.Schema.Notation.arg/2`.
   * `:resolve` - The resolution function. See below for more information.
+  * `:complexity` - The complexity function. See below for more information.
   * `:default_value` - The default value of a field. Note this is not used during resolution; only fields that are part of an `Absinthe.Type.InputObject` should set this value.
 
   ## Resolution Functions
@@ -111,6 +120,37 @@ defmodule Absinthe.Type.Field do
      for the field (and useful for complex resolutions using the resolved source
      object, etc)
 
+  ## Complexity function
+
+  ### Default
+
+  If no complexity function is given, the default complexity function is used,
+  which is equivalent to:
+
+      fn(_, child_complexity) -> 1 + child_complexity end
+
+  ### Custom Complexity
+
+  When accepting arguments, however, you probably need do use them for
+  something. Here's an example of definining a field that looks up a at most
+  `limit` users:
+  ```
+  query do
+    field :users, :person do
+      arg :limit, :integer
+
+      complexity fn %{limit: limit}, child_complexity ->
+        10 + limit * child_complexity
+      end
+    end
+  end
+  ```
+
+  Custom complexity functions are passed two arguments:
+
+  1. A map of the arguments for the field, filled in with values from the
+     provided query document/variables.
+  2. A non negative integer, which is total complexity of the child fields.
   """
   @type t :: %{name: binary,
                description: binary | nil,
@@ -119,10 +159,12 @@ defmodule Absinthe.Type.Field do
                default_value: any,
                args: %{(binary | atom) => Absinthe.Type.Argument.t} | nil,
                resolve: resolver_t | nil,
+               complexity: complexity_t | nil,
                __private__: Keyword.t,
                __reference__: Type.Reference.t}
 
-  defstruct name: nil, description: nil, type: nil, deprecation: nil, args: %{}, resolve: nil, default_value: nil, __private__: [], __reference__: nil
+  defstruct name: nil, description: nil, type: nil, deprecation: nil, args: %{},
+  resolve: nil, complexity: nil, default_value: nil, __private__: [], __reference__: nil
 
   @doc """
   Build an AST of the field map for inclusion in other types
