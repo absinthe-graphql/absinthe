@@ -14,12 +14,25 @@ defmodule Absinthe.Phase.Document.Arguments.ComplexityTest do
           5 + limit * child_complexity
         end
       end
+      field :context_aware_complexity, list_of(:foo) do
+        complexity penalize_guests(10)
+      end
     end
 
     object :foo do
       field :bar, :string
       field :buzz, :integer
     end
+
+    defp penalize_guests(penalty) do
+      fn
+        _, child_complexity, %{context: %{current_user: _}} ->
+          child_complexity + 1
+        _, child_complexity, _ ->
+          child_complexity + 1 + penalty
+      end
+    end
+
   end
 
   use Harness.Document.Phase, phase: Absinthe.Phase.Document.Complexity, schema: Schema
@@ -52,6 +65,26 @@ defmodule Absinthe.Phase.Document.Arguments.ComplexityTest do
       {:ok, result, _} = run_phase(doc, operation_name: "ComplexityVar", variables: %{"limit" => 5})
       op = result.operations |> Enum.find(&(&1.name == "ComplexityVar"))
       assert op.complexity == 15
+    end
+
+    it "supports access to context" do
+      doc = """
+      query ContextComplexity {
+        contextAwareComplexity {
+          bar
+          buzz
+        }
+      }
+      """
+
+      {:ok, result, _} = run_phase(doc, operation_name: "ContextComplexity", variables: %{}, context: %{current_user: true})
+      op = result.operations |> Enum.find(&(&1.name == "ContextComplexity"))
+      assert op.complexity == 3
+
+      {:ok, result, _} = run_phase(doc, operation_name: "ContextComplexity", variables: %{})
+      op = result.operations |> Enum.find(&(&1.name == "ContextComplexity"))
+      assert op.complexity == 13
+
     end
 
     it "uses fragments" do

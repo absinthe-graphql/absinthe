@@ -8,3 +8,4 @@ erl_crash.dump
 src/*.erl
 .tool-versions*
 missing_rules.rb
+.DS_Store
