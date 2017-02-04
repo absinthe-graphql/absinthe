@@ -52,7 +52,8 @@ defmodule Absinthe.Type.Extensions do
   @spec parse_datetime(any) :: {:ok, DateTime.t} | :error
   defp parse_datetime(value) when is_binary(value) do
     case DateTime.from_iso8601(value) do
-      {:ok, datetime, _offset} -> {:ok, datetime}
+      {:ok, datetime, 0} -> {:ok, datetime}
+      {:ok, _datetime, _offset} -> :error
       _error -> :error
     end
   end
