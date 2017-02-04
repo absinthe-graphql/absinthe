@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Document.Arguments.ComplexityTest do
+defmodule Absinthe.Phase.Document.ComplexityTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.Blueprint
@@ -35,7 +35,7 @@ defmodule Absinthe.Phase.Document.Arguments.ComplexityTest do
 
   end
 
-  use Harness.Document.Phase, phase: Absinthe.Phase.Document.Complexity, schema: Schema
+  use Harness.Document.Phase, phase: Absinthe.Phase.Document.Complexity.Result, schema: Schema
 
   describe "analysing complexity a document" do
     it "uses arguments and defaults to complexity of 1 for a field" do
@@ -114,7 +114,7 @@ defmodule Absinthe.Phase.Document.Arguments.ComplexityTest do
       }
       """
 
-      assert {:error, "complexity is 6, which is above maximum 5", [Absinthe.Phase.Document.Complexity|_]} =
+      assert {:error, "complexity is 6, which is above maximum 5", [Absinthe.Phase.Document.Complexity.Result|_]} =
         run_phase(doc, operation_name: "ComplexityError", variables: %{}, max_complexity: 5)
     end
   end
