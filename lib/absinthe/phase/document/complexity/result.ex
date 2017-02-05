@@ -42,15 +42,25 @@ defmodule Absinthe.Phase.Document.Complexity.Result do
     {node, errors}
   end
 
-  defp error(%{name: name, source_location: location}, complexity, max) do
+  defp error(%{source_location: location} = node, complexity, max) do
     Phase.Error.new(
       __MODULE__,
-      error_message(name, complexity, max),
+      error_message(node, complexity, max),
       location: location
     )
   end
 
-  def error_message(name, complexity, max) do
-    "#{name} is too complex: complexity is #{complexity} and maximum is #{max}"
+  def error_message(node, complexity, max) do
+    "#{describe_node(node)} is too complex: complexity is #{complexity} and maximum is #{max}"
+  end
+
+  defp describe_node(%Blueprint.Document.Operation{name: nil}) do
+    "Operation"
+  end
+  defp describe_node(%Blueprint.Document.Operation{name: name}) do
+    "Operation #{name}"
+  end
+  defp describe_node(%Blueprint.Document.Field{name: name}) do
+    "Field #{name}"
   end
 end

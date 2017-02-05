@@ -172,8 +172,8 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       {:ok, result, _} = run_phase(doc, operation_name: "ComplexityError", variables: %{}, max_complexity: 5)
       errors = result.resolution.validation |> Enum.map(&(&1.message))
       assert errors == [
-        "fooComplexity is too complex: complexity is 6 and maximum is 5",
-        "ComplexityError is too complex: complexity is 6 and maximum is 5"
+        "Field fooComplexity is too complex: complexity is 6 and maximum is 5",
+        "Operation ComplexityError is too complex: complexity is 6 and maximum is 5"
       ]
     end
 
@@ -192,8 +192,26 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       {:ok, result, _} = run_phase(doc, operation_name: "ComplexityNested", variables: %{}, max_complexity: 4)
       errors = result.resolution.validation |> Enum.map(&(&1.message))
       assert errors == [
-        "nestedComplexity is too complex: complexity is 5 and maximum is 4",
-        "ComplexityNested is too complex: complexity is 5 and maximum is 4"
+        "Field nestedComplexity is too complex: complexity is 5 and maximum is 4",
+        "Operation ComplexityNested is too complex: complexity is 5 and maximum is 4"
+      ]
+    end
+
+    it "errors when too complex and nil operation name" do
+      doc = """
+      {
+        fooComplexity(limit: 1) {
+          heavy
+        }
+      }
+      """
+
+      {:ok, result, _} = run_phase(doc, operation_name: nil, variables: %{},
+      max_complexity: 100)
+      errors = result.resolution.validation |> Enum.map(&(&1.message))
+      assert errors == [
+        "Field fooComplexity is too complex: complexity is 105 and maximum is 100",
+        "Operation is too complex: complexity is 105 and maximum is 100"
       ]
     end
 
