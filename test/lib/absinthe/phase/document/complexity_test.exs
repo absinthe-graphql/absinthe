@@ -206,7 +206,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       }
       """
 
-      {:ok, result, _} = run_phase(doc, operation_name: "ComplexitySkip", variables: %{}, max_complexity: 1, analyse_complexity: false)
+      {:ok, result, _} = run_phase(doc, operation_name: "ComplexitySkip", variables: %{}, max_complexity: 1, analyze_complexity: false)
       op = result.operations |> Enum.find(&(&1.name == "ComplexitySkip"))
       assert op.complexity == nil
       errors = result.resolution.validation |> Enum.map(&(&1.message))

@@ -14,7 +14,7 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
   """
   @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
   def run(input, options \\ []) do
-    if Keyword.get(options, :analyse_complexity, false) do
+    if Keyword.get(options, :analyze_complexity, false) do
       do_run(input, options)
     else
       {:ok, input}
@@ -69,9 +69,9 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
 
   defp field_value_error(field, value) do
     """
-    Invalid value returned from complexity analyser.
+    Invalid value returned from complexity analyzer.
 
-    Analysing field:
+    Analyzing field:
 
       #{field.name}
 

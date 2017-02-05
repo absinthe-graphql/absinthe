@@ -431,7 +431,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   @doc false
-  # Record a complexity analyser in the current scope
+  # Record a complexity analyzer in the current scope
   def record_complexity!(env, func_ast) do
     Scope.put_attribute(env.module, :complexity, func_ast)
     Scope.recorded!(env.module, :attr, :complexity)

@@ -14,7 +14,7 @@ defmodule Harness.Document.Phase do
         options =
           options
           |> Keyword.put(:jump_phases, false)
-          |> Keyword.put_new(:analyse_complexity, true)
+          |> Keyword.put_new(:analyze_complexity, true)
         pipeline = Pipeline.for_document(unquote(schema), options)
         Pipeline.run(query, pipeline |> Pipeline.upto(unquote(phase)))
       end
