@@ -19,7 +19,8 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
     {:ok, Blueprint.update_current(input, &Blueprint.postwalk(&1, fun))}
   end
 
-  def handle_node(%Blueprint.Document.Field{fields: fields,
+  def handle_node(%Blueprint.Document.Field{complexity: nil,
+                                            fields: fields,
                                             argument_data: args,
                                             schema_node: schema_node} = node, info_data) do
     child_complexity = sum_complexity(fields)
