@@ -65,6 +65,8 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       {:ok, result, _} = run_phase(doc, operation_name: "ComplexityArg", variables: %{})
       op = result.operations |> Enum.find(&(&1.name == "ComplexityArg"))
       assert op.complexity == 8
+      errors = result.resolution.validation |> Enum.map(&(&1.message))
+      assert errors == []
     end
 
     it "uses variable arguments" do
@@ -80,6 +82,8 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       {:ok, result, _} = run_phase(doc, operation_name: "ComplexityVar", variables: %{"limit" => 5})
       op = result.operations |> Enum.find(&(&1.name == "ComplexityVar"))
       assert op.complexity == 15
+      errors = result.resolution.validation |> Enum.map(&(&1.message))
+      assert errors == []
     end
 
     it "supports access to context" do
@@ -95,10 +99,14 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       {:ok, result, _} = run_phase(doc, operation_name: "ContextComplexity", variables: %{}, context: %{current_user: true})
       op = result.operations |> Enum.find(&(&1.name == "ContextComplexity"))
       assert op.complexity == 3
+      errors = result.resolution.validation |> Enum.map(&(&1.message))
+      assert errors == []
 
       {:ok, result, _} = run_phase(doc, operation_name: "ContextComplexity", variables: %{})
       op = result.operations |> Enum.find(&(&1.name == "ContextComplexity"))
       assert op.complexity == 13
+      errors = result.resolution.validation |> Enum.map(&(&1.message))
+      assert errors == []
 
     end
 
@@ -188,5 +196,22 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
         "ComplexityNested is too complex: complexity is 5 and maximum is 4"
       ]
     end
+
+    it "skips analysis when disabled" do
+      doc = """
+      query ComplexitySkip {
+        fooComplexity(limit: 3) {
+          bar
+        }
+      }
+      """
+
+      {:ok, result, _} = run_phase(doc, operation_name: "ComplexitySkip", variables: %{}, max_complexity: 1, analyse_complexity: false)
+      op = result.operations |> Enum.find(&(&1.name == "ComplexitySkip"))
+      assert op.complexity == nil
+      errors = result.resolution.validation |> Enum.map(&(&1.message))
+      assert errors == []
+    end
+
   end
 end

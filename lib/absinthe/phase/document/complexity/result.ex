@@ -27,7 +27,7 @@ defmodule Absinthe.Phase.Document.Complexity.Result do
   end
 
   defp handle_node(%{complexity: complexity} = node, max, errors)
-       when complexity > max do
+       when is_integer(complexity) and complexity > max do
     error = error(node, complexity, max)
     node =
       node

@@ -11,7 +11,11 @@ defmodule Harness.Document.Phase do
       """
       @spec run_phase(String.t, Keyword.t) :: Phase.result_t
       def run_phase(query, options) do
-        pipeline = Pipeline.for_document(unquote(schema), Keyword.put(options, :jump_phases, false))
+        options =
+          options
+          |> Keyword.put(:jump_phases, false)
+          |> Keyword.put_new(:analyse_complexity, true)
+        pipeline = Pipeline.for_document(unquote(schema), options)
         Pipeline.run(query, pipeline |> Pipeline.upto(unquote(phase)))
       end
     end

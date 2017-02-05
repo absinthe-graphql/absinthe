@@ -14,6 +14,14 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
   """
   @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
   def run(input, options \\ []) do
+    if Keyword.get(options, :analyse_complexity, false) do
+      do_run(input, options)
+    else
+      {:ok, input}
+    end
+  end
+
+  defp do_run(input, options) do
     info_data = info_boilerplate(input, options)
     fun = &handle_node(&1, info_data)
     {:ok, Blueprint.update_current(input, &Blueprint.postwalk(&1, fun))}
