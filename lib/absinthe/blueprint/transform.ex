@@ -80,6 +80,11 @@ defmodule Absinthe.Blueprint.Transform do
   def walk(blueprint, acc, pre, post)
 
   for {node_name, children} <- nodes_with_children do
+    if :selections in children do
+      def walk(%unquote(node_name){flags: %{flat: _}} = node, acc, pre, post) do
+        node_with_children(node, unquote(children--[:selections]), acc, pre, post)
+      end
+    end
     def walk(%unquote(node_name){} = node, acc, pre, post) do
       node_with_children(node, unquote(children), acc, pre, post)
     end

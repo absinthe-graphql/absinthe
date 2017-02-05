@@ -146,6 +146,13 @@ defmodule Absinthe do
     defexception message: "execution failed"
   end
 
+  defmodule AnalysisError do
+    @moduledoc """
+    An error during analysis.
+    """
+    defexception message: "analysis failed"
+  end
+
   @type result_selection_t :: %{
     String.t =>
         nil
@@ -182,6 +189,10 @@ defmodule Absinthe do
     arguments in the provided query document.
   * `:context` -> A map of the execution context.
   * `:root_value` -> A root value to use as the source for toplevel fields.
+  * `:analyze_complexity` -> Whether to analyze the complexity before
+  executing an operation.
+  * `:max_complexity` -> An integer (or `:infinity`) for the maximum allowed
+  complexity for the operation being executed.
 
   ## Examples
 
@@ -204,6 +215,8 @@ defmodule Absinthe do
     adapter: Absinthe.Adapter.t,
     root_value: term,
     operation_name: String.t,
+    analyze_complexity: boolean,
+    max_complexity: non_neg_integer | :infinity
   ]
 
   @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, run_opts) :: {:ok, result_t} | {:error, any}

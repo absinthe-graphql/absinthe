@@ -92,6 +92,9 @@ defmodule Absinthe.Pipeline do
       # Prepare for Execution
       Phase.Document.CascadeInvalid,
       Phase.Document.Flatten,
+      # Analyse Complexity
+      {Phase.Document.Complexity.Analysis, options},
+      {Phase.Document.Complexity.Result, options},
       # Execution
       {Phase.Document.Execution.Resolution, options},
       # Format Result

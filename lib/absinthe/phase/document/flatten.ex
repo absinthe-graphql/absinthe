@@ -27,7 +27,7 @@ defmodule Absinthe.Phase.Document.Flatten do
   defp process(%{selections: selections} = node, fragments) do
     fields = Enum.flat_map(selections, &selection_to_fields(&1, fragments))
     |> inherit_type_condition(node)
-    %{node | fields: fields}
+    put_flag(%{node | fields: fields}, :flat)
   end
 
   @spec selection_to_fields(Blueprint.Document.selection_t, [Blueprint.Document.Fragment.Named.t]) :: [Blueprint.Document.Field.t]

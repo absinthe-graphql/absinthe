@@ -423,6 +423,21 @@ defmodule Absinthe.Schema.Notation do
     :ok
   end
 
+  @placement {:complexity, [under: [:field]]}
+  defmacro complexity(func_ast) do
+    __CALLER__
+    |> recordable!(:complexity, @placement[:complexity])
+    |> record_complexity!(func_ast)
+  end
+
+  @doc false
+  # Record a complexity analyzer in the current scope
+  def record_complexity!(env, func_ast) do
+    Scope.put_attribute(env.module, :complexity, func_ast)
+    Scope.recorded!(env.module, :attr, :complexity)
+    :ok
+  end
+
   @placement {:is_type_of, [under: [:object]]}
   @doc """
 

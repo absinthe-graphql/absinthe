@@ -18,6 +18,7 @@ defmodule Absinthe.Blueprint.Document.Field do
     source_location: nil,
     type_conditions: [],
     schema_node: nil,
+    complexity: nil,
     fields: [],
   ]
 
@@ -31,7 +32,8 @@ defmodule Absinthe.Blueprint.Document.Field do
     fields: [Blueprint.Document.Field.t],
     source_location: nil | Blueprint.Document.SourceLocation.t,
     type_conditions: [Blueprint.TypeReference.Name],
-    schema_node: Type.t
+    schema_node: Type.t,
+    complexity: nil | non_neg_integer
   }
 
 end
