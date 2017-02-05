@@ -147,13 +147,29 @@ defmodule Absinthe.Type.Field do
   end
   ```
 
-  Custom complexity functions are passed two arguments:
+  An optional third argument, `Absinthe.Complexity` struct, provides extra
+  information. Here's an example of changing the complexity using the context:
+  ```
+  query do
+    field :users, :person do
+      arg :limit, :integer
+
+      complexity fn _, child_complexity, %{context: %{admin: admin?}} ->
+        if admin?, do: 0, else: 10 + limit * child_complexity
+      end
+    end
+  end
+  ```
+
+  Custom complexity functions are passed two or three arguments:
 
   1. A map of the arguments for the field, filled in with values from the
      provided query document/variables.
   2. A non negative integer, which is total complexity of the child fields.
+  3. An `Absinthe.Complexity` struct with information about the context of the
+     field. This argument is optional when using an anonymous function.
 
-  Alternative a complexity can be an integer greater than or equal to 0:
+  Alternatively complexity can be an integer greater than or equal to 0:
   ```
   query do
     field :users, :person do
