@@ -33,7 +33,8 @@ defmodule Absinthe.Type.Field do
   See the `Absinthe.Type.Field/t` explanation of `:complexity` for more
   information.
   """
-  @type complexity_t :: ((%{atom => any}, non_neg_integer) -> non_neg_integer)
+  @type complexity_t ::
+    ((%{atom => any}, non_neg_integer) -> non_neg_integer) | non_neg_integer
 
   @type ok_result :: {:ok, any}
   @type error_result :: {:error, error_value}
