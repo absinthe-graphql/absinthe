@@ -120,6 +120,21 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       assert op.complexity == 19
     end
 
+    it "raises error on negative complexity" do
+      doc = """
+      query ComplexityNeg {
+        fooComplexity(limit: -20) {
+          bar
+        }
+      }
+      """
+
+      assert_raise Absinthe.AnalysisError, fn() ->
+        run_phase(doc, operation_name: "ComplexityNeg", variables: %{})
+      end
+    end
+
+
     it "does not error when complex child is discounted by parent" do
       doc = """
       query ComplexityDiscount {

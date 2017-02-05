@@ -146,6 +146,13 @@ defmodule Absinthe do
     defexception message: "execution failed"
   end
 
+  defmodule AnalysisError do
+    @moduledoc """
+    An error during analysis.
+    """
+    defexception message: "analysis failed"
+  end
+
   @type result_selection_t :: %{
     String.t =>
         nil
