@@ -1,8 +1,6 @@
 defmodule Absinthe.Phase.Document.ComplexityTest do
   use Absinthe.Case, async: true
 
-  alias Absinthe.Blueprint
-
   defmodule Schema do
     use Absinthe.Schema
 
@@ -17,11 +15,28 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       field :context_aware_complexity, list_of(:foo) do
         complexity penalize_guests(10)
       end
+      field :discount_child_complexity, list_of(:foo) do
+        complexity fn _, child_complexity -> child_complexity - 1 end
+      end
+      field :nested_complexity, list_of(:quux) do
+        complexity fn _, child_complexity ->
+          5 * child_complexity
+        end
+      end
     end
 
     object :foo do
       field :bar, :string
       field :buzz, :integer
+      field :heavy, :string do
+        complexity fn _, 0 -> 100 end
+      end
+    end
+
+    object :quux do
+      field :nested, :foo do
+        complexity fn _, _ -> 1 end
+      end
     end
 
     defp penalize_guests(penalty) do
@@ -105,6 +120,23 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       assert op.complexity == 19
     end
 
+    it "does not error when complex child is discounted by parent" do
+      doc = """
+      query ComplexityDiscount {
+        discountChildComplexity {
+          heavy
+        }
+      }
+      """
+
+      {:ok, result, _} = run_phase(doc, operation_name: "ComplexityDiscount", variables: %{}, max_complexity: 100)
+      op = result.operations |> Enum.find(&(&1.name == "ComplexityDiscount"))
+      assert op.complexity == 99
+
+      errors = result.resolution.validation |> Enum.map(&(&1.message))
+      assert errors == []
+    end
+
     it "errors when too complex" do
       doc = """
       query ComplexityError {
@@ -114,8 +146,32 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       }
       """
 
-      assert {:error, "complexity is 6, which is above maximum 5", [Absinthe.Phase.Document.Complexity.Result|_]} =
-        run_phase(doc, operation_name: "ComplexityError", variables: %{}, max_complexity: 5)
+      {:ok, result, _} = run_phase(doc, operation_name: "ComplexityError", variables: %{}, max_complexity: 5)
+      errors = result.resolution.validation |> Enum.map(&(&1.message))
+      assert errors == [
+        "fooComplexity is too complex: complexity is 6 and maximum is 5",
+        "ComplexityError is too complex: complexity is 6 and maximum is 5"
+      ]
+    end
+
+    it "errors when too complex but not for discounted complex child" do
+      doc = """
+      query ComplexityNested {
+        nestedComplexity {
+          nested {
+            bar
+            heavy
+          }
+        }
+      }
+      """
+
+      {:ok, result, _} = run_phase(doc, operation_name: "ComplexityNested", variables: %{}, max_complexity: 4)
+      errors = result.resolution.validation |> Enum.map(&(&1.message))
+      assert errors == [
+        "nestedComplexity is too complex: complexity is 5 and maximum is 4",
+        "ComplexityNested is too complex: complexity is 5 and maximum is 4"
+      ]
     end
   end
 end
