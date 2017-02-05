@@ -59,7 +59,7 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
     info = struct(Complexity, Map.put(info_data, :definition, node))
     complexity.(arg, child_complexity, info)
   end
-  defp field_complexity(%{complexity: {mod, fun}}, arg, child_complexity, info_data, _) do
+  defp field_complexity(%{complexity: {mod, fun}}, arg, child_complexity, info_data, node) do
     info = struct(Complexity, Map.put(info_data, :definition, node))
     apply(mod, fun, [arg, child_complexity, info])
   end
