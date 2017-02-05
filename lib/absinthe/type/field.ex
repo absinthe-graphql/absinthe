@@ -151,6 +151,16 @@ defmodule Absinthe.Type.Field do
   1. A map of the arguments for the field, filled in with values from the
      provided query document/variables.
   2. A non negative integer, which is total complexity of the child fields.
+
+  Alternative a complexity can be an integer greater than or equal to 0:
+  ```
+  query do
+    field :users, :person do
+      complexity 10
+    end
+  end
+  ```
+
   """
   @type t :: %{name: binary,
                description: binary | nil,

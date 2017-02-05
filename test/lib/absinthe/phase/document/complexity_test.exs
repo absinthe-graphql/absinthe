@@ -29,13 +29,13 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       field :bar, :string
       field :buzz, :integer
       field :heavy, :string do
-        complexity fn _, 0 -> 100 end
+        complexity 100
       end
     end
 
     object :quux do
       field :nested, :foo do
-        complexity fn _, _ -> 1 end
+        complexity 1
       end
     end
 

@@ -37,6 +37,10 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
   defp field_complexity(%{complexity: nil}, _, child_complexity, _, _) do
     @default_complexity + child_complexity
   end
+  defp field_complexity(%{complexity: complexity}, _, _, _, _)
+       when is_integer(complexity) and complexity >= 0 do
+    complexity
+  end
   defp field_complexity(%{complexity: complexity}, arg, child_complexity, _, _)
        when is_function(complexity, 2) do
     complexity.(arg, child_complexity)
