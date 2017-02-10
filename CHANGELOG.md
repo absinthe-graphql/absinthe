@@ -1,7 +1,8 @@
 # Changelog
 
-## v1.2.6 (Unreleased)
+## v1.2.6
 
+- Enhancement: Query complexity analysis!
 - Bug fix: Fields with runtime errors are presented with `null` values in the result data instead of elided entirely.
 
 ## v1.2.5
