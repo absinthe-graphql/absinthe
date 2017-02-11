@@ -297,7 +297,8 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     Type.Field.resolve(concrete_schema_node, args, source, info)
   end
 
-  @spec to_result(resolution_result :: term, blueprint :: Blueprint.t, schema_type :: Type.t) :: Resolution.t
+  @spec to_result(resolution_result :: term, blueprint :: Blueprint.Document.Field.t, schema_type :: Type.t) ::
+    Resolution.node_t
   defp to_result(nil, blueprint, %Type.NonNull{} = schema_type) do
     raise Absinthe.ExecutionError, nil_value_error(blueprint, schema_type)
   end
