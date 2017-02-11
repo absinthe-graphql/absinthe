@@ -7,7 +7,8 @@ defmodule Absinthe.Blueprint.Transform do
   @doc """
   Apply `fun` to a node, then walk to its children and do the same
   """
-  @spec prewalk(Blueprint.t, (Blueprint.t -> Blueprint.t)) :: Blueprint.t
+  @spec prewalk(Blueprint.node_t, (Blueprint.node_t -> Blueprint.node_t | {:halt, Blueprint.node_t})) ::
+    Blueprint.node_t
   def prewalk(node, fun) when is_function(fun, 1) do
     {node, _} = prewalk(node, nil, fn x, nil ->
       case fun.(x) do
@@ -23,7 +24,8 @@ defmodule Absinthe.Blueprint.Transform do
 
   The supplied function must be arity 2.
   """
-  @spec prewalk(Blueprint.t, any, ((Blueprint.t, any) -> {Blueprint.t, any})) :: {Blueprint.t, any}
+  @spec prewalk(Blueprint.node_t, acc, ((Blueprint.node_t, acc) -> {Blueprint.node_t, acc} | {:halt, Blueprint.node_t, acc})) ::
+    {Blueprint.node_t, acc} when acc: var
   def prewalk(node, acc, fun) when is_function(fun, 2) do
     walk(node, acc, fun, &pass/2)
   end
@@ -31,7 +33,8 @@ defmodule Absinthe.Blueprint.Transform do
   @doc """
   Apply `fun` to all children of a node, then apply `fun` to node
   """
-  @spec prewalk(Blueprint.t, (Blueprint.t -> Blueprint.t)) :: Blueprint.t
+  @spec postwalk(Blueprint.node_t, (Blueprint.node_t -> Blueprint.node_t)) ::
+    Blueprint.node_t
   def postwalk(node, fun) when is_function(fun, 1) do
     {node, _} = postwalk(node, nil, fn x, nil -> {fun.(x), nil} end)
     node
@@ -40,7 +43,8 @@ defmodule Absinthe.Blueprint.Transform do
   @doc """
   Same as `postwalk/2` but takes and returns an accumulator
   """
-  @spec prewalk(Blueprint.t, any, ((Blueprint.t, any) -> {Blueprint.t, any})) :: {Blueprint.t, any}
+  @spec postwalk(Blueprint.node_t, acc, ((Blueprint.node_t, acc) -> {Blueprint.node_t, acc})) ::
+    {Blueprint.node_t, acc} when acc: var
   def postwalk(node, acc, fun) when is_function(fun, 2) do
     walk(node, acc, &pass/2, fun)
   end
@@ -76,7 +80,7 @@ defmodule Absinthe.Blueprint.Transform do
     Blueprint.Schema.UnionTypeDefinition => [:directives, :types],
   }
 
-  @spec walk(Blueprint.t, any, ((Blueprint.t, any) -> {Blueprint.t, any}), ((Blueprint.t, any) -> {Blueprint.t, any})) :: {Blueprint.t, any}
+  @spec walk(Blueprint.node_t, acc, ((Blueprint.node_t, acc) -> {Blueprint.node_t, acc} | {:halt, Blueprint.node_t, acc}), ((Blueprint.node_t, acc) -> {Blueprint.node_t, acc})) :: {Blueprint.node_t, acc} when acc: var
   def walk(blueprint, acc, pre, post)
 
   for {node_name, children} <- nodes_with_children do
