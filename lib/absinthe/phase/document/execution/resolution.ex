@@ -352,7 +352,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     field.type_conditions
     |> Enum.map(&info.schema.__absinthe_type__(&1.name))
-    |> Enum.all?(&passes_type_condition?(&1, target_type, source, info.schema))
+    |> Enum.all?(&passes_type_condition?(&1, target_type, source, info))
   end
 
   # For fields
@@ -379,24 +379,24 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     )
   end
 
-  @spec passes_type_condition?(Type.t, Type.t, any, Schema.t) :: boolean
+  @spec passes_type_condition?(Type.t, Type.t, any, Absinthe.Resolution.t) :: boolean
   defp passes_type_condition?(%{name: name}, %{name: name}, _, _), do: true
   # The condition is an Object type and the current scope is a Union; Verify
   # that the Union has the Object type as a member and that the current source
   # object's concrete type matched the condition Object type.
-  defp passes_type_condition?(%Type.Object{} = condition, %Type.Union{} = type, source, schema) do
+  defp passes_type_condition?(%Type.Object{} = condition, %Type.Union{} = type, source, info) do
     with true <- Type.Union.member?(type, condition) do
-      concrete_type = Type.Union.resolve_type(type, source, %{schema: schema})
-      passes_type_condition?(condition, concrete_type, source, schema)
+      concrete_type = Type.Union.resolve_type(type, source, info)
+      passes_type_condition?(condition, concrete_type, source, info)
     end
   end
   # The condition is an Object type and the current scope is an Interface; verify
   # that the Object type is a member of the Interface and that the current source
   # object's concrete type matched the condition Object type.
-  defp passes_type_condition?(%Type.Object{} = condition, %Type.Interface{} = type, source, schema) do
+  defp passes_type_condition?(%Type.Object{} = condition, %Type.Interface{} = type, source, info) do
     with true <- Type.Interface.member?(type, condition) do
-      concrete_type = Type.Interface.resolve_type(type, source, %{schema: schema})
-      passes_type_condition?(condition, concrete_type, source, schema)
+      concrete_type = Type.Interface.resolve_type(type, source, info)
+      passes_type_condition?(condition, concrete_type, source, info)
     end
   end
   # The condition is an Interface type and the current scope is an Object type;
@@ -407,10 +407,10 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   # The condition is an Interface type and the current scope is an abstract
   # (Union/Interface) type; Verify that the current source object's concrete
   # type is a member of the Interface.
-  defp passes_type_condition?(%Type.Interface{} = condition, %abstract_mod{} = type, source, schema)
+  defp passes_type_condition?(%Type.Interface{} = condition, %abstract_mod{} = type, source, info)
       when abstract_mod in [Type.Interface, Type.Union] do
-    concrete_type = Type.Union.resolve_type(type, source, %{schema: schema})
-    passes_type_condition?(condition, concrete_type, source, schema)
+    concrete_type = Type.Union.resolve_type(type, source, info)
+    passes_type_condition?(condition, concrete_type, source, info)
   end
   # Otherwise, nope.
   defp passes_type_condition?(_, _, _, _) do
