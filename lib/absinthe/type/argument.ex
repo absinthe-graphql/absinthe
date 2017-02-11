@@ -19,12 +19,13 @@ defmodule Absinthe.Type.Argument do
     set-up using `Absinthe.Schema.Notation.deprecate/1`.
   * `:description` - Description of an argument, useful for introspection.
   """
-  @type t :: %{name: binary,
-               type: Type.identifier_t,
-               default_value: any,
-               deprecation: Type.Deprecation.t | nil,
-               description: binary | nil,
-               __reference__: Type.Reference.t}
+  @type t :: %__MODULE__{
+    name: binary,
+    type: Type.identifier_t,
+    default_value: any,
+    deprecation: Type.Deprecation.t | nil,
+    description: binary | nil,
+    __reference__: Type.Reference.t}
 
   defstruct name: nil, description: nil, type: nil, deprecation: nil, default_value: nil, __reference__: nil
 

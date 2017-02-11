@@ -10,7 +10,7 @@ defmodule Absinthe.Traversal do
   alias __MODULE__
   alias Absinthe.Traversal.Node
 
-  @type t :: %{context: any, seen: [Node.t], path: [Node.t]}
+  @type t :: %__MODULE__{context: any, seen: [Node.t], path: [Node.t]}
   defstruct context: nil, seen: [], path: []
 
   # Instructions defining behavior during traversal

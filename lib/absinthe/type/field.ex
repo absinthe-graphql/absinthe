@@ -182,7 +182,8 @@ defmodule Absinthe.Type.Field do
   ```
 
   """
-  @type t :: %{name: binary,
+  @type t :: %__MODULE__{
+               name: binary,
                description: binary | nil,
                type: Type.identifier_t,
                deprecation: Deprecation.t | nil,

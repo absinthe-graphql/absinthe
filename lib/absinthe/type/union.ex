@@ -39,7 +39,7 @@ defmodule Absinthe.Type.Union do
   The `__private__` and `:__reference__` keys are for internal use.
 
   """
-  @type t :: %{
+  @type t :: %__MODULE__{
     name: binary,
     description: binary,
     types: [Type.identifier_t],
