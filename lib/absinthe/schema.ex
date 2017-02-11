@@ -245,16 +245,16 @@ defmodule Absinthe.Schema do
   @spec lookup_type(atom, Type.wrapping_t | Type.t | Type.identifier_t, Keyword.t) :: Type.t | nil
   def lookup_type(schema, type, options \\ [unwrap: true]) do
     cond do
+      is_atom(type) ->
+        schema.__absinthe_type__(type)
+      is_binary(type) ->
+        schema.__absinthe_type__(type)
       Type.wrapped?(type) ->
         if Keyword.get(options, :unwrap) do
           lookup_type(schema, type |> Type.unwrap)
         else
           type
         end
-      is_atom(type) ->
-        schema.__absinthe_type__(type)
-      is_binary(type) ->
-        schema.__absinthe_type__(type)
       true ->
         type
     end
