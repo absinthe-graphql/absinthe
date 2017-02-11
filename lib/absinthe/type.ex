@@ -14,13 +14,13 @@ defmodule Absinthe.Type do
   @type custom_t :: Type.Scalar.t | Type.Object.t | Type.Field.t | Type.Interface.t | Type.Union.t | Type.Enum.t | Type.InputObject.t
 
   @typedoc "All the possible types"
-  @type t :: custom_t | Type.List.t | Type.NonNull.t
+  @type t :: custom_t | wrapping_t
 
   @typedoc "A type identifier"
   @type identifier_t :: atom
 
   @typedoc "A type reference"
-  @type reference_t :: identifier_t | t | wrapping_t
+  @type reference_t :: identifier_t | t
 
   def identifier(%{__reference__: %{identifier: ident}}) do
     ident
@@ -209,12 +209,14 @@ defmodule Absinthe.Type do
   def wrapped?(_), do: false
 
   @doc "Unwrap a type from a List or NonNull"
-  @spec unwrap(wrapping_t | t) :: t
+  @spec unwrap(wrapping_t) :: custom_t
+  @spec unwrap(type) :: type when type: custom_t
   def unwrap(%{of_type: t}), do: unwrap(t)
   def unwrap(type), do: type
 
   @doc "Unwrap a type from NonNull"
-  @spec unwrap_non_null(Type.NonNull.t | t) :: t
+  @spec unwrap_non_null(Type.NonNull.t) :: custom_t
+  @spec unwrap_non_null(type) :: type when type: custom_t | Type.List.t
   def unwrap_non_null(%Type.NonNull{of_type: t}), do: unwrap_non_null(t)
   def unwrap_non_null(type), do: type
 
