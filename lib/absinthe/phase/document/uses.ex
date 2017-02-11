@@ -38,7 +38,7 @@ defmodule Absinthe.Phase.Document.Uses do
 
   @spec handle_use(Blueprint.node_t, acc_t) :: {Blueprint.node_t, acc_t}
   defp handle_use(%Blueprint.Document.Fragment.Spread{} = node, acc) do
-    if uses?(acc, node) do
+    if uses?(acc.fragments, node) do
       {node, acc}
     else
       target_fragment = Enum.find(acc.fragments_available, &(&1.name == node.name))
@@ -59,21 +59,8 @@ defmodule Absinthe.Phase.Document.Uses do
     {node, acc}
   end
 
-  @fragment_types [
-    Blueprint.Document.Fragment.Named,
-    Blueprint.Document.Fragment.Spread
-  ]
-
-  @spec uses?(acc_t, Blueprint.node_t) :: boolean
-  defp uses?(acc, %struct{} = node) when struct in @fragment_types do
-    do_uses?(acc.fragments, node)
-  end
-  defp uses?(acc, %Blueprint.Input.Variable{} = node) do
-    do_uses?(acc.variables, node)
-  end
-
-  @spec do_uses?([Blueprint.use_t], Blueprint.node_t) :: boolean
-  defp do_uses?(list, node) do
+  @spec uses?([Blueprint.use_t], Blueprint.Document.Fragment.Spread.t) :: boolean
+  defp uses?(list, node) do
     Enum.find(list, &(&1.name == node.name))
   end
 
