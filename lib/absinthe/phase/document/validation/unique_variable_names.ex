@@ -24,7 +24,8 @@ defmodule Absinthe.Phase.Document.Validation.UniqueVariableNames do
     {:ok, result}
   end
 
-  @spec process(Blueprint.Document.VariableDefinition.t, [Blueprint.Document.VariableDefinition.t]) :: boolean
+  @spec process(Blueprint.Document.VariableDefinition.t,[Blueprint.Document.VariableDefinition.t]) ::
+    Blueprint.Document.VariableDefinition.t
   defp process(variable_definition, variable_definitions) do
     if duplicate?(variable_definitions, variable_definition) do
       variable_definition
@@ -36,7 +37,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueVariableNames do
   end
 
   # Whether a duplicate variable_definition is present
-  @spec duplicate?([Blueprint.Document.Variable.t], Blueprint.Document.Variable.t) :: boolean
+  @spec duplicate?([Blueprint.Document.VariableDefinition.t], Blueprint.Document.VariableDefinition.t) :: boolean
   defp duplicate?(variable_definitions, variable_definition) do
     Enum.count(variable_definitions, &(&1.name == variable_definition.name)) > 1
   end

@@ -20,7 +20,8 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNames do
     {:ok, result}
   end
 
-  @spec process(Blueprint.Document.Operation.t, [Blueprint.Document.Operation.t]) :: boolean
+  @spec process(Blueprint.Document.Operation.t, [Blueprint.Document.Operation.t]) ::
+    Blueprint.Document.Operation.t
   defp process(%{name: nil} = operation, _) do
     operation
   end
