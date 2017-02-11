@@ -297,7 +297,7 @@ defmodule Absinthe.Schema do
   @doc """
   List all implementors of an interface on a schema
   """
-  @spec implementors(t, atom) :: [Type.Object.t]
+  @spec implementors(t, Type.identifier_t | Type.Interface.t) :: [Type.Object.t]
   def implementors(schema, ident) when is_atom(ident) do
     schema.__absinthe_interface_implementors__
     |> Map.get(ident, [])
