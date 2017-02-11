@@ -77,7 +77,7 @@ defmodule Absinthe.Resolution.Plugin do
   NOTE: This function is given the full accumulator. Namespacing is suggested to
   avoid conflicts.
   """
-  @callback init(any, Document.Resolution.acc) :: {any :: Document.Resolution.acc}
+  @callback init(any, Document.Resolution.acc) :: {any, Document.Resolution.acc}
 
   @doc """
   The default list of resolution plugins
