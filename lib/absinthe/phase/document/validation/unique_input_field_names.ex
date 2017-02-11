@@ -46,7 +46,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNames do
   end
 
   # Generate an error for an input field
-  @spec error(Blueprint.Input.Field.t) :: Phase.t
+  @spec error(Blueprint.Input.Field.t) :: Phase.Error.t
   defp error(node) do
     Phase.Error.new(
       __MODULE__,

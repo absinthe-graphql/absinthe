@@ -2,7 +2,7 @@ defmodule Absinthe.Blueprint.Input.Integer do
 
   @moduledoc false
 
-  alias Absinthe.{Phase}
+  alias Absinthe.{Blueprint, Phase}
 
   @enforce_keys [:value]
   defstruct [

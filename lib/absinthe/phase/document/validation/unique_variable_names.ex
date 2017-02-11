@@ -42,7 +42,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueVariableNames do
   end
 
   # Generate an error for a duplicate variable_definition.
-  @spec error(Blueprint.Document.Variable.t) :: Phase.Error.t
+  @spec error(Blueprint.Document.VariableDefinition.t) :: Phase.Error.t
   defp error(node) do
     Phase.Error.new(
       __MODULE__,

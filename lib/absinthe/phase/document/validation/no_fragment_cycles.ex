@@ -90,7 +90,7 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
   end
 
   # Generate the error for a fragment cycle
-  @spec cycle_error(Blueprint.Document.Fragment.Named.t, String.t) :: Phase.t
+  @spec cycle_error(Blueprint.Document.Fragment.Named.t, String.t) :: Phase.Error.t
   defp cycle_error(fragment, message) do
     %Phase.Error{
       message: message,

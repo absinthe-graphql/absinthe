@@ -18,7 +18,7 @@ defmodule Absinthe.Blueprint.Document.Resolution.Object do
     emitter: Blueprint.Document.Field.t,
     fields: [Blueprint.Document.Resolution.node_t],
     errors: [Phase.Error.t],
-    flags: [Blueprint.flag_t]
+    flags: Blueprint.flags_t
   }
 
 end

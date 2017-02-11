@@ -31,6 +31,8 @@ defmodule Absinthe.Type.Scalar do
 
   use Absinthe.Introspection.Kind
 
+  alias Absinthe.Type
+
   def build(%{attrs: attrs}) do
     quote do: %unquote(__MODULE__){unquote_splicing(attrs)}
   end

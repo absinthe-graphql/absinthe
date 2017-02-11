@@ -16,7 +16,7 @@ defmodule Absinthe.Blueprint.Document.Resolution.Leaf do
     emitter: Blueprint.Document.Field.t,
     value: Blueprint.Document.Resolution.node_t,
     errors: [Phase.Error.t],
-    flags: [Blueprint.flag_t],
+    flags: Blueprint.flags_t,
   }
 
 end

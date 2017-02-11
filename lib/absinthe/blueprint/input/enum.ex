@@ -2,7 +2,7 @@ defmodule Absinthe.Blueprint.Input.Enum do
 
   @moduledoc false
 
-  alias Absinthe.{Phase}
+  alias Absinthe.{Blueprint, Phase}
 
   @enforce_keys [:value, :source_location]
   defstruct [

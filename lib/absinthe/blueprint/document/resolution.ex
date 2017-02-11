@@ -5,7 +5,7 @@ defmodule Absinthe.Blueprint.Document.Resolution do
   alias Absinthe.Phase
   alias __MODULE__
 
-  @type acc :: Map.t
+  @type acc :: map
 
   defstruct [
     validation: [],

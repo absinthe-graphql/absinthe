@@ -139,7 +139,7 @@ defmodule Absinthe.Schema do
   @typedoc """
   A module defining a schema.
   """
-  @type t :: atom
+  @type t :: module
 
   alias Absinthe.Type
   alias Absinthe.Language

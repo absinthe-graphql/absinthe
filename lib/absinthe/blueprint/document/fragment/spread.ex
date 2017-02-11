@@ -15,7 +15,7 @@ defmodule Absinthe.Blueprint.Document.Fragment.Spread do
   ]
 
   @type t :: %__MODULE__{
-    directives: [Blueprint.Document.Directive.t],
+    directives: [Blueprint.Directive.t],
     errors: [Absinthe.Phase.Error.t],
     name: String.t,
     flags: Blueprint.flags_t,
