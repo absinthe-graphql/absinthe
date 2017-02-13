@@ -76,6 +76,18 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"things" => [%{"name" => "Bar", "id" => "bar"}, %{"name" => "Foo", "id" => "foo"}]}}}, run(query, Things)
   end
 
+  it "returns an error message when a list is given where it doesn't belong" do
+    query = """
+    query GimmeFoo {
+      thing(id: ["foo"]) {
+        name
+      }
+    }
+    """
+    assert_result {:ok, %{errors: [%{locations: [%{column: 0, line: 2}],
+      message: "Argument \"id\" has invalid value [\"foo\"]."}]}}, run(query, Things)
+  end
+
   it "Invalid arguments on children of a list field are correctly handled" do
     query = """
     query AllTheThings {

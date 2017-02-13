@@ -50,6 +50,9 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
     |> Enum.map(&(&1.normalized))
     |> Enum.with_index
     |> Enum.flat_map(fn
+      {%{schema_node: nil} = child, _} ->
+        collect_child_errors(child, schema)
+
       {%{flags: %{invalid: _}} = child, idx} ->
         child_type_name =
           child.schema_node
