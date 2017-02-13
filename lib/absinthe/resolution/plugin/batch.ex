@@ -87,7 +87,7 @@ defmodule Absinthe.Resolution.Plugin.Batch do
   """
   @type batch_fun :: {module, atom} | {module, atom, term}
 
-  @type post_batch_fun :: (term -> Absinthe.Type.Field.resolver_output)
+  @type post_batch_fun :: (term -> Absinthe.Type.Field.result)
 
   def before_resolution(acc) do
     case acc do

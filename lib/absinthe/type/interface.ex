@@ -59,11 +59,11 @@ defmodule Absinthe.Type.Interface do
 
   The `__private__` and `:__reference__` keys are for internal use.
   """
-  @type t :: %{
+  @type t :: %__MODULE__{
     name: binary,
     description: binary,
     fields: map,
-    resolve_type: ((any, Absinthe.Execution.t) -> atom | nil),
+    resolve_type: ((any, Absinthe.Resolution.t) -> atom | nil),
     __private__: Keyword.t,
     __reference__: Type.Reference.t,
   }

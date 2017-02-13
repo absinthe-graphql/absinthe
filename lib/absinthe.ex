@@ -219,14 +219,14 @@ defmodule Absinthe do
     max_complexity: non_neg_integer | :infinity
   ]
 
-  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, run_opts) :: {:ok, result_t} | {:error, any}
+  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, run_opts) :: {:ok, result_t} | {:error, String.t}
   def run(document, schema, options \\ []) do
     pipeline = Absinthe.Pipeline.for_document(schema, options)
     case Absinthe.Pipeline.run(document, pipeline) do
       {:ok, result, _phases} ->
         {:ok, result}
-      other ->
-        other
+      {:error, msg, _phases} ->
+        {:error, msg}
     end
   end
 

@@ -20,7 +20,8 @@ defmodule Absinthe.Phase.Document.Validation.UniqueFragmentNames do
     {:ok, result}
   end
 
-  @spec process(Blueprint.Document.Fragment.Named.t, [Blueprint.Document.Fragment.Named.t]) :: boolean
+  @spec process(Blueprint.Document.Fragment.Named.t, [Blueprint.Document.Fragment.Named.t]) ::
+    Blueprint.Document.Fragment.Named.t
   defp process(fragment, fragments) do
     if duplicate?(fragments, fragment) do
       fragment

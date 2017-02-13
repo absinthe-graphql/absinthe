@@ -1,7 +1,7 @@
 defmodule Absinthe.Language.FieldDefinition do
   @moduledoc false
 
-  alias Absinthe.{Blueprint ,Language}
+  alias Absinthe.{Blueprint, Language}
 
   defstruct [
     name: nil,

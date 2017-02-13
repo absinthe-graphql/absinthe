@@ -4,7 +4,7 @@ defmodule Absinthe.Resolution do
   the current field's execution environment.
   """
 
-  alias Absinthe.{Schema, Type}
+  alias Absinthe.{Blueprint, Schema, Type}
 
   @typedoc """
   Information about the current resolution.

@@ -18,6 +18,7 @@ defmodule Absinthe.Phase do
     | {:error, String.t}
 
   alias __MODULE__
+  alias Absinthe.Blueprint
 
   defmacro __using__(_) do
     quote do

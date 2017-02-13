@@ -61,7 +61,7 @@ defmodule Absinthe.Resolution.Plugin do
   NOTE: This function is given the whole pipeline to be inserted after the current
   phase completes.
   """
-  @callback pipeline(next_pipeline :: Absinthe.Pipeline.t, resolution_acc :: Map.t) :: Absinthe.Pipeline.t
+  @callback pipeline(next_pipeline :: Absinthe.Pipeline.t, resolution_acc :: map) :: Absinthe.Pipeline.t
 
   @doc """
   Called after a field invokes the plugin.
@@ -77,7 +77,7 @@ defmodule Absinthe.Resolution.Plugin do
   NOTE: This function is given the full accumulator. Namespacing is suggested to
   avoid conflicts.
   """
-  @callback init(any, Document.Resolution.acc) :: {any :: Document.Resolution.acc}
+  @callback init(any, Document.Resolution.acc) :: {any, Document.Resolution.acc}
 
   @doc """
   The default list of resolution plugins

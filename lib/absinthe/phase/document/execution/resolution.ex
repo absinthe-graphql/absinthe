@@ -209,24 +209,24 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
   # Everything else; raise
   defp build_result(other, _, field, _, source) do
-    raise_result_error!(other, field, source)
+    raise result_error(other, field, source)
   end
 
-  defp raise_result_error!({:error, _} = value, field, source) do
-    raise_result_error!(
+  defp result_error({:error, _} = value, field, source) do
+    result_error(
       value, field, source,
       "You're returning an :error tuple, but did you forget to include a `:message`\nkey in every custom error (map or keyword list)?"
     )
   end
-  defp raise_result_error!(value, field, source) do
-    raise_result_error!(
+  defp result_error(value, field, source) do
+    result_error(
       value, field, source,
       "Did you forget to return a valid `{:ok, any}` | `{:error, error_value}` tuple?"
     )
   end
 
-  defp raise_result_error!(value, field, source, guess) do
-    raise Absinthe.ExecutionError, """
+  defp result_error(value, field, source, guess) do
+    Absinthe.ExecutionError.exception("""
     Invalid value returned from resolver.
 
     Resolving field:
@@ -254,7 +254,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     The result must be one of the following...
 
     #{@error_detail}
-    """
+    """)
   end
 
   defp build_error_result(original_value, error_values, acc, bp_field, info, source) do
@@ -267,7 +267,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp put_result_error_value(error_value, result, original_value, bp_field, source) do
     case split_error_value(error_value) do
       {[], _} ->
-        raise_result_error!(original_value, bp_field, source)
+        raise result_error(original_value, bp_field, source)
       {[message: message], extra} ->
         message = ~s(In field "#{bp_field.name}": #{message})
         put_error(result, error(bp_field, message, extra))
@@ -297,7 +297,8 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     Type.Field.resolve(concrete_schema_node, args, source, info)
   end
 
-  @spec to_result(resolution_result :: term, blueprint :: Blueprint.t, schema_type :: Type.t) :: Resolution.t
+  @spec to_result(resolution_result :: term, blueprint :: Blueprint.Document.Field.t, schema_type :: Type.t) ::
+    Resolution.node_t
   defp to_result(nil, blueprint, %Type.NonNull{} = schema_type) do
     raise Absinthe.ExecutionError, nil_value_error(blueprint, schema_type)
   end
@@ -352,7 +353,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     field.type_conditions
     |> Enum.map(&info.schema.__absinthe_type__(&1.name))
-    |> Enum.all?(&passes_type_condition?(&1, target_type, source, info.schema))
+    |> Enum.all?(&passes_type_condition?(&1, target_type, source, info))
   end
 
   # For fields
@@ -379,24 +380,24 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     )
   end
 
-  @spec passes_type_condition?(Type.t, Type.t, any, Schema.t) :: boolean
+  @spec passes_type_condition?(Type.t, Type.t, any, Absinthe.Resolution.t) :: boolean
   defp passes_type_condition?(%{name: name}, %{name: name}, _, _), do: true
   # The condition is an Object type and the current scope is a Union; Verify
   # that the Union has the Object type as a member and that the current source
   # object's concrete type matched the condition Object type.
-  defp passes_type_condition?(%Type.Object{} = condition, %Type.Union{} = type, source, schema) do
+  defp passes_type_condition?(%Type.Object{} = condition, %Type.Union{} = type, source, info) do
     with true <- Type.Union.member?(type, condition) do
-      concrete_type = Type.Union.resolve_type(type, source, %{schema: schema})
-      passes_type_condition?(condition, concrete_type, source, schema)
+      concrete_type = Type.Union.resolve_type(type, source, info)
+      passes_type_condition?(condition, concrete_type, source, info)
     end
   end
   # The condition is an Object type and the current scope is an Interface; verify
   # that the Object type is a member of the Interface and that the current source
   # object's concrete type matched the condition Object type.
-  defp passes_type_condition?(%Type.Object{} = condition, %Type.Interface{} = type, source, schema) do
+  defp passes_type_condition?(%Type.Object{} = condition, %Type.Interface{} = type, source, info) do
     with true <- Type.Interface.member?(type, condition) do
-      concrete_type = Type.Interface.resolve_type(type, source, %{schema: schema})
-      passes_type_condition?(condition, concrete_type, source, schema)
+      concrete_type = Type.Interface.resolve_type(type, source, info)
+      passes_type_condition?(condition, concrete_type, source, info)
     end
   end
   # The condition is an Interface type and the current scope is an Object type;
@@ -407,10 +408,10 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   # The condition is an Interface type and the current scope is an abstract
   # (Union/Interface) type; Verify that the current source object's concrete
   # type is a member of the Interface.
-  defp passes_type_condition?(%Type.Interface{} = condition, %abstract_mod{} = type, source, schema)
+  defp passes_type_condition?(%Type.Interface{} = condition, %abstract_mod{} = type, source, info)
       when abstract_mod in [Type.Interface, Type.Union] do
-    concrete_type = Type.Union.resolve_type(type, source, %{schema: schema})
-    passes_type_condition?(condition, concrete_type, source, schema)
+    concrete_type = Type.Union.resolve_type(type, source, info)
+    passes_type_condition?(condition, concrete_type, source, info)
   end
   # Otherwise, nope.
   defp passes_type_condition?(_, _, _, _) do

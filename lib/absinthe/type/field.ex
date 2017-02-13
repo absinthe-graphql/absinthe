@@ -182,7 +182,8 @@ defmodule Absinthe.Type.Field do
   ```
 
   """
-  @type t :: %{name: binary,
+  @type t :: %__MODULE__{
+               name: binary,
                description: binary | nil,
                type: Type.identifier_t,
                deprecation: Deprecation.t | nil,
@@ -222,7 +223,7 @@ defmodule Absinthe.Type.Field do
       field_data = [name: name] ++ Keyword.update(field_attrs, :args, quoted_empty_map, fn
         raw_args ->
           args = for {name, attrs} <- raw_args, do: {name, ensure_reference(attrs, name, default_ref)}
-          Type.Argument.build(args || [])
+          Type.Argument.build(args)
       end)
       field_ast = quote do: %Absinthe.Type.Field{unquote_splicing(field_data |> Absinthe.Type.Deprecation.from_attribute)}
       {field_name, field_ast}

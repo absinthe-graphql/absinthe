@@ -31,6 +31,8 @@ defmodule Absinthe.Type.Scalar do
 
   use Absinthe.Introspection.Kind
 
+  alias Absinthe.Type
+
   def build(%{attrs: attrs}) do
     quote do: %unquote(__MODULE__){unquote_splicing(attrs)}
   end
@@ -60,7 +62,7 @@ defmodule Absinthe.Type.Scalar do
 
   The `:__private__` and `:__reference__` keys are for internal use.
   """
-  @type t :: %{
+  @type t :: %__MODULE__{
     name: binary,
     description: binary,
     serialize: (value_t -> any),

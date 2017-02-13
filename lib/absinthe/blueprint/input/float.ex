@@ -2,6 +2,8 @@ defmodule Absinthe.Blueprint.Input.Float do
 
   @moduledoc false
 
+  alias Absinthe.Blueprint
+
   @enforce_keys [:value]
   defstruct [
     :value,

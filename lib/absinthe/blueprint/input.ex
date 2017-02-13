@@ -19,7 +19,7 @@ defmodule Absinthe.Blueprint.Input do
       Blueprint.Input.List.t
     | Input.Object.t
 
-  @type t :: leaf | collection
+  @type t :: leaf | collection | Input.Value.t | Input.Argument.t
 
   @parse_types [
     Input.Boolean,

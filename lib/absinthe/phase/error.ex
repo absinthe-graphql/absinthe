@@ -10,7 +10,7 @@ defmodule Absinthe.Phase.Error do
     extra: %{}
   ]
 
-  @type loc_t :: %{line: integer, column: nil | integer}
+  @type loc_t :: %{optional(any) => any, line: integer, column: nil | integer}
 
   @type t :: %__MODULE__{
     message: String.t,

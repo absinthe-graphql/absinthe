@@ -139,7 +139,7 @@ defmodule Absinthe.Schema do
   @typedoc """
   A module defining a schema.
   """
-  @type t :: atom
+  @type t :: module
 
   alias Absinthe.Type
   alias Absinthe.Language
@@ -245,16 +245,16 @@ defmodule Absinthe.Schema do
   @spec lookup_type(atom, Type.wrapping_t | Type.t | Type.identifier_t, Keyword.t) :: Type.t | nil
   def lookup_type(schema, type, options \\ [unwrap: true]) do
     cond do
+      is_atom(type) ->
+        schema.__absinthe_type__(type)
+      is_binary(type) ->
+        schema.__absinthe_type__(type)
       Type.wrapped?(type) ->
         if Keyword.get(options, :unwrap) do
           lookup_type(schema, type |> Type.unwrap)
         else
           type
         end
-      is_atom(type) ->
-        schema.__absinthe_type__(type)
-      is_binary(type) ->
-        schema.__absinthe_type__(type)
       true ->
         type
     end
@@ -297,7 +297,7 @@ defmodule Absinthe.Schema do
   @doc """
   List all implementors of an interface on a schema
   """
-  @spec implementors(t, atom) :: [Type.Object.t]
+  @spec implementors(t, Type.identifier_t | Type.Interface.t) :: [Type.Object.t]
   def implementors(schema, ident) when is_atom(ident) do
     schema.__absinthe_interface_implementors__
     |> Map.get(ident, [])

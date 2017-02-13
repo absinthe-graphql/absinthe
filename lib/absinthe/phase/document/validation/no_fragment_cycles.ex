@@ -33,19 +33,28 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
   # Check a list of fragments for cycles
   @spec check([Blueprint.Document.Fragment.Named.t]) :: {[Blueprint.Document.Fragment.Named.t], integer}
   defp check(fragments) do
-    {_, graph} = Blueprint.prewalk(fragments, :digraph.new([:cyclic]), &vertex/2)
+    graph = :digraph.new([:cyclic])
+    try do
+      check(fragments, graph)
+    after
+      :digraph.delete(graph)
+    end
+  end
+
+  @spec check([Blueprint.Document.Fragment.Named.t], :digraph.graph) :: {[Blueprint.Document.Fragment.Named.t], integer}
+  defp check(fragments, graph) do
+    Enum.each(fragments, fn(node) -> Blueprint.prewalk(node, &vertex(&1, graph)) end)
     {modified, error_count} = Enum.reduce(fragments, {[], 0}, fn
       fragment, {processed, error_count} ->
         errors_to_add = cycle_errors(fragment, :digraph.get_cycle(graph, fragment.name))
         fragment_with_errors = update_in(fragment.errors, &(errors_to_add ++ &1))
         {[fragment_with_errors | processed], error_count + length(errors_to_add)}
     end)
-    :digraph.delete(graph)
     {modified, error_count}
   end
 
   # Add a vertex modeling a fragment
-  @spec vertex(Blueprint.Document.Fragment.Named.t, :digraph.graph) :: {Blueprint.Document.Fragment.Named.t, :digraph.graph}
+  @spec vertex(Blueprint.Document.Fragment.Named.t, :digraph.graph) :: Blueprint.Document.Fragment.Named.t
   defp vertex(%Blueprint.Document.Fragment.Named{} = fragment, graph) do
     :digraph.add_vertex(graph, fragment.name)
     Enum.each(fragment.selections, fn
@@ -54,10 +63,10 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
       _ ->
         false
     end)
-    {fragment, graph}
+    fragment
   end
-  defp vertex(fragment, graph) do
-    {fragment, graph}
+  defp vertex(fragment, _graph) do
+    fragment
   end
 
   # Add an edge, modeling the relationship between two fragments
@@ -90,7 +99,7 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
   end
 
   # Generate the error for a fragment cycle
-  @spec cycle_error(Blueprint.Document.Fragment.Named.t, String.t) :: Phase.t
+  @spec cycle_error(Blueprint.Document.Fragment.Named.t, String.t) :: Phase.Error.t
   defp cycle_error(fragment, message) do
     %Phase.Error{
       message: message,

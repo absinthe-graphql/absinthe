@@ -19,8 +19,10 @@ defmodule Absinthe.Schema.Rule do
     end
   end
 
-  @callback check(Absithe.Schema.t) :: [Absinthe.Error.detail_t]
-  @callback explanation(Absithe.Error.detail_t) :: binary
+  @callback check(Absinthe.Schema.t) :: [Absinthe.Schema.Error.detail_t]
+  @callback explanation(Absinthe.Schema.Error.detail_t) :: binary
+
+  @type t :: module
 
   @rules [
     Rule.TypeNamesAreReserved,
@@ -30,7 +32,7 @@ defmodule Absinthe.Schema.Rule do
     Rule.InterfacesMustResolveTypes,
   ]
 
-  @spec check(Absinthe.Schema.t) :: [Absinthe.Error.detail_t]
+  @spec check(Absinthe.Schema.t) :: [Absinthe.Schema.Error.detail_t]
   def check(schema) do
     Enum.flat_map(@rules, &(&1.check(schema)))
   end

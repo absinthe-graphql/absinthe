@@ -178,7 +178,7 @@ defmodule Absinthe.Pipeline do
     beginning ++ [additional] ++ (pipeline -- beginning)
   end
 
-  @spec insert_before(t, Phase.t, Phase.t) :: t
+  @spec insert_after(t, Phase.t, Phase.t) :: t
   def insert_after(pipeline, phase, additional) do
     beginning = upto(pipeline, phase)
     beginning ++ [additional] ++ (pipeline -- beginning)
