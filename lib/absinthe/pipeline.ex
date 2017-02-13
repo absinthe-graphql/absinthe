@@ -24,8 +24,10 @@ defmodule Absinthe.Pipeline do
     |> run_phase(input)
   end
 
+  @default_adapter Application.get_env(:absinthe, :adapter, Absinthe.Adapter.LanguageConventions)
+
   @defaults [
-    adapter: Absinthe.Adapter.LanguageConventions,
+    adapter: @default_adapter,
     operation_name: nil,
     variables: %{},
     context: %{},
