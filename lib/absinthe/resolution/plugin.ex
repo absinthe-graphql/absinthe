@@ -63,21 +63,6 @@ defmodule Absinthe.Resolution.Plugin do
   """
   @callback pipeline(next_pipeline :: Absinthe.Pipeline.t, resolution_acc :: map) :: Absinthe.Pipeline.t
 
-  @doc """
-  Called after a field invokes the plugin.
-
-  Resolution functions invoke a function via:
-  ```elixir
-  {:plugin, PluginModule, plugin_data}
-  ```
-
-  The first argument to `init` is whatever `plugin_data` is. The second is the
-  resolution accumulator.
-
-  NOTE: This function is given the full accumulator. Namespacing is suggested to
-  avoid conflicts.
-  """
-  @callback init(any, Document.Resolution.acc) :: {any, Document.Resolution.acc}
 
   @doc """
   The default list of resolution plugins

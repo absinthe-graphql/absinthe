@@ -134,7 +134,6 @@ defmodule Absinthe.Type.Interface do
       {keypath, val} when val != nil ->
         flat = keypath |> List.flatten
         ignore_implementing_keypath?(flat) || (safe_get_in(type.fields, flat) == val)
-        true
       {_keypath, nil} ->
         true
     end)
@@ -151,7 +150,7 @@ defmodule Absinthe.Type.Interface do
     end
   end
 
-  @ignore [:description, :__reference__]
+  @ignore [:description, :__reference__, :middleware]
   defp ignore_implementing_keypath?(keypath) when is_list(keypath) do
     keypath
     |> Enum.any?(&ignore_implementing_keypath?/1)

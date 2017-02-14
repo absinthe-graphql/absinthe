@@ -284,7 +284,6 @@ defmodule Absinthe.Type.Field do
       field
       |> maybe_add_default(field_info.schema.__absinthe_custom_default_resolve__)
       |> maybe_add_default(system_default(field.__reference__.identifier))
-      # |> maybe_wrap_with_private
 
     Absinthe.Resolution.call field.resolve, parent, args, field_info
   end
@@ -297,21 +296,6 @@ defmodule Absinthe.Type.Field do
   end
   defp maybe_add_default(node, _) do
     node
-  end
-
-  defp maybe_wrap_with_private(%{resolve: resolve, __private__: private} = node) do
-    resolve =
-      private
-      |> Keyword.values
-      |> Enum.reduce(resolve, fn private, resolve ->
-        if constructor = private[:resolve] do
-          constructor.(resolve)
-        else
-          resolve
-        end
-      end)
-
-    %{node | resolve: resolve}
   end
 
   # TODO: Optimize to avoid anonymous function closure
