@@ -205,7 +205,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       %Type.Field{} = schema_node ->
         schema_node.type
         |> Type.unwrap
-        |> info.schema.__absinthe_type__
+        |> info.schema.__absinthe_lookup__
       other ->
         other
     end
@@ -373,7 +373,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     target_type = find_target_type(schema_type, info.schema)
 
     field.type_conditions
-    |> Enum.map(&info.schema.__absinthe_type__(&1.name))
+    |> Enum.map(&info.schema.__absinthe_lookup__(&1.name))
     |> Enum.all?(&passes_type_condition?(&1, target_type, source, info))
   end
 
@@ -386,7 +386,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     find_target_type(type, schema)
   end
   def find_target_type(schema_type, schema) when is_atom(schema_type) or is_binary(schema_type) do
-    schema.__absinthe_type__(schema_type)
+    schema.__absinthe_lookup__(schema_type)
   end
   def find_target_type(type, _schema) do
     type

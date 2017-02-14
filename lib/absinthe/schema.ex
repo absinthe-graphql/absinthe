@@ -152,6 +152,38 @@ defmodule Absinthe.Schema do
       import_types Absinthe.Type.BuiltIns
       @after_compile unquote(__MODULE__)
       @behaviour unquote(__MODULE__)
+
+      def middleware(object, field) do
+        __default_middleware__(object, field)
+      end
+
+      def __default_middleware__(_, %{middleware: [], identifier: identifier}) do
+        [{
+          Absinthe.Resolution,
+          fn parent, _, _ -> {:ok, Map.get(parent, identifier)} end
+        }]
+      end
+      def __default_middleware__(_, %{middleware: middleware}) do
+        middleware
+      end
+
+      def __absinthe_lookup__(key) do
+        key
+        |> __absinthe_type__
+        |> case do
+          %Type.Object{} = object ->
+            fields = Map.new(object.fields, fn
+              {identifier, field} ->
+                {identifier, %{field | middleware: middleware(object, field)}}
+            end)
+
+            %{object | fields: fields}
+          type ->
+            type
+        end
+      end
+
+      defoverridable middleware: 2
     end
   end
 
@@ -222,14 +254,6 @@ defmodule Absinthe.Schema do
     Absinthe.Schema.Notation.scope(__CALLER__, :object, :subscription, [name: @default_subscription_name], block)
   end
 
-  @doc """
-  Defines a custom default resolve function for the schema.
-  """
-  defmacro default_resolve(func) do
-    Module.put_attribute(__CALLER__.module, :absinthe_custom_default_resolve, func)
-    :ok
-  end
-
   # Lookup a directive that in used by/available to a schema
   @doc """
   Lookup a directive.
@@ -239,26 +263,27 @@ defmodule Absinthe.Schema do
     schema.__absinthe_directive__(name)
   end
 
-  @doc """
-  Lookup a type by name, identifier, or by unwrapping.
-  """
-  @spec lookup_type(atom, Type.wrapping_t | Type.t | Type.identifier_t, Keyword.t) :: Type.t | nil
-  def lookup_type(schema, type, options \\ [unwrap: true]) do
-    cond do
-      is_atom(type) ->
-        schema.__absinthe_type__(type)
-      is_binary(type) ->
-        schema.__absinthe_type__(type)
-      Type.wrapped?(type) ->
-        if Keyword.get(options, :unwrap) do
-          lookup_type(schema, type |> Type.unwrap)
-        else
+
+    @doc """
+    Lookup a type by name, identifier, or by unwrapping.
+    """
+    @spec lookup_type(atom, Type.wrapping_t | Type.t | Type.identifier_t, Keyword.t) :: Type.t | nil
+    def lookup_type(schema, type, options \\ [unwrap: true]) do
+      cond do
+        is_atom(type) ->
+          schema.__absinthe_lookup__(type)
+        is_binary(type) ->
+          schema.__absinthe_lookup__(type)
+        Type.wrapped?(type) ->
+          if Keyword.get(options, :unwrap) do
+            lookup_type(schema, type |> Type.unwrap)
+          else
+            type
+          end
+        true ->
           type
-        end
-      true ->
-        type
+      end
     end
-  end
 
   @doc """
   List all types on a schema

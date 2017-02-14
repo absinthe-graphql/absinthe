@@ -183,6 +183,7 @@ defmodule Absinthe.Type.Field do
 
   """
   @type t :: %__MODULE__{
+               identifier: atom,
                name: binary,
                description: binary | nil,
                type: Type.identifier_t,
@@ -195,6 +196,7 @@ defmodule Absinthe.Type.Field do
                __reference__: Type.Reference.t}
 
   defstruct [
+    identifier: nil,
     name: nil,
     description: nil,
     type: nil,
@@ -239,7 +241,7 @@ defmodule Absinthe.Type.Field do
 
       field_attrs = Keyword.update(field_attrs, :middleware, [], &Enum.reverse/1)
 
-      field_data = [name: name] ++ Keyword.update(field_attrs, :args, quoted_empty_map, fn
+      field_data = [name: name, identifier: field_name] ++ Keyword.update(field_attrs, :args, quoted_empty_map, fn
         raw_args ->
           args = for {name, attrs} <- raw_args, do: {name, ensure_reference(attrs, name, default_ref)}
           Type.Argument.build(args)
@@ -259,50 +261,6 @@ defmodule Absinthe.Type.Field do
         {a, b, args} = default_reference
 
         Keyword.put(arg_attrs, :__reference__, {a, b, Keyword.put(args, :identifier, name)})
-    end
-  end
-
-  def set_resolution_function(object, schema) do
-    fields = Map.new(object.fields, fn
-      {identifier, %{middleware: []} = field} ->
-        field =
-          field
-          |> maybe_add_default(schema.__absinthe_custom_default_resolve__)
-          |> maybe_add_default(system_default(identifier))
-
-        {identifier, field}
-
-      {identifier, %{middleware: [_|_]} = field} ->
-        {identifier, field}
-    end)
-
-    %{object | fields: fields}
-  end
-
-  def resolve(field, args, parent, field_info) do
-    field =
-      field
-      |> maybe_add_default(field_info.schema.__absinthe_custom_default_resolve__)
-      |> maybe_add_default(system_default(field.__reference__.identifier))
-
-    Absinthe.Resolution.call field.resolve, parent, args, field_info
-  end
-
-  defp maybe_add_default(node, nil) do
-    node
-  end
-  defp maybe_add_default(%{middleware: []} = node, resolution_function) do
-    %{node | middleware: [{Absinthe.Resolution, resolution_function}]}
-  end
-  defp maybe_add_default(node, _) do
-    node
-  end
-
-  # TODO: Optimize to avoid anonymous function closure
-  # Maybe optimize w/ Map.take (hard because order matters)
-  defp system_default(field_name) do
-    fn parent, _, _ ->
-      {:ok, Map.get(parent, field_name)}
     end
   end
 
