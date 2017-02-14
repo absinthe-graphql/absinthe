@@ -187,7 +187,7 @@ defmodule Absinthe.Schema do
     end
   end
 
-  @callback resolution_plugins() :: [Absinthe.Resolution.Plugin.t]
+  @callback middleware_phases() :: [Absinthe.Resolution.Middleware.t]
 
   @doc false
   def __after_compile__(env, _bytecode) do

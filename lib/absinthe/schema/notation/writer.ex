@@ -42,10 +42,10 @@ defmodule Absinthe.Schema.Notation.Writer do
         def __absinthe_exports__, do: unquote(exports)
       end,
       quote do
-        def resolution_plugins do
-          unquote(Absinthe.Resolution.Plugin.defaults())
+        def middleware_phases do
+          unquote(Absinthe.Resolution.Middleware.defaults())
         end
-        defoverridable(resolution_plugins: 0)
+        defoverridable(middleware_phases: 0)
       end
     ]
   end

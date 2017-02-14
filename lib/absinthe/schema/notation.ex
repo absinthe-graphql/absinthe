@@ -440,6 +440,7 @@ defmodule Absinthe.Schema.Notation do
     :ok
   end
 
+  @placement {:plug, [under: [:field]]}
   defmacro plug(module, opts \\ []) do
     env = __CALLER__
     module = Macro.expand(module, env)
