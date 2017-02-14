@@ -8,7 +8,7 @@ defmodule Absinthe.Resolution do
 
   @type field_state :: :resolving | :halted | :suspended
 
-  def call(res, resolution_function) do
+  def call(%{state: :cont} = res, resolution_function) do
     result = case resolution_function do
       fun when is_function(fun, 2) ->
         fun.(res.arguments, res)
@@ -27,7 +27,12 @@ defmodule Absinthe.Resolution do
         """
     end
 
-    %{res | state: :halted, result: result}
+    case result do
+      {:plugin, module, opts} ->
+        module.call(res, opts)
+      _ ->
+        %{res | result: result}
+    end
   end
 
   @typedoc """
@@ -53,6 +58,7 @@ defmodule Absinthe.Resolution do
     parent_type: Type.t,
     source: any,
     state: field_state,
+    acc: %{any => any},
   }
 
   @enforce_keys [:adapter, :context, :root_value, :schema, :source]
@@ -65,8 +71,10 @@ defmodule Absinthe.Resolution do
     :definition,
     :schema,
     :source,
+    middleware: [],
+    acc: %{},
     arguments: %{},
-    state: :resolving,
+    state: :cont,
   ]
 
   @doc """

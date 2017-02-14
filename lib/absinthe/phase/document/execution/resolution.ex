@@ -145,36 +145,59 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     {values, acc} = walk_results(values, acc, bp_node, schema_type, info)
     {%{result | values: values}, acc}
   end
-  def walk_result(%Resolution.PluginInvocation{} = node, acc, _bp_node, _schema_type, _info) do
-    {result, acc} = Resolution.PluginInvocation.resolve(node, acc)
-
-    build_result(result, acc, node.emitter, node.info, node.source)
+  def walk_result(%Absinthe.Resolution{} = res, acc, _bp_node, _schema_type, info) do
+    do_resolve_field(%{res | acc: acc}, info, res.source)
   end
 
-  def resolve_field(bp_field, acc, res, source) do
-    # bp_field.argument_data
-    # |> call_resolution_function(bp_field, res, source)
-    # |> IO.inspect
-    # |> build_result(acc, bp_field, info, source)
+  def resolve_field(%{schema_node: %{name: "__" <> _}} = bp_field, acc, info, source) do
+    info
+    |> build_resolution_struct(bp_field, acc)
+    |> do_resolve_field(info, source)
+  end
+  def resolve_field(bp_field, acc, %{parent_type: %abstract_mod{} = parent_type} = info, source) when abstract_mod in [Type.Interface, Type.Union] do
+    concrete_type = abstract_mod.resolve_type(parent_type, source, info)
 
-    concrete_type = res.parent_type
-
-    concrete_schema_node = Map.fetch!(concrete_type.fields, bp_field.schema_node.__reference__.identifier)
-
+    resolve_field(bp_field, acc, %{info | parent_type: concrete_type}, source)
+  end
+  def resolve_field(bp_field, acc, info, source) do
+    concrete_schema_node = Map.fetch!(info.parent_type.fields, bp_field.schema_node.__reference__.identifier)
     bp_field = %{bp_field | schema_node: concrete_schema_node}
 
-    res = %{res |
-      definition: bp_field,
-      arguments: bp_field.argument_data,
-    }
+    info
+    |> build_resolution_struct(bp_field, acc)
+    |> do_resolve_field(info, source)
+  end
 
-    Enum.reduce(concrete_schema_node.middleware, res, fn {middleware, opts}, res ->
-      middleware.call(res, opts)
-    end)
+  defp build_resolution_struct(info, bp_field, acc) do
+    %{info |
+     middleware: bp_field.schema_node.middleware,
+     acc: acc,
+     definition: bp_field,
+     arguments: bp_field.argument_data,
+   }
+  end
+
+  # bp_field needs to have a concrete schema node, AKA no unions or interfaces
+  defp do_resolve_field(res, info, source) do
+    res
+    |> reduce_resolution
     |> case do
-      %{state: :halted} = res ->
-        build_result(res.result, acc, bp_field, res, source)
-      end
+      %{state: :halt} = res ->
+        build_result(res.result, res.acc, res.definition, info, source)
+
+      %{state: :suspend} = res ->
+        {res, res.acc}
+    end
+  end
+
+  defp reduce_resolution(%{middleware: []} = res), do: %{res | state: :halt}
+  defp reduce_resolution(%{middleware: [{middleware, opts} | remaining_middleware]} = res) do
+    case middleware.call(%{res | middleware: remaining_middleware}, opts) do
+      %{state: :cont} = res ->
+        reduce_resolution(res)
+      res ->
+        res
+    end
   end
 
   defp resolve_fields(parent, acc, info, source) do
@@ -220,10 +243,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   # Error result; put errors
   defp build_result({:error, error_value} = err, acc, bp_field, info, source) do
     build_error_result(err, List.wrap(error_value), acc, bp_field, info, source)
-  end
-  # Plugin result; init
-  defp build_result({:plugin, plugin, data}, acc, emitter, info, source) do
-    Resolution.PluginInvocation.init(plugin, data, acc, emitter, info, source)
   end
   # Everything else; raise
   defp build_result(other, _, field, _, source) do
@@ -297,22 +316,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
   defp split_error_value(error_value) when is_binary(error_value) do
     {[message: error_value], []}
-  end
-
-  # Introspection Field
-  defp call_resolution_function(args, %{schema_node: %{name: "__" <> _}} = field, info, _) do
-    field.schema_node.resolve.(args, info)
-  end
-  # Interface/Union Field
-  defp call_resolution_function(args, field, %{parent_type: %abstract_mod{}} = info, source)
-      when abstract_mod in [Type.Interface, Type.Union] do
-    concrete_type = abstract_mod.resolve_type(info.parent_type, source, info)
-    # Try again, using the concrete type
-    call_resolution_function(args, field, put_in(info.parent_type, concrete_type), source)
-  end
-  defp call_resolution_function(args, field, %{parent_type: %Type.Object{} = concrete_type} = info, source) do
-    concrete_schema_node = Map.fetch!(concrete_type.fields, field.schema_node.__reference__.identifier)
-    Type.Field.resolve(concrete_schema_node, args, source, info)
   end
 
   @spec to_result(resolution_result :: term, blueprint :: Blueprint.Document.Field.t, schema_type :: Type.t) ::

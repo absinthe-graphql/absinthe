@@ -35,18 +35,28 @@ defmodule Absinthe.Resolution.Plugin.Async do
 
   @behaviour Absinthe.Resolution.Plugin
 
+
+  def call(%{state: :cont} = res, task_data) do
+    %{res |
+      state: :suspend,
+      acc: Map.put(res.acc, __MODULE__, true),
+      middleware: [{__MODULE__, task_data} | res.middleware]
+    }
+  end
+
+  def call(%{state: :suspend} = res, {task, opts}) do
+    %{res |
+      state: :cont,
+      result: Task.await(task, opts[:timeout] || 30_000)
+    }
+  end
+
   # We must set the flag to false because if a previous resolution iteration
   # set it to true it needs to go back to false now. It will be set
   # back to true if any field uses this plugin again.
   def before_resolution(acc) do
     Map.put(acc, __MODULE__, false)
   end
-
-  # A field has used this plugin, we need to set our flag on the accumulator true
-  def init(task, acc) do
-    {task, Map.put(acc, __MODULE__, true)}
-  end
-
   # Nothing to do after resolution for this plugin, so we no-op
   def after_resolution(acc), do: acc
 
@@ -59,11 +69,5 @@ defmodule Absinthe.Resolution.Plugin.Async do
       _ ->
         pipeline
     end
-  end
-
-  # In a later resolution phase we've now come across an invocation of this plugin
-  # left behind by a prior phase. It needs to be resolved to a real value now.
-  def resolve({task, opts}, acc) do
-    {Task.await(task, Keyword.get(opts, :timeout, 30_000)), acc}
   end
 end

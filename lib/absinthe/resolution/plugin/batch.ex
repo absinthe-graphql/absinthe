@@ -98,13 +98,30 @@ defmodule Absinthe.Resolution.Plugin.Batch do
     end
   end
 
-  def init({batch_fun, field_data, post_batch_fun, batch_opts}, acc) do
+  def call(%{state: :cont} = res, {batch_key, field_data, post_batch_fun, batch_opts}) do
+    acc = res.acc
     acc = update_in(acc[__MODULE__][:input], fn
-      nil -> [{{batch_fun, batch_opts}, field_data}]
-      data -> [{{batch_fun, batch_opts}, field_data} | data]
+      nil -> [{{batch_key, batch_opts}, field_data}]
+      data -> [{{batch_key, batch_opts}, field_data} | data]
     end)
 
-    {{batch_fun, post_batch_fun}, acc}
+    %{res |
+      state: :suspend,
+      middleware: [{__MODULE__, {batch_key, post_batch_fun}} | res.middleware],
+      acc: acc,
+    }
+  end
+  def call(%{state: :suspend} = res, {batch_key, post_batch_fun}) do
+    batch_data_for_fun =
+      res.acc
+      |> Map.fetch!(__MODULE__)
+      |> Map.fetch!(:output)
+      |> Map.fetch!(batch_key)
+
+    %{res |
+      state: :cont,
+      result: post_batch_fun.(batch_data_for_fun),
+    }
   end
 
   def after_resolution(acc) do
@@ -142,15 +159,5 @@ defmodule Absinthe.Resolution.Plugin.Batch do
       _ ->
         pipeline
     end
-  end
-
-  def resolve({batch_fun, post_batch_fun}, acc) do
-    batch_data_for_fun =
-      acc
-      |> Map.fetch!(__MODULE__)
-      |> Map.fetch!(:output)
-      |> Map.fetch!(batch_fun)
-
-    {post_batch_fun.(batch_data_for_fun), acc}
   end
 end
