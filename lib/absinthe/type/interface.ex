@@ -21,8 +21,8 @@ defmodule Absinthe.Type.Interface do
   interface :named_entity do
     field :name, :string
     resolve_type fn
-      %{age: _}, _ -> {:ok, :person}
-      %{employee_count: _}, _ -> {:ok, :business}
+      %{age: _}, _ -> :person
+      %{employee_count: _}, _ -> :business
       _ -> :error
     end
   end
