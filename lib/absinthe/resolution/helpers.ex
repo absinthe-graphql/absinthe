@@ -6,12 +6,12 @@ defmodule Absinthe.Resolution.Helpers do
   or (by extension) `Absinthe.Schema`.
   """
 
-  alias Absinthe.Resolution.Middleware
+  alias Absinthe.Middleware
 
   @doc """
   Execute resolution field asynchronously.
 
-  This is a helper function for using the `Absinthe.Resolution.Middleware.Async`.
+  This is a helper function for using the `Absinthe.Middleware.Async`.
 
   Forbidden in mutation fields. (TODO: actually enforce this)
   """
@@ -24,7 +24,7 @@ defmodule Absinthe.Resolution.Helpers do
   @doc """
   Batch the resolution of several functions together.
 
-  Helper function for creating `Absinthe.Resolution.Middleware.Batch`
+  Helper function for creating `Absinthe.Middleware.Batch`
 
   # Example
   Raw usage:

@@ -48,7 +48,7 @@ defmodule Absinthe.Resolution do
   ]
 
   def resolver(fun) do
-    Absinthe.Resolution.Middleware.plug(__MODULE__, fun)
+    Absinthe.Middleware.plug(__MODULE__, fun)
   end
 
   @type field_state :: :resolving | :halted | :suspended
@@ -89,7 +89,7 @@ defmodule Absinthe.Resolution do
     apply_result(res, {:middleware, module, opts})
   end
   def apply_result(res, {:middleware, module, opts}) do
-    %{res | middleware: [Absinthe.Resolution.Middleware.plug(module, opts) | res.middleware]}
+    %{res | middleware: [Absinthe.Middleware.plug(module, opts) | res.middleware]}
   end
   def apply_result(res, result) do
     raise result_error(result, res.definition, res.source)

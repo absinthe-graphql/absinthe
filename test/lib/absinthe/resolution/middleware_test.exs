@@ -1,4 +1,4 @@
-defmodule Absinthe.Resolution.MiddlewareTest do
+defmodule Absinthe.MiddlewareTest do
   use Absinthe.Case, async: true
 
   defmodule Timing do
@@ -31,7 +31,7 @@ defmodule Absinthe.Resolution.MiddlewareTest do
   defmodule Schema do
     use Absinthe.Schema
 
-    alias Absinthe.Resolution.MiddlewareTest
+    alias Absinthe.MiddlewareTest
 
     def middleware(field, %Absinthe.Type.Object{identifier: :query}) do
       field

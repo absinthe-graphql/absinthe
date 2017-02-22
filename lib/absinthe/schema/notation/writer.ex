@@ -43,7 +43,7 @@ defmodule Absinthe.Schema.Notation.Writer do
       end,
       quote do
         def middleware_phases do
-          unquote(Absinthe.Resolution.Middleware.defaults())
+          unquote(Absinthe.Middleware.defaults())
         end
         defoverridable(middleware_phases: 0)
       end

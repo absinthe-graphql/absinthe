@@ -8,7 +8,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   # because the results form basically a new tree from the original blueprint.
 
   alias Absinthe.{Blueprint, Type, Phase}
-  alias Absinthe.Resolution.Middleware
+  alias Absinthe.Middleware
   alias Blueprint.Document.Resolution
 
   alias Absinthe.Phase

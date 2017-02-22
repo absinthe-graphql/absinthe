@@ -1,4 +1,4 @@
-defmodule Absinthe.Resolution.Middleware do
+defmodule Absinthe.Middleware do
   @moduledoc """
   Defines Resolution Plugin Behaviour
 
@@ -79,7 +79,7 @@ defmodule Absinthe.Resolution.Middleware do
   The default list of resolution plugins
   """
   def defaults do
-    [Absinthe.Resolution.Middleware.Batch, Absinthe.Resolution.Middleware.Async]
+    [Absinthe.Middleware.Batch, Absinthe.Middleware.Async]
   end
 
   @doc false

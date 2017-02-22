@@ -1,4 +1,4 @@
-defmodule Absinthe.Resolution.Middleware.Async do
+defmodule Absinthe.Middleware.Async do
   @moduledoc """
   This plugin enables asynchronous execution of a field.
 
@@ -33,7 +33,7 @@ defmodule Absinthe.Resolution.Middleware.Async do
   See the source code and associated comments for further details.
   """
 
-  @behaviour Absinthe.Resolution.Middleware
+  @behaviour Absinthe.Middleware
 
 
   def call(%{state: :cont} = res, task_data) do

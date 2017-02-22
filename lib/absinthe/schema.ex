@@ -147,7 +147,7 @@ defmodule Absinthe.Schema do
 
 
   def default_middleware(%{middleware: [], identifier: identifier} = field, _) do
-    middleware = [{{Absinthe.Resolution.Middleware, :default}, identifier}]
+    middleware = [{{Absinthe.Middleware, :default}, identifier}]
 
     %{field | middleware: middleware}
   end
@@ -206,7 +206,7 @@ defmodule Absinthe.Schema do
     end
   end
 
-  @callback middleware_phases() :: [Absinthe.Resolution.Middleware.t]
+  @callback middleware_phases() :: [Absinthe.Middleware.t]
 
   @doc false
   def __after_compile__(env, _bytecode) do

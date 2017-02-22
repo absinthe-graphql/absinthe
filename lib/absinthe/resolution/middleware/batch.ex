@@ -1,4 +1,4 @@
-defmodule Absinthe.Resolution.Middleware.Batch do
+defmodule Absinthe.Middleware.Batch do
   @moduledoc """
   Batch the resolution of multiple fields.
 
@@ -64,7 +64,7 @@ defmodule Absinthe.Resolution.Middleware.Batch do
   Such a function could be easily built upon the API of this module.
   """
 
-  @behaviour Absinthe.Resolution.Middleware
+  @behaviour Absinthe.Middleware
 
   @typedoc """
   The function to be called with the aggregate batch information.

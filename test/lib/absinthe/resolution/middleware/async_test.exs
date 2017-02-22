@@ -1,4 +1,4 @@
-defmodule Absinthe.Resolution.Middleware.AsyncTest do
+defmodule Absinthe.Middleware.AsyncTest do
   use Absinthe.Case, async: true
 
   defmodule Schema do
