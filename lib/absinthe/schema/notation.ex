@@ -71,6 +71,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def record_object!(env, identifier, attrs, block) do
+    attrs = Keyword.put(attrs, :identifier, identifier)
     scope(env, :object, identifier, attrs, block)
   end
 
@@ -441,14 +442,19 @@ defmodule Absinthe.Schema.Notation do
   end
 
   @placement {:plug, [under: [:field]]}
-  defmacro plug(module, opts \\ []) do
+  defmacro plug(new_middleware, opts \\ []) do
     env = __CALLER__
-    module = Macro.expand(module, env)
+    new_middleware = Macro.expand(new_middleware, env)
 
     middleware = Scope.current(env.module).attrs
     |> Keyword.get(:middleware, [])
 
-    Scope.put_attribute(env.module, :middleware, [{module, opts} | middleware])
+    new_middleware = case new_middleware do
+      {module, fun} -> {:{}, [], [{module, fun}, opts]}
+      module -> {:{}, [], [{module, :call}, opts]}
+    end
+
+    Scope.put_attribute(env.module, :middleware, [new_middleware | middleware])
     nil
   end
 

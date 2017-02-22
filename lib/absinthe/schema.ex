@@ -145,6 +145,16 @@ defmodule Absinthe.Schema do
   alias Absinthe.Language
   alias __MODULE__
 
+
+  def default_middleware(%{middleware: [], identifier: identifier} = field, _) do
+    middleware = [{{Absinthe.Resolution.Middleware, :default}, identifier}]
+
+    %{field | middleware: middleware}
+  end
+  def default_middleware(field, _) do
+    field
+  end
+
   defmacro __using__(opts \\ []) do
     quote do
       use Absinthe.Schema.Notation, unquote(opts)
@@ -153,28 +163,35 @@ defmodule Absinthe.Schema do
       @after_compile unquote(__MODULE__)
       @behaviour unquote(__MODULE__)
 
-      def middleware(object, field) do
-        __default_middleware__(object, field)
+      @doc false
+      def __absinthe_middleware__(field, %{name: "__" <> _} = object) do
+        field
+        |> Absinthe.Schema.default_middleware(object)
+        |> __do_absinthe_middleware__(object)
+      end
+      def __absinthe_middleware__(field, object) do
+        __do_absinthe_middleware__(field, object)
       end
 
-      def __default_middleware__(_, %{middleware: [], identifier: identifier}) do
-        [{
-          Absinthe.Resolution,
-          fn parent, _, _ -> {:ok, Map.get(parent, identifier)} end
-        }]
-      end
-      def __default_middleware__(_, %{middleware: middleware}) do
-        middleware
+      defp __do_absinthe_middleware__(field, object) do
+        field
+        |> middleware(object) # run field against user supplied function
+        |> Absinthe.Schema.default_middleware(object) # if they forgot to add middleware set the default
       end
 
+      def middleware(field, object) do
+        field
+      end
+
+      @doc false
       def __absinthe_lookup__(key) do
         key
         |> __absinthe_type__
         |> case do
-          %Type.Object{} = object ->
+          %Absinthe.Type.Object{} = object ->
             fields = Map.new(object.fields, fn
               {identifier, field} ->
-                {identifier, %{field | middleware: middleware(object, field)}}
+                {identifier, __absinthe_middleware__(field, object)}
             end)
 
             %{object | fields: fields}

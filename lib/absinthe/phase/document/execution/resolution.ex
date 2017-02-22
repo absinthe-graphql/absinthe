@@ -14,58 +14,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   alias Absinthe.Phase
   use Absinthe.Phase
 
-  @error_detail """
-  ## For a data result
-
-  `{:ok, any}` result will do.
-
-  ### Examples:
-
-  A simple integer result:
-
-      {:ok, 1}
-
-  Something more complex:
-
-      {:ok, %Model.Thing{some: %{complex: :data}}}
-
-  ## For an error result
-
-  One or more errors for a field can be returned in a single `{:error, error_value}` tuple.
-
-  `error_value` can be:
-  - A simple error message string.
-  - A map containing `:message` key, plus any additional serializable metadata.
-  - A keyword list containing a `:message` key, plus any additional serializable metadata.
-  - A list containing multiple of any/all of these.
-
-  ### Examples
-
-  A simple error message:
-
-      {:error, "Something bad happened"}
-
-  Multiple error messages:
-
-      {:error, ["Something bad", "Even worse"]
-
-  Single custom errors (note the required `:message` keys):
-
-      {:error, message: "Unknown user", code: 21}
-      {:error, %{message: "A database error occurred", details: format_db_error(some_value)}}
-
-  Three errors of mixed types:
-
-      {:error, ["Simple message", [message: "A keyword list error", code: 1], %{message: "A map error"}]}
-
-  ## To activate a plugin
-
-  `{:plugin, NameOfPluginModule, term}` to activate a plugin.
-
-  See `Absinthe.Resolution.Plugin` for more information.
-
-  """
-
   @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
   def run(bp_root, options \\ []) do
     case Blueprint.current_operation(bp_root) do
@@ -183,21 +131,40 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     |> reduce_resolution
     |> case do
       %{state: :halt} = res ->
-        build_result(res.result, res.acc, res.definition, info, source)
+        build_result(res, info, source)
 
       %{state: :suspend} = res ->
         {res, res.acc}
     end
   end
 
+  defp build_result(%{errors: [], result: result} = res, info, _source) do
+    full_type = Type.expand(res.definition.schema_node.type, info.schema)
+    bp_field = res.definition
+
+    result
+    |> to_result(bp_field, full_type)
+    |> walk_result(res.acc, bp_field, full_type, info)
+  end
+  defp build_result(%{errors: errors} = res, info, source) do
+    build_error_result({:error, errors}, errors, res.acc, res.definition, info, source)
+  end
+
   defp reduce_resolution(%{middleware: []} = res), do: %{res | state: :halt}
-  defp reduce_resolution(%{middleware: [{middleware, opts} | remaining_middleware]} = res) do
-    case middleware.call(%{res | middleware: remaining_middleware}, opts) do
-      %{state: :cont} = res ->
-        reduce_resolution(res)
-      res ->
+  defp reduce_resolution(%{middleware: [middleware | remaining_middleware]} = res) do
+    case call_middleware(middleware, %{res | middleware: remaining_middleware}) do
+      %{state: :suspend} = res ->
         res
+      res ->
+        reduce_resolution(res)
     end
+  end
+
+  defp call_middleware({{mod, fun}, opts}, res) do
+    apply(mod, fun, [res, opts])
+  end
+  defp call_middleware({module, opts}, res) do
+    apply(module, :call, [res, opts])
   end
 
   defp resolve_fields(parent, acc, info, source) do
@@ -228,72 +195,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     do_resolve_fields(fields, res_acc, info, source, [result | acc])
   end
 
-  # Normal :ok result
-  defp build_result({:ok, result}, acc, bp_field, info, _) do
-    full_type = Type.expand(bp_field.schema_node.type, info.schema)
-
-    result
-    |> to_result(bp_field, full_type)
-    |> walk_result(acc, bp_field, full_type, info)
-  end
-  # Error result; force wrap of single Keyword.t errors
-  defp build_result({:error, [{_, _} | _] = error_value} = err, acc, bp_field, info, source) do
-    build_error_result(err, [error_value], acc, bp_field, info, source)
-  end
-  # Error result; put errors
-  defp build_result({:error, error_value} = err, acc, bp_field, info, source) do
-    build_error_result(err, List.wrap(error_value), acc, bp_field, info, source)
-  end
-  # Everything else; raise
-  defp build_result(other, _, field, _, source) do
-    raise result_error(other, field, source)
-  end
-
-  defp result_error({:error, _} = value, field, source) do
-    result_error(
-      value, field, source,
-      "You're returning an :error tuple, but did you forget to include a `:message`\nkey in every custom error (map or keyword list)?"
-    )
-  end
-  defp result_error(value, field, source) do
-    result_error(
-      value, field, source,
-      "Did you forget to return a valid `{:ok, any}` | `{:error, error_value}` tuple?"
-    )
-  end
-
-  defp result_error(value, field, source, guess) do
-    Absinthe.ExecutionError.exception("""
-    Invalid value returned from resolver.
-
-    Resolving field:
-
-        #{field.name}
-
-    Defined at:
-
-        #{field.schema_node.__reference__.location.file}:#{field.schema_node.__reference__.location.line}
-
-    Resolving on:
-
-        #{inspect source}
-
-    Got value:
-
-        #{inspect value}
-
-    ...
-
-    #{guess}
-
-    ...
-
-    The result must be one of the following...
-
-    #{@error_detail}
-    """)
-  end
-
   defp build_error_result(original_value, error_values, acc, bp_field, info, source) do
     full_type = Type.expand(bp_field.schema_node.type, info.schema)
     result = to_result(nil, bp_field, full_type)
@@ -304,7 +205,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp put_result_error_value(error_value, result, original_value, bp_field, source) do
     case split_error_value(error_value) do
       {[], _} ->
-        raise result_error(original_value, bp_field, source)
+        raise Absinthe.Resolution.result_error(original_value, bp_field, source)
       {[message: message], extra} ->
         message = ~s(In field "#{bp_field.name}": #{message})
         put_error(result, error(bp_field, message, extra))

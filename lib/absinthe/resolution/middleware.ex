@@ -63,6 +63,18 @@ defmodule Absinthe.Resolution.Middleware do
   """
   @callback pipeline(next_pipeline :: Absinthe.Pipeline.t, resolution_acc :: map) :: Absinthe.Pipeline.t
 
+  def plug(middleware, opts \\ [])
+  def plug({_, _} = middleware, opts) do
+    {middleware, opts}
+  end
+  def plug(module, opts) do
+    plug({module, :call}, opts)
+  end
+
+  def default(%{source: source} = res, field_name) do
+    %{res | result: Map.get(source, field_name)}
+  end
+
 
   @doc """
   The default list of resolution plugins

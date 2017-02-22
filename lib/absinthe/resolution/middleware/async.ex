@@ -45,9 +45,12 @@ defmodule Absinthe.Resolution.Middleware.Async do
   end
 
   def call(%{state: :suspend} = res, {task, opts}) do
-    %{res |
-      state: :cont,
-      result: Task.await(task, opts[:timeout] || 30_000)
+    %{res | state: :cont,
+      middleware: [
+        Absinthe.Resolution.resolver(fn _, _, _ ->
+          Task.await(task, opts[:timeout] || 30_000)
+        end) | res.middleware
+      ]
     }
   end
 
