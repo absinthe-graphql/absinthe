@@ -45,13 +45,8 @@ defmodule Absinthe.Resolution.Middleware.Async do
   end
 
   def call(%{state: :suspend} = res, {task, opts}) do
-    %{res | state: :cont,
-      middleware: [
-        Absinthe.Resolution.resolver(fn _, _, _ ->
-          Task.await(task, opts[:timeout] || 30_000)
-        end) | res.middleware
-      ]
-    }
+    %{res | state: :cont }
+    |> Absinthe.Resolution.apply_result(Task.await(task, opts[:timeout] || 30_000))
   end
 
   # We must set the flag to false because if a previous resolution iteration

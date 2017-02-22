@@ -159,7 +159,9 @@ defmodule Absinthe.Schema do
     quote do
       use Absinthe.Schema.Notation, unquote(opts)
       import unquote(__MODULE__), only: :macros
+
       import_types Absinthe.Type.BuiltIns
+
       @after_compile unquote(__MODULE__)
       @behaviour unquote(__MODULE__)
 
@@ -179,7 +181,7 @@ defmodule Absinthe.Schema do
         |> Absinthe.Schema.default_middleware(object) # if they forgot to add middleware set the default
       end
 
-      def middleware(field, object) do
+      def middleware(field, _object) do
         field
       end
 

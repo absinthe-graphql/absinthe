@@ -75,7 +75,6 @@ defmodule Absinthe.Resolution.Middleware do
     %{res | result: Map.get(source, field_name)}
   end
 
-
   @doc """
   The default list of resolution plugins
   """
