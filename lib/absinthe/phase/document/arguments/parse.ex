@@ -33,10 +33,12 @@ defmodule Absinthe.Phase.Document.Arguments.Parse do
 
   defp build_value(normalized, %Type.Scalar{} = schema_node, context) do
     case Type.Scalar.parse(schema_node, normalized, context) do
-      :error ->
-        {:error, :bad_parse}
       {:ok, val} ->
         {:ok, val}
+      {:error, _reason} ->
+        {:error, :bad_parse}
+      :error ->
+        {:error, :bad_parse}
     end
   end
   defp build_value(normalized, %Type.Enum{} = schema_node, _) do
