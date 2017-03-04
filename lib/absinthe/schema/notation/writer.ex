@@ -41,12 +41,6 @@ defmodule Absinthe.Schema.Notation.Writer do
         def __absinthe_interface_implementors__, do: unquote(implementors)
         def __absinthe_exports__, do: unquote(exports)
       end,
-      quote do
-        def middleware_phases do
-          unquote(Absinthe.Middleware.defaults())
-        end
-        defoverridable(middleware_phases: 0)
-      end
     ]
   end
 

@@ -153,7 +153,7 @@ defmodule Absinthe.Middleware.Batch do
   def pipeline(pipeline, acc) do
     case acc[__MODULE__][:input] do
       [_|_] ->
-        [Absinthe.Phase.Document.Execution.Resolution | pipeline]
+        [Absinthe.Middleware.resolution_phases | pipeline]
       _ ->
         pipeline
     end

@@ -1,6 +1,6 @@
 defmodule Absinthe.Middleware do
   @moduledoc """
-  Defines Resolution Plugin Behaviour
+  Defines Resolution Middleware Behaviour
 
   Plugins enable custom resolution behaviour on a field. A plugin is activated
   on field if its resolution function returns the following tuple instead of one
@@ -33,10 +33,16 @@ defmodule Absinthe.Middleware do
   @type t :: atom
 
   @doc """
-  Function called prior to the execution of a resolution phase.
+  This is the main middleware callback.
 
-  This allows plugins to setup any data in the resolution accumulator they may
-  need.
+  It receives an `%Absinthe.Resolution{}` struct and it needs to return an
+  `%Absinthe.Resolution{}` struct. The second argument will be whatever value
+  was passed to the `plug` call that setup the middleware.
+  """
+  @callback call(Absinthe.Resolution.t, term) :: Absinthe.Resolution.t
+
+  @doc """
+  Optional callback to setup the resolution accumulator prior to resolution.
 
   NOTE: This function is given the full accumulator. Namespacing is suggested to
   avoid conflicts.
@@ -44,7 +50,8 @@ defmodule Absinthe.Middleware do
   @callback before_resolution(resolution_acc :: Document.Resolution.acc) :: Document.Resolution.acc
 
   @doc """
-  Function called after the execution of a resolution phase.
+  Optional callback to do something with the resolution accumulator after
+  resolution.
 
   NOTE: This function is given the full accumulator. Namespacing is suggested to
   avoid conflicts.
@@ -52,10 +59,10 @@ defmodule Absinthe.Middleware do
   @callback after_resolution(resolution_acc :: Document.Resolution.acc) :: Document.Resolution.acc
 
   @doc """
-  Add any additional phases required by the plugin.
+  Optional callback used to specify additional phases to run.
 
   Plugins may require additional resolution phases to be run. This function should
-  use values set in the resolution accumulator
+  use values set in the resolution accumulator to determine
   whether or not additional phases are required.
 
   NOTE: This function is given the whole pipeline to be inserted after the current
@@ -63,6 +70,26 @@ defmodule Absinthe.Middleware do
   """
   @callback pipeline(next_pipeline :: Absinthe.Pipeline.t, resolution_acc :: map) :: Absinthe.Pipeline.t
 
+  @optional_callbacks [
+    before_resolution: 1,
+    after_resolution: 1,
+    pipeline: 2,
+  ]
+
+  @doc """
+  Build a middleware Tuple.
+
+  Internally Absinthe represents the middleware to be run on a field as a list
+  of tuples. This representation however ought not to be the concern of library
+  users, so we recommend using this function instead which will always return
+  whatever the current representation is.
+
+  ## Examples
+  ```
+  Absinthe.Middleware.plug(MyApp.Authorization)
+  Absinthe.Middleware.plug(MyApp.Authorization, some_option: :foo)
+  ```
+  """
   def plug(middleware, opts \\ [])
   def plug({_, _} = middleware, opts) do
     {middleware, opts}
@@ -71,24 +98,30 @@ defmodule Absinthe.Middleware do
     plug({module, :call}, opts)
   end
 
-  def default(%{source: source} = res, field_name) do
-    %{res | result: Map.get(source, field_name)}
-  end
-
   @doc """
-  The default list of resolution plugins
+  Returns the list of default plugins.
   """
-  def defaults do
+  def defaults() do
     [Absinthe.Middleware.Batch, Absinthe.Middleware.Async]
   end
 
+  @doc """
+  Returns the list of phases necessary to run resolution again.
+  """
+  def resolution_phases() do
+    [
+      Absinthe.Phase.Document.Execution.BeforeResolution,
+      Absinthe.Phase.Document.Execution.Resolution,
+      Absinthe.Phase.Document.Execution.AfterResolution,
+    ]
+  end
+
   @doc false
-  def pipeline(plugins, resolution) do
-    resolution_acc = resolution.acc
+  def pipeline(plugins, resolution_acc) do
     Enum.reduce(plugins, [], fn plugin, pipeline ->
       plugin.pipeline(pipeline, resolution_acc)
     end)
-    |> List.flatten
     |> Enum.dedup
+    |> List.flatten
   end
 end

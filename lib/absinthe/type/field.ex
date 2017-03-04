@@ -25,7 +25,7 @@ defmodule Absinthe.Type.Field do
   @typedoc """
   The result of a resolver.
   """
-  @type result :: ok_result | error_result | plugin_result
+  @type result :: ok_result | error_result | middleware_result
 
   @typedoc """
   A complexity function.
@@ -41,7 +41,7 @@ defmodule Absinthe.Type.Field do
 
   @type ok_result :: {:ok, any}
   @type error_result :: {:error, error_value}
-  @type plugin_result :: {:plugin, Absinthe.Resolution.Plugin.t, term}
+  @type middleware_result :: {:middleware, Absinthe.Middleware.t, term}
 
   @typedoc """
   An error message is a human-readable string describing the error that occurred.

@@ -8,7 +8,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   # because the results form basically a new tree from the original blueprint.
 
   alias Absinthe.{Blueprint, Type, Phase}
-  alias Absinthe.Middleware
   alias Blueprint.Document.Resolution
 
   alias Absinthe.Phase
@@ -27,14 +26,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     blueprint = %{bp_root | resolution: resolution}
 
-    bp_root.schema.middleware_phases
-    |> Middleware.pipeline(resolution)
-    |> case do
-      [] ->
-        {:ok, blueprint}
-      pipeline ->
-        {:insert, blueprint, pipeline}
-    end
+    {:ok, blueprint}
   end
 
   defp perform_resolution(bp_root, operation, options) do
@@ -44,21 +36,9 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     acc    = bp_root.resolution.acc
     result = bp_root.resolution |> Resolution.get_result(operation, root_value)
 
-    acc = bp_root.schema |> before_resolution(acc)
-
     {result, acc} = walk_result(result, acc, operation, operation.schema_node, info)
 
-    acc = bp_root.schema |> after_resolution(acc)
-
     Resolution.update(bp_root.resolution, result, acc)
-  end
-
-  defp before_resolution(schema, acc) do
-    schema.middleware_phases |> Enum.reduce(acc, &(&1.before_resolution(&2)))
-  end
-
-  defp after_resolution(schema, acc) do
-    schema.middleware_phases |> Enum.reduce(acc, &(&1.after_resolution(&2)))
   end
 
   defp build_info(bp_root, root_value, options) do

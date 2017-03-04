@@ -145,11 +145,11 @@ defmodule Absinthe.Schema do
   alias Absinthe.Language
   alias __MODULE__
 
-
+  @doc """
+  Apply the Absinthe default middleware to a field
+  """
   def default_middleware(%{middleware: [], identifier: identifier} = field, _) do
-    middleware = [{{Absinthe.Middleware, :default}, identifier}]
-
-    %{field | middleware: middleware}
+    %{field | middleware: [Absinthe.Middleware.plug(Absinthe.Middleware.Default, identifier)]}
   end
   def default_middleware(field, _) do
     field
@@ -202,11 +202,15 @@ defmodule Absinthe.Schema do
         end
       end
 
-      defoverridable middleware: 2
+      def plugins do
+        Absinthe.Middleware.defaults()
+      end
+
+      defoverridable middleware: 2, plugins: 0
     end
   end
 
-  @callback middleware_phases() :: [Absinthe.Middleware.t]
+  @callback plugins() :: [Absinthe.Middleware.t]
 
   @doc false
   def __after_compile__(env, _bytecode) do

@@ -35,7 +35,6 @@ defmodule Absinthe.Middleware.Async do
 
   @behaviour Absinthe.Middleware
 
-
   def call(%{state: :cont} = res, task_data) do
     %{res |
       state: :suspend,
@@ -63,7 +62,7 @@ defmodule Absinthe.Middleware.Async do
   def pipeline(pipeline, acc) do
     case acc do
       %{__MODULE__ => true} ->
-        [Absinthe.Phase.Document.Execution.Resolution | pipeline]
+        [Absinthe.Middleware.resolution_phases | pipeline]
       _ ->
         pipeline
     end
