@@ -1,8 +1,51 @@
 defmodule Absinthe.Middleware do
   @moduledoc """
-  Defines Resolution Middleware Behaviour
+  Middleware enables custom resolution behaviour on a field.
 
-  Plugins enable custom resolution behaviour on a field. A plugin is activated
+  Middleware can be placed on a field in three different ways:
+
+  1) Using the `Absinthe.Schema.Notation.plug/2` macro used inside a field definition
+  2) Using the `middleware/2` callback in your schema. This is useful when you want to apply
+  middleware to many fields
+  3) Returning a `{:middleware, SomeMiddleware, opts}` tuple from a resolution function.
+
+  ## Middleware Plug Macro
+
+  Suppose you want to only allow authorized users to access a particular field.
+  This is relatively generic logic, so you dont' want to do it inside resolution
+  fields over and over. Let's build a small authorization middleware, and apply
+  it to a field:
+
+  ```
+  defmodule MyApp.Web.Authentication do
+    @behaviour Absinthe.Middleware
+
+    def call(resolution, _opts) do
+      case resolution.context do
+        %{current_user: _} ->
+          resolution
+        _ ->
+          %{resolution | state: :halt}
+          |> Absinthe.Resolution.put_result({:error, "unauthorized"})
+      end
+    end
+  end
+  ```
+
+  By specifying `@behaviour Absinthe.Middleware` the compiler will ensure that
+  we provide a `def call` callback. This function takes an `%Absinthe.Resolution{}`
+  struct and will also need to return one such struct.
+
+  On that struct there is a `context` key which holds the absinthe context. This
+  is generally where things like the current user are placed. For more information
+  on how the current user ends up in the context please see our full authentication
+  guide on the website.
+
+  Our `def call` function simply checks the context to see if there is a current
+  user. If there is, we pass the resolution onward. If there is not, we update
+  the resolution state to `:halt` and place an error result.
+
+  A plugin is activated
   on field if its resolution function returns the following tuple instead of one
   of the usual `{:ok, value}` or `{:error, reason}` tuples:
 

@@ -19,6 +19,8 @@ defmodule Absinthe.Resolution do
   To access the schema type for this field, see the `definition.schema_node`.
   """
   @type t :: %__MODULE__{
+    value: term,
+    errors: [term],
     adapter: Absinthe.Adapter.t,
     context: map,
     root_value: any,
@@ -32,7 +34,7 @@ defmodule Absinthe.Resolution do
 
   @enforce_keys [:adapter, :context, :root_value, :schema, :source]
   defstruct [
-    :result,
+    :value,
     :adapter,
     :context,
     :parent_type,
@@ -72,26 +74,36 @@ defmodule Absinthe.Resolution do
         """
     end
 
-    apply_result(res, result)
+    put_result(%{res | state: :halt}, result)
   end
+  def call(res, _), do: res
 
-  @doc "Handy function for applying user function result tuples to a resolution struct"
-  def apply_result(res, {:ok, value}) do
-    %{res | result: value}
+  @doc """
+  Handy function for applying user function result tuples to a resolution struct
+
+  User facing functions generally return one of several tuples like `{:ok, val}`
+  or `{:error, reason}`. This function handles applying those various tuples
+  to the resolution struct.
+
+  This is useful for middleware that wants to handle user facing functions, but
+  does not want to duplicate this logic.
+  """
+  def put_result(res, {:ok, value}) do
+    %{res | value: value}
   end
-  def apply_result(res, {:error, [{_, _} | _] = error_keyword}) do
+  def put_result(res, {:error, [{_, _} | _] = error_keyword}) do
     %{res | errors: [error_keyword]}
   end
-  def apply_result(res, {:error, errors}) do
+  def put_result(res, {:error, errors}) do
     %{res | errors: List.wrap(errors)}
   end
-  def apply_result(res, {:plugin, module, opts}) do
-    apply_result(res, {:middleware, module, opts})
+  def put_result(res, {:plugin, module, opts}) do
+    put_result(res, {:middleware, module, opts})
   end
-  def apply_result(res, {:middleware, module, opts}) do
-    %{res | middleware: [Absinthe.Middleware.plug(module, opts) | res.middleware]}
+  def put_result(res, {:middleware, module, opts}) do
+    %{res | state: :cont, middleware: [Absinthe.Middleware.plug(module, opts) | res.middleware]}
   end
-  def apply_result(res, result) do
+  def put_result(res, result) do
     raise result_error(result, res.definition, res.source)
   end
 
@@ -215,5 +227,21 @@ defmodule Absinthe.Resolution do
 
     #{@error_detail}
     """)
+  end
+end
+
+defimpl Inspect, for: Absinthe.Resolution do
+  import Inspect.Algebra
+
+  def inspect(res, opts) do
+    inner =
+      res
+      |> Map.from_struct
+      |> Map.update!(:definition, &(&1.name))
+      |> Map.update!(:parent_type, &(&1.identifier))
+      |> Map.to_list
+      |> Inspect.List.inspect(opts)
+
+    concat ["#Absinthe.Resolution<", inner, ">"]
   end
 end

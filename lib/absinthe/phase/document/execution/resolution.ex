@@ -115,10 +115,13 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
       %{state: :suspend} = res ->
         {res, res.acc}
+
+      _ ->
+        raise "Should have halted or suspended middleware"
     end
   end
 
-  defp build_result(%{errors: [], result: result} = res, info, _source) do
+  defp build_result(%{errors: [], value: result} = res, info, _source) do
     full_type = Type.expand(res.definition.schema_node.type, info.schema)
     bp_field = res.definition
 
@@ -130,7 +133,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     build_error_result({:error, errors}, errors, res.acc, res.definition, info, source)
   end
 
-  defp reduce_resolution(%{middleware: []} = res), do: %{res | state: :halt}
+  defp reduce_resolution(%{middleware: []} = res), do: res
   defp reduce_resolution(%{middleware: [middleware | remaining_middleware]} = res) do
     case call_middleware(middleware, %{res | middleware: remaining_middleware}) do
       %{state: :suspend} = res ->

@@ -181,6 +181,7 @@ defmodule Absinthe.Schema do
         |> Absinthe.Schema.default_middleware(object) # if they forgot to add middleware set the default
       end
 
+      @doc false
       def middleware(field, _object) do
         field
       end
@@ -202,6 +203,7 @@ defmodule Absinthe.Schema do
         end
       end
 
+      @doc false
       def plugins do
         Absinthe.Middleware.defaults()
       end

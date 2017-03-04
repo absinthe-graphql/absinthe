@@ -118,8 +118,8 @@ defmodule Absinthe.Middleware.Batch do
       |> Map.fetch!(:output)
       |> Map.fetch!(batch_key)
 
-    %{res | state: :cont}
-    |> Absinthe.Resolution.apply_result(post_batch_fun.(batch_data_for_fun))
+    %{res | state: :halt}
+    |> Absinthe.Resolution.put_result(post_batch_fun.(batch_data_for_fun))
   end
 
   def after_resolution(acc) do

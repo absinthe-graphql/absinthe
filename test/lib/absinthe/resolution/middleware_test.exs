@@ -15,15 +15,12 @@ defmodule Absinthe.MiddlewareTest do
 
   defmodule Auth do
     def call(res, _) do
-      if Enum.any?(res.middleware, &match?({:public, _}, &1)) do
-        res
-      else
-        case res.context do
-          %{current_user: _} ->
-            res
-          _ ->
-            %{res | state: :halt, result: {:error, "unauthorized"}}
-        end
+      case res.context do
+        %{current_user: _} ->
+          res
+        _ ->
+          %{res | state: :halt}
+          |> Absinthe.Resolution.put_result({:error, "unauthorized"})
       end
     end
   end
@@ -33,39 +30,82 @@ defmodule Absinthe.MiddlewareTest do
 
     alias Absinthe.MiddlewareTest
 
-    def middleware(field, %Absinthe.Type.Object{identifier: :query}) do
+    def middleware(field, object = %Absinthe.Type.Object{identifier: :secret_object}) do
       field
-      |> Map.update!(:middleware, &[{MiddlewareTest.Auth, []} | &1])
-      |> timing_middleware
+      |> Absinthe.Schema.default_middleware(object)
+      |> Map.update!(:middleware, &[Absinthe.Middleware.plug(MiddlewareTest.Auth) | &1])
     end
-    def middleware(object, field) do
-      object
-      |> Absinthe.Schema.default_middleware(field)
-      |> timing_middleware
-    end
-
-    defp timing_middleware(field) do
+    def middleware(field, _) do
       field
-      |> Map.update!(:middleware, &([{MiddlewareTest.Timing, :start} | &1] ++ [{MiddlewareTest.Timing, :end}]))
     end
 
     query do
-      field :authenticated, :string do
+      field :authenticated, :user do
+        plug MiddlewareTest.Auth
+
         resolve fn _, _, _ ->
-          {:ok, "hello"}
+          {:ok, %{name: "bob"}}
         end
       end
 
-      field :public, :string do
-        plug :public
+      field :public, :user do
         resolve fn _, _, _ ->
-          {:ok, "world"}
+          {:ok, %{name: "bob", email: "secret"}}
+        end
+      end
+
+      field :returns_private_object, :secret_object do
+        resolve fn _, _, _ ->
+          {:ok, %{key: "value"}}
         end
       end
     end
+
+    # keys in this object are made secret via the def middleware callback
+    object :secret_object do
+      field :key, :string
+      field :key2, :string
+    end
+
+    object :user do
+      field :email, :string do
+        plug MiddlewareTest.Auth
+        plug Absinthe.Middleware.Default, :email
+      end
+      field :name, :string
+    end
   end
 
-  test "foo" do
+  test "fails with authorization error when no current user" do
+    doc = """
+    {authenticated { name }}
+    """
+    assert {:ok, %{errors: errors}} = Absinthe.run(doc, __MODULE__.Schema)
+    assert [%{locations: [%{column: 0, line: 1}], message: "In field \"authenticated\": unauthorized"}] == errors
+  end
 
+  test "email fails with authorization error when no current user" do
+    doc = """
+    {public { name email }}
+    """
+    assert {:ok, %{errors: errors}} = Absinthe.run(doc, __MODULE__.Schema)
+    assert [%{locations: [%{column: 0, line: 1}], message: "In field \"email\": unauthorized"}] == errors
+  end
+
+  test "email works when current user" do
+    doc = """
+    {public { name email }}
+    """
+    assert {:ok, %{data: data}} = Absinthe.run(doc, __MODULE__.Schema, context: %{current_user: %{}})
+    assert %{"public" => %{"email" => "secret", "name" => "bob"}} == data
+  end
+
+  test "secret object cant be accessed without a current user" do
+    doc = """
+    {returnsPrivateObject { key }}
+    """
+    assert {:ok, %{errors: errors}} = Absinthe.run(doc, __MODULE__.Schema)
+    assert [%{locations: [%{column: 0, line: 1}],
+               message: "In field \"key\": unauthorized"}] == errors
   end
 end
