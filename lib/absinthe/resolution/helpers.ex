@@ -18,7 +18,7 @@ defmodule Absinthe.Resolution.Helpers do
   @spec async(( -> term)) :: {:plugin, Middleware.Async, term}
   @spec async(( -> term), Keyword.t) :: {:plugin, Middleware.Async, term}
   def async(fun, opts \\ []) do
-    {:middleware, Middleware.Async, {Task.async(fun), opts}}
+    {:middleware, Middleware.Async, {fun, opts}}
   end
 
   @doc """

@@ -8,7 +8,9 @@ defmodule Absinthe.Middleware.AsyncTest do
       field :async_thing, :string do
         resolve fn _, _, _ ->
           async(fn ->
-            {:ok, "we async now"}
+            async(fn ->
+              {:ok, "we async now"}
+            end)
           end)
         end
       end

@@ -38,21 +38,22 @@ defmodule Absinthe.Middleware.Async do
   @behaviour Absinthe.Middleware
 
   # A function has handed resolution off to this middleware. The first argument
-  # is the current resolution struct. The `task_data` argument already includes
+  # is the current resolution struct. The second argument is the function to
+  # execute asynchronously, and opts we'll want to use when it is time to await
   # the task.
   #
   # This function suspends resolution, and sets the async flag true in the resolution
-  # accumulator. This will be used later to determine that we need to run resolution
+  # accumulator. This will be used later to determine whether we need to run resolution
   # again.
   #
-  # Finally, this function inserts additional middleware into the remaining middleware
+  # This function inserts additional middleware into the remaining middleware
   # stack for this field. On the next resolution pass, we need to `Task.await` the
   # task so we have actual data. Thus, we prepend this module to the middleware stack.
-  # The resolution struct will be suspend, and thus is handled by the second clause of
-  # this function.
-  def call(%{state: :cont} = res, task_data) do
+  def call(%{state: :unresolved} = res, {fun, opts}) do
+    task_data = {Task.async(fun), opts}
+
     %{res |
-      state: :suspend,
+      state: :suspended,
       acc: Map.put(res.acc, __MODULE__, true),
       middleware: [Absinthe.Middleware.plug(__MODULE__, task_data) | res.middleware]
     }
@@ -61,14 +62,17 @@ defmodule Absinthe.Middleware.Async do
   # This is the clause that gets called on the second pass. There's very little
   # to do here. We just need to await the task started in the previous pass.
   #
-  # We also need to set the `state` to `:cont` so that resolution will continue.
-  #
   # Finally, we apply the result to the resolution using a helper function that ensures
-  # we handle the different tuple results
-  def call(%{state: :suspend} = res, {task, opts}) do
+  # we handle the different tuple results.
+  #
+  # The `put_result` function handles setting the appropriate state.
+  # If the result is an `{:ok, value} | {:error, reasoon}` tuple it will set
+  # the state to `:resolved`, and if it is another middleware tuple it will
+  # set the state to unresolved.
+  def call(%{state: :suspended} = res, {task, opts}) do
     result = Task.await(task, opts[:timeout] || 30_000)
 
-    %{res | state: :halt}
+    res
     |> Absinthe.Resolution.put_result(result)
   end
 

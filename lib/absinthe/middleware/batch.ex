@@ -98,7 +98,7 @@ defmodule Absinthe.Middleware.Batch do
     end
   end
 
-  def call(%{state: :cont} = res, {batch_key, field_data, post_batch_fun, batch_opts}) do
+  def call(%{state: :unresolved} = res, {batch_key, field_data, post_batch_fun, batch_opts}) do
     acc = res.acc
     acc = update_in(acc[__MODULE__][:input], fn
       nil -> [{{batch_key, batch_opts}, field_data}]
@@ -106,19 +106,19 @@ defmodule Absinthe.Middleware.Batch do
     end)
 
     %{res |
-      state: :suspend,
+      state: :suspended,
       middleware: [{__MODULE__, {batch_key, post_batch_fun}} | res.middleware],
       acc: acc,
     }
   end
-  def call(%{state: :suspend} = res, {batch_key, post_batch_fun}) do
+  def call(%{state: :suspended} = res, {batch_key, post_batch_fun}) do
     batch_data_for_fun =
       res.acc
       |> Map.fetch!(__MODULE__)
       |> Map.fetch!(:output)
       |> Map.fetch!(batch_key)
 
-    %{res | state: :halt}
+    res
     |> Absinthe.Resolution.put_result(post_batch_fun.(batch_data_for_fun))
   end
 

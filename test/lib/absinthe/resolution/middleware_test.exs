@@ -1,25 +1,13 @@
 defmodule Absinthe.MiddlewareTest do
   use Absinthe.Case, async: true
 
-  defmodule Timing do
-    def call(res, :start) do
-      # place start time on res
-      res
-    end
-
-    def call(res, :end) do
-      # put total time on res
-      res
-    end
-  end
-
   defmodule Auth do
     def call(res, _) do
       case res.context do
         %{current_user: _} ->
           res
         _ ->
-          %{res | state: :halt}
+          res
           |> Absinthe.Resolution.put_result({:error, "unauthorized"})
       end
     end

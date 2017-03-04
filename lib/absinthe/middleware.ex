@@ -25,7 +25,7 @@ defmodule Absinthe.Middleware do
         %{current_user: _} ->
           resolution
         _ ->
-          %{resolution | state: :halt}
+          resolution
           |> Absinthe.Resolution.put_result({:error, "unauthorized"})
       end
     end

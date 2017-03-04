@@ -110,10 +110,10 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     res
     |> reduce_resolution
     |> case do
-      %{state: :halt} = res ->
+      %{state: :resolved} = res ->
         build_result(res, info, source)
 
-      %{state: :suspend} = res ->
+      %{state: :suspended} = res ->
         {res, res.acc}
 
       _ ->
@@ -136,7 +136,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp reduce_resolution(%{middleware: []} = res), do: res
   defp reduce_resolution(%{middleware: [middleware | remaining_middleware]} = res) do
     case call_middleware(middleware, %{res | middleware: remaining_middleware}) do
-      %{state: :suspend} = res ->
+      %{state: :suspended} = res ->
         res
       res ->
         reduce_resolution(res)

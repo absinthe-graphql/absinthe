@@ -46,16 +46,16 @@ defmodule Absinthe.Resolution do
     middleware: [],
     acc: %{},
     arguments: %{},
-    state: :cont,
+    state: :unresolved,
   ]
 
   def resolver(fun) do
     Absinthe.Middleware.plug(__MODULE__, fun)
   end
 
-  @type field_state :: :resolving | :halted | :suspended
+  @type field_state :: :unresolved | :resolved | :suspended
 
-  def call(%{state: :cont} = res, resolution_function) do
+  def call(%{state: :unresolved} = res, resolution_function) do
     result = case resolution_function do
       fun when is_function(fun, 2) ->
         fun.(res.arguments, res)
@@ -74,7 +74,7 @@ defmodule Absinthe.Resolution do
         """
     end
 
-    put_result(%{res | state: :halt}, result)
+    put_result(res, result)
   end
   def call(res, _), do: res
 
@@ -89,19 +89,19 @@ defmodule Absinthe.Resolution do
   does not want to duplicate this logic.
   """
   def put_result(res, {:ok, value}) do
-    %{res | value: value}
+    %{res | state: :resolved, value: value}
   end
   def put_result(res, {:error, [{_, _} | _] = error_keyword}) do
-    %{res | errors: [error_keyword]}
+    %{res | state: :resolved, errors: [error_keyword]}
   end
   def put_result(res, {:error, errors}) do
-    %{res | errors: List.wrap(errors)}
+    %{res | state: :resolved, errors: List.wrap(errors)}
   end
   def put_result(res, {:plugin, module, opts}) do
     put_result(res, {:middleware, module, opts})
   end
   def put_result(res, {:middleware, module, opts}) do
-    %{res | state: :cont, middleware: [Absinthe.Middleware.plug(module, opts) | res.middleware]}
+    %{res | state: :unresolved, middleware: [Absinthe.Middleware.plug(module, opts) | res.middleware]}
   end
   def put_result(res, result) do
     raise result_error(result, res.definition, res.source)
