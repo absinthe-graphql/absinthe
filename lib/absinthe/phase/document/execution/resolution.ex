@@ -121,18 +121,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     end
   end
 
-  defp build_result(%{errors: [], value: result} = res, info, _source) do
-    full_type = Type.expand(res.definition.schema_node.type, info.schema)
-    bp_field = res.definition
-
-    result
-    |> to_result(bp_field, full_type)
-    |> walk_result(res.acc, bp_field, full_type, info)
-  end
-  defp build_result(%{errors: errors} = res, info, source) do
-    build_error_result({:error, errors}, errors, res.acc, res.definition, info, source)
-  end
-
   defp reduce_resolution(%{middleware: []} = res), do: res
   defp reduce_resolution(%{middleware: [middleware | remaining_middleware]} = res) do
     case call_middleware(middleware, %{res | middleware: remaining_middleware}) do
@@ -146,8 +134,26 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp call_middleware({{mod, fun}, opts}, res) do
     apply(mod, fun, [res, opts])
   end
-  defp call_middleware({module, opts}, res) do
-    apply(module, :call, [res, opts])
+  defp call_middleware({mod, opts}, res) do
+    apply(mod, :call, [res, opts])
+  end
+  defp call_middleware(mod, res) when is_atom(mod) do
+    apply(mod, :call, [res, []])
+  end
+  defp call_middleware(fun, res) when is_function(fun, 2) do
+    fun.(res, [])
+  end
+
+  defp build_result(%{errors: [], value: result} = res, info, _source) do
+    full_type = Type.expand(res.definition.schema_node.type, info.schema)
+    bp_field = res.definition
+
+    result
+    |> to_result(bp_field, full_type)
+    |> walk_result(res.acc, bp_field, full_type, info)
+  end
+  defp build_result(%{errors: errors} = res, info, source) do
+    build_error_result({:error, errors}, errors, res.acc, res.definition, info, source)
   end
 
   defp resolve_fields(parent, acc, info, source) do

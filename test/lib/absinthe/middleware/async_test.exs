@@ -29,9 +29,9 @@ defmodule Absinthe.Middleware.AsyncTest do
     end
 
     def cool_async(fun) do
-      fn source, args, info ->
+      fn _source, _args, _info ->
         async(fn ->
-          Absinthe.Resolution.call(fun, source, args, info)
+          {:middleware, Absinthe.Resolution, fun}
         end)
       end
     end

@@ -32,7 +32,7 @@ defmodule Absinthe.Execution.DefaultResolverTest do
         field :bar, :string
       end
 
-      def middleware(%{middleware: [], name: name, identifier: identifier} = field, _) do
+      def set_middleware(%{middleware: [], name: name, identifier: identifier} = field, _) do
         middleware = Absinthe.Resolution.resolver(fn parent, _, _ ->
           case parent do
             %{^name => value} -> {:ok, value}
@@ -43,7 +43,7 @@ defmodule Absinthe.Execution.DefaultResolverTest do
 
         %{field | middleware: [middleware]}
       end
-      def middleware(field, _) do
+      def set_middleware(field, _) do
         field
       end
 

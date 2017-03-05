@@ -414,7 +414,7 @@ defmodule Absinthe.Schema.Notation do
     __CALLER__
     |> recordable!(:resolve, @placement[:resolve])
     quote do
-      plug Absinthe.Resolution, unquote(func_ast)
+      middleware Absinthe.Resolution, unquote(func_ast)
     end
   end
 
@@ -441,17 +441,25 @@ defmodule Absinthe.Schema.Notation do
     :ok
   end
 
-  @placement {:plug, [under: [:field]]}
-  defmacro plug(new_middleware, opts \\ []) do
+  @placement {:middleware, [under: [:field]]}
+  defmacro middleware(new_middleware, opts \\ []) do
     env = __CALLER__
+
     new_middleware = Macro.expand(new_middleware, env)
 
     middleware = Scope.current(env.module).attrs
     |> Keyword.get(:middleware, [])
 
     new_middleware = case new_middleware do
-      {module, fun} -> {:{}, [], [{module, fun}, opts]}
-      module -> {:{}, [], [{module, :call}, opts]}
+      {module, fun} ->
+        {:{}, [], [{module, fun}, opts]}
+      atom ->
+        case Atom.to_string(atom) do
+          "Elixir." <> _ ->
+            {:{}, [], [{atom, :call}, opts]}
+          _ ->
+            {:{}, [], [{env.module, atom}, opts]}
+        end
     end
 
     Scope.put_attribute(env.module, :middleware, [new_middleware | middleware])

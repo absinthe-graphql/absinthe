@@ -120,28 +120,6 @@ defmodule Absinthe.Middleware do
   ]
 
   @doc """
-  Build a middleware Tuple.
-
-  Internally Absinthe represents the middleware to be run on a field as a list
-  of tuples. This representation however ought not to be the concern of library
-  users, so we recommend using this function instead which will always return
-  whatever the current representation is.
-
-  ## Examples
-  ```
-  Absinthe.Middleware.plug(MyApp.Authorization)
-  Absinthe.Middleware.plug(MyApp.Authorization, some_option: :foo)
-  ```
-  """
-  def plug(middleware, opts \\ [])
-  def plug({_, _} = middleware, opts) do
-    {middleware, opts}
-  end
-  def plug(module, opts) do
-    plug({module, :call}, opts)
-  end
-
-  @doc """
   Returns the list of default plugins.
   """
   def defaults() do

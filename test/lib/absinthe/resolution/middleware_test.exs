@@ -18,18 +18,30 @@ defmodule Absinthe.MiddlewareTest do
 
     alias Absinthe.MiddlewareTest
 
-    def middleware(field, object = %Absinthe.Type.Object{identifier: :secret_object}) do
+    def set_middleware(field, object = %Absinthe.Type.Object{identifier: :secret_object}) do
+      fun = &auth/2
+
       field
       |> Absinthe.Schema.default_middleware(object)
-      |> Map.update!(:middleware, &[Absinthe.Middleware.plug(MiddlewareTest.Auth) | &1])
+      |> Map.update!(:middleware, fn middleware -> [ fun | middleware] end)
     end
-    def middleware(field, _) do
+    def set_middleware(field, _) do
       field
+    end
+
+    def auth(res, _) do
+      case res.context do
+        %{current_user: _} ->
+          res
+        _ ->
+          res
+          |> Absinthe.Resolution.put_result({:error, "unauthorized"})
+      end
     end
 
     query do
       field :authenticated, :user do
-        plug MiddlewareTest.Auth
+        middleware MiddlewareTest.Auth
 
         resolve fn _, _, _ ->
           {:ok, %{name: "bob"}}
@@ -57,8 +69,8 @@ defmodule Absinthe.MiddlewareTest do
 
     object :user do
       field :email, :string do
-        plug MiddlewareTest.Auth
-        plug Absinthe.Middleware.Default, :email
+        middleware MiddlewareTest.Auth
+        middleware Absinthe.Middleware.MapGet, :email
       end
       field :name, :string
     end

@@ -55,7 +55,7 @@ defmodule Absinthe.Middleware.Async do
     %{res |
       state: :suspended,
       acc: Map.put(res.acc, __MODULE__, true),
-      middleware: [Absinthe.Middleware.plug(__MODULE__, task_data) | res.middleware]
+      middleware: [{__MODULE__, task_data} | res.middleware]
     }
   end
 
