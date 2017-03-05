@@ -1,11 +1,11 @@
-defmodule Absinthe.Type.ExtensionsTest do
+defmodule Absinthe.Type.CustomTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.Type
 
   defmodule TestSchema do
     use Absinthe.Schema
-    import_types Type.Extensions
+    import_types Type.Custom
   end
 
   @datetime %DateTime{

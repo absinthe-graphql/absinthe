@@ -1,10 +1,10 @@
-defmodule Absinthe.Type.Extensions do
+defmodule Absinthe.Type.Custom do
   use Absinthe.Schema.Notation
 
   @moduledoc """
   This module contains additional data types.
 
-  To use: `import_types Absinthe.Type.Extensions`.
+  To use: `import_types Absinthe.Type.Custom`.
   """
 
   scalar :datetime, name: "DateTime" do
@@ -15,7 +15,7 @@ defmodule Absinthe.Type.Extensions do
     """
 
     serialize &DateTime.to_iso8601/1
-    parse parse_with([Absinthe.Blueprint.Input.DateTime], &parse_datetime/1)
+    parse &parse_datetime/1
   end
 
   scalar :naive_datetime, name: "NaiveDateTime" do
@@ -26,7 +26,7 @@ defmodule Absinthe.Type.Extensions do
     """
 
     serialize &NaiveDateTime.to_iso8601/1
-    parse parse_with([Absinthe.Blueprint.Input.NaiveDateTime], &parse_naive_datetime/1)
+    parse &parse_naive_datetime/1
   end
 
   scalar :date do
@@ -36,7 +36,7 @@ defmodule Absinthe.Type.Extensions do
     """
 
     serialize &Date.to_iso8601/1
-    parse parse_with([Absinthe.Blueprint.Input.Date], &parse_date/1)
+    parse &parse_date/1
   end
 
   scalar :time do
@@ -46,7 +46,7 @@ defmodule Absinthe.Type.Extensions do
     """
 
     serialize &Time.to_iso8601/1
-    parse parse_with([Absinthe.Blueprint.Input.Time], &parse_time/1)
+    parse &parse_time/1
   end
 
   @spec parse_datetime(any) :: {:ok, DateTime.t} | :error
@@ -93,20 +93,4 @@ defmodule Absinthe.Type.Extensions do
   defp parse_time(_) do
     :error
   end
-
-
-  # Parse, supporting pulling values out of blueprint Input nodes
-  defp parse_with(node_types, coercion) do
-    fn
-      %{__struct__: str, value: value} ->
-        if Enum.member?(node_types, str) do
-          coercion.(value)
-        else
-          :error
-        end
-      other ->
-        coercion.(other)
-    end
-  end
-
 end
