@@ -27,6 +27,16 @@ defmodule Absinthe.Logger do
         pipeline: true
 
   The default is equivalent to `false`.
+
+  ## Disabling
+
+  To display Absinthe logging, set the `:log` configuration option to `false`:
+
+      config :absinthe,
+        log: false
+
+  The default is `true`.
+
   """
   require Logger
 
@@ -35,14 +45,16 @@ defmodule Absinthe.Logger do
   """
   @spec log_run(level :: Logger.level, {doc :: Absinthe.Pipeline.data_t, schema :: Absinthe.Schema.t, pipeline :: Absinthe.Pipeline.t, opts :: Keyword.t}) :: :ok
   def log_run(level, {doc, schema, pipeline, opts}) do
-    Logger.log level, fn ->
-      [
-        "ABSINTHE",
-        " schema=", inspect(schema),
-        " variables=", variables_body(opts),
-        pipeline_section(pipeline),
-        "---", ?\n, document(doc), ?\n, "---"
-      ]
+    if Application.get_env(:absinthe, :log, true) do
+      Logger.log level, fn ->
+        [
+          "ABSINTHE",
+          " schema=", inspect(schema),
+          " variables=", variables_body(opts),
+          pipeline_section(pipeline),
+          "---", ?\n, document(doc), ?\n, "---"
+        ]
+      end
     end
     :ok
   end
