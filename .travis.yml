@@ -1,5 +1,5 @@
 language: elixir
-elixir: 1.4.1
+elixir: 1.4.2
 notifications:
   recipients:
     - bruce.williams@cargosense.com
