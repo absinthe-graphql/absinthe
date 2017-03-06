@@ -11,7 +11,8 @@ defmodule Absinthe.Type.Custom do
     description """
     The `DateTime` scalar type represents a date and time in the UTC
     timezone. The DateTime appears in a JSON response as an ISO8601 formatted
-    string, including UTC timezone ("Z").
+    string, including UTC timezone ("Z"). The parsed date and time string will
+    be converted to UTC and any UTC offset other than 0 will be rejected.
     """
 
     serialize &DateTime.to_iso8601/1

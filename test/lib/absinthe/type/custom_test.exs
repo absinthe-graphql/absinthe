@@ -13,6 +13,7 @@ defmodule Absinthe.Type.CustomTest do
     hour: 20, minute: 31, second: 55,
     time_zone: "Etc/UTC", zone_abbr: "UTC", utc_offset: 0, std_offset: 0,
   }
+
   @naive_datetime ~N[2017-01-27 20:31:55]
   @date ~D[2017-01-27]
   @time ~T[20:31:55]
@@ -35,6 +36,11 @@ defmodule Absinthe.Type.CustomTest do
     it "can be parsed from an ISO8601 date and time string including timezone" do
       assert {:ok, @datetime} == parse(:datetime, "2017-01-27T20:31:55Z")
       assert {:ok, @datetime} == parse(:datetime, "2017-01-27 20:31:55Z")
+    end
+
+    it "cannot be parsed when a UTC offset is included" do
+      assert :error == parse(:datetime, "2017-01-27T20:31:55-02:30")
+      assert :error == parse(:datetime, "2017-01-27T20:31:55+04:00")
     end
 
     it "cannot be parsed without UTC timezone marker" do
