@@ -2,19 +2,19 @@ defmodule Absinthe.Middleware do
   @moduledoc """
   Middleware enables custom resolution behaviour on a field.
 
-  Middleware can be placed on a field in three different ways:
+  All resolution happens through middleware. Even `resolve` functions are middleware,
+  as the `resolve` macro is just
 
-  1) Using the `Absinthe.Schema.Notation.plug/2` macro used inside a field definition
-  2) Using the `middleware/2` callback in your schema. This is useful when you want to apply
-  middleware to many fields
-  3) Returning a `{:middleware, SomeMiddleware, opts}` tuple from a resolution function.
+  ```
+  quote do
+    middleware Absinthe.Resolution, unquote(function_ast)
+  end
+  ```
 
-  ## Middleware Plug Macro
+  Resolution happens by reducing a list of middleware onto an `%Absinthe.Resolution{}`
+  struct.
 
-  Suppose you want to only allow authorized users to access a particular field.
-  This is relatively generic logic, so you dont' want to do it inside resolution
-  fields over and over. Let's build a small authorization middleware, and apply
-  it to a field:
+  ## Example
 
   ```
   defmodule MyApp.Web.Authentication do
@@ -26,7 +26,7 @@ defmodule Absinthe.Middleware do
           resolution
         _ ->
           resolution
-          |> Absinthe.Resolution.put_result({:error, "unauthorized"})
+          |> Absinthe.Resolution.put_result({:error, "unauthenticated"})
       end
     end
   end
@@ -45,27 +45,143 @@ defmodule Absinthe.Middleware do
   user. If there is, we pass the resolution onward. If there is not, we update
   the resolution state to `:halt` and place an error result.
 
-  A plugin is activated
-  on field if its resolution function returns the following tuple instead of one
-  of the usual `{:ok, value}` or `{:error, reason}` tuples:
+  Middleware can be placed on a field in three different ways:
 
-  ```elixir
-  {:plugin, NameOfPluginModule, term}
+  1) Using the `set_middleware/2` callback in your schema.
+  2) Using the `Absinthe.Schema.Notation.middleware/2` macro used inside a field definition
+  3) Returning a `{:middleware, SomeMiddleware, opts}` tuple from a resolution function.
+
+  ## The `set_middleware/2` callback.
+
+  `set_middleware/2` is a function callback on a schema. When you `use Absinthe.Schema`
+  a default implementation of this function is placed in your schema. It is passed
+  the an Absinthe.Type.Field struct, as well as the Absinthe.Type.Object struct
+  that the field is a part of. The middleware for a field exists as a list on
+  the `Field` struct under the `:middleware` key.
+
+  So for example if your schema contained:
+
+  ```
+  object :user do
+    field :name, :string
+    field :age, :integer
+  end
+
+  query do
+    field :lookup_user, :user do
+      resolve fn _, _ ->
+        {:ok, %{name: "Bob"}}
+      end
+    end
+  end
+
+  def set_middleware(field, object) do
+    # what is field?
+    # what is object?
+    field.middleware |> IO.inspect
+    field
+  end
   ```
 
-  Often a plugin will provide a helper function to return this, see `Absinthe.Resolution.Helpers.async/1`
-  for an example.
+  Given a document like:
+  ```
+  { lookupUser { name }}
+  ```
 
-  Plugins use the information placed in the third element of the plugin tuple
-  along with values in the resolution accumulator to perform whatever logic they need.
+  `object` is each object that is accessed while executing the document. In our
+  case that is the `:user` object and the `:query` object. `field` is every
+  field on that object. Concretely then, the function is called 3 times for that
+  document, with the following arguments:
 
-  NOTE: All plugins that will be used must be listed on the schema.
+  ```
+  YourSchema.set_middleware(lookup_user_field_of_root_query_object, root_query_object)
+  # IO.inspect output: [{Absinthe.Resolution, #Function<20.52032458/0>}]
+  YourSchema.set_middleware(name_field_of_user, user_object)
+  # IO.inspect output: []
+  YourSchema.set_middleware(age_field_of_user, user_object)
+  # IO.inspect output: []
+  ```
 
-  ## The Resolution Accumulator
-  The resolution accumulator is just a map that is carried through the resolution process.
-  The `Async` plugin uses it to flag whether or not a field has been executed asynchronously,
-  which indicates that another resolution pass is needed to await that field. The `Batch`
-  plugin uses it to hold all the information that will be used for batching.
+  In the latter two cases we see that the middleware list is empty. In the first
+  case we see one middleware, which is placed by the `resolve` macro used in the
+  `:lookup_user` field.
+
+  ### Default Middleware
+
+  One use of `set_middleware/2` is setting the default middleware on a field,
+  replacing the `default_resolver` macro. By default middleware is placed on a
+  field that looks up a field by its snake case identifier, ie `:resource_name`.
+  Here is an example of how to change the default to use a camel cased string,
+  IE, "resourceName".
+
+  ```
+  def set_middleware(%{middleware: []} = field, _object) do
+    camelized =
+      field.identifier
+      |> Atom.to_string
+      |> Macro.camelize
+
+    middleware = [{{__MODULE__, :get_camelized_key}, camelized}]
+
+    %{field | middleware: middleware}
+  end
+  def set_middleware(field, _object) do
+    field
+  end
+
+  def get_camelized_key(%{source: source} = res, key) do
+    %{res | state: :resolved, value: Map.get(source, key)}
+  end
+  ```
+
+  There's a lot going on here so let's unpack it. The first thing to note
+  is that we're using two clauses. We only want to set this middleware if there
+  is not already middleware defined (by a resolve function or otherwise), so we
+  pattern match on an empty list. Generating the camelized key is a simple matter
+  of camelizing the field identifier.
+
+  Next we need to build a list that defines what middleware we want to use. The
+  form we're using is `{{MODULE, :function_to_call}, options_of_middleware}`. For
+  our purposes we're simply going to use a function in the schema module itself
+  `get_camelized_key`.
+
+  Like all middleware functions, it takes a resolution struct, and options. The
+  options is the caemlized key we generated. We get the camelized string from
+  the parent map, and set it as the value of the resolution struct. Finally we
+  mark the resolution state `:resolved`.
+
+  ### Object Wide Authentication
+
+  Let's use our authentication middleware from earlier, and place it on every
+  field in the query object.
+
+  ```
+  defmodule MyApp.Web.Schema do
+    use Absinthe.Schema
+
+    query do
+      field :private_field, :string do
+        resolve fn _, _ ->
+          {:ok, "this can only be viewed if authenticated"}
+        end
+      end
+    end
+
+    def set_middleware(field, %Absinthe.Type.Object{identifier: :query}) do
+      field
+      |> Map.update!(:middleware, [MyApp.Web.Authentication | &1])
+    end
+    def set_middleware(field, _object) do
+      field
+    end
+  end
+  ```
+
+  ## TL;DR:
+
+  - Middleware functions take a `%Absinthe.Resolution{}` struct, and return one.
+  - All middleware on a field are always run, make sure to pattern match on the
+    state if you care.
   """
 
   alias Absinthe.Blueprint.Document
