@@ -148,10 +148,10 @@ defmodule Absinthe.Schema do
   @doc """
   Apply the Absinthe default middleware to a field
   """
-  def default_middleware(%{middleware: [], identifier: identifier} = field, _) do
+  def ensure_middleware(%{middleware: [], identifier: identifier} = field, _) do
     %{field | middleware: [{Absinthe.Middleware.MapGet, identifier}]}
   end
-  def default_middleware(field, _) do
+  def ensure_middleware(field, _) do
     field
   end
 
@@ -168,7 +168,7 @@ defmodule Absinthe.Schema do
       @doc false
       def __absinthe_middleware__(field, %{name: "__" <> _} = object) do
         field
-        |> Absinthe.Schema.default_middleware(object)
+        |> Absinthe.Schema.ensure_middleware(object)
         |> __do_absinthe_middleware__(object)
       end
       def __absinthe_middleware__(field, object) do
@@ -178,7 +178,7 @@ defmodule Absinthe.Schema do
       defp __do_absinthe_middleware__(field, object) do
         field
         |> set_middleware(object) # run field against user supplied function
-        |> Absinthe.Schema.default_middleware(object) # if they forgot to add middleware set the default
+        |> Absinthe.Schema.ensure_middleware(object) # if they forgot to add middleware set the default
       end
 
       @doc false

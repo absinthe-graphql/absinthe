@@ -22,7 +22,7 @@ defmodule Absinthe.MiddlewareTest do
       fun = &auth/2
 
       field
-      |> Absinthe.Schema.default_middleware(object)
+      |> Absinthe.Schema.ensure_middleware(object)
       |> Map.update!(:middleware, fn middleware -> [ fun | middleware] end)
     end
     def set_middleware(field, _) do
