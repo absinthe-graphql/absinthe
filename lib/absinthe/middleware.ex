@@ -43,7 +43,7 @@ defmodule Absinthe.Middleware do
 
   Our `def call` function simply checks the context to see if there is a current
   user. If there is, we pass the resolution onward. If there is not, we update
-  the resolution state to `:halt` and place an error result.
+  the resolution state to `:resolved` and place an error result.
 
   Middleware can be placed on a field in three different ways:
 
