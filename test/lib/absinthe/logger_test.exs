@@ -12,13 +12,14 @@ defmodule Absinthe.LoggerTest do
         "password" => @filtered,
         "alsoUnsafe" => @value
       } = Absinthe.Logger.filter_variables(@variables)
-      # Change the config
-      Application.put_env(:absinthe, Absinthe.Logger, [filter_variables: ~w(token alsoUnsafe)])
+    end
+
+    test "it filters given values" do
       assert %{
         "token" => @filtered,
         "password" => @value,
         "alsoUnsafe" => @filtered
-      } = Absinthe.Logger.filter_variables(@variables)
+      } = Absinthe.Logger.filter_variables(@variables, ~w(token alsoUnsafe))
     end
   end
 
