@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.0-beta0
+
+- Enhancement: MIDDLEWARE! See the `Absinthe.Middleware` moduledocs.
+- Breaking change: `default_resolve` is no longer valid, see middleware
+
 ## v1.2.6
 
 - Enhancement: Query complexity analysis!

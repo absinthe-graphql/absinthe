@@ -18,15 +18,15 @@ defmodule Absinthe.MiddlewareTest do
 
     alias Absinthe.MiddlewareTest
 
-    def set_middleware(field, object = %Absinthe.Type.Object{identifier: :secret_object}) do
+    def middleware(middleware, field, object = %Absinthe.Type.Object{identifier: :secret_object}) do
       fun = &auth/2
 
-      field
-      |> Absinthe.Schema.ensure_middleware(object)
-      |> Map.update!(:middleware, fn middleware -> [ fun | middleware] end)
+      middleware = Absinthe.Schema.ensure_middleware(middleware, field, object)
+
+      [fun | middleware]
     end
-    def set_middleware(field, _) do
-      field
+    def middleware(middleware, _field, _) do
+      middleware
     end
 
     def auth(res, _) do

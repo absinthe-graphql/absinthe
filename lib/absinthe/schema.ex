@@ -146,13 +146,13 @@ defmodule Absinthe.Schema do
   alias __MODULE__
 
   @doc """
-  Apply the Absinthe default middleware to a field
+  Return the default middleware set for a field if none exists
   """
-  def ensure_middleware(%{middleware: [], identifier: identifier} = field, _) do
-    %{field | middleware: [{Absinthe.Middleware.MapGet, identifier}]}
+  def ensure_middleware([], %{identifier: identifier}, _) do
+    [{Absinthe.Middleware.MapGet, identifier}]
   end
-  def ensure_middleware(field, _) do
-    field
+  def ensure_middleware(middleware, _field, _object) do
+    middleware
   end
 
   defmacro __using__(opts \\ []) do
@@ -166,24 +166,26 @@ defmodule Absinthe.Schema do
       @behaviour unquote(__MODULE__)
 
       @doc false
-      def __absinthe_middleware__(field, %{name: "__" <> _} = object) do
-        field
-        |> Absinthe.Schema.ensure_middleware(object)
-        |> __do_absinthe_middleware__(object)
+      def __absinthe_middleware__(middleware, field, %{name: "__" <> _} = object) do
+        # if we have the double underscore prefix we're dealing with introspection
+        # types, which should use the built in default middleware
+        middleware
+        |> Absinthe.Schema.ensure_middleware(field, object)
+        |> __do_absinthe_middleware__(field, object)
       end
-      def __absinthe_middleware__(field, object) do
-        __do_absinthe_middleware__(field, object)
+      def __absinthe_middleware__(middleware, field, object) do
+        __do_absinthe_middleware__(middleware, field, object)
       end
 
-      defp __do_absinthe_middleware__(field, object) do
-        field
-        |> set_middleware(object) # run field against user supplied function
-        |> Absinthe.Schema.ensure_middleware(object) # if they forgot to add middleware set the default
+      defp __do_absinthe_middleware__(middleware, field, object) do
+        middleware
+        |> __MODULE__.middleware(field, object) # run field against user supplied function
+        |> Absinthe.Schema.ensure_middleware(field, object) # if they forgot to add middleware set the default
       end
 
       @doc false
-      def set_middleware(field, _object) do
-        field
+      def middleware(middleware, _field, _object) do
+        middleware
       end
 
       @doc false
@@ -194,7 +196,7 @@ defmodule Absinthe.Schema do
           %Absinthe.Type.Object{} = object ->
             fields = Map.new(object.fields, fn
               {identifier, field} ->
-                {identifier, __absinthe_middleware__(field, object)}
+                {identifier, %{field | middleware: __absinthe_middleware__(field.middleware, field, object)}}
             end)
 
             %{object | fields: fields}
@@ -208,7 +210,7 @@ defmodule Absinthe.Schema do
         Absinthe.Middleware.defaults()
       end
 
-      defoverridable set_middleware: 2, plugins: 0
+      defoverridable middleware: 3, plugins: 0
     end
   end
 

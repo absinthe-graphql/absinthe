@@ -47,13 +47,13 @@ defmodule Absinthe.Middleware do
 
   Middleware can be placed on a field in three different ways:
 
-  1) Using the `set_middleware/2` callback in your schema.
+  1) Using the `middlware/3` callback in your schema.
   2) Using the `Absinthe.Schema.Notation.middleware/2` macro used inside a field definition
   3) Returning a `{:middleware, SomeMiddleware, opts}` tuple from a resolution function.
 
-  ## The `set_middleware/2` callback.
+  ## The `middlware/3` callback.
 
-  `set_middleware/2` is a function callback on a schema. When you `use Absinthe.Schema`
+  `middlware/3` is a function callback on a schema. When you `use Absinthe.Schema`
   a default implementation of this function is placed in your schema. It is passed
   the an Absinthe.Type.Field struct, as well as the Absinthe.Type.Object struct
   that the field is a part of. The middleware for a field exists as a list on
@@ -75,11 +75,12 @@ defmodule Absinthe.Middleware do
     end
   end
 
-  def set_middleware(field, object) do
-    # what is field?
-    # what is object?
-    field.middleware |> IO.inspect
-    field
+  def middleware(middleware, field, object) do
+    middleware |> IO.inspect
+    field |> IO.inspect
+    object |> IO.inspect
+
+    middleware
   end
   ```
 
@@ -94,12 +95,9 @@ defmodule Absinthe.Middleware do
   document, with the following arguments:
 
   ```
-  YourSchema.set_middleware(lookup_user_field_of_root_query_object, root_query_object)
-  # IO.inspect output: [{Absinthe.Resolution, #Function<20.52032458/0>}]
-  YourSchema.set_middleware(name_field_of_user, user_object)
-  # IO.inspect output: []
-  YourSchema.set_middleware(age_field_of_user, user_object)
-  # IO.inspect output: []
+  YourSchema.middleware([{Absinthe.Resolution, #Function<20.52032458/0>}], lookup_user_field_of_root_query_object, root_query_object)
+  YourSchema.middleware([], name_field_of_user, user_object)
+  YourSchema.middleware([], age_field_of_user, user_object)
   ```
 
   In the latter two cases we see that the middleware list is empty. In the first
@@ -108,16 +106,16 @@ defmodule Absinthe.Middleware do
 
   ### Default Middleware
 
-  One use of `set_middleware/2` is setting the default middleware on a field,
+  One use of `middlware/3` is setting the default middleware on a field,
   replacing the `default_resolver` macro. By default middleware is placed on a
   field that looks up a field by its snake case identifier, ie `:resource_name`.
   Here is an example of how to change the default to use a camel cased string,
   IE, "resourceName".
 
   ```
-  def set_middleware(%{middleware: []} = field, _object) do
+  def middleware([], %{identifier: identifier}, _object) do
     camelized =
-      field.identifier
+      identifier
       |> Atom.to_string
       |> Macro.camelize
 
@@ -125,8 +123,8 @@ defmodule Absinthe.Middleware do
 
     %{field | middleware: middleware}
   end
-  def set_middleware(field, _object) do
-    field
+  def middleware(middleware, _field, _object) do
+    middleware
   end
 
   def get_camelized_key(%{source: source} = res, key) do
@@ -167,12 +165,11 @@ defmodule Absinthe.Middleware do
       end
     end
 
-    def set_middleware(field, %Absinthe.Type.Object{identifier: :query}) do
-      field
-      |> Map.update!(:middleware, [MyApp.Web.Authentication | &1])
+    def middleware(middlware, _field, %Absinthe.Type.Object{identifier: :query}) do
+      [MyApp.Web.Authentication | &1]
     end
-    def set_middleware(field, _object) do
-      field
+    def middleware(middleware, field, _object) do
+      middleware
     end
   end
   ```

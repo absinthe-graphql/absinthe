@@ -46,6 +46,7 @@ defmodule Absinthe.Resolution do
     middleware: [],
     acc: %{},
     arguments: %{},
+    private: %{},
     state: :unresolved,
   ]
 
