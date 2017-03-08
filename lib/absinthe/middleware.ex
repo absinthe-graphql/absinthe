@@ -124,9 +124,7 @@ defmodule Absinthe.Middleware do
       |> Atom.to_string
       |> Macro.camelize
 
-    middleware = [{{__MODULE__, :get_camelized_key}, camelized}]
-
-    %{field | middleware: middleware}
+    [{{__MODULE__, :get_camelized_key}, camelized}]
   end
   def middleware(middleware, _field, _object) do
     middleware
