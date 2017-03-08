@@ -22,17 +22,6 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
-
-  defmacro default_resolve(_) do
-    raise """
-    Don't use this anymore, instead use middleware, see the middleware
-    module doc.
-
-    A better error message is coming
-    """
-    []
-  end
-
   Module.register_attribute(__MODULE__, :placement, accumulate: true)
 
   @doc false

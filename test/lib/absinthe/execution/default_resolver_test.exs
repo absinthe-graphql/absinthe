@@ -33,7 +33,7 @@ defmodule Absinthe.Execution.DefaultResolverTest do
       end
 
       def middleware([], %{name: name, identifier: identifier}, _) do
-        middleware = Absinthe.Resolution.resolver(fn parent, _, _ ->
+        middleware_spec = Absinthe.Resolution.resolver_spec(fn parent, _, _ ->
           case parent do
             %{^name => value} -> {:ok, value}
             %{^identifier => value} -> {:ok, value}
@@ -41,7 +41,7 @@ defmodule Absinthe.Execution.DefaultResolverTest do
           end
         end)
 
-        [middleware]
+        [middleware_spec]
       end
       def middleware(middlware, _, _) do
         middlware

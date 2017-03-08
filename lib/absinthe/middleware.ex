@@ -11,7 +11,7 @@ defmodule Absinthe.Middleware do
   end
   ```
 
-  Resolution happens by reducing a list of middleware onto an `%Absinthe.Resolution{}`
+  Resolution happens by reducing a list of middleware spec onto an `%Absinthe.Resolution{}`
   struct.
 
   ## Example
@@ -20,7 +20,7 @@ defmodule Absinthe.Middleware do
   defmodule MyApp.Web.Authentication do
     @behaviour Absinthe.Middleware
 
-    def call(resolution, _opts) do
+    def call(resolution, _config) do
       case resolution.context do
         %{current_user: _} ->
           resolution
@@ -49,15 +49,19 @@ defmodule Absinthe.Middleware do
 
   1) Using the `middlware/3` callback in your schema.
   2) Using the `Absinthe.Schema.Notation.middleware/2` macro used inside a field definition
-  3) Returning a `{:middleware, SomeMiddleware, opts}` tuple from a resolution function.
+  3) Returning a `{:middleware, middleware_spec, config}` tuple from a resolution function.
+
+  ### Terminology:
+  - "Middleware for a field": a list of middleware spec
+  - "a middleware": a particular function, or module that adheres to the middleware contract.
+  - "middleware spec", `module | {module, term} | {{module, function_name}, term} | ((Absinthe.Resolution.t, term) -> Absinthe.Resolution.t)`.
 
   ## The `middlware/3` callback.
 
   `middlware/3` is a function callback on a schema. When you `use Absinthe.Schema`
   a default implementation of this function is placed in your schema. It is passed
-  the an Absinthe.Type.Field struct, as well as the Absinthe.Type.Object struct
-  that the field is a part of. The middleware for a field exists as a list on
-  the `Field` struct under the `:middleware` key.
+  the existing middleware for a field, the field itself, and the object
+  that the field is a part of.
 
   So for example if your schema contained:
 
@@ -91,8 +95,9 @@ defmodule Absinthe.Middleware do
 
   `object` is each object that is accessed while executing the document. In our
   case that is the `:user` object and the `:query` object. `field` is every
-  field on that object. Concretely then, the function is called 3 times for that
-  document, with the following arguments:
+  field on that object, and middleware is a list of whatever middleware
+  spec have been configured by the schema on that field. Concretely
+  then, the function is called 3 times for that document, with the following arguments:
 
   ```
   YourSchema.middleware([{Absinthe.Resolution, #Function<20.52032458/0>}], lookup_user_field_of_root_query_object, root_query_object)
@@ -101,7 +106,7 @@ defmodule Absinthe.Middleware do
   ```
 
   In the latter two cases we see that the middleware list is empty. In the first
-  case we see one middleware, which is placed by the `resolve` macro used in the
+  case we see one middleware spec, which is placed by the `resolve` macro used in the
   `:lookup_user` field.
 
   ### Default Middleware
@@ -148,6 +153,13 @@ defmodule Absinthe.Middleware do
   the parent map, and set it as the value of the resolution struct. Finally we
   mark the resolution state `:resolved`.
 
+  Side note: This `middleware/3` function is called whenever we pull
+  the type out of the schema. The middleware itself is run every time
+  we get a field on an object. If we have 1000 objects and we were
+  doing the camelization logic INSIDE the middleware, we would compute
+  the camelized string 1000 times. By doing it in the `def middleware`
+  callback we do it just once.
+
   ### Object Wide Authentication
 
   Let's use our authentication middleware from earlier, and place it on every
@@ -174,6 +186,60 @@ defmodule Absinthe.Middleware do
   end
   ```
 
+  ## The `middleware/2` macro
+
+  For placing middleware on a particular field, it's handy to use
+  the `middleware/2` macro.
+
+  Middleware will be run in the order in which they are specified.
+  The `middleware/3` callback has final say on what middleware get
+  set.
+
+  Examples
+
+  `Auth` would run before resolution, and `HandleError` would run after.
+  ```
+  field :hello, :string do
+    middleware Auth, some_option: 1
+    resolve &get_the_string/2
+    middleware HandleAuth, :foo
+  end
+  ```
+
+  Anonymous functions are a valid middleware spec. A nice use case
+  is altering the context in a logout mutation. Mutations are the
+  only time the context should be altered. This is not enforced.
+  ```
+  field :logout, :query do
+    middleware fn res, _ ->
+      %{res |
+        context: Map.delete(res.context, :current_user),
+        value: "logged out",
+        state: :resolved
+      }
+    end
+  end
+  ```
+
+  `middleware/2` even accepts local public function names. Note
+  that `middleware/2` is the only thing that can take local function
+  names without an associated module. If not using macros, use
+  `{{__MODULE__, :function_name}, []}`
+  ```
+  def auth(res, _config) do
+    # auth logic here
+  end
+
+  query do
+    field :hello, :string do
+      middleware :auth
+      resolve &get_the_string/2
+    end
+  end
+  ```
+
+
+
   ## Main Points
 
   - Middleware functions take a `%Absinthe.Resolution{}` struct, and return one.
@@ -183,10 +249,9 @@ defmodule Absinthe.Middleware do
 
   alias Absinthe.Blueprint.Document
 
-  @typedoc """
-  Any module that implements this behaviour
-  """
-  @type t :: atom
+  @type function_name :: atom
+
+  @type spec :: module | {module, term} | {{module, function_name}, term} | ((Absinthe.Resolution.t, term) -> Absinthe.Resolution.t)
 
   @doc """
   This is the main middleware callback.

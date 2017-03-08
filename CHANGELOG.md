@@ -2,8 +2,18 @@
 
 ## 1.3.0-beta0
 
-- Enhancement: MIDDLEWARE! See the `Absinthe.Middleware` moduledocs.
+- Added `Absinthe.Logger` -- adds configurable pipeline and variable logging
+  with filtering support (filters "token" and "password" by default). Used by
+  the `absinthe_plug` package.
+
+- MIDDLEWARE! See the `Absinthe.Middleware` moduledocs.
+
+- Enhancement: Middleware can be used to change the context. Use this judiciously.
+- Bug Fix: All interfaces an object claims to implement are checked at compile time, instead of just the first.
+- Breaking change: plugins have been replaced by middleware, see the middleware docs.
 - Breaking change: `default_resolve` is no longer valid, see middleware
+- Breaking change: A root `query` object is now required, per the spec
+
 
 ## v1.2.6
 

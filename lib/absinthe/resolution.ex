@@ -50,7 +50,7 @@ defmodule Absinthe.Resolution do
     state: :unresolved,
   ]
 
-  def resolver(fun) do
+  def resolver_spec(fun) do
     {{__MODULE__, :call}, fun}
   end
 

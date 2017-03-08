@@ -231,6 +231,35 @@ defmodule Absinthe.Schema do
     end
   end
 
+  defmacro default_resolve(_) do
+    raise """
+    Don't use this anymore, instead use middleware, see the middleware
+    module doc.
+
+    If you had this before:
+    ```
+    default_resolve fn parent, _args, info ->
+      # stuff here
+    end
+    ```
+
+    Instead do:
+    ```
+    def middleware([], _field, _object) do
+      middleware_spec = Absinthe.Resolution.resolver_spec(fn parent, _args, info ->
+        # stuff here
+      end)
+
+      [middleware_spec]
+    end
+    def middleware(middleware, _, _) do
+      middleware
+    end
+    ```
+    """
+    []
+  end
+
   @default_query_name "RootQueryType"
   @doc """
   Defines a root Query object
