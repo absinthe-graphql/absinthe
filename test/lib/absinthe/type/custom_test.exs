@@ -7,6 +7,10 @@ defmodule Absinthe.Type.CustomTest do
   defmodule TestSchema do
     use Absinthe.Schema
     import_types Type.Custom
+
+    query do
+      
+    end
   end
 
   @datetime %DateTime{
