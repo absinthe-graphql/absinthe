@@ -213,6 +213,9 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp split_error_value(error_value) when is_binary(error_value) do
     {[message: error_value], []}
   end
+  defp split_error_value(error_value) do
+    {[message: to_string(error_value)], []}
+  end
 
   @spec to_result(resolution_result :: term, blueprint :: Blueprint.Document.Field.t, schema_type :: Type.t) ::
     Resolution.node_t

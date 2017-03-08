@@ -63,7 +63,7 @@ defmodule Absinthe.Type.Field do
   @typedoc """
   An error value is a simple error message, a custom error, or a list of either/both of them.
   """
-  @type error_value :: error_message | custom_error | [error_message | custom_error]
+  @type error_value :: error_message | custom_error | [error_message | custom_error] | serializable
 
   @typedoc """
   The configuration for a field.

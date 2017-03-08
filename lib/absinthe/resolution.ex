@@ -178,6 +178,7 @@ defmodule Absinthe.Resolution do
   - A map containing `:message` key, plus any additional serializable metadata.
   - A keyword list containing a `:message` key, plus any additional serializable metadata.
   - A list containing multiple of any/all of these.
+  - Any other value compatible with `to_string/1`.
 
   ### Examples
 
@@ -197,6 +198,12 @@ defmodule Absinthe.Resolution do
   Three errors of mixed types:
 
       {:error, ["Simple message", [message: "A keyword list error", code: 1], %{message: "A map error"}]}
+
+  Generic handler for interoperability with errors from other libraries:
+
+      {:error, :foo}
+      {:error, 1.0}
+      {:error, 2}
 
   ## To activate a plugin
 
