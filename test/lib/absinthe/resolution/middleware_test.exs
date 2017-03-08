@@ -71,6 +71,10 @@ defmodule Absinthe.MiddlewareTest do
       field :email, :string do
         middleware MiddlewareTest.Auth
         middleware Absinthe.Middleware.MapGet, :email
+        middleware fn res, _ ->
+          # no-op, mostly making sure this form works
+          res
+        end
       end
       field :name, :string
     end

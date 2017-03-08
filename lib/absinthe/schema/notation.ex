@@ -464,13 +464,15 @@ defmodule Absinthe.Schema.Notation do
     new_middleware = case new_middleware do
       {module, fun} ->
         {:{}, [], [{module, fun}, opts]}
-      atom ->
+      atom when is_atom(atom) ->
         case Atom.to_string(atom) do
           "Elixir." <> _ ->
             {:{}, [], [{atom, :call}, opts]}
           _ ->
             {:{}, [], [{env.module, atom}, opts]}
         end
+      val ->
+        val
     end
 
     Scope.put_attribute(env.module, :middleware, [new_middleware | middleware])
