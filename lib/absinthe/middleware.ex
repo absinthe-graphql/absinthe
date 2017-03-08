@@ -47,9 +47,9 @@ defmodule Absinthe.Middleware do
 
   Middleware can be placed on a field in three different ways:
 
-  1) Using the `middleware/3` callback in your schema.
-  2) Using the `Absinthe.Schema.Notation.middleware/2` macro used inside a field definition
-  3) Returning a `{:middleware, middleware_spec, config}` tuple from a resolution function.
+  1. Using the `middleware/3` callback in your schema.
+  2. Using the `Absinthe.Schema.Notation.middleware/2` macro used inside a field definition
+  3. Returning a `{:middleware, middleware_spec, config}` tuple from a resolution function.
 
   ### Terminology:
   - "Middleware for a field": a list of middleware spec
