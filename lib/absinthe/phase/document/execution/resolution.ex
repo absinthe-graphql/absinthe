@@ -148,6 +148,12 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     full_type = Type.expand(res.definition.schema_node.type, info.schema)
     bp_field = res.definition
 
+    info = if res.context == info.context do
+      info
+    else
+      %{info | context: res.context}
+    end
+
     result
     |> to_result(bp_field, full_type)
     |> walk_result(res.acc, bp_field, full_type, info)

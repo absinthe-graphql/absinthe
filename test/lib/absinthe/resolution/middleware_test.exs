@@ -59,6 +59,16 @@ defmodule Absinthe.MiddlewareTest do
           {:ok, %{key: "value"}}
         end
       end
+
+      field :from_context, :string do
+        middleware fn res, _ ->
+          %{res | context: %{value: "yooooo"}}
+        end
+
+        resolve fn _, %{context: context} ->
+          {:ok, context.value}
+        end
+      end
     end
 
     # keys in this object are made secret via the def middleware callback
@@ -111,5 +121,13 @@ defmodule Absinthe.MiddlewareTest do
     assert {:ok, %{errors: errors}} = Absinthe.run(doc, __MODULE__.Schema)
     assert [%{locations: [%{column: 0, line: 1}],
                message: "In field \"key\": unauthorized"}] == errors
+  end
+
+  test "it can modify the context" do
+    doc = """
+    {fromContext}
+    """
+    assert {:ok, %{data: data}} = Absinthe.run(doc, __MODULE__.Schema, context: %{current_user: %{}})
+    assert %{"fromContext" => "yooooo"} == data
   end
 end
