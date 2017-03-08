@@ -113,12 +113,12 @@ defmodule Absinthe.Type.InterfaceTest do
       assert_schema_error(
         "bad_interface_schema",
         [
+          %{rule: Rule.ObjectMustImplementInterfaces, data: %{object: "Foo", interface: "Aged"}},
           %{rule: Rule.ObjectMustImplementInterfaces, data: %{object: "Foo", interface: "Named"}},
           %{rule: Rule.ObjectInterfacesMustBeValid, data: %{object: "Quux", interface: "Foo"}},
-          %{rule: Rule.InterfacesMustResolveTypes, data: "Named"}
+          %{rule: Rule.InterfacesMustResolveTypes, data: "Named"},
         ]
       )
     end
-
   end
 end

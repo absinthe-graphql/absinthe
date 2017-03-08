@@ -54,7 +54,7 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfaces do
     |> Enum.reduce([], fn
       %Type.Interface{} = iface_type, acc ->
         if Type.Interface.implements?(iface_type, type) do
-          []
+          acc
         else
           [report(type.__reference__.location, %{object: type.name, interface: iface_type.name}) | acc]
         end
