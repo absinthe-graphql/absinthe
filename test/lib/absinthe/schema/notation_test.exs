@@ -18,24 +18,6 @@ defmodule Absinthe.Schema.NotationTest do
 
       assert [:email, :name] = Foo.__absinthe_type__(:bar).fields |> Map.keys |> Enum.sort
     end
-    # 
-    # it "works for input objects" do
-    #   defmodule InputFoo do
-    #     use Absinthe.Schema.Notation
-    #
-    #     input_object :foo do
-    #       field :name, :string
-    #     end
-    #
-    #     input_object :bar do
-    #       import_fields :foo
-    #       field :email, :string
-    #     end
-    #   end
-    #
-    #   # assert [:email, :name] = InputFoo.__absinthe_type__(:bar).fields |> Map.keys |> Enum.sort
-    #   assert true
-    # end
 
     it "works for input objects" do
       defmodule InputFoo do

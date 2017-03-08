@@ -41,7 +41,7 @@ defmodule Absinthe.Middleware do
   on how the current user ends up in the context please see our full authentication
   guide on the website.
 
-  Our `def call` function simply checks the context to see if there is a current
+  Our `call/2` function simply checks the context to see if there is a current
   user. If there is, we pass the resolution onward. If there is not, we update
   the resolution state to `:resolved` and place an error result.
 
@@ -144,7 +144,7 @@ defmodule Absinthe.Middleware do
   `get_camelized_key`.
 
   Like all middleware functions, it takes a resolution struct, and options. The
-  options is the caemlized key we generated. We get the camelized string from
+  options is the camelized key we generated. We get the camelized string from
   the parent map, and set it as the value of the resolution struct. Finally we
   mark the resolution state `:resolved`.
 
