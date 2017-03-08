@@ -22,6 +22,17 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
+
+  defmacro default_resolve(_) do
+    raise """
+    Don't use this anymore, instead use middleware, see the middleware
+    module doc.
+
+    A better error message is coming
+    """
+    []
+  end
+
   Module.register_attribute(__MODULE__, :placement, accumulate: true)
 
   @doc false
@@ -71,6 +82,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def record_object!(env, identifier, attrs, block) do
+    attrs = Keyword.put(attrs, :identifier, identifier)
     scope(env, :object, identifier, attrs, block)
   end
 
@@ -412,7 +424,9 @@ defmodule Absinthe.Schema.Notation do
   defmacro resolve(func_ast) do
     __CALLER__
     |> recordable!(:resolve, @placement[:resolve])
-    |> record_resolve!(func_ast)
+    quote do
+      middleware Absinthe.Resolution, unquote(func_ast)
+    end
   end
 
   @doc false
@@ -436,6 +450,31 @@ defmodule Absinthe.Schema.Notation do
     Scope.put_attribute(env.module, :complexity, func_ast)
     Scope.recorded!(env.module, :attr, :complexity)
     :ok
+  end
+
+  @placement {:middleware, [under: [:field]]}
+  defmacro middleware(new_middleware, opts \\ []) do
+    env = __CALLER__
+
+    new_middleware = Macro.expand(new_middleware, env)
+
+    middleware = Scope.current(env.module).attrs
+    |> Keyword.get(:middleware, [])
+
+    new_middleware = case new_middleware do
+      {module, fun} ->
+        {:{}, [], [{module, fun}, opts]}
+      atom ->
+        case Atom.to_string(atom) do
+          "Elixir." <> _ ->
+            {:{}, [], [{atom, :call}, opts]}
+          _ ->
+            {:{}, [], [{env.module, atom}, opts]}
+        end
+    end
+
+    Scope.put_attribute(env.module, :middleware, [new_middleware | middleware])
+    nil
   end
 
   @placement {:is_type_of, [under: [:object]]}
