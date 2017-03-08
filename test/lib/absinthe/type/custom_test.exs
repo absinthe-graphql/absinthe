@@ -2,6 +2,7 @@ defmodule Absinthe.Type.CustomTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.Type
+  alias Absinthe.Blueprint.Input
 
   defmodule TestSchema do
     use Absinthe.Schema
@@ -34,43 +35,33 @@ defmodule Absinthe.Type.CustomTest do
     end
 
     it "can be parsed from an ISO8601 date and time string including timezone" do
-      assert {:ok, @datetime} == parse(:datetime, "2017-01-27T20:31:55Z")
-      assert {:ok, @datetime} == parse(:datetime, "2017-01-27 20:31:55Z")
+      assert {:ok, @datetime} == parse(:datetime, %Input.String{value: "2017-01-27T20:31:55Z"})
+      assert {:ok, @datetime} == parse(:datetime, %Input.String{value: "2017-01-27 20:31:55Z"})
     end
 
     it "can be parsed from an ISO8601 date and time string including zero UTC offset" do
-      assert {:ok, @datetime} == parse(:datetime, "2017-01-27T20:31:55+00:00")
+      assert {:ok, @datetime} == parse(:datetime, %Input.String{value: "2017-01-27T20:31:55+00:00"})
     end
 
     it "cannot be parsed when a non-zero UTC offset is included" do
-      assert :error == parse(:datetime, "2017-01-27T20:31:55-02:30")
-      assert :error == parse(:datetime, "2017-01-27T20:31:55+04:00")
+      assert :error == parse(:datetime, %Input.String{value: "2017-01-27T20:31:55-02:30"})
+      assert :error == parse(:datetime, %Input.String{value: "2017-01-27T20:31:55+04:00"})
     end
 
     it "cannot be parsed without UTC timezone marker" do
-      assert :error == parse(:datetime, "2017-01-27T20:31:55")
-      assert :error == parse(:datetime, "2017-01-27 20:31:55")
+      assert :error == parse(:datetime, %Input.String{value: "2017-01-27T20:31:55"})
+      assert :error == parse(:datetime, %Input.String{value: "2017-01-27 20:31:55"})
     end
 
     it "cannot be parsed when date or time is missing" do
-      assert :error == parse(:datetime, "2017-01-27")
-      assert :error == parse(:datetime, "20:31:55")
+      assert :error == parse(:datetime, %Input.String{value: "2017-01-27"})
+      assert :error == parse(:datetime, %Input.String{value: "20:31:55"})
     end
 
     it "cannot be parsed from a binary not formatted according to ISO8601" do
-      assert :error == parse(:datetime, "abc123")
-      assert :error == parse(:datetime, "01/25/2017 20:31:55")
-      assert :error == parse(:datetime, "2017-15-42T31:71:95Z")
-    end
-
-    it "cannot be parsed from a number" do
-      assert :error == parse(:datetime, 0)
-      assert :error == parse(:datetime, 0.0)
-    end
-
-    it "cannot be parsed from a boolean" do
-      assert :error == parse(:datetime, true)
-      assert :error == parse(:datetime, false)
+      assert :error == parse(:datetime, %Input.String{value: "abc123"})
+      assert :error == parse(:datetime, %Input.String{value: "01/25/2017 20:31:55"})
+      assert :error == parse(:datetime, %Input.String{value: "2017-15-42T31:71:95Z"})
     end
   end
 
@@ -80,30 +71,20 @@ defmodule Absinthe.Type.CustomTest do
     end
 
     it "can be parsed from an ISO8601 date and time string" do
-      assert {:ok, @naive_datetime} == parse(:naive_datetime, "2017-01-27T20:31:55Z")
-      assert {:ok, @naive_datetime} == parse(:naive_datetime, "2017-01-27 20:31:55Z")
-      assert {:ok, @naive_datetime} == parse(:naive_datetime, "2017-01-27 20:31:55")
+      assert {:ok, @naive_datetime} == parse(:naive_datetime, %Input.String{value: "2017-01-27T20:31:55Z"})
+      assert {:ok, @naive_datetime} == parse(:naive_datetime, %Input.String{value: "2017-01-27 20:31:55Z"})
+      assert {:ok, @naive_datetime} == parse(:naive_datetime, %Input.String{value: "2017-01-27 20:31:55"})
     end
 
     it "cannot be parsed when date or time is missing" do
-      assert :error == parse(:naive_datetime, "2017-01-27")
-      assert :error == parse(:naive_datetime, "20:31:55")
+      assert :error == parse(:naive_datetime, %Input.String{value: "2017-01-27"})
+      assert :error == parse(:naive_datetime, %Input.String{value: "20:31:55"})
     end
 
     it "cannot be parsed from a binary not formatted according to ISO8601" do
-      assert :error == parse(:naive_datetime, "abc123")
-      assert :error == parse(:naive_datetime, "01/25/2017 20:31:55")
-      assert :error == parse(:naive_datetime, "2017-15-42T31:71:95")
-    end
-
-    it "cannot be parsed from a number" do
-      assert :error == parse(:naive_datetime, 0)
-      assert :error == parse(:naive_datetime, 0.0)
-    end
-
-    it "cannot be parsed from a boolean" do
-      assert :error == parse(:naive_datetime, true)
-      assert :error == parse(:naive_datetime, false)
+      assert :error == parse(:naive_datetime, %Input.String{value: "abc123"})
+      assert :error == parse(:naive_datetime, %Input.String{value: "01/25/2017 20:31:55"})
+      assert :error == parse(:naive_datetime, %Input.String{value: "2017-15-42T31:71:95"})
     end
   end
 
@@ -113,33 +94,23 @@ defmodule Absinthe.Type.CustomTest do
     end
 
     it "can be parsed from an ISO8601 date string" do
-      assert {:ok, @date} == parse(:date, "2017-01-27")
+      assert {:ok, @date} == parse(:date, %Input.String{value: "2017-01-27"})
     end
 
     it "cannot be parsed when time is included" do
-      assert :error == parse(:date, "2017-01-27T20:31:55Z")
-      assert :error == parse(:date, "2017-01-27 20:31:55Z")
-      assert :error == parse(:date, "2017-01-27 20:31:55")
+      assert :error == parse(:date, %Input.String{value: "2017-01-27T20:31:55Z"})
+      assert :error == parse(:date, %Input.String{value: "2017-01-27 20:31:55Z"})
+      assert :error == parse(:date, %Input.String{value: "2017-01-27 20:31:55"})
     end
 
     it "cannot be parsed when date is missing" do
-      assert :error == parse(:date, "20:31:55")
+      assert :error == parse(:date, %Input.String{value: "20:31:55"})
     end
 
     it "cannot be parsed from a binary not formatted according to ISO8601" do
-      assert :error == parse(:date, "abc123")
-      assert :error == parse(:date, "01/25/2017 20:31:55")
-      assert :error == parse(:date, "2017-15-42T31:71:95Z")
-    end
-
-    it "cannot be parsed from a number" do
-      assert :error == parse(:date, 0)
-      assert :error == parse(:date, 0.0)
-    end
-
-    it "cannot be parsed from a boolean" do
-      assert :error == parse(:date, true)
-      assert :error == parse(:date, false)
+      assert :error == parse(:date, %Input.String{value: "abc123"})
+      assert :error == parse(:date, %Input.String{value: "01/25/2017 20:31:55"})
+      assert :error == parse(:date, %Input.String{value: "2017-15-42T31:71:95Z"})
     end
   end
 
@@ -149,33 +120,23 @@ defmodule Absinthe.Type.CustomTest do
     end
 
     it "can be parsed from an ISO8601 date string" do
-      assert {:ok, @time} == parse(:time, "20:31:55")
+      assert {:ok, @time} == parse(:time, %Input.String{value: "20:31:55"})
     end
 
     it "cannot be parsed when date is included" do
-      assert :error == parse(:time, "2017-01-27T20:31:55Z")
-      assert :error == parse(:time, "2017-01-27 20:31:55Z")
-      assert :error == parse(:time, "2017-01-27 20:31:55")
+      assert :error == parse(:time, %Input.String{value: "2017-01-27T20:31:55Z"})
+      assert :error == parse(:time, %Input.String{value: "2017-01-27 20:31:55Z"})
+      assert :error == parse(:time, %Input.String{value: "2017-01-27 20:31:55"})
     end
 
     it "cannot be parsed when time is missing" do
-      assert :error == parse(:time, "2017-01-27")
+      assert :error == parse(:time, %Input.String{value: "2017-01-27"})
     end
 
     it "cannot be parsed from a binary not formatted according to ISO8601" do
-      assert :error == parse(:time, "abc123")
-      assert :error == parse(:time, "01/25/2017 20:31:55")
-      assert :error == parse(:time, "2017-15-42T31:71:95Z")
-    end
-
-    it "cannot be parsed from a number" do
-      assert :error == parse(:time, 0)
-      assert :error == parse(:time, 0.0)
-    end
-
-    it "cannot be parsed from a boolean" do
-      assert :error == parse(:time, true)
-      assert :error == parse(:time, false)
+      assert :error == parse(:time, %Input.String{value: "abc123"})
+      assert :error == parse(:time, %Input.String{value: "01/25/2017 20:31:55"})
+      assert :error == parse(:time, %Input.String{value: "2017-15-42T31:71:95Z"})
     end
   end
 end
