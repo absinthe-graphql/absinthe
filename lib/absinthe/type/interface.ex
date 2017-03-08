@@ -21,9 +21,9 @@ defmodule Absinthe.Type.Interface do
   interface :named_entity do
     field :name, :string
     resolve_type fn
-      %{age: _}, _ -> {:ok, :person}
-      %{employee_count: _}, _ -> {:ok, :business}
-      _ -> :error
+      %{age: _}, _ -> :person
+      %{employee_count: _}, _ -> :business
+      _ -> nil
     end
   end
 
@@ -150,7 +150,7 @@ defmodule Absinthe.Type.Interface do
     end
   end
 
-  @ignore [:description, :__reference__]
+  @ignore [:description, :__reference__, :middleware]
   defp ignore_implementing_keypath?(keypath) when is_list(keypath) do
     keypath
     |> Enum.any?(&ignore_implementing_keypath?/1)

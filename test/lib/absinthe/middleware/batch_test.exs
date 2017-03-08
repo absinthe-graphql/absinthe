@@ -1,4 +1,4 @@
-defmodule Absinthe.Resolution.Plugin.BatchTest do
+defmodule Absinthe.Middleware.BatchTest do
   use Absinthe.Case, async: true
 
   defmodule Schema do

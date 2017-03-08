@@ -6,25 +6,25 @@ defmodule Absinthe.Resolution.Helpers do
   or (by extension) `Absinthe.Schema`.
   """
 
-  alias Absinthe.Resolution.Plugin
+  alias Absinthe.Middleware
 
   @doc """
   Execute resolution field asynchronously.
 
-  This is a helper function for using the `Absinthe.Resolution.Plugin.Async`.
+  This is a helper function for using the `Absinthe.Middleware.Async`.
 
   Forbidden in mutation fields. (TODO: actually enforce this)
   """
-  @spec async(( -> term)) :: {:plugin, Plugin.Async, term}
-  @spec async(( -> term), Keyword.t) :: {:plugin, Plugin.Async, term}
+  @spec async(( -> term)) :: {:plugin, Middleware.Async, term}
+  @spec async(( -> term), Keyword.t) :: {:plugin, Middleware.Async, term}
   def async(fun, opts \\ []) do
-    {:plugin, Plugin.Async, {Task.async(fun), opts}}
+    {:middleware, Middleware.Async, {fun, opts}}
   end
 
   @doc """
   Batch the resolution of several functions together.
 
-  Helper function for creating `Absinthe.Resolution.Plugin.Batch`
+  Helper function for creating `Absinthe.Middleware.Batch`
 
   # Example
   Raw usage:
@@ -45,10 +45,10 @@ defmodule Absinthe.Resolution.Helpers do
   batch({EctoBatch, :by_id}, [])
   ```
   """
-  @spec batch(Plugin.Batch.batch_fun, term, Plugin.Batch.post_batch_fun) :: {:plugin, Plugin.Batch, term}
-  @spec batch(Plugin.Batch.batch_fun, term, Plugin.Batch.post_batch_fun, opts :: Keyword.t):: {:plugin, Plugin.Batch, term}
+  @spec batch(Middleware.Batch.batch_fun, term, Middleware.Batch.post_batch_fun) :: {:plugin, Middleware.Batch, term}
+  @spec batch(Middleware.Batch.batch_fun, term, Middleware.Batch.post_batch_fun, opts :: Keyword.t):: {:plugin, Middleware.Batch, term}
   def batch(batch_fun, batch_data, post_batch_fun, opts \\ []) do
     batch_config = {batch_fun, batch_data, post_batch_fun, opts}
-    {:plugin, Plugin.Batch, batch_config}
+    {:middleware, Middleware.Batch, batch_config}
   end
 end

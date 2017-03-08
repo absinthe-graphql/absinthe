@@ -61,7 +61,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNames do
   defp type_name(%Type.Field{} = node, schema) do
     node.type
     |> Type.unwrap
-    |> schema.__absinthe_type__()
+    |> schema.__absinthe_lookup__()
     |> Map.fetch!(:name)
   end
   defp type_name(node, _) do

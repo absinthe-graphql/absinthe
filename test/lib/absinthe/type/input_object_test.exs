@@ -4,6 +4,10 @@ defmodule Absinthe.Type.InputObjectTest do
   defmodule TestSchema do
     use Absinthe.Schema
 
+    query do
+      #Query type must exist
+    end
+
     input_object :profile do
       description "A profile"
 

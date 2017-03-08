@@ -145,17 +145,76 @@ defmodule Absinthe.Schema do
   alias Absinthe.Language
   alias __MODULE__
 
+  @doc """
+  Return the default middleware set for a field if none exists
+  """
+  def ensure_middleware([], %{identifier: identifier}, _) do
+    [{Absinthe.Middleware.MapGet, identifier}]
+  end
+  def ensure_middleware(middleware, _field, _object) do
+    middleware
+  end
+
   defmacro __using__(opts \\ []) do
     quote do
       use Absinthe.Schema.Notation, unquote(opts)
       import unquote(__MODULE__), only: :macros
+
       import_types Absinthe.Type.BuiltIns
+
       @after_compile unquote(__MODULE__)
       @behaviour unquote(__MODULE__)
+
+      @doc false
+      def __absinthe_middleware__(middleware, field, %{name: "__" <> _} = object) do
+        # if we have the double underscore prefix we're dealing with introspection
+        # types, which should use the built in default middleware
+        middleware
+        |> Absinthe.Schema.ensure_middleware(field, object)
+        |> __do_absinthe_middleware__(field, object)
+      end
+      def __absinthe_middleware__(middleware, field, object) do
+        __do_absinthe_middleware__(middleware, field, object)
+      end
+
+      defp __do_absinthe_middleware__(middleware, field, object) do
+        middleware
+        |> __MODULE__.middleware(field, object) # run field against user supplied function
+        |> Absinthe.Schema.ensure_middleware(field, object) # if they forgot to add middleware set the default
+      end
+
+      @doc false
+      def middleware(middleware, _field, _object) do
+        middleware
+      end
+
+      @doc false
+      def __absinthe_lookup__(key) do
+        key
+        |> __absinthe_type__
+        |> case do
+          %Absinthe.Type.Object{} = object ->
+            fields = Map.new(object.fields, fn
+              {identifier, field} ->
+                {identifier, %{field | middleware: __absinthe_middleware__(field.middleware, field, object)}}
+            end)
+
+            %{object | fields: fields}
+          type ->
+            type
+        end
+      end
+
+      @doc false
+      def plugins do
+        Absinthe.Middleware.defaults()
+      end
+
+      defoverridable middleware: 3, plugins: 0
     end
   end
 
-  @callback resolution_plugins() :: [Absinthe.Resolution.Plugin.t]
+  @callback plugins() :: [Absinthe.Middleware.t]
 
   @doc false
   def __after_compile__(env, _bytecode) do
@@ -170,6 +229,35 @@ defmodule Absinthe.Schema do
       details ->
         raise Absinthe.Schema.Error, details
     end
+  end
+
+  defmacro default_resolve(_) do
+    raise """
+    Don't use this anymore, instead use middleware, see the middleware
+    module doc.
+
+    If you had this before:
+    ```
+    default_resolve fn parent, _args, info ->
+      # stuff here
+    end
+    ```
+
+    Instead do:
+    ```
+    def middleware([], _field, _object) do
+      middleware_spec = Absinthe.Resolution.resolver_spec(fn parent, _args, info ->
+        # stuff here
+      end)
+
+      [middleware_spec]
+    end
+    def middleware(middleware, _, _) do
+      middleware
+    end
+    ```
+    """
+    []
   end
 
   @default_query_name "RootQueryType"
@@ -222,14 +310,6 @@ defmodule Absinthe.Schema do
     Absinthe.Schema.Notation.scope(__CALLER__, :object, :subscription, [name: @default_subscription_name], block)
   end
 
-  @doc """
-  Defines a custom default resolve function for the schema.
-  """
-  defmacro default_resolve(func) do
-    Module.put_attribute(__CALLER__.module, :absinthe_custom_default_resolve, func)
-    :ok
-  end
-
   # Lookup a directive that in used by/available to a schema
   @doc """
   Lookup a directive.
@@ -239,26 +319,27 @@ defmodule Absinthe.Schema do
     schema.__absinthe_directive__(name)
   end
 
-  @doc """
-  Lookup a type by name, identifier, or by unwrapping.
-  """
-  @spec lookup_type(atom, Type.wrapping_t | Type.t | Type.identifier_t, Keyword.t) :: Type.t | nil
-  def lookup_type(schema, type, options \\ [unwrap: true]) do
-    cond do
-      is_atom(type) ->
-        schema.__absinthe_type__(type)
-      is_binary(type) ->
-        schema.__absinthe_type__(type)
-      Type.wrapped?(type) ->
-        if Keyword.get(options, :unwrap) do
-          lookup_type(schema, type |> Type.unwrap)
-        else
+
+    @doc """
+    Lookup a type by name, identifier, or by unwrapping.
+    """
+    @spec lookup_type(atom, Type.wrapping_t | Type.t | Type.identifier_t, Keyword.t) :: Type.t | nil
+    def lookup_type(schema, type, options \\ [unwrap: true]) do
+      cond do
+        is_atom(type) ->
+          schema.__absinthe_lookup__(type)
+        is_binary(type) ->
+          schema.__absinthe_lookup__(type)
+        Type.wrapped?(type) ->
+          if Keyword.get(options, :unwrap) do
+            lookup_type(schema, type |> Type.unwrap)
+          else
+            type
+          end
+        true ->
           type
-        end
-      true ->
-        type
+      end
     end
-  end
 
   @doc """
   List all types on a schema

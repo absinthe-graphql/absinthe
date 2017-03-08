@@ -111,7 +111,6 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     :error
   end
 
-
   # Parse, supporting pulling values out of blueprint Input nodes
   defp parse_with(node_types, coercion) do
     fn
