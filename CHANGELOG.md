@@ -16,11 +16,6 @@
 - Breaking change: `default_resolve` is no longer valid, see middleware
 - Breaking change: A root `query` object is now required, per the spec
 
-### Goals before release:
-  - [ ] Provide path information to middleware
-  - [ ] Provide a way to put values into a top level `extensions` key.
-  - [ ] Fix minor performance regression
-
 ## v1.2.6
 
 - Enhancement: Query complexity analysis!
