@@ -1,4 +1,4 @@
-defmodule Absinthe.Type.BuliltIns.ScalarsTest do
+defmodule Absinthe.Type.BuiltIns.ScalarsTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.Type
