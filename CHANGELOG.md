@@ -8,6 +8,7 @@
 
 - MIDDLEWARE! See the `Absinthe.Middleware` moduledocs.
 
+- Enhancement: Absinthe now provides built in date and time types. Simply `import_types Absinthe.Type.Custom` in your schema to use.
 - Enhancement: Middleware can be used to change the context. Use this judiciously.
 - Bug Fix: All interfaces an object claims to implement are checked at compile time, instead of just the first.
 - Breaking change: plugins have been replaced by middleware, see the middleware docs.
