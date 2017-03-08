@@ -5,6 +5,10 @@ defmodule Absinthe.Type.BuliltIns.ScalarsTest do
 
   defmodule TestSchema do
     use Absinthe.Schema
+
+    query do
+      #Query type must exist
+    end
   end
 
   @max_int 9007199254740991

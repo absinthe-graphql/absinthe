@@ -6,6 +6,10 @@ defmodule Absinthe.Type.UnionTest do
   defmodule TestSchema do
     use Absinthe.Schema
 
+    query do
+      #Query type must exist
+    end
+
     object :person do
       description "A person"
 

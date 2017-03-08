@@ -95,6 +95,10 @@ defmodule Absinthe.SchemaTest do
   defmodule ThirdSchema do
     use Absinthe.Schema
 
+    query do
+      #Query type must exist
+    end
+
     import_types UserSchema
 
     object :baz do
@@ -223,6 +227,10 @@ defmodule Absinthe.SchemaTest do
 
   defmodule MetadataSchema do
     use Absinthe.Schema
+
+    query do
+      #Query type must exist
+    end
 
     object :foo do
       meta :sql_table, "foos"

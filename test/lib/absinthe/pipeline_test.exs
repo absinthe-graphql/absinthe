@@ -5,6 +5,10 @@ defmodule Absinthe.PipelineTest do
 
   defmodule Schema do
     use Absinthe.Schema
+
+    query do
+      #Query type must exist
+    end
   end
 
   describe ".run an operation" do

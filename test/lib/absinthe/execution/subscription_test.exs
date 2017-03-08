@@ -4,6 +4,10 @@ defmodule Absinthe.Execution.SubscriptionTest do
   defmodule Schema do
     use Absinthe.Schema
 
+    query do
+      #Query type must exist
+    end
+
     subscription do
       field :thing, :string do
         arg :client_id, non_null(:id)
