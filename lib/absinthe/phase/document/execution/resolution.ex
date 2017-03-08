@@ -58,6 +58,11 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
       {:error, ["Simple message", [message: "A keyword list error", code: 1], %{message: "A map error"}]}
 
+  Generic handler for interoperability with errors from other libraries:
+      {:error, :foo}
+      {:error, 1.0}
+      {:error, 2}
+
   ## To activate a plugin
 
   `{:plugin, NameOfPluginModule, term}` to activate a plugin.
@@ -279,6 +284,9 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
   defp split_error_value(error_value) when is_binary(error_value) do
     {[message: error_value], []}
+  end
+  defp split_error_value(error_value) do
+    {[message: to_string(error_value)], []}
   end
 
   # Introspection Field
