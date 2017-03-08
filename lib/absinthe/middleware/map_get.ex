@@ -1,6 +1,6 @@
 defmodule Absinthe.Middleware.MapGet do
   @moduledoc """
-  This is the default middlware.
+  This is the default middleware.
   """
 
   @behaviour Absinthe.Middleware

@@ -43,8 +43,8 @@ defmodule Absinthe.Execution.DefaultResolverTest do
 
         [middleware_spec]
       end
-      def middleware(middlware, _, _) do
-        middlware
+      def middleware(middleware, _, _) do
+        middleware
       end
 
     end

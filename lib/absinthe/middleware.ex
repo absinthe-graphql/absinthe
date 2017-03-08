@@ -47,7 +47,7 @@ defmodule Absinthe.Middleware do
 
   Middleware can be placed on a field in three different ways:
 
-  1) Using the `middlware/3` callback in your schema.
+  1) Using the `middleware/3` callback in your schema.
   2) Using the `Absinthe.Schema.Notation.middleware/2` macro used inside a field definition
   3) Returning a `{:middleware, middleware_spec, config}` tuple from a resolution function.
 
@@ -56,9 +56,9 @@ defmodule Absinthe.Middleware do
   - "a middleware": a particular function, or module that adheres to the middleware contract.
   - "middleware spec", `module | {module, term} | {{module, function_name}, term} | ((Absinthe.Resolution.t, term) -> Absinthe.Resolution.t)`.
 
-  ## The `middlware/3` callback.
+  ## The `middleware/3` callback.
 
-  `middlware/3` is a function callback on a schema. When you `use Absinthe.Schema`
+  `middleware/3` is a function callback on a schema. When you `use Absinthe.Schema`
   a default implementation of this function is placed in your schema. It is passed
   the existing middleware for a field, the field itself, and the object
   that the field is a part of.
@@ -111,7 +111,7 @@ defmodule Absinthe.Middleware do
 
   ### Default Middleware
 
-  One use of `middlware/3` is setting the default middleware on a field,
+  One use of `middleware/3` is setting the default middleware on a field,
   replacing the `default_resolver` macro. By default middleware is placed on a
   field that looks up a field by its snake case identifier, ie `:resource_name`.
   Here is an example of how to change the default to use a camel cased string,
@@ -177,7 +177,7 @@ defmodule Absinthe.Middleware do
       end
     end
 
-    def middleware(middlware, _field, %Absinthe.Type.Object{identifier: :query}) do
+    def middleware(middleware, _field, %Absinthe.Type.Object{identifier: :query}) do
       [MyApp.Web.Authentication | &1]
     end
     def middleware(middleware, field, _object) do
