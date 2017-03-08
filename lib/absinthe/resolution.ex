@@ -1,7 +1,10 @@
 defmodule Absinthe.Resolution do
   @moduledoc """
-  The primary piece of metadata passed to aid resolution functions, describing
-  the current field's execution environment.
+  The primary struct of resolution.
+
+  In many ways like the `%Conn{}` from `Plug`, the `%Absinthe.Resolution{}` is the
+  piece of information that passed along from middleware to middleware as part of
+  resolution.
   """
 
   @typedoc """
@@ -85,6 +88,10 @@ defmodule Absinthe.Resolution do
   User facing functions generally return one of several tuples like `{:ok, val}`
   or `{:error, reason}`. This function handles applying those various tuples
   to the resolution struct.
+
+  The resolution state is updated depending on the tuple returned. `:ok` and
+  `:error` tuples set the state to `:resolved`, whereas middleware tuples set it
+  to `:unresolved`.
 
   This is useful for middleware that wants to handle user facing functions, but
   does not want to duplicate this logic.
