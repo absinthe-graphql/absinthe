@@ -38,7 +38,11 @@ defmodule Absinthe.Type.CustomTest do
       assert {:ok, @datetime} == parse(:datetime, "2017-01-27 20:31:55Z")
     end
 
-    it "cannot be parsed when a UTC offset is included" do
+    it "can be parsed from an ISO8601 date and time string including zero UTC offset" do
+      assert {:ok, @datetime} == parse(:datetime, "2017-01-27T20:31:55+00:00")
+    end
+
+    it "cannot be parsed when a non-zero UTC offset is included" do
       assert :error == parse(:datetime, "2017-01-27T20:31:55-02:30")
       assert :error == parse(:datetime, "2017-01-27T20:31:55+04:00")
     end
