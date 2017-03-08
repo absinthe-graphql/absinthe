@@ -174,7 +174,7 @@ defmodule Absinthe.Middleware do
   end
   ```
 
-  ## TL;DR:
+  ## Main Points
 
   - Middleware functions take a `%Absinthe.Resolution{}` struct, and return one.
   - All middleware on a field are always run, make sure to pattern match on the
