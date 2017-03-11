@@ -264,34 +264,32 @@ defmodule Absinthe.Schema do
   @doc """
   Defines a root Query object
   """
-  defmacro query(raw_attrs, [do: block]) do
-    attrs = raw_attrs
-    |> Keyword.put_new(:name, @default_query_name)
-    Absinthe.Schema.Notation.scope(__CALLER__, :object, :query, attrs, block)
+  defmacro query(raw_attrs \\ [name: @default_query_name], [do: block]) do
+    record_query(__CALLER__, raw_attrs, block)
   end
 
-  @doc """
-  Defines a root Query object
-  """
-  defmacro query([do: block]) do
-    Absinthe.Schema.Notation.scope(__CALLER__, :object, :query, [name: @default_query_name], block)
+  defp record_query(env, raw_attrs, block) do
+    attrs =
+      raw_attrs
+      |> Keyword.put_new(:name, @default_query_name)
+      |> Keyword.put(:identifier, :query)
+    Absinthe.Schema.Notation.scope(env, :object, :query, attrs, block)
   end
 
   @default_mutation_name "RootMutationType"
   @doc """
   Defines a root Mutation object
   """
-  defmacro mutation(raw_attrs, [do: block]) do
-    attrs = raw_attrs
-    |> Keyword.put_new(:name, @default_mutation_name)
-    Absinthe.Schema.Notation.scope(__CALLER__, :object, :mutation, attrs, block)
+  defmacro mutation(raw_attrs \\ [name: @default_mutation_name], [do: block]) do
+    record_mutation(__CALLER__, raw_attrs, block)
   end
 
-  @doc """
-  Defines a root Mutation object
-  """
-  defmacro mutation([do: block]) do
-    Absinthe.Schema.Notation.scope(__CALLER__, :object, :mutation, [name: @default_mutation_name], block)
+  defp record_mutation(env, raw_attrs, block) do
+    attrs =
+      raw_attrs
+      |> Keyword.put_new(:name, @default_mutation_name)
+      |> Keyword.put(:identifier, :mutation)
+    Absinthe.Schema.Notation.scope(env, :object, :mutation, attrs, block)
   end
 
   @default_subscription_name "RootSubscriptionType"
