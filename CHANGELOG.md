@@ -1,6 +1,7 @@
 # Changelog
 
-## 1.3.0-beta0
+## 1.3.0
+### Status: Beta
 
 - Added `Absinthe.Logger` -- adds configurable pipeline and variable logging
   with filtering support (filters "token" and "password" by default). Used by
