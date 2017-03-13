@@ -182,20 +182,23 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     info = %{info | parent_type: parent_type, source: source}
 
     parent.fields
-    |> Enum.filter(&field_applies?(&1, info, source, parent.schema_node))
     # Conceptually just |> Enum.map(&resolve_field/n)
-    |> do_resolve_fields(acc, info, source, [])
+    |> do_resolve_fields(acc, info, source, parent_type, [])
   end
 
-  # mechanical function for optimized field walking, ignore
-  defp do_resolve_fields(fields, res_acc, info, source, acc)
-  defp do_resolve_fields([], res_acc, _, _, acc), do: {:lists.reverse(acc), res_acc}
-  defp do_resolve_fields([%{schema_node: nil} | fields], res_acc, info, source, acc) do
-    do_resolve_fields(fields, res_acc, info, source, acc)
+  defp do_resolve_fields(fields, res_acc, info, source, parent_type, acc)
+  defp do_resolve_fields([], res_acc, _, _, _, acc), do: {:lists.reverse(acc), res_acc}
+  defp do_resolve_fields([%{schema_node: nil} | fields], res_acc, info, source, parent_type, acc) do
+    do_resolve_fields(fields, res_acc, info, source, parent_type, acc)
   end
-  defp do_resolve_fields([field | fields], res_acc, info, source, acc) do
-    {result, res_acc} = resolve_field(field, res_acc, info, source)
-    do_resolve_fields(fields, res_acc, info, source, [result | acc])
+  defp do_resolve_fields([field | fields], res_acc, info, source, parent_type, acc) do
+    case field_applies?(field, info, source, parent_type) do
+      true ->
+        {result, res_acc} = resolve_field(field, res_acc, info, source)
+        do_resolve_fields(fields, res_acc, info, source, parent_type, [result | acc])
+      false ->
+        do_resolve_fields(fields, res_acc, info, source, parent_type, acc)
+    end
   end
 
   defp build_error_result(original_value, error_values, acc, bp_field, info, source) do
