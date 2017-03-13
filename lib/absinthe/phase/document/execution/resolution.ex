@@ -77,11 +77,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     do_resolve_field(%{res | acc: acc}, info, res.source)
   end
 
-  def resolve_field(%{schema_node: %{name: "__" <> _}} = bp_field, acc, info, source) do
-    info
-    |> build_resolution_struct(bp_field, acc)
-    |> do_resolve_field(info, source)
-  end
   def resolve_field(bp_field, acc, %{parent_type: %Type.Interface{} = parent_type} = info, source) do
     resolve_abstract_field(bp_field, acc, info, source, parent_type)
   end
@@ -89,9 +84,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     resolve_abstract_field(bp_field, acc, info, source, parent_type)
   end
   def resolve_field(bp_field, acc, info, source) do
-    # concrete_schema_node = Map.fetch!(info.parent_type.fields, bp_field.schema_node.__reference__.identifier)
-    # bp_field = %{bp_field | schema_node: concrete_schema_node}
-
     info
     |> build_resolution_struct(bp_field, acc)
     |> do_resolve_field(info, source)
@@ -99,6 +91,9 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   defp resolve_abstract_field(bp_field, acc, info, source, %abstract_mod{} = parent_type) do
     concrete_type = abstract_mod.resolve_type(parent_type, source, info)
+    |> IO.inspect
+
+    bp_field |> IO.inspect
 
     resolve_field(bp_field, acc, %{info | parent_type: concrete_type}, source)
   end
@@ -123,8 +118,12 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       %{state: :suspended} = res ->
         {res, res.acc}
 
-      _ ->
-        raise "Should have halted or suspended middleware"
+      final_res ->
+        raise """
+        Should have halted or suspended middleware
+        Started with: #{inspect res}
+        Ended with: #{inspect final_res}
+        """
     end
   end
 
@@ -170,20 +169,29 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     build_error_result({:error, errors}, errors, res.acc, res.definition, info, source)
   end
 
+  defp get_return_type(%{schema_node: %Type.Field{type: type}}) do
+    Type.unwrap(type)
+  end
+  defp get_return_type(type), do: type
+
+  defp handle_abstract_types(%abstract_mod{} = parent_type, source, info) when abstract_mod in [Type.Interface, Type.Union] do
+    abstract_mod.resolve_type(parent_type, source, info)
+  end
+  defp handle_abstract_types(parent_type, _source, _info) do
+    parent_type
+  end
+
   defp resolve_fields(parent, acc, info, source) do
-    parent_type = case parent.schema_node do
-      %Type.Field{} = schema_node ->
-        schema_node.type
-        |> Type.unwrap
-        |> info.schema.__absinthe_lookup__
-      other ->
-        other
-    end
+    parent_type =
+      parent
+      # parent is the parent field, we need to get the return type of that field
+      |> get_return_type
+      # that return type could be an interface or union, so let's make it concrete
+      |> handle_abstract_types(source, info)
+
     info = %{info | parent_type: parent_type, source: source}
 
-    parent.fields
-    # Conceptually just |> Enum.map(&resolve_field/n)
-    |> do_resolve_fields(acc, info, source, parent_type, [])
+    do_resolve_fields(parent.fields, acc, info, source, parent_type, [])
   end
 
   defp do_resolve_fields(fields, res_acc, info, source, parent_type, acc)
@@ -192,7 +200,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     do_resolve_fields(fields, res_acc, info, source, parent_type, acc)
   end
   defp do_resolve_fields([field | fields], res_acc, info, source, parent_type, acc) do
-    case field_applies?(field, info, source, parent_type) do
+    case field_applies?(parent_type, field) do
       true ->
         {result, res_acc} = resolve_field(field, res_acc, info, source)
         do_resolve_fields(fields, res_acc, info, source, parent_type, [result | acc])
@@ -276,30 +284,29 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     walk_results(values, res_acc, bp_node, inner_type, info, [result | acc])
   end
 
-  def field_applies?(%{name: _, type_conditions: []}, _, _, _) do
+  def field_applies?(parent_type, %{type_conditions: conditions}) do
+    do_field_applies?(conditions, parent_type, true)
+  end
+
+  defp do_field_applies?(_, _, false), do: false
+  defp do_field_applies?([], parent_type, acc) do
+    acc
+  end
+  defp do_field_applies?([condition | conditions], parent_type, _) do
+    do_field_applies?(conditions, parent_type, passes_type_condition?(condition, parent_type))
+  end
+
+  defp passes_type_condition?(%Type.Object{name: name}, %Type.Object{name: name}) do
     true
   end
-  def field_applies?(field, info, source, schema_type) do
-    target_type = find_target_type(schema_type, info.schema)
-
-    field.type_conditions
-    |> Enum.map(&info.schema.__absinthe_lookup__(&1.name))
-    |> Enum.all?(&passes_type_condition?(&1, target_type, source, info))
+  defp passes_type_condition?(%Type.Interface{} = condition, %Type.Object{} = type) do
+    Type.Interface.member?(condition, type)
   end
-
-  # For fields
-  def find_target_type(%{type: type}, schema) do
-    find_target_type(type, schema)
+  defp passes_type_condition?(%Type.Union{} = condition, %Type.Object{} = type) do
+    Type.Union.member?(condition, type)
   end
-  # For lists and non-nulls
-  def find_target_type(%{of_type: type}, schema) do
-    find_target_type(type, schema)
-  end
-  def find_target_type(schema_type, schema) when is_atom(schema_type) or is_binary(schema_type) do
-    schema.__absinthe_lookup__(schema_type)
-  end
-  def find_target_type(type, _schema) do
-    type
+  defp passes_type_condition?(_, _) do
+    false
   end
 
   def error(node, message, extra \\ []) do
@@ -309,44 +316,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       location: node.source_location,
       extra: extra
     )
-  end
-
-  @spec passes_type_condition?(Type.t, Type.t, any, Absinthe.Resolution.t) :: boolean
-  defp passes_type_condition?(%{name: name}, %{name: name}, _, _), do: true
-  # The condition is an Object type and the current scope is a Union; Verify
-  # that the Union has the Object type as a member and that the current source
-  # object's concrete type matched the condition Object type.
-  defp passes_type_condition?(%Type.Object{} = condition, %Type.Union{} = type, source, info) do
-    with true <- Type.Union.member?(type, condition) do
-      concrete_type = Type.Union.resolve_type(type, source, info)
-      passes_type_condition?(condition, concrete_type, source, info)
-    end
-  end
-  # The condition is an Object type and the current scope is an Interface; verify
-  # that the Object type is a member of the Interface and that the current source
-  # object's concrete type matched the condition Object type.
-  defp passes_type_condition?(%Type.Object{} = condition, %Type.Interface{} = type, source, info) do
-    with true <- Type.Interface.member?(type, condition) do
-      concrete_type = Type.Interface.resolve_type(type, source, info)
-      passes_type_condition?(condition, concrete_type, source, info)
-    end
-  end
-  # The condition is an Interface type and the current scope is an Object type;
-  # verify that the Object type is a member of the Interface.
-  defp passes_type_condition?(%Type.Interface{} = condition, %Type.Object{} = type, _, _) do
-    Type.Interface.member?(condition, type)
-  end
-  # The condition is an Interface type and the current scope is an abstract
-  # (Union/Interface) type; Verify that the current source object's concrete
-  # type is a member of the Interface.
-  defp passes_type_condition?(%Type.Interface{} = condition, %abstract_mod{} = type, source, info)
-      when abstract_mod in [Type.Interface, Type.Union] do
-    concrete_type = Type.Union.resolve_type(type, source, info)
-    passes_type_condition?(condition, concrete_type, source, info)
-  end
-  # Otherwise, nope.
-  defp passes_type_condition?(_, _, _, _) do
-    false
   end
 
   defp nil_value_error(blueprint, _schema_type) do
