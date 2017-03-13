@@ -82,18 +82,25 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     |> build_resolution_struct(bp_field, acc)
     |> do_resolve_field(info, source)
   end
-  def resolve_field(bp_field, acc, %{parent_type: %abstract_mod{} = parent_type} = info, source) when abstract_mod in [Type.Interface, Type.Union] do
-    concrete_type = abstract_mod.resolve_type(parent_type, source, info)
-
-    resolve_field(bp_field, acc, %{info | parent_type: concrete_type}, source)
+  def resolve_field(bp_field, acc, %{parent_type: %Type.Interface{} = parent_type} = info, source) do
+    resolve_abstract_field(bp_field, acc, info, source, parent_type)
+  end
+  def resolve_field(bp_field, acc, %{parent_type: %Type.Union{} = parent_type} = info, source) do
+    resolve_abstract_field(bp_field, acc, info, source, parent_type)
   end
   def resolve_field(bp_field, acc, info, source) do
-    concrete_schema_node = Map.fetch!(info.parent_type.fields, bp_field.schema_node.__reference__.identifier)
-    bp_field = %{bp_field | schema_node: concrete_schema_node}
+    # concrete_schema_node = Map.fetch!(info.parent_type.fields, bp_field.schema_node.__reference__.identifier)
+    # bp_field = %{bp_field | schema_node: concrete_schema_node}
 
     info
     |> build_resolution_struct(bp_field, acc)
     |> do_resolve_field(info, source)
+  end
+
+  defp resolve_abstract_field(bp_field, acc, info, source, %abstract_mod{} = parent_type) do
+    concrete_type = abstract_mod.resolve_type(parent_type, source, info)
+
+    resolve_field(bp_field, acc, %{info | parent_type: concrete_type}, source)
   end
 
   defp build_resolution_struct(info, bp_field, acc) do
@@ -145,7 +152,8 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp build_result(%{errors: [], value: result} = res, info, _source) do
-    full_type = Type.expand(res.definition.schema_node.type, info.schema)
+    # full_type = Type.expand(res.definition.schema_node.type, info.schema)
+    full_type = res.definition.schema_node.type
     bp_field = res.definition
 
     info = if res.context == info.context do
