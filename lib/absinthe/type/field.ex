@@ -41,7 +41,7 @@ defmodule Absinthe.Type.Field do
 
   @type ok_result :: {:ok, any}
   @type error_result :: {:error, error_value}
-  @type middleware_result :: {:middleware, Absinthe.Middleware.t, term}
+  @type middleware_result :: {:middleware, Absinthe.Middleware.spec, term}
 
   @typedoc """
   An error message is a human-readable string describing the error that occurred.
