@@ -134,50 +134,23 @@ defmodule Absinthe.Type.Interface do
   end
 
   @spec implements?(Type.Interface.t, Type.Object.t) :: boolean
-  def implements?(interface, type) do
-    # Convert the submap into a list of key-value pairs where each key
-    # is a list representing the keypath of its corresponding value.
-    flatten_with_list_keys(interface.fields)
-    # Check that every keypath has the same value in both maps
-    # (assumes that `nil` is not a legitimate value)
-    |> Enum.all?(fn
-      {keypath, val} when val != nil ->
-        flat = keypath |> List.flatten
-        ignore_implementing_keypath?(flat) || (safe_get_in(type.fields, flat) == val)
-      {_keypath, nil} ->
-        true
+  def implements?(%{__reference__: %{module: schema}} = interface, type) do
+    type_fields = type.fields
+    Enum.all?(interface.fields, fn {field_ident, ifield} ->
+      case Map.get(type_fields, field_ident) do
+        nil -> false
+        field ->
+          itype = Absinthe.Schema.lookup_type(schema, ifield.type)
+          type = Absinthe.Schema.lookup_type(schema, field.type)
+          covariant?(itype, type)
+      end
     end)
   end
 
-  # Try to get a value, ignoring errors
-  @spec safe_get_in(any, list) :: any
-  defp safe_get_in(target, keypath) do
-    try do
-      get_in(target, keypath)
-    rescue
-      FunctionClauseError ->
-        nil
-    end
+  defp covariant?(%{name: name}, %{name: name}) do
+    true
   end
-
-  @ignore [:description, :__reference__, :middleware]
-  defp ignore_implementing_keypath?(keypath) when is_list(keypath) do
-    keypath
-    |> Enum.any?(&ignore_implementing_keypath?/1)
+  defp covariant?(%Type.Interface{} = itype, type) do
+    implements?(itype, type)
   end
-  defp ignore_implementing_keypath?(keypath) when is_atom(keypath) do
-    Enum.member?(@ignore, keypath)
-  end
-
-  defp flatten_with_list_keys(map) do
-    Enum.flat_map(Map.to_list(map), fn
-      {:__struct__, _} ->
-        []
-      {key, map} when is_map(map) ->
-        for {subkey, val} <- flatten_with_list_keys(map), do: {[key | [subkey]], val}
-      other ->
-        [other]
-    end)
-  end
-
 end
