@@ -133,24 +133,34 @@ defmodule Absinthe.Type.Interface do
     false
   end
 
-  @spec implements?(Type.Interface.t, Type.Object.t) :: boolean
-  def implements?(%{__reference__: %{module: schema}} = interface, type) do
-    type_fields = type.fields
-    Enum.all?(interface.fields, fn {field_ident, ifield} ->
+  @spec implements?(Type.Interface.t, Type.Object.t, Type.Schema.t) :: boolean
+  def implements?(interface, type, schema) do
+    covariant?(interface, type, schema)
+  end
+
+  defp covariant?(%wrapper{of_type: inner_type1}, %wrapper{of_type: inner_type2}, schema) do
+    covariant?(inner_type1, inner_type2, schema)
+  end
+  defp covariant?(%{name: name}, %{name: name}, _schema) do
+    true
+  end
+  defp covariant?(%Type.Interface{fields: ifields}, %{fields: type_fields}, schema) do
+    Enum.all?(ifields, fn {field_ident, ifield} ->
       case Map.get(type_fields, field_ident) do
         nil -> false
         field ->
-          itype = Absinthe.Schema.lookup_type(schema, ifield.type)
-          type = Absinthe.Schema.lookup_type(schema, field.type)
-          covariant?(itype, type)
+          covariant?(ifield.type, field.type, schema)
       end
     end)
   end
-
-  defp covariant?(%{name: name}, %{name: name}) do
-    true
+  defp covariant?(nil, _, _), do: false
+  defp covariant?(_, nil, _), do: false
+  defp covariant?(itype, type, schema) when is_atom(itype) do
+    itype = schema.__absinthe_type__(itype)
+    covariant?(itype, type, schema)
   end
-  defp covariant?(%Type.Interface{} = itype, type) do
-    implements?(itype, type)
+  defp covariant?(itype, type, schema) when is_atom(type) do
+    type = schema.__absinthe_type__(type)
+    covariant?(itype, type, schema)
   end
 end

@@ -19,6 +19,9 @@
 - Breaking change: plugins have been replaced by middleware, see the middleware docs.
 - Breaking change: `default_resolve` is no longer valid, see middleware
 - Breaking change: A root `query` object is now required, per the spec
+- Breaking change: `Absinthe.Type.Interface.implements/2` is now `implements/3` with the last argument being the schema.
+
+- Note: Undocumented module InterfaceMap removed as it was unused.
 
 ## v1.2.6
 
