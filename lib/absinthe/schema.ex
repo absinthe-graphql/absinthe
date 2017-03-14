@@ -207,14 +207,14 @@ defmodule Absinthe.Schema do
 
       @doc false
       def plugins do
-        Absinthe.Middleware.defaults()
+        Absinthe.Plugin.defaults()
       end
 
       defoverridable middleware: 3, plugins: 0
     end
   end
 
-  @callback plugins() :: [Absinthe.Middleware.t]
+  @callback plugins() :: [Absinthe.Plugin.t]
 
   @doc false
   def __after_compile__(env, _bytecode) do

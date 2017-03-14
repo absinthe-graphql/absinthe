@@ -36,6 +36,7 @@ defmodule Absinthe.Middleware.Async do
   """
 
   @behaviour Absinthe.Middleware
+  @behaviour Absinthe.Plugin
 
   # A function has handed resolution off to this middleware. The first argument
   # is the current resolution struct. The second argument is the function to
@@ -90,7 +91,7 @@ defmodule Absinthe.Middleware.Async do
   def pipeline(pipeline, acc) do
     case acc do
       %{__MODULE__ => true} ->
-        [Absinthe.Middleware.resolution_phases | pipeline]
+        [Absinthe.Plugin.resolution_phases | pipeline]
       _ ->
         pipeline
     end

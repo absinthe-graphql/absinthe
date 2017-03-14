@@ -15,7 +15,7 @@ defmodule Absinthe.Phase.Document.Execution.AfterResolution do
     blueprint = %{bp_root | resolution: %{resolution | acc: acc}}
 
     bp_root.schema.plugins
-    |> Absinthe.Middleware.pipeline(acc)
+    |> Absinthe.Plugin.pipeline(acc)
     |> case do
       [] ->
         {:ok, blueprint}

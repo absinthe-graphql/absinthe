@@ -65,6 +65,7 @@ defmodule Absinthe.Middleware.Batch do
   """
 
   @behaviour Absinthe.Middleware
+  @behaviour Absinthe.Plugin
 
   @typedoc """
   The function to be called with the aggregate batch information.
@@ -153,7 +154,7 @@ defmodule Absinthe.Middleware.Batch do
   def pipeline(pipeline, acc) do
     case acc[__MODULE__][:input] do
       [_|_] ->
-        [Absinthe.Middleware.resolution_phases | pipeline]
+        [Absinthe.Plugin.resolution_phases | pipeline]
       _ ->
         pipeline
     end
