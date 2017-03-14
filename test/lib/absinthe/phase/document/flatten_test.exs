@@ -140,7 +140,6 @@ defmodule Absinthe.Phase.Document.FlattenTest do
   defp pre_pipeline(variables) do
     Pipeline.for_document(Schema, variables: variables)
     |> Pipeline.before(Phase.Document.Flatten)
-    # |> Kernel.++([Phase.Document.Result])
   end
 
 end
