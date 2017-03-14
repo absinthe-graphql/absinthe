@@ -22,11 +22,26 @@ defmodule Absinthe.Phase.Document.ExpandSchemaReferences do
       node
       |> expand_schema_node(schema)
       |> expand_type_conditions(schema)
+      |> ensure_child_types
 
     used_abstract_types = check_abstract_type_usage(node, schema, used_abstract_types)
 
     {node, used_abstract_types}
   end
+
+  defp ensure_child_types(%{fields: []} = node), do: node
+  defp ensure_child_types(%{fields: fields, schema_node: %{type: %Type.Object{fields: schema_fields}}} = node) do
+    fields = for field <- fields do
+      case field.name do
+        "__" <> _ ->
+          field
+        _ ->
+          %{field | schema_node: Map.fetch!(schema_fields, field.schema_node.__reference__.identifier), type_conditions: []}
+      end
+    end
+    %{node | fields: fields}
+  end
+  defp ensure_child_types(node), do: node
 
   defp expand_schema_node(%{schema_node: schema_node} = node, schema) do
     %{node | schema_node: expand(schema_node, schema)}

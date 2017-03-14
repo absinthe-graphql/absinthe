@@ -31,11 +31,7 @@ defmodule Absinthe.Phase.Document.FlattenTest do
       foo(id: $id) {
         gender
         ... FooFields
-        ... NotFooFields
         ... on Foo {
-          age
-        }
-        ... on NotFoo {
           age
         }
       }
@@ -58,7 +54,7 @@ defmodule Absinthe.Phase.Document.FlattenTest do
     it "has its selections flattened to fields" do
       result = input(@query, %{"id" => 4})
       assert ~w(foo more) == get_in(result.operations, [Access.at(0), Access.key!(:fields), Access.all(), Access.key!(:name)])
-      assert ~w(gender name name age age) == get_in(result.operations, [Access.at(0), Access.key!(:fields), Access.at(0), Access.key!(:fields), Access.all(), Access.key!(:name)])
+      assert ~w(gender name age) == get_in(result.operations, [Access.at(0), Access.key!(:fields), Access.at(0), Access.key!(:fields), Access.all(), Access.key!(:name)])
     end
   end
 
@@ -67,12 +63,8 @@ defmodule Absinthe.Phase.Document.FlattenTest do
       foo(id: $id) {
         gender @include(if: $inc)
         ... FooFields @include(if: $inc)
-        ... NotFooFields
         ... on Foo @include(if: $inc) {
           age
-        }
-        ... on NotFoo {
-          age @include(if: $inc)
         }
       }
       ... QueryFields
@@ -95,7 +87,7 @@ defmodule Absinthe.Phase.Document.FlattenTest do
       result = input(@query, %{"id" => 4, "inc" => false})
       op = result.operations |> List.first
       assert ~w(foo more) == get_in(op.fields, [Access.all(), Access.key!(:name)])
-      assert ~w(name) == get_in(op.fields, [Access.at(0), Access.key!(:fields), Access.all(), Access.key!(:name)])
+      assert ~w() == get_in(op.fields, [Access.at(0), Access.key!(:fields), Access.all(), Access.key!(:name)])
     end
   end
 
@@ -148,6 +140,7 @@ defmodule Absinthe.Phase.Document.FlattenTest do
   defp pre_pipeline(variables) do
     Pipeline.for_document(Schema, variables: variables)
     |> Pipeline.before(Phase.Document.Flatten)
+    # |> Kernel.++([Phase.Document.Result])
   end
 
 end
