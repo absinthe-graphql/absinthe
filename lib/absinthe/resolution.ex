@@ -35,7 +35,7 @@ defmodule Absinthe.Resolution do
     acc: %{any => any},
   }
 
-  @enforce_keys [:adapter, :context, :root_value, :schema, :source]
+  @enforce_keys [:adapter, :context, :root_value, :schema, :source, :type_cache]
   defstruct [
     :value,
     :adapter,
@@ -45,6 +45,7 @@ defmodule Absinthe.Resolution do
     :definition,
     :schema,
     :source,
+    :type_cache,
     errors: [],
     middleware: [],
     acc: %{},
@@ -249,6 +250,7 @@ defimpl Inspect, for: Absinthe.Resolution do
   import Inspect.Algebra
 
   def inspect(res, opts) do
+    # TODO: better inspect representation
     inner =
       res
       |> Map.from_struct

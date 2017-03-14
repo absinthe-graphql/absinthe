@@ -50,6 +50,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       root_value: root_value,
       schema: bp_root.schema,
       source: root_value,
+      type_cache: bp_root.resolution.type_cache,
     }
   end
 
@@ -86,28 +87,48 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp resolve_fields(parent, acc, info, source) do
-    parent_type =
+    {parent_type, fields} =
       parent
       # parent is the parent field, we need to get the return type of that field
       |> get_return_type
       # that return type could be an interface or union, so let's make it concrete
-      |> handle_abstract_types(source, info)
+      |> handle_abstract_types(parent.fields, source, info)
 
     info = %{info | parent_type: parent_type, source: source}
 
-    do_resolve_fields(parent.fields, acc, info, source, parent_type, [])
+    do_resolve_fields(fields, acc, info, source, parent_type, [])
   end
 
   defp get_return_type(%{schema_node: %Type.Field{type: type}}) do
     Type.unwrap(type)
   end
+  defp get_return_type(%{schema_node: schema_node}) do
+    Type.unwrap(schema_node)
+  end
   defp get_return_type(type), do: type
 
-  defp handle_abstract_types(%abstract_mod{} = parent_type, source, info) when abstract_mod in [Type.Interface, Type.Union] do
-    abstract_mod.resolve_type(parent_type, source, info)
+  defp handle_abstract_types(%abstract_mod{} = parent_type, parent_fields, source, info) when abstract_mod in [Type.Interface, Type.Union] do
+    concrete_type_identifier = abstract_mod.resolve_type(parent_type, source, info, lookup: false)
+
+    concrete_type =
+      info.type_cache
+      |> Map.fetch!(concrete_type_identifier)
+
+    concrete_fields = concrete_type.fields
+
+    fields = for field <- parent_fields, field_applies?(concrete_type, field) do
+      case field.name do
+        "__" <> _ ->
+          field
+        _ ->
+          %{field | schema_node: Map.fetch!(concrete_fields, field.schema_node.__reference__.identifier)}
+      end
+    end
+
+    {concrete_type, fields}
   end
-  defp handle_abstract_types(parent_type, _source, _info) do
-    parent_type
+  defp handle_abstract_types(parent_type, parent_fields, _source, _info) do
+    {parent_type, parent_fields}
   end
 
   defp do_resolve_fields(fields, res_acc, info, source, parent_type, acc)
@@ -116,13 +137,8 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     do_resolve_fields(fields, res_acc, info, source, parent_type, acc)
   end
   defp do_resolve_fields([field | fields], res_acc, info, source, parent_type, acc) do
-    case field_applies?(parent_type, field) do
-      true ->
-        {result, res_acc} = resolve_field(field, res_acc, info, source)
-        do_resolve_fields(fields, res_acc, info, source, parent_type, [result | acc])
-      false ->
-        do_resolve_fields(fields, res_acc, info, source, parent_type, acc)
-    end
+    {result, res_acc} = resolve_field(field, res_acc, info, source)
+    do_resolve_fields(fields, res_acc, info, source, parent_type, [result | acc])
   end
 
   def resolve_field(bp_field, acc, info, source) do
@@ -184,15 +200,10 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp build_result(%{errors: [], value: result} = res, info, _source) do
-    # full_type = Type.expand(res.definition.schema_node.type, info.schema)
-    full_type = res.definition.schema_node.type
     bp_field = res.definition
+    full_type = bp_field.schema_node.type
 
-    info = if res.context == info.context do
-      info
-    else
-      %{info | context: res.context}
-    end
+    info = %{info | context: res.context}
 
     result
     |> to_result(bp_field, full_type)
@@ -271,15 +282,21 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   def field_applies?(parent_type, %{type_conditions: conditions}) do
+    # custom version of Enum.all?(conditions, &passes_type_condition?(&1, parent_type))
     do_field_applies?(conditions, parent_type, true)
   end
 
   defp do_field_applies?(_, _, false), do: false
-  defp do_field_applies?([], parent_type, acc) do
+  defp do_field_applies?([], _parent_type, acc) do
     acc
   end
   defp do_field_applies?([condition | conditions], parent_type, _) do
-    do_field_applies?(conditions, parent_type, passes_type_condition?(condition, parent_type))
+    pass_fail = passes_type_condition?(condition, parent_type)
+    # IO.puts "====================="
+    # condition |> IO.inspect
+    # parent_type |> IO.inspect
+    # IO.puts "====================="
+    do_field_applies?(conditions, parent_type, pass_fail)
   end
 
   defp passes_type_condition?(%Type.Object{name: name}, %Type.Object{name: name}) do

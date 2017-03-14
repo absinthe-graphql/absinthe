@@ -4,18 +4,28 @@ defmodule Absinthe.Phase.Document.ExpandSchemaReferences do
   # This module ensures that all schema lookups necessary for resolution have
   # already been run.
 
-  alias Absinthe.{Blueprint}
+  alias Absinthe.{Blueprint, Type}
   use Absinthe.Phase
 
   def run(input, _options \\ []) do
-    result = Blueprint.prewalk(input, &handle_node(&1, input.schema))
-    {:ok, result}
+    {result, types_referenced_by_abstract_types} = Blueprint.prewalk(input, MapSet.new, &handle_node(&1, &2, input.schema))
+
+    type_cache = build_type_cache(types_referenced_by_abstract_types, input.schema)
+
+    resolution = %{result.resolution | type_cache: type_cache}
+
+    {:ok, %{result | resolution: resolution}}
   end
 
-  def handle_node(node, schema) do
-    node
-    |> expand_schema_node(schema)
-    |> expand_type_conditions(schema)
+  def handle_node(node, used_abstract_types, schema) do
+    node =
+      node
+      |> expand_schema_node(schema)
+      |> expand_type_conditions(schema)
+
+    used_abstract_types = check_abstract_type_usage(node, schema, used_abstract_types)
+
+    {node, used_abstract_types}
   end
 
   defp expand_schema_node(%{schema_node: schema_node} = node, schema) do
@@ -41,6 +51,32 @@ defmodule Absinthe.Phase.Document.ExpandSchemaReferences do
     node
   end
 
+  defp check_abstract_type_usage(%{schema_node: schema_node}, schema, types) do
+    collate_used(schema_node, schema, types)
+  end
+  defp check_abstract_type_usage(_node, _schema, types) do
+    types
+  end
+
+  defp collate_used(%{type: type}, schema, types) do
+    collate_used(type, schema, types)
+  end
+  defp collate_used(%{of_type: type}, schema, types) do
+    collate_used(type, schema, types)
+  end
+  defp collate_used(%Type.Interface{__reference__: %{identifier: identifier}}, schema, types) do
+    schema.__absinthe_interface_implementors__
+    |> Map.fetch!(identifier)
+    |> Enum.into(types)
+  end
+  defp collate_used(%Type.Union{} = union, _schema, types) do
+    union.types
+    |> Enum.into(types)
+  end
+  defp collate_used(_type, _schema, types) do
+    types
+  end
+
   defp expand(nil, _schema) do
     nil
   end
@@ -57,5 +93,20 @@ defmodule Absinthe.Phase.Document.ExpandSchemaReferences do
   end
   defp expand(type, _) do
     type
+  end
+
+  defp build_type_cache(types, schema) do
+    Map.new(types, fn type_identifier ->
+      type =
+        schema
+        |> Absinthe.Schema.lookup_type(type_identifier)
+        |> Map.update!(:fields, fn fields ->
+          Map.new(fields, fn {field_name, field} ->
+            {field_name, expand(field, schema)}
+          end)
+        end)
+
+      {type_identifier, type}
+    end)
   end
 end
