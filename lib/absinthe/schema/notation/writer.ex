@@ -44,7 +44,25 @@ defmodule Absinthe.Schema.Notation.Writer do
     ]
   end
 
+  defp init_implementors(nil) do
+    %{}
+  end
+  defp init_implementors(modules) do
+    modules
+    |> Enum.map(&(&1.__absinthe_interface_implementors__))
+    |> Enum.reduce(%{}, fn implementors, acc ->
+      Map.merge(implementors, acc, fn _k, v1, v2 ->
+        v1 ++ v2
+      end)
+    end)
+  end
+
   def build_info(env) do
+    implementors =
+      env.module
+      |> Module.get_attribute(:absinthe_imports)
+      |> init_implementors
+
     descriptions =
       env.module
       |> Module.get_attribute(:absinthe_descriptions)
@@ -60,7 +78,11 @@ defmodule Absinthe.Schema.Notation.Writer do
       |> Absinthe.Schema.Rule.FieldImportsExist.check
       |> Absinthe.Schema.Rule.NoCircularFieldImports.check
 
-    info = %__MODULE__{env: env, errors: errors}
+    info = %__MODULE__{
+      env: env,
+      errors: errors,
+      implementors: implementors
+    }
 
     Enum.reduce(definitions, info, &do_build_info/2)
   end

@@ -1061,6 +1061,8 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp do_import_types(type_module, env) when is_atom(type_module) do
+    imports = Module.get_attribute(env.module, :absinthe_imports) || []
+    _ = Module.put_attribute(env.module, :absinthe_imports, [type_module | imports])
 
     types = for {ident, name} <- type_module.__absinthe_types__, ident in type_module.__absinthe_exports__ do
       put_definition(
