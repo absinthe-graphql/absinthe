@@ -400,8 +400,9 @@ defmodule AbsintheTest do
       assert Enum.sort_by(input_fields, sort) == Enum.sort_by(correct, sort)
     end
 
-    it "ignores fragments that can't be applied" do
-      assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == run(@unapplied_fragment, ContactSchema)
+    it "Object spreads in object scope should return an error" do
+      # https://facebook.github.io/graphql/#sec-Object-Spreads-In-Object-Scope
+      assert {:ok, %{errors: [%{locations: [%{column: 0, line: 4}], message: "Fragment spread has no type overlap with parent.\nParent possible types: [\"Person\"]\nSpread possible types: [\"Business\"]\n"}]}} == run(@unapplied_fragment, ContactSchema)
     end
 
   end

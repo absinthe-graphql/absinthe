@@ -83,21 +83,31 @@ defmodule Absinthe.Type.Interface do
   end
 
   @spec resolve_type(Type.Interface.t, any, Absinthe.Resolution.t) :: Type.t | nil
-  def resolve_type(%{resolve_type: nil, __reference__: %{identifier: ident}}, obj, %{schema: schema}) do
+  def resolve_type(type, obj, env, opts \\ [lookup: true])
+  def resolve_type(%{resolve_type: nil, __reference__: %{identifier: ident}}, obj, %{schema: schema}, opts) do
     implementors = Schema.implementors(schema, ident)
-    Enum.find(implementors, fn
+    type_name = Enum.find(implementors, fn
       %{is_type_of: nil} ->
         false
       type ->
         type.is_type_of.(obj)
     end)
+    if opts[:lookup] do
+      Absinthe.Schema.lookup_type(schema, type_name)
+    else
+      type_name
+    end
   end
-  def resolve_type(%{resolve_type: resolver}, obj, %{schema: schema} = env) do
+  def resolve_type(%{resolve_type: resolver}, obj, %{schema: schema} = env, opts) do
     case resolver.(obj, env) do
       nil ->
         nil
       ident when is_atom(ident) ->
-        Schema.lookup_type(schema, ident)
+        if opts[:lookup] do
+          Absinthe.Schema.lookup_type(schema, ident)
+        else
+          ident
+        end
     end
   end
 

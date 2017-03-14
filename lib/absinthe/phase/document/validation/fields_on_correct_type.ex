@@ -17,10 +17,12 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
   end
 
   @spec handle_node(Blueprint.node_t, Schema.t) :: Blueprint.node_t
-  defp handle_node(%{selections: _, schema_node: parent_schema_node} = node, input) when not is_nil(parent_schema_node) do
-    selections = Enum.map(node.selections, fn
+  defp handle_node(%{selections: selections, schema_node: parent_schema_node} = node, %{schema: schema} = input) when not is_nil(parent_schema_node) do
+    possible_parent_types = possible_types(parent_schema_node, schema)
+
+    selections = Enum.map(selections, fn
       %Blueprint.Document.Field{schema_node: nil} = field ->
-        type = named_type(parent_schema_node, input.schema)
+        type = named_type(parent_schema_node, schema)
         field
         |> flag_invalid(:unknown_field)
         |> put_error(error(
@@ -30,6 +32,23 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
              suggested_field_names(field.name, type, input)
            )
         )
+      %Blueprint.Document.Fragment.Spread{} = spread ->
+        fragment = Enum.find(input.fragments, &(&1.name == spread.name))
+        possible_child_types = possible_types(fragment.schema_node, schema)
+
+        if Enum.any?(possible_child_types, &(&1 in possible_parent_types)) do
+          spread
+        else
+          spread_error(spread, possible_parent_types, possible_child_types, schema)
+        end
+      %Blueprint.Document.Fragment.Inline{} = fragment ->
+        possible_child_types = possible_types(fragment.schema_node, schema)
+
+        if Enum.any?(possible_child_types, &(&1 in possible_parent_types)) do
+          fragment
+        else
+          spread_error(fragment, possible_parent_types, possible_child_types, schema)
+        end
       other ->
         other
     end)
@@ -37,6 +56,48 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
   end
   defp handle_node(node, _) do
     node
+  end
+
+  defp idents_to_names(idents, schema) do
+    for ident <- idents do
+      Absinthe.Schema.lookup_type(schema, ident).name
+    end
+  end
+
+  defp spread_error(spread, parent_types_idents, child_types_idents, schema) do
+    parent_types = idents_to_names(parent_types_idents, schema)
+    child_types = idents_to_names(child_types_idents, schema)
+
+    msg = """
+    Fragment spread has no type overlap with parent.
+    Parent possible types: #{inspect parent_types}
+    Spread possible types: #{inspect child_types}
+    """
+
+    error = Phase.Error.new(__MODULE__, msg, location: spread.source_location)
+
+    spread
+    |> flag_invalid(:invalid_spread)
+    |> put_error(error)
+  end
+
+  defp possible_types(%{type: type}, schema) do
+    possible_types(type, schema)
+  end
+  defp possible_types(type, schema) do
+    schema
+    |> Absinthe.Schema.lookup_type(type)
+    |> case do
+      %Type.Object{identifier: identifier} ->
+        [identifier]
+      %Type.Interface{__reference__: %{identifier: identifier}} ->
+        schema.__absinthe_interface_implementors__
+        |> Map.fetch!(identifier)
+      %Type.Union{types: types} ->
+        types
+      _ ->
+        []
+    end
   end
 
   @spec named_type(Type.t, Schema.t) :: Type.named_t
