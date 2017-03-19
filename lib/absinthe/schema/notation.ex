@@ -991,7 +991,7 @@ defmodule Absinthe.Schema.Notation do
     |> record_description!(text)
   end
 
-  defp reformat_description(text), do: String.strip(text)
+  defp reformat_description(text), do: String.trim(text)
 
   @doc false
   # Record a description in the current scope
