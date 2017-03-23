@@ -292,10 +292,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
   defp do_field_applies?([condition | conditions], parent_type, _) do
     pass_fail = passes_type_condition?(condition, parent_type)
-    # IO.puts "====================="
-    # condition |> IO.inspect
-    # parent_type |> IO.inspect
-    # IO.puts "====================="
     do_field_applies?(conditions, parent_type, pass_fail)
   end
 
