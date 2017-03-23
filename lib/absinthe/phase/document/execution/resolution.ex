@@ -251,18 +251,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp to_result(root_value, blueprint, %Type.NonNull{of_type: inner_type}) do
     to_result(root_value, blueprint, inner_type)
   end
-  defp to_result(root_value, blueprint, %Type.Scalar{} = schema_type) do
-    %Resolution.Leaf{
-      emitter: blueprint,
-      value: Type.Scalar.serialize(schema_type, root_value)
-    }
-  end
-  defp to_result(root_value, blueprint, %Type.Enum{} = schema_type) do
-    %Resolution.Leaf{
-      emitter: blueprint,
-      value: Type.Enum.serialize(schema_type, root_value)
-    }
-  end
   defp to_result(root_value, blueprint, %Type.Object{}) do
     %Resolution.Object{root_value: root_value, emitter: blueprint}
   end
@@ -279,6 +267,18 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       |> Enum.map(&to_result(&1, blueprint, inner_type))
 
     %Resolution.List{values: values, emitter: blueprint}
+  end
+  defp to_result(root_value, blueprint, %Type.Scalar{} = schema_type) do
+    %Resolution.Leaf{
+      emitter: blueprint,
+      value: root_value,
+    }
+  end
+  defp to_result(root_value, blueprint, %Type.Enum{} = schema_type) do
+    %Resolution.Leaf{
+      emitter: blueprint,
+      value: root_value,
+    }
   end
 
   def field_applies?(parent_type, %{type_conditions: conditions}) do
