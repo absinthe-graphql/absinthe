@@ -146,4 +146,70 @@ defmodule Absinthe.UnionFragmentTest do
     assert {:ok, %{data: expected}} == Absinthe.run(doc, Schema)
   end
 
+  test "it queries a heterogeneous list using fragments properly" do
+    doc = """
+    {
+      viewer {
+        objects {
+          ...fragmentWithUserField
+          ...fragmentWithOneTodoField
+          ...fragmentWithOtherTodoField
+        }
+      }
+    }
+
+    fragment fragmentWithUserField on User {
+      name
+    }
+
+    fragment fragmentWithOneTodoField on Todo {
+      name
+    }
+
+    fragment fragmentWithOtherTodoField on Todo {
+      completed
+    }
+    """
+    expected = %{"viewer" => %{"objects" => [
+      %{"name" => "foo"},
+      %{"name" => "do stuff", "completed" => false},
+      %{"name" => "bar"},
+    ]}}
+    assert {:ok, %{data: expected}} == Absinthe.run(doc, Schema)
+  end
+
+  test "it merges fragments of a heterogeneous list properly" do
+    doc = """
+    {
+      viewer {
+        ...fragmentWithOneType
+        ...fragmentWithOtherType
+      }
+    }
+
+    fragment fragmentWithOneType on Viewer {
+      objects {
+        ... on User {
+          name
+        }
+      }
+    }
+
+    fragment fragmentWithOtherType on Viewer {
+      objects {
+        ... on Todo {
+          name
+          completed
+        }
+      }
+    }
+    """
+    expected = %{"viewer" => %{"objects" => [
+      %{"name" => "foo"},
+      %{"name" => "do stuff", "completed" => false},
+      %{"name" => "bar"},
+    ]}}
+    assert {:ok, %{data: expected}} == Absinthe.run(doc, Schema)
+  end
+
 end
