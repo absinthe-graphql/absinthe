@@ -153,6 +153,23 @@ defmodule Absinthe.Pipeline do
     end
   end
 
+  @doc """
+  Replace a phase in a pipeline with another, using the same options.
+  """
+  @spec replace(t, Phase.t, Phase.t) :: t
+  def replace(pipeline, phase, replacement) do
+    Enum.map(pipeline, fn
+      candidate ->
+        case match_phase?(phase, candidate) do
+          true ->
+            {candidate_phase, opts} = phase_invocation(candidate)
+            {replacement, opts}
+          false ->
+            candidate
+        end
+    end)
+  end
+
   # Whether a phase configuration is for a given phase
   @spec match_phase?(Phase.t, phase_config_t) :: boolean
   defp match_phase?(phase, phase), do: true
