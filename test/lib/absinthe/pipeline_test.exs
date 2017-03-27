@@ -97,7 +97,7 @@ defmodule Absinthe.PipelineTest do
     end
   end
 
-  @pipeline [A, B, C, D, {E, []}, F]
+  @pipeline [A, B, C, D, {E, [name: "e"]}, F]
 
   describe ".before" do
 
@@ -120,8 +120,8 @@ defmodule Absinthe.PipelineTest do
     end
 
     it "inserts the phase before" do
-      assert [X, A, B, C, D, {E, []}, F] == Pipeline.insert_before(@pipeline, A, X)
-      assert [A, B, C, D, X, {E, []}, F] == Pipeline.insert_before(@pipeline, E, X)
+      assert [X, A, B, C, D, {E, [name: "e"]}, F] == Pipeline.insert_before(@pipeline, A, X)
+      assert [A, B, C, D, X, {E, [name: "e"]}, F] == Pipeline.insert_before(@pipeline, E, X)
     end
 
   end
@@ -134,7 +134,7 @@ defmodule Absinthe.PipelineTest do
 
     it "returns the phases upto the match" do
       assert [A, B, C] == Pipeline.upto(@pipeline, C)
-      assert [A, B, C, D, {E, []}] == Pipeline.upto(@pipeline, E)
+      assert [A, B, C, D, {E, [name: "e"]}] == Pipeline.upto(@pipeline, E)
     end
 
   end
@@ -142,8 +142,40 @@ defmodule Absinthe.PipelineTest do
   describe ".upto" do
 
     it "returns the pipeline without specified phase" do
-      assert [A, B, D, {E, []}, F] == Pipeline.without(@pipeline, C)
+      assert [A, B, D, {E, [name: "e"]}, F] == Pipeline.without(@pipeline, C)
       assert [A, B, C, D, F] == Pipeline.without(@pipeline, E)
+    end
+
+  end
+
+  describe ".replace" do
+
+    describe "when not found" do
+      it "returns the pipeline unchanged" do
+        assert @pipeline == Pipeline.replace(@pipeline, X, ABC)
+      end
+    end
+
+    describe "when found" do
+      describe "when the target has options" do
+        describe "when no replacement options are given" do
+          it "replaces the phase but reuses the options" do
+            assert [A, B, C, D, {X, [name: "e"]}, F] == Pipeline.replace(@pipeline, E, X)
+          end
+        end
+        describe "when replacement options are given" do
+          it "replaces the phase and uses the new options" do
+            assert [A, B, C, D, {X, [name: "Custom"]}, F] == Pipeline.replace(@pipeline, E, {X, [name: "Custom"]})
+            assert [A, B, C, D, {X, []}, F] == Pipeline.replace(@pipeline, E, {X, []})
+          end
+        end
+      end
+      describe "when the target has no options" do
+        it "simply replaces the phase" do
+          assert [A, B, C, X, {E, [name: "e"]}, F] == Pipeline.replace(@pipeline, D, X)
+          assert [A, B, C, {X, [name: "Custom Opt"]}, {E, [name: "e"]}, F] == Pipeline.replace(@pipeline, D, {X, [name: "Custom Opt"]})
+        end
+      end
     end
 
   end

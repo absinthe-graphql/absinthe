@@ -17,7 +17,7 @@ defmodule Absinthe.Type.Directive do
   * `:name` - The name of the directivee. Should be a lowercase `binary`. Set automatically.
   * `:description` - A nice description for introspection.
   * `:args` - A map of `Absinthe.Type.Argument` structs. See `Absinthe.Schema.Notation.arg/1`.
-  * `:locations` - A list of places the directives can be used (can be `:operation`, `:fragment`, `:field`).
+  * `:locations` - A list of places the directives can be used.
   * `:instruction` - A function that, given an argument, returns an instruction for the correct action to take
 
   The `:__reference__` key is for internal use.
@@ -26,10 +26,12 @@ defmodule Absinthe.Type.Directive do
     name: binary,
     description: binary,
     args: map,
-    locations: [atom],
+    locations: [location],
     expand: nil | ((Absinthe.Blueprint.node_t, map) -> {Absinthe.Blueprint.t, map}),
     instruction: ((map) -> atom), __reference__: Type.Reference.t
   }
+
+  @type location :: :query | :mutation | :field | :fragment_definition | :fragment_spread | :inline_fragment
 
   defstruct [
     name: nil,
