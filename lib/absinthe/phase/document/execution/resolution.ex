@@ -268,13 +268,13 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     %Resolution.List{values: values, emitter: blueprint}
   end
-  defp to_result(root_value, blueprint, %Type.Scalar{} = schema_type) do
+  defp to_result(root_value, blueprint, %Type.Scalar{}) do
     %Resolution.Leaf{
       emitter: blueprint,
       value: root_value,
     }
   end
-  defp to_result(root_value, blueprint, %Type.Enum{} = schema_type) do
+  defp to_result(root_value, blueprint, %Type.Enum{}) do
     %Resolution.Leaf{
       emitter: blueprint,
       value: root_value,

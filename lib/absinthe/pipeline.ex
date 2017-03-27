@@ -182,9 +182,9 @@ defmodule Absinthe.Pipeline do
         case match_phase?(phase, candidate) do
           true ->
             case phase_invocation(candidate) do
-              {candidate_phase, []} ->
+              {_, []} ->
                 replacement
-              {candidate_phase, opts} ->
+              {_, opts} ->
                 case is_atom(replacement) do
                   true ->
                     {replacement, opts}
