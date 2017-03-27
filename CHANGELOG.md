@@ -7,21 +7,35 @@
   with filtering support (filters "token" and "password" by default). Used by
   the `absinthe_plug` package.
 
-- MIDDLEWARE! See the `Absinthe.Middleware` moduledocs.
+- Enhancement: Added resolution middleware. See the `Absinthe.Middleware`
+  moduledocs.
+- Enhancement: Middleware can be used to change the context. Use this
+  judiciously.
+- Enhancement: Added built-in date and time types. Simply `import_types
+  Absinthe.Type.Custom` in your schema to use.
+- Enhancement: Error tuple values can now be anything that's compatible with
+  `to_string/1`
+- Enhancement: Substantial performance improvements for type conditions and
+  abstract type return values
+- Enhancement: Added `Absinthe.Pipeline.replace/3` for easier modification of
+  pipeline phases.
+- Enhancement: Scalar and Enum serialization moved to the
+  `Absinthe.Phase.Document.Result` phase, making customization of serialization
+  easier.
 
-- Enhancement: Absinthe now provides built in date and time types. Simply `import_types Absinthe.Type.Custom` in your schema to use.
-- Enhancement: Middleware can be used to change the context. Use this judiciously.
-- Enhancement: Error tuple values can now be anything that's compatible with `to_string/1`
-- Enhancement: Substantial performance improvements for type conditions and abstract type return values
+- Bug Fix: All interfaces an object claims to implement are checked at compile
+  time, instead of just the first.
 
-- Bug Fix: All interfaces an object claims to implement are checked at compile time, instead of just the first.
+- Breaking change: Plugins have been replaced by middleware, see the middleware
+  docs.
+- Breaking change: `default_resolve` is no longer valid, see
+  `Absinthe.Middleware`.
+- Breaking change: A root `query` object is now required, per the GraphQL spec.
+- Breaking change: `Absinthe.Type.Interface.implements/2` is now `implements/3`
+  with the last argument being the schema.
 
-- Breaking change: plugins have been replaced by middleware, see the middleware docs.
-- Breaking change: `default_resolve` is no longer valid, see middleware
-- Breaking change: A root `query` object is now required, per the spec
-- Breaking change: `Absinthe.Type.Interface.implements/2` is now `implements/3` with the last argument being the schema.
-
-- Note: Undocumented module InterfaceMap removed as it was unused.
+- Cleanup: Undocumented module `InterfaceMap` removed as it was no longer being
+  used.
 
 ## v1.2.6
 
