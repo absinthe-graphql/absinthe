@@ -9,6 +9,7 @@ defmodule Absinthe.Blueprint.Document.Fragment.Inline do
     :type_condition,
     selections: [],
     directives: [],
+    possible_types: [],
     source_location: nil,
     # Populated by phases
     schema_node: nil,

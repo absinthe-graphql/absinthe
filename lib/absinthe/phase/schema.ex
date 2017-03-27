@@ -43,7 +43,7 @@ defmodule Absinthe.Phase.Schema do
   defp set_children(parent, schema, adapter) do
     Blueprint.prewalk(parent, fn
       ^parent -> parent
-      %Absinthe.Blueprint.Input.Variable{} = child-> {:halt, child}
+      %Absinthe.Blueprint.Input.Variable{} = child -> {:halt, child}
       child -> {:halt, set_schema_node(child, parent, schema, adapter)}
     end)
   end

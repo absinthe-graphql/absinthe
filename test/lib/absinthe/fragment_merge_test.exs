@@ -31,6 +31,18 @@ defmodule Absinthe.FragmentMergeTest do
       }
     }
 
+    {
+      viewer {
+        User =>
+          todos {
+            totalCount,
+          }
+          todos {
+            completedCount
+          }
+      }
+    }
+
     fragment fragmentWithOneField on User {
       todos {
         totalCount,

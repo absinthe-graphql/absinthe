@@ -12,6 +12,7 @@ defmodule Absinthe.Blueprint.Document.Field do
     arguments: [],
     argument_data: %{},
     directives: [],
+    possible_types: [],
     # Added by phases
     flags: %{},
     errors: [],
