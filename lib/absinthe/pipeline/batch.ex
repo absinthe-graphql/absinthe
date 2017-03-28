@@ -8,7 +8,7 @@ defmodule Absinthe.Pipeline.Batch do
     acc = init_acc(blueprints)
     resolution_phase = {Execution.Resolution, [plugin_callbacks: false] ++ options}
 
-    resolve(blueprints, [resolution_phase], acc, plugins)
+    do_resolve(blueprints, [resolution_phase], acc, plugins)
   end
 
   defp do_resolve(blueprints, phases, acc, plugins) do
@@ -28,7 +28,7 @@ defmodule Absinthe.Pipeline.Batch do
       [] ->
         blueprints
       pipeline ->
-        resolve(blueprints, pipeline, acc, plugins)
+        do_resolve(blueprints, pipeline, acc, plugins)
     end
   end
 
