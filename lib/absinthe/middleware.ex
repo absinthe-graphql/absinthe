@@ -178,7 +178,7 @@ defmodule Absinthe.Middleware do
     def middleware(middleware, _field, %Absinthe.Type.Object{identifier: :query}) do
       [MyApp.Web.Authentication | middleware]
     end
-    def middleware(middleware, field, _object) do
+    def middleware(middleware, _field, _object) do
       middleware
     end
   end
