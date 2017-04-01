@@ -32,12 +32,19 @@ defmodule Absinthe.Execution.DefaultResolverTest do
         field :bar, :string
       end
 
-      default_resolve fn
-        _, %{source: source, definition: %{name: name}} ->
-          {
-            :ok,
-            Map.get(source, name) || Map.get(source, String.to_existing_atom(name))
-          }
+      def middleware([], %{name: name, identifier: identifier}, _) do
+        middleware_spec = Absinthe.Resolution.resolver_spec(fn parent, _, _ ->
+          case parent do
+            %{^name => value} -> {:ok, value}
+            %{^identifier => value} -> {:ok, value}
+            _ -> {:ok, nil}
+          end
+        end)
+
+        [middleware_spec]
+      end
+      def middleware(middlware, _, _) do
+        middlware
       end
 
     end

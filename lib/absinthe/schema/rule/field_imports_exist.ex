@@ -36,6 +36,12 @@ defmodule Absinthe.Schema.Rule.FieldImportsExist do
     |> Map.new(&{&1.identifier, &1})
   end
 
+  def explanation(%{data: %{artifact: msg}}) do
+    """
+      #{msg}
+    """ |> String.strip
+  end
+
   defp error(definition, ref) do
     msg = """
     Field Import Erro

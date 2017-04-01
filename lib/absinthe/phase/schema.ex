@@ -50,7 +50,7 @@ defmodule Absinthe.Phase.Schema do
 
   # Do note, the `parent` arg is the parent blueprint node, not the parent's schema node.
   defp set_schema_node(%Blueprint.Document.Fragment.Inline{type_condition: %{name: type_name}} = node, _parent, schema, _adapter) do
-    %{node | schema_node: schema.__absinthe_type__(type_name)}
+    %{node | schema_node: schema.__absinthe_lookup__(type_name)}
   end
   defp set_schema_node(%Blueprint.Directive{name: name} = node, _parent, schema, adapter) do
     schema_node =
@@ -61,10 +61,10 @@ defmodule Absinthe.Phase.Schema do
     %{node | schema_node: schema_node}
   end
   defp set_schema_node(%Blueprint.Document.Operation{type: op_type} = node, _parent, schema, _adapter) do
-    %{node | schema_node: schema.__absinthe_type__(op_type)}
+    %{node | schema_node: schema.__absinthe_lookup__(op_type)}
   end
   defp set_schema_node(%Blueprint.Document.Fragment.Named{} = node, _parent, schema, _adapter) do
-    %{node | schema_node: schema.__absinthe_type__(node.type_condition.name)}
+    %{node | schema_node: schema.__absinthe_lookup__(node.type_condition.name)}
   end
   defp set_schema_node(%Blueprint.Document.VariableDefinition{type: type_reference} = node, _parent, schema, _adapter) do
     wrapped =
@@ -155,7 +155,7 @@ defmodule Absinthe.Phase.Schema do
   end
   defp find_schema_field(%Type.Field{type: maybe_wrapped_type}, name, schema, adapter) do
     type = Type.unwrap(maybe_wrapped_type)
-    |> schema.__absinthe_type__
+    |> schema.__absinthe_lookup__
     find_schema_field(type, name, schema, adapter)
   end
   defp find_schema_field(_, _, _, _) do

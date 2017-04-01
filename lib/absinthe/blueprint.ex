@@ -14,6 +14,7 @@ defmodule Absinthe.Blueprint do
     types: [],
     directives: [],
     fragments: [],
+    name: nil,
     schema: nil,
     adapter: nil,
     # Added by phases
@@ -26,6 +27,7 @@ defmodule Absinthe.Blueprint do
     operations: [Blueprint.Document.Operation.t],
     types: [Blueprint.Schema.t],
     directives: [Blueprint.Schema.DirectiveDefinition.t],
+    name: nil | String.t,
     fragments: [Blueprint.Document.Fragment.Named.t],
     schema: nil | Absinthe.Schema.t,
     adapter: nil | Absinthe.Adapter.t,
