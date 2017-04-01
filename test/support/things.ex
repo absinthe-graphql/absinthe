@@ -44,6 +44,8 @@ defmodule Things do
           {:error, [%{message: "Custom Error 1", code: 1}, %{message: "Custom Error 2", code: 2}]}
         %{type: :multiple_without_message}, _ ->
           {:error, [%{message: "Custom Error 1", code: 1}, %{code: 2}]}
+        %{type: :atom}, _ ->
+          {:error, [%{message: "foo"}]}
       end
     end
 
