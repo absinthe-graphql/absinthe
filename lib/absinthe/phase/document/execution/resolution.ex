@@ -207,6 +207,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     result
     |> to_result(bp_field, full_type)
+    |> Map.put(:extensions, res.extensions)
     |> walk_result(res.acc, bp_field, full_type, info)
   end
   defp build_result(%{errors: errors} = res, info, source) do

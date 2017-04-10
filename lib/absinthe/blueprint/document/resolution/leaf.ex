@@ -9,7 +9,8 @@ defmodule Absinthe.Blueprint.Document.Resolution.Leaf do
     :emitter,
     :value,
     errors: [],
-    flags: %{}
+    flags: %{},
+    extensions: %{},
   ]
 
   @type t :: %__MODULE__{
@@ -17,6 +18,7 @@ defmodule Absinthe.Blueprint.Document.Resolution.Leaf do
     value: Blueprint.Document.Resolution.node_t,
     errors: [Phase.Error.t],
     flags: Blueprint.flags_t,
+    extensions: %{any => any},
   }
 
 end
