@@ -6,9 +6,9 @@ defmodule Absinthe.Phase.Blueprint do
   alias Absinthe.Blueprint
 
   @spec run(any, Keyword.t) :: {:ok, Blueprint.t}
-  def run(input, _options \\ []) do
-    doc = input # The doc is also the input
-    {:ok, Blueprint.Draft.convert(input, doc)}
+  def run(blueprint, _options \\ []) do
+    input = blueprint.input # The doc is also the input
+    {:ok, Blueprint.Draft.convert(input, blueprint)}
   end
 
 end

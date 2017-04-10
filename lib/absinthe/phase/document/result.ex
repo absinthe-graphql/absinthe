@@ -8,15 +8,11 @@ defmodule Absinthe.Phase.Document.Result do
   use Absinthe.Phase
 
   @spec run(Blueprint.t | Phase.Error.t, Keyword.t) :: {:ok, map}
-  def run(input, _options \\ []) do
-    result = input |> process
-    {:ok, result}
+  def run(%Blueprint{} = bp, _options \\ []) do
+    {:ok, %{bp | result: process(bp)}}
   end
 
-  defp process(%Phase.Error{} = error) do
-    format_result({:parse_failed, error})
-  end
-  defp process(%Blueprint{} = blueprint) do
+  defp process(blueprint) do
     result = case blueprint.resolution do
       %{validation: [], result: nil} ->
         :execution_failed

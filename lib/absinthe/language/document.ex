@@ -64,8 +64,8 @@ defmodule Absinthe.Language.Document do
       Language.Fragment,
     ]
 
-    def convert(node, _) do
-      Enum.reduce(node.definitions, %Blueprint{}, &convert_definition(&1, node, &2))
+    def convert(node, bp) do
+      Enum.reduce(node.definitions, bp, &convert_definition(&1, node, &2))
     end
 
     defp convert_definition(%struct{} = node, doc, blueprint) when struct in @operations do
