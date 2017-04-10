@@ -245,8 +245,6 @@ defmodule Absinthe.Middleware do
     state if you care.
   """
 
-  alias Absinthe.Blueprint.Document
-
   @type function_name :: atom
 
   @type spec :: module | {module, term} | {{module, function_name}, term} | ((Absinthe.Resolution.t, term) -> Absinthe.Resolution.t)
