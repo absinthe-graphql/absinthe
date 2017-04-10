@@ -200,7 +200,7 @@ defmodule Absinthe.Middleware do
   field :hello, :string do
     middleware Auth, some_option: 1
     resolve &get_the_string/2
-    middleware HandleAuth, :foo
+    middleware HandleError, :foo
   end
   ```
 
