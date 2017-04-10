@@ -33,6 +33,7 @@ defmodule Absinthe.Resolution do
     source: any,
     state: field_state,
     acc: %{any => any},
+    arguments: %{optional(atom) => any}
   }
 
   @enforce_keys [:adapter, :context, :root_value, :schema, :source, :type_cache]

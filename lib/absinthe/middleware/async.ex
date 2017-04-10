@@ -91,7 +91,7 @@ defmodule Absinthe.Middleware.Async do
   def pipeline(pipeline, acc) do
     case acc do
       %{__MODULE__ => true} ->
-        [Absinthe.Plugin.resolution_phases | pipeline]
+        [Absinthe.Phase.Document.Execution.Resolution | pipeline]
       _ ->
         pipeline
     end
