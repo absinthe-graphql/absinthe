@@ -41,7 +41,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp perform_resolution(bp_root, operation, options) do
-    root_value = Keyword.get(options, :root_value, %{})
+    root_value = bp_root.resolution.root_value
 
     info   = build_info(bp_root, root_value, options)
     acc    = bp_root.resolution.acc
@@ -65,7 +65,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp run_callbacks(_, _, acc, _ ), do: acc
 
   defp build_info(bp_root, root_value, options) do
-    context = Keyword.get(options, :context, %{})
+    context = bp_root.resolution.context
 
     %Absinthe.Resolution{
       adapter: bp_root.adapter,

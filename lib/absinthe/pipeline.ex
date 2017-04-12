@@ -44,7 +44,7 @@ defmodule Absinthe.Pipeline do
       # Parse Document
       {Phase.Parse, options},
       # Convert to Blueprint
-      Phase.Blueprint,
+      {Phase.Blueprint, options},
       # Find Current Operation (if any)
       {Phase.Document.Validation.ProvidedAnOperation, options},
       {Phase.Document.CurrentOperation, options},

@@ -52,6 +52,7 @@ defmodule Absinthe.Resolution do
     acc: %{},
     arguments: %{},
     private: %{},
+    path: [],
     state: :unresolved,
   ]
 
