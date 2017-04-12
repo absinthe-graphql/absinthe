@@ -305,7 +305,7 @@ defmodule AbsintheTest do
     assert {:error, bp} = Absinthe.Phase.Parse.run(query, jump_phases: false)
     assert [%Absinthe.Phase.Error{extra: %{},
               locations: [%{column: 0, line: 2}], message: "illegal: -w",
-              phase: Absinthe.Phase.Parse}] == bp.resolution.validation
+              phase: Absinthe.Phase.Parse}] == bp.resolution.validation_errors
   end
 
   it "should resolve using enums" do
