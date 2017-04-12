@@ -324,9 +324,9 @@ defmodule Absinthe.Schema do
   def lookup_type(schema, type, options \\ [unwrap: true]) do
     cond do
       is_atom(type) ->
-        do_lookup_type(schema, type)
+        cached_lookup_type(schema, type)
       is_binary(type) ->
-        do_lookup_type(schema, type)
+        cached_lookup_type(schema, type)
       Type.wrapped?(type) ->
         if Keyword.get(options, :unwrap) do
           lookup_type(schema, type |> Type.unwrap)
@@ -338,7 +338,8 @@ defmodule Absinthe.Schema do
     end
   end
 
-  defp do_lookup_type(schema, type) do
+  @doc false
+  def cached_lookup_type(schema, type) do
     # TODO: elaborate on why we're using the pdict.
     case :erlang.get({schema, type}) do
       :undefined ->

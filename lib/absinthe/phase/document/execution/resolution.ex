@@ -118,7 +118,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     info = %{info | parent_type: parent_type, source: source}
 
-    do_resolve_fields(fields, acc, info, source, parent_type, [])
+    do_resolve_fields(fields, acc, info, source, [])
   end
 
   defp get_return_type(%{schema_node: %Type.Field{type: type}}) do
@@ -134,7 +134,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     concrete_fields = concrete_type.fields
 
-    fields = for field <- parent_fields, field_applies?(concrete_type, field) do
+    fields = for field <- parent_fields, field_applies?(concrete_type, field, info) do
       case field.name do
         "__" <> _ ->
           field
@@ -146,17 +146,29 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     {concrete_type, fields}
   end
   defp handle_abstract_types(parent_type, parent_fields, _source, _info) do
-    {parent_type, parent_fields}
+    # you essentially have to refresh the schema nodes. This can happen when you have an interface
+    # based type condition placed under a concrete field. The parent field type is concrete,
+    # but the sub selection types are built on the abstract type not the concrete type.
+    # Ideally we so
+    concrete_fields = parent_type.fields
+    fields = for field <- parent_fields do
+      case field.name do
+        "__" <> _ ->
+          field
+        _ ->
+          %{field | schema_node: Map.fetch!(concrete_fields, field.schema_node.__reference__.identifier)}
+      end
+    end
+    {parent_type, fields}
   end
 
-  defp do_resolve_fields(fields, res_acc, info, source, parent_type, acc)
-  defp do_resolve_fields([], res_acc, _, _, _, acc), do: {:lists.reverse(acc), res_acc}
-  defp do_resolve_fields([%{schema_node: nil} | fields], res_acc, info, source, parent_type, acc) do
-    do_resolve_fields(fields, res_acc, info, source, parent_type, acc)
-  end
-  defp do_resolve_fields([field | fields], res_acc, info, source, parent_type, acc) do
+  defp do_resolve_fields([], res_acc, _, _, acc), do: {:lists.reverse(acc), res_acc}
+  # defp do_resolve_fields([%{schema_node: nil} | fields], res_acc, info, source, acc) do
+  #   do_resolve_fields(fields, res_acc, info, source, acc)
+  # end
+  defp do_resolve_fields([field | fields], res_acc, info, source, acc) do
     {result, res_acc} = resolve_field(field, res_acc, info, source)
-    do_resolve_fields(fields, res_acc, info, source, parent_type, [result | acc])
+    do_resolve_fields(fields, res_acc, info, source, [result | acc])
   end
 
   def resolve_field(bp_field, acc, info, source) do
@@ -302,7 +314,19 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     }
   end
 
-  def field_applies?(parent_type, %{type_conditions: conditions}) do
+  defp normalize_condition(condition, schema) when is_atom(condition) do
+    Absinthe.Schema.lookup_type(schema, condition)
+  end
+  defp normalize_condition(condition, schema) do
+    type = condition |> Absinthe.Type.unwrap
+    Absinthe.Schema.lookup_type(schema, type)
+  end
+
+  defp field_applies?(parent_type, %{type_conditions: conditions}, info) do
+    conditions = for condition <- conditions do
+      condition |> normalize_condition(info.schema)
+    end
+
     # custom version of Enum.all?(conditions, &passes_type_condition?(&1, parent_type))
     do_field_applies?(conditions, parent_type, true)
   end
