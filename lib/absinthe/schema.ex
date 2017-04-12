@@ -318,26 +318,26 @@ defmodule Absinthe.Schema do
   end
 
 
-    @doc """
-    Lookup a type by name, identifier, or by unwrapping.
-    """
-    @spec lookup_type(atom, Type.wrapping_t | Type.t | Type.identifier_t, Keyword.t) :: Type.t | nil
-    def lookup_type(schema, type, options \\ [unwrap: true]) do
-      cond do
-        is_atom(type) ->
-          schema.__absinthe_lookup__(type)
-        is_binary(type) ->
-          schema.__absinthe_lookup__(type)
-        Type.wrapped?(type) ->
-          if Keyword.get(options, :unwrap) do
-            lookup_type(schema, type |> Type.unwrap)
-          else
-            type
-          end
-        true ->
+  @doc """
+  Lookup a type by name, identifier, or by unwrapping.
+  """
+  @spec lookup_type(atom, Type.wrapping_t | Type.t | Type.identifier_t, Keyword.t) :: Type.t | nil
+  def lookup_type(schema, type, options \\ [unwrap: true]) do
+    cond do
+      is_atom(type) ->
+        schema.__absinthe_lookup__(type)
+      is_binary(type) ->
+        schema.__absinthe_lookup__(type)
+      Type.wrapped?(type) ->
+        if Keyword.get(options, :unwrap) do
+          lookup_type(schema, type |> Type.unwrap)
+        else
           type
-      end
+        end
+      true ->
+        type
     end
+  end
 
   @doc """
   List all types on a schema
