@@ -23,7 +23,7 @@ defmodule Absinthe.Phase.Document.Validation.Result do
       {[], false, _} ->
         {:ok, result}
       {_, _, false} ->
-        {:ok, result}
+        {:error, result}
       _ ->
         {:jump, result, abort_phase}
     end
