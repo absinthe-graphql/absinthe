@@ -33,6 +33,7 @@ defmodule Absinthe.Resolution do
     source: any,
     state: field_state,
     acc: %{any => any},
+    extensions: %{any => any},
     arguments: %{optional(atom) => any}
   }
 
@@ -51,6 +52,7 @@ defmodule Absinthe.Resolution do
     middleware: [],
     acc: %{},
     arguments: %{},
+    extensions: %{},
     private: %{},
     path: [],
     state: :unresolved,

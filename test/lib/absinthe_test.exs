@@ -302,7 +302,10 @@ defmodule AbsintheTest do
     }
     """
 
-    assert {:error, "illegal: -w, on line 2"} == Absinthe.Phase.Parse.run(query, jump_phases: false)
+    assert {:error, bp} = Absinthe.Phase.Parse.run(query, jump_phases: false)
+    assert [%Absinthe.Phase.Error{extra: %{},
+              locations: [%{column: 0, line: 2}], message: "illegal: -w",
+              phase: Absinthe.Phase.Parse}] == bp.resolution.validation_errors
   end
 
   it "should resolve using enums" do
@@ -384,7 +387,7 @@ defmodule AbsintheTest do
     """
 
     it "can be parsed" do
-      {:ok, doc, _} = Absinthe.Pipeline.run(@simple_fragment, [Absinthe.Phase.Parse])
+      {:ok, %{input: doc}, _} = Absinthe.Pipeline.run(@simple_fragment, [Absinthe.Phase.Parse])
       assert %{definitions: [%Absinthe.Language.OperationDefinition{},
                              %Absinthe.Language.Fragment{name: "NamedPerson"}]} = doc
     end

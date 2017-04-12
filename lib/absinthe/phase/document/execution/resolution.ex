@@ -43,7 +43,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp perform_resolution(bp_root, operation, options) do
     root_value = bp_root.resolution.root_value
 
-    info   = build_info(bp_root, root_value, options)
+    info   = build_info(bp_root, root_value)
     acc    = bp_root.resolution.acc
     result = bp_root.resolution |> Resolution.get_result(operation, root_value)
 
@@ -64,7 +64,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
   defp run_callbacks(_, _, acc, _ ), do: acc
 
-  defp build_info(bp_root, root_value, options) do
+  defp build_info(bp_root, root_value) do
     context = bp_root.resolution.context
 
     %Absinthe.Resolution{
@@ -230,6 +230,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     result
     |> to_result(bp_field, full_type)
+    |> Map.put(:extensions, res.extensions)
     |> walk_result(res.acc, bp_field, full_type, info)
   end
   defp build_result(%{errors: errors} = res, info, source) do

@@ -152,7 +152,9 @@ defmodule Absinthe.Phase.ParseTest do
   end
 
   def run(input) do
-    Absinthe.Phase.Parse.run(input)
+    with {:ok, %{input: input}} <- Absinthe.Phase.Parse.run(input) do
+      {:ok, input}
+    end
   end
 
 

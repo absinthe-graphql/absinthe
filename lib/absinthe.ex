@@ -223,7 +223,7 @@ defmodule Absinthe do
   def run(document, schema, options \\ []) do
     pipeline = Absinthe.Pipeline.for_document(schema, options)
     case Absinthe.Pipeline.run(document, pipeline) do
-      {:ok, result, _phases} ->
+      {:ok, %{result: result}, _phases} ->
         {:ok, result}
       {:error, msg, _phases} ->
         {:error, msg}
