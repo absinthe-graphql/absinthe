@@ -8,7 +8,6 @@ defmodule Absinthe.Blueprint.Document.Resolution do
   @type acc :: map
 
   defstruct [
-    type_cache: %{},
     validation_errors: [],
     result: nil,
     acc: %{},

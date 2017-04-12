@@ -37,7 +37,7 @@ defmodule Absinthe.Resolution do
     arguments: %{optional(atom) => any}
   }
 
-  @enforce_keys [:adapter, :context, :root_value, :schema, :source, :type_cache]
+  @enforce_keys [:adapter, :context, :root_value, :schema, :source]
   defstruct [
     :value,
     :adapter,
@@ -47,7 +47,6 @@ defmodule Absinthe.Resolution do
     :definition,
     :schema,
     :source,
-    :type_cache,
     errors: [],
     middleware: [],
     acc: %{},

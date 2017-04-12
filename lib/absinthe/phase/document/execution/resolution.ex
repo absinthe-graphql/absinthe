@@ -73,7 +73,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       root_value: root_value,
       schema: bp_root.schema,
       source: root_value,
-      type_cache: bp_root.resolution.type_cache,
     }
   end
 
@@ -131,11 +130,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp get_return_type(type), do: type
 
   defp handle_abstract_types(%abstract_mod{} = parent_type, parent_fields, source, info) when abstract_mod in [Type.Interface, Type.Union] do
-    concrete_type_identifier = abstract_mod.resolve_type(parent_type, source, info, lookup: false)
-
-    concrete_type =
-      info.type_cache
-      |> Map.fetch!(concrete_type_identifier)
+    concrete_type = abstract_mod.resolve_type(parent_type, source, info)
 
     concrete_fields = concrete_type.fields
 
@@ -224,7 +219,9 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   defp build_result(%{errors: [], value: result} = res, info, _source) do
     bp_field = res.definition
-    full_type = bp_field.schema_node.type
+    full_type = Type.expand(bp_field.schema_node.type, info.schema)
+
+    bp_field = put_in(bp_field.schema_node.type, full_type)
 
     info = %{info | context: res.context}
 
