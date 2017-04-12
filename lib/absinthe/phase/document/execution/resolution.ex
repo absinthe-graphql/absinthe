@@ -153,11 +153,11 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     {parent_type, parent_fields}
   end
 
-  defp do_resolve_fields([], res_acc, _, _, _, _, acc), do: {:lists.reverse(acc), res_acc}
-  defp do_resolve_fields([%{name: name} = field | fields], res_acc, info, source, parent_type, path, acc) do
-    {result, res_acc} = resolve_field(field, res_acc, info, source, [name | path])
+  defp do_resolve_fields([%{name: name, alias: alias} = field | fields], res_acc, info, source, parent_type, path, acc) do
+    {result, res_acc} = resolve_field(field, res_acc, info, source, [alias || name | path])
     do_resolve_fields(fields, res_acc, info, source, parent_type, path, [result | acc])
   end
+  defp do_resolve_fields([], res_acc, _, _, _, _, acc), do: {:lists.reverse(acc), res_acc}
 
   def resolve_field(bp_field, acc, info, source, path) do
     info

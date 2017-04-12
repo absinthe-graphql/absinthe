@@ -114,7 +114,7 @@ defmodule Things do
         ],
       ],
       resolve: fn
-        %{id: id}, info ->
+        %{id: id}, _ ->
           {:ok, @db |> Map.get(id)}
       end
 
