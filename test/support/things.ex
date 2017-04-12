@@ -114,7 +114,7 @@ defmodule Things do
         ],
       ],
       resolve: fn
-        %{id: id}, _ ->
+        %{id: id}, info ->
           {:ok, @db |> Map.get(id)}
       end
 
@@ -167,7 +167,9 @@ defmodule Things do
     description "A thing"
 
     field :id, non_null(:string),
-      description: "The ID of the thing"
+      description: "The ID of the thing", resolve: fn parent, _, info ->
+        {:ok, Map.get(parent, :id)}
+      end
 
     field :name, :string,
       description: "The name of the thing"
