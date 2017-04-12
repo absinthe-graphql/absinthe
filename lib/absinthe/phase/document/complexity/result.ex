@@ -17,7 +17,7 @@ defmodule Absinthe.Phase.Document.Complexity.Result do
     fun = &handle_node(&1, max, &2)
     {operation, errors} = Blueprint.prewalk(operation, [], fun)
     result = Blueprint.update_current(input, fn(_) -> operation end)
-    result = put_in(result.resolution.validation, errors)
+    result = put_in(result.resolution.validation_errors, errors)
     case {errors, Map.new(options)} do
       {[_|_], %{jump_phases: true, result_phase: abort_phase}} ->
         {:jump, result, abort_phase}

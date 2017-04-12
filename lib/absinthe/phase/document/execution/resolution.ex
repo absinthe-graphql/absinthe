@@ -26,23 +26,46 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     blueprint = %{bp_root | resolution: resolution}
 
-    {:ok, blueprint}
+    if Keyword.get(options, :plugin_callbacks, true) do
+      bp_root.schema.plugins()
+      |> Absinthe.Plugin.pipeline(resolution.acc)
+      |> case do
+        [] ->
+          {:ok, blueprint}
+        pipeline ->
+          {:insert, blueprint, pipeline}
+      end
+    else
+      {:ok, blueprint}
+    end
   end
 
   defp perform_resolution(bp_root, operation, options) do
-    root_value = Keyword.get(options, :root_value, %{})
+    root_value = bp_root.resolution.root_value
 
     info   = build_info(bp_root, root_value, options)
     acc    = bp_root.resolution.acc
     result = bp_root.resolution |> Resolution.get_result(operation, root_value)
 
+    plugins = bp_root.schema.plugins()
+    run_callbacks? = Keyword.get(options, :plugin_callbacks, true)
+
+    acc = plugins |> run_callbacks(:before_resolution, acc, run_callbacks?)
+
     {result, acc} = walk_result(result, acc, operation, operation.schema_node, info)
+
+    acc = plugins |> run_callbacks(:after_resolution, acc, run_callbacks?)
 
     Resolution.update(bp_root.resolution, result, acc)
   end
 
+  defp run_callbacks(plugins, callback, acc, true) do
+    Enum.reduce(plugins, acc, &apply(&1, callback, [&2]))
+  end
+  defp run_callbacks(_, _, acc, _ ), do: acc
+
   defp build_info(bp_root, root_value, options) do
-    context = Keyword.get(options, :context, %{})
+    context = bp_root.resolution.context
 
     %Absinthe.Resolution{
       adapter: bp_root.adapter,

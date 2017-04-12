@@ -46,17 +46,6 @@ defmodule Absinthe.Plugin do
     [Absinthe.Middleware.Batch, Absinthe.Middleware.Async]
   end
 
-  @doc """
-  Returns the list of phases necessary to run resolution again.
-  """
-  def resolution_phases() do
-    [
-      Absinthe.Phase.Document.Execution.BeforeResolution,
-      Absinthe.Phase.Document.Execution.Resolution,
-      Absinthe.Phase.Document.Execution.AfterResolution,
-    ]
-  end
-
   @doc false
   def pipeline(plugins, resolution_acc) do
     Enum.reduce(plugins, [], fn plugin, pipeline ->

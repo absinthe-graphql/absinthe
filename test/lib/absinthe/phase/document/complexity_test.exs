@@ -65,7 +65,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       {:ok, result, _} = run_phase(doc, operation_name: "ComplexityArg", variables: %{})
       op = result.operations |> Enum.find(&(&1.name == "ComplexityArg"))
       assert op.complexity == 8
-      errors = result.resolution.validation |> Enum.map(&(&1.message))
+      errors = result.resolution.validation_errors |> Enum.map(&(&1.message))
       assert errors == []
     end
 
@@ -82,7 +82,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       {:ok, result, _} = run_phase(doc, operation_name: "ComplexityVar", variables: %{"limit" => 5})
       op = result.operations |> Enum.find(&(&1.name == "ComplexityVar"))
       assert op.complexity == 15
-      errors = result.resolution.validation |> Enum.map(&(&1.message))
+      errors = result.resolution.validation_errors |> Enum.map(&(&1.message))
       assert errors == []
     end
 
@@ -99,13 +99,13 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       {:ok, result, _} = run_phase(doc, operation_name: "ContextComplexity", variables: %{}, context: %{current_user: true})
       op = result.operations |> Enum.find(&(&1.name == "ContextComplexity"))
       assert op.complexity == 3
-      errors = result.resolution.validation |> Enum.map(&(&1.message))
+      errors = result.resolution.validation_errors |> Enum.map(&(&1.message))
       assert errors == []
 
       {:ok, result, _} = run_phase(doc, operation_name: "ContextComplexity", variables: %{})
       op = result.operations |> Enum.find(&(&1.name == "ContextComplexity"))
       assert op.complexity == 13
-      errors = result.resolution.validation |> Enum.map(&(&1.message))
+      errors = result.resolution.validation_errors |> Enum.map(&(&1.message))
       assert errors == []
 
     end
@@ -156,7 +156,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       op = result.operations |> Enum.find(&(&1.name == "ComplexityDiscount"))
       assert op.complexity == 99
 
-      errors = result.resolution.validation |> Enum.map(&(&1.message))
+      errors = result.resolution.validation_errors |> Enum.map(&(&1.message))
       assert errors == []
     end
 
@@ -170,7 +170,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       """
 
       {:ok, result, _} = run_phase(doc, operation_name: "ComplexityError", variables: %{}, max_complexity: 5)
-      errors = result.resolution.validation |> Enum.map(&(&1.message))
+      errors = result.resolution.validation_errors |> Enum.map(&(&1.message))
       assert errors == [
         "Field fooComplexity is too complex: complexity is 6 and maximum is 5",
         "Operation ComplexityError is too complex: complexity is 6 and maximum is 5"
@@ -190,7 +190,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       """
 
       {:ok, result, _} = run_phase(doc, operation_name: "ComplexityNested", variables: %{}, max_complexity: 4)
-      errors = result.resolution.validation |> Enum.map(&(&1.message))
+      errors = result.resolution.validation_errors |> Enum.map(&(&1.message))
       assert errors == [
         "Field nestedComplexity is too complex: complexity is 5 and maximum is 4",
         "Operation ComplexityNested is too complex: complexity is 5 and maximum is 4"
@@ -208,7 +208,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
 
       {:ok, result, _} = run_phase(doc, operation_name: nil, variables: %{},
       max_complexity: 100)
-      errors = result.resolution.validation |> Enum.map(&(&1.message))
+      errors = result.resolution.validation_errors |> Enum.map(&(&1.message))
       assert errors == [
         "Field fooComplexity is too complex: complexity is 105 and maximum is 100",
         "Operation is too complex: complexity is 105 and maximum is 100"
@@ -227,7 +227,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       {:ok, result, _} = run_phase(doc, operation_name: "ComplexitySkip", variables: %{}, max_complexity: 1, analyze_complexity: false)
       op = result.operations |> Enum.find(&(&1.name == "ComplexitySkip"))
       assert op.complexity == nil
-      errors = result.resolution.validation |> Enum.map(&(&1.message))
+      errors = result.resolution.validation_errors |> Enum.map(&(&1.message))
       assert errors == []
     end
 
