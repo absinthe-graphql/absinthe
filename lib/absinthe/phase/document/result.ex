@@ -4,25 +4,21 @@ defmodule Absinthe.Phase.Document.Result do
 
   # Produces data fit for external encoding from annotated value tree
 
-  alias Absinthe.{Blueprint, Phase}
+  alias Absinthe.{Blueprint, Phase, Type}
   use Absinthe.Phase
 
   @spec run(Blueprint.t | Phase.Error.t, Keyword.t) :: {:ok, map}
-  def run(input, _options \\ []) do
-    result = input |> process
-    {:ok, result}
+  def run(%Blueprint{} = bp, _options \\ []) do
+    {:ok, %{bp | result: process(bp)}}
   end
 
-  defp process(%Phase.Error{} = error) do
-    format_result({:parse_failed, error})
-  end
-  defp process(%Blueprint{} = blueprint) do
+  defp process(blueprint) do
     result = case blueprint.resolution do
-      %{validation: [], result: nil} ->
+      %{validation_errors: [], result: nil} ->
         :execution_failed
-      %{validation: [], result: result} ->
+      %{validation_errors: [], result: result} ->
         {:ok, field_data(result.fields, [])}
-      %{validation: errors} ->
+      %{validation_errors: errors} ->
         {:validation_failed, errors}
     end
     format_result(result)
@@ -46,11 +42,20 @@ defmodule Absinthe.Phase.Document.Result do
     %{errors: [format_error(error)]}
   end
 
-  defp data(%{errors: [], value: value}, errors), do: {value, errors}
-  defp data(%{errors: field_errors, value: _}, errors), do: {nil, field_errors ++ errors}
+  defp data(%{errors: [_|_] = field_errors}, errors), do: {nil, field_errors ++ errors}
 
   # Leaf
-  defp data(%{value: value}, errors), do: {value, errors}
+  defp data(%{value: nil}, errors), do: {nil, errors}
+  defp data(%{value: value, emitter: emitter}, errors) do
+    value =
+      case Type.unwrap(emitter.schema_node.type) do
+        %Type.Scalar{} = schema_node ->
+          Type.Scalar.serialize(schema_node, value)
+        %Type.Enum{} = schema_node ->
+          Type.Enum.serialize(schema_node, value)
+      end
+    {value, errors}
+  end
 
   # Object
   defp data(%{fields: fields}, errors), do: field_data(fields, errors)

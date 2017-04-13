@@ -46,6 +46,10 @@ defmodule Absinthe.TypeTest do
   defmodule MetadataSchema do
     use Absinthe.Schema
 
+    query do
+      #Query type must exist
+    end
+
     object :with_meta do
       meta :foo, "bar"
     end

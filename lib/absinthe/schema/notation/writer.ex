@@ -21,8 +21,6 @@ defmodule Absinthe.Schema.Notation.Writer do
     implementors  = Macro.escape info.implementors
     directive_map = Macro.escape info.directive_map
 
-    default_resolve_func = Module.get_attribute(env.module, :absinthe_custom_default_resolve)
-
     [
       quote do
         def __absinthe_types__, do: unquote(type_map)
@@ -43,16 +41,28 @@ defmodule Absinthe.Schema.Notation.Writer do
         def __absinthe_interface_implementors__, do: unquote(implementors)
         def __absinthe_exports__, do: unquote(exports)
       end,
-      custom_default_resolve(default_resolve_func),
-      quote do
-        def resolution_plugins do
-          unquote(Absinthe.Resolution.Plugin.defaults())
-        end
-        defoverridable(resolution_plugins: 0)
-      end    ]
+    ]
+  end
+
+  defp init_implementors(nil) do
+    %{}
+  end
+  defp init_implementors(modules) do
+    modules
+    |> Enum.map(&(&1.__absinthe_interface_implementors__))
+    |> Enum.reduce(%{}, fn implementors, acc ->
+      Map.merge(implementors, acc, fn _k, v1, v2 ->
+        v1 ++ v2
+      end)
+    end)
   end
 
   def build_info(env) do
+    implementors =
+      env.module
+      |> Module.get_attribute(:absinthe_imports)
+      |> init_implementors
+
     descriptions =
       env.module
       |> Module.get_attribute(:absinthe_descriptions)
@@ -68,29 +78,40 @@ defmodule Absinthe.Schema.Notation.Writer do
       |> Absinthe.Schema.Rule.FieldImportsExist.check
       |> Absinthe.Schema.Rule.NoCircularFieldImports.check
 
-    info = %__MODULE__{env: env, errors: errors}
+    info = %__MODULE__{
+      env: env,
+      errors: errors,
+      implementors: implementors
+    }
 
     Enum.reduce(definitions, info, &do_build_info/2)
-  end
-
-  defp custom_default_resolve(nil) do
-    quote do
-      def __absinthe_custom_default_resolve__, do: nil
-    end
-  end
-  defp custom_default_resolve(func) do
-    quote do
-      def __absinthe_custom_default_resolve__, do: unquote(func)
-    end
   end
 
   defp type_functions(definition) do
     ast = build(:type, definition)
     identifier = definition.identifier
     name = definition.attrs[:name]
-    quote do
-      def __absinthe_type__(unquote(identifier)), do: unquote(ast)
-      def __absinthe_type__(unquote(name)), do: __absinthe_type__(unquote(identifier))
+
+    result = [
+      quote do: def __absinthe_type__(unquote(name)), do: __absinthe_type__(unquote(identifier))
+    ]
+
+    if definition.builder == Absinthe.Type.Object do
+      [
+        quote do
+          def __absinthe_type__(unquote(identifier)) do
+            unquote(ast)
+          end
+        end,
+        result
+      ]
+    else
+      [
+        quote do
+          def __absinthe_type__(unquote(identifier)), do: unquote(ast)
+        end,
+        result
+      ]
     end
   end
 

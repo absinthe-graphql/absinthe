@@ -9,16 +9,17 @@ defmodule Absinthe.Blueprint.Document.Resolution.Object do
     :root_value,
     :emitter,
     :fields,
-    # Added by phases
     errors: [],
-    flags: %{}
+    flags: %{},
+    extensions: %{},
   ]
 
   @type t :: %__MODULE__{
     emitter: Blueprint.Document.Field.t,
     fields: [Blueprint.Document.Resolution.node_t],
     errors: [Phase.Error.t],
-    flags: Blueprint.flags_t
+    flags: Blueprint.flags_t,
+    extensions: %{any => any},
   }
 
 end

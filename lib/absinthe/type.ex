@@ -250,7 +250,7 @@ defmodule Absinthe.Type do
   @doc "Expand any atom type references inside a List or NonNull"
   @spec expand(reference_t, Schema.t) :: wrapping_t | t
   def expand(ref, schema) when is_atom(ref) do
-    schema.__absinthe_type__(ref)
+    schema.__absinthe_lookup__(ref)
   end
   def expand(%{of_type: contents} = ref, schema) do
     %{ref | of_type: expand(contents, schema)}

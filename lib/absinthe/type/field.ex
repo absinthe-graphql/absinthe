@@ -25,7 +25,7 @@ defmodule Absinthe.Type.Field do
   @typedoc """
   The result of a resolver.
   """
-  @type result :: ok_result | error_result | plugin_result
+  @type result :: ok_result | error_result | middleware_result
 
   @typedoc """
   A complexity function.
@@ -41,7 +41,7 @@ defmodule Absinthe.Type.Field do
 
   @type ok_result :: {:ok, any}
   @type error_result :: {:error, error_value}
-  @type plugin_result :: {:plugin, Absinthe.Resolution.Plugin.t, term}
+  @type middleware_result :: {:middleware, Absinthe.Middleware.spec, term}
 
   @typedoc """
   An error message is a human-readable string describing the error that occurred.
@@ -63,7 +63,7 @@ defmodule Absinthe.Type.Field do
   @typedoc """
   An error value is a simple error message, a custom error, or a list of either/both of them.
   """
-  @type error_value :: error_message | custom_error | [error_message | custom_error]
+  @type error_value :: error_message | custom_error | [error_message | custom_error] | serializable
 
   @typedoc """
   The configuration for a field.
@@ -183,19 +183,31 @@ defmodule Absinthe.Type.Field do
 
   """
   @type t :: %__MODULE__{
+               identifier: atom,
                name: binary,
                description: binary | nil,
                type: Type.identifier_t,
                deprecation: Deprecation.t | nil,
                default_value: any,
                args: %{(binary | atom) => Absinthe.Type.Argument.t} | nil,
-               resolve: resolver_t | nil,
+               middleware: [],
                complexity: complexity_t | nil,
                __private__: Keyword.t,
                __reference__: Type.Reference.t}
 
-  defstruct name: nil, description: nil, type: nil, deprecation: nil, args: %{},
-  resolve: nil, complexity: nil, default_value: nil, __private__: [], __reference__: nil
+  defstruct [
+    identifier: nil,
+    name: nil,
+    description: nil,
+    type: nil,
+    deprecation: nil,
+    args: %{},
+    middleware: [],
+    complexity: nil,
+    default_value: nil,
+    __private__: [],
+    __reference__: nil,
+  ]
 
   @doc """
   Build an AST of the field map for inclusion in other types
@@ -220,7 +232,16 @@ defmodule Absinthe.Type.Field do
       name = field_name |> Atom.to_string
       default_ref = field_attrs[:__reference__]
 
-      field_data = [name: name] ++ Keyword.update(field_attrs, :args, quoted_empty_map, fn
+      field_attrs = case Keyword.pop(field_attrs, :resolve) do
+        {nil, field_attrs} ->
+          field_attrs
+        {resolution_function_ast, field_attrs} ->
+          Keyword.put(field_attrs, :middleware, [{Absinthe.Resolution, resolution_function_ast}])
+      end
+
+      field_attrs = Keyword.update(field_attrs, :middleware, [], &Enum.reverse/1)
+
+      field_data = [name: name, identifier: field_name] ++ Keyword.update(field_attrs, :args, quoted_empty_map, fn
         raw_args ->
           args = for {name, attrs} <- raw_args, do: {name, ensure_reference(attrs, name, default_ref)}
           Type.Argument.build(args)
@@ -240,46 +261,6 @@ defmodule Absinthe.Type.Field do
         {a, b, args} = default_reference
 
         Keyword.put(arg_attrs, :__reference__, {a, b, Keyword.put(args, :identifier, name)})
-    end
-  end
-
-  def resolve(field, args, parent, field_info) do
-    field =
-      field
-      |> maybe_add_default(field_info.schema.__absinthe_custom_default_resolve__)
-      |> maybe_add_default(system_default(field.__reference__.identifier))
-      |> maybe_wrap_with_private
-
-    Absinthe.Resolution.call field.resolve, parent, args, field_info
-  end
-
-  defp maybe_add_default(%{resolve: nil} = node, resolution_function) do
-    %{node | resolve: resolution_function}
-  end
-  defp maybe_add_default(node, _) do
-    node
-  end
-
-  defp maybe_wrap_with_private(%{resolve: resolve, __private__: private} = node) do
-    resolve =
-      private
-      |> Keyword.values
-      |> Enum.reduce(resolve, fn private, resolve ->
-        if constructor = private[:resolve] do
-          constructor.(resolve)
-        else
-          resolve
-        end
-      end)
-
-    %{node | resolve: resolve}
-  end
-
-  # TODO: Optimize to avoid anonymous function closure
-  # Maybe optimize w/ Map.take (hard because order matters)
-  defp system_default(field_name) do
-    fn parent, _, _ ->
-      {:ok, Map.get(parent, field_name)}
     end
   end
 

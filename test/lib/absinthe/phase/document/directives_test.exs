@@ -16,7 +16,7 @@ defmodule Absinthe.Phase.Document.DirectivesTest do
     end
 
     object :category do
-      field :name
+      field :name, :string
     end
 
   end
@@ -38,7 +38,7 @@ defmodule Absinthe.Phase.Document.DirectivesTest do
   describe ".run with built-in @include" do
 
     it "returns a blueprint" do
-      {:ok, result} = input(@query, %{})
+      {:ok, result} = input(@query, %{"cats" => true})
       assert %Blueprint{} = result
     end
 

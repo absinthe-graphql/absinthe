@@ -302,7 +302,10 @@ defmodule AbsintheTest do
     }
     """
 
-    assert {:error, "illegal: -w, on line 2"} == Absinthe.Phase.Parse.run(query, jump_phases: false)
+    assert {:error, bp} = Absinthe.Phase.Parse.run(query, jump_phases: false)
+    assert [%Absinthe.Phase.Error{extra: %{},
+              locations: [%{column: 0, line: 2}], message: "illegal: -w",
+              phase: Absinthe.Phase.Parse}] == bp.resolution.validation_errors
   end
 
   it "should resolve using enums" do
@@ -384,7 +387,7 @@ defmodule AbsintheTest do
     """
 
     it "can be parsed" do
-      {:ok, doc, _} = Absinthe.Pipeline.run(@simple_fragment, [Absinthe.Phase.Parse])
+      {:ok, %{input: doc}, _} = Absinthe.Pipeline.run(@simple_fragment, [Absinthe.Phase.Parse])
       assert %{definitions: [%Absinthe.Language.OperationDefinition{},
                              %Absinthe.Language.Fragment{name: "NamedPerson"}]} = doc
     end
@@ -400,8 +403,9 @@ defmodule AbsintheTest do
       assert Enum.sort_by(input_fields, sort) == Enum.sort_by(correct, sort)
     end
 
-    it "ignores fragments that can't be applied" do
-      assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == run(@unapplied_fragment, ContactSchema)
+    it "Object spreads in object scope should return an error" do
+      # https://facebook.github.io/graphql/#sec-Object-Spreads-In-Object-Scope
+      assert {:ok, %{errors: [%{locations: [%{column: 0, line: 4}], message: "Fragment spread has no type overlap with parent.\nParent possible types: [\"Person\"]\nSpread possible types: [\"Business\"]\n"}]}} == run(@unapplied_fragment, ContactSchema)
     end
 
   end

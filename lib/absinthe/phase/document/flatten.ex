@@ -87,6 +87,8 @@ defmodule Absinthe.Phase.Document.Flatten do
     fields
   end
   defp inherit_type_condition(fields, %{type_condition: condition}) do
+    condition = condition.schema_node
+
     fields
     |> Enum.map(fn field ->
       update_in(field.type_conditions, &MapSet.to_list(MapSet.new([condition | &1])))

@@ -14,25 +14,36 @@ defmodule Absinthe.Blueprint do
     types: [],
     directives: [],
     fragments: [],
+    name: nil,
     schema: nil,
     adapter: nil,
     # Added by phases
     flags: %{},
     errors: [],
-    resolution: %Blueprint.Document.Resolution{}
+    input: nil,
+    resolution: %Blueprint.Document.Resolution{},
+    result: %{},
   ]
 
   @type t :: %__MODULE__{
     operations: [Blueprint.Document.Operation.t],
     types: [Blueprint.Schema.t],
     directives: [Blueprint.Schema.DirectiveDefinition.t],
+    name: nil | String.t,
     fragments: [Blueprint.Document.Fragment.Named.t],
     schema: nil | Absinthe.Schema.t,
     adapter: nil | Absinthe.Adapter.t,
     # Added by phases
     errors: [Absinthe.Phase.Error.t],
     flags: flags_t,
-    resolution: Blueprint.Document.Resolution.t
+    resolution: Blueprint.Document.Resolution.t,
+    result: result_t,
+  }
+
+  @type result_t :: %{
+    optional(:data) => term,
+    optional(:errors) => [term],
+    optional(:extensions) => term,
   }
 
   @type node_t ::

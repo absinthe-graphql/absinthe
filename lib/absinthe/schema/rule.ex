@@ -25,6 +25,7 @@ defmodule Absinthe.Schema.Rule do
   @type t :: module
 
   @rules [
+    Rule.QueryTypeMustBeObject,
     Rule.TypeNamesAreReserved,
     Rule.TypeNamesAreValid,
     Rule.ObjectInterfacesMustBeValid,
