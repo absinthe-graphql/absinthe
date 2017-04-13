@@ -1,13 +1,12 @@
 defmodule Absinthe.Phase.Document.Flatten do
   @moduledoc false
 
-
   use Absinthe.Phase
-  alias Absinthe.Blueprint
+  alias Absinthe.{Type, Blueprint}
 
   @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
   def run(input, _options \\ []) do
-    result = Blueprint.update_current(blueprint, fn op ->
+    result = Blueprint.update_current(input, fn op ->
       flatten(op, input)
     end)
     {:ok, result}

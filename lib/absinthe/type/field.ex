@@ -101,7 +101,7 @@ defmodule Absinthe.Type.Field do
   ```
   ### Custom Resolution
 
-  When accepting arguments, however, you probably need do use them for
+  When accepting arguments, however, you probably need to use them for
   something. Here's an example of definining a field that looks up a list of
   users for a given `location_id`:
   ```
@@ -135,7 +135,7 @@ defmodule Absinthe.Type.Field do
 
   ### Custom Complexity
 
-  When accepting arguments, however, you probably need do use them for
+  When accepting arguments, however, you probably need to use them for
   something. Here's an example of definining a field that looks up at most
   `limit` users:
   ```
