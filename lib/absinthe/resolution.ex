@@ -34,6 +34,7 @@ defmodule Absinthe.Resolution do
     state: field_state,
     acc: %{any => any},
     extensions: %{any => any},
+    path: [binary],
     arguments: %{optional(atom) => any}
   }
 
