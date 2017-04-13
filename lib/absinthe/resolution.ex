@@ -59,7 +59,9 @@ defmodule Absinthe.Resolution do
     fragments: [],
   ]
 
-  defdelegate project(selections, info), to: __MODULE__.Projector
+  def project(%__MODULE__{definition: %{selections: selections}} = info) do
+    __MODULE__.Projector.project(selections, info)
+  end
 
   def resolver_spec(fun) do
     {{__MODULE__, :call}, fun}
