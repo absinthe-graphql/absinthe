@@ -317,27 +317,39 @@ defmodule Absinthe.Schema do
     schema.__absinthe_directive__(name)
   end
 
-
-    @doc """
-    Lookup a type by name, identifier, or by unwrapping.
-    """
-    @spec lookup_type(atom, Type.wrapping_t | Type.t | Type.identifier_t, Keyword.t) :: Type.t | nil
-    def lookup_type(schema, type, options \\ [unwrap: true]) do
-      cond do
-        is_atom(type) ->
-          schema.__absinthe_lookup__(type)
-        is_binary(type) ->
-          schema.__absinthe_lookup__(type)
-        Type.wrapped?(type) ->
-          if Keyword.get(options, :unwrap) do
-            lookup_type(schema, type |> Type.unwrap)
-          else
-            type
-          end
-        true ->
+  @doc """
+  Lookup a type by name, identifier, or by unwrapping.
+  """
+  @spec lookup_type(atom, Type.wrapping_t | Type.t | Type.identifier_t, Keyword.t) :: Type.t | nil
+  def lookup_type(schema, type, options \\ [unwrap: true]) do
+    cond do
+      is_atom(type) ->
+        cached_lookup_type(schema, type)
+      is_binary(type) ->
+        cached_lookup_type(schema, type)
+      Type.wrapped?(type) ->
+        if Keyword.get(options, :unwrap) do
+          lookup_type(schema, type |> Type.unwrap)
+        else
           type
-      end
+        end
+      true ->
+        type
     end
+  end
+
+  @doc false
+  def cached_lookup_type(schema, type) do
+    # TODO: elaborate on why we're using the pdict.
+    case :erlang.get({schema, type}) do
+      :undefined ->
+        result = schema.__absinthe_lookup__(type)
+        :erlang.put({schema, type}, result)
+        result
+      result ->
+        result
+    end
+  end
 
   @doc """
   List all types on a schema

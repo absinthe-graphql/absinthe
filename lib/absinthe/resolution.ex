@@ -33,10 +33,11 @@ defmodule Absinthe.Resolution do
     source: any,
     state: field_state,
     acc: %{any => any},
+    extensions: %{any => any},
     arguments: %{optional(atom) => any}
   }
 
-  @enforce_keys [:adapter, :context, :root_value, :schema, :source, :type_cache]
+  @enforce_keys [:adapter, :context, :root_value, :schema, :source]
   defstruct [
     :value,
     :adapter,
@@ -46,12 +47,13 @@ defmodule Absinthe.Resolution do
     :definition,
     :schema,
     :source,
-    :type_cache,
     errors: [],
     middleware: [],
     acc: %{},
     arguments: %{},
+    extensions: %{},
     private: %{},
+    path: [],
     state: :unresolved,
   ]
 
