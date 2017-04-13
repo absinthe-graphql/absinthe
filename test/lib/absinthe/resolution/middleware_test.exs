@@ -78,14 +78,8 @@ defmodule Absinthe.MiddlewareTest do
     object :path do
       field :path, :path, resolve: fn _, _ -> {:ok, %{}} end
       field :result, list_of(:string) do
-        resolve fn _, %{path: path} ->
-          result = Enum.map(path, fn
-            %{name: name, alias: alias} ->
-              alias || name
-            %{name: nil, schema_node: schema_node} ->
-              schema_node.name
-          end)
-          {:ok, result}
+        resolve fn _, info ->
+          {:ok, Absinthe.Resolution.path_string(info)}
         end
       end
     end

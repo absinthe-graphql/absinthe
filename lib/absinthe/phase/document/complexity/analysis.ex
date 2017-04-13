@@ -28,7 +28,7 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
   end
 
   def handle_node(%Blueprint.Document.Field{complexity: nil,
-                                            fields: fields,
+                                            selections: fields,
                                             argument_data: args,
                                             schema_node: schema_node} = node, info_data) do
     child_complexity = sum_complexity(fields)
@@ -39,7 +39,7 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
         raise Absinthe.AnalysisError, field_value_error(node, other)
     end
   end
-  def handle_node(%Blueprint.Document.Operation{complexity: nil, fields: fields} = node, _) do
+  def handle_node(%Blueprint.Document.Operation{complexity: nil, selections: fields} = node, _) do
     complexity = sum_complexity(fields)
     %{node | complexity: complexity}
   end
