@@ -69,6 +69,25 @@ defmodule Absinthe.MiddlewareTest do
           {:ok, context.value}
         end
       end
+
+      field :path, :path do
+        resolve fn _, _ -> {:ok, %{}} end
+      end
+    end
+
+    object :path do
+      field :path, :path, resolve: fn _, _ -> {:ok, %{}} end
+      field :result, list_of(:string) do
+        resolve fn _, %{path: path} ->
+          result = Enum.map(path, fn
+            %{name: name, alias: alias} ->
+              alias || name
+            %{name: nil, schema_node: schema_node} ->
+              schema_node.name
+          end)
+          {:ok, result}
+        end
+      end
     end
 
     # keys in this object are made secret via the def middleware callback
@@ -129,5 +148,13 @@ defmodule Absinthe.MiddlewareTest do
     """
     assert {:ok, %{data: data}} = Absinthe.run(doc, __MODULE__.Schema, context: %{current_user: %{}})
     assert %{"fromContext" => "yooooo"} == data
+  end
+
+  test "it gets the path of the current field" do
+    doc = """
+    {foo: path { bar: path { result }}}
+    """
+    assert {:ok, %{data: data}} = Absinthe.run(doc, __MODULE__.Schema, context: %{current_user: %{}})
+    assert %{"foo" => %{"bar" => %{"result" => ["result", "bar", "foo", "RootQueryType"]}}} == data
   end
 end
