@@ -10,6 +10,9 @@ defmodule Absinthe.Resolution.Projector do
 
   defp do_project(selections, %{fragments: fragments, parent_type: parent_type} = info) do
     Enum.flat_map(selections, fn
+      %{flags: %{skip: _}} ->
+        []
+
       %Blueprint.Document.Field{} = field ->
         [field]
 
@@ -19,7 +22,6 @@ defmodule Absinthe.Resolution.Projector do
       %Blueprint.Document.Fragment.Spread{name: name} ->
         %{type_condition: condition, selections: selections} = Map.fetch!(fragments, name)
         conditionally_project(condition, selections, parent_type, info)
-
     end)
   end
 
