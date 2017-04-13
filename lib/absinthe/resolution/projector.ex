@@ -5,7 +5,6 @@ defmodule Absinthe.Resolution.Projector do
   def project(selections, info) do
     # TODO: cache this
     do_project(selections, info)
-    |> refresh(info)
   end
 
   defp do_project(selections, %{fragments: fragments, parent_type: parent_type} = info) do
@@ -14,7 +13,7 @@ defmodule Absinthe.Resolution.Projector do
         []
 
       %Blueprint.Document.Field{} = field ->
-        [field]
+        [update_schema_node(field, parent_type)]
 
       %Blueprint.Document.Fragment.Inline{type_condition: %{schema_node: condition}, selections: selections} ->
         conditionally_project(condition, selections, parent_type, info)
@@ -36,15 +35,12 @@ defmodule Absinthe.Resolution.Projector do
     end
   end
 
-  defp refresh(fields, %{parent_type: %{fields: concrete_fields}}) do
-    for field <- fields do
-      case field.name do
-        "__" <> _ ->
-          field
-        _ ->
-          %{field | schema_node: Map.fetch!(concrete_fields, field.schema_node.__reference__.identifier)}
-      end
-    end
+  # necessary when the field in question is on an abstract type.
+  defp update_schema_node(%{name: "__" <> _} = field, _) do
+    field
+  end
+  defp update_schema_node(%{schema_node: %{identifier: identifier}} = field, %{fields: concrete_fields}) do
+    %{field | schema_node: :maps.get(identifier, concrete_fields)}
   end
 
   defp normalize_condition(%{} = condition, _schema) do
