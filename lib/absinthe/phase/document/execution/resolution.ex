@@ -101,11 +101,11 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   # walk list results
-  defp walk_results([], res_acc, _, _, _, _, acc), do: {:lists.reverse(acc), res_acc}
   defp walk_results([value | values], res_acc, bp_node, inner_type, info, path, acc) do
     {result, res_acc} = walk_result(value, res_acc, bp_node, inner_type, info, path)
     walk_results(values, res_acc, bp_node, inner_type, info, path, [result | acc])
   end
+  defp walk_results([], res_acc, _, _, _, _, acc), do: {:lists.reverse(acc), res_acc}
 
   defp resolve_fields(parent, acc, info, source, path) do
     {parent_type, fields} =

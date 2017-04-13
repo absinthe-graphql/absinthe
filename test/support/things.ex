@@ -167,9 +167,7 @@ defmodule Things do
     description "A thing"
 
     field :id, non_null(:string),
-      description: "The ID of the thing", resolve: fn parent, _, _info ->
-        {:ok, Map.get(parent, :id)}
-      end
+      description: "The ID of the thing"
 
     field :name, :string,
       description: "The name of the thing"
