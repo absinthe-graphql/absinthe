@@ -48,7 +48,7 @@ defmodule Absinthe.Schema.Rule.FieldImportsExist do
 
     Object #{inspect definition.identifier} imports fields from #{inspect ref} but
     #{inspect ref} does not exist in the schema!
-    """ |> String.strip
+    """ |> String.trim
 
     %{data: %{artifact: msg, value: ref}, location: %{file: definition.file, line: definition.line}, rule: __MODULE__}
   end

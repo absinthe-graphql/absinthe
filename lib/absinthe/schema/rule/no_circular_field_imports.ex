@@ -38,7 +38,7 @@ defmodule Absinthe.Schema.Rule.NoCircularFieldImports do
             |> Enum.map(&"`#{&1}'")
             |> Enum.join(" => ")
 
-          msg = String.strip """
+          msg = String.trim """
           Field Import Cycle Error
 
           Field Import in object `#{definition.identifier}' `import_fields(#{inspect ref}) forms a cycle via: (#{deps})

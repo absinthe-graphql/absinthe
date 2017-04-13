@@ -65,8 +65,13 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Arguments.Normalize,
       # Map to Schema
       {Phase.Schema, options},
+      Phase.FragmentPossibilitySpace,
       # Ensure Types
       Phase.Validation.KnownTypeNames,
+      Phase.Validation.KnownDirectives,
+      Phase.Document.Validation.ScalarLeafs,
+      Phase.Document.Validation.UniqueArgumentNames,
+      Phase.Document.Validation.FieldsOnCorrectType,
       # Process Arguments
       Phase.Document.Arguments.CoerceEnums,
       Phase.Document.Arguments.CoerceLists,
@@ -75,15 +80,11 @@ defmodule Absinthe.Pipeline do
       Phase.Document.MissingLiterals,
       Phase.Document.Arguments.FlagInvalid,
       # Validate Full Document
-      Phase.Validation.KnownDirectives,
-      Phase.Document.Validation.ScalarLeafs,
       Phase.Document.Validation.VariablesAreInputTypes,
       Phase.Document.Validation.ArgumentsOfCorrectType,
       Phase.Document.Validation.KnownArgumentNames,
       Phase.Document.Validation.ProvidedNonNullArguments,
-      Phase.Document.Validation.UniqueArgumentNames,
       Phase.Document.Validation.UniqueInputFieldNames,
-      Phase.Document.Validation.FieldsOnCorrectType,
       # Check Validation
       {Phase.Document.Validation.Result, options},
       # Apply Directives

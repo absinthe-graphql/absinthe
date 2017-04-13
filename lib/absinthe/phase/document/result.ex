@@ -73,31 +73,8 @@ defmodule Absinthe.Phase.Document.Result do
     list_data(fields, errs ++ errors, acc)
   end
 
-  defp deep_merge(list) when is_list(list) and length(list) <= 1 do
-    :maps.from_list(list)
-  end
-  defp deep_merge(list) when is_list(list) do
-    list
-    |> Enum.map(&Map.new([&1]))
-    |> Enum.reduce(&do_deep_merge/2)
-  end
-
-  def do_deep_merge(right, left) do
-    Map.merge(left, right, &do_deep_resolve/3)
-  end
-
-  defp do_deep_resolve(_key, [%{} = left], [%{} = right]) do
-    [do_deep_merge(right, left)]
-  end
-  defp do_deep_resolve(_key, %{} = left, %{} = right) do
-    do_deep_merge(right, left)
-  end
-  defp do_deep_resolve(_key, _left, right) do
-   right
-  end
-
   defp field_data(fields, errors, acc \\ [])
-  defp field_data([], errors, acc), do: {deep_merge(acc), errors}
+  defp field_data([], errors, acc), do: {:maps.from_list(acc), errors}
   defp field_data([field | fields], errors, acc) do
     {value, errors} = data(field, errors)
     field_data(fields, errors, [{field_name(field), value} | acc])

@@ -160,6 +160,9 @@ defmodule Absinthe.Type.InterfaceTest do
         ... on HasItem {
           item {
             name
+            ... on Item {
+              name
+            }
             ... on ValuedItem {
               cost
             }

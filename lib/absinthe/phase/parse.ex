@@ -71,12 +71,12 @@ defmodule Absinthe.Phase.Parse do
     end
   end
 
-  @spec format_raw_parse_error({integer, :absinthe_parser, [char_list]}) :: Phase.Error.t
+  @spec format_raw_parse_error({integer, :absinthe_parser, [charlist]}) :: Phase.Error.t
   defp format_raw_parse_error({line, :absinthe_parser, msgs}) do
     message = msgs |> Enum.map(&to_string/1) |> Enum.join("")
     %Phase.Error{message: message, locations: [%{line: line, column: 0}], phase: __MODULE__}
   end
-  @spec format_raw_parse_error({integer, :absinthe_lexer, {atom, char_list}}) :: Phase.Error.t
+  @spec format_raw_parse_error({integer, :absinthe_lexer, {atom, charlist}}) :: Phase.Error.t
   defp format_raw_parse_error({line, :absinthe_lexer, {problem, field}}) do
     message = "#{problem}: #{field}"
     %Phase.Error{message: message, locations: [%{line: line, column: 0}], phase: __MODULE__}

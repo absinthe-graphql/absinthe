@@ -8,6 +8,7 @@ defmodule Absinthe.Blueprint.Document.Fragment.Spread do
   defstruct [
     :name,
     directives: [],
+    possible_types: [],
     source_location: nil,
     # Populated by phases
     flags: %{},
