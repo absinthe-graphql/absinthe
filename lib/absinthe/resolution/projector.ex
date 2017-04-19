@@ -4,7 +4,14 @@ defmodule Absinthe.Resolution.Projector do
 
   def project(selections, info) do
     # TODO: cache this
-    do_project(selections, info)
+    selections
+    |> do_project(info)
+    |> merge(info)
+  end
+
+  defp merge(fields, info) do
+    # now the fun part
+    fields
   end
 
   defp do_project(selections, %{fragments: fragments, parent_type: parent_type} = info) do
