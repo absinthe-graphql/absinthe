@@ -22,4 +22,18 @@ defmodule Absinthe.Execution.FragmentSpreadTest do
     assert {:ok, %{data: %{"firstSearchResult" => %{"__typename" => "Person", "age" => 35}}}} == Absinthe.run(@query, ContactSchema)
   end
 
+  @query_on_root """
+  query RootFragmentSpread {
+    ...SR
+  }
+
+  fragment SR on RootQueryType {
+    firstSearchResult { __typename }
+  }
+  """
+
+  it "spreads fragments on root query type" do
+    assert {:ok, %{data: %{"firstSearchResult" => %{"__typename" => "Person"}}}} == Absinthe.run(@query_on_root, ContactSchema)
+  end
+
 end
