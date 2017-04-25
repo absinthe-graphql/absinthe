@@ -31,9 +31,7 @@ defmodule AbsintheTest do
     query = """
     query GimmeFoo {
       thing(id: "foo") {
-        name {
-          foo
-        }
+        name
       }
     }
     """
