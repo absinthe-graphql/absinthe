@@ -47,14 +47,61 @@ defmodule Absinthe.Middleware do
 
   Middleware can be placed on a field in three different ways:
 
-  1. Using the `middleware/3` callback in your schema.
-  2. Using the `Absinthe.Schema.Notation.middleware/2` macro used inside a field definition
+  1. Using the `Absinthe.Schema.Notation.middleware/2` macro used inside a field definition
+  2. Using the `middleware/3` callback in your schema.
   3. Returning a `{:middleware, middleware_spec, config}` tuple from a resolution function.
 
-  ### Terminology:
-  - "Middleware for a field": a list of middleware spec
-  - "a middleware": a particular function, or module that adheres to the middleware contract.
-  - "middleware spec", `module | {module, term} | {{module, function_name}, term} | ((Absinthe.Resolution.t, term) -> Absinthe.Resolution.t)`.
+  ## The `middleware/2` macro
+
+  For placing middleware on a particular field, it's handy to use
+  the `middleware/2` macro.
+
+  Middleware will be run in the order in which they are specified.
+  The `middleware/3` callback has final say on what middleware get
+  set.
+
+  Examples
+
+  `MyApp.Web.Authentication` would run before resolution, and `HandleError` would run after.
+  ```
+  field :hello, :string do
+    middleware MyApp.Web.Authentication
+    resolve &get_the_string/2
+    middleware HandleError, :foo
+  end
+  ```
+
+  Anonymous functions are a valid middleware spec. A nice use case
+  is altering the context in a logout mutation. Mutations are the
+  only time the context should be altered. This is not enforced.
+  ```
+  field :logout, :query do
+    middleware fn res, _ ->
+      %{res |
+        context: Map.delete(res.context, :current_user),
+        value: "logged out",
+        state: :resolved
+      }
+    end
+  end
+  ```
+
+  `middleware/2` even accepts local public function names. Note
+  that `middleware/2` is the only thing that can take local function
+  names without an associated module. If not using macros, use
+  `{{__MODULE__, :function_name}, []}`
+  ```
+  def auth(res, _config) do
+    # auth logic here
+  end
+
+  query do
+    field :hello, :string do
+      middleware :auth
+      resolve &get_the_string/2
+    end
+  end
+  ```
 
   ## The `middleware/3` callback.
 
@@ -183,60 +230,6 @@ defmodule Absinthe.Middleware do
     end
   end
   ```
-
-  ## The `middleware/2` macro
-
-  For placing middleware on a particular field, it's handy to use
-  the `middleware/2` macro.
-
-  Middleware will be run in the order in which they are specified.
-  The `middleware/3` callback has final say on what middleware get
-  set.
-
-  Examples
-
-  `Auth` would run before resolution, and `HandleError` would run after.
-  ```
-  field :hello, :string do
-    middleware Auth, some_option: 1
-    resolve &get_the_string/2
-    middleware HandleError, :foo
-  end
-  ```
-
-  Anonymous functions are a valid middleware spec. A nice use case
-  is altering the context in a logout mutation. Mutations are the
-  only time the context should be altered. This is not enforced.
-  ```
-  field :logout, :query do
-    middleware fn res, _ ->
-      %{res |
-        context: Map.delete(res.context, :current_user),
-        value: "logged out",
-        state: :resolved
-      }
-    end
-  end
-  ```
-
-  `middleware/2` even accepts local public function names. Note
-  that `middleware/2` is the only thing that can take local function
-  names without an associated module. If not using macros, use
-  `{{__MODULE__, :function_name}, []}`
-  ```
-  def auth(res, _config) do
-    # auth logic here
-  end
-
-  query do
-    field :hello, :string do
-      middleware :auth
-      resolve &get_the_string/2
-    end
-  end
-  ```
-
-
 
   ## Main Points
 

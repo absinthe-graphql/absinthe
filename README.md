@@ -69,7 +69,7 @@ Install from [Hex.pm](https://hex.pm/packages/absinthe):
 
 ```elixir
 def deps do
-  [{:absinthe, "~> 1.2.0"}]
+  [{:absinthe, "~> 1.3.0"}]
 end
 ```
 
@@ -81,7 +81,7 @@ def application do
 end
 ```
 
-Note: Absinthe requires Elixir 1.3 or higher.
+Note: Absinthe requires Elixir 1.4 or higher.
 
 ## Upgrading
 

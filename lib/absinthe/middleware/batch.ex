@@ -43,7 +43,8 @@ defmodule Absinthe.Middleware.Batch do
   end
 
   def users_by_id(_, user_ids) do
-    Repo.all from u in User, where: u.id in ^user_ids
+    users = Repo.all from u in User, where: u.id in ^user_ids
+    Map.new(users, fn user -> {user.id, user} end)
   end
   ```
 
@@ -55,10 +56,11 @@ defmodule Absinthe.Middleware.Batch do
   - `fn batch_results`: This function takes the results from the batching function.
   it should return one of the resolution function values.
 
-  Clearly some of this could be derived for ecto functions. We hope to have an
-  Absinthe.Ecto library that might provide an API more like:
+  Clearly some of this could be derived for ecto functions. Check out the Absinthe.Ecto
+  library for something that provides this:
+
   ```elixir
-  field :author, :user, resolve: belongs_to(:author)
+  field :author, :user, resolve: assoc(:author)
   ```
 
   Such a function could be easily built upon the API of this module.
