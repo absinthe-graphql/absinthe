@@ -5,40 +5,68 @@ defmodule Absinthe.Resolution.Projector do
   def project(selections, info) do
     # TODO: cache this
     selections
-    |> do_project(info)
-    |> merge(info)
+    |> collect(info)
+    |> rectify_order
   end
 
-  defp merge(fields, info) do
-    # now the fun part
-    fields
-  end
+  defp response_key(%{alias: nil, name: name}), do: name
+  defp response_key(%{alias: alias}), do: alias
+  defp response_key(%{name: name}), do: name
 
-  defp do_project(selections, %{fragments: fragments, parent_type: parent_type} = info) do
-    Enum.flat_map(selections, fn
-      %{flags: %{skip: _}} ->
-        []
+  defp collect(selections, info, index \\ 0)
+  defp collect(selections, %{fragments: fragments, parent_type: parent_type} = info, offset) do
+    selections
+    |> Enum.with_index(offset)
+    |> Enum.reduce(%{}, fn
+      {%{flags: %{skip: _}}, _index}, acc ->
+        acc
 
-      %Blueprint.Document.Field{} = field ->
-        [update_schema_node(field, parent_type)]
+      {%Blueprint.Document.Field{} = field, index}, acc ->
+        field = update_schema_node(field, parent_type)
+        key = response_key(field)
 
-      %Blueprint.Document.Fragment.Inline{type_condition: %{schema_node: condition}, selections: selections} ->
-        conditionally_project(condition, selections, parent_type, info)
+        Map.update(acc, key, {index, [field]}, fn {existing_index, fields} ->
+          {existing_index, [field | fields]}
+        end)
 
-      %Blueprint.Document.Fragment.Spread{name: name} ->
+      {%Blueprint.Document.Fragment.Inline{type_condition: %{schema_node: condition}, selections: selections}, index}, acc ->
+        subfields = conditionally_collect(condition, selections, parent_type, info, index)
+
+        merge_subfields(acc, subfields)
+
+      {%Blueprint.Document.Fragment.Spread{name: name}, index}, acc ->
         %{type_condition: condition, selections: selections} = Map.fetch!(fragments, name)
-        conditionally_project(condition, selections, parent_type, info)
+
+        subfields = conditionally_collect(condition, selections, parent_type, info, index)
+
+        merge_subfields(acc, subfields)
     end)
   end
 
-  defp conditionally_project(condition, selections, parent_type, %{schema: schema} = info) do
+  defp rectify_order(grouped_fields) do
+    grouped_fields
+    |> Enum.sort(fn {_, {i1, _}}, {_, {i2, _}} ->
+      i1 <= i2
+    end)
+    |> Enum.map(fn {k, {_index, fields}} ->
+      {k, fields}
+    end)
+  end
+
+  defp merge_subfields(acc, subfields) do
+    Map.merge(acc, subfields, fn _k, {index, fields}, {_index, subfields} ->
+      {index, subfields ++ fields}
+    end)
+  end
+
+  defp conditionally_collect(condition, selections, parent_type, %{schema: schema} = info, index) do
     condition
     |> Type.unwrap
     |> normalize_condition(schema)
     |> passes_type_condition?(parent_type)
     |> case do
-      true -> project(selections, info)
-      false -> []
+      true -> collect(selections, info, index)
+      false -> %{}
     end
   end
 

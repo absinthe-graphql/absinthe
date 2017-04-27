@@ -141,15 +141,15 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     parent_type
   end
 
-  defp do_resolve_fields([field | fields], res_acc, info, source, parent_type, path, acc) do
-    {result, res_acc} = resolve_field(field, res_acc, info, source, [field | path])
+  defp do_resolve_fields([{_k, [field | _]} = field_group | fields], res_acc, info, source, parent_type, path, acc) do
+    {result, res_acc} = resolve_field(field_group, res_acc, info, source, [field | path])
     do_resolve_fields(fields, res_acc, info, source, parent_type, path, [result | acc])
   end
   defp do_resolve_fields([], res_acc, _, _, _, _, acc), do: {:lists.reverse(acc), res_acc}
 
-  def resolve_field(bp_field, acc, info, source, path) do
+  def resolve_field(field_group, acc, info, source, path) do
     info
-    |> build_resolution_struct(bp_field, acc, path)
+    |> build_resolution_struct(field_group, acc, path)
     |> do_resolve_field(info, source, path)
   end
 
@@ -173,12 +173,13 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     end
   end
 
-  defp build_resolution_struct(info, bp_field, acc, path) do
+  defp build_resolution_struct(info, {_, [bp_field | _] = fields}, acc, path) do
     %{info |
       path: path,
       middleware: bp_field.schema_node.middleware,
       acc: acc,
       definition: bp_field,
+      definitions: fields,
       arguments: bp_field.argument_data,
     }
   end
@@ -213,6 +214,8 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     bp_field = put_in(bp_field.schema_node.type, full_type)
 
     info = %{info | context: res.context}
+
+    bp_field = %{bp_field | selections: Enum.flat_map(res.definitions, &(&1.selections))}
 
     result
     |> to_result(bp_field, full_type)
