@@ -50,7 +50,6 @@ defmodule Absinthe.Resolution do
     :source,
     errors: [],
     middleware: [],
-    definitions: [],
     acc: %{},
     arguments: %{},
     extensions: %{},

@@ -53,9 +53,17 @@ defmodule Absinthe.Resolution.Projector do
     |> Enum.sort(fn {_, {i1, _}}, {_, {i2, _}} ->
       i1 <= i2
     end)
-    |> Enum.map(fn {k, {_index, fields}} ->
-      {k, fields}
+    |> Enum.map(fn
+      {_k, {_index, [field]}} ->
+        field
+      {_k, {_index, [%{selections: selections} = field | rest]}} ->
+        %{field | selections: flatten(rest, selections)}
     end)
+  end
+
+  defp flatten([], acc), do: acc
+  defp flatten([%{selections: selections} | fields], acc) do
+    flatten(fields, selections ++ acc)
   end
 
   defp conditionally_collect(condition, selections, fragments, parent_type, schema, index, acc) do
