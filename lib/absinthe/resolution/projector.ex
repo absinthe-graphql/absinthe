@@ -13,34 +13,39 @@ defmodule Absinthe.Resolution.Projector do
   defp response_key(%{alias: alias}), do: alias
   defp response_key(%{name: name}), do: name
 
-  defp collect(selections, info, index \\ 0)
-  defp collect(selections, %{fragments: fragments, parent_type: parent_type} = info, offset) do
-    selections
-    |> Enum.with_index(offset)
-    |> Enum.reduce(%{}, fn
-      {%{flags: %{skip: _}}, _index}, acc ->
-        acc
+  defp collect(selections, %{fragments: fragments, parent_type: parent_type, schema: schema}) do
+    {acc, _index} = do_collect(selections, fragments, parent_type, schema, 0, %{})
+    acc
+  end
 
-      {%Blueprint.Document.Field{} = field, index}, acc ->
+  defp do_collect([], _, _, _, index, acc), do: {acc, index}
+  defp do_collect([selection | selections], fragments, parent_type, schema, index, acc) do
+    case selection do
+      %{flags: %{skip: _}} ->
+        do_collect(selections, fragments, parent_type, schema, index, acc)
+
+      %Blueprint.Document.Field{} = field ->
         field = update_schema_node(field, parent_type)
         key = response_key(field)
 
-        Map.update(acc, key, {index, [field]}, fn {existing_index, fields} ->
+        acc = Map.update(acc, key, {index, [field]}, fn {existing_index, fields} ->
           {existing_index, [field | fields]}
         end)
 
-      {%Blueprint.Document.Fragment.Inline{type_condition: %{schema_node: condition}, selections: selections}, index}, acc ->
-        subfields = conditionally_collect(condition, selections, parent_type, info, index)
+        do_collect(selections, fragments, parent_type, schema, index + 1, acc)
 
-        merge_subfields(acc, subfields)
+      %Blueprint.Document.Fragment.Inline{type_condition: %{schema_node: condition}, selections: inner_selections} ->
+        {acc, index} = conditionally_collect(condition, inner_selections, fragments, parent_type, schema, index, acc)
 
-      {%Blueprint.Document.Fragment.Spread{name: name}, index}, acc ->
-        %{type_condition: condition, selections: selections} = Map.fetch!(fragments, name)
+        do_collect(selections, fragments, parent_type, schema, index, acc)
 
-        subfields = conditionally_collect(condition, selections, parent_type, info, index)
+      %Blueprint.Document.Fragment.Spread{name: name} ->
+        %{type_condition: condition, selections: inner_selections} = Map.fetch!(fragments, name)
 
-        merge_subfields(acc, subfields)
-    end)
+        {acc, index} = conditionally_collect(condition, inner_selections, fragments, parent_type, schema, index, acc)
+
+        do_collect(selections, fragments, parent_type, schema, index, acc)
+    end
   end
 
   defp rectify_order(grouped_fields) do
@@ -53,20 +58,14 @@ defmodule Absinthe.Resolution.Projector do
     end)
   end
 
-  defp merge_subfields(acc, subfields) do
-    Map.merge(acc, subfields, fn _k, {index, fields}, {_index, subfields} ->
-      {index, subfields ++ fields}
-    end)
-  end
-
-  defp conditionally_collect(condition, selections, parent_type, %{schema: schema} = info, index) do
+  defp conditionally_collect(condition, selections, fragments, parent_type, schema, index, acc) do
     condition
     |> Type.unwrap
     |> normalize_condition(schema)
     |> passes_type_condition?(parent_type)
     |> case do
-      true -> collect(selections, info, index)
-      false -> %{}
+      true -> do_collect(selections, fragments, parent_type, schema, index, acc)
+      false -> {acc, index}
     end
   end
 
