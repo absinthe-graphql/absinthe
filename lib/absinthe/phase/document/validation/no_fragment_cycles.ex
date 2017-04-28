@@ -22,7 +22,7 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
   @spec do_run(Blueprint.t, %{validation_result_phase: Phase.t}) :: Phase.result_t
   def do_run(input, %{validation_result_phase: abort_phase}) do
     {fragments, error_count} = check(input.fragments)
-    result = put_in(input.fragments, fragments)
+    result = %{input | fragments: fragments}
     if error_count > 0 do
       {:jump, result, abort_phase}
     else
@@ -35,7 +35,17 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
   defp check(fragments) do
     graph = :digraph.new([:cyclic])
     try do
-      check(fragments, graph)
+      with {fragments, 0} <- check(fragments, graph) do
+        fragments = Map.new(fragments, &{&1.name, &1})
+
+        fragments =
+          graph
+          |> :digraph_utils.topsort
+          |> Enum.reverse
+          |> Enum.map(&Map.fetch!(fragments, &1))
+
+        {fragments, 0}
+      end
     after
       :digraph.delete(graph)
     end
