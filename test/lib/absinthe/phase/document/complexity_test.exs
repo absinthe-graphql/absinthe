@@ -9,7 +9,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
         arg :limit, non_null(:integer)
 
         complexity fn %{limit: limit}, child_complexity ->
-          5 + limit * child_complexity
+          5 + (limit * child_complexity)
         end
       end
       field :context_aware_complexity, list_of(:foo) do
