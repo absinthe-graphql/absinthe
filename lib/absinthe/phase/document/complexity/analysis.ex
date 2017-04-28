@@ -47,6 +47,19 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
                                             selections: fields,
                                             argument_data: args,
                                             schema_node: schema_node} = node, info, _fragments) do
+    # NOTE:
+    # This really should be more nuanced. If this particular field's schema node
+    # is a union type, right now the complexity of:
+    # thisField {
+    #   ... User { a b c}
+    #   ... Dog { x y z }
+    # }
+    # would be the complexity of `|a, b, c, x, y, z|` despite the fact that it is
+    # impossible for `a, b, c` to also happen with `x, y, z`
+    #
+    # However, if this schema node is an interface type things get complicated quickly.
+    # You would have to evaluate the complexity for every possible type which can get
+    # pretty unwieldy. For now, simple types it is.
     child_complexity = sum_complexity(fields)
     case field_complexity(schema_node, args, child_complexity, info, node) do
       complexity when is_integer(complexity) and complexity >= 0 ->
