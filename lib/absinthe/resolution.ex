@@ -57,11 +57,8 @@ defmodule Absinthe.Resolution do
     path: [],
     state: :unresolved,
     fragments: [],
+    fields_cache: %{},
   ]
-
-  def project(%__MODULE__{definition: %{selections: selections}} = info) do
-    __MODULE__.Projector.project(selections, info)
-  end
 
   def resolver_spec(fun) do
     {{__MODULE__, :call}, fun}

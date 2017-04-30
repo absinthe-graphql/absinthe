@@ -2,18 +2,29 @@ defmodule Absinthe.Resolution.Projector do
 
   alias Absinthe.{Blueprint, Type}
 
-  def project(selections, info) do
-    # TODO: cache this
-    selections
-    |> collect(info)
-    |> rectify_order
+  def project(selections, %{identifier: identifier} = parent_type, path, cache, info) do
+    path_names = for %{name: name} <- path, name, do: name
+    key = {identifier, path_names}
+
+    case Map.fetch(cache, key) do
+      {:ok, fields} ->
+        {fields, cache}
+
+      _ ->
+        fields =
+          selections
+          |> collect(parent_type, info)
+          |> rectify_order
+
+        {fields, Map.put(cache, key, fields)}
+    end
   end
 
   defp response_key(%{alias: nil, name: name}), do: name
   defp response_key(%{alias: alias}), do: alias
   defp response_key(%{name: name}), do: name
 
-  defp collect(selections, %{fragments: fragments, parent_type: parent_type, schema: schema}) do
+  defp collect(selections, parent_type, %{fragments: fragments, schema: schema}) do
     {acc, _index} = do_collect(selections, fragments, parent_type, schema, 0, %{})
     acc
   end
