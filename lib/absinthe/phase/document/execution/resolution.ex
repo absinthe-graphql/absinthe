@@ -209,17 +209,24 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     fun.(res, [])
   end
 
-  defp build_result(%{errors: [], value: result, context: context, acc: acc} = res, info, _source, path) do
-    bp_field = res.definition
+  defp build_result(%{errors: []} = res, info, _source, path) do
+    %{
+      value: result,
+      context: context,
+      acc: acc,
+      definition: bp_field,
+      extensions: extensions
+    } = res
+
     full_type = Type.expand(bp_field.schema_node.type, info.schema)
 
     bp_field = put_in(bp_field.schema_node.type, full_type)
 
     info = %{info | context: context, acc: acc}
 
-    result
-    |> to_result(bp_field, full_type)
-    |> Map.put(:extensions, res.extensions)
+    result = result |> to_result(bp_field, full_type)
+
+    %{result | extensions: extensions}
     |> walk_result(bp_field, full_type, info, path)
   end
   defp build_result(%{errors: errors} = res, info, source, _path) do
