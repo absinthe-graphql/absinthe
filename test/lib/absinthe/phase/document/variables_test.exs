@@ -40,6 +40,21 @@ defmodule Absinthe.Phase.Document.VariablesTest do
     end
   end
 
+  it "should prevent using non input types as variables" do
+    doc = """
+    query Foo($input: Thing) {
+      version
+    }
+    """
+
+    expected = %{errors: [%{locations: [%{column: 0, line: 1}],
+         message: "Variable \"input\" cannot be non-input type \"Thing\"."},
+       %{locations: [%{column: 0, line: 1}, %{column: 0, line: 1}],
+         message: "Variable \"input\" is never used in operation \"Foo\"."}]}
+
+    assert {:ok, expected} == Absinthe.run(doc, Things)
+  end
+
   def input(query, values) do
     {:ok, result} = blueprint(query)
     |> Phase.Document.Variables.run(variables: values)
