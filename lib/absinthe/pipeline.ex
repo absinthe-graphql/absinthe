@@ -35,6 +35,13 @@ defmodule Absinthe.Pipeline do
     jump_phases: true,
   ]
 
+  def for_variables(schema, options) do
+    [
+      {Phase.Schema, options},
+      {Phase.Document.Arguments.Parse, options},
+    ]
+  end
+
   @spec for_document(Absinthe.Schema.t) :: t
   @spec for_document(Absinthe.Schema.t, Keyword.t) :: t
   def for_document(schema, options \\ []) do

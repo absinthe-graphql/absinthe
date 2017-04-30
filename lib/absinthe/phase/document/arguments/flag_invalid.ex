@@ -43,11 +43,8 @@ defmodule Absinthe.Phase.Document.Arguments.FlagInvalid do
   end
 
   defp check_children(node, children, flag) do
-    invalid? =
-      fn
-        %{flags: %{invalid: _}} -> true
-        _                       -> false
-      end
+    invalid? = &match?(%{flags: %{invalid: _}}, &1)
+
     if Enum.any?(children, invalid?) do
       flag_invalid(node, flag)
     else

@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Document.Variables do
+defmodule Absinthe.Phase.Document.SeparateVariables do
   @moduledoc false
 
   # Provided a set of variable values:
@@ -46,7 +46,7 @@ defmodule Absinthe.Phase.Document.Variables do
   @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
   def run(input, options \\ []) do
     variables = options[:variables] || %{}
-    {:ok, update_operations(input, variables) |> IO.inspect}
+    {:ok, update_operations(input, variables)}
   end
 
   def update_operations(input, variables) do

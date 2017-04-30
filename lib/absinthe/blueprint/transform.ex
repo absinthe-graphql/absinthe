@@ -61,7 +61,7 @@ defmodule Absinthe.Blueprint.Transform do
     Blueprint.Document.Fragment.Inline => [:selections, :directives],
     Blueprint.Document.Fragment.Named => [:selections, :directives],
     Blueprint.Document.Fragment.Spread => [:directives],
-    Blueprint.Document.VariableDefinition => [:type, :default_value],
+    Blueprint.Document.VariableDefinition => [:type, :default_value, :input],
     Blueprint.Input.Argument => [:input_value],
     Blueprint.Input.Field => [:input_value],
     Blueprint.Input.Object => [:fields],

@@ -13,6 +13,7 @@ defmodule Absinthe.Blueprint.Document.VariableDefinition do
     # Added by phases
     flags: %{},
     provided_value: nil,
+    input: nil,
     errors: [],
     schema_node: nil,
   ]
