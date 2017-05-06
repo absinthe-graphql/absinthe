@@ -66,6 +66,17 @@ defmodule Absinthe.Resolution do
 
   @type field_state :: :unresolved | :resolved | :suspended
 
+  def project(%{
+      definition: %{selections: selections},
+      path: path,
+      cache: cache,
+    } = info, type) do
+
+    {fields, _} = Absinthe.Resolution.Projector.project(info.selections, type, path, cache, info)
+
+    fields
+  end
+
   def call(%{state: :unresolved} = res, resolution_function) do
     result = case resolution_function do
       fun when is_function(fun, 2) ->
