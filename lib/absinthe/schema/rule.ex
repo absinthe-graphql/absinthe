@@ -31,6 +31,7 @@ defmodule Absinthe.Schema.Rule do
     Rule.ObjectInterfacesMustBeValid,
     Rule.ObjectMustImplementInterfaces,
     Rule.InterfacesMustResolveTypes,
+    Rule.InputOuputTypesCorrectlyPlaced,
   ]
 
   @spec check(Absinthe.Schema.t) :: [Absinthe.Schema.Error.detail_t]
