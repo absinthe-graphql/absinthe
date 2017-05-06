@@ -33,9 +33,6 @@ defmodule Absinthe.Phase.Schema do
   defp handle_node(%Blueprint{} = node, schema, adapter) do
     set_children %{node | schema: schema, adapter: adapter}, schema, adapter
   end
-  defp handle_node(%Absinthe.Blueprint.Document.VariableDefinition{} = node, _, _) do
-    {:halt, node}
-  end
   defp handle_node(node, schema, adapter) do
     set_children(node, schema, adapter)
   end

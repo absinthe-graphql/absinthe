@@ -47,6 +47,7 @@ defmodule Absinthe.Type.InputObject do
   The `__private__` and `:__reference__` fields are for internal use.
   """
   @type t :: %__MODULE__{
+    identifier: atom,
     name: binary,
     description: binary,
     fields: map | (() -> map),
@@ -55,6 +56,7 @@ defmodule Absinthe.Type.InputObject do
   }
 
   defstruct [
+    identifier: nil,
     name: nil,
     description: nil,
     fields: %{},

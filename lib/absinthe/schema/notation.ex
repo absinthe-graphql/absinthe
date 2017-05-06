@@ -336,6 +336,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record a field in the current scope
   def record_field!(env, identifier, attrs, block) do
+    attrs = [identifier: identifier] ++ attrs
     scope(env, :field, identifier, attrs, block)
   end
 
@@ -533,6 +534,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record an argument in the current scope
   def record_arg!(env, identifier, attrs, block) do
+    attrs = [identifier: identifier] ++ attrs
     scope(env, :arg, identifier, attrs, block)
   end
 
@@ -584,6 +586,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record a scalar type
   def record_scalar!(env, identifier, attrs, block) do
+    attrs = [identifier: identifier] ++ attrs
     scope(env, :scalar, identifier, attrs, block)
   end
 
@@ -711,6 +714,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record a directive
   def record_directive!(env, identifier, attrs, block) do
+    attrs = [identifier: identifier] ++ attrs
     scope(env, :directive, identifier, attrs, block)
   end
 
@@ -823,6 +827,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record an input object type
   def record_input_object!(env, identifier, attrs, block) do
+    attrs = [identifier: identifier] ++ attrs
     scope(env, :input_object, identifier, attrs, block)
   end
 
@@ -861,6 +866,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record a union type
   def record_union!(env, identifier, attrs, block) do
+    attrs = [identifier: identifier] ++ attrs
     scope(env, :union, identifier, attrs, block)
   end
 
@@ -969,6 +975,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record an enum type
   def record_enum!(env, identifier, attrs, block) do
+    attrs = [identifier: identifier] ++ attrs
     scope(env, :enum, identifier, attrs, block)
   end
 

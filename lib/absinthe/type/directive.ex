@@ -23,6 +23,7 @@ defmodule Absinthe.Type.Directive do
   The `:__reference__` key is for internal use.
   """
   @type t :: %{
+    identifier: atom,
     name: binary,
     description: binary,
     args: map,
@@ -34,6 +35,7 @@ defmodule Absinthe.Type.Directive do
   @type location :: :query | :mutation | :field | :fragment_definition | :fragment_spread | :inline_fragment
 
   defstruct [
+    identifier: nil,
     name: nil,
     description: nil,
     args: nil,

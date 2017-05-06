@@ -41,36 +41,39 @@ defmodule Absinthe.Phase.Document.Variables do
   # Note that no validation occurs in this phase.
 
   use Absinthe.Phase
-  alias Absinthe.Blueprint
+  alias Absinthe.{Blueprint, Pipeline}
 
   @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
-  def run(input, options \\ []) do
+  def run(blueprint, options \\ []) do
     variables = options[:variables] || %{}
-    {:ok, update_operations(input, variables) |> IO.inspect}
-  end
 
-  def update_operations(input, variables) do
-    operations = for op <- input.operations do
-      update_operation(op, variables)
-    end
-
-    %{input | operations: operations}
-  end
-
-  def update_operation(%{variable_definitions: variable_definitions} = operation, variables) do
-    {variable_definitions, provided_values} = Enum.map_reduce(variable_definitions, %{}, fn
-      node, acc ->
-        provided_value =
-          variables
-          |> Map.get(node.name, node.default_value)
-          |> Blueprint.Input.parse
-
-        {%{node | provided_value: provided_value}, Map.put(acc, node.name, provided_value)}
+    result = Blueprint.update_current(blueprint, fn operation ->
+      operation
+      |> update_operation(variables, blueprint, options)
     end)
 
-    %{operation |
-      variable_definitions: variable_definitions,
-      provided_values: provided_values
-    }
+    {:ok, result}
   end
+
+  def update_operation(%{variable_definitions: variable_definitions} = operation, variables, root, options) do
+    variable_definitions = Enum.map(variable_definitions, fn node ->
+      input =
+        variables
+        |> Map.get(node.name, node.default_value)
+        |> Blueprint.Input.parse
+
+      %{node | input: %Blueprint.Input.Value{literal: input, normalized: input}}
+      |> validate_variable(root, options)
+    end)
+
+    %{operation | variable_definitions: variable_definitions}
+  end
+
+  def validate_variable(variable_def, root, options) do
+    pipeline = Pipeline.for_variables(root.schema, options)
+
+    {:ok, variable_def, _} = Pipeline.run(variable_def, pipeline)
+    variable_def
+  end
+
 end

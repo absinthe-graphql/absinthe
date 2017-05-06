@@ -5,29 +5,42 @@ defmodule Absinthe.Phase.Document.VariablesTest do
     use Absinthe.Schema
 
     query do
-      field :version, :string do
-        arg :string, :version
+      field :echo, :string do
+        arg :input, :string
+
+        resolve fn %{input: input}, _ ->
+          {:ok, input}
+        end
       end
     end
   end
 
-  alias Absinthe.Blueprint
-  alias Absinthe.Blueprint.Document.VariableDefinition
+  test "we can go all the way through the validations without errors" do
+    doc = """
+    query Echo($input: String) {
+      echo(input: $input)
+    }
+    """
 
-  test "we can validate variables separately" do
-    value = "Hello World" |> Blueprint.Input.parse
-    input = %Blueprint.Input.Value{normalized: value}
-    definition = build("input", "String", %{input: input})
-
-    validation_pipeline = Absinthe.Pipeline.for_variables(Schema)
+    assert {:ok, _blueprint, _} = validate(doc)
   end
 
-  defp build(name, type, opts \\ %{}) do
-    %VariableDefinition{
-      name: name,
-      type: %Absinthe.Blueprint.TypeReference.Name{errors: [],
-       name: type, schema_node: Absinthe.Schema.lookup_type(Schema, type)}
+  test "documents with variable values that are the wrong type for the field still error" do
+    doc = """
+    query Echo($input: Int) {
+      echo(input: $input)
     }
-    |> Map.merge(opts)
+    """
+
+    assert {:error, _blueprint, _} = validate(doc)
+  end
+
+  defp validate(doc) do
+    pipeline =
+      Schema
+      |> Absinthe.Pipeline.for_document(jump_phases: false)
+      |> Absinthe.Pipeline.upto(Absinthe.Phase.Document.Validation.Result)
+
+    Absinthe.Pipeline.run(doc, pipeline)
   end
 end

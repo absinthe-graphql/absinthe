@@ -40,6 +40,7 @@ defmodule Absinthe.Type.Union do
 
   """
   @type t :: %__MODULE__{
+    identifier: atom,
     name: binary,
     description: binary,
     types: [Type.identifier_t],
@@ -49,6 +50,7 @@ defmodule Absinthe.Type.Union do
   }
 
   defstruct [
+    identifier: nil,
     name: nil,
     description: nil,
     resolve_type: nil,
