@@ -3,7 +3,7 @@ defmodule Absinthe.Language.ObjectTypeDefinitionTest do
 
   alias Absinthe.Blueprint
 
-  describe "converting to Blueprint" do
+  context "converting to Blueprint" do
 
     it "works, given a Blueprint Schema 'type' definition" do
       assert %Blueprint.Schema.ObjectTypeDefinition{name: "Person"} = from_input("type Person { name: String! }")

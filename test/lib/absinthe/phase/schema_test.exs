@@ -1,7 +1,7 @@
 defmodule Absinthe.Phase.SchemaTest do
   use Absinthe.Case, async: true
 
-  describe "when given [Int] for Int schema node" do
+  context "when given [Int] for Int schema node" do
 
     defmodule IntegerInputSchema do
       use Absinthe.Schema

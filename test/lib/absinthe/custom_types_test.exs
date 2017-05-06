@@ -50,7 +50,7 @@ defmodule Absinthe.CustomTypesTest do
     end
   end
 
-  describe "custom datetime type" do
+  context "custom datetime type" do
     it "can use datetime type in queries" do
       result = "{ custom_types_query { datetime } }" |> run(Schema)
       assert_result {:ok, %{data: %{"custom_types_query" =>
@@ -80,7 +80,7 @@ defmodule Absinthe.CustomTypesTest do
     end
   end
 
-  describe "custom naive datetime type" do
+  context "custom naive datetime type" do
     it "can use naive datetime type in queries" do
       result = "{ custom_types_query { naive_datetime } }" |> run(Schema)
       assert_result {:ok, %{data: %{"custom_types_query" =>
@@ -110,7 +110,7 @@ defmodule Absinthe.CustomTypesTest do
     end
   end
 
-  describe "custom date type" do
+  context "custom date type" do
     it "can use date type in queries" do
       result = "{ custom_types_query { date } }" |> run(Schema)
       assert_result {:ok, %{data: %{"custom_types_query" =>
@@ -140,7 +140,7 @@ defmodule Absinthe.CustomTypesTest do
     end
   end
 
-  describe "custom time type" do
+  context "custom time type" do
     it "can use time type in queries" do
       result = "{ custom_types_query { time } }" |> run(Schema)
       assert_result {:ok, %{data: %{"custom_types_query" =>

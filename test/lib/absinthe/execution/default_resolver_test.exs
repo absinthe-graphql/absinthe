@@ -4,7 +4,7 @@ defmodule Absinthe.Execution.DefaultResolverTest do
   @root %{:foo => "baz", "bar" => "quux"}
   @query "{ foo bar }"
 
-  describe "without a custom default resolver defined" do
+  context "without a custom default resolver defined" do
 
     defmodule NormalSchema do
       use Absinthe.Schema
@@ -22,7 +22,7 @@ defmodule Absinthe.Execution.DefaultResolverTest do
 
   end
 
-  describe "with a custom default resolver defined" do
+  context "with a custom default resolver defined" do
 
     defmodule CustomSchema do
       use Absinthe.Schema

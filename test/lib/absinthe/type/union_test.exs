@@ -50,7 +50,7 @@ defmodule Absinthe.Type.UnionTest do
 
   end
 
-  describe "union" do
+  context "union" do
 
     it "can be defined" do
       obj = TestSchema.__absinthe_type__(:search_result)

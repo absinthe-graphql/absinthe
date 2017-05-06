@@ -141,7 +141,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
 
   end
 
-  describe "arguments with variables" do
+  context "arguments with variables" do
     it "should raise an error when a non null argument variable is null" do
       doc = """
       query GetContacts($contacts:[ContactInput]){contacts(contacts:$contacts)}
@@ -150,7 +150,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         doc |> run(Schema)
     end
 
-    describe "list inputs" do
+    context "list inputs" do
 
       it "works with basic scalars" do
         doc = """
@@ -174,7 +174,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
       end
     end
 
-    describe "input object arguments" do
+    context "input object arguments" do
       it "works in a basic case" do
         doc = """
         query FindUser($contact: ContactInput!){
@@ -185,7 +185,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
       end
     end
 
-    describe "custom scalar arguments" do
+    context "custom scalar arguments" do
       it "works when specified as non null" do
         doc = """
         { requiredThing(name: "bob") }
@@ -198,7 +198,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
       end
     end
 
-    describe "boolean arguments" do
+    context "boolean arguments" do
 
       it "are passed as arguments to resolution functions correctly" do
         doc = """
@@ -271,7 +271,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
 
     end
 
-    describe "nullable arguments" do
+    context "nullable arguments" do
       it "if omitted should still be passed as an argument map to the resolver" do
         doc = """
         query GetContact{ contact }
@@ -280,7 +280,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
       end
     end
 
-    describe "enum types" do
+    context "enum types" do
       it "should work with valid values" do
         doc = """
         query GetContact($type:ContactType){ contact(type: $type) }
@@ -305,8 +305,8 @@ defmodule Absinthe.Execution.ArgumentsTest do
     end
   end
 
-  describe "literal arguments" do
-    describe "missing arguments" do
+  context "literal arguments" do
+    context "missing arguments" do
       it "returns the appropriate error" do
         doc = """
         { requiredThing }
@@ -315,7 +315,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
       end
     end
 
-    describe "list inputs" do
+    context "list inputs" do
       it "works with basic scalars" do
         doc = """
         {numbers(numbers: [1, 2])}
@@ -365,7 +365,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
       end
     end
 
-    describe "input object arguments" do
+    context "input object arguments" do
       it "works in a basic case" do
         doc = """
         {user(contact: {email: "bubba@joe.com"})}
@@ -408,7 +408,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
       end
     end
 
-    describe "custom scalar arguments" do
+    context "custom scalar arguments" do
       it "works when specified as non null" do
         doc = """
         { requiredThing(name: "bob") }
@@ -420,7 +420,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
       end
     end
 
-    describe "boolean arguments" do
+    context "boolean arguments" do
 
       it "are passed as arguments to resolution functions correctly" do
         assert_result {:ok, %{data: %{"something" => "YES"}}}, "{ something(flag: true) }" |> run(Schema)
@@ -434,7 +434,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
       end
     end
 
-    describe "enum types" do
+    context "enum types" do
       it "should work with valid values" do
         assert_result {:ok, %{data: %{"contact" => "Email"}}}, "{ contact(type: Email) }" |> run(Schema)
       end
@@ -445,7 +445,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
     end
   end
 
-  describe "camelized errors" do
+  context "camelized errors" do
     it "should adapt internal field names on error" do
       doc = """
       query FindUser {
