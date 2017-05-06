@@ -35,6 +35,17 @@ defmodule Absinthe.Pipeline do
     jump_phases: true,
   ]
 
+  def for_variables(schema, options) do
+    options = @defaults
+    |> Keyword.merge(Keyword.put(options, :schema, schema))
+    [
+      {Phase.Schema, options},
+      Phase.Document.Arguments.CoerceEnums,
+      Phase.Document.Arguments.CoerceLists,
+      {Phase.Document.Arguments.Parse, options},
+    ]
+  end
+
   @spec for_document(Absinthe.Schema.t) :: t
   @spec for_document(Absinthe.Schema.t, Keyword.t) :: t
   def for_document(schema, options \\ []) do
@@ -60,19 +71,16 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Validation.UniqueFragmentNames,
       Phase.Document.Validation.UniqueOperationNames,
       Phase.Document.Validation.UniqueVariableNames,
-      # Apply Input
-      {Phase.Document.Variables, options},
-      Phase.Document.Arguments.Normalize,
       # Map to Schema
       {Phase.Schema, options},
       # Ensure Types
       Phase.Validation.KnownTypeNames,
       # Process Arguments
-      Phase.Document.Arguments.CoerceEnums,
       Phase.Document.Arguments.CoerceLists,
       {Phase.Document.Arguments.Parse, options},
       Phase.Document.MissingVariables,
       Phase.Document.MissingLiterals,
+      Phase.Document.Validation.VariablesOfCorrectType,
       Phase.Document.Arguments.FlagInvalid,
       # Validate Full Document
       Phase.Validation.KnownDirectives,
@@ -84,6 +92,9 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Validation.UniqueArgumentNames,
       Phase.Document.Validation.UniqueInputFieldNames,
       Phase.Document.Validation.FieldsOnCorrectType,
+      # Apply Input
+      {Phase.Document.Variables, options},
+      Phase.Document.Arguments.Normalize,
       # Check Validation
       {Phase.Document.Validation.Result, options},
       # Prepare for Execution

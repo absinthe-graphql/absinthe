@@ -33,7 +33,7 @@ defmodule Absinthe.Blueprint.Input.List do
         %Blueprint.Input.Value{
           literal: node,
           normalized: node,
-          schema_node: Type.unwrap(node.schema_node),
+          schema_node: Type.unwrap(list_schema_node),
         }
       ],
       source_location: node.source_location,

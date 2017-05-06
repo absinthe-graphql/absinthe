@@ -17,9 +17,11 @@ defmodule Absinthe.Language.ObjectField do
 
   defimpl Blueprint.Draft do
     def convert(node, doc) do
+      converted_value = Blueprint.Draft.convert(node.value, doc)
+
       %Blueprint.Input.Field{
         name: node.name,
-        input_value: %Blueprint.Input.Value{literal: Blueprint.Draft.convert(node.value, doc)},
+        input_value: %Blueprint.Input.Value{literal: converted_value, normalized: converted_value},
         source_location: source_location(node),
       }
     end

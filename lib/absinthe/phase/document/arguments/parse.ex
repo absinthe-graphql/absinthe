@@ -19,6 +19,9 @@ defmodule Absinthe.Phase.Document.Arguments.Parse do
   defp handle_node(%{normalized: nil} = node, _context) do
     node
   end
+  defp handle_node(%Input.Value{normalized: %Input.Variable{}} = node, _) do
+    node
+  end
   defp handle_node(%Input.Value{normalized: normalized} = node, context) do
     case build_value(normalized, node.schema_node, context) do
       {:ok, value} ->

@@ -63,6 +63,7 @@ defmodule Absinthe.Type.Scalar do
   The `:__private__` and `:__reference__` keys are for internal use.
   """
   @type t :: %__MODULE__{
+    identifier: atom,
     name: binary,
     description: binary,
     serialize: (value_t -> any),
@@ -72,6 +73,7 @@ defmodule Absinthe.Type.Scalar do
   }
 
   defstruct [
+    identifier: nil,
     name: nil,
     description: nil,
     serialize: nil,

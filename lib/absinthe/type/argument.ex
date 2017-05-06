@@ -20,6 +20,7 @@ defmodule Absinthe.Type.Argument do
   * `:description` - Description of an argument, useful for introspection.
   """
   @type t :: %__MODULE__{
+    identifier: atom,
     name: binary,
     type: Type.identifier_t,
     default_value: any,
@@ -27,7 +28,7 @@ defmodule Absinthe.Type.Argument do
     description: binary | nil,
     __reference__: Type.Reference.t}
 
-  defstruct name: nil, description: nil, type: nil, deprecation: nil, default_value: nil, __reference__: nil
+  defstruct identifier: nil, name: nil, description: nil, type: nil, deprecation: nil, default_value: nil, __reference__: nil
 
   @doc """
   Build an AST of the args map for inclusion in other types
@@ -49,7 +50,8 @@ defmodule Absinthe.Type.Argument do
     ast = for {arg_name, arg_attrs} <- args do
       name = arg_name |> Atom.to_string
       arg_data = [name: name] ++ arg_attrs
-      arg_ast = quote do: %Absinthe.Type.Argument{unquote_splicing(arg_data |> Absinthe.Type.Deprecation.from_attribute)}
+      arg_data = arg_data |> Absinthe.Type.Deprecation.from_attribute
+      arg_ast = quote do: %Absinthe.Type.Argument{unquote_splicing(arg_data)}
       {arg_name, arg_ast}
     end
     quote do: %{unquote_splicing(ast)}

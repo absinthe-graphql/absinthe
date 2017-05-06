@@ -69,6 +69,7 @@ defmodule Absinthe.Type.Enum do
   The `__private__` and `:__reference__` fields are for internal use.
   """
   @type t :: %__MODULE__{
+    identifier: atom,
     name: binary,
     description: binary,
     values: %{binary => Type.Enum.Value.t},
@@ -77,6 +78,7 @@ defmodule Absinthe.Type.Enum do
   }
 
   defstruct [
+    identifier: nil,
     name: nil,
     description: nil,
     values: %{},

@@ -53,7 +53,8 @@ defmodule Absinthe.Blueprint.Input do
   def parse(value) when is_list(value) do
     %Input.List{
       items: Enum.map(value, fn item ->
-        %Input.Value{literal: parse(item)}
+        parsed = parse(item)
+        %Input.Value{literal: parsed, normalized: parsed}
       end)
     }
   end
@@ -61,9 +62,10 @@ defmodule Absinthe.Blueprint.Input do
     %Input.Object{
       fields: Enum.map(value, fn
         {name, field_value} ->
+          parsed = parse(field_value)
           %Input.Field{
             name: name,
-            input_value: %Input.Value{literal: parse(field_value)}
+            input_value: %Input.Value{literal: parsed, normalized: parsed}
           }
       end)
     }
