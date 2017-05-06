@@ -15,7 +15,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedFragmentsTest do
     )
   end
 
-  describe "Validate: No unused fragments" do
+  context "Validate: No unused fragments" do
 
     it "all fragment names are used" do
       assert_passes_rule(@rule,

@@ -24,7 +24,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
     )
   end
 
-  describe "Validate: Scalar leafs" do
+  context "Validate: Scalar leafs" do
 
     it "valid scalar selection" do
       assert_passes_rule(@rule,

@@ -11,7 +11,7 @@ defmodule Absinthe.Language.VariableTest do
   }
   """
 
-  describe "converting to Blueprint" do
+  context "converting to Blueprint" do
 
     it "builds an Input.Variable.t" do
       assert %Blueprint.Input.Variable{name: "input"} = from_input(@query)

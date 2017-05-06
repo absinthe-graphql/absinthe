@@ -343,7 +343,7 @@ defmodule AbsintheTest do
     assert_result {:ok, %{errors: [%{message: "Field \"things\" of type \"[Thing]\" must have a selection of subfields. Did you mean \"things { ... }\"?"}]}}, result
   end
 
-  describe "fragments" do
+  context "fragments" do
 
     @simple_fragment """
       query Q {
@@ -410,7 +410,7 @@ defmodule AbsintheTest do
 
   end
 
-  describe "a root_value" do
+  context "a root_value" do
 
     @version "1.4.5"
     @query "{ version }"
@@ -420,7 +420,7 @@ defmodule AbsintheTest do
 
   end
 
-  describe "an alias with an underscore" do
+  context "an alias with an underscore" do
 
     @query """
     { _thing123:thing(id: "foo") { name } }
@@ -431,7 +431,7 @@ defmodule AbsintheTest do
 
   end
 
-  describe "multiple operation documents" do
+  context "multiple operation documents" do
     @multiple_ops_query """
     query ThingFoo {
       thing(id: "foo") {

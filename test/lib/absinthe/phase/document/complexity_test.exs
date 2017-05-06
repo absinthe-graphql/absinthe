@@ -52,7 +52,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
 
   use Harness.Document.Phase, phase: Absinthe.Phase.Document.Complexity.Result, schema: Schema
 
-  describe "analysing complexity a document" do
+  context "analysing complexity a document" do
     it "uses arguments and defaults to complexity of 1 for a field" do
       doc = """
       query ComplexityArg {

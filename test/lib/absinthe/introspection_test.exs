@@ -4,7 +4,7 @@ defmodule Absinthe.IntrospectionTest do
 
   alias Absinthe.Schema
 
-  describe "introspection of an object" do
+  context "introspection of an object" do
     it "returns the name of the object type currently being queried without an alias" do
       result = "{ person { __typename name } }" |> run(ContactSchema)
       assert_result {:ok, %{data: %{"person" => %{"name" => "Bruce", "__typename" => "Person"}}}}, result
@@ -15,7 +15,7 @@ defmodule Absinthe.IntrospectionTest do
     end
   end
 
-  describe "introspection of an interface" do
+  context "introspection of an interface" do
     it "returns the name of the object type currently being queried" do
       # Without an alias
       result = "{ contact { entity { __typename name } } }" |> run(ContactSchema)
@@ -26,7 +26,7 @@ defmodule Absinthe.IntrospectionTest do
     end
   end
 
-  describe "when querying against a union" do
+  context "when querying against a union" do
     it "returns the name of the object type currently being queried" do
       # Simple type
       result = "{ firstSearchResult { __typename } }" |> run(ContactSchema)
@@ -37,7 +37,7 @@ defmodule Absinthe.IntrospectionTest do
     end
   end
 
-  describe "introspection of a schema" do
+  context "introspection of a schema" do
 
     it "can use __schema to get types" do
       {:ok, %{data: %{"__schema" => %{"types" => types}}}} = run(
@@ -88,7 +88,7 @@ defmodule Absinthe.IntrospectionTest do
 
   end
 
-  describe "introspection of an enum type" do
+  context "introspection of an enum type" do
 
     it "can use __type and value information with deprecations" do
       result = """
@@ -141,7 +141,7 @@ defmodule Absinthe.IntrospectionTest do
 
   end
 
-  describe "introspection of an input object type" do
+  context "introspection of an input object type" do
 
     it "can use __type and ignore deprecated fields" do
       result = """
@@ -177,7 +177,7 @@ defmodule Absinthe.IntrospectionTest do
 
   end
 
-  describe "introspection of an interface type" do
+  context "introspection of an interface type" do
 
     it "can use __type and get possible types" do
       result = """
@@ -198,7 +198,7 @@ defmodule Absinthe.IntrospectionTest do
 
   end
 
-  describe "introspection of an object type that includes a list" do
+  context "introspection of an object type that includes a list" do
 
     it "can use __type and see fields with the wrapping list types" do
       result = """
@@ -233,7 +233,7 @@ defmodule Absinthe.IntrospectionTest do
   end
 
 
-  describe "introspection of an object type" do
+  context "introspection of an object type" do
 
     it "can use __type and ignore deprecated fields" do
       result = """
@@ -358,7 +358,7 @@ defmodule Absinthe.IntrospectionTest do
 
   end
 
-  describe "introspection of a scalar type" do
+  context "introspection of a scalar type" do
     it "can use __type" do
       result = """
       {
@@ -379,7 +379,7 @@ defmodule Absinthe.IntrospectionTest do
   end
 
 
-  describe "introspection of a union type" do
+  context "introspection of a union type" do
 
     it "can use __type and get possible types" do
       result = """
@@ -400,7 +400,7 @@ defmodule Absinthe.IntrospectionTest do
 
   end
 
-  describe "full introspection" do
+  context "full introspection" do
 
     @filename "graphql/introspection.graphql"
     @query File.read!(Path.join([:code.priv_dir(:absinthe), @filename]))

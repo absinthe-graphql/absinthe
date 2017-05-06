@@ -20,7 +20,7 @@ defmodule Absinthe.Language.FieldTest do
   }
   """
 
-  describe "converting to Blueprint" do
+  context "converting to Blueprint" do
 
     it "builds a Field.t" do
       assert %Blueprint.Document.Field{name: "foo", arguments: [%Input.Argument{name: "input", input_value: %Input.Value{literal: %Input.Object{fields: [%Input.Field{name: "foo", input_value: %Input.Value{literal: %Input.Integer{value: 2}}}]}}}], source_location: %Blueprint.Document.SourceLocation{line: 2}} = from_input(@query)

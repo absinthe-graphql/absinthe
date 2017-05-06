@@ -15,7 +15,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
     )
   end
 
-  describe "Validate: No unused variables" do
+  context "Validate: No unused variables" do
 
     it "uses all variables" do
       assert_passes_rule(@rule,

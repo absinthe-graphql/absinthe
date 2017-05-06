@@ -11,7 +11,7 @@ defmodule Absinthe.Language.ObjectValueTest do
   }
   """
 
-  describe "converting to Blueprint" do
+  context "converting to Blueprint" do
 
     it "builds an Input.Object.t" do
       assert %Blueprint.Input.Object{fields: [%Blueprint.Input.Field{name: "foo", input_value: %Blueprint.Input.Value{literal: %Blueprint.Input.Integer{value: 2}}}]} = from_input(@query)

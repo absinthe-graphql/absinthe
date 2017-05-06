@@ -4,7 +4,7 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlacedTest do
 
   alias Absinthe.Schema.Rule
 
-  describe "rule" do
+  context "rule" do
 
     it "is enforced with input types on arguments" do
       assert_schema_error("invalid_input_types",
