@@ -10,6 +10,7 @@ defmodule Absinthe.Blueprint.Document.Fragment.Spread do
     directives: [],
     source_location: nil,
     # Populated by phases
+    complexity: nil,
     flags: %{},
     errors: [],
   ]

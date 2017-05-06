@@ -20,7 +20,6 @@ defmodule Absinthe.Blueprint.Document.Operation do
     schema_node: nil,
     complexity: nil,
     provided_values: %{},
-    fields: [],
     errors: [],
   ]
 
@@ -38,7 +37,6 @@ defmodule Absinthe.Blueprint.Document.Operation do
     complexity: nil | non_neg_integer,
     provided_values: %{String.t => nil | Blueprint.Input.t},
     flags: Blueprint.flags_t,
-    fields: [Blueprint.Document.Field.t],
     errors: [Absinthe.Phase.Error.t],
   }
 

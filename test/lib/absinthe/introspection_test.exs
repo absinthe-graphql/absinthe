@@ -65,7 +65,20 @@ defmodule Absinthe.IntrospectionTest do
     end
 
     it "can use __schema to get the directives" do
-      result = "{ __schema { directives { name args { name type { kind ofType { name kind } } } locations onField onFragment onOperation } } }" |> run(ContactSchema)
+      result = """
+      {
+        __schema {
+          directives {
+            name
+            args { name type { kind ofType { name kind } } }
+            locations
+            onField
+            onFragment
+            onOperation
+          }
+        }
+      }
+      """ |> run(ContactSchema)
       assert {:ok,
               %{data: %{"__schema" => %{
                          "directives" => [

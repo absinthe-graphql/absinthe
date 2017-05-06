@@ -52,9 +52,11 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     acc = plugins |> run_callbacks(:before_resolution, acc, run_callbacks?)
 
-    {result, acc} = walk_result(result, acc, operation, operation.schema_node, info)
+    info = %{info | acc: acc}
 
-    acc = plugins |> run_callbacks(:after_resolution, acc, run_callbacks?)
+    {result, info} = walk_result(result, operation, operation.schema_node, info, [operation])
+
+    acc = plugins |> run_callbacks(:after_resolution, info.acc, run_callbacks?)
 
     Resolution.update(bp_root.resolution, result, acc)
   end
@@ -73,6 +75,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       root_value: root_value,
       schema: bp_root.schema,
       source: root_value,
+      fragments: Map.new(bp_root.fragments, &{&1.name, &1}),
     }
   end
 
@@ -80,45 +83,46 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   This function walks through any existing results. If no results are found at a
   given node, it will call the requisite function to expand and build those results
   """
-  def walk_result(%{fields: nil} = result, acc, bp_node, _schema_type, info) do
-    {fields, acc} = resolve_fields(bp_node, acc, info, result.root_value)
-    {%{result | fields: fields}, acc}
+  def walk_result(%{fields: nil} = result, bp_node, _schema_type, info, path) do
+    {fields, info} = resolve_fields(bp_node, info, result.root_value, path)
+    {%{result | fields: fields}, info}
   end
-  def walk_result(%{fields: fields} = result, acc, bp_node, schema_type, info) do
-    {fields, acc} = walk_results(fields, acc, bp_node, schema_type, info)
+  def walk_result(%{fields: fields} = result, bp_node, schema_type, info, path) do
+    {fields, info} = walk_results(fields, bp_node, schema_type, info, path, [])
 
-    {%{result | fields: fields}, acc}
+    {%{result | fields: fields}, info}
   end
-  def walk_result(%Resolution.Leaf{} = result, acc, _, _, _) do
-    {result, acc}
+  def walk_result(%Resolution.Leaf{} = result, _, _, info, _) do
+    {result, info}
   end
-  def walk_result(%{values: values} = result, acc, bp_node, schema_type, info) do
-    {values, acc} = walk_results(values, acc, bp_node, schema_type, info)
-    {%{result | values: values}, acc}
+  def walk_result(%{values: values} = result, bp_node, schema_type, info, path) do
+    {values, info} = walk_results(values, bp_node, schema_type, info, path, [])
+    {%{result | values: values}, info}
   end
-  def walk_result(%Absinthe.Resolution{} = res, acc, _bp_node, _schema_type, info) do
-    do_resolve_field(%{res | acc: acc}, info, res.source)
+  def walk_result(%Absinthe.Resolution{} = res, _bp_node, _schema_type, info, path) do
+    do_resolve_field(%{res | acc: info.acc}, info, res.source, path)
   end
 
   # walk list results
-  defp walk_results(values, res_acc, bp_node, inner_type, info, acc \\ [])
-  defp walk_results([], res_acc, _, _, _, acc), do: {:lists.reverse(acc), res_acc}
-  defp walk_results([value | values], res_acc, bp_node, inner_type, info, acc) do
-    {result, res_acc} = walk_result(value, res_acc, bp_node, inner_type, info)
-    walk_results(values, res_acc, bp_node, inner_type, info, [result | acc])
+  defp walk_results([value | values], bp_node, inner_type, info, path, acc) do
+    {result, info} = walk_result(value, bp_node, inner_type, info, path)
+    walk_results(values, bp_node, inner_type, info, path, [result | acc])
   end
+  defp walk_results([], _, _, info, _, acc), do: {:lists.reverse(acc), info}
 
-  defp resolve_fields(parent, acc, info, source) do
-    {parent_type, fields} =
+  defp resolve_fields(parent, info, source, path) do
+    parent_type =
       parent
       # parent is the parent field, we need to get the return type of that field
       |> get_return_type
       # that return type could be an interface or union, so let's make it concrete
-      |> handle_abstract_types(parent.fields, source, info)
+      |> get_concrete_type(source, info)
 
-    info = %{info | parent_type: parent_type, source: source}
+    {fields, fields_cache} = Absinthe.Resolution.Projector.project(parent.selections, parent_type, path, info.fields_cache, info)
 
-    do_resolve_fields(fields, acc, info, source, [])
+    info = %{info | fields_cache: fields_cache}
+
+    do_resolve_fields(fields, info, source, parent_type, path, [])
   end
 
   defp get_return_type(%{schema_node: %Type.Field{type: type}}) do
@@ -129,64 +133,38 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
   defp get_return_type(type), do: type
 
-  defp handle_abstract_types(%abstract_mod{} = parent_type, parent_fields, source, info) when abstract_mod in [Type.Interface, Type.Union] do
-    concrete_type = abstract_mod.resolve_type(parent_type, source, info)
-
-    concrete_fields = concrete_type.fields
-
-    fields = for field <- parent_fields, field_applies?(concrete_type, field, info) do
-      case field.name do
-        "__" <> _ ->
-          field
-        _ ->
-          %{field | schema_node: Map.fetch!(concrete_fields, field.schema_node.__reference__.identifier)}
-      end
-    end
-
-    {concrete_type, fields}
+  defp get_concrete_type(%Type.Union{} = parent_type, source, info) do
+    Type.Union.resolve_type(parent_type, source, info)
   end
-  defp handle_abstract_types(parent_type, parent_fields, _source, _info) do
-    # you essentially have to refresh the schema nodes. This can happen when you have an interface
-    # based type condition placed under a concrete field. The parent field type is concrete,
-    # but the sub selection types are built on the abstract type not the concrete type.
-    # Ideally we so
-    concrete_fields = parent_type.fields
-    fields = for field <- parent_fields do
-      case field.name do
-        "__" <> _ ->
-          field
-        _ ->
-          %{field | schema_node: Map.fetch!(concrete_fields, field.schema_node.__reference__.identifier)}
-      end
-    end
-    {parent_type, fields}
+  defp get_concrete_type(%Type.Interface{} = parent_type, source, info) do
+    Type.Interface.resolve_type(parent_type, source, info)
+  end
+  defp get_concrete_type(parent_type, _source, _info) do
+    parent_type
   end
 
-  defp do_resolve_fields([], res_acc, _, _, acc), do: {:lists.reverse(acc), res_acc}
-  # defp do_resolve_fields([%{schema_node: nil} | fields], res_acc, info, source, acc) do
-  #   do_resolve_fields(fields, res_acc, info, source, acc)
-  # end
-  defp do_resolve_fields([field | fields], res_acc, info, source, acc) do
-    {result, res_acc} = resolve_field(field, res_acc, info, source)
-    do_resolve_fields(fields, res_acc, info, source, [result | acc])
+  defp do_resolve_fields([field | fields], info, source, parent_type, path, acc) do
+    {result, info} = resolve_field(field, info, source, parent_type, [field | path])
+    do_resolve_fields(fields, info, source, parent_type, path, [result | acc])
   end
+  defp do_resolve_fields([], info, _, _, _, acc), do: {:lists.reverse(acc), info}
 
-  def resolve_field(bp_field, acc, info, source) do
+  def resolve_field(field, info, source, parent_type, path) do
     info
-    |> build_resolution_struct(bp_field, acc)
-    |> do_resolve_field(info, source)
+    |> build_resolution_struct(field, source, parent_type, path)
+    |> do_resolve_field(info, source, path)
   end
 
   # bp_field needs to have a concrete schema node, AKA no unions or interfaces
-  defp do_resolve_field(res, info, source) do
+  defp do_resolve_field(res, info, source, path) do
     res
     |> reduce_resolution
     |> case do
       %{state: :resolved} = res ->
-        build_result(res, info, source)
+        build_result(res, info, source, path)
 
-      %{state: :suspended} = res ->
-        {res, res.acc}
+      %{state: :suspended, acc: acc} = res ->
+        {res, %{info | acc: acc}}
 
       final_res ->
         raise """
@@ -197,13 +175,15 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     end
   end
 
-  defp build_resolution_struct(info, bp_field, acc) do
+  defp build_resolution_struct(info, bp_field, source, parent_type, path) do
     %{info |
-     middleware: bp_field.schema_node.middleware,
-     acc: acc,
-     definition: bp_field,
-     arguments: bp_field.argument_data,
-   }
+      path: path,
+      source: source,
+      parent_type: parent_type,
+      middleware: bp_field.schema_node.middleware,
+      definition: bp_field,
+      arguments: bp_field.argument_data,
+    }
   end
 
   defp reduce_resolution(%{middleware: []} = res), do: res
@@ -229,28 +209,36 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     fun.(res, [])
   end
 
-  defp build_result(%{errors: [], value: result} = res, info, _source) do
-    bp_field = res.definition
+  defp build_result(%{errors: []} = res, info, _source, path) do
+    %{
+      value: result,
+      context: context,
+      acc: acc,
+      definition: bp_field,
+      extensions: extensions
+    } = res
+
     full_type = Type.expand(bp_field.schema_node.type, info.schema)
 
     bp_field = put_in(bp_field.schema_node.type, full_type)
 
-    info = %{info | context: res.context}
+    info = %{info | context: context, acc: acc}
 
-    result
-    |> to_result(bp_field, full_type)
-    |> Map.put(:extensions, res.extensions)
-    |> walk_result(res.acc, bp_field, full_type, info)
+    result = result |> to_result(bp_field, full_type)
+
+    %{result | extensions: extensions}
+    |> walk_result(bp_field, full_type, info, path)
   end
-  defp build_result(%{errors: errors} = res, info, source) do
+  defp build_result(%{errors: errors} = res, info, source, _path) do
     build_error_result({:error, errors}, errors, res.acc, res.definition, info, source)
   end
 
   defp build_error_result(original_value, error_values, acc, bp_field, info, source) do
+    info = %{info | acc: acc}
     full_type = Type.expand(bp_field.schema_node.type, info.schema)
     result = to_result(nil, bp_field, full_type)
     result = Enum.reduce(Enum.reverse(error_values), result, &put_result_error_value(&1, &2, original_value, bp_field, source))
-    {result, acc}
+    {result, info}
   end
 
   defp put_result_error_value(error_value, result, original_value, bp_field, source) do
@@ -312,45 +300,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       emitter: blueprint,
       value: root_value,
     }
-  end
-
-  defp normalize_condition(condition, schema) when is_atom(condition) do
-    Absinthe.Schema.lookup_type(schema, condition)
-  end
-  defp normalize_condition(condition, schema) do
-    type = condition |> Absinthe.Type.unwrap
-    Absinthe.Schema.lookup_type(schema, type)
-  end
-
-  defp field_applies?(parent_type, %{type_conditions: conditions}, info) do
-    conditions = for condition <- conditions do
-      condition |> normalize_condition(info.schema)
-    end
-
-    # custom version of Enum.all?(conditions, &passes_type_condition?(&1, parent_type))
-    do_field_applies?(conditions, parent_type, true)
-  end
-
-  defp do_field_applies?(_, _, false), do: false
-  defp do_field_applies?([], _parent_type, acc) do
-    acc
-  end
-  defp do_field_applies?([condition | conditions], parent_type, _) do
-    pass_fail = passes_type_condition?(condition, parent_type)
-    do_field_applies?(conditions, parent_type, pass_fail)
-  end
-
-  defp passes_type_condition?(%Type.Object{name: name}, %Type.Object{name: name}) do
-    true
-  end
-  defp passes_type_condition?(%Type.Interface{} = condition, %Type.Object{} = type) do
-    Type.Interface.member?(condition, type)
-  end
-  defp passes_type_condition?(%Type.Union{} = condition, %Type.Object{} = type) do
-    Type.Union.member?(condition, type)
-  end
-  defp passes_type_condition?(_, _) do
-    false
   end
 
   def error(node, message, extra \\ []) do

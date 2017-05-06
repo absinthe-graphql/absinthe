@@ -86,11 +86,10 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Validation.FieldsOnCorrectType,
       # Check Validation
       {Phase.Document.Validation.Result, options},
-      # Apply Directives
-      Phase.Document.Arguments.Data,
-      Phase.Document.Directives,
       # Prepare for Execution
-      Phase.Document.Flatten,
+      Phase.Document.Arguments.Data,
+      # Apply Directives
+      Phase.Document.Directives,
       # Analyse Complexity
       {Phase.Document.Complexity.Analysis, options},
       {Phase.Document.Complexity.Result, options},

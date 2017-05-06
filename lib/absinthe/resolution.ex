@@ -34,7 +34,8 @@ defmodule Absinthe.Resolution do
     state: field_state,
     acc: %{any => any},
     extensions: %{any => any},
-    arguments: %{optional(atom) => any}
+    arguments: %{optional(atom) => any},
+    fragments: [Blueprint.Document.Fragment.Named.t],
   }
 
   @enforce_keys [:adapter, :context, :root_value, :schema, :source]
@@ -55,6 +56,8 @@ defmodule Absinthe.Resolution do
     private: %{},
     path: [],
     state: :unresolved,
+    fragments: [],
+    fields_cache: %{},
   ]
 
   def resolver_spec(fun) do
@@ -85,6 +88,15 @@ defmodule Absinthe.Resolution do
     put_result(res, result)
   end
   def call(res, _), do: res
+
+  def path_string(%__MODULE__{path: path}) do
+    Enum.map(path, fn
+      %{name: name, alias: alias} ->
+        alias || name
+      %{schema_node: schema_node} ->
+        schema_node.name
+    end)
+  end
 
   @doc """
   Handy function for applying user function result tuples to a resolution struct
