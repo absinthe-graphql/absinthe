@@ -3,8 +3,9 @@
 ## v1.3.1
 
 - Enhancement: Improved nested fragment handling when merging is required.
-- Enhancement: Projection API.
 - Enhancement: Performance improvements, particularly for documents containing fragments
+- Enhancement: Projection API. This is an improvement upon the previous recommendation, which was to get child
+  fields via looking at the info, and required manual handling of type conditions.
 
 ## v1.3.0
 
