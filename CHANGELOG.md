@@ -4,8 +4,9 @@
 
 - Enhancement: Improved nested fragment handling when merging is required.
 - Enhancement: Performance improvements, particularly for documents containing fragments
-- Enhancement: Projection API. This is an improvement upon the previous recommendation, which was to get child
-  fields via looking at the info, and required manual handling of type conditions.
+- Enhancement: `Absinthe.Resolution.project/1,2` which returns the child fields under the current field. This is an improvement upon the previous recommendation, which was to get child fields via using internal data structures found in info, and required manual handling of type conditions.
+
+- NOTE: If you were previously computing subfields by looking at `%Absinthe.Blueprint.Document.Field{}` internals, do note that their structure has changed a little. Notably, there is no longer a `:fields` key.
 
 ## v1.3.0
 
