@@ -66,15 +66,77 @@ defmodule Absinthe.Resolution do
 
   @type field_state :: :unresolved | :resolved | :suspended
 
+  @doc """
+  Get the child fields under the current field.
+
+  See `project/2` for details.
+  """
+  def project(info) do
+    case info.definition.schema_node.type do
+      %Absinthe.Type.Interface{} ->
+        raise need_concrete_type_error()
+      %Absinthe.Type.Union{} ->
+        raise need_concrete_type_error()
+      schema_node ->
+        project(info, schema_node)
+    end
+  end
+
+  @doc """
+  Get the child fields under the current field.
+
+  ## Example
+
+  Given a document like:
+  ```
+  { user { id name }}
+  ```
+
+  ```
+  field :user, :user do
+    resolve fn _, info ->
+      child_fields = Absinthe.Resolution.project(info) |> Enum.map(&(&1.name))
+      # ...
+    end
+  end
+  ```
+
+  `child_fields` will be `["id", "name"]`.
+
+  It correctly handles fragments, so for example if you had the document:
+  ```
+  {
+    user {
+      ... on User {
+        id
+      }
+      ... on Named {
+        name
+      }
+    }
+  }
+  ```
+
+  you would still get a nice and simple `child_fields` that was `["id", "name"]`.
+  """
   def project(%{
       definition: %{selections: selections},
       path: path,
-      cache: cache,
+      fields_cache: cache,
     } = info, type) do
 
-    {fields, _} = Absinthe.Resolution.Projector.project(info.selections, type, path, cache, info)
+    type = Absinthe.Schema.lookup_type(info.schema, type)
+
+    {fields, _} = Absinthe.Resolution.Projector.project(selections, type, path, cache, info)
 
     fields
+  end
+
+  defp need_concrete_type_error() do
+    """
+    You tried to project from a field that is an abstract type without concrete type information!
+    Use `project/2` instead of `project/1`, and supply the type yourself please!
+    """
   end
 
   def call(%{state: :unresolved} = res, resolution_function) do
