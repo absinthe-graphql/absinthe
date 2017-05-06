@@ -1,6 +1,12 @@
 # Changelog
 
-## 1.3.0
+## v1.3.1
+
+- Enhancement: Improved nested fragment handling when merging is required.
+- Enhancement: Projection API.
+- Enhancement: Performance improvements, particularly for documents containing fragments
+
+## v1.3.0
 
 - Added `Absinthe.Logger` -- adds configurable pipeline and variable logging
   with filtering support (filters "token" and "password" by default). Used by
