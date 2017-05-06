@@ -61,7 +61,7 @@ defmodule Absinthe.Blueprint.Transform do
     Blueprint.Document.Fragment.Inline => [:selections, :directives],
     Blueprint.Document.Fragment.Named => [:selections, :directives],
     Blueprint.Document.Fragment.Spread => [:directives],
-    Blueprint.Document.VariableDefinition => [:type, :default_value, :input],
+    Blueprint.Document.VariableDefinition => [:input],
     Blueprint.Input.Argument => [:input_value],
     Blueprint.Input.Field => [:input_value],
     Blueprint.Input.Object => [:fields],
@@ -82,13 +82,14 @@ defmodule Absinthe.Blueprint.Transform do
 
   @spec walk(Blueprint.node_t, acc, ((Blueprint.node_t, acc) -> {Blueprint.node_t, acc} | {:halt, Blueprint.node_t, acc}), ((Blueprint.node_t, acc) -> {Blueprint.node_t, acc})) :: {Blueprint.node_t, acc} when acc: var
   def walk(blueprint, acc, pre, post)
+  def walk([], acc, _pre, _post) do
+    {[], acc}
+  end
+  def walk(nil, acc, _pre, _post) do
+    {nil, acc}
+  end
 
   for {node_name, children} <- nodes_with_children do
-    if :selections in children do
-      def walk(%unquote(node_name){flags: %{flat: _}} = node, acc, pre, post) do
-        node_with_children(node, unquote(children--[:selections]), acc, pre, post)
-      end
-    end
     def walk(%unquote(node_name){} = node, acc, pre, post) do
       node_with_children(node, unquote(children), acc, pre, post)
     end

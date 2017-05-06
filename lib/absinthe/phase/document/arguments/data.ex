@@ -43,7 +43,6 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
     %{node | value: input.data}
   end
   def handle_node(%Input.Value{normalized: %Input.List{items: items}} = node) do
-    node.normalized |> IO.inspect
     data_list = for %{data: data} <- items, data != nil, do: data
     %{node | data: data_list}
   end

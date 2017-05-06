@@ -40,6 +40,8 @@ defmodule Absinthe.Pipeline do
     |> Keyword.merge(Keyword.put(options, :schema, schema))
     [
       {Phase.Schema, options},
+      Phase.Document.Arguments.CoerceEnums,
+      Phase.Document.Arguments.CoerceLists,
       {Phase.Document.Arguments.Parse, options},
     ]
   end
@@ -74,7 +76,6 @@ defmodule Absinthe.Pipeline do
       # Ensure Types
       Phase.Validation.KnownTypeNames,
       # Process Arguments
-      Phase.Document.Arguments.CoerceEnums,
       Phase.Document.Arguments.CoerceLists,
       {Phase.Document.Arguments.Parse, options},
       Phase.Document.MissingVariables,
