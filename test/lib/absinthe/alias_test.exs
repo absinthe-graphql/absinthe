@@ -28,7 +28,7 @@ defmodule Absinthe.Middleware.AliasTest do
     }
     """
     expected_data = %{
-      "user_id" => %{"id" => 42},
+      "userId" => %{"id" => 42},
       "userName" => %{"name" => "foobar"},
     }
 
