@@ -67,4 +67,10 @@ defmodule Absinthe.Introspection.Field do
     }
   end
 
+  def meta(custom_meta) do
+    module = "Elixir.Absinthe.Introspection.Field.Meta.#{String.capitalize(custom_meta)}"
+              |> String.to_existing_atom()
+    apply(module,:meta,[])
+  end
+
 end
