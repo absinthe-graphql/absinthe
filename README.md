@@ -39,6 +39,11 @@ Absinthe includes a number of advanced resolution features, to include:
 - Batched field resolution (addressing N+1 query problems)
 - A resolution plugin system supporting further extensibility
 
+### Safety
+
+- Complexity analysis and configurable limiting
+- Support for precompiled documents/preventing custom documents
+
 ### Idiomatic Documents, Idiomatic Code
 
 Write your schemas in idiomatic Elixir `snake_case` notation. Absinthe can
