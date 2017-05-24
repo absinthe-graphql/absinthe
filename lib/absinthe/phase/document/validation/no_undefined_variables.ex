@@ -42,12 +42,12 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariables do
   end
 
   # Generate the error for the node
-  @spec error(Blueprint.Input.Variable.t, Blueprint.Operation.t) :: Phase.Error.t
+  @spec error(Blueprint.Input.Variable.t, Blueprint.Document.Operation.t) :: Phase.Error.t
   defp error(node, operation) do
     Phase.Error.new(
       __MODULE__,
       error_message(node.name, operation.name),
-      [node.source_location, operation.source_location]
+      location: [node.source_location, operation.source_location]
     )
   end
 

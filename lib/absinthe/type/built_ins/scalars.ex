@@ -5,8 +5,8 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
 
   scalar :integer, name: "Int" do
     description """
-    The `Int` scalar type represents non-fractional signed whole numeric
-    values. Int can represent values between `-(2^53 - 1)` and `2^53 - 1` since
+    The `Int` scalar type represents non-fractional signed whole numeric values.
+    Int can represent values between `-(2^53 - 1)` and `2^53 - 1` since it is
     represented in JSON as double-precision floating point numbers specified
     by [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
     """
@@ -65,25 +65,20 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   @max_int 9007199254740991
   @min_int -9007199254740991
 
-  @spec parse_int(integer | float | binary) :: {:ok, integer} | :error
+  @spec parse_int(any) :: {:ok, integer} | :error
   defp parse_int(value) when is_integer(value) and value >= @min_int and value <= @max_int do
     {:ok, value}
-  end
-  defp parse_int(value) when is_float(value) do
-    with {result, _} <- Integer.parse(String.to_integer(value, 10)) do
-      parse_int(result)
-    end
   end
   defp parse_int(_) do
     :error
   end
 
-  @spec parse_float(integer | float) :: {:ok, float} | :error
-  defp parse_float(value) when is_integer(value) do
-    {:ok, value * 1.0}
-  end
+  @spec parse_float(any) :: {:ok, float} | :error
   defp parse_float(value) when is_float(value) do
     {:ok, value}
+  end
+  defp parse_float(value) when is_integer(value) do
+    {:ok, value * 1.0}
   end
   defp parse_float(_) do
     :error
@@ -92,9 +87,6 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   @spec parse_string(any) :: {:ok, binary} | :error
   defp parse_string(value) when is_binary(value) do
     {:ok, value}
-  end
-  defp parse_string(value) when is_float(value) or is_integer(value) do
-    :error
   end
   defp parse_string(_) do
     :error
@@ -112,16 +104,12 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   end
 
   @spec parse_boolean(any) :: {:ok, boolean} | :error
-  defp parse_boolean(value) when is_number(value) do
-    {:ok, value > 0}
-  end
   defp parse_boolean(value) when is_boolean(value) do
     {:ok, value}
   end
   defp parse_boolean(_) do
     :error
   end
-
 
   # Parse, supporting pulling values out of blueprint Input nodes
   defp parse_with(node_types, coercion) do

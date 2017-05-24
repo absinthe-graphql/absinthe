@@ -10,7 +10,7 @@ defmodule Absinthe.Traversal do
   alias __MODULE__
   alias Absinthe.Traversal.Node
 
-  @type t :: %{context: any, seen: [Node.t], path: [Node.t]}
+  @type t :: %__MODULE__{context: any, seen: [Node.t], path: [Node.t]}
   defstruct context: nil, seen: [], path: []
 
   # Instructions defining behavior during traversal
@@ -20,18 +20,18 @@ defmodule Absinthe.Traversal do
   #   traversal should NOT continue to children, but to siblings (using
   #   `traversal`)
   # * `{:error, message}`: Bad stuff happened, explained by `message`
-  @type instruction_t :: {:ok, any} | {:prune, any} | {:error, any}
+  @type instruction_t :: {:ok, any, t} | {:prune, any, t} | {:error, any}
 
   # Traverse, reducing nodes using a given function to evaluate their value.
   @doc false
-  @spec reduce(Node.t, any, any, (Node.t -> instruction_t)) :: any
+  @spec reduce(Node.t, any, acc, (Node.t, t, acc -> instruction_t)) :: acc when acc: var
   def reduce(node, context, initial_value, node_evaluator) do
     {result, _traversal} = do_reduce(node, %Traversal{context: context}, initial_value, node_evaluator)
     result
   end
 
   # Reduce using a traversal struct
-  @spec do_reduce(Node.t, t, any, (Node.t -> instruction_t)) :: {any, t}
+  @spec do_reduce(Node.t, t, acc, (Node.t, t, acc -> instruction_t)) :: {acc, t} when acc: var
   defp do_reduce(node, traversal, initial_value, node_evaluator) do
     if seen?(traversal, node) do
       {initial_value, traversal}
@@ -46,7 +46,7 @@ defmodule Absinthe.Traversal do
   end
 
   # Traverse a node's children
-  @spec reduce(Node.t, t, any, (Node.t -> instruction_t)) :: any
+  @spec reduce_children(Node.t, t, acc, (Node.t, t, acc -> instruction_t)) :: {acc, t} when acc: var
   defp reduce_children(node, traversal, initial, node_evalator) do
     Enum.reduce(Node.children(node, traversal), {initial, traversal}, fn
       child, {this_value, this_traversal} ->

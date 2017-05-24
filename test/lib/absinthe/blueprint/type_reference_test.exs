@@ -3,7 +3,7 @@ defmodule Absinthe.Blueprint.TypeReferenceTest do
 
   alias Absinthe.Blueprint
 
-  describe ".unwrap of Name" do
+  context ".unwrap of Name" do
 
     it "is left intact" do
       name = %Blueprint.TypeReference.Name{name: "Foo"}
@@ -12,7 +12,7 @@ defmodule Absinthe.Blueprint.TypeReferenceTest do
 
   end
 
-  describe ".unwrap of List" do
+  context ".unwrap of List" do
 
     it "extracts the inner name" do
       name = %Blueprint.TypeReference.Name{name: "Foo"}
@@ -29,7 +29,7 @@ defmodule Absinthe.Blueprint.TypeReferenceTest do
 
   end
 
-  describe ".unwrap of NonNull" do
+  context ".unwrap of NonNull" do
 
     it "extracts the inner name" do
       name = %Blueprint.TypeReference.Name{name: "Foo"}

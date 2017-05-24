@@ -38,12 +38,12 @@ defmodule Absinthe.Phase.Document.Validation.VariablesAreInputTypes do
   end
 
   # Generate an error for an input field
-  @spec error(Blueprint.Document.VariableDefinition.t, String.t) :: Phase.t
+  @spec error(Blueprint.Document.VariableDefinition.t, String.t) :: Phase.Error.t
   defp error(node, type_rep) do
     Phase.Error.new(
       __MODULE__,
       error_message(node.name, type_rep),
-      node.source_location
+      location: node.source_location
     )
   end
 

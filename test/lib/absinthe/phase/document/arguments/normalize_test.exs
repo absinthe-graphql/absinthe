@@ -14,6 +14,7 @@ defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
         arg :name, :string
         arg :age, :integer
       end
+      field :things, :things
     end
 
     object :foo do
@@ -25,6 +26,17 @@ defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
       field :name, non_null(:string)
       field :age, :integer
     end
+
+    object :things do
+      field :items, list_of(:item) do
+        arg :id, :id
+      end
+    end
+
+    object :item do
+      field :id, :id
+    end
+
 
   end
 
@@ -43,9 +55,22 @@ defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
     }
   """
 
-  describe "when not providing a value for an optional variable with a default value" do
+  @fragment_query """
+    query Things($id: ID!) {
+      things {
+        ... thingsFooFragment
+      }
+    }
+    fragment thingsFragment on Things {
+      items(id: $id) {
+        id
+      }
+    }
+  """
+
+  context "when not providing a value for an optional variable with a default value" do
     it "uses the default value" do
-      {:ok, result, _} = run_phase(@query, variables: %{})
+      {:ok, result, _} = run_phase(@query, variables: %{}, operation_name: "Profile")
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
       field = op.selections |> List.first
       age_argument = field.arguments |> Enum.find(&(&1.name == "age"))
@@ -55,15 +80,25 @@ defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
     end
   end
 
-  describe "when providing a value for an optional variable with a default value" do
+  context "when providing a value for an optional variable with a default value" do
     it "uses the default value" do
-      {:ok, result, _} = run_phase(@query, variables: %{"age" => 4})
+      {:ok, result, _} = run_phase(@query, variables: %{"age" => 4}, operation_name: "Profile")
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
       field = op.selections |> List.first
       age_argument = field.arguments |> Enum.find(&(&1.name == "age"))
       assert %Blueprint.Input.Integer{value: 4} == age_argument.input_value.normalized
       name_argument = field.arguments |> Enum.find(&(&1.name == "name"))
       assert %Blueprint.Input.String{value: "Bruce", source_location: %Blueprint.Document.SourceLocation{column: nil, line: 7}} == name_argument.input_value.normalized
+    end
+  end
+
+  context "when providing an input to a fragment" do
+    it "normalizes the input" do
+      {:ok, result, _} = run_phase(@fragment_query, variables: %{"id" => "foo"})
+      frag = result.fragments |> Enum.find(&(&1.name == "thingsFragment"))
+      field = frag.selections |> List.first
+      id_argument = field.arguments |> Enum.find(&(&1.name == "id"))
+      assert %Blueprint.Input.String{value: "foo"} == id_argument.input_value.normalized
     end
   end
 

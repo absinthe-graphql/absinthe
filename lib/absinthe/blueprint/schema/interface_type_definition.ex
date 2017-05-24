@@ -2,6 +2,8 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
 
   @moduledoc false
 
+  alias Absinthe.Blueprint
+
   @enforce_keys [:name]
   defstruct [
     :name,

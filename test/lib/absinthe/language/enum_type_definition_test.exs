@@ -3,7 +3,7 @@ defmodule Absinthe.Language.EnumTypeDefinitionTest do
 
   alias Absinthe.Blueprint
 
-  describe "converting to Blueprint" do
+  context "converting to Blueprint" do
 
     it "works, given a Blueprint Schema 'enum' definition" do
       rep = "enum Episode { NEWHOPE, EMPIRE, JEDI }" |> from_input
@@ -21,7 +21,7 @@ defmodule Absinthe.Language.EnumTypeDefinitionTest do
   end
 
   defp from_input(text) do
-    {:ok, doc} = Absinthe.Phase.Parse.run(text)
+    {:ok, %{input: doc}} = Absinthe.Phase.Parse.run(text)
 
     doc
     |> extract_ast_node

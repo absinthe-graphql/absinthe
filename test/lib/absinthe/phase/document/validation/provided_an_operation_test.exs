@@ -14,7 +14,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedAnOperationTest do
     )
   end
 
-  describe "Given an operation" do
+  context "Given an operation" do
 
     it "passes" do
       assert_passes_rule(@rule,
@@ -29,19 +29,19 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedAnOperationTest do
 
   end
 
-  describe "When empty" do
+  context "When empty" do
 
     it "fails" do
       assert_fails_rule(@rule,
         "",
         [],
-        no_operation
+        no_operation()
       )
     end
 
   end
 
-  describe "When given fragments" do
+  context "When given fragments" do
 
     it "fails" do
       assert_fails_rule(@rule,
@@ -51,7 +51,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedAnOperationTest do
         }
         """,
         [],
-        no_operation
+        no_operation()
       )
     end
 

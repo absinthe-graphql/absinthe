@@ -5,16 +5,18 @@ defmodule Absinthe.Blueprint.Document.Resolution do
   alias Absinthe.Phase
   alias __MODULE__
 
-  @type acc :: Map.t
+  @type acc :: map
 
   defstruct [
-    validation: [],
+    validation_errors: [],
     result: nil,
-    acc: %{}
+    acc: %{},
+    context: %{},
+    root_value: %{},
   ]
 
   @type t :: %__MODULE__ {
-    validation: [Phase.Error.t],
+    validation_errors: [Phase.Error.t],
     result: nil | Resolution.Object.t,
     acc: acc,
   }

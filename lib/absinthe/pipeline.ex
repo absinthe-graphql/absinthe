@@ -44,7 +44,7 @@ defmodule Absinthe.Pipeline do
       # Parse Document
       {Phase.Parse, options},
       # Convert to Blueprint
-      Phase.Blueprint,
+      {Phase.Blueprint, options},
       # Find Current Operation (if any)
       {Phase.Document.Validation.ProvidedAnOperation, options},
       {Phase.Document.CurrentOperation, options},
@@ -68,8 +68,9 @@ defmodule Absinthe.Pipeline do
       # Ensure Types
       Phase.Validation.KnownTypeNames,
       # Process Arguments
-      Phase.Document.Arguments.Coercion,
-      Phase.Document.Arguments.Parse,
+      Phase.Document.Arguments.CoerceEnums,
+      Phase.Document.Arguments.CoerceLists,
+      {Phase.Document.Arguments.Parse, options},
       Phase.Document.MissingVariables,
       Phase.Document.MissingLiterals,
       Phase.Document.Arguments.FlagInvalid,
@@ -85,12 +86,13 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Validation.FieldsOnCorrectType,
       # Check Validation
       {Phase.Document.Validation.Result, options},
-      # Apply Directives
-      Phase.Document.Arguments.Data,
-      Phase.Document.Directives,
       # Prepare for Execution
-      Phase.Document.CascadeInvalid,
-      Phase.Document.Flatten,
+      Phase.Document.Arguments.Data,
+      # Apply Directives
+      Phase.Document.Directives,
+      # Analyse Complexity
+      {Phase.Document.Complexity.Analysis, options},
+      {Phase.Document.Complexity.Result, options},
       # Execution
       {Phase.Document.Execution.Resolution, options},
       # Format Result
@@ -146,6 +148,51 @@ defmodule Absinthe.Pipeline do
     end
   end
 
+  @doc """
+  Replace a phase in a pipeline with another, supporting reusing the same
+  options.
+
+  ## Examples
+
+  Replace a simple phase (without options):
+
+      iex> Pipeline.replace([A, B, C], B, X)
+      [A, X, C]
+
+  Replace a phase with options, retaining them:
+
+      iex> Pipeline.replace([A, {B, [name: "Thing]}, C], B, X)
+      [A, {X, [name: "Thing"]}, C]
+
+  Replace a phase with options, overriding them:
+
+      iex> Pipeline.replace([A, {B, [name: "Thing]}, C], B, {X, [name: "Nope"]})
+      [A, {X, [name: "Nope"]}, C]
+
+  """
+  @spec replace(t, Phase.t, phase_config_t) :: t
+  def replace(pipeline, phase, replacement) do
+    Enum.map(pipeline, fn
+      candidate ->
+        case match_phase?(phase, candidate) do
+          true ->
+            case phase_invocation(candidate) do
+              {_, []} ->
+                replacement
+              {_, opts} ->
+                case is_atom(replacement) do
+                  true ->
+                    {replacement, opts}
+                  false ->
+                    replacement
+                end
+            end
+          false ->
+            candidate
+        end
+    end)
+  end
+
   # Whether a phase configuration is for a given phase
   @spec match_phase?(Phase.t, phase_config_t) :: boolean
   defp match_phase?(phase, phase), do: true
@@ -174,7 +221,7 @@ defmodule Absinthe.Pipeline do
     beginning ++ [additional] ++ (pipeline -- beginning)
   end
 
-  @spec insert_before(t, Phase.t, Phase.t) :: t
+  @spec insert_after(t, Phase.t, Phase.t) :: t
   def insert_after(pipeline, phase, additional) do
     beginning = upto(pipeline, phase)
     beginning ++ [additional] ++ (pipeline -- beginning)

@@ -1,4 +1,4 @@
-defmodule Absinthe.Resolution.Plugin.Batch do
+defmodule Absinthe.Middleware.Batch do
   @moduledoc """
   Batch the resolution of multiple fields.
 
@@ -43,7 +43,8 @@ defmodule Absinthe.Resolution.Plugin.Batch do
   end
 
   def users_by_id(_, user_ids) do
-    Repo.all from u in User, where: u.id in ^user_ids
+    users = Repo.all from u in User, where: u.id in ^user_ids
+    Map.new(users, fn user -> {user.id, user} end)
   end
   ```
 
@@ -55,16 +56,18 @@ defmodule Absinthe.Resolution.Plugin.Batch do
   - `fn batch_results`: This function takes the results from the batching function.
   it should return one of the resolution function values.
 
-  Clearly some of this could be derived for ecto functions. We hope to have an
-  Absinthe.Ecto library that might provide an API more like:
+  Clearly some of this could be derived for ecto functions. Check out the Absinthe.Ecto
+  library for something that provides this:
+
   ```elixir
-  field :author, :user, resolve: belongs_to(:author)
+  field :author, :user, resolve: assoc(:author)
   ```
 
   Such a function could be easily built upon the API of this module.
   """
 
-  @behaviour Absinthe.Resolution.Plugin
+  @behaviour Absinthe.Middleware
+  @behaviour Absinthe.Plugin
 
   @typedoc """
   The function to be called with the aggregate batch information.
@@ -85,9 +88,9 @@ defmodule Absinthe.Resolution.Plugin.Batch do
   It could also be used to set options unique to the execution of a particular
   batching function.
   """
-  @type batch_fun :: {Module.t, :atom} | {Module.t, :atom, term}
+  @type batch_fun :: {module, atom} | {module, atom, term}
 
-  @type post_batch_fun :: (term -> Absinthe.Type.Field.resolver_output)
+  @type post_batch_fun :: (term -> Absinthe.Type.Field.result)
 
   def before_resolution(acc) do
     case acc do
@@ -98,13 +101,28 @@ defmodule Absinthe.Resolution.Plugin.Batch do
     end
   end
 
-  def init({batch_fun, field_data, post_batch_fun, batch_opts}, acc) do
+  def call(%{state: :unresolved} = res, {batch_key, field_data, post_batch_fun, batch_opts}) do
+    acc = res.acc
     acc = update_in(acc[__MODULE__][:input], fn
-      nil -> [{{batch_fun, batch_opts}, field_data}]
-      data -> [{{batch_fun, batch_opts}, field_data} | data]
+      nil -> [{{batch_key, batch_opts}, field_data}]
+      data -> [{{batch_key, batch_opts}, field_data} | data]
     end)
 
-    {{batch_fun, post_batch_fun}, acc}
+    %{res |
+      state: :suspended,
+      middleware: [{__MODULE__, {batch_key, post_batch_fun}} | res.middleware],
+      acc: acc,
+    }
+  end
+  def call(%{state: :suspended} = res, {batch_key, post_batch_fun}) do
+    batch_data_for_fun =
+      res.acc
+      |> Map.fetch!(__MODULE__)
+      |> Map.fetch!(:output)
+      |> Map.fetch!(batch_key)
+
+    res
+    |> Absinthe.Resolution.put_result(post_batch_fun.(batch_data_for_fun))
   end
 
   def after_resolution(acc) do
@@ -142,15 +160,5 @@ defmodule Absinthe.Resolution.Plugin.Batch do
       _ ->
         pipeline
     end
-  end
-
-  def resolve({batch_fun, post_batch_fun}, acc) do
-    batch_data_for_fun =
-      acc
-      |> Map.fetch!(__MODULE__)
-      |> Map.fetch!(:output)
-      |> Map.fetch!(batch_fun)
-
-    {post_batch_fun.(batch_data_for_fun), acc}
   end
 end

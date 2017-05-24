@@ -4,6 +4,10 @@ defmodule Absinthe.Type.ObjectTest do
   defmodule TestSchema do
     use Absinthe.Schema
 
+    query do
+      #Query type must exist
+    end
+
     object :person do
       description "A person"
 
@@ -20,14 +24,14 @@ defmodule Absinthe.Type.ObjectTest do
 
   end
 
-  describe "object" do
+  context "object" do
 
     it "can be defined" do
       assert %Absinthe.Type.Object{name: "Person", description: "A person"} = TestSchema.__absinthe_type__(:person)
       assert %{person: "Person"} = TestSchema.__absinthe_types__
     end
 
-    describe "fields" do
+    context "fields" do
 
       it "are defined" do
         obj = TestSchema.__absinthe_type__(:person)
@@ -36,7 +40,7 @@ defmodule Absinthe.Type.ObjectTest do
 
     end
 
-    describe "arguments" do
+    context "arguments" do
 
       it "are defined" do
         field = TestSchema.__absinthe_type__(:person).fields.profile_picture

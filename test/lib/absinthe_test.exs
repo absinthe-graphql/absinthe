@@ -2,9 +2,49 @@ defmodule AbsintheTest do
   use Absinthe.Case, async: true
   import AssertResult
 
+  it "can return multiple errors" do
+    query = "mutation { failingThing(type: MULTIPLE) { name } }"
+    assert_result {:ok, %{data: %{"failingThing" => nil}, errors: [%{message: "In field \"failingThing\": one"}, %{message: "In field \"failingThing\": two"}]}}, run(query, Things)
+  end
+
+  it "can return extra error fields" do
+    query = "mutation { failingThing(type: WITH_CODE) { name } }"
+    assert_result {:ok, %{data: %{"failingThing" => nil}, errors: [%{code: 42, message: "In field \"failingThing\": Custom Error"}]}}, run(query, Things)
+  end
+
+  it "requires message in extended errors" do
+    query = "mutation { FailingThing(type: WITHOUT_MESSAGE) { name } }"
+    assert_raise Absinthe.ExecutionError, fn -> run(query, Things) end
+  end
+
+  it "can return multiple errors, with extra error fields" do
+    query = "mutation { failingThing(type: MULTIPLE_WITH_CODE) { name } }"
+    assert_result {:ok, %{data: %{"failingThing" => nil}, errors: [%{code: 1, message: "In field \"failingThing\": Custom Error 1"}, %{code: 2, message: "In field \"failingThing\": Custom Error 2"}]}}, run(query, Things)
+  end
+
+  it "requires message in extended errors, when multiple errors are given" do
+    query = "mutation { failingThing(type: MULTIPLE_WITHOUT_MESSAGE) { name } }"
+    assert_raise Absinthe.ExecutionError, fn -> run(query, Things) end
+  end
+
   it "can do a simple query" do
     query = """
     query GimmeFoo {
+      thing(id: "foo") {
+        name
+      }
+    }
+    """
+    assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}}}, run(query, Things)
+  end
+
+  it "can do a simple query with fragments" do
+    query = """
+    {
+      ... Fields
+    }
+
+    fragment Fields on RootQueryType {
       thing(id: "foo") {
         name
       }
@@ -34,6 +74,30 @@ defmodule AbsintheTest do
     }
     """
     assert_result {:ok, %{data: %{"things" => [%{"name" => "Bar", "id" => "bar"}, %{"name" => "Foo", "id" => "foo"}]}}}, run(query, Things)
+  end
+
+  it "returns an error message when a list is given where it doesn't belong" do
+    query = """
+    query GimmeFoo {
+      thing(id: ["foo"]) {
+        name
+      }
+    }
+    """
+    assert_result {:ok, %{errors: [%{locations: [%{column: 0, line: 2}],
+      message: "Argument \"id\" has invalid value [\"foo\"]."}]}}, run(query, Things)
+  end
+
+  it "Invalid arguments on children of a list field are correctly handled" do
+    query = """
+    query AllTheThings {
+      things {
+        id(x: 1)
+        name
+      }
+    }
+    """
+    assert_result {:ok, %{errors: [%{message: "Unknown argument \"x\" on field \"id\" of type \"Thing\"."}]}}, run(query, Things)
   end
 
   it "can do a simple query with an all caps alias" do
@@ -130,7 +194,7 @@ defmodule AbsintheTest do
       }
     """
     assert_result {:ok, %{data: %{"thingByContext" => %{"name" => "Bar"}}}}, run(query, Things, context: %{thing: "bar"})
-    assert_result {:ok, %{data: %{},
+    assert_result {:ok, %{data: %{"thingByContext" => nil},
                           errors: [%{message: ~s(In field "thingByContext": No :id context provided)}]}}, run(query, Things)
   end
 
@@ -144,6 +208,22 @@ defmodule AbsintheTest do
     """
     result = run(query, Things, variables: %{"thingId" => "bar"})
     assert_result {:ok, %{data: %{"thing" => %{"name" => "Bar"}}}}, result
+  end
+
+  it "can handle variable errors without an operation name" do
+    query = """
+    query($userId: String, $test: String) {
+        user(id: $userId) {
+            id
+        }
+    }
+    """
+    assert_result {:ok,
+      %{errors: [
+        %{message: "Cannot query field \"user\" on type \"RootQueryType\". Did you mean \"number\"?"},
+        %{message: "Unknown argument \"id\" on field \"user\" of type \"RootQueryType\"."},
+        %{message: "Variable \"test\" is never used."}]}
+    }, run(query, Things, variables: %{"id" => "foo"})
   end
 
   it "can use input objects" do
@@ -222,7 +302,10 @@ defmodule AbsintheTest do
     }
     """
 
-    assert {:error, "illegal: -w, on line 2"} == Absinthe.Phase.Parse.run(query, jump_phases: false)
+    assert {:error, bp} = Absinthe.Phase.Parse.run(query, jump_phases: false)
+    assert [%Absinthe.Phase.Error{extra: %{},
+              locations: [%{column: 0, line: 2}], message: "illegal: -w",
+              phase: Absinthe.Phase.Parse}] == bp.resolution.validation_errors
   end
 
   it "should resolve using enums" do
@@ -260,7 +343,7 @@ defmodule AbsintheTest do
     assert_result {:ok, %{errors: [%{message: "Field \"things\" of type \"[Thing]\" must have a selection of subfields. Did you mean \"things { ... }\"?"}]}}, result
   end
 
-  describe "fragments" do
+  context "fragments" do
 
     @simple_fragment """
       query Q {
@@ -304,7 +387,7 @@ defmodule AbsintheTest do
     """
 
     it "can be parsed" do
-      {:ok, doc, _} = Absinthe.Pipeline.run(@simple_fragment, [Absinthe.Phase.Parse])
+      {:ok, %{input: doc}, _} = Absinthe.Pipeline.run(@simple_fragment, [Absinthe.Phase.Parse])
       assert %{definitions: [%Absinthe.Language.OperationDefinition{},
                              %Absinthe.Language.Fragment{name: "NamedPerson"}]} = doc
     end
@@ -320,13 +403,14 @@ defmodule AbsintheTest do
       assert Enum.sort_by(input_fields, sort) == Enum.sort_by(correct, sort)
     end
 
-    it "ignores fragments that can't be applied" do
-      assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == run(@unapplied_fragment, ContactSchema)
+    it "Object spreads in object scope should return an error" do
+      # https://facebook.github.io/graphql/#sec-Object-Spreads-In-Object-Scope
+      assert {:ok, %{errors: [%{locations: [%{column: 0, line: 4}], message: "Fragment spread has no type overlap with parent.\nParent possible types: [\"Person\"]\nSpread possible types: [\"Business\"]\n"}]}} == run(@unapplied_fragment, ContactSchema)
     end
 
   end
 
-  describe "a root_value" do
+  context "a root_value" do
 
     @version "1.4.5"
     @query "{ version }"
@@ -336,7 +420,7 @@ defmodule AbsintheTest do
 
   end
 
-  describe "an alias with an underscore" do
+  context "an alias with an underscore" do
 
     @query """
     { _thing123:thing(id: "foo") { name } }
@@ -347,7 +431,7 @@ defmodule AbsintheTest do
 
   end
 
-  describe "multiple operation documents" do
+  context "multiple operation documents" do
     @multiple_ops_query """
     query ThingFoo {
       thing(id: "foo") {

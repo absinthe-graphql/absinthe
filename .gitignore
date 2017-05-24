@@ -7,3 +7,5 @@ erl_crash.dump
 *.ez
 src/*.erl
 .tool-versions*
+missing_rules.rb
+.DS_Store

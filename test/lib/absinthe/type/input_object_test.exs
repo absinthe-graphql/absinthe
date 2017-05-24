@@ -4,6 +4,10 @@ defmodule Absinthe.Type.InputObjectTest do
   defmodule TestSchema do
     use Absinthe.Schema
 
+    query do
+      #Query type must exist
+    end
+
     input_object :profile do
       description "A profile"
 
@@ -20,14 +24,14 @@ defmodule Absinthe.Type.InputObjectTest do
 
   end
 
-  describe "input object" do
+  context "input object" do
 
     it "can be defined" do
       assert %Absinthe.Type.InputObject{name: "Profile", description: "A profile"} = TestSchema.__absinthe_type__(:profile)
       assert %{profile: "Profile"} = TestSchema.__absinthe_types__
     end
 
-    describe "fields" do
+    context "fields" do
 
       it "are defined" do
         obj = TestSchema.__absinthe_type__(:profile)
@@ -36,7 +40,7 @@ defmodule Absinthe.Type.InputObjectTest do
 
     end
 
-    describe "arguments" do
+    context "arguments" do
 
       it "are defined" do
         field = TestSchema.__absinthe_type__(:profile).fields.profile_picture

@@ -37,7 +37,7 @@ defmodule Absinthe.Phase.Validation.KnownTypeNamesTest do
     ~s(Unknown type "#{type}".)
   end
 
-  describe "Validate: Known type names" do
+  context "Validate: Known type names" do
 
     it "known type names are valid" do
       assert_passes_rule(@rule,

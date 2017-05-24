@@ -5,9 +5,13 @@ defmodule Absinthe.PipelineTest do
 
   defmodule Schema do
     use Absinthe.Schema
+
+    query do
+      #Query type must exist
+    end
   end
 
-  describe ".run an operation" do
+  context ".run an operation" do
 
     @query """
     { foo { bar } }
@@ -21,7 +25,7 @@ defmodule Absinthe.PipelineTest do
 
   end
 
-  describe ".run an idl" do
+  context ".run an idl" do
 
     @query """
     type Person {
@@ -73,7 +77,7 @@ defmodule Absinthe.PipelineTest do
     end
   end
 
-  describe ".run with options" do
+  context ".run with options" do
     it "should work" do
       assert {:ok, "oof.oof.oof", [Phase3, Phase2, Phase1]} == Pipeline.run("foo", [Phase1, {Phase2, times: 3}, {Phase3, reverse: false}])
       assert {:ok, "foo.foo.foo", [Phase3, Phase2, Phase1]} == Pipeline.run("foo", [Phase1, {Phase2, times: 3}, {Phase3, reverse: true}])
@@ -87,15 +91,15 @@ defmodule Absinthe.PipelineTest do
     end
   end
 
-  describe ".run with a bad phase result" do
+  context ".run with a bad phase result" do
     it "should return a nice error object" do
       assert {:error, "Last phase did not return a valid result tuple.", [BadPhase]} == Pipeline.run("foo", [BadPhase])
     end
   end
 
-  @pipeline [A, B, C, D, {E, []}, F]
+  @pipeline [A, B, C, D, {E, [name: "e"]}, F]
 
-  describe ".before" do
+  context ".before" do
 
     it "raises an exception if one can't be found" do
       assert_raise RuntimeError, fn -> Pipeline.before([], Anything) end
@@ -109,20 +113,20 @@ defmodule Absinthe.PipelineTest do
 
   end
 
-  describe ".insert_before" do
+  context ".insert_before" do
 
     it "raises an exception if one can't be found" do
       assert_raise RuntimeError, fn -> Pipeline.insert_before([], Anything, X) end
     end
 
     it "inserts the phase before" do
-      assert [X, A, B, C, D, {E, []}, F] == Pipeline.insert_before(@pipeline, A, X)
-      assert [A, B, C, D, X, {E, []}, F] == Pipeline.insert_before(@pipeline, E, X)
+      assert [X, A, B, C, D, {E, [name: "e"]}, F] == Pipeline.insert_before(@pipeline, A, X)
+      assert [A, B, C, D, X, {E, [name: "e"]}, F] == Pipeline.insert_before(@pipeline, E, X)
     end
 
   end
 
-  describe ".upto" do
+  context ".upto" do
 
     it "raises an exception if one can't be found" do
       assert_raise RuntimeError, fn -> Pipeline.upto([], Anything) end
@@ -130,16 +134,48 @@ defmodule Absinthe.PipelineTest do
 
     it "returns the phases upto the match" do
       assert [A, B, C] == Pipeline.upto(@pipeline, C)
-      assert [A, B, C, D, {E, []}] == Pipeline.upto(@pipeline, E)
+      assert [A, B, C, D, {E, [name: "e"]}] == Pipeline.upto(@pipeline, E)
     end
 
   end
 
-  describe ".upto" do
+  context ".upto" do
 
     it "returns the pipeline without specified phase" do
-      assert [A, B, D, {E, []}, F] == Pipeline.without(@pipeline, C)
+      assert [A, B, D, {E, [name: "e"]}, F] == Pipeline.without(@pipeline, C)
       assert [A, B, C, D, F] == Pipeline.without(@pipeline, E)
+    end
+
+  end
+
+  context ".replace" do
+
+    context "when not found" do
+      it "returns the pipeline unchanged" do
+        assert @pipeline == Pipeline.replace(@pipeline, X, ABC)
+      end
+    end
+
+    context "when found" do
+      context "when the target has options" do
+        context "when no replacement options are given" do
+          it "replaces the phase but reuses the options" do
+            assert [A, B, C, D, {X, [name: "e"]}, F] == Pipeline.replace(@pipeline, E, X)
+          end
+        end
+        context "when replacement options are given" do
+          it "replaces the phase and uses the new options" do
+            assert [A, B, C, D, {X, [name: "Custom"]}, F] == Pipeline.replace(@pipeline, E, {X, [name: "Custom"]})
+            assert [A, B, C, D, {X, []}, F] == Pipeline.replace(@pipeline, E, {X, []})
+          end
+        end
+      end
+      context "when the target has no options" do
+        it "simply replaces the phase" do
+          assert [A, B, C, X, {E, [name: "e"]}, F] == Pipeline.replace(@pipeline, D, X)
+          assert [A, B, C, {X, [name: "Custom Opt"]}, {E, [name: "e"]}, F] == Pipeline.replace(@pipeline, D, {X, [name: "Custom Opt"]})
+        end
+      end
     end
 
   end

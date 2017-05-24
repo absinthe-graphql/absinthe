@@ -2,6 +2,8 @@ defmodule Absinthe.Blueprint.Document.Fragment.Named.Use do
 
   @moduledoc false
 
+  alias Absinthe.Blueprint
+
   @enforce_keys [:name, :source_location]
   defstruct [
     :name,

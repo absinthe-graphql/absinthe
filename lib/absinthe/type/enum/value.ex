@@ -27,7 +27,7 @@ defmodule Absinthe.Type.Enum.Value do
   @type t :: %{name: binary, description: binary, value: any, deprecation: Type.Deprecation.t | nil, __reference__: Type.Reference.t}
   defstruct name: nil, description: nil, value: nil, deprecation: nil, __reference__: nil
 
-  @spec build(Keyword.t) :: %{atom => Absinthe.Type.Enum.Value.t}
+  @spec build(Keyword.t) :: Macro.expr
   def build(raw_values) when is_list(raw_values) do
     ast = for {identifier, value_attrs} <- normalize(raw_values) do
       value_data = value_data(identifier, value_attrs)

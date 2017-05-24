@@ -3,7 +3,7 @@ defmodule Absinthe.Language.ScalarTypeDefinitionTest do
 
   alias Absinthe.Blueprint
 
-  describe "converting to Blueprint" do
+  context "converting to Blueprint" do
 
     it "works, given a Blueprint Schema 'scalar' definition" do
       assert %Blueprint.Schema.ScalarTypeDefinition{name: "Time"} = from_input("scalar Time")
@@ -20,7 +20,7 @@ defmodule Absinthe.Language.ScalarTypeDefinitionTest do
   end
 
   defp from_input(text) do
-    {:ok, doc} = Absinthe.Phase.Parse.run(text)
+    {:ok, %{input: doc}} = Absinthe.Phase.Parse.run(text)
 
     doc
     |> extract_ast_node

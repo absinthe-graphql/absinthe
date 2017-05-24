@@ -7,7 +7,8 @@ defmodule Absinthe.Blueprint.Transform do
   @doc """
   Apply `fun` to a node, then walk to its children and do the same
   """
-  @spec prewalk(Blueprint.t, (Blueprint.t -> Blueprint.t)) :: Blueprint.t
+  @spec prewalk(Blueprint.node_t, (Blueprint.node_t -> Blueprint.node_t | {:halt, Blueprint.node_t})) ::
+    Blueprint.node_t
   def prewalk(node, fun) when is_function(fun, 1) do
     {node, _} = prewalk(node, nil, fn x, nil ->
       case fun.(x) do
@@ -23,7 +24,8 @@ defmodule Absinthe.Blueprint.Transform do
 
   The supplied function must be arity 2.
   """
-  @spec prewalk(Blueprint.t, any, ((Blueprint.t, any) -> {Blueprint.t, any})) :: {Blueprint.t, any}
+  @spec prewalk(Blueprint.node_t, acc, ((Blueprint.node_t, acc) -> {Blueprint.node_t, acc} | {:halt, Blueprint.node_t, acc})) ::
+    {Blueprint.node_t, acc} when acc: var
   def prewalk(node, acc, fun) when is_function(fun, 2) do
     walk(node, acc, fun, &pass/2)
   end
@@ -31,7 +33,8 @@ defmodule Absinthe.Blueprint.Transform do
   @doc """
   Apply `fun` to all children of a node, then apply `fun` to node
   """
-  @spec prewalk(Blueprint.t, (Blueprint.t -> Blueprint.t)) :: Blueprint.t
+  @spec postwalk(Blueprint.node_t, (Blueprint.node_t -> Blueprint.node_t)) ::
+    Blueprint.node_t
   def postwalk(node, fun) when is_function(fun, 1) do
     {node, _} = postwalk(node, nil, fn x, nil -> {fun.(x), nil} end)
     node
@@ -40,7 +43,8 @@ defmodule Absinthe.Blueprint.Transform do
   @doc """
   Same as `postwalk/2` but takes and returns an accumulator
   """
-  @spec prewalk(Blueprint.t, any, ((Blueprint.t, any) -> {Blueprint.t, any})) :: {Blueprint.t, any}
+  @spec postwalk(Blueprint.node_t, acc, ((Blueprint.node_t, acc) -> {Blueprint.node_t, acc})) ::
+    {Blueprint.node_t, acc} when acc: var
   def postwalk(node, acc, fun) when is_function(fun, 2) do
     walk(node, acc, &pass/2, fun)
   end
@@ -50,17 +54,16 @@ defmodule Absinthe.Blueprint.Transform do
   nodes_with_children = %{
     Blueprint => [:fragments, :operations, :types, :directives],
     Blueprint.Directive => [:arguments],
-    Blueprint.Document.Field => [:selections, :arguments, :directives, :fields],
-    Blueprint.Document.Operation => [:selections, :variable_definitions, :directives, :fields],
+    Blueprint.Document.Field => [:selections, :arguments, :directives],
+    Blueprint.Document.Operation => [:selections, :variable_definitions, :directives],
     Blueprint.TypeReference.List => [:of_type],
     Blueprint.TypeReference.NonNull => [:of_type],
-    Blueprint.Document.Fragment.Inline => [:fields, :selections, :directives],
-    Blueprint.Document.Fragment.Named => [:fields, :selections, :directives],
+    Blueprint.Document.Fragment.Inline => [:selections, :directives],
+    Blueprint.Document.Fragment.Named => [:selections, :directives],
     Blueprint.Document.Fragment.Spread => [:directives],
     Blueprint.Document.VariableDefinition => [:type, :default_value],
     Blueprint.Input.Argument => [:input_value],
     Blueprint.Input.Field => [:input_value],
-    Blueprint.Input.List.Item => [:input_value],
     Blueprint.Input.Object => [:fields],
     Blueprint.Input.List => [:items],
     Blueprint.Input.Value => [:normalized, :literal],
@@ -77,10 +80,15 @@ defmodule Absinthe.Blueprint.Transform do
     Blueprint.Schema.UnionTypeDefinition => [:directives, :types],
   }
 
-  @spec walk(Blueprint.t, any, ((Blueprint.t, any) -> {Blueprint.t, any}), ((Blueprint.t, any) -> {Blueprint.t, any})) :: {Blueprint.t, any}
+  @spec walk(Blueprint.node_t, acc, ((Blueprint.node_t, acc) -> {Blueprint.node_t, acc} | {:halt, Blueprint.node_t, acc}), ((Blueprint.node_t, acc) -> {Blueprint.node_t, acc})) :: {Blueprint.node_t, acc} when acc: var
   def walk(blueprint, acc, pre, post)
 
   for {node_name, children} <- nodes_with_children do
+    if :selections in children do
+      def walk(%unquote(node_name){flags: %{flat: _}} = node, acc, pre, post) do
+        node_with_children(node, unquote(children--[:selections]), acc, pre, post)
+      end
+    end
     def walk(%unquote(node_name){} = node, acc, pre, post) do
       node_with_children(node, unquote(children), acc, pre, post)
     end

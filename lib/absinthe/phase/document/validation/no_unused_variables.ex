@@ -43,12 +43,12 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariables do
   end
 
   # Generate the error for the node
-  @spec error(Blueprint.Document.VariableDefinition.t, Blueprint.Operation.t) :: Phase.Error.t
+  @spec error(Blueprint.Document.VariableDefinition.t, Blueprint.Document.Operation.t) :: Phase.Error.t
   defp error(node, operation) do
     Phase.Error.new(
       __MODULE__,
       error_message(node.name, operation.name),
-      [node.source_location, operation.source_location]
+      location: [node.source_location, operation.source_location]
     )
   end
 

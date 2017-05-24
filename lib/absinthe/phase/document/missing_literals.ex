@@ -28,6 +28,10 @@ defmodule Absinthe.Phase.Document.MissingLiterals do
     fields = fill_missing_nodes(Blueprint.Input.Field, fields, schema_fields, node.source_location, adapter, schema)
     %{node | fields: fields}
   end
+  defp populate_node(%Blueprint.Input.Object{schema_node: %{of_type: type}} = node, adapter, schema) do
+    %{ node | schema_node: type}
+    |> populate_node(adapter, schema)
+  end
   defp populate_node(node, _adapter, _schema), do: node
 
   defp fill_missing_nodes(type, arguments, schema_args, source_location, adapter, schema) do

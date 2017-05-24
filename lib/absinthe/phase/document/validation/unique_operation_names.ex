@@ -20,7 +20,8 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNames do
     {:ok, result}
   end
 
-  @spec process(Blueprint.Document.Operation.t, [Blueprint.Document.Operation.t]) :: boolean
+  @spec process(Blueprint.Document.Operation.t, [Blueprint.Document.Operation.t]) ::
+    Blueprint.Document.Operation.t
   defp process(%{name: nil} = operation, _) do
     operation
   end
@@ -46,7 +47,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNames do
     Phase.Error.new(
       __MODULE__,
       error_message(node.name),
-      node.source_location
+      location: node.source_location
     )
   end
 

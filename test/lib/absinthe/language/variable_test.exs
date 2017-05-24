@@ -11,7 +11,7 @@ defmodule Absinthe.Language.VariableTest do
   }
   """
 
-  describe "converting to Blueprint" do
+  context "converting to Blueprint" do
 
     it "builds an Input.Variable.t" do
       assert %Blueprint.Input.Variable{name: "input"} = from_input(@query)
@@ -20,7 +20,7 @@ defmodule Absinthe.Language.VariableTest do
   end
 
   defp from_input(text) do
-    {:ok, doc} = Absinthe.Phase.Parse.run(text)
+    {:ok, %{input: doc}} = Absinthe.Phase.Parse.run(text)
 
     doc
     |> extract_ast_node

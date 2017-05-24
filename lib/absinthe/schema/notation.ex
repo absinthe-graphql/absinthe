@@ -71,6 +71,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def record_object!(env, identifier, attrs, block) do
+    attrs = Keyword.put(attrs, :identifier, identifier)
     scope(env, :object, identifier, attrs, block)
   end
 
@@ -342,18 +343,35 @@ defmodule Absinthe.Schema.Notation do
   @doc """
   Defines a resolve function for a field
 
-  Specify a 2 arity function to call when resolving a field. Resolve functions
-  must return either `{:ok, term}` or `{:error, binary | [binary, ...]}`.
+  Specify a 2 or 3 arity function to call when resolving a field.
 
   You can either hard code a particular anonymous function, or have a function
-  call that returns a 2 arity anonymous function. See examples for more information.
-
-  The first argument to the function are the GraphQL arguments, and the latter
-  is an `Absinthe.Resolution` struct. It is where you can access the GraphQL
-  context and other execution data.
+  call that returns a 2 or 3 arity anonymous function. See examples for more information.
 
   Note that when using a hard coded anonymous function, the function will not
   capture local variables.
+
+  ### 3 Arity Functions
+
+  The first argument to the function is the parent entity.
+  ```
+  {
+    user(id: 1) {
+      name
+    }
+  }
+  ```
+  A resolution function on the `name` field would have the result of the `user(id: 1)` field
+  as its first argument. Top level fields have the `root_value` as their first argument.
+  Unless otherwise specified, this defaults to an empty map.
+
+  The second argument to the resolution function is the field arguments. The final
+  argument is an `Absinthe.Resolution` struct, which includes information like
+  the `context` and other execution data.
+
+  ### 2 Arity Function
+
+  Exactly the same as the 3 arity version, but without the first argument (the parent entity)
 
   ## Placement
 
@@ -372,7 +390,7 @@ defmodule Absinthe.Schema.Notation do
   query do
     field :person, :person do
       resolve fn %{id: id}, _ ->
-        Person.find(id)
+        {:ok, Person.find(id)}
       end
     end
   end
@@ -387,7 +405,7 @@ defmodule Absinthe.Schema.Notation do
 
   def lookup(:person) do
     fn %{id: id}, _ ->
-      Person.find(id)
+      {:ok, Person.find(id)}
     end
   end
   ```
@@ -395,7 +413,9 @@ defmodule Absinthe.Schema.Notation do
   defmacro resolve(func_ast) do
     __CALLER__
     |> recordable!(:resolve, @placement[:resolve])
-    |> record_resolve!(func_ast)
+    quote do
+      middleware Absinthe.Resolution, unquote(func_ast)
+    end
   end
 
   @doc false
@@ -404,6 +424,48 @@ defmodule Absinthe.Schema.Notation do
     Scope.put_attribute(env.module, :resolve, func_ast)
     Scope.recorded!(env.module, :attr, :resolve)
     :ok
+  end
+
+  @placement {:complexity, [under: [:field]]}
+  defmacro complexity(func_ast) do
+    __CALLER__
+    |> recordable!(:complexity, @placement[:complexity])
+    |> record_complexity!(func_ast)
+  end
+
+  @doc false
+  # Record a complexity analyzer in the current scope
+  def record_complexity!(env, func_ast) do
+    Scope.put_attribute(env.module, :complexity, func_ast)
+    Scope.recorded!(env.module, :attr, :complexity)
+    :ok
+  end
+
+  @placement {:middleware, [under: [:field]]}
+  defmacro middleware(new_middleware, opts \\ []) do
+    env = __CALLER__
+
+    new_middleware = Macro.expand(new_middleware, env)
+
+    middleware = Scope.current(env.module).attrs
+    |> Keyword.get(:middleware, [])
+
+    new_middleware = case new_middleware do
+      {module, fun} ->
+        {:{}, [], [{module, fun}, opts]}
+      atom when is_atom(atom) ->
+        case Atom.to_string(atom) do
+          "Elixir." <> _ ->
+            {:{}, [], [{atom, :call}, opts]}
+          _ ->
+            {:{}, [], [{env.module, atom}, opts]}
+        end
+      val ->
+        val
+    end
+
+    Scope.put_attribute(env.module, :middleware, [new_middleware | middleware])
+    nil
   end
 
   @placement {:is_type_of, [under: [:object]]}
@@ -488,10 +550,9 @@ defmodule Absinthe.Schema.Notation do
 
   ## Examples
   ```
-  scalar :time do
-    description "ISOz time"
-    parse &Timex.DateFormat.parse(&1, "{ISOz}")
-    serialize &Timex.DateFormat.format!(&1, "{ISOz}")
+  scalar :time, description: "ISOz time" do
+    parse &Timex.parse(&1.value, "{ISOz}")
+    serialize &Timex.format!(&1, "{ISOz}")
   end
   ```
   """
@@ -960,7 +1021,7 @@ defmodule Absinthe.Schema.Notation do
     |> record_description!(text)
   end
 
-  defp reformat_description(text), do: String.strip(text)
+  defp reformat_description(text), do: String.trim(text)
 
   @doc false
   # Record a description in the current scope
@@ -992,12 +1053,16 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro import_types(type_module_ast) do
     env = __CALLER__
-    type_module_ast
-    |> Macro.expand(env)
-    |> do_import_types(env)
+    {:ok, _} =
+      type_module_ast
+      |> Macro.expand(env)
+      |> do_import_types(env)
+    :ok
   end
 
   defp do_import_types(type_module, env) when is_atom(type_module) do
+    imports = Module.get_attribute(env.module, :absinthe_imports) || []
+    _ = Module.put_attribute(env.module, :absinthe_imports, [type_module | imports])
 
     types = for {ident, name} <- type_module.__absinthe_types__, ident in type_module.__absinthe_exports__ do
       put_definition(

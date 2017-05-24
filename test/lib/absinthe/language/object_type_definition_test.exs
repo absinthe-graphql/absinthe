@@ -3,7 +3,7 @@ defmodule Absinthe.Language.ObjectTypeDefinitionTest do
 
   alias Absinthe.Blueprint
 
-  describe "converting to Blueprint" do
+  context "converting to Blueprint" do
 
     it "works, given a Blueprint Schema 'type' definition" do
       assert %Blueprint.Schema.ObjectTypeDefinition{name: "Person"} = from_input("type Person { name: String! }")
@@ -43,7 +43,7 @@ defmodule Absinthe.Language.ObjectTypeDefinitionTest do
   end
 
   defp from_input(text) do
-    {:ok, doc} = Absinthe.Phase.Parse.run(text)
+    {:ok, %{input: doc}} = Absinthe.Phase.Parse.run(text)
 
     doc
     |> extract_ast_node

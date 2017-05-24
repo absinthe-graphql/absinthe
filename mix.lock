@@ -1,9 +1,7 @@
-%{"benchfella": {:hex, :benchfella, "0.3.2", "b9648e77fa8d8b8b9fe8f54293bee63f7de03909b3af6ab22a0e546716a396fb", [:mix], []},
-  "currency_formatter": {:hex, :currency_formatter, "0.4.2", "d2c030e90668e9660576a5a16a7caaf358957b56382a47a89a52111ff8eaa11b", [:mix], [{:poison, "~> 2.2.0", [hex: :poison, optional: false]}]},
-  "dialyze": {:hex, :dialyze, "0.2.1", "9fb71767f96649020d769db7cbd7290059daff23707d6e851e206b1fdfa92f9d", [:mix], []},
-  "earmark": {:hex, :earmark, "1.0.2", "a0b0904d74ecc14da8bd2e6e0248e1a409a2bc91aade75fcf428125603de3853", [:mix], []},
-  "ex_doc": {:hex, :ex_doc, "0.14.3", "e61cec6cf9731d7d23d254266ab06ac1decbb7651c3d1568402ec535d387b6f7", [:mix], [{:earmark, "~> 1.0", [hex: :earmark, optional: false]}]},
-  "ex_spec": {:hex, :ex_spec, "1.0.0", "b1e791072fecbf80c725adf45e7cbdf3d96af3765638a1f1547824706ece4bc9", [:mix], []},
-  "fs": {:hex, :fs, "0.9.2", "ed17036c26c3f70ac49781ed9220a50c36775c6ca2cf8182d123b6566e49ec59", [:rebar], []},
-  "mix_test_watch": {:hex, :mix_test_watch, "0.2.6", "9fcc2b1b89d1594c4a8300959c19d50da2f0ff13642c8f681692a6e507f92cab", [:mix], [{:fs, "~> 0.9.1", [hex: :fs, optional: false]}]},
-  "poison": {:hex, :poison, "2.2.0", "4763b69a8a77bd77d26f477d196428b741261a761257ff1cf92753a0d4d24a63", [:mix], []}}
+%{"benchfella": {:hex, :benchfella, "0.3.4", "41d2c017b361ece5225b5ba2e3b30ae53578c57c6ebc434417b4f1c2c94cf4f3", [:mix], []},
+  "dialyze": {:hex, :dialyze, "0.2.1", "9fb71767f96649020d769db7cbd7290059daff23707d6e851e206b1fdfa92f9d", [], []},
+  "earmark": {:hex, :earmark, "1.2.1", "7ad3f203ab84d31832814483c834e006cf88949f061a4b50d7e783147572280f", [:mix], []},
+  "ex_doc": {:hex, :ex_doc, "0.15.1", "d5f9d588fd802152516fccfdb96d6073753f77314fcfee892b15b6724ca0d596", [:mix], [{:earmark, "~> 1.1", [hex: :earmark, optional: false]}]},
+  "ex_spec": {:hex, :ex_spec, "2.0.1", "8bdbd6fa85995fbf836ed799571d44be6f9ebbcace075209fd0ad06372c111cf", [:mix], []},
+  "fs": {:hex, :fs, "2.12.0", "ad631efacc9a5683c8eaa1b274e24fa64a1b8eb30747e9595b93bec7e492e25e", [:rebar3], []},
+  "mix_test_watch": {:hex, :mix_test_watch, "0.4.0", "7e44b681b0238999d4c39b5beed77b4ac45aef1c112a763aae414bdb5bc34523", [:mix], [{:fs, "~> 2.12", [hex: :fs, optional: false]}]}}

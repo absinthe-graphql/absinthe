@@ -21,9 +21,9 @@ defmodule Absinthe.Type.Interface do
   interface :named_entity do
     field :name, :string
     resolve_type fn
-      %{age: _}, _ -> {:ok, :person}
-      %{employee_count: _}, _ -> {:ok, :business}
-      _ -> :error
+      %{age: _}, _ -> :person
+      %{employee_count: _}, _ -> :business
+      _ -> nil
     end
   end
 
@@ -59,11 +59,11 @@ defmodule Absinthe.Type.Interface do
 
   The `__private__` and `:__reference__` keys are for internal use.
   """
-  @type t :: %{
+  @type t :: %__MODULE__{
     name: binary,
     description: binary,
     fields: map,
-    resolve_type: ((any, Absinthe.Execution.t) -> atom | nil),
+    resolve_type: ((any, Absinthe.Resolution.t) -> atom | nil),
     __private__: Keyword.t,
     __reference__: Type.Reference.t,
   }
@@ -83,21 +83,31 @@ defmodule Absinthe.Type.Interface do
   end
 
   @spec resolve_type(Type.Interface.t, any, Absinthe.Resolution.t) :: Type.t | nil
-  def resolve_type(%{resolve_type: nil, __reference__: %{identifier: ident}}, obj, %{schema: schema}) do
+  def resolve_type(type, obj, env, opts \\ [lookup: true])
+  def resolve_type(%{resolve_type: nil, __reference__: %{identifier: ident}}, obj, %{schema: schema}, opts) do
     implementors = Schema.implementors(schema, ident)
-    Enum.find(implementors, fn
+    type_name = Enum.find(implementors, fn
       %{is_type_of: nil} ->
         false
       type ->
         type.is_type_of.(obj)
     end)
+    if opts[:lookup] do
+      Absinthe.Schema.lookup_type(schema, type_name)
+    else
+      type_name
+    end
   end
-  def resolve_type(%{resolve_type: resolver}, obj, %{schema: schema} = env) do
+  def resolve_type(%{resolve_type: resolver}, obj, %{schema: schema} = env, opts) do
     case resolver.(obj, env) do
       nil ->
         nil
       ident when is_atom(ident) ->
-        Schema.lookup_type(schema, ident)
+        if opts[:lookup] do
+          Absinthe.Schema.lookup_type(schema, ident)
+        else
+          ident
+        end
     end
   end
 
@@ -123,51 +133,34 @@ defmodule Absinthe.Type.Interface do
     false
   end
 
-  @spec implements?(Type.Interface.t, Type.Object.t) :: boolean
-  def implements?(interface, type) do
-    # Convert the submap into a list of key-value pairs where each key
-    # is a list representing the keypath of its corresponding value.
-    flatten_with_list_keys(interface.fields)
-    # Check that every keypath has the same value in both maps
-    # (assumes that `nil` is not a legitimate value)
-    |> Enum.all?(fn
-      {keypath, val} when val != nil ->
-        flat = keypath |> List.flatten
-        ignore_implementing_keypath?(flat) || (safe_get_in(type.fields, flat) == val)
-      {_keypath, nil} ->
-        true
+  @spec implements?(Type.Interface.t, Type.Object.t, Type.Schema.t) :: boolean
+  def implements?(interface, type, schema) do
+    covariant?(interface, type, schema)
+  end
+
+  defp covariant?(%wrapper{of_type: inner_type1}, %wrapper{of_type: inner_type2}, schema) do
+    covariant?(inner_type1, inner_type2, schema)
+  end
+  defp covariant?(%{name: name}, %{name: name}, _schema) do
+    true
+  end
+  defp covariant?(%Type.Interface{fields: ifields}, %{fields: type_fields}, schema) do
+    Enum.all?(ifields, fn {field_ident, ifield} ->
+      case Map.get(type_fields, field_ident) do
+        nil -> false
+        field ->
+          covariant?(ifield.type, field.type, schema)
+      end
     end)
   end
-
-  # Try to get a value, ignoring errors
-  @spec safe_get_in(any, list) :: any
-  defp safe_get_in(target, keypath) do
-    try do
-      get_in(target, keypath)
-    rescue
-      FunctionClauseError ->
-        nil
-    end
+  defp covariant?(nil, _, _), do: false
+  defp covariant?(_, nil, _), do: false
+  defp covariant?(itype, type, schema) when is_atom(itype) do
+    itype = schema.__absinthe_type__(itype)
+    covariant?(itype, type, schema)
   end
-
-  @ignore [:description, :__reference__]
-  defp ignore_implementing_keypath?(keypath) when is_list(keypath) do
-    keypath
-    |> Enum.any?(&ignore_implementing_keypath?/1)
+  defp covariant?(itype, type, schema) when is_atom(type) do
+    type = schema.__absinthe_type__(type)
+    covariant?(itype, type, schema)
   end
-  defp ignore_implementing_keypath?(keypath) when is_atom(keypath) do
-    Enum.member?(@ignore, keypath)
-  end
-
-  defp flatten_with_list_keys(map) do
-    Enum.flat_map(Map.to_list(map), fn
-      {:__struct__, _} ->
-        []
-      {key, map} when is_map(map) ->
-        for {subkey, val} <- flatten_with_list_keys(map), do: {[key | [subkey]], val}
-      other ->
-        [other]
-    end)
-  end
-
 end

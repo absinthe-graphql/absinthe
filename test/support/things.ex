@@ -6,6 +6,14 @@ defmodule Things do
     "bar" => %{id: "bar", name: "Bar", value: 5}
   }
 
+  enum :failure_type do
+    value :multiple
+    value :with_code
+    value :without_message
+    value :multiple_with_code
+    value :multiple_without_message
+  end
+
   mutation do
 
     field :update_thing,
@@ -22,6 +30,22 @@ defmodule Things do
           found = @db |> Map.get(id)
           {:ok, found |> Map.merge(fields)}
       end
+
+    field :failing_thing, type: :thing do
+      arg :type, type: :failure_type
+      resolve fn
+        %{type: :multiple}, _ ->
+          {:error, ["one", "two"]}
+        %{type: :with_code}, _ ->
+          {:error, message: "Custom Error", code: 42}
+        %{type: :without_message}, _ ->
+          {:error, code: 42}
+        %{type: :multiple_with_code}, _ ->
+          {:error, [%{message: "Custom Error 1", code: 1}, %{message: "Custom Error 2", code: 2}]}
+        %{type: :multiple_without_message}, _ ->
+          {:error, [%{message: "Custom Error 1", code: 1}, %{code: 2}]}
+      end
+    end
 
   end
 
@@ -91,11 +115,7 @@ defmodule Things do
       ],
       resolve: fn
         %{id: id}, _ ->
-          # {:ok, @db |> Map.get(id)}
-          Absinthe.Resolution.Helpers.async(fn ->
-            {:ok, @db |> Map.get(id)}
-          end)
-
+          {:ok, @db |> Map.get(id)}
       end
 
     field :deprecated_thing,

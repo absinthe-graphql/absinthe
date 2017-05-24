@@ -54,7 +54,7 @@ defmodule Absinthe.Type.InterfaceTest do
 
   end
 
-  describe "interface" do
+  context "interface" do
 
     it "can be defined" do
       obj = TestSchema.__absinthe_type__(:named)
@@ -79,9 +79,9 @@ defmodule Absinthe.Type.InterfaceTest do
 
   end
 
-  describe "an object that implements an interface" do
+  context "an object that implements an interface" do
 
-    describe "with the interface as a field type" do
+    context "with the interface as a field type" do
 
       it "can select fields that are declared by the interface" do
         result = """
@@ -107,18 +107,85 @@ defmodule Absinthe.Type.InterfaceTest do
 
   end
 
-  describe "when it doesn't define those fields" do
+  context "when it doesn't define those fields" do
 
     it "reports schema errors" do
       assert_schema_error(
         "bad_interface_schema",
         [
+          %{rule: Rule.ObjectMustImplementInterfaces, data: %{object: "Foo", interface: "Aged"}},
           %{rule: Rule.ObjectMustImplementInterfaces, data: %{object: "Foo", interface: "Named"}},
           %{rule: Rule.ObjectInterfacesMustBeValid, data: %{object: "Quux", interface: "Foo"}},
-          %{rule: Rule.InterfacesMustResolveTypes, data: "Named"}
+          %{rule: Rule.InterfacesMustResolveTypes, data: "Named"},
         ]
       )
     end
+  end
 
+  it "can query simple InterfaceSubtypeSchema" do
+    result = """
+    {
+      box {
+        item {
+          name
+          cost
+        }
+      }
+    }
+    """
+    |> run(Absinthe.InterfaceSubtypeSchema)
+    assert_result {:ok, %{data: %{"box" => %{"item" => %{"name" => "Computer", "cost" => 1000}}}}}, result
+  end
+
+  it "can query InterfaceSubtypeSchema treating box as HasItem" do
+    result = """
+    {
+      box {
+        ... on HasItem {
+          item {
+            name
+          }
+        }
+      }
+    }
+    """
+    |> run(Absinthe.InterfaceSubtypeSchema)
+    assert_result {:ok, %{data: %{"box" => %{"item" => %{"name" => "Computer"}}}}}, result
+  end
+
+  it "can query InterfaceSubtypeSchema treating box as HasItem and item as ValuedItem" do
+    result = """
+    {
+      box {
+        ... on HasItem {
+          item {
+            name
+            ... on ValuedItem {
+              cost
+            }
+          }
+        }
+      }
+    }
+    """
+    |> run(Absinthe.InterfaceSubtypeSchema)
+    assert_result {:ok, %{data: %{"box" => %{"item" => %{"name" => "Computer", "cost" => 1000}}}}}, result
+  end
+
+  it "rejects querying InterfaceSubtypeSchema treating box as HasItem asking for cost" do
+    result = """
+    {
+      box {
+        ... on HasItem {
+          item {
+            name
+            cost
+          }
+        }
+      }
+    }
+    """
+    |> run(Absinthe.InterfaceSubtypeSchema)
+    assert_result {:ok, %{errors: [%{message: "Cannot query field \"cost\" on type \"Item\". Did you mean to use an inline fragment on \"ValuedItem\"?"}]}}, result
   end
 end

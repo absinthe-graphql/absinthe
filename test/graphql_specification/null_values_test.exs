@@ -42,11 +42,11 @@ defmodule GraphQL.Specification.NullValuesTest do
 
   end
 
-  describe "as a literal" do
+  context "as a literal" do
 
-    describe "to a nullable argument with a default value" do
+    context "to a nullable argument with a default value" do
 
-      describe "(control): if not passed" do
+      context "(control): if not passed" do
 
         @query """
         { times(base: 4) }
@@ -57,7 +57,7 @@ defmodule GraphQL.Specification.NullValuesTest do
 
       end
 
-      describe "if passed" do
+      context "if passed" do
 
         @query """
         { times(base: 4, multiplier: null) }
@@ -70,9 +70,9 @@ defmodule GraphQL.Specification.NullValuesTest do
 
     end
 
-    describe "to a nullable input object field with a default value" do
+    context "to a nullable input object field with a default value" do
 
-      describe "(control): if not passed" do
+      context "(control): if not passed" do
 
         @query """
         { times: objTimes(input: {base: 4}) }
@@ -83,7 +83,7 @@ defmodule GraphQL.Specification.NullValuesTest do
 
       end
 
-      describe "if passed" do
+      context "if passed" do
 
         @query """
         { times: objTimes(input: {base: 4, multiplier: null}) }
@@ -96,9 +96,9 @@ defmodule GraphQL.Specification.NullValuesTest do
 
     end
 
-    describe "to a non-nullable argument" do
+    context "to a non-nullable argument" do
 
-      describe "if passed" do
+      context "if passed" do
 
         @query """
         { times(base: null) }
@@ -111,9 +111,9 @@ defmodule GraphQL.Specification.NullValuesTest do
 
     end
 
-    describe "to a non-nullable input object field" do
+    context "to a non-nullable input object field" do
 
-      describe "if passed" do
+      context "if passed" do
 
         @query """
         { times: objTimes(input: {base: null}) }
@@ -129,11 +129,11 @@ defmodule GraphQL.Specification.NullValuesTest do
 
   end
 
-  describe "as a variable value" do
+  context "as a variable value" do
 
-    describe "to a variable with a default value" do
+    context "to a variable with a default value" do
 
-      describe "if not passed (control)" do
+      context "if not passed (control)" do
 
         @query """
         query Test($mult: Int = 6) { times(base: 4, multiplier: $mult) }
@@ -144,7 +144,7 @@ defmodule GraphQL.Specification.NullValuesTest do
 
       end
 
-      describe "if passed" do
+      context "if passed" do
 
         @query """
         query Test($mult: Int = 6) { times(base: 4, multiplier: $mult) }
@@ -157,9 +157,9 @@ defmodule GraphQL.Specification.NullValuesTest do
 
     end
 
-    describe "to a non-nullable variable" do
+    context "to a non-nullable variable" do
 
-      describe "if passed" do
+      context "if passed" do
 
         @query """
         query Test($mult: Int!) { times(base: 4, multiplier: $mult) }

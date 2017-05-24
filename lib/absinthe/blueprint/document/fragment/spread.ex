@@ -10,12 +10,13 @@ defmodule Absinthe.Blueprint.Document.Fragment.Spread do
     directives: [],
     source_location: nil,
     # Populated by phases
+    complexity: nil,
     flags: %{},
     errors: [],
   ]
 
   @type t :: %__MODULE__{
-    directives: [Blueprint.Document.Directive.t],
+    directives: [Blueprint.Directive.t],
     errors: [Absinthe.Phase.Error.t],
     name: String.t,
     flags: Blueprint.flags_t,

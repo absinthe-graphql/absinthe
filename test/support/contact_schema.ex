@@ -105,6 +105,7 @@ defmodule ContactSchema do
         _, _ ->
           {:ok, @others}
       end
+
     interface :named_entity
   end
 

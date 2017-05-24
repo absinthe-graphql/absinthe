@@ -1,9 +1,9 @@
 defmodule Absinthe.Language.DirectiveDefinitionTest do
   use Absinthe.Case, async: true
 
-  alias Absinthe.{Blueprint, Language, Phase}
+  alias Absinthe.{Blueprint, Language}
 
-  describe "blueprint conversion" do
+  context "blueprint conversion" do
 
     it "works, given a Blueprint Schema 'directive' definition without arguments" do
       assert %Blueprint.Schema.DirectiveDefinition{name: "thingy", locations: ["FIELD", "OBJECT"]} = from_input("directive @thingy on FIELD | OBJECT")
@@ -19,7 +19,7 @@ defmodule Absinthe.Language.DirectiveDefinitionTest do
   end
 
   defp from_input(text) do
-    {:ok, doc} = Phase.Parse.run(text)
+    {:ok, %{input: doc}} = Absinthe.Phase.Parse.run(text)
 
     doc
     |> extract_ast_node

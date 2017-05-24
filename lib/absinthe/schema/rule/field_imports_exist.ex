@@ -36,13 +36,19 @@ defmodule Absinthe.Schema.Rule.FieldImportsExist do
     |> Map.new(&{&1.identifier, &1})
   end
 
+  def explanation(%{data: %{artifact: msg}}) do
+    """
+      #{msg}
+    """ |> String.strip
+  end
+
   defp error(definition, ref) do
     msg = """
     Field Import Erro
 
     Object #{inspect definition.identifier} imports fields from #{inspect ref} but
     #{inspect ref} does not exist in the schema!
-    """ |> String.strip
+    """ |> String.trim
 
     %{data: %{artifact: msg, value: ref}, location: %{file: definition.file, line: definition.line}, rule: __MODULE__}
   end

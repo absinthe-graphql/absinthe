@@ -14,25 +14,36 @@ defmodule Absinthe.Blueprint do
     types: [],
     directives: [],
     fragments: [],
+    name: nil,
     schema: nil,
     adapter: nil,
     # Added by phases
     flags: %{},
     errors: [],
-    resolution: %Blueprint.Document.Resolution{}
+    input: nil,
+    resolution: %Blueprint.Document.Resolution{},
+    result: %{},
   ]
 
   @type t :: %__MODULE__{
     operations: [Blueprint.Document.Operation.t],
     types: [Blueprint.Schema.t],
     directives: [Blueprint.Schema.DirectiveDefinition.t],
+    name: nil | String.t,
     fragments: [Blueprint.Document.Fragment.Named.t],
     schema: nil | Absinthe.Schema.t,
     adapter: nil | Absinthe.Adapter.t,
     # Added by phases
-    errors: [Blueprint.Phase.Error.t],
-    flags: Blueprint.flags_t,
-    resolution: Blueprint.Document.Resolution.t
+    errors: [Absinthe.Phase.Error.t],
+    flags: flags_t,
+    resolution: Blueprint.Document.Resolution.t,
+    result: result_t,
+  }
+
+  @type result_t :: %{
+    optional(:data) => term,
+    optional(:errors) => [term],
+    optional(:extensions) => term,
   }
 
   @type node_t ::
@@ -93,7 +104,7 @@ defmodule Absinthe.Blueprint do
   @doc """
   Get the currently selected operation.
   """
-  @spec current_operation(t) :: nil | Blueprint.Operation.t
+  @spec current_operation(t) :: nil | Blueprint.Document.Operation.t
   def current_operation(blueprint) do
     Enum.find(blueprint.operations, &(&1.current == true))
   end
@@ -101,7 +112,7 @@ defmodule Absinthe.Blueprint do
   @doc """
   Update the current operation.
   """
-  @spec update_current(t, (Blueprint.Operation.t -> Blueprint.Operation.t)) :: t
+  @spec update_current(t, (Blueprint.Document.Operation.t -> Blueprint.Document.Operation.t)) :: t
   def update_current(blueprint, change) do
     ops = Enum.map(blueprint.operations, fn
       %{current: true} = op ->

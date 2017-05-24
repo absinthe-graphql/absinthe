@@ -11,7 +11,7 @@ defmodule Absinthe.Language.ObjectValueTest do
   }
   """
 
-  describe "converting to Blueprint" do
+  context "converting to Blueprint" do
 
     it "builds an Input.Object.t" do
       assert %Blueprint.Input.Object{fields: [%Blueprint.Input.Field{name: "foo", input_value: %Blueprint.Input.Value{literal: %Blueprint.Input.Integer{value: 2}}}]} = from_input(@query)
@@ -20,7 +20,7 @@ defmodule Absinthe.Language.ObjectValueTest do
   end
 
   defp from_input(text) do
-    {:ok, doc} = Absinthe.Phase.Parse.run(text)
+    {:ok, %{input: doc}} = Absinthe.Phase.Parse.run(text)
 
     doc
     |> extract_ast_node

@@ -15,7 +15,7 @@ defmodule Absinthe.Language.InputValueDefinition do
   @type t :: %__MODULE__{
     name: String.t,
     type: Language.input_t,
-    default_value: Language.Input.t,
+    default_value: Language.input_t,
     directives: [Language.Directive.t],
     loc: Language.loc_t,
   }

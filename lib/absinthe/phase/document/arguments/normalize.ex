@@ -17,18 +17,20 @@ defmodule Absinthe.Phase.Document.Arguments.Normalize do
 
   @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
   def run(input, _options \\ []) do
-    acc = %{provided_values: %{}}
+    acc = %{provided_values: get_provided_values(input)}
     {node, _} = Blueprint.prewalk(input, acc, &handle_node/2)
     {:ok, node}
   end
 
-  @spec handle_node(Blueprint.node_t, map) :: {Blueprint.node_t, map}
-  defp handle_node(%Blueprint.Document.Operation{} = node, acc) do
-    {
-      node,
-      %{acc | provided_values: node.provided_values}
-    }
+  @spec get_provided_values(Blueprint.t) :: map
+  defp get_provided_values(input) do
+    case Blueprint.current_operation(input) do
+      nil -> %{}
+      operation -> operation.provided_values
+    end
   end
+
+  @spec handle_node(Blueprint.node_t, map) :: {Blueprint.node_t, map}
   # Argument using a variable: Set provided value
   defp handle_node(%Blueprint.Input.Value{literal: %Blueprint.Input.Variable{name: variable_name}} = node, acc) do
     {

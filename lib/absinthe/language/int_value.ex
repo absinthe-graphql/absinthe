@@ -1,7 +1,7 @@
 defmodule Absinthe.Language.IntValue do
   @moduledoc false
 
-  alias Absinthe.Blueprint
+  alias Absinthe.{Blueprint, Language}
 
   defstruct [
     :value,
