@@ -12,6 +12,8 @@ defmodule Absinthe.Phase.Schema do
 
   alias Absinthe.{Blueprint, Type, Schema}
 
+  @default_adapter Application.get_env(:absinthe, :adapter, Absinthe.Adapter.LanguageConventions)
+
   # The approach here is pretty simple.
   # We start at the top blueprint node and set the appropriate schema node on operations
   # directives and so forth.
@@ -24,7 +26,7 @@ defmodule Absinthe.Phase.Schema do
   @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
   def run(input, options \\ []) do
     schema = Keyword.fetch!(options, :schema)
-    adapter = Keyword.get(options, :adapter, Absinthe.Adapter.LanguageConventions)
+    adapter = Keyword.get(options, :adapter, @default_adapter)
 
     result = Blueprint.prewalk(input, &handle_node(&1, schema, adapter))
     {:ok, result}
