@@ -45,6 +45,18 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
       )
     end
 
+    it "fails when a single operation with wrong name is provided" do
+      assert_fails_rule(@rule,
+        """
+        query Foo {
+          name
+        }
+        """,
+        [operation_name: "Nothere"],
+        no_current_operation()
+      )
+    end
+
   end
 
   context "Not given an operation name" do
