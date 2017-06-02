@@ -90,7 +90,7 @@ defmodule Absinthe.Schema do
 
   ```
   defmodule App.Schema.Objects do
-    use Absinthe.Scheme.Notation
+    use Absinthe.Schema.Notation
 
     object :item do
       # ... type definition
