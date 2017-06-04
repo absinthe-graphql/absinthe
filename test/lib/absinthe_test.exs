@@ -38,6 +38,17 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"thing" => %{"name" => "Foo"}}}}, run(query, Things)
   end
 
+  it "will fail here" do
+    query = """
+    query GimmeFoo {
+      thing(id: ["foo"]) {
+        name
+      }
+    }
+    """
+    run(query, Things)
+  end
+
   it "can do a simple query with fragments" do
     query = """
     {
