@@ -99,8 +99,8 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     {values, info} = walk_results(values, bp_node, schema_type, info, path, [])
     {%{result | values: values}, info}
   end
-  def walk_result(%Absinthe.Resolution{} = res, _bp_node, _schema_type, info, path) do
-    do_resolve_field(%{res | acc: info.acc}, info, res.source, path)
+  def walk_result(%Absinthe.Resolution{} = res, _bp_node, _schema_type, info, _path) do
+    do_resolve_field(%{res | acc: info.acc}, info, res.source, res.path)
   end
 
   # walk list results

@@ -28,7 +28,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceEnumsTest do
   use Harness.Document.Phase, phase: Absinthe.Phase.Document.Arguments.CoerceEnums, schema: Schema
 
 
-  describe "when using an Enum type input argument" do
+  context "when using an Enum type input argument" do
     it "coerces the type from String to Enum" do
       doc = """
       query Enum {
@@ -62,7 +62,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceEnumsTest do
     end
   end
 
-  describe "when using a non-null Enum type input argument" do
+  context "when using a non-null Enum type input argument" do
     it "coerces the type from String to Enum" do
       doc = """
       query Enum {

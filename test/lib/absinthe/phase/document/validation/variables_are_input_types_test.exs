@@ -15,7 +15,7 @@ defmodule Absinthe.Phase.Document.Validation.VariablesAreInputTypesTest do
     )
   end
 
-  describe "Validate: Variables are input types" do
+  context "Validate: Variables are input types" do
 
     it "input types are valid" do
       assert_passes_rule(@rule,

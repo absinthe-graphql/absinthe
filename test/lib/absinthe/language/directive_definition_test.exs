@@ -3,7 +3,7 @@ defmodule Absinthe.Language.DirectiveDefinitionTest do
 
   alias Absinthe.{Blueprint, Language}
 
-  describe "blueprint conversion" do
+  context "blueprint conversion" do
 
     it "works, given a Blueprint Schema 'directive' definition without arguments" do
       assert %Blueprint.Schema.DirectiveDefinition{name: "thingy", locations: ["FIELD", "OBJECT"]} = from_input("directive @thingy on FIELD | OBJECT")

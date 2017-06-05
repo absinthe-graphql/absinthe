@@ -4,7 +4,7 @@ defmodule Absinthe.Schema.Rule.TypeNamesAreReservedTest do
 
   alias Absinthe.Schema.Rule
 
-  describe "rule" do
+  context "rule" do
 
     it "is enforced" do
       assert_schema_error("prefix_schema",

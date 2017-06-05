@@ -6,7 +6,7 @@ defmodule Absinthe.SchemaTest do
   alias Absinthe.Schema
   alias Absinthe.Type
 
-  describe "built-in types" do
+  context "built-in types" do
 
     def load_valid_schema do
       load_schema("valid_schema")
@@ -27,7 +27,7 @@ defmodule Absinthe.SchemaTest do
 
   end
 
-  describe "using the same identifier" do
+  context "using the same identifier" do
 
     it "raises an exception" do
       assert_schema_error("schema_with_duplicate_identifiers",
@@ -36,7 +36,7 @@ defmodule Absinthe.SchemaTest do
 
   end
 
-  describe "using the same name" do
+  context "using the same name" do
 
     def load_duplicate_name_schema do
       load_schema("schema_with_duplicate_names")
@@ -108,7 +108,7 @@ defmodule Absinthe.SchemaTest do
   end
 
 
-  describe "using import_types" do
+  context "using import_types" do
 
     it "adds the types from a parent" do
       assert %{foo: "Foo", bar: "Bar"} = UserSchema.__absinthe_types__
@@ -122,7 +122,7 @@ defmodule Absinthe.SchemaTest do
 
   end
 
-  describe "lookup_type" do
+  context "lookup_type" do
 
     it "is supported" do
       assert "Foo" == Schema.lookup_type(ThirdSchema, :foo).name
@@ -156,7 +156,7 @@ defmodule Absinthe.SchemaTest do
   end
 
 
-  describe "root fields" do
+  context "root fields" do
 
     it "can have a default name" do
       assert "RootQueryType" == Schema.lookup_type(RootsSchema, :query).name
@@ -173,7 +173,7 @@ defmodule Absinthe.SchemaTest do
 
   end
 
-  describe "fields" do
+  context "fields" do
 
     it "have the correct structure in query" do
       assert %Type.Field{name: "name"} = Schema.lookup_type(RootsSchema, :query).fields.name
@@ -185,7 +185,7 @@ defmodule Absinthe.SchemaTest do
 
   end
 
-  describe "arguments" do
+  context "arguments" do
 
     it "have the correct structure" do
       assert %Type.Argument{name: "family_name"} = Schema.lookup_type(RootsSchema, :query).fields.name.args.family_name
@@ -211,7 +211,7 @@ defmodule Absinthe.SchemaTest do
 
   end
 
-  describe "multiple fragment spreads" do
+  context "multiple fragment spreads" do
 
     @query """
     query Viewer{viewer{id,...F1}}
@@ -272,7 +272,7 @@ defmodule Absinthe.SchemaTest do
 
   end
 
-  describe "can add metadata to an object" do
+  context "can add metadata to an object" do
 
     it "sets object metadata" do
       foo = Schema.lookup_type(MetadataSchema, :foo)

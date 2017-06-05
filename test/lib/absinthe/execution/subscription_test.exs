@@ -20,7 +20,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
 
   end
 
-  describe "subscriptions" do
+  context "subscriptions" do
 
     @query """
     subscription SubscribeToThing($clientId: ID!) {

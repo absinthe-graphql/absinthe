@@ -23,7 +23,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
     end
   end
 
-  describe "Validate: Unique argument names" do
+  context "Validate: Unique argument names" do
 
     it "no arguments on field" do
       assert_passes_rule(@rule,

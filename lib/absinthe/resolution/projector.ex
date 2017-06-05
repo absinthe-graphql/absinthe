@@ -3,7 +3,7 @@ defmodule Absinthe.Resolution.Projector do
   alias Absinthe.{Blueprint, Type}
 
   def project(selections, %{identifier: identifier} = parent_type, path, cache, info) do
-    path_names = for %{name: name} <- path, name, do: name
+    path_names = for %{name: name, alias: alias} <- path, name, do: alias || name
     key = {identifier, path_names}
 
     case Map.fetch(cache, key) do

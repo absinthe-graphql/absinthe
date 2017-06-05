@@ -31,7 +31,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
   use Harness.Document.Phase, phase: Absinthe.Phase.Document.Arguments.CoerceLists, schema: Schema
 
 
-  describe "when using an List type input argument" do
+  context "when using an List type input argument" do
     it "coerces the type from a single element to List" do
       doc = """
       query List {
@@ -65,7 +65,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
     end
   end
 
-  describe "when using a wrapped List type input argument" do
+  context "when using a wrapped List type input argument" do
     it "coerces the type from a single element to List" do
       doc = """
       query List {
@@ -99,7 +99,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
     end
   end
 
-  describe "when using a List of a coercable type input argument" do
+  context "when using a List of a coercable type input argument" do
     it "coerces the type from a single element to List" do
       doc = """
       query List {

@@ -10,7 +10,7 @@ defmodule Absinthe.Language.FragmentTest do
   }
   """
 
-  describe "converting to Blueprint" do
+  context "converting to Blueprint" do
 
     it "builds a Document.Fragment.Named.t" do
       assert %Blueprint.Document.Fragment.Named{name: "FooFields", type_condition: %Blueprint.TypeReference.Name{name: "Foo"}, selections: [%Blueprint.Document.Field{name: "foo"}, %Blueprint.Document.Field{name: "bar"}]} = from_input(@query)

@@ -6,7 +6,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
   use Support.Harness.Validation
   alias Absinthe.{Blueprint}
 
-  describe "Valid" do
+  context "Valid" do
 
     it "single arg is known" do
       assert_passes_rule(@rule,
@@ -85,7 +85,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
 
   end
 
-  describe "Invalid" do
+  context "Invalid" do
 
     it "undirective args are invalid" do
       assert_fails_rule(@rule,
