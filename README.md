@@ -68,6 +68,9 @@ The project is under constant improvement by a growing list of contributors,
 and your feedback is important. Please
 [join us](http://absinthe-graphql.org/community/)!
 
+Please remember that all interactions in our official spaces follow our [Code of
+Conduct](./CODE_OF_CONDUCT.md).
+
 ## Installation
 
 Install from [Hex.pm](https://hex.pm/packages/absinthe):
