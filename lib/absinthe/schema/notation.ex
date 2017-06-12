@@ -1196,6 +1196,7 @@ defmodule Absinthe.Schema.Notation do
         attrs
 
       desc ->
+        desc = Macro.expand(desc, env)
         Module.put_attribute(env.module, :__absinthe_desc__, nil)
         Keyword.put(attrs, :description, reformat_description(desc))
     end

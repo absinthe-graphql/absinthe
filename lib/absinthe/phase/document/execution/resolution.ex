@@ -111,18 +111,21 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp walk_results([], _, _, info, _, acc), do: {:lists.reverse(acc), info}
 
   defp resolve_fields(parent, info, source, path) do
-    parent_type =
-      parent
-      # parent is the parent field, we need to get the return type of that field
-      |> get_return_type
-      # that return type could be an interface or union, so let's make it concrete
-      |> get_concrete_type(source, info)
+    parent
+    # parent is the parent field, we need to get the return type of that field
+    |> get_return_type
+    # that return type could be an interface or union, so let's make it concrete
+    |> get_concrete_type(source, info)
+    |> case do
+      nil ->
+        {[], info}
+      parent_type ->
+        {fields, fields_cache} = Absinthe.Resolution.Projector.project(parent.selections, parent_type, path, info.fields_cache, info)
 
-    {fields, fields_cache} = Absinthe.Resolution.Projector.project(parent.selections, parent_type, path, info.fields_cache, info)
+        info = %{info | fields_cache: fields_cache}
 
-    info = %{info | fields_cache: fields_cache}
-
-    do_resolve_fields(fields, info, source, parent_type, path, [])
+        do_resolve_fields(fields, info, source, parent_type, path, [])
+    end
   end
 
   defp get_return_type(%{schema_node: %Type.Field{type: type}}) do

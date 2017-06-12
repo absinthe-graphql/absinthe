@@ -3,6 +3,7 @@
 ## v1.3.2
 
 - Bug Fix: Ensure `%Absinthe.Resolution{}` struct can be inspect inside `resolve_type` and similar.
+- Bug Fix: Handle `nil` return values from `resolve_type`
 
 ## v1.3.1
 

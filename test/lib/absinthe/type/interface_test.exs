@@ -12,7 +12,11 @@ defmodule Absinthe.Type.InterfaceTest do
     query do
       field :foo, type: :foo
       field :bar, type: :bar
-      field :named_thing, :named
+      field :named_thing, :named do
+        resolve fn _, _ ->
+          {:ok, %{}}
+        end
+      end
     end
 
     object :foo do
@@ -186,6 +190,18 @@ defmodule Absinthe.Type.InterfaceTest do
     }
     """
     |> run(Absinthe.InterfaceSubtypeSchema)
+    assert_result {:ok, %{errors: [%{message: "Cannot query field \"cost\" on type \"Item\". Did you mean to use an inline fragment on \"ValuedItem\"?"}]}}, result
+  end
+
+  it "works even when resolve_type returns nil" do
+    result = """
+    {
+      namedThing {
+        name
+      }
+    }
+    """
+    |> run(TestSchema)
     assert_result {:ok, %{errors: [%{message: "Cannot query field \"cost\" on type \"Item\". Did you mean to use an inline fragment on \"ValuedItem\"?"}]}}, result
   end
 end
