@@ -82,7 +82,10 @@ defmodule Absinthe.Middleware.Batch do
 
   ```elixir
   def by_id(model, ids) do
-    Repo.al from m in model, where: m.id in ^ids
+    model
+    |> where([m], m.id in ^ids)
+    |> Repo.all()
+    |> Map.new(&{&1.id, &1})
   end
   ```
   It could also be used to set options unique to the execution of a particular
