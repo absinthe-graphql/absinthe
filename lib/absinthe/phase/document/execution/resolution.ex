@@ -218,9 +218,9 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       extensions: extensions
     } = res
 
-    with %{identifier: :mutation} <- info.parent_type do
-      pubsub = info.schema.pubsub()
-      Absinthe.Subscriptions.publish_from_mutation(pubsub, info, result)
+    with %{identifier: :mutation} <- res.parent_type do
+      pubsub = res.schema.pubsub()
+      Absinthe.Subscriptions.publish_from_mutation(pubsub, res, result)
     end
 
     full_type = Type.expand(bp_field.schema_node.type, info.schema)

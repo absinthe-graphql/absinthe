@@ -296,16 +296,16 @@ defmodule Absinthe.Schema do
   @doc """
   Defines a root Subscription object
   """
-  defmacro subscription(raw_attrs, [do: block]) do
-    attrs = raw_attrs
-    |> Keyword.put_new(:name, @default_subscription_name)
-    Absinthe.Schema.Notation.scope(__CALLER__, :object, :subscription, attrs, block)
+  defmacro subscription(raw_attrs \\ [name: @default_subscription_name], [do: block]) do
+    record_subscription(__CALLER__, raw_attrs, block)
   end
-  @doc """
-  Defines a root Subscription object
-  """
-  defmacro subscription([do: block]) do
-    Absinthe.Schema.Notation.scope(__CALLER__, :object, :subscription, [name: @default_subscription_name], block)
+
+  defp record_subscription(env, raw_attrs, block) do
+    attrs =
+      raw_attrs
+      |> Keyword.put_new(:name, @default_subscription_name)
+      |> Keyword.put(:identifier, :subscription)
+    Absinthe.Schema.Notation.scope(env, :object, :subscription, attrs, block)
   end
 
   # Lookup a directive that in used by/available to a schema

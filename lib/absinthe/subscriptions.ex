@@ -9,12 +9,14 @@ defmodule Absinthe.Subscriptions do
     for {field, key_strategy} <- subscribed_fields,
     {topic, doc} <- get_docs(endpoint, field, mutation_result, key_strategy) do
 
+      doc = put_in(doc.resolution.root_value, root_value)
+
       pipeline = [
-        {Absinthe.Phase.Document.Execution.Resolution, root_value: root_value},
+        Absinthe.Phase.Document.Execution.Resolution,
         Absinthe.Phase.Document.Result,
       ]
 
-      {:ok, data, _} = Absinthe.Pipeline.run(doc, pipeline)
+      {:ok, %{result: data}, _} = Absinthe.Pipeline.run(doc, pipeline)
 
       # TODO: direct broadcast for local nodes only when we handle distribution
       # MyApp.Pub
