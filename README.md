@@ -49,7 +49,7 @@ Absinthe includes a number of advanced resolution features, to include:
 Write your schemas in idiomatic Elixir `snake_case` notation. Absinthe can
 transparently translate to `camelCase` notation for your API clients.
 
-Or, define your own translation scheme by writing an simple adapter.
+Or, define your own translation schema by writing an simple adapter.
 
 ### Frontend Support
 
@@ -67,6 +67,9 @@ clients, too.
 The project is under constant improvement by a growing list of contributors,
 and your feedback is important. Please
 [join us](http://absinthe-graphql.org/community/)!
+
+Please remember that all interactions in our official spaces follow our [Code of
+Conduct](./CODE_OF_CONDUCT.md).
 
 ## Installation
 

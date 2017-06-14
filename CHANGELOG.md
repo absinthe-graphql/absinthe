@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.2
+
+- Bug Fix: Ensure `%Absinthe.Resolution{}` struct can be inspect inside `resolve_type` and similar.
+
 ## v1.3.1
 
 - Enhancement: Improved nested fragment handling when merging is required.
