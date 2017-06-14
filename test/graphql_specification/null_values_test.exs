@@ -18,6 +18,8 @@ defmodule GraphQL.Specification.NullValuesTest do
             {:ok, base}
           _, %{base: base, multiplier: num}, _ ->
             {:ok, base * num}
+          _, %{base: _}, _ ->
+            {:error, "Didn't get any multiplier"}
         end
 
       end
@@ -164,10 +166,8 @@ defmodule GraphQL.Specification.NullValuesTest do
         @query """
         query Test($mult: Int!) { times(base: 4, multiplier: $mult) }
         """
-        # Needs non-nullable variable validation (missing)
-        @tag :pending
         it "adds an error" do
-
+          assert_result {:ok, %{errors: [%{message: "Variable \"mult\": Expected non-null, found null."}]}}, run(@query, Schema, variables: %{"mult" => nil})
         end
 
       end

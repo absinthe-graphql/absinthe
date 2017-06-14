@@ -45,7 +45,7 @@ defmodule Absinthe.Blueprint.Input do
     %Input.Float{value: value}
   end
   def parse(value) when is_nil(value) do
-    %Input.Null{}
+    nil
   end
   # Note: The value may actually be an Enum value and may
   # need to be manually converted, based on the schema.
