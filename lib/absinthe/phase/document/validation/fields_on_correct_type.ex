@@ -195,7 +195,8 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
   end
 
   defp find_possible_types(field_name, type, schema) do
-    Schema.concrete_types(schema, type)
+    schema
+    |> Schema.concrete_types(Type.unwrap(type))
     |> types_with_field(field_name)
   end
 
