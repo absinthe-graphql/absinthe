@@ -23,7 +23,7 @@ defmodule Absinthe.Subscriptions do
       # |> Phoenix.PubSub.node_name()
       # |> Phoenix.PubSub.direct_broadcast(MyApp.Pub, topic, %Phoenix.Socket.Broadcast{topic, event, payload})
 
-      endpoint.broadcast!(topic, "subscription:data", data)
+      endpoint.broadcast!(topic, "subscription:data", %{subscription_id: topic, result: data})
     end
   end
 
