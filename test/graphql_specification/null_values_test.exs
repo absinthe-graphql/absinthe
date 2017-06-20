@@ -32,7 +32,22 @@ defmodule GraphQL.Specification.NullValuesTest do
           _, %{input: %{base: base, multiplier: num}}, _ ->
             {:ok, base * num}
         end
+      end
 
+      field :nullable_list, :list_details do
+        arg :input, list_of(:integer)
+        resolve fn
+          _, %{input: list}, _ ->
+            {
+              :ok,
+              %{
+                length: length(list),
+                content: list,
+                null_count: Enum.count(list, &(&1 == nil)),
+                non_null_count: Enum.count(list, &(&1 != nil)),
+              }
+            }
+        end
       end
 
     end
@@ -40,6 +55,13 @@ defmodule GraphQL.Specification.NullValuesTest do
     input_object :times_input do
       field :multiplier, :integer, default_value: 2
       field :base, non_null(:integer)
+    end
+
+    object :list_details do
+      field :length, :integer
+      field :content, list_of(:integer)
+      field :null_count, :integer
+      field :non_null_count, :integer
     end
 
   end
@@ -128,6 +150,66 @@ defmodule GraphQL.Specification.NullValuesTest do
 
     end
 
+    context "to a [Int]" do
+
+      context "if passed as the value" do
+        @query """
+        {
+          nullableList(input: null) {
+            length
+            content
+            nonNullCount
+            nullCount
+          }
+        }
+        """
+        @tag :check1
+        it "is coerced to an empty list" do
+          assert_result {
+            :ok,
+            %{
+              data: %{
+                "nullableList" => %{
+                  "length" => 0,
+                  "content" => [],
+                  "nullCount" => 0,
+                  "nonNullCount" => 0
+                }
+              }
+            }
+          }, run(@query, Schema)
+        end
+      end
+
+      context "if passed as an element" do
+        @query """
+        {
+          nullableList(input: [null, 1]) {
+            length
+            content
+            nonNullCount
+            nullCount
+          }
+        }
+        """
+        it "is treated as a valid value" do
+          assert_result {
+            :ok,
+            %{
+              data: %{
+                "nullableList" => %{
+                  "length" => 2,
+                  "content" => [nil, 1],
+                  "nullCount" => 1,
+                  "nonNullCount" => 1
+                }
+              }
+            }
+          }, run(@query, Schema)
+        end
+      end
+
+    end
 
   end
 
