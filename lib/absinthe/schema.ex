@@ -173,6 +173,12 @@ defmodule Absinthe.Schema do
         |> Absinthe.Schema.ensure_middleware(field, object)
         |> __do_absinthe_middleware__(field, object)
       end
+      def __absinthe_middleware__(middleware, field, %{identifier: :mutation} = object) do
+        # mutation objects should run publication triggers
+        middleware
+        |> Absinthe.Subscriptions.add_middleware
+        |> __do_absinthe_middleware__(field, object)
+      end
       def __absinthe_middleware__(middleware, field, object) do
         __do_absinthe_middleware__(middleware, field, object)
       end
