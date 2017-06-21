@@ -296,4 +296,215 @@ defmodule GraphQL.Specification.NullValues.ListTest do
 
   end
 
+ context "as a variable" do
+
+    context "to an [Int]" do
+
+      context "if passed as the value" do
+        @query """
+        query ($value: [Int]) {
+          nullableList(input: $value) {
+            length
+            content
+            nonNullCount
+            nullCount
+          }
+        }
+        """
+        it "is treated as a null argument" do
+          assert_result {
+            :ok,
+            %{
+              data: %{
+                "nullableList" => nil
+              }
+            }
+          }, run(@query, Schema, variables: %{"value" => nil})
+        end
+      end
+
+      context "if passed as an element" do
+        @query """
+        query ($value: [Int] ){
+          nullableList(input: $value) {
+            length
+            content
+            nonNullCount
+            nullCount
+          }
+        }
+        """
+        it "is treated as a valid value" do
+          assert_result {
+            :ok,
+            %{
+              data: %{
+                "nullableList" => %{
+                  "length" => 2,
+                  "content" => [nil, 1],
+                  "nullCount" => 1,
+                  "nonNullCount" => 1
+                }
+              }
+            }
+          }, run(@query, Schema, variables: %{"value" => [nil, 1]})
+        end
+      end
+
+    end
+
+    context "to an [Int]!" do
+
+      context "if passed as the value" do
+        @query """
+        query ($value: [Int]!) {
+          nonNullableList(input: $value) {
+            length
+            content
+            nonNullCount
+            nullCount
+          }
+        }
+        """
+        it "is treated as a null argument" do
+          assert_result {
+            :ok,
+            %{
+              errors: [%{message: "Argument \"input\" has invalid value $value."}, %{message: "Variable \"value\": Expected non-null, found null."}]
+            }
+          }, run(@query, Schema, variables: %{"value" => nil})
+        end
+      end
+
+      context "if passed as an element" do
+        @query """
+        query ($value: [Int]!){
+          nonNullableList(input: $value) {
+            length
+            content
+            nonNullCount
+            nullCount
+          }
+        }
+        """
+        it "is treated as a valid value" do
+          assert_result {
+            :ok,
+            %{
+              data: %{
+                "nonNullableList" => %{
+                  "length" => 2,
+                  "content" => [nil, 1],
+                  "nullCount" => 1,
+                  "nonNullCount" => 1
+                }
+              }
+            }
+          }, run(@query, Schema, variables: %{"value" => [nil, 1]})
+        end
+      end
+
+    end
+
+    context "to an [Int!]" do
+
+      context "if passed as the value" do
+        @query """
+        query ($value: [Int!]) {
+          nullableListOfNonNullableType(input: $value) {
+            length
+            content
+            nonNullCount
+            nullCount
+          }
+        }
+        """
+        it "is treated as a null argument" do
+          assert_result {
+            :ok,
+            %{
+              data: %{
+                "nullableListOfNonNullableType" => nil
+              }
+            }
+          }, run(@query, Schema, variables: %{"value" => nil})
+        end
+      end
+
+      context "if passed as an element" do
+        @query """
+        query ($value: [Int!]){
+          nullableListOfNonNullableType(input: $value) {
+            length
+            content
+            nonNullCount
+            nullCount
+          }
+        }
+        """
+        it "returns an error" do
+          assert_result {
+            :ok,
+            %{
+              errors: [
+                %{message: "Argument \"input\" has invalid value $value.\nIn element #1: Expected type \"Int!\", found null."}
+              ]
+            }
+          }, run(@query, Schema, variables: %{"value" => [nil, 1]})
+        end
+      end
+
+    end
+
+    context "to an [Int!]!" do
+
+      context "if passed as the value" do
+        @query """
+        query ($value: [Int!]!){
+          nonNullableListOfNonNullableType(input: $value) {
+            length
+            content
+            nonNullCount
+            nullCount
+          }
+        }
+        """
+        it "is treated as a null argument" do
+          assert_result {
+            :ok,
+            %{
+              errors: [%{message: "Argument \"input\" has invalid value $value."}, %{message: "Variable \"value\": Expected non-null, found null."}]
+            }
+          }, run(@query, Schema, variables: %{"value" => nil})
+        end
+      end
+
+      context "if passed as an element" do
+        @query """
+        query ($value: [Int!]!) {
+          nonNullableListOfNonNullableType(input: $value) {
+            length
+            content
+            nonNullCount
+            nullCount
+          }
+        }
+        """
+        @tag :check
+        it "returns an error" do
+          assert_result {
+            :ok,
+            %{
+              errors: [
+                %{message: "Argument \"input\" has invalid value $value.\nIn element #1: Expected type \"Int!\", found null."}
+              ]
+            }
+          }, run(@query, Schema, variables: %{"value" => [nil, 1]})
+        end
+      end
+
+    end
+
+  end
+
 end
