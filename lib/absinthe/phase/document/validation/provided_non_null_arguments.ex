@@ -22,7 +22,6 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArguments do
     node = node |> put_error(error(node, node.schema_node.type, schema))
     {:halt, node}
   end
-
   defp handle_node(node, _) do
     node
   end
