@@ -23,7 +23,7 @@ defmodule Absinthe.Type.Interface do
     resolve_type fn
       %{age: _}, _ -> :person
       %{employee_count: _}, _ -> :business
-      _ -> nil
+      _, _ -> nil
     end
   end
 
