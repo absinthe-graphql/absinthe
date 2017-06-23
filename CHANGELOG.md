@@ -4,6 +4,7 @@
 
 - Bug Fix: Handle OTP 20.0 warnings.
 - Bug Fix: Ensure `%Absinthe.Resolution{}` struct can be inspect inside `resolve_type` and similar.
+- Bug Fix: Handle `nil` return values from `resolve_type`
 
 ## v1.3.1
 
