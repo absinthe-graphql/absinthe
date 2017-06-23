@@ -94,12 +94,15 @@ defmodule Absinthe.Type.Enum do
     internal_values = Type.Enum.Value.build(raw_values, :value)
     values_by_name = Type.Enum.Value.build(raw_values, :name)
 
+    attrs =
+      attrs
+      |> Keyword.put(:values, values)
+      |> Keyword.put(:values_by_internal_value, internal_values)
+      |> Keyword.put(:values_by_name, values_by_name)
+
     quote do
       %unquote(__MODULE__){
         unquote_splicing(attrs),
-        values: unquote(values),
-        values_by_internal_value: unquote(internal_values),
-        values_by_name: unquote(values_by_name),
       }
     end
   end

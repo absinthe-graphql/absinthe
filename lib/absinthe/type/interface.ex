@@ -79,7 +79,10 @@ defmodule Absinthe.Type.Interface do
 
   def build(%{attrs: attrs}) do
     fields = Type.Field.build(attrs[:fields] || [])
-    quote do: %unquote(__MODULE__){unquote_splicing(attrs), fields: unquote(fields)}
+    attrs = Keyword.put(attrs, :fields, fields)
+    quote do
+      %unquote(__MODULE__){unquote_splicing(attrs)}
+    end
   end
 
   @spec resolve_type(Type.Interface.t, any, Absinthe.Resolution.t) :: Type.t | nil

@@ -239,13 +239,16 @@ defmodule Absinthe.Type.Field do
           Keyword.put(field_attrs, :middleware, [{Absinthe.Resolution, resolution_function_ast}])
       end
 
-      field_attrs = Keyword.update(field_attrs, :middleware, [], &Enum.reverse/1)
-
-      field_data = [name: name, identifier: field_name] ++ Keyword.update(field_attrs, :args, quoted_empty_map, fn
-        raw_args ->
-          args = for {name, attrs} <- raw_args, do: {name, ensure_reference(attrs, name, default_ref)}
-          Type.Argument.build(args)
-      end)
+      field_data =
+        field_attrs
+        |> Keyword.put_new(:name, name)
+        |> Keyword.put(:identifier, field_name)
+        |> Keyword.update(:middleware, [], &Enum.reverse/1)
+        |> Keyword.update(:args, quoted_empty_map, fn
+          raw_args ->
+            args = for {name, attrs} <- raw_args, do: {name, ensure_reference(attrs, name, default_ref)}
+            Type.Argument.build(args)
+        end)
       field_ast = quote do: %Absinthe.Type.Field{unquote_splicing(field_data |> Absinthe.Type.Deprecation.from_attribute)}
       {field_name, field_ast}
     end

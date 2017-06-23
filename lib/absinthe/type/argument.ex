@@ -48,7 +48,7 @@ defmodule Absinthe.Type.Argument do
   def build(args) when is_list(args) do
     ast = for {arg_name, arg_attrs} <- args do
       name = arg_name |> Atom.to_string
-      arg_data = [name: name] ++ arg_attrs
+      arg_data = arg_attrs |> Keyword.put(:name, name)
       arg_ast = quote do: %Absinthe.Type.Argument{unquote_splicing(arg_data |> Absinthe.Type.Deprecation.from_attribute)}
       {arg_name, arg_ast}
     end
