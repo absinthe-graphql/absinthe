@@ -113,10 +113,11 @@ defmodule Absinthe.Type.Object do
       |> Type.Field.build()
       |> handle_imports(attrs[:field_imports])
 
+    attrs = Keyword.put(attrs, :fields, fields)
+
     quote do
       %unquote(__MODULE__){
         unquote_splicing(attrs),
-        fields: unquote(fields),
       }
     end
   end

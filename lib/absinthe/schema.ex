@@ -374,6 +374,9 @@ defmodule Absinthe.Schema do
   def concrete_types(_, %Type.Object{} = type) do
     [type]
   end
+  def concrete_types(_, type) do
+    [type]
+  end
 
   @doc """
   List all directives on a schema

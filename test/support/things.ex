@@ -145,13 +145,6 @@ defmodule Things do
         %{id: id}, _ ->
           {:ok, @db |> Map.get(id)}
       end
-
-    field :things,
-      type: list_of(:thing),
-      resolve: fn
-        _, _ ->
-          {:ok, Map.values(@db)}
-      end
   end
 
   input_object :input_thing do
@@ -160,7 +153,6 @@ defmodule Things do
     field :deprecated_field, :string, deprecate: true
     field :deprecated_field_with_reason, :string, deprecate: "reason"
     field :deprecated_non_null_field, non_null(:string), deprecate: true
-    field :deprecated_field_with_reason, :string, deprecate: "reason"
   end
 
   object :thing do
