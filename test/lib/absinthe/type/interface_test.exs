@@ -202,6 +202,6 @@ defmodule Absinthe.Type.InterfaceTest do
     }
     """
     |> run(TestSchema)
-    assert_result {:ok, %{errors: [%{message: "Cannot query field \"cost\" on type \"Item\". Did you mean to use an inline fragment on \"ValuedItem\"?"}]}}, result
+    assert_result {:ok, %{data: %{"namedThing" => %{}}}}, result
   end
 end
