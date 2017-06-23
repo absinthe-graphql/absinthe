@@ -32,4 +32,12 @@ defmodule Absinthe.Blueprint.Input.Value do
     normalized: literals,
     data: term,
   }
+
+  @spec valid?(t) :: boolean
+  @doc false
+  # Whether a value is valid and useful in an argument
+  def valid?(%{normalized: %Absinthe.Blueprint.Input.Null{}}), do: true
+  def valid?(%{normalized: nil}), do: false
+  def valid?(%{normalized: _}), do: true
+
 end

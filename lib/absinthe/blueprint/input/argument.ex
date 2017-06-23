@@ -32,6 +32,8 @@ defmodule Absinthe.Blueprint.Input.Argument do
     |> Enum.filter(fn
       %__MODULE__{schema_node: nil} ->
         false
+      %__MODULE__{input_value: %{normalized: %Blueprint.Input.Null{}}, value: nil} ->
+        true
       %__MODULE__{value: nil} ->
         false
       arg ->

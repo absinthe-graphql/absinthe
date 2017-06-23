@@ -14,6 +14,7 @@ defmodule Absinthe.Blueprint.Input do
     | Input.String.t
     | Input.Variable.t
     | Input.Boolean.t
+    | Input.Null.t
 
   @type collection ::
       Blueprint.Input.List.t
@@ -30,6 +31,7 @@ defmodule Absinthe.Blueprint.Input do
     Input.List,
     Input.Object,
     Input.String,
+    Input.Null
   ]
 
   @spec parse(any) :: nil | t
@@ -41,6 +43,9 @@ defmodule Absinthe.Blueprint.Input do
   end
   def parse(value) when is_float(value) do
     %Input.Float{value: value}
+  end
+  def parse(value) when is_nil(value) do
+    %Input.Null{}
   end
   # Note: The value may actually be an Enum value and may
   # need to be manually converted, based on the schema.
@@ -67,9 +72,6 @@ defmodule Absinthe.Blueprint.Input do
           }
       end)
     }
-  end
-  def parse(nil) do
-    nil
   end
 
   @simple_inspect_types [
@@ -109,6 +111,9 @@ defmodule Absinthe.Blueprint.Input do
   end
   def inspect(%Input.Variable{} = node) do
     "$" <> node.name
+  end
+  def inspect(%Input.Null{}) do
+    "null"
   end
   def inspect(nil) do
     "null"

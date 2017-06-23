@@ -29,6 +29,17 @@ defmodule Absinthe.Phase.Document.VariablesTest do
     end
   end
 
+  context "when providing an explicit null value for an optional variable with a default value" do
+    it "uses null" do
+      result = input(@query, %{"name" => "Bruce", "age" => nil})
+      op = result.operations |> Enum.find(&(&1.name == "Profile"))
+      assert op.provided_values == %{
+        "age" => %Blueprint.Input.Null{},
+        "name" => %Blueprint.Input.String{value: "Bruce"},
+      }
+    end
+  end
+
   context "when providing a value for an optional variable with a default value" do
     it "uses the default value" do
       result = input(@query, %{"age" => 4, "name" => "Bruce"})

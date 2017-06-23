@@ -43,14 +43,16 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
     %{node | value: input.data}
   end
   def handle_node(%Input.Value{normalized: %Input.List{items: items}} = node) do
-    data_list = for %{data: data} <- items, data != nil, do: data
+    data_list = for %{data: data} = item <- items, Input.Value.valid?(item), do: data
     %{node | data: data_list}
   end
   def handle_node(%Input.Value{normalized: %Input.Object{fields: fields}} = node) do
     data =
       fields
-      |> Enum.map(&{&1.schema_node.__reference__.identifier, &1.input_value.data})
-      |> Enum.reject(&match?({_, nil}, &1))
+      |> Enum.filter_map(
+        &include_field?/1,
+        &{&1.schema_node.__reference__.identifier, &1.input_value.data}
+      )
       |> Map.new
 
     %{node | data: data}
@@ -58,4 +60,9 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
   def handle_node(node) do
     node
   end
+
+  defp include_field?(%{input_value: %{normalized: %Input.Null{}}}), do: true
+  defp include_field?(%{input_value: %{data: nil}}), do: false
+  defp include_field?(_), do: true
+
 end

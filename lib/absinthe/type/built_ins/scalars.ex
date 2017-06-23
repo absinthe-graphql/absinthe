@@ -120,6 +120,8 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
         else
           :error
         end
+      %Absinthe.Blueprint.Input.Null{} ->
+        {:ok, nil}
       other ->
         coercion.(other)
     end
