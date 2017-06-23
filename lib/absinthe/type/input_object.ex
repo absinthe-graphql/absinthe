@@ -70,7 +70,9 @@ defmodule Absinthe.Type.InputObject do
       |> Type.Field.build
       |> Type.Object.handle_imports(attrs[:field_imports])
 
-    quote do: %unquote(__MODULE__){unquote_splicing(attrs), fields: unquote(fields)}
+    attrs = Keyword.put(attrs, :fields, fields)
+
+    quote do: %unquote(__MODULE__){unquote_splicing(attrs)}
   end
 
   defimpl Absinthe.Traversal.Node do

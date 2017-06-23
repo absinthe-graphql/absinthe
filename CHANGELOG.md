@@ -2,6 +2,7 @@
 
 ## v1.3.2
 
+- Bug Fix: Handle OTP 20.0 warnings.
 - Bug Fix: Ensure `%Absinthe.Resolution{}` struct can be inspect inside `resolve_type` and similar.
 
 ## v1.3.1
