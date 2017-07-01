@@ -7,7 +7,6 @@ defmodule Absinthe.Subscription do
   @doc "Publish a mutation"
   def publish_mutation(pubsub, resolution_info, mutation_result) do
     subscribed_fields = get_subscription_fields(resolution_info)
-    |> IO.inspect
 
     _ = publish_remote(pubsub, subscribed_fields, mutation_result)
     _ = Subscription.Local.publish_mutation(pubsub, subscribed_fields, mutation_result)
@@ -57,7 +56,7 @@ defmodule Absinthe.Subscription do
       mutation_result: mutation_result,
     }
 
-    :ok = pubsub.broadcast(proxy_topic, "mutation", payload)
+    :ok = pubsub.publish_mutation(proxy_topic, payload)
   end
 
   ## Middleware callback

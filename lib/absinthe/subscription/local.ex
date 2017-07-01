@@ -13,7 +13,7 @@ defmodule Absinthe.Subscription.Local do
     end)
 
     for {field, key_strategy} <- subscribed_fields,
-    {topic, doc} <- get_docs(pubsub, field, mutation_result, key_strategy) |> IO.inspect do
+    {topic, doc} <- get_docs(pubsub, field, mutation_result, key_strategy) do
 
       root_value = Map.merge(doc.resolution.root_value || %{}, root_value)
       doc = put_in(doc.resolution.root_value, root_value)
@@ -23,21 +23,25 @@ defmodule Absinthe.Subscription.Local do
         Absinthe.Phase.Document.Result,
       ]
 
-      try do
+      execution_result = try do
         {:ok, %{result: data}, _} = Absinthe.Pipeline.run(doc, pipeline)
 
-        data |> IO.inspect
-
-        # TODO: direct broadcast for local nodes only when we handle distribution
-        # MyApp.Pub
-        # |> Phoenix.PubSub.node_name()
-        # |> Phoenix.PubSub.direct_broadcast(MyApp.Pub, topic, %Phoenix.Socket.Broadcast{topic, event, payload})
-
-        :ok = pubsub.broadcast(topic, "subscription:data", %{subscription_id: topic, result: data})
+        {:ok, data}
       rescue
-        x ->
-          # not doing the right thing here yet
-          Logger.info(inspect(x))
+        exception ->
+          message = Exception.message(exception)
+          stacktrace = System.stacktrace |> Exception.format_stacktrace
+
+          Logger.error("""
+          #{message}
+
+          #{stacktrace}
+          """)
+          :error
+      end
+
+      with {:ok, data} <- execution_result do
+        :ok = pubsub.publish_subscription(topic, data)
       end
 
     end

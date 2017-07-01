@@ -5,7 +5,7 @@ defmodule Absinthe.Subscription.ProxySupervisor do
     Supervisor.start_link(__MODULE__, {pubsub, registry, pool_size})
   end
 
-  def init({pubsub, registry, pool_size}) do
+  def init({pubsub, _registry, pool_size}) do
     children = for shard <- 1..pool_size do
       worker(Absinthe.Subscription.Proxy, [pubsub, shard], id: shard)
     end
