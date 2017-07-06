@@ -7,7 +7,6 @@ defmodule Absinthe.Subscription.Local do
   # node.
 
   def publish_mutation(pubsub, subscribed_fields, mutation_result) do
-
     root_value = Map.new(subscribed_fields, fn {field, _} ->
       {field, mutation_result}
     end)

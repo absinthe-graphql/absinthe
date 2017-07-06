@@ -18,10 +18,10 @@ defmodule Absinthe.Subscription.Proxy do
     {:ok, %__MODULE__{pubsub: pubsub}}
   end
 
-  def handle_info(%{payload: %{node: src_node}}, state) when src_node == node() do
+  def handle_info(%{node: src_node}, state) when src_node == node() do
     {:noreply, state}
   end
-  def handle_info(%{payload: payload}, state) do
+  def handle_info(payload, state) do
     Subscription.Local.publish_mutation(state.pubsub, payload.subscribed_fields, payload.mutation_result)
     {:noreply, state}
   end

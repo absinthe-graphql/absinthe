@@ -5,9 +5,11 @@ defmodule Absinthe.Subscription do
   defdelegate start_link(pubsub), to: Subscription.Supervisor
 
   @doc "Publish a mutation"
-  def publish_mutation(pubsub, resolution_info, mutation_result) do
-    subscribed_fields = get_subscription_fields(resolution_info)
-
+  def publish_mutation(pubsub, %Absinthe.Resolution{} = info, mutation_result) do
+    subscribed_fields = get_subscription_fields(info)
+    publish_mutation(pubsub, subscribed_fields, mutation_result)
+  end
+  def publish_mutation(pubsub, subscribed_fields, mutation_result) do
     _ = publish_remote(pubsub, subscribed_fields, mutation_result)
     _ = Subscription.Local.publish_mutation(pubsub, subscribed_fields, mutation_result)
     :ok
@@ -47,16 +49,7 @@ defmodule Absinthe.Subscription do
 
     proxy_topic = Subscription.Proxy.topic(shard)
 
-    # we need to include the current node as part of the broadcast.
-    # This is because this broadcast will also be picked up by proxies within the
-    # current node, and they need to be able to ignore this message.
-    payload = %{
-      node: node(),
-      subscribed_fields: subscribed_fields,
-      mutation_result: mutation_result,
-    }
-
-    :ok = pubsub.publish_mutation(proxy_topic, payload)
+    :ok = pubsub.publish_mutation(proxy_topic, subscribed_fields, mutation_result)
   end
 
   ## Middleware callback
