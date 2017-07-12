@@ -1,4 +1,6 @@
 defmodule Absinthe.Subscription.Proxy do
+  @moduledoc false
+
   use GenServer
 
   defstruct [
@@ -22,7 +24,7 @@ defmodule Absinthe.Subscription.Proxy do
     {:noreply, state}
   end
   def handle_info(payload, state) do
-    Subscription.Local.publish_mutation(state.pubsub, payload.subscribed_fields, payload.mutation_result)
+    Subscription.Local.publish_mutation(state.pubsub, payload.mutation_result, payload.subscribed_fields)
     {:noreply, state}
   end
 end

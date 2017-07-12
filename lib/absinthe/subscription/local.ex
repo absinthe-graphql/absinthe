@@ -6,7 +6,7 @@ defmodule Absinthe.Subscription.Local do
   # This module handles running and broadcasting documents that are local to this
   # node.
 
-  def publish_mutation(pubsub, subscribed_fields, mutation_result) do
+  def publish_mutation(pubsub, mutation_result, subscribed_fields) do
     root_value = Map.new(subscribed_fields, fn {field, _} ->
       {field, mutation_result}
     end)
@@ -48,9 +48,12 @@ defmodule Absinthe.Subscription.Local do
     :ok
   end
 
-  defp get_docs(pubsub, field, mutation_result, [topic: topic_fun]) do
-    key = {field, topic_fun.(mutation_result)}
-    Absinthe.Subscription.get(pubsub, key)
+  defp get_docs(pubsub, field, mutation_result, [topic: topic_fun]) when is_function(topic_fun, 1) do
+    key = topic_fun.(mutation_result)
+    Absinthe.Subscription.get(pubsub, {field, key})
+  end
+  defp get_docs(pubsub, field, _mutation_result, key) do
+    Absinthe.Subscription.get(pubsub, {field, key})
   end
 
 end

@@ -33,12 +33,20 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
+  @doc """
+  Set the topic function for a subscription field. See the `subscription/2` macro
+  docs for details
+  """
   defmacro topic(topic_fun) do
     __CALLER__.module
     |> Scope.put_attribute(:topic, topic_fun)
     :ok
   end
 
+  @doc """
+  Set a trigger for a subscription field. See the `subscription/2` macro
+  docs for details
+  """
   defmacro trigger(mutations, attrs) do
     env = __CALLER__
     Scope.put_attribute(env.module, :triggers, {List.wrap(mutations), attrs}, accumulate: true)
@@ -1119,6 +1127,48 @@ defmodule Absinthe.Schema.Notation do
   @placement {:import_fields, [under: [:input_object, :interface, :object]]}
   @doc """
   Import fields from another object
+
+  ## Example
+  ```
+  object :news_queries do
+    field :all_links, list_of(:link)
+    field :main_story, :link
+  end
+
+  object :admin_queries do
+    field :users, list_of(:user)
+    field :pending_posts, list_of(:post)
+  end
+
+  query do
+    import_fields :news_queries
+    import_fields :admin_queries
+  end
+  ```
+
+  Import fields can also be used on objects created inside other modules that you
+  have used import_types on.
+
+  ```
+  defmodule MyApp.Schema.NewsTypes do
+    use Absinthe.Schema.Notation
+
+    object :news_queries do
+      field :all_links, list_of(:link)
+      field :main_story, :link
+    end
+  end
+  defmodule MyApp.Schema.Schema do
+    use Absinthe.Schema
+
+    import_types MyApp.Schema.NewsTypes
+
+    query do
+      import_fields :news_queries
+      # ...
+    end
+  end
+  ```
   """
   defmacro import_fields(type_name, opts \\ []) do
     __CALLER__

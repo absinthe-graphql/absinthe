@@ -4,14 +4,16 @@ defmodule Absinthe.Subscription do
 
   defdelegate start_link(pubsub), to: Subscription.Supervisor
 
-  @doc "Publish a mutation"
-  def publish_mutation(pubsub, %Absinthe.Resolution{} = info, mutation_result) do
+  @doc """
+  Publish a mutation
+  """
+  def publish(pubsub, mutation_result, %Absinthe.Resolution{} = info) do
     subscribed_fields = get_subscription_fields(info)
-    publish_mutation(pubsub, subscribed_fields, mutation_result)
+    publish(pubsub, mutation_result, subscribed_fields)
   end
-  def publish_mutation(pubsub, subscribed_fields, mutation_result) do
-    _ = publish_remote(pubsub, subscribed_fields, mutation_result)
-    _ = Subscription.Local.publish_mutation(pubsub, subscribed_fields, mutation_result)
+  def publish(pubsub, mutation_result, subscribed_fields) do
+    _ = publish_remote(pubsub, mutation_result, subscribed_fields)
+    _ = Subscription.Local.publish_mutation(pubsub, mutation_result, subscribed_fields)
     :ok
   end
 
@@ -25,6 +27,12 @@ defmodule Absinthe.Subscription do
     |> Registry.register(field_key, {doc_id, doc})
   end
 
+  def unsubscribe(pubsub, doc_id) do
+    # TODO: do.
+    :ok
+  end
+
+  @doc false
   def get(pubsub, key) do
     pubsub
     |> registry_name
@@ -39,7 +47,7 @@ defmodule Absinthe.Subscription do
   end
 
   @doc false
-  def publish_remote(pubsub, subscribed_fields, mutation_result) do
+  def publish_remote(pubsub, mutation_result, subscribed_fields) do
     {:ok, pool_size} =
       pubsub
       |> registry_name
@@ -49,14 +57,14 @@ defmodule Absinthe.Subscription do
 
     proxy_topic = Subscription.Proxy.topic(shard)
 
-    :ok = pubsub.publish_mutation(proxy_topic, subscribed_fields, mutation_result)
+    :ok = pubsub.publish_mutation(proxy_topic, mutation_result, subscribed_fields)
   end
 
   ## Middleware callback
   @doc false
   def call(%{state: :resolved, errors: [], value: value} = res, _) do
     if pubsub = res.context[:pubsub] do
-      publish_mutation(pubsub, res, value)
+      __MODULE__.publish(pubsub, value, res)
     end
     res
   end

@@ -285,6 +285,17 @@ defmodule Absinthe.Schema do
   @default_mutation_name "RootMutationType"
   @doc """
   Defines a root Mutation object
+
+  ```
+  mutation do
+    field :create_user, :user do
+      arg :name, non_nulL(:string)
+      arg :email, non_nulL(:string)
+
+      resolve &MyApp.Web.BlogResolvers.create_user/2
+    end
+  end
+  ```
   """
   defmacro mutation(raw_attrs \\ [name: @default_mutation_name], [do: block]) do
     record_mutation(__CALLER__, raw_attrs, block)
@@ -301,6 +312,62 @@ defmodule Absinthe.Schema do
   @default_subscription_name "RootSubscriptionType"
   @doc """
   Defines a root Subscription object
+
+  Subscriptions in GraphQL let a client submit a document to the server that
+  outlines what data they want to receive in the event of particular updates.
+
+  For a full walk through of how to setup your project with subscriptions and
+  Phoenix see the Absinthe.Phoenix project moduledoc.
+
+  When you push a mutation, you can have selections on that mutation result
+  to get back data you need, IE
+
+  ```
+  mutation {
+    createUser(accountId: 1, name: "bob") {
+      id
+      account { name}
+    }
+  }
+  ```
+
+  However, what if you want to know whe OTHER people create a new user, so that
+  your UI can update as well. This is the point of subscriptions.
+
+  ```
+  subscription {
+    newUsers {
+      id
+      account { name}
+    }
+  }
+  ```
+
+  The job of the subscription macros then is to give you the tools to connect
+  subscription documents with the values that will drive them. In the last example
+  we would get all users for all accounts, but you could imagine wanting just
+  `newUsers(accountId: 2)`.
+
+  In your schema you articulate the interests of a subscription via the `topic`
+  macro:
+
+  ```
+  subscription do
+    field :new_users, :user do
+      arg :account_id, non_null(:id)
+
+      topic fn args ->
+        args.account_id
+      end
+    end
+  end
+  ```
+  The topic can be any term. You can broadcast a value manually to this subscription
+  by doing
+
+  ```
+  Absinthe.Subscription.publish(pubsub, user, [new_users: user.account_id])
+  ```
   """
   defmacro subscription(raw_attrs \\ [name: @default_subscription_name], [do: block]) do
     record_subscription(__CALLER__, raw_attrs, block)

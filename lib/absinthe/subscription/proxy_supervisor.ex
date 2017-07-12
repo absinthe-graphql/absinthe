@@ -1,4 +1,6 @@
 defmodule Absinthe.Subscription.ProxySupervisor do
+  @moduledoc false
+
   use Supervisor
 
   def start_link(pubsub, registry, pool_size) do

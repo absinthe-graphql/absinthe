@@ -1,4 +1,6 @@
 defmodule Absinthe.Subscription.Supervisor do
+  @moduledoc false
+
   use Supervisor
 
   def start_link(pubsub, pool_size \\ System.schedulers_online() * 2) do
