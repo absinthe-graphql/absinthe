@@ -27,8 +27,10 @@ defmodule Absinthe.Execution.SubscriptionTest do
       thing(clientId: $clientId)
     }
     """
-    it "can be executed" do
-      assert {:ok, %{data: %{"thing" => "subscribed-abc"}}} == run(@query, Schema, variables: %{"clientId" => "abc"})
+    it "errors for the moment" do
+      assert_raise(RuntimeError, fn ->
+        run(@query, Schema, variables: %{"clientId" => "abc"})
+      end)
     end
   end
 

@@ -221,7 +221,11 @@ defmodule Absinthe do
 
   @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, run_opts) :: {:ok, result_t} | {:error, String.t}
   def run(document, schema, options \\ []) do
-    pipeline = Absinthe.Pipeline.for_document(schema, options)
+    pipeline =
+      schema
+      |> Absinthe.Pipeline.for_document(options)
+      |> Absinthe.Pipeline.insert_before(Absinthe.Phase.Document.Execution.Resolution, {Absinthe.Phase.SubscribeSelf, options})
+
     case Absinthe.Pipeline.run(document, pipeline) do
       {:ok, %{result: result}, _phases} ->
         {:ok, result}

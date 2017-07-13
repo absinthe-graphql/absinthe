@@ -72,6 +72,7 @@ defmodule Absinthe.Schema.Notation.Writer do
       env.module
       |> Module.get_attribute(:absinthe_definitions)
       |> Enum.map(&update_description(&1, descriptions))
+      |> add_mutation_triggers
 
     {definitions, errors} =
       {definitions, []}
@@ -85,6 +86,42 @@ defmodule Absinthe.Schema.Notation.Writer do
     }
 
     Enum.reduce(definitions, info, &do_build_info/2)
+  end
+
+  defp add_mutation_triggers(definitions) do
+    subscription = Enum.find(definitions, fn definition ->
+      definition.identifier == :subscription
+    end)
+    mutation = Enum.find(definitions, fn definition ->
+      definition.identifier == :mutation
+    end)
+
+    if subscription && mutation do
+      mut_fields = mutation.attrs[:fields]
+      |> Enum.map(fn {mut_field_name, mut_field_attrs} ->
+        triggers =
+          for {sub_field_name, sub_field_attrs} <- (subscription.attrs[:fields] || []),
+          {mutation_names, config} <- (sub_field_attrs[:triggers] || []),
+          mut_field_name in mutation_names,
+          do: {sub_field_name, config}
+
+        case triggers do
+          [] ->
+            {mut_field_name, mut_field_attrs}
+          triggers ->
+            {mut_field_name, Keyword.put(mut_field_attrs, :triggers, triggers)}
+        end
+      end)
+
+      new_mutation = put_in(mutation.attrs[:fields], mut_fields)
+
+      Enum.map(definitions, fn
+        %{identifier: :mutation} -> new_mutation
+        definition -> definition
+      end)
+    else
+      definitions
+    end
   end
 
   defp type_functions(definition) do

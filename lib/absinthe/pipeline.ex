@@ -62,6 +62,7 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Validation.UniqueVariableNames,
       # Apply Input
       {Phase.Document.Variables, options},
+      Phase.Document.Validation.ProvidedNonNullVariables,
       Phase.Document.Arguments.Normalize,
       # Map to Schema
       {Phase.Schema, options},
@@ -215,16 +216,16 @@ defmodule Absinthe.Pipeline do
     |> Enum.filter(&(not match_phase?(phase, &1)))
   end
 
-  @spec insert_before(t, Phase.t, Phase.t) :: t
+  @spec insert_before(t, Phase.t, Phase.t | [Phase.t]) :: t
   def insert_before(pipeline, phase, additional) do
     beginning = before(pipeline, phase)
-    beginning ++ [additional] ++ (pipeline -- beginning)
+    beginning ++ List.wrap(additional) ++ (pipeline -- beginning)
   end
 
-  @spec insert_after(t, Phase.t, Phase.t) :: t
+  @spec insert_after(t, Phase.t, Phase.t | [Phase.t]) :: t
   def insert_after(pipeline, phase, additional) do
     beginning = upto(pipeline, phase)
-    beginning ++ [additional] ++ (pipeline -- beginning)
+    beginning ++ List.wrap(additional) ++ (pipeline -- beginning)
   end
 
   @spec reject(t, Regex.t) :: t

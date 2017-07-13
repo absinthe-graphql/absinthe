@@ -1,7 +1,8 @@
-%{"benchfella": {:hex, :benchfella, "0.3.4", "41d2c017b361ece5225b5ba2e3b30ae53578c57c6ebc434417b4f1c2c94cf4f3", [:mix], []},
-  "dialyze": {:hex, :dialyze, "0.2.1", "9fb71767f96649020d769db7cbd7290059daff23707d6e851e206b1fdfa92f9d", [], []},
-  "earmark": {:hex, :earmark, "1.2.1", "7ad3f203ab84d31832814483c834e006cf88949f061a4b50d7e783147572280f", [:mix], []},
-  "ex_doc": {:hex, :ex_doc, "0.15.1", "d5f9d588fd802152516fccfdb96d6073753f77314fcfee892b15b6724ca0d596", [:mix], [{:earmark, "~> 1.1", [hex: :earmark, optional: false]}]},
-  "ex_spec": {:hex, :ex_spec, "2.0.1", "8bdbd6fa85995fbf836ed799571d44be6f9ebbcace075209fd0ad06372c111cf", [:mix], []},
-  "fs": {:hex, :fs, "2.12.0", "ad631efacc9a5683c8eaa1b274e24fa64a1b8eb30747e9595b93bec7e492e25e", [:rebar3], []},
-  "mix_test_watch": {:hex, :mix_test_watch, "0.4.0", "7e44b681b0238999d4c39b5beed77b4ac45aef1c112a763aae414bdb5bc34523", [:mix], [{:fs, "~> 2.12", [hex: :fs, optional: false]}]}}
+%{"benchfella": {:hex, :benchfella, "0.3.4", "41d2c017b361ece5225b5ba2e3b30ae53578c57c6ebc434417b4f1c2c94cf4f3", [:mix], [], "hexpm"},
+  "dialyze": {:hex, :dialyze, "0.2.1", "9fb71767f96649020d769db7cbd7290059daff23707d6e851e206b1fdfa92f9d", [], [], "hexpm"},
+  "earmark": {:hex, :earmark, "1.2.2", "f718159d6b65068e8daeef709ccddae5f7fdc770707d82e7d126f584cd925b74", [:mix], [], "hexpm"},
+  "ex_doc": {:hex, :ex_doc, "0.16.2", "3b3e210ebcd85a7c76b4e73f85c5640c011d2a0b2f06dcdf5acdb2ae904e5084", [:mix], [{:earmark, "~> 1.1", [hex: :earmark, repo: "hexpm", optional: false]}], "hexpm"},
+  "ex_spec": {:hex, :ex_spec, "2.0.1", "8bdbd6fa85995fbf836ed799571d44be6f9ebbcace075209fd0ad06372c111cf", [:mix], [], "hexpm"},
+  "fs": {:hex, :fs, "2.12.0", "ad631efacc9a5683c8eaa1b274e24fa64a1b8eb30747e9595b93bec7e492e25e", [:rebar3], [], "hexpm"},
+  "mix_test_watch": {:hex, :mix_test_watch, "0.4.0", "7e44b681b0238999d4c39b5beed77b4ac45aef1c112a763aae414bdb5bc34523", [:mix], [{:fs, "~> 2.12", [hex: :fs, repo: "hexpm", optional: false]}], "hexpm"},
+  "phoenix_pubsub": {:hex, :phoenix_pubsub, "1.0.2", "bfa7fd52788b5eaa09cb51ff9fcad1d9edfeb68251add458523f839392f034c1", [:mix], [], "hexpm"}}

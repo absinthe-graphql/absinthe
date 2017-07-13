@@ -9,7 +9,7 @@ defmodule Absinthe.Phase.ParseTest do
     assert {:error, _} = run("{ user(id: 2 { name } }")
   end
 
-  @reserved ~w(query mutation fragment on implements interface union scalar enum input extend null)
+  @reserved ~w(query mutation fragment on implements interface union scalar enum input extend)
   it "can parse queries with arguments and variables that are 'reserved words'" do
     @reserved
     |> Enum.each(fn
@@ -74,6 +74,15 @@ defmodule Absinthe.Phase.ParseTest do
   }
   """
   it "can parse 'on' in different contexts" do
+    assert {:ok, _} = run(@query)
+  end
+
+  @query """
+  query QueryWithNullLiterals($name: String = null) {
+    fieldWithNullLiteral(name: $name, literalNull: null) @direct(arg: null)
+  }
+  """
+  it "parses null value" do
     assert {:ok, _} = run(@query)
   end
 
@@ -156,7 +165,5 @@ defmodule Absinthe.Phase.ParseTest do
       {:ok, input}
     end
   end
-
-
 
 end

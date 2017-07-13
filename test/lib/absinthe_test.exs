@@ -253,14 +253,22 @@ defmodule AbsintheTest do
 
   it "reports variables that are never used" do
     query = """
-      query GimmeThingByVariable($thingId: String!, $other: String!) {
+      query GimmeThingByVariable($thingId: String, $other: String!) {
         thing(id: $thingId) {
           name
         }
       }
     """
     result = run(query, Things, variables: %{"thingId" => "bar"})
-    assert_result {:ok, %{errors: [%{message: ~s(Variable "other" is never used in operation "GimmeThingByVariable".)}]}}, result
+    assert_result {
+      :ok,
+      %{
+        errors: [
+          %{message: "Variable \"other\": Expected non-null, found null."},
+          %{message: ~s(Variable "other" is never used in operation "GimmeThingByVariable".)}
+        ]
+      }
+    }, result
   end
 
   it "reports parser errors from parse" do

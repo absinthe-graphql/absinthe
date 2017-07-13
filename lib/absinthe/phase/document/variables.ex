@@ -60,12 +60,11 @@ defmodule Absinthe.Phase.Document.Variables do
   def update_operation(%{variable_definitions: variable_definitions} = operation, variables) do
     {variable_definitions, provided_values} = Enum.map_reduce(variable_definitions, %{}, fn
       node, acc ->
-        provided_value =
-          variables
-          |> Map.get(node.name, node.default_value)
-          |> Blueprint.Input.parse
-
-        {%{node | provided_value: provided_value}, Map.put(acc, node.name, provided_value)}
+        provided_value = calculate_value(node, variables)
+        {
+          %{node | provided_value: provided_value},
+          Map.put(acc, node.name, provided_value)
+        }
     end)
 
     %{operation |
@@ -73,4 +72,19 @@ defmodule Absinthe.Phase.Document.Variables do
       provided_values: provided_values
     }
   end
+
+  defp calculate_value(node, variables) do
+    case Map.fetch(variables, node.name) do
+      :error ->
+        node.default_value
+      {:ok, value} ->
+        value
+        |> preparse_nil
+        |> Blueprint.Input.parse
+    end
+  end
+
+  defp preparse_nil(nil), do: %Blueprint.Input.Null{}
+  defp preparse_nil(other), do: other
+
 end
