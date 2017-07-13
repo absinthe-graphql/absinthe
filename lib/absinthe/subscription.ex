@@ -6,6 +6,24 @@ defmodule Absinthe.Subscription do
   project see the Absinthe.Phoenix package.
 
   Define in your schema via `Absinthe.Schema.subscription/2`
+
+  ## Beta Limitations
+
+  There are a couple of limitations to the beta release of subscriptions that
+  are worth keeping in mind if you want to use this in production:
+
+  By design, all subscription docs triggered by a mutation are run inside the
+  mutation process as a form of back pressure.
+
+  At the moment however database batching does not happen across the set of
+  subscription docs. Thus if you have a lot of subscription docs and they each
+  do a lot of extra DB lookups you're going to delay incoming mutation responses
+  by however long it takes to do all that work.
+
+  Before the final version of 1.4.0 we want
+
+  - Batching across subscriptions
+  - More user control over back pressure / async balance.
   """
 
   require Logger
@@ -20,6 +38,25 @@ defmodule Absinthe.Subscription do
 
   @doc """
   Publish a mutation
+
+  This function is generally used when trying to publish to one or more subscription
+  fields "out of band" from any particular mutation.
+
+  ## Examples
+
+  Note: As with all subscription examples if you're using Absinthe.Phoenix `pubsub`
+  will be `MyApp.Web.Endpoint`.
+
+  ```
+  Absinthe.Subscription.publish(pubsub, user, [new_users: user.account_id])
+  ```
+  ```
+  # publish to two subscription fields
+  Absinthe.Subscription.publish(pubsub, user, [
+    new_users: user.account_id,
+    other_user_subscription_field: user.id,
+  ])
+  ```
   """
   @spec publish(Absinthe.Subscription.Pubsub.t, term, Absinthe.Resolution.t | [subscription_field_spec]) :: :ok
   def publish(pubsub, mutation_result, %Absinthe.Resolution{} = info) do
