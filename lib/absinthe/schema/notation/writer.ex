@@ -109,7 +109,7 @@ defmodule Absinthe.Schema.Notation.Writer do
           [] ->
             {mut_field_name, mut_field_attrs}
           triggers ->
-            {mut_field_name, [{:triggers, triggers} | mut_field_attrs]}
+            {mut_field_name, Keyword.put(mut_field_attrs, :triggers, triggers)}
         end
       end)
 
