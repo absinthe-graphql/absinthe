@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.4.0
+Status: Beta
+
+- Enhancement: Subscriptions! See the Absinthe.Phoenix project for getting started info
+- Enhancement: Null literal support [as laid out in the October 2016 GraphQL Specification](http://facebook.github.io/graphql/#sec-Null-Value)
+
 ## v1.3.2
 
 - Bug Fix: Handle OTP 20.0 warnings.

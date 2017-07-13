@@ -27,7 +27,7 @@ defmodule Absinthe.Subscription do
     |> Registry.register(field_key, {doc_id, doc})
   end
 
-  def unsubscribe(pubsub, doc_id) do
+  def unsubscribe(_pubsub, _doc_id) do
     # TODO: do.
     :ok
   end
