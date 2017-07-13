@@ -1,12 +1,27 @@
 defmodule Absinthe.Subscription do
+  @moduledoc """
+  Real time updates via GraphQL
+
+  For a how to guide on getting started with Absinthe.Subscriptions in your phoenix
+  project see the Absinthe.Phoenix package.
+
+  Define in your schema via `Absinthe.Schema.subscription/2`
+  """
+
   require Logger
   alias __MODULE__
 
+  @doc """
+  Add Absinthe.Subscription to your process tree.
+  """
   defdelegate start_link(pubsub), to: Subscription.Supervisor
+
+  @type subscription_field_spec :: {atom, term | ((term) -> term)}
 
   @doc """
   Publish a mutation
   """
+  @spec publish(Absinthe.Subscription.Pubsub.t, term, Absinthe.Resolution.t | [subscription_field_spec]) :: :ok
   def publish(pubsub, mutation_result, %Absinthe.Resolution{} = info) do
     subscribed_fields = get_subscription_fields(info)
     publish(pubsub, mutation_result, subscribed_fields)
@@ -21,6 +36,7 @@ defmodule Absinthe.Subscription do
     resolution_info.definition.schema_node.triggers || []
   end
 
+  @doc false
   def subscribe(pubsub, field_key, doc_id, doc) do
     pubsub
     |> registry_name

@@ -11,6 +11,8 @@ defmodule Absinthe.Subscription.Pubsub do
   Note: with the Absinthe.Phoenix package a Phoenix endpoint can be used for pubsub.
   """
 
+  @type t :: module()
+
   @doc """
   Subscribe the current process via a given topic
   """
