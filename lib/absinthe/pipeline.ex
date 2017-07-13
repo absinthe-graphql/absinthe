@@ -225,7 +225,7 @@ defmodule Absinthe.Pipeline do
   @spec insert_after(t, Phase.t, Phase.t) :: t
   def insert_after(pipeline, phase, additional) do
     beginning = upto(pipeline, phase)
-    beginning ++ [additional] ++ (pipeline -- beginning)
+    beginning ++ List.wrap(additional) ++ (pipeline -- beginning)
   end
 
   @spec reject(t, Regex.t) :: t

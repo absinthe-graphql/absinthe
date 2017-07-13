@@ -173,6 +173,12 @@ defmodule Absinthe.Schema do
         |> Absinthe.Schema.ensure_middleware(field, object)
         |> __do_absinthe_middleware__(field, object)
       end
+      def __absinthe_middleware__(middleware, field, %{identifier: :mutation} = object) do
+        # mutation objects should run publication triggers
+        middleware
+        |> Absinthe.Subscription.add_middleware
+        |> __do_absinthe_middleware__(field, object)
+      end
       def __absinthe_middleware__(middleware, field, object) do
         __do_absinthe_middleware__(middleware, field, object)
       end
@@ -279,6 +285,17 @@ defmodule Absinthe.Schema do
   @default_mutation_name "RootMutationType"
   @doc """
   Defines a root Mutation object
+
+  ```
+  mutation do
+    field :create_user, :user do
+      arg :name, non_nulL(:string)
+      arg :email, non_nulL(:string)
+
+      resolve &MyApp.Web.BlogResolvers.create_user/2
+    end
+  end
+  ```
   """
   defmacro mutation(raw_attrs \\ [name: @default_mutation_name], [do: block]) do
     record_mutation(__CALLER__, raw_attrs, block)
@@ -295,17 +312,102 @@ defmodule Absinthe.Schema do
   @default_subscription_name "RootSubscriptionType"
   @doc """
   Defines a root Subscription object
-  """
-  defmacro subscription(raw_attrs, [do: block]) do
-    attrs = raw_attrs
-    |> Keyword.put_new(:name, @default_subscription_name)
-    Absinthe.Schema.Notation.scope(__CALLER__, :object, :subscription, attrs, block)
+
+  Subscriptions in GraphQL let a client submit a document to the server that
+  outlines what data they want to receive in the event of particular updates.
+
+  For a full walk through of how to setup your project with subscriptions and
+  Phoenix see the Absinthe.Phoenix project moduledoc.
+
+  When you push a mutation, you can have selections on that mutation result
+  to get back data you need, IE
+
+  ```
+  mutation {
+    createUser(accountId: 1, name: "bob") {
+      id
+      account { name}
+    }
+  }
+  ```
+
+  However, what if you want to know whe OTHER people create a new user, so that
+  your UI can update as well. This is the point of subscriptions.
+
+  ```
+  subscription {
+    newUsers {
+      id
+      account { name}
+    }
+  }
+  ```
+
+  The job of the subscription macros then is to give you the tools to connect
+  subscription documents with the values that will drive them. In the last example
+  we would get all users for all accounts, but you could imagine wanting just
+  `newUsers(accountId: 2)`.
+
+  In your schema you articulate the interests of a subscription via the `topic`
+  macro:
+
+  ```
+  subscription do
+    field :new_users, :user do
+      arg :account_id, non_null(:id)
+
+      topic fn args ->
+        args.account_id
+      end
+    end
   end
-  @doc """
-  Defines a root Subscription object
+  ```
+  The topic can be any term. You can broadcast a value manually to this subscription
+  by doing
+
+  ```
+  Absinthe.Subscription.publish(pubsub, user, [new_users: user.account_id])
+  ```
+
+  It's pretty common to want to associate particular mutations as the triggers
+  for one or more subscriptions, so Absinthe provides some macros to help with
+  that too.
+
+  ```
+  subscription do
+    field :new_users, :user do
+      arg :account_id, non_null(:id)
+
+      topic fn args ->
+        args.account_id
+      end
+
+      trigger :create_user, topic: fn user ->
+        user.account_id
+      end
+    end
+  end
+  ```
+
+  The idea with a trigger is that it takes either a single mutation `:create_user`
+  or a list of mutations `[:create_user, :blah_user, ...]` and a topic function.
+  This function returns a value that is used to lookup documents on the basis of
+  the topic they returned from the `topic` macro.
+
+  Note that a subscription field can have `trigger` as many trigger blocks as you
+  need, in the event that different groups of mutations return different results
+  that require different topic functions.
   """
-  defmacro subscription([do: block]) do
-    Absinthe.Schema.Notation.scope(__CALLER__, :object, :subscription, [name: @default_subscription_name], block)
+  defmacro subscription(raw_attrs \\ [name: @default_subscription_name], [do: block]) do
+    record_subscription(__CALLER__, raw_attrs, block)
+  end
+
+  defp record_subscription(env, raw_attrs, block) do
+    attrs =
+      raw_attrs
+      |> Keyword.put_new(:name, @default_subscription_name)
+      |> Keyword.put(:identifier, :subscription)
+    Absinthe.Schema.Notation.scope(env, :object, :subscription, attrs, block)
   end
 
   # Lookup a directive that in used by/available to a schema
