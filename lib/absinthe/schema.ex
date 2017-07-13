@@ -368,6 +368,35 @@ defmodule Absinthe.Schema do
   ```
   Absinthe.Subscription.publish(pubsub, user, [new_users: user.account_id])
   ```
+
+  It's pretty common to want to associate particular mutations as the triggers
+  for one or more subscriptions, so Absinthe provides some macros to help with
+  that too.
+
+  ```
+  subscription do
+    field :new_users, :user do
+      arg :account_id, non_null(:id)
+
+      topic fn args ->
+        args.account_id
+      end
+
+      trigger :create_user, topic: fn user ->
+        user.account_id
+      end
+    end
+  end
+  ```
+
+  The idea with a trigger is that it takes either a single mutation `:create_user`
+  or a list of mutations `[:create_user, :blah_user, ...]` and a topic function.
+  This function returns a value that is used to lookup documents on the basis of
+  the topic they returned from the `topic` macro.
+
+  Note that a subscription field can have `trigger` as many trigger blocks as you
+  need, in the event that different groups of mutations return different results
+  that require different topic functions.
   """
   defmacro subscription(raw_attrs \\ [name: @default_subscription_name], [do: block]) do
     record_subscription(__CALLER__, raw_attrs, block)

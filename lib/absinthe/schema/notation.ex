@@ -44,8 +44,38 @@ defmodule Absinthe.Schema.Notation do
   end
 
   @doc """
-  Set a trigger for a subscription field. See the `subscription/2` macro
-  docs for details
+  Set a trigger for a subscription field.
+
+  It accepts one or more mutation field names, and can be called more than once.
+
+  ```
+  mutation do
+    field :gps_event, :gps_event
+    field :user_checkin, :user
+  end
+  subscription do
+    field :location_update, :user do
+      arg :user_id, non_null(:id)
+
+      topic fn args ->
+        args.user_id
+      end
+
+      trigger :gps_event, topic: fn event ->
+        event.user_id
+      end
+
+      trigger :user_checkin, topic: fn user ->
+        user.id
+      end
+    end
+  end
+  ```
+
+  Trigger functions are only called once per event, so database calls within
+  them do not present a significant burden. 
+
+  See the `subscription/2` macro docs for additional details
   """
   defmacro trigger(mutations, attrs) do
     env = __CALLER__
