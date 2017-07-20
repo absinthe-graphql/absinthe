@@ -125,7 +125,7 @@ defmodule Absinthe.Subscription do
   ## Middleware callback
   @doc false
   def call(%{state: :resolved, errors: [], value: value} = res, _) do
-    if pubsub = res.context[:pubsub] do
+    if pubsub = res.context[:pubsub] && Process.whereis(pubsub) do
       __MODULE__.publish(pubsub, value, res)
     end
     res
