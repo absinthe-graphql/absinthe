@@ -26,6 +26,8 @@ defmodule Absinthe.Subscription do
   - More user control over back pressure / async balance.
   """
 
+  alias Absinthe.Subscription.Registry
+
   require Logger
   alias __MODULE__
 
@@ -78,82 +80,18 @@ defmodule Absinthe.Subscription do
     registry = pubsub |> registry_name
 
     {:ok, _} = Registry.register(registry, field_key, {doc_id, doc})
-    {:ok, _} = Registry.register(registry, doc_id, field_key)
+    {:ok, _} = Registry.register(registry, {self(), doc_id}, field_key)
   end
 
-  @doc """
-  Unsubscribe the current process from a given doc id
-  """
+  @doc false
   def unsubscribe(pubsub, doc_id) do
     registry = pubsub |> registry_name
-
-    for {_, field_key} <- Registry.lookup(registry, doc_id) do
-      do_unsubscribe(registry, field_key, doc_id)
-    end
-    Registry.unregister(registry, doc_id)
-    :ok
-  end
-
-  # TODO: Replace with Registry.match_delete when it exists
-  def do_unsubscribe(registry, key, doc_id) do
     self = self()
-    spec = {key, {self, {doc_id, :_}}}
-
-    {kind, partitions, key_ets, pid_ets, listeners} = info!(registry)
-    {key_partition, pid_partition} = partitions(kind, key, self, partitions)
-    key_ets = key_ets || key_ets!(registry, key_partition)
-    {pid_server, pid_ets} = pid_ets || pid_ets!(registry, pid_partition)
-
-    # Remove first from the key_ets because in case of crashes
-    # the pid_ets will still be able to clean up. The last step is
-    # to clean if we have no more entries.
-    true = :ets.match_delete(key_ets, spec)
-    true = :ets.delete_object(pid_ets, {self, key, key_ets})
-
-    unlink_if_unregistered(pid_server, pid_ets, self)
-
-    for listener <- listeners do
-      Kernel.send(listener, {:unregister, registry, key, self})
+    for {^self, field_key} <- Registry.lookup(registry, {self, doc_id}) do
+      Registry.unregister_match(registry, field_key, {doc_id, :_})
     end
+    Registry.unregister(registry, {self, doc_id})
     :ok
-  end
-
-  @all_info -1
-  defp info!(registry) do
-    try do
-      :ets.lookup_element(registry, @all_info, 2)
-    catch
-      :error, :badarg ->
-        raise ArgumentError, "unknown registry: #{inspect registry}"
-    end
-  end
-
-  defp unlink_if_unregistered(pid_server, pid_ets, self) do
-    unless :ets.member(pid_ets, self) do
-      Process.unlink(pid_server)
-    end
-  end
-
-  defp partitions(:unique, key, pid, partitions) do
-    {hash(key, partitions), hash(pid, partitions)}
-  end
-  defp partitions(:duplicate, _key, pid, partitions) do
-    partition = hash(pid, partitions)
-    {partition, partition}
-  end
-
-  defp key_ets!(registry, partition) do
-    :ets.lookup_element(registry, partition, 2)
-  end
-
-  defp pid_ets!(registry, partition) do
-    :ets.lookup_element(registry, partition, 3)
-  end
-
-  # @compile {:inline, hash: 2}
-
-  defp hash(term, limit) do
-    :erlang.phash2(term, limit)
   end
 
   @doc false
