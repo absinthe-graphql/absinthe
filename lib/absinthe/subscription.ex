@@ -83,16 +83,14 @@ defmodule Absinthe.Subscription do
     {:ok, _} = Registry.register(registry, {self(), doc_id}, field_key)
   end
 
-  @doc """
-  Unsubscribe the current process from a given doc id
-  """
+  @doc false
   def unsubscribe(pubsub, doc_id) do
     registry = pubsub |> registry_name
     self = self()
     for {^self, field_key} <- Registry.lookup(registry, {self, doc_id}) do
       Registry.unregister_match(registry, field_key, {doc_id, :_})
     end
-    Registry.unregister(registry, doc_id)
+    Registry.unregister(registry, {self, doc_id})
     :ok
   end
 
