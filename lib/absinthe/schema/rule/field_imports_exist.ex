@@ -39,7 +39,7 @@ defmodule Absinthe.Schema.Rule.FieldImportsExist do
   def explanation(%{data: %{artifact: msg}}) do
     """
       #{msg}
-    """ |> String.strip
+    """ |> String.trim
   end
 
   defp error(definition, ref) do
