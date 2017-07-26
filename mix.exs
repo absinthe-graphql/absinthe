@@ -39,7 +39,7 @@ defmodule Absinthe.Mixfile do
       {:benchfella, "~> 0.3.0", only: :dev},
       {:dialyze, "~> 0.2", only: :dev},
       {:phoenix_pubsub, ">= 0.0.0", only: :test},
-      {:mix_test_watch, "~> 0.4.0", only: [:test, :dev]}
+      {:mix_test_watch, "~> 0.4.1", only: [:test, :dev]}
     ]
   end
 end
