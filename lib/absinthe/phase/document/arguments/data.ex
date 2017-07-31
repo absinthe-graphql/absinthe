@@ -47,13 +47,9 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
     %{node | data: data_list}
   end
   def handle_node(%Input.Value{normalized: %Input.Object{fields: fields}} = node) do
-    data =
-      fields
-      |> Enum.filter_map(
-        &include_field?/1,
-        &{&1.schema_node.__reference__.identifier, &1.input_value.data}
-      )
-      |> Map.new
+    data = for field <- fields, include_field?(field), into: %{} do
+      {field.schema_node.__reference__.identifier, field.input_value.data}
+    end
 
     %{node | data: data}
   end
