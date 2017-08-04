@@ -158,6 +158,18 @@ defmodule Things do
   object :thing do
     description "A thing"
 
+    field :fail, :id do
+      @desc "the id we want this field to fail on"
+      arg :id, :id
+
+      resolve fn
+        %{id: id}, %{id: id}, _ ->
+          {:error, "fail"}
+        %{id: id}, _, _ ->
+          {:ok, id}
+      end
+    end
+
     field :id, non_null(:string),
       description: "The ID of the thing"
 

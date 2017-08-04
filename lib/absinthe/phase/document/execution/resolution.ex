@@ -104,9 +104,9 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   # walk list results
-  defp walk_results([value | values], bp_node, inner_type, info, [i | path], acc) do
+  defp walk_results([value | values], bp_node, inner_type, info, [i | sub_path] = path, acc) do
     {result, info} = walk_result(value, bp_node, inner_type, info, path)
-    walk_results(values, bp_node, inner_type, info, [i + 1 | path], [result | acc])
+    walk_results(values, bp_node, inner_type, info, [i + 1 | sub_path], [result | acc])
   end
   defp walk_results([], _, _, info, _, acc), do: {:lists.reverse(acc), info}
 

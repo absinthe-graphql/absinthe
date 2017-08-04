@@ -483,4 +483,21 @@ defmodule AbsintheTest do
     assert_result {:ok, %{errors: [%{message: "Cannot spread fragment \"Foo\" within itself via \"Bar\", \"Foo\"."}, %{message: "Cannot spread fragment \"Bar\" within itself via \"Foo\", \"Bar\"."}]}}, run(cycler, Things)
   end
 
+  it "can return errors with aliases" do
+    query = "mutation { foo: failingThing(type: WITH_CODE) { name } }"
+    assert_result {:ok, %{data: %{"foo" => nil}, errors: [%{code: 42, message: "In field \"failingThing\": Custom Error", path: ["foo"]}]}}, run(query, Things)
+  end
+
+  it "can return errors with indices" do
+    query = """
+    query AllTheThings {
+      things {
+        id
+        fail(id: "foo")
+      }
+    }
+    """
+    assert_result {:ok, %{data: %{"things" => [%{"id" => "bar", "fail" => "bar"}, %{"id" => "foo", "fail" => nil}]}, errors: [%{message: "In field \"fail\": fail", path: ["things", 1, "fail"]}]}}, run(query, Things)
+  end
+
 end
