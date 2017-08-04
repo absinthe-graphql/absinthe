@@ -5,6 +5,7 @@ Status: Beta
 
 - Enhancement: Subscriptions! See the Absinthe.Phoenix project for getting started info
 - Enhancement: Null literal support [as laid out in the October 2016 GraphQL Specification](http://facebook.github.io/graphql/#sec-Null-Value)
+- Enhancement: Errors now include path information. This path information can be accessed in resolvers via `Absinthe.Resolution.path/1`
 
 ## v1.3.2
 
