@@ -47,11 +47,11 @@ defmodule Absinthe.Phase.Document.Complexity.Result do
   end
 
   defp error(%{source_location: location} = node, complexity, max) do
-    Phase.Error.new(
-      __MODULE__,
-      error_message(node, complexity, max),
-      location: location
-    )
+    %Phase.Error{
+      phase: __MODULE__,
+      message: error_message(node, complexity, max),
+      locations: [location],
+    }
   end
 
   def error_message(node, complexity, max) do

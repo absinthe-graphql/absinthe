@@ -4,12 +4,12 @@ defmodule AbsintheTest do
 
   it "can return multiple errors" do
     query = "mutation { failingThing(type: MULTIPLE) { name } }"
-    assert_result {:ok, %{data: %{"failingThing" => nil}, errors: [%{message: "In field \"failingThing\": one"}, %{message: "In field \"failingThing\": two"}]}}, run(query, Things)
+    assert_result {:ok, %{data: %{"failingThing" => nil}, errors: [%{message: "In field \"failingThing\": one", path: ["failingThing"]}, %{message: "In field \"failingThing\": two", path: ["failingThing"]}]}}, run(query, Things)
   end
 
   it "can return extra error fields" do
     query = "mutation { failingThing(type: WITH_CODE) { name } }"
-    assert_result {:ok, %{data: %{"failingThing" => nil}, errors: [%{code: 42, message: "In field \"failingThing\": Custom Error"}]}}, run(query, Things)
+    assert_result {:ok, %{data: %{"failingThing" => nil}, errors: [%{code: 42, message: "In field \"failingThing\": Custom Error", path: ["failingThing"]}]}}, run(query, Things)
   end
 
   it "requires message in extended errors" do
@@ -19,7 +19,7 @@ defmodule AbsintheTest do
 
   it "can return multiple errors, with extra error fields" do
     query = "mutation { failingThing(type: MULTIPLE_WITH_CODE) { name } }"
-    assert_result {:ok, %{data: %{"failingThing" => nil}, errors: [%{code: 1, message: "In field \"failingThing\": Custom Error 1"}, %{code: 2, message: "In field \"failingThing\": Custom Error 2"}]}}, run(query, Things)
+    assert_result {:ok, %{data: %{"failingThing" => nil}, errors: [%{code: 1, message: "In field \"failingThing\": Custom Error 1", path: ["failingThing"]}, %{code: 2, message: "In field \"failingThing\": Custom Error 2", path: ["failingThing"]}]}}, run(query, Things)
   end
 
   it "requires message in extended errors, when multiple errors are given" do
@@ -195,7 +195,7 @@ defmodule AbsintheTest do
     """
     assert_result {:ok, %{data: %{"thingByContext" => %{"name" => "Bar"}}}}, run(query, Things, context: %{thing: "bar"})
     assert_result {:ok, %{data: %{"thingByContext" => nil},
-                          errors: [%{message: ~s(In field "thingByContext": No :id context provided)}]}}, run(query, Things)
+                          errors: [%{message: ~s(In field "thingByContext": No :id context provided), path: ["thingByContext"]}]}}, run(query, Things)
   end
 
   it "can use variables" do
@@ -481,6 +481,23 @@ defmodule AbsintheTest do
     }
     """
     assert_result {:ok, %{errors: [%{message: "Cannot spread fragment \"Foo\" within itself via \"Bar\", \"Foo\"."}, %{message: "Cannot spread fragment \"Bar\" within itself via \"Foo\", \"Bar\"."}]}}, run(cycler, Things)
+  end
+
+  it "can return errors with aliases" do
+    query = "mutation { foo: failingThing(type: WITH_CODE) { name } }"
+    assert_result {:ok, %{data: %{"foo" => nil}, errors: [%{code: 42, message: "In field \"failingThing\": Custom Error", path: ["foo"]}]}}, run(query, Things)
+  end
+
+  it "can return errors with indices" do
+    query = """
+    query AllTheThings {
+      things {
+        id
+        fail(id: "foo")
+      }
+    }
+    """
+    assert_result {:ok, %{data: %{"things" => [%{"id" => "bar", "fail" => "bar"}, %{"id" => "foo", "fail" => nil}]}, errors: [%{message: "In field \"fail\": fail", path: ["things", 1, "fail"]}]}}, run(query, Things)
   end
 
 end

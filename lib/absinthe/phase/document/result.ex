@@ -77,12 +77,12 @@ defmodule Absinthe.Phase.Document.Result do
   defp field_data([], errors, acc), do: {Map.new(acc), errors}
   defp field_data([field | fields], errors, acc) do
     {value, errors} = data(field, errors)
-    field_data(fields, errors, [{field_name(field), value} | acc])
+    field_data(fields, errors, [{field_name(field.emitter), value} | acc])
   end
 
-  defp field_name(%{emitter: %{alias: nil, name: name}}), do: name
-  defp field_name(%{emitter: %{alias: name}}), do: name
-  defp field_name(%{emitter: %{name: name}}), do: name
+  defp field_name(%{alias: nil, name: name}), do: name
+  defp field_name(%{alias: name}), do: name
+  defp field_name(%{name: name}), do: name
 
   defp format_error(%Phase.Error{locations: []} = error) do
     error_object = %{message: error.message}
@@ -91,13 +91,18 @@ defmodule Absinthe.Phase.Document.Result do
   defp format_error(%Phase.Error{} = error) do
     error_object = %{
       message: error.message,
-      locations: Enum.map(error.locations, &format_location/1)
+      locations: Enum.flat_map(error.locations, &format_location/1),
     }
+    error_object = case error.path do
+      [] -> error_object
+      path -> Map.put(error_object, :path, path)
+    end
     Map.merge(Map.new(error.extra), error_object)
   end
 
   defp format_location(%{line: line, column: col}) do
-    %{line: line || 0, column: col || 0}
+    [%{line: line || 0, column: col || 0}]
   end
+  defp format_location(_), do: []
 
 end

@@ -49,11 +49,11 @@ defmodule Absinthe.Phase.Validation.KnownTypeNames do
 
   @spec error(Blueprint.node_t, String.t) :: Phase.Error.t
   defp error(node, name) do
-    Phase.Error.new(
-      __MODULE__,
-      ~s(Unknown type "#{name}".),
-      location: node.source_location
-    )
+    %Phase.Error{
+      phase: __MODULE__,
+      message: ~s(Unknown type "#{name}".),
+      locations: [node.source_location]
+    }
   end
 
 end

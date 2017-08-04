@@ -87,11 +87,11 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafs do # [sic]
   # Generate the error
   @spec error(Blueprint.Document.Field.t, String.t) :: Phase.Error.t
   defp error(node, message) do
-    Phase.Error.new(
-      __MODULE__,
-      message,
-      location: node.source_location
-    )
+    %Phase.Error{
+      phase: __MODULE__,
+      message: message,
+      locations: [node.source_location],
+    }
   end
 
   @doc """

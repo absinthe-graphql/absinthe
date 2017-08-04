@@ -83,6 +83,45 @@ defmodule Absinthe.Resolution do
   end
 
   @doc """
+  Get the current path.
+
+  Each `Absinthe.Resolution` struct holds the current result path as a list of
+  blueprint nodes and indices. Usually however you don't need the full AST list
+  and instead just want the path that will eventually end up in the result.
+
+  For that, use this function.
+
+  ## Examples
+  Given some query:
+  ```
+  {users { email }}
+  ```
+
+  If you called this function inside a resolver on the users email field it
+  returns a value like:
+
+  ```elixir
+  resolve fn _, _, resolution ->
+    Absinthe.Resolution.path(resolution) #=> ["users", 5, "email"]
+  end
+  ```
+
+  In this case `5` is the 0 based index in the list of users the field is currently
+  at.
+  """
+  def path(%{path: path}) do
+    path
+    |> Enum.reverse
+    |> Enum.drop(1)
+    |> Enum.map(&field_name/1)
+  end
+
+  defp field_name(%{alias: nil, name: name}), do: name
+  defp field_name(%{alias: name}), do: name
+  defp field_name(%{name: name}), do: name
+  defp field_name(index), do: index
+
+  @doc """
   Get the child fields under the current field.
 
   ## Example

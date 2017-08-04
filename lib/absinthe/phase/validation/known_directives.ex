@@ -55,21 +55,21 @@ defmodule Absinthe.Phase.Validation.KnownDirectives do
   # Generate the error for the node
   @spec error_unknown(Blueprint.node_t) :: Phase.Error.t
   defp error_unknown(node) do
-    Phase.Error.new(
-      __MODULE__,
-      "Unknown directive.",
-      location: node.source_location
-    )
+    %Phase.Error{
+      phase: __MODULE__,
+      message: "Unknown directive.",
+      locations: [node.source_location]
+    }
   end
 
   @spec error_misplaced(Blueprint.node_t, atom) :: Phase.Error.t
   defp error_misplaced(node, placement) do
     placement_name = placement |> to_string |> String.upcase
-    Phase.Error.new(
-      __MODULE__,
-      "May not be used on #{placement_name}.",
-      location: node.source_location
-    )
+    %Phase.Error{
+      phase: __MODULE__,
+      message: "May not be used on #{placement_name}.",
+      locations: [node.source_location]
+    }
   end
 
 end
