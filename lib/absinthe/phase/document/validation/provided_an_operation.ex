@@ -43,10 +43,10 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedAnOperation do
   # Generate the error for the node
   @spec error() :: Phase.Error.t
   defp error do
-    Phase.Error.new(
-      __MODULE__,
-      error_message()
-    )
+    %Phase.Error{
+      phase: __MODULE__,
+      message: error_message(),
+    }
   end
 
 end

@@ -74,7 +74,11 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
     Spread possible types: #{inspect child_types}
     """
 
-    error = Phase.Error.new(__MODULE__, msg, location: spread.source_location)
+    error = %Phase.Error{
+      phase: __MODULE__,
+      message: msg,
+      locations: [spread.source_location],
+    }
 
     spread
     |> flag_invalid(:invalid_spread)
@@ -111,11 +115,11 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
   # Generate the error for a field
   @spec error(Blueprint.node_t, String.t, [String.t], [String.t]) :: Phase.Error.t
   defp error(field_node, parent_type_name, type_suggestions, field_suggestions) do
-    Phase.Error.new(
-      __MODULE__,
-      error_message(field_node.name, parent_type_name, type_suggestions, field_suggestions),
-      location: field_node.source_location
-    )
+    %Phase.Error{
+      phase: __MODULE__,
+      message: error_message(field_node.name, parent_type_name, type_suggestions, field_suggestions),
+      locations: [field_node.source_location],
+    }
   end
 
   @suggest 5

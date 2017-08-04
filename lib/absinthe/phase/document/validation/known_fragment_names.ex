@@ -37,11 +37,11 @@ defmodule Absinthe.Phase.Document.Validation.KnownFragmentNames do
   # Generate the error for the node
   @spec error(Blueprint.node_t) :: Phase.Error.t
   defp error(node) do
-    Phase.Error.new(
-      __MODULE__,
-      ~s(Unknown fragment "#{node.name}"),
-      location: node.source_location
-    )
+    %Phase.Error{
+      phase: __MODULE__,
+      message: ~s(Unknown fragment "#{node.name}"),
+      locations: [node.source_location],
+    }
   end
 
 end

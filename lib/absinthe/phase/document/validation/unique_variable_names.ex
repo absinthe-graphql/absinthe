@@ -45,11 +45,11 @@ defmodule Absinthe.Phase.Document.Validation.UniqueVariableNames do
   # Generate an error for a duplicate variable_definition.
   @spec error(Blueprint.Document.VariableDefinition.t) :: Phase.Error.t
   defp error(node) do
-    Phase.Error.new(
-      __MODULE__,
-      error_message(node.name),
-      location: node.source_location
-    )
+    %Phase.Error{
+      phase: __MODULE__,
+      message: error_message(node.name),
+      locations: [node.source_location],
+    }
   end
 
   @doc """

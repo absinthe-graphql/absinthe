@@ -88,7 +88,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     {%{result | fields: fields}, info}
   end
   def walk_result(%{fields: fields} = result, bp_node, schema_type, info, path) do
-    {fields, info} = walk_results(fields, bp_node, schema_type, info, path, [])
+    {fields, info} = walk_results(fields, bp_node, schema_type, info, [0 | path], [])
 
     {%{result | fields: fields}, info}
   end
@@ -96,7 +96,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     {result, info}
   end
   def walk_result(%{values: values} = result, bp_node, schema_type, info, path) do
-    {values, info} = walk_results(values, bp_node, schema_type, info, path, [])
+    {values, info} = walk_results(values, bp_node, schema_type, info, [0 | path], [])
     {%{result | values: values}, info}
   end
   def walk_result(%Absinthe.Resolution{} = res, _bp_node, _schema_type, info, _path) do
@@ -104,9 +104,9 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   # walk list results
-  defp walk_results([value | values], bp_node, inner_type, info, path, acc) do
+  defp walk_results([value | values], bp_node, inner_type, info, [i | path], acc) do
     {result, info} = walk_result(value, bp_node, inner_type, info, path)
-    walk_results(values, bp_node, inner_type, info, path, [result | acc])
+    walk_results(values, bp_node, inner_type, info, [i + 1 | path], [result | acc])
   end
   defp walk_results([], _, _, info, _, acc), do: {:lists.reverse(acc), info}
 
@@ -232,25 +232,25 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     %{result | extensions: extensions}
     |> walk_result(bp_field, full_type, info, path)
   end
-  defp build_result(%{errors: errors} = res, info, source, _path) do
-    build_error_result({:error, errors}, errors, res.acc, res.definition, info, source)
+  defp build_result(%{errors: errors} = res, info, source, path) do
+    build_error_result({:error, errors}, errors, res.acc, res.definition, info, source, path)
   end
 
-  defp build_error_result(original_value, error_values, acc, bp_field, info, source) do
+  defp build_error_result(original_value, error_values, acc, bp_field, info, source, path) do
     info = %{info | acc: acc}
     full_type = Type.expand(bp_field.schema_node.type, info.schema)
     result = to_result(nil, bp_field, full_type)
-    result = Enum.reduce(Enum.reverse(error_values), result, &put_result_error_value(&1, &2, original_value, bp_field, source))
+    result = Enum.reduce(Enum.reverse(error_values), result, &put_result_error_value(&1, &2, original_value, bp_field, source, path))
     {result, info}
   end
 
-  defp put_result_error_value(error_value, result, original_value, bp_field, source) do
+  defp put_result_error_value(error_value, result, original_value, bp_field, source, path) do
     case split_error_value(error_value) do
       {[], _} ->
         raise Absinthe.Resolution.result_error(original_value, bp_field, source)
       {[message: message], extra} ->
         message = ~s(In field "#{bp_field.name}": #{message})
-        put_error(result, error(bp_field, message, extra))
+        put_error(result, error(bp_field, message, path, Map.new(extra)))
     end
   end
 
@@ -305,13 +305,14 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     }
   end
 
-  def error(node, message, extra \\ []) do
-    Phase.Error.new(
-      __MODULE__,
-      message,
-      location: node.source_location,
-      extra: extra
-    )
+  def error(node, message, path, extra) do
+    %Phase.Error{
+      phase: __MODULE__,
+      message: message,
+      locations: [node.source_location],
+      path: Absinthe.Resolution.path(%{path: path}),
+      extra: extra,
+    }
   end
 
   defp nil_value_error(blueprint, _schema_type) do

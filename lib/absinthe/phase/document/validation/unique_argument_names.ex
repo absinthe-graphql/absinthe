@@ -53,11 +53,11 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNames do
   # Generate an error for a duplicate argument.
   @spec error(Blueprint.Input.Argument.t) :: Phase.Error.t
   defp error(node) do
-    Phase.Error.new(
-      __MODULE__,
-      error_message(),
-      location: node.source_location
-    )
+    %Phase.Error{
+      phase: __MODULE__,
+      message: error_message(),
+      locations: [node.source_location],
+    }
   end
 
   @doc """
