@@ -2,7 +2,13 @@ defmodule Absinthe.Type.Custom do
   use Absinthe.Schema.Notation
 
   @moduledoc """
-  This module contains additional data types.
+  This module contains the following additional data types:
+  - datetime (UTC)
+  - naive_datetime
+  - date
+  - time
+
+  Further description of these types can be found in the source code.
 
   To use: `import_types Absinthe.Type.Custom`.
   """
