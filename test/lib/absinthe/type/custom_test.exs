@@ -21,6 +21,8 @@ defmodule Absinthe.Type.CustomTest do
   @naive_datetime ~N[2017-01-27 20:31:55]
   @date ~D[2017-01-27]
   @time ~T[20:31:55]
+  @decimal Decimal.new("-3.49")
+  @decimal_int Decimal.new("3")
 
   defp serialize(type, value) do
     TestSchema.__absinthe_type__(type)
@@ -140,6 +142,32 @@ defmodule Absinthe.Type.CustomTest do
       assert :error == parse(:time, %Input.String{value: "abc123"})
       assert :error == parse(:time, %Input.String{value: "01/25/2017 20:31:55"})
       assert :error == parse(:time, %Input.String{value: "2017-15-42T31:71:95Z"})
+    end
+  end
+
+  context ":decimal" do
+    it "serializes as a string" do
+      assert "-3.49" == serialize(:decimal, @decimal)
+      assert "3" == serialize(:decimal, @decimal_int)
+    end
+
+    it "can be parsed from a numeric string" do
+      assert {:ok, decimal} = parse(:decimal, %Input.String{value: "-3.49"})
+      assert Decimal.cmp(@decimal, decimal) == :eq
+    end
+
+    it "can be parsed from a float" do
+      assert {:ok, decimal} = parse(:decimal, %Input.Float{value: -3.49})
+      assert Decimal.cmp(@decimal, decimal) == :eq
+    end
+
+    it "can be parsed from an integer" do
+      assert {:ok, decimal} = parse(:decimal, %Input.Integer{value: 3})
+      assert Decimal.cmp(@decimal_int, decimal) == :eq
+    end
+
+    it "cannot be parsed from alphanumeric string" do
+      assert :error == parse(:decimal, %Input.String{value: "23.4 abc"})
     end
   end
 end
