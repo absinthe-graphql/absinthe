@@ -7,7 +7,7 @@ defmodule Absinthe.Type.Custom do
   - naive_datetime
   - date
   - time
-  - decimal (only if Decimal is available)
+  - decimal (only if [Decimal](https://hex.pm/packages/decimal) is available)
 
   Further description of these types can be found in the source code.
 
