@@ -16,6 +16,7 @@ defmodule Absinthe.CustomTypesTest do
       naive_datetime: ~N[2017-01-27 20:31:55],
       date: ~D[2017-01-27],
       time: ~T[20:31:55],
+      decimal: Decimal.new("-3.49"),
     }
 
     query do
@@ -36,6 +37,7 @@ defmodule Absinthe.CustomTypesTest do
       field :naive_datetime, :naive_datetime
       field :date, :date
       field :time, :time
+      field :decimal, :decimal
     end
 
     object :result do
@@ -47,6 +49,7 @@ defmodule Absinthe.CustomTypesTest do
       field :naive_datetime, :naive_datetime
       field :date, :date
       field :time, :time
+      field :decimal, :decimal
     end
   end
 
@@ -162,6 +165,60 @@ defmodule Absinthe.CustomTypesTest do
       request = """
       mutation {
         custom_types_mutation(args: { time: "abc" }) {
+          message
+        }
+      }
+      """
+      assert {:ok, %{errors: _errors}} = run(request, Schema)
+    end
+  end
+
+  context "custom decimal type" do
+    it "can use decimal type in queries" do
+      result = "{ custom_types_query { decimal } }" |> run(Schema)
+      assert_result {:ok, %{data: %{"custom_types_query" =>
+      %{"decimal" => "-3.49"}}}}, result
+    end
+    it "can use decimal type as string in input_object" do
+      request = """
+      mutation {
+        custom_types_mutation(args: { decimal: "-3.49" }) {
+          message
+        }
+      }
+      """
+      result = run(request, Schema)
+      assert_result {:ok, %{data: %{"custom_types_mutation" =>
+        %{"message" => "ok"}}}}, result
+    end
+    it "can use decimal type as integer in input_object" do
+      request = """
+      mutation {
+        custom_types_mutation(args: { decimal: 3 }) {
+          message
+        }
+      }
+      """
+      result = run(request, Schema)
+      assert_result {:ok, %{data: %{"custom_types_mutation" =>
+        %{"message" => "ok"}}}}, result
+    end
+    it "can use decimal type as float in input_object" do
+      request = """
+      mutation {
+        custom_types_mutation(args: { decimal: -3.49 }) {
+          message
+        }
+      }
+      """
+      result = run(request, Schema)
+      assert_result {:ok, %{data: %{"custom_types_mutation" =>
+        %{"message" => "ok"}}}}, result
+    end
+    it "returns an error when decimal value cannot be parsed" do
+      request = """
+      mutation {
+        custom_types_mutation(args: { decimal: "abc" }) {
           message
         }
       }

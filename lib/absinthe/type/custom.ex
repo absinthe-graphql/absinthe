@@ -7,6 +7,7 @@ defmodule Absinthe.Type.Custom do
   - naive_datetime
   - date
   - time
+  - decimal (only if [Decimal](https://hex.pm/packages/decimal) is available)
 
   Further description of these types can be found in the source code.
 
@@ -56,6 +57,18 @@ defmodule Absinthe.Type.Custom do
     parse &parse_time/1
   end
 
+  if Code.ensure_loaded?(Decimal) do
+    scalar :decimal do
+      description """
+      The `Decimal` scalar type represents signed double-precision fractional
+      values parsed by the `Decimal` library.  The Decimal appears in a JSON
+      response as a string to preserve precision.
+      """
+      serialize &Decimal.to_string/1
+      parse &parse_decimal/1
+    end
+  end
+
   @spec parse_datetime(Absinthe.Blueprint.Input.String.t) :: {:ok, DateTime.t} | :error
   defp parse_datetime(%Absinthe.Blueprint.Input.String{value: value}) do
     case DateTime.from_iso8601(value) do
@@ -99,5 +112,26 @@ defmodule Absinthe.Type.Custom do
   end
   defp parse_time(_) do
     :error
+  end
+
+  if Code.ensure_loaded?(Decimal) do
+    @spec parse_decimal(any) :: {:ok, Decimal.t} | :error
+    defp parse_decimal(%Absinthe.Blueprint.Input.String{value: value}) do
+      case Decimal.parse(value) do
+        {:ok, decimal} -> {:ok, decimal}
+        _ -> :error
+      end
+    end
+    defp parse_decimal(%Absinthe.Blueprint.Input.Float{value: value}) do
+      decimal = Decimal.new(value)
+      if Decimal.nan?(decimal), do: :error, else: {:ok, decimal}
+    end
+    defp parse_decimal(%Absinthe.Blueprint.Input.Integer{value: value}) do
+      decimal = Decimal.new(value)
+      if Decimal.nan?(decimal), do: :error, else: {:ok, decimal}
+    end
+    defp parse_decimal(_) do
+      :error
+    end
   end
 end
