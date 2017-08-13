@@ -331,7 +331,7 @@ defmodule Absinthe.Schema do
   }
   ```
 
-  However, what if you want to know whe OTHER people create a new user, so that
+  However, what if you want to know when OTHER people create a new user, so that
   your UI can update as well. This is the point of subscriptions.
 
   ```
