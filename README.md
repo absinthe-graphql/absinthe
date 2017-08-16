@@ -49,7 +49,7 @@ Absinthe includes a number of advanced resolution features, to include:
 Write your schemas in idiomatic Elixir `snake_case` notation. Absinthe can
 transparently translate to `camelCase` notation for your API clients.
 
-Or, define your own translation schema by writing an simple adapter.
+Or, define your own translation schema by writing a simple adapter.
 
 ### Frontend Support
 
