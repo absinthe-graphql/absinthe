@@ -111,7 +111,12 @@ defmodule Absinthe.Phase.Schema do
     node
   end
   defp set_schema_node(%Blueprint.Input.Field{} = node, parent, schema, adapter) do
-    %{node | schema_node: find_schema_field(parent.schema_node, node.name, schema, adapter)}
+    case node.name do
+      "__" <> _ ->
+        %{node | schema_node: nil}
+      name ->
+        %{node | schema_node: find_schema_field(parent.schema_node, name, schema, adapter)}
+    end
   end
   defp set_schema_node(%Blueprint.Input.List{} = node, parent, _schema, _adapter) do
     case Type.unwrap_non_null(parent.schema_node) do

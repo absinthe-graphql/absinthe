@@ -507,4 +507,17 @@ defmodule AbsintheTest do
     assert_result {:ok, %{errors: [%{message: "Operation \"mutation\" not supported"}]}}, run(query, Absinthe.Test.OnlyQuerySchema)
   end
 
+  it "provides proper error when __typename is included in variables" do
+    query = """
+    mutation UpdateThingValue($input: InputThing) {
+      thing: update_thing(id: "foo", thing: $input) {
+        name
+        value
+      }
+    }
+    """
+    result = run(query, Things, variables: %{"input" => %{"value" => 100, "__typename" => "foo"}})
+    assert_result {:ok, %{errors: [%{message: "Argument \"thing\" has invalid value $input.\nIn field \"__typename\": Unknown field."}]}}, result
+  end
+
 end
