@@ -17,6 +17,7 @@ defmodule Absinthe.Phase.Document.Validation.Result do
 
   @spec do_run(Blueprint.t, %{result_phase: Phase.t, jump_phases: boolean}) :: Phase.result_t
   def do_run(input, %{result_phase: abort_phase, jump_phases: jump}) do
+    # input |> IO.inspect
     {input, {errors, invalid}} = Blueprint.prewalk(input, {[], false}, &handle_node/2)
     result = put_in(input.resolution.validation_errors, errors)
     case {errors, invalid, jump} do
@@ -31,14 +32,19 @@ defmodule Absinthe.Phase.Document.Validation.Result do
 
   # Collect the validation errors from nodes
   @spec handle_node(Blueprint.node_t, [Phase.Error.t]) :: {Blueprint.node_t, [Phase.Error.t]}
-  defp handle_node(%{errors: errs} = node, {errors, invalid}) do
+  defp handle_node(node, acc) do
+    {node, acc} = check_errors(node, acc)
+    # check_flags(node, acc)
+  end
+
+  defp check_errors(%{errors: errs} = node, {errors, invalid}) do
     {node, {errors ++ errs, invalid}}
   end
-  defp handle_node(%{flags: %{invalid: _}} = node, {errors, _}) do
+  defp check_errors(node, acc), do: {node, acc}
+
+  defp check_flags(%{flags: %{invalid: _}} = node, {errors, _}) do
     {node, {errors, true}}
   end
-  defp handle_node(node, acc) do
-    {node, acc}
-  end
+  defp check_flags(node, acc), do: {node, acc}
 
 end

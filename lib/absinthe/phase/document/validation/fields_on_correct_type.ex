@@ -17,6 +17,17 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
   end
 
   @spec handle_node(Blueprint.node_t, Schema.t) :: Blueprint.node_t
+  defp handle_node(%Blueprint.Document.Operation{schema_node: nil} = node, _) do
+    error = %Phase.Error{
+      phase: __MODULE__,
+      message: "Operation \"#{node.type}\" not supported",
+      locations: [node.source_location],
+    }
+
+    node
+    |> flag_invalid(:unknown_operation)
+    |> put_error(error)
+  end
   defp handle_node(%{selections: selections, schema_node: parent_schema_node} = node, %{schema: schema} = input) when not is_nil(parent_schema_node) do
     possible_parent_types = possible_types(parent_schema_node, schema)
 

@@ -500,4 +500,11 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"things" => [%{"id" => "bar", "fail" => "bar"}, %{"id" => "foo", "fail" => nil}]}, errors: [%{message: "In field \"fail\": fail", path: ["things", 1, "fail"]}]}}, run(query, Things)
   end
 
+  it "errors when mutations are run without any mutation object" do
+    query = """
+    mutation { foo }
+    """
+    assert_result {:ok, %{errors: [%{message: "Operation \"mutation\" not supported"}]}}, run(query, Absinthe.Test.OnlyQuerySchema)
+  end
+
 end
