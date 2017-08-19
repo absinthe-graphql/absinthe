@@ -33,18 +33,12 @@ defmodule Absinthe.Phase.Document.Validation.Result do
   # Collect the validation errors from nodes
   @spec handle_node(Blueprint.node_t, [Phase.Error.t]) :: {Blueprint.node_t, [Phase.Error.t]}
   defp handle_node(node, acc) do
-    {node, acc} = check_errors(node, acc)
-    # check_flags(node, acc)
+    check_errors(node, acc)
   end
 
   defp check_errors(%{errors: errs} = node, {errors, invalid}) do
     {node, {errors ++ errs, invalid}}
   end
   defp check_errors(node, acc), do: {node, acc}
-
-  defp check_flags(%{flags: %{invalid: _}} = node, {errors, _}) do
-    {node, {errors, true}}
-  end
-  defp check_flags(node, acc), do: {node, acc}
 
 end
