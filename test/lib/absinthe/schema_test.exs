@@ -52,6 +52,7 @@ defmodule Absinthe.SchemaTest do
   defmodule SourceSchema do
     use Absinthe.Schema
 
+    @desc "can describe query"
     query do
       field :foo,
         type: :foo,
@@ -105,6 +106,10 @@ defmodule Absinthe.SchemaTest do
       field :name, :string
     end
 
+  end
+
+  it "can have a description on the root query" do
+    assert "can describe query" == Absinthe.Schema.lookup_type(SourceSchema, :query).description
   end
 
 

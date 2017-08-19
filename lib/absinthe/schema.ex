@@ -279,7 +279,9 @@ defmodule Absinthe.Schema do
       raw_attrs
       |> Keyword.put_new(:name, @default_query_name)
       |> Keyword.put(:identifier, :query)
+
     Absinthe.Schema.Notation.scope(env, :object, :query, attrs, block)
+    Absinthe.Schema.Notation.desc_attribute_recorder(:query)
   end
 
   @default_mutation_name "RootMutationType"
@@ -307,6 +309,7 @@ defmodule Absinthe.Schema do
       |> Keyword.put_new(:name, @default_mutation_name)
       |> Keyword.put(:identifier, :mutation)
     Absinthe.Schema.Notation.scope(env, :object, :mutation, attrs, block)
+    Absinthe.Schema.Notation.desc_attribute_recorder(:query)
   end
 
   @default_subscription_name "RootSubscriptionType"
@@ -408,6 +411,7 @@ defmodule Absinthe.Schema do
       |> Keyword.put_new(:name, @default_subscription_name)
       |> Keyword.put(:identifier, :subscription)
     Absinthe.Schema.Notation.scope(env, :object, :subscription, attrs, block)
+    Absinthe.Schema.Notation.desc_attribute_recorder(:query)
   end
 
   # Lookup a directive that in used by/available to a schema
