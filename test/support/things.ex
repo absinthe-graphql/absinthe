@@ -6,6 +6,12 @@ defmodule Things do
     "bar" => %{id: "bar", name: "Bar", value: 5}
   }
 
+  enum :sigils_work, values: ~w(foo bar)a
+
+  enum :sigils_work_inside do
+    values ~w(foo bar)a
+  end
+
   enum :failure_type do
     value :multiple
     value :with_code

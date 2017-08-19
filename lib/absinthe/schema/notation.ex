@@ -73,7 +73,7 @@ defmodule Absinthe.Schema.Notation do
   ```
 
   Trigger functions are only called once per event, so database calls within
-  them do not present a significant burden. 
+  them do not present a significant burden.
 
   See the `subscription/2` macro docs for additional details
   """
@@ -1019,6 +1019,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record an enum type
   def record_enum!(env, identifier, attrs, block) do
+    attrs = expand(attrs, env)
     scope(env, :enum, identifier, attrs, block)
   end
 
