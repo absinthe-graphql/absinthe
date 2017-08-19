@@ -67,6 +67,25 @@ defmodule Absinthe.Type.Custom do
       serialize &Decimal.to_string/1
       parse &parse_decimal/1
     end
+
+    @spec parse_decimal(any) :: {:ok, Decimal.t} | :error
+    defp parse_decimal(%Absinthe.Blueprint.Input.String{value: value}) do
+      case Decimal.parse(value) do
+        {:ok, decimal} -> {:ok, decimal}
+        _ -> :error
+      end
+    end
+    defp parse_decimal(%Absinthe.Blueprint.Input.Float{value: value}) do
+      decimal = Decimal.new(value)
+      if Decimal.nan?(decimal), do: :error, else: {:ok, decimal}
+    end
+    defp parse_decimal(%Absinthe.Blueprint.Input.Integer{value: value}) do
+      decimal = Decimal.new(value)
+      if Decimal.nan?(decimal), do: :error, else: {:ok, decimal}
+    end
+    defp parse_decimal(_) do
+      :error
+    end
   end
 
   @spec parse_datetime(Absinthe.Blueprint.Input.String.t) :: {:ok, DateTime.t} | :error
@@ -112,26 +131,5 @@ defmodule Absinthe.Type.Custom do
   end
   defp parse_time(_) do
     :error
-  end
-
-  if Code.ensure_loaded?(Decimal) do
-    @spec parse_decimal(any) :: {:ok, Decimal.t} | :error
-    defp parse_decimal(%Absinthe.Blueprint.Input.String{value: value}) do
-      case Decimal.parse(value) do
-        {:ok, decimal} -> {:ok, decimal}
-        _ -> :error
-      end
-    end
-    defp parse_decimal(%Absinthe.Blueprint.Input.Float{value: value}) do
-      decimal = Decimal.new(value)
-      if Decimal.nan?(decimal), do: :error, else: {:ok, decimal}
-    end
-    defp parse_decimal(%Absinthe.Blueprint.Input.Integer{value: value}) do
-      decimal = Decimal.new(value)
-      if Decimal.nan?(decimal), do: :error, else: {:ok, decimal}
-    end
-    defp parse_decimal(_) do
-      :error
-    end
   end
 end
