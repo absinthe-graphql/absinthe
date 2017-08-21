@@ -216,13 +216,13 @@ defmodule Absinthe.Pipeline do
     |> Enum.filter(&(not match_phase?(phase, &1)))
   end
 
-  @spec insert_before(t, Phase.t, Phase.t | [Phase.t]) :: t
+  @spec insert_before(t, Phase.t, phase_config_t | [phase_config_t]) :: t
   def insert_before(pipeline, phase, additional) do
     beginning = before(pipeline, phase)
     beginning ++ List.wrap(additional) ++ (pipeline -- beginning)
   end
 
-  @spec insert_after(t, Phase.t, Phase.t | [Phase.t]) :: t
+  @spec insert_after(t, Phase.t, phase_config_t | [phase_config_t]) :: t
   def insert_after(pipeline, phase, additional) do
     beginning = upto(pipeline, phase)
     beginning ++ List.wrap(additional) ++ (pipeline -- beginning)
