@@ -43,7 +43,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
              suggested_field_names(field.name, type, input)
            )
         )
-      %Blueprint.Document.Fragment.Spread{} = spread ->
+      %Blueprint.Document.Fragment.Spread{errors: []} = spread ->
         fragment = Enum.find(input.fragments, &(&1.name == spread.name))
         possible_child_types = possible_types(fragment.schema_node, schema)
 
