@@ -74,9 +74,9 @@ defmodule Absinthe.Subscription do
   defp get_subscription_fields(resolution_info) do
     mut_field_name = resolution_info.definition.schema_node.identifier
     schema = resolution_info.schema
-    sub_fields = Absinthe.Schema.lookup_type(schema, :subscription)[:fields] || []
+    subscription = Absinthe.Schema.lookup_type(schema, :subscription) || %{}
 
-    for {sub_field_name, sub_field} <- sub_fields,
+    for {sub_field_name, sub_field} <- Map.get(subscription, :fields, []),
     {mutation_names, config} <- sub_field.triggers,
     mut_field_name in mutation_names,
     do: {sub_field_name, config}
