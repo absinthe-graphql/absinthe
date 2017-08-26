@@ -5,7 +5,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
     @behaviour Absinthe.Subscription.Pubsub
 
     def start_link() do
-      Registry.start_link(name: __MODULE__, keys: :unique)
+      Registry.start_link(:unique, __MODULE__)
     end
 
     def subscribe(topic) do
