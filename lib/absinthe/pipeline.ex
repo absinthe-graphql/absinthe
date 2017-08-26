@@ -94,6 +94,7 @@ defmodule Absinthe.Pipeline do
       # Analyse Complexity
       {Phase.Document.Complexity.Analysis, options},
       {Phase.Document.Complexity.Result, options},
+      Phase.Subscription.SubscribeSelf,
       # Execution
       {Phase.Document.Execution.Resolution, options},
       # Format Result

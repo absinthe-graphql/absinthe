@@ -224,7 +224,7 @@ defmodule Absinthe do
     pipeline =
       schema
       |> Absinthe.Pipeline.for_document(options)
-      |> Absinthe.Pipeline.insert_before(Absinthe.Phase.Document.Execution.Resolution, {Absinthe.Phase.SubscribeSelf, options})
+      # |> Absinthe.Pipeline.insert_before(Absinthe.Phase.Document.Execution.Resolution, {Absinthe.Phase.SubscribeSelf, options})
 
     case Absinthe.Pipeline.run(document, pipeline) do
       {:ok, %{result: result}, _phases} ->
