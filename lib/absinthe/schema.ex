@@ -148,6 +148,9 @@ defmodule Absinthe.Schema do
   @doc """
   Return the default middleware set for a field if none exists
   """
+  def ensure_middleware([], _field, %{identifier: :subscription}) do
+    [Absinthe.Middleware.PassParent]
+  end
   def ensure_middleware([], %{identifier: identifier}, _) do
     [{Absinthe.Middleware.MapGet, identifier}]
   end

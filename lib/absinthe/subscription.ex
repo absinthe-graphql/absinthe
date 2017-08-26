@@ -7,7 +7,9 @@ defmodule Absinthe.Subscription do
 
   Define in your schema via `Absinthe.Schema.subscription/2`
 
-  ## Beta Limitations
+  ## Basic Usage
+
+  ## Performance Characteristics
 
   There are a couple of limitations to the beta release of subscriptions that
   are worth keeping in mind if you want to use this in production:

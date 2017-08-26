@@ -7,15 +7,11 @@ defmodule Absinthe.Subscription.Local do
   # node.
 
   def publish_mutation(pubsub, mutation_result, subscribed_fields) do
-    root_value = Map.new(subscribed_fields, fn {field, _} ->
-      {field, mutation_result}
-    end)
-
     for {field, key_strategy} <- subscribed_fields,
     {topic, doc} <- get_docs(pubsub, field, mutation_result, key_strategy) do
 
-      root_value = Map.merge(doc.resolution.root_value || %{}, root_value)
-      doc = put_in(doc.resolution.root_value, root_value)
+      # root_value = Map.merge(doc.resolution.root_value || %{}, mutation_result)
+      doc = put_in(doc.resolution.root_value, mutation_result)
 
       pipeline = [
         Absinthe.Phase.Document.Execution.Resolution,
@@ -49,11 +45,16 @@ defmodule Absinthe.Subscription.Local do
   end
 
   defp get_docs(pubsub, field, mutation_result, [topic: topic_fun]) when is_function(topic_fun, 1) do
-    key = topic_fun.(mutation_result)
-    Absinthe.Subscription.get(pubsub, {field, key})
+    do_get_docs(pubsub, field, topic_fun.(mutation_result))
   end
   defp get_docs(pubsub, field, _mutation_result, key) do
-    Absinthe.Subscription.get(pubsub, {field, key})
+    do_get_docs(pubsub, field, key)
+  end
+
+  defp do_get_docs(pubsub, field, keys) do
+    keys
+    |> List.wrap
+    |> Enum.flat_map(&Absinthe.Subscription.get(pubsub, {field, &1}))
   end
 
 end

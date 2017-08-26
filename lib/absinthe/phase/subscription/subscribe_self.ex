@@ -34,18 +34,19 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
     %{schema_node: schema_node, argument_data: argument_data} = get_field(blueprint)
     name = schema_node.identifier
 
-    key = case schema_node.topic do
+    config = case schema_node.config do
       fun when is_function(fun, 2) ->
-        apply(fun, [argument_data, context])
+        apply(fun, [argument_data, %{context: context}])
       fun when is_function(fun, 1) ->
         IO.write(:stderr, "Warning: 1-arity topic functions are deprecated, upgrade to 2 arity before 1.4.0 release")
         apply(fun, [argument_data])
       nil ->
-        Atom.to_string(name)
+        {:ok, topic: Atom.to_string(name)}
     end
 
-    case key do
-      {:ok, key} ->
+    case config do
+      {:ok, config} ->
+        key = find_key!(config)
         {:ok, {name, key}}
       {:error, msg} ->
         {:error, msg}
@@ -58,6 +59,14 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
         #{inspect val}
         """
     end
+  end
+
+  defp find_key!(config) do
+    config[:topic] || raise """
+    Subscription config must include a non null topic!
+
+    #{inspect config}
+    """
   end
 
   defp get_field(blueprint) do
