@@ -112,7 +112,7 @@ defmodule Absinthe.Subscription do
 
   @doc false
   def registry_name(pubsub) do
-    Module.concat([pubsub, Registry])
+    Module.concat([pubsub, :Registry])
   end
 
   @doc false
@@ -132,14 +132,23 @@ defmodule Absinthe.Subscription do
   ## Middleware callback
   @doc false
   def call(%{state: :resolved, errors: [], value: value} = res, _) do
-    pubsub = res.context[:pubsub]
-
-    if pubsub && Process.whereis(registry_name(pubsub)) do
+    with {:ok, pubsub} <- extract_pubsub(res.context) do
       __MODULE__.publish(pubsub, value, res)
     end
+
     res
   end
   def call(res, _), do: res
+
+  @doc false
+  def extract_pubsub(context) do
+    with {:ok, pubsub} <- Map.fetch(context, :pubsub),
+    pid when is_pid(pid) <- Process.whereis(registry_name(pubsub)) do
+      {:ok, pubsub}
+    else
+      _ -> :error
+    end
+  end
 
   @doc false
   def add_middleware(middleware) do
