@@ -1,6 +1,8 @@
 defmodule Absinthe.Middleware.PassParent do
   @moduledoc """
-  This is the default middleware.
+  Middleware that just passes the parent down to the children.
+
+  This is the default resolver for subscription fields.
   """
 
   @behaviour Absinthe.Middleware
