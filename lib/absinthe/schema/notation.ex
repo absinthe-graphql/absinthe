@@ -56,7 +56,7 @@ defmodule Absinthe.Schema.Notation do
   ```elixir
   config fn args, %{context: context} ->
     if authorized?(context) do
-      {:ok, args.client_id}
+      {:ok, topic: args.client_id}
     else
       {:error, "unauthorized"}
     end
