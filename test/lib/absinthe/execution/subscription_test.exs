@@ -42,9 +42,16 @@ defmodule Absinthe.Execution.SubscriptionTest do
       field :thing, :string do
         arg :client_id, non_null(:id)
 
-        topic fn args, _ ->
-          args.client_id
+        config fn
+          _args, %{context: %{authorized: false}} ->
+            {:error, "unauthorized"}
+          args, _ ->
+            {
+              :ok,
+              topic: args.client_id,
+            }
         end
+
       end
     end
 
@@ -86,7 +93,16 @@ defmodule Absinthe.Execution.SubscriptionTest do
       :ok,
       %{errors: [%{locations: [%{column: 0, line: 2}],
         message: "Unknown argument \"extra\" on field \"thing\" of type \"RootSubscriptionType\"."}]}
-    } = run(@query, Schema, variables: %{"clientId" => "abc"}, context: %{pubsub: PubSub})
+    } == run(@query, Schema, variables: %{"clientId" => "abc"}, context: %{pubsub: PubSub})
+  end
+
+  @query """
+  subscription ($clientId: ID!) {
+    thing(clientId: $clientId)
+  }
+  """
+  it "can return an error tuple from the topic function" do
+    assert {:error, "unauthorized"} == run(@query, Schema, variables: %{"clientId" => "abc"}, context: %{pubsub: PubSub, authorized: false})
   end
 
 end

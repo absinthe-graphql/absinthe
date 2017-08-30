@@ -202,8 +202,8 @@ defmodule Absinthe.Type.Field do
     type: nil,
     deprecation: nil,
     args: %{},
-    topic: nil, # used by subscription fields
-    triggers: nil, # used by mutation fields
+    config: nil, # used by subscription fields
+    triggers: [], # used by mutatino fields
     middleware: [],
     complexity: nil,
     default_value: nil,

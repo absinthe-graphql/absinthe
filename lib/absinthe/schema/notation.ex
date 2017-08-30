@@ -34,15 +34,77 @@ defmodule Absinthe.Schema.Notation do
   end
 
   @doc """
-  Set the topic function for a subscription field. See the `subscription/2` macro
-  docs for details
-  """
-  defmacro topic(topic_fun) do
-    __CALLER__.module
-    |> Scope.put_attribute(:topic, topic_fun)
-    :ok
+  REPLACED BY `config/1`
+
+  `topic/1` macro is no longer used! replaced by `config/1`
+
+  Upgrade example:
+
+  If previously you had
+
+  topic fn args ->
+    args.foo_id
   end
 
+  now do
+
+  config fn args, _ ->
+    {:ok, topic: args.id}
+  end
+
+  This will be removed in the final 1.4.0 release
+  """
+  defmacro topic(_) do
+    raise """
+    `topic/1` macro is no longer used! replaced by `config/1`
+
+    Upgrade example:
+
+    If previously you had
+
+    topic fn args ->
+      args.foo_id
+    end
+
+    now do
+
+    config fn args, _ ->
+      {:ok, topic: args.id}
+    end
+    """
+  end
+
+  @doc false
+  defmacro resolver(_) do
+    raise "`resolver/1` is not a function, did you mean `resolve` ?"
+  end
+
+  @placement {:config, [under: [:field]]}
+  @doc """
+  Configure a subscription field.
+
+  ## Example
+
+  ```elixir
+  config fn args, %{context: context} ->
+    if authorized?(context) do
+      {:ok, topic: args.client_id}
+    else
+      {:error, "unauthorized"}
+    end
+  end
+  ```
+
+  See `Absinthe.Schema.subscription/1` for details
+  """
+  defmacro config(config_fun) do
+    env = __CALLER__
+    recordable!(env, :config, @placement[:config])
+    Scope.put_attribute(env.module, :config, config_fun)
+    []
+  end
+
+  @placement {:trigger, [under: [:field]]}
   @doc """
   Set a trigger for a subscription field.
 
@@ -57,8 +119,8 @@ defmodule Absinthe.Schema.Notation do
     field :location_update, :user do
       arg :user_id, non_null(:id)
 
-      topic fn args ->
-        args.user_id
+      config fn args, _ ->
+        {:ok, topic: args.user_id}
       end
 
       trigger :gps_event, topic: fn event ->
@@ -66,7 +128,7 @@ defmodule Absinthe.Schema.Notation do
       end
 
       trigger :user_checkin, topic: fn user ->
-        user.id
+        [user.id, user.parent_id]
       end
     end
   end
@@ -79,6 +141,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro trigger(mutations, attrs) do
     env = __CALLER__
+    recordable!(env, :trigger, @placement[:trigger])
     Scope.put_attribute(env.module, :triggers, {List.wrap(mutations), attrs}, accumulate: true)
     :ok
   end
