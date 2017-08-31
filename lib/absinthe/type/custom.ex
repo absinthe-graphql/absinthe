@@ -68,7 +68,7 @@ defmodule Absinthe.Type.Custom do
       parse &parse_decimal/1
     end
 
-    @spec parse_decimal(any) :: {:ok, Decimal.t} | :error
+    @spec parse_decimal(any) :: {:ok, Decimal.t} | {:ok, nil} | :error
     defp parse_decimal(%Absinthe.Blueprint.Input.String{value: value}) do
       case Decimal.parse(value) do
         {:ok, decimal} -> {:ok, decimal}
@@ -83,12 +83,15 @@ defmodule Absinthe.Type.Custom do
       decimal = Decimal.new(value)
       if Decimal.nan?(decimal), do: :error, else: {:ok, decimal}
     end
+    defp parse_decimal(%Absinthe.Blueprint.Input.Null{}) do
+      {:ok, nil}
+    end
     defp parse_decimal(_) do
       :error
     end
   end
 
-  @spec parse_datetime(Absinthe.Blueprint.Input.String.t) :: {:ok, DateTime.t} | :error
+  @spec parse_datetime(Absinthe.Blueprint.Input.String.t) :: {:ok, DateTime.t} | {:ok, nil} | :error
   defp parse_datetime(%Absinthe.Blueprint.Input.String{value: value}) do
     case DateTime.from_iso8601(value) do
       {:ok, datetime, 0} -> {:ok, datetime}
@@ -96,38 +99,50 @@ defmodule Absinthe.Type.Custom do
       _error -> :error
     end
   end
+  defp parse_datetime(%Absinthe.Blueprint.Input.Null{}) do
+    {:ok, nil}
+  end
   defp parse_datetime(_) do
     :error
   end
 
-  @spec parse_naive_datetime(Absinthe.Blueprint.Input.String.t) :: {:ok, NaiveDateTime.t} | :error
+  @spec parse_naive_datetime(Absinthe.Blueprint.Input.String.t) :: {:ok, NaiveDateTime.t} |{:ok, nil} | :error
   defp parse_naive_datetime(%Absinthe.Blueprint.Input.String{value: value}) do
     case NaiveDateTime.from_iso8601(value) do
       {:ok, naive_datetime} -> {:ok, naive_datetime}
       _error -> :error
     end
   end
+  defp parse_naive_datetime(%Absinthe.Blueprint.Input.Null{}) do
+    {:ok, nil}
+  end
   defp parse_naive_datetime(_) do
     :error
   end
 
-  @spec parse_date(Absinthe.Blueprint.Input.String.t) :: {:ok, Date.t} | :error
+  @spec parse_date(Absinthe.Blueprint.Input.String.t) :: {:ok, Date.t} | {:ok, nil} | :error
   defp parse_date(%Absinthe.Blueprint.Input.String{value: value}) do
     case Date.from_iso8601(value) do
       {:ok, date} -> {:ok, date}
       _error -> :error
     end
   end
+  defp parse_date(%Absinthe.Blueprint.Input.Null{}) do
+    {:ok, nil}
+  end
   defp parse_date(_) do
     :error
   end
 
-  @spec parse_time(Absinthe.Blueprint.Input.String.t) :: {:ok, Time.t} | :error
+  @spec parse_time(Absinthe.Blueprint.Input.String.t) :: {:ok, Time.t} | {:ok, nil} | :error
   defp parse_time(%Absinthe.Blueprint.Input.String{value: value}) do
     case Time.from_iso8601(value) do
       {:ok, time} -> {:ok, time}
       _error -> :error
     end
+  end
+  defp parse_time(%Absinthe.Blueprint.Input.Null{}) do
+    {:ok, nil}
   end
   defp parse_time(_) do
     :error
