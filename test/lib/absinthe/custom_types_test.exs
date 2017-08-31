@@ -71,6 +71,18 @@ defmodule Absinthe.CustomTypesTest do
       assert_result {:ok, %{data: %{"custom_types_mutation" =>
         %{"message" => "ok"}}}}, result
     end
+    it "can use null in input_object" do
+      request = """
+      mutation {
+        custom_types_mutation(args: { datetime: null }) {
+          message
+        }
+      }
+      """
+      result = run(request, Schema)
+      assert_result {:ok, %{data: %{"custom_types_mutation" =>
+        %{"message" => "ok"}}}}, result
+    end
     it "returns an error when datetime value cannot be parsed" do
       request = """
       mutation {
@@ -93,6 +105,18 @@ defmodule Absinthe.CustomTypesTest do
       request = """
       mutation {
         custom_types_mutation(args: { naive_datetime: "2017-01-27T20:31:55" }) {
+          message
+        }
+      }
+      """
+      result = run(request, Schema)
+      assert_result {:ok, %{data: %{"custom_types_mutation" =>
+        %{"message" => "ok"}}}}, result
+    end
+    it "can use null in input_object" do
+      request = """
+      mutation {
+        custom_types_mutation(args: { naive_datetime: null }) {
           message
         }
       }
@@ -131,6 +155,18 @@ defmodule Absinthe.CustomTypesTest do
       assert_result {:ok, %{data: %{"custom_types_mutation" =>
         %{"message" => "ok"}}}}, result
     end
+    it "can use null in input_object" do
+      request = """
+      mutation {
+        custom_types_mutation(args: { date: null }) {
+          message
+        }
+      }
+      """
+      result = run(request, Schema)
+      assert_result {:ok, %{data: %{"custom_types_mutation" =>
+        %{"message" => "ok"}}}}, result
+    end
     it "returns an error when date value cannot be parsed" do
       request = """
       mutation {
@@ -153,6 +189,18 @@ defmodule Absinthe.CustomTypesTest do
       request = """
       mutation {
         custom_types_mutation(args: { time: "20:31:55" }) {
+          message
+        }
+      }
+      """
+      result = run(request, Schema)
+      assert_result {:ok, %{data: %{"custom_types_mutation" =>
+        %{"message" => "ok"}}}}, result
+    end
+    it "can use null in input_object" do
+      request = """
+      mutation {
+        custom_types_mutation(args: { time: null }) {
           message
         }
       }
@@ -207,6 +255,18 @@ defmodule Absinthe.CustomTypesTest do
       request = """
       mutation {
         custom_types_mutation(args: { decimal: -3.49 }) {
+          message
+        }
+      }
+      """
+      result = run(request, Schema)
+      assert_result {:ok, %{data: %{"custom_types_mutation" =>
+        %{"message" => "ok"}}}}, result
+    end
+    it "can use null in input_object" do
+      request = """
+      mutation {
+        custom_types_mutation(args: { decimal: null }) {
           message
         }
       }
