@@ -64,31 +64,8 @@ defmodule Absinthe.Type.Custom do
       values parsed by the `Decimal` library.  The Decimal appears in a JSON
       response as a string to preserve precision.
       """
-      serialize &Decimal.to_string/1
-      parse &parse_decimal/1
-    end
-
-    @spec parse_decimal(any) :: {:ok, Decimal.t} | :error
-    @spec parse_decimal(Absinthe.Blueprint.Input.Null.t) :: {:ok, nil}
-    defp parse_decimal(%Absinthe.Blueprint.Input.String{value: value}) do
-      case Decimal.parse(value) do
-        {:ok, decimal} -> {:ok, decimal}
-        _ -> :error
-      end
-    end
-    defp parse_decimal(%Absinthe.Blueprint.Input.Float{value: value}) do
-      decimal = Decimal.new(value)
-      if Decimal.nan?(decimal), do: :error, else: {:ok, decimal}
-    end
-    defp parse_decimal(%Absinthe.Blueprint.Input.Integer{value: value}) do
-      decimal = Decimal.new(value)
-      if Decimal.nan?(decimal), do: :error, else: {:ok, decimal}
-    end
-    defp parse_decimal(%Absinthe.Blueprint.Input.Null{}) do
-      {:ok, nil}
-    end
-    defp parse_decimal(_) do
-      :error
+      serialize &Absinthe.Type.Custom.Decimal.serialize/1
+      parse &Absinthe.Type.Custom.Decimal.parse/1
     end
   end
 
