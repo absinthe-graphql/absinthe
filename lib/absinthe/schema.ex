@@ -163,11 +163,12 @@ defmodule Absinthe.Schema do
 
   Convenience function.
   """
-  def introspect(schema) do
+  @spec introspect(schema :: t, opts :: Absinthe.run_opts) :: Absinthe.run_result
+  def introspect(schema, opts \\ []) do
     [:code.priv_dir(:absinthe), "graphql", "introspection.graphql"]
     |> Path.join()
     |> File.read!
-    |> Absinthe.run(schema)
+    |> Absinthe.run(schema, opts)
   end
 
   defmacro __using__(opts \\ []) do

@@ -219,7 +219,9 @@ defmodule Absinthe do
     max_complexity: non_neg_integer | :infinity
   ]
 
-  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, run_opts) :: {:ok, result_t} | {:error, String.t}
+  @type run_result :: {:ok, result_t} | {:error, String.t}
+
+  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, run_opts) :: run_result
   def run(document, schema, options \\ []) do
     pipeline =
       schema
