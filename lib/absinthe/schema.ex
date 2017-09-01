@@ -158,6 +158,18 @@ defmodule Absinthe.Schema do
     middleware
   end
 
+  @doc """
+  Run the introspection query on a schema.
+
+  Convenience function.
+  """
+  def introspect(schema) do
+    [:code.priv_dir(:absinthe), "graphql", "introspection.graphql"]
+    |> Path.join()
+    |> File.read!
+    |> Absinthe.run(schema)
+  end
+
   defmacro __using__(opts \\ []) do
     quote do
       use Absinthe.Schema.Notation, unquote(opts)

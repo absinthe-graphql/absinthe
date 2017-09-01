@@ -19,12 +19,7 @@ defmodule Absinthe.Test do
   to load the majority of the Absinthe code base.
   """
   def prime(schema_name) do
-    {:ok, %{data: _}} =
-      [:code.priv_dir(:absinthe), "graphql", "introspection.graphql"]
-      |> Path.join()
-      |> File.read!
-      |> Absinthe.run(schema_name)
-
+    {:ok, %{data: _}} = Absinthe.Schema.introspect(schema_name)
     :ok
   end
 end
