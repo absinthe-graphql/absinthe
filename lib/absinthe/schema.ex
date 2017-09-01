@@ -461,7 +461,17 @@ defmodule Absinthe.Schema do
 
   @doc false
   def cached_lookup_type(schema, type) do
-    # TODO: elaborate on why we're using the pdict.
+    # Originally, schema types were entirely literals, and very fast to lookup.
+    # Fast lookup types are assumed throughout the codebase, as it is often mandatory
+    # to lookup a type in several different places.
+    #
+    # Now, type/field imports, middleware logic, and other things means they aren't
+    # literals anymore, and aren't as fast as they should be. Thus the use of the pdict
+    # to make sure we only pay this cost once.
+    #
+    # Ideal solution: mandate that types are macro-escapable, and then we can turn
+    # them back into literals. The main issue there is resolution functions.
+
     case :erlang.get({schema, type}) do
       :undefined ->
         result = schema.__absinthe_lookup__(type)

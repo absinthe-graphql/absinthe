@@ -1,7 +1,17 @@
 defmodule Absinthe.Resolution.Projector do
 
+  @moduledoc false
+
   alias Absinthe.{Blueprint, Type}
 
+  @doc """
+  Project one layer down from where we are right now.
+
+  Projection amounts to collecting the next set of fields to operate on, based on
+  the current field. This is a non trivial operation because you have to handle
+  the various type conditions that come along with fragments / inline fragments,
+  field merging, and other wondeful stuff like that.
+  """
   def project(selections, %{identifier: identifier} = parent_type, path, cache, info) do
     path_names = for %{name: name, alias: alias} <- path, name, do: alias || name
     key = {identifier, path_names}
