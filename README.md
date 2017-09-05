@@ -77,7 +77,7 @@ Install from [Hex.pm](https://hex.pm/packages/absinthe):
 
 ```elixir
 def deps do
-  [{:absinthe, "~> 1.3.1"}]
+  [{:absinthe, "~> 1.3.2"}]
 end
 ```
 
