@@ -3,43 +3,28 @@ defmodule Absinthe.Subscription.Local do
 
   require Logger
 
+  alias Absinthe.Pipeline.BatchResolver
+
   # This module handles running and broadcasting documents that are local to this
   # node.
 
   def publish_mutation(pubsub, mutation_result, subscribed_fields) do
-    for {field, key_strategy} <- subscribed_fields,
+    docs_and_topics = for {field, key_strategy} <- subscribed_fields,
     {topic, doc} <- get_docs(pubsub, field, mutation_result, key_strategy) do
-      doc = put_in(doc.resolution.root_value, mutation_result)
-
-      pipeline = [
-        Absinthe.Phase.Document.Execution.Resolution,
-        Absinthe.Phase.Document.Result,
-      ]
-
-      execution_result = try do
-        {:ok, %{result: data}, _} = Absinthe.Pipeline.run(doc, pipeline)
-
-        {:ok, data}
-      rescue
-        exception ->
-          message = Exception.message(exception)
-          stacktrace = System.stacktrace |> Exception.format_stacktrace
-
-          Logger.error("""
-          #{message}
-
-          #{stacktrace}
-          """)
-          :error
-      end
-
-      with {:ok, data} <- execution_result do
-        :ok = pubsub.publish_subscription(topic, data)
-      end
-
+      {topic, put_in(doc.resolution.root_value, mutation_result)}
     end
 
-    :ok
+    if Enum.any?(docs_and_topics) do
+      {topics, docs} = Enum.unzip(docs_and_topics)
+      docs = BatchResolver.run(docs, [schema: hd(docs).schema])
+      pipeline = [
+        Absinthe.Phase.Document.Result
+      ]
+      for {doc, topic} <- Enum.zip(docs, topics) do
+        {:ok, %{result: data}, _} = Absinthe.Pipeline.run(doc, pipeline)
+        :ok = pubsub.publish_subscription(topic, data)
+      end
+    end
   end
 
   defp get_docs(pubsub, field, mutation_result, [topic: topic_fun]) when is_function(topic_fun, 1) do
