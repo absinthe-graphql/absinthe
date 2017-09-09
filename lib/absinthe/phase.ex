@@ -23,6 +23,7 @@ defmodule Absinthe.Phase do
   defmacro __using__(_) do
     quote do
       @behaviour Phase
+      import(unquote(__MODULE__))
 
       @spec flag_invalid(Blueprint.node_t) :: Blueprint.node_t
       def flag_invalid(%{flags: _} = node) do
@@ -39,15 +40,6 @@ defmodule Absinthe.Phase do
         Absinthe.Blueprint.put_flag(node, flag, __MODULE__)
       end
 
-      @spec put_error(Blueprint.node_t, Phase.Error.t) :: Blueprint.node_t
-      def put_error(%{errors: _} = node, error) do
-        update_in(node.errors, &[error | &1])
-      end
-
-      def any_invalid?(nodes) do
-        Enum.any?(nodes, &match?(%{flags: %{invalid: _}}, &1))
-      end
-
       def inherit_invalid(%{flags: _} = node, children, add_flag) do
         case any_invalid?(children) do
           true ->
@@ -58,6 +50,15 @@ defmodule Absinthe.Phase do
       end
 
     end
+  end
+
+  @spec put_error(Blueprint.node_t, Phase.Error.t) :: Blueprint.node_t
+  def put_error(%{errors: _} = node, error) do
+    update_in(node.errors, &[error | &1])
+  end
+
+  def any_invalid?(nodes) do
+    Enum.any?(nodes, &match?(%{flags: %{invalid: _}}, &1))
   end
 
   @callback run(any, any) :: result_t
