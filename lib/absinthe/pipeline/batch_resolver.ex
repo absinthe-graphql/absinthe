@@ -51,11 +51,11 @@ defmodule Absinthe.Pipeline.BatchResolver do
 
   defp run_pipeline(bp, phases) do
     case Absinthe.Pipeline.run(bp, phases) do
-     {:ok, blueprint, _} ->
-       blueprint
-     result ->
-       raise pipeline_error(result)
-   end
+      {:ok, blueprint, _} ->
+        blueprint
+      result ->
+        raise pipeline_error(result)
+    end
   end
 
   defp update_resolution_acc(%{resolution: resolution} = bp, acc) do
