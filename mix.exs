@@ -1,7 +1,7 @@
 defmodule Absinthe.Mixfile do
   use Mix.Project
 
-  @version "1.4.0-beta.5"
+  @version "1.4.0-rc.0"
 
   def project do
     [app: :absinthe,
