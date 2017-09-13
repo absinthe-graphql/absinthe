@@ -27,15 +27,15 @@ defmodule Absinthe.Resolution do
     adapter: Absinthe.Adapter.t,
     context: map,
     root_value: any,
-    schema: Schema.t,
-    definition: Blueprint.node_t,
-    parent_type: Type.t,
+    schema: Absinthe.Schema.t,
+    definition: Absinthe.Blueprint.node_t,
+    parent_type: Absinthe.Type.t,
     source: any,
     state: field_state,
     acc: %{any => any},
     extensions: %{any => any},
     arguments: %{optional(atom) => any},
-    fragments: [Blueprint.Document.Fragment.Named.t],
+    fragments: [Absinthe.Blueprint.Document.Fragment.Named.t],
   }
 
   @enforce_keys [:adapter, :context, :root_value, :schema, :source]
