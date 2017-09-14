@@ -230,5 +230,31 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       assert errors == []
     end
 
+    it "handles GraphQL introspection" do
+      doc= """
+      query IntrospectionQuery {
+        __schema {
+          types {
+            ...FullType
+          }
+        }
+      }
+
+      fragment FullType on __Type {
+        fields {
+          args {
+            ...InputValue
+          }
+        }
+      }
+
+      fragment InputValue on __InputValue {
+        type { name }
+      }
+      """
+
+      assert {:ok, result, _} = run_phase(doc, operation_name: "IntrospectionQuery", variables: %{}, analyze_complexity: true)
+    end
+
   end
 end
