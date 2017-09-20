@@ -367,7 +367,7 @@ defmodule Absinthe.Schema do
   we would get all users for all accounts, but you could imagine wanting just
   `newUsers(accountId: 2)`.
 
-  In your schema you articulate the interests of a subscription via the `topic`
+  In your schema you articulate the interests of a subscription via the `config`
   macro:
 
   ```
@@ -375,8 +375,8 @@ defmodule Absinthe.Schema do
     field :new_users, :user do
       arg :account_id, non_null(:id)
 
-      topic fn args ->
-        args.account_id
+      config fn args,_info ->
+        {:ok, topic: args.account_id}
       end
     end
   end
@@ -397,8 +397,8 @@ defmodule Absinthe.Schema do
     field :new_users, :user do
       arg :account_id, non_null(:id)
 
-      topic fn args ->
-        args.account_id
+      config fn args, _info ->
+        {:ok, topic: args.account_id}
       end
 
       trigger :create_user, topic: fn user ->
@@ -411,7 +411,7 @@ defmodule Absinthe.Schema do
   The idea with a trigger is that it takes either a single mutation `:create_user`
   or a list of mutations `[:create_user, :blah_user, ...]` and a topic function.
   This function returns a value that is used to lookup documents on the basis of
-  the topic they returned from the `topic` macro.
+  the topic they returned from the `config` macro.
 
   Note that a subscription field can have `trigger` as many trigger blocks as you
   need, in the event that different groups of mutations return different results
