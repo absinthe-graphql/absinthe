@@ -222,7 +222,8 @@ defmodule Absinthe.Middleware do
       end
     end
 
-    def middleware(middleware, _field, %Absinthe.Type.Object{identifier: :query}) do
+    def middleware(middleware, _field, %Absinthe.Type.Object{identifier: identifier})
+    when identifier in [:query, :subscription, :mutation] do
       [MyApp.Web.Authentication | middleware]
     end
     def middleware(middleware, _field, _object) do
@@ -230,6 +231,11 @@ defmodule Absinthe.Middleware do
     end
   end
   ```
+
+  **It is important to note that we are matching for the `:query`, `:subscription` or
+  `:mutation` identifier types. We do this because the middleware function will be
+  called for each field in the schema. It is also important to provide a fallback so
+  that the default `Absinthe.Middleware.MapGet` is configured.**
 
   ## Main Points
 
