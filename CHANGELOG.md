@@ -1,7 +1,7 @@
 # Changelog
 
 ## v1.4.0
-Status: Beta
+Status: RC
 
 - Enhancement: Subscriptions! See the Absinthe.Phoenix project for getting started info
 - Enhancement: Null literal support [as laid out in the October 2016 GraphQL Specification](http://facebook.github.io/graphql/#sec-Null-Value)
