@@ -58,7 +58,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     acc = plugins |> run_callbacks(:after_resolution, info.acc, run_callbacks?)
 
-    Resolution.update(bp_root.resolution, result, acc)
+    Resolution.update(bp_root.resolution, result, info.context, acc)
   end
 
   defp run_callbacks(plugins, callback, acc, true) do
