@@ -119,6 +119,10 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
     Enum.reduce(fields, 0, &sum_complexity/2)
   end
 
+  defp sum_complexity(%{complexity: complexity}, acc) when is_nil(complexity) do
+    @default_complexity + acc
+  end
+
   defp sum_complexity(%{complexity: complexity}, acc) when is_integer(complexity) do
     complexity + acc
   end

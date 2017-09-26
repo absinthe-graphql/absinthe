@@ -5,6 +5,10 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
     use Absinthe.Schema
 
     query do
+      field :union_complexity, list_of(:search_result) do
+        resolve fn(_, _) -> {:ok, :foo} end
+      end
+
       field :foo_complexity, list_of(:foo) do
         arg :limit, non_null(:integer)
 
@@ -22,6 +26,15 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
         complexity fn _, child_complexity ->
           5 * child_complexity
         end
+      end
+    end
+
+    union :search_result do
+      types [:foo, :quux]
+      
+      resolve_type fn
+        :foo, _ -> :foo
+        :quux, _ -> :quux 
       end
     end
 
@@ -53,6 +66,24 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
   use Harness.Document.Phase, phase: Absinthe.Phase.Document.Complexity.Result, schema: Schema
 
   context "analysing complexity a document" do
+    it "use union" do
+      doc = """
+      query UnionComplexity {
+        unionComplexity {
+           ... on Foo {
+             bar
+          }
+        }
+      }
+      """
+
+      assert {:ok, result, _} = run_phase(doc, operation_name: "UnionComplexity", variables: %{})
+      op = result.operations |> Enum.find(&(&1.name == "UnionComplexity"))
+      assert op.complexity == 2
+      errors = result.resolution.validation_errors |> Enum.map(&(&1.message))
+      assert errors == []
+    end
+
     it "uses arguments and defaults to complexity of 1 for a field" do
       doc = """
       query ComplexityArg {
