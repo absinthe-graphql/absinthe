@@ -102,7 +102,8 @@ defmodule Absinthe.Execution.SubscriptionTest do
   }
   """
   it "can return an error tuple from the topic function" do
-    assert {:error, "unauthorized"} == run(@query, Schema, variables: %{"clientId" => "abc"}, context: %{pubsub: PubSub, authorized: false})
+    assert {:ok, %{errors: [%{locations: [%{column: 0, line: 2}], message: "unauthorized"}]}}
+      == run(@query, Schema, variables: %{"clientId" => "abc"}, context: %{pubsub: PubSub, authorized: false})
   end
 
 end
