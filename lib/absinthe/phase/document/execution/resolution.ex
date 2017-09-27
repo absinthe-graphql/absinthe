@@ -249,7 +249,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       {[], _} ->
         raise Absinthe.Resolution.result_error(original_value, bp_field, source)
       {[message: message], extra} ->
-        message = ~s(In field "#{bp_field.name}": #{message})
         put_error(result, error(bp_field, message, path, Map.new(extra)))
     end
   end
