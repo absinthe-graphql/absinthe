@@ -6,6 +6,7 @@ Status: RC
 - Enhancement: Subscriptions! See the Absinthe.Phoenix project for getting started info
 - Enhancement: Null literal support [as laid out in the October 2016 GraphQL Specification](http://facebook.github.io/graphql/#sec-Null-Value)
 - Enhancement: Errors now include path information. This path information can be accessed in resolvers via `Absinthe.Resolution.path/1`
+- Breaking Change: Errors returned from resolvers no longer say "In field #{field_name}:". The inclusion of the path information obviates the need for this data, and it makes error messages a lot easier to deal with on the front end.
 
 ## v1.3.2
 
