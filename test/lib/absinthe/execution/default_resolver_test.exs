@@ -32,7 +32,7 @@ defmodule Absinthe.Execution.DefaultResolverTest do
         field :bar, :string
       end
 
-      def middleware([], %{name: name, identifier: identifier}, _) do
+      def middleware([{Absinthe.Middleware.MapGet, _}], %{name: name, identifier: identifier}, _) do
         middleware_spec = Absinthe.Resolution.resolver_spec(fn parent, _, _ ->
           case parent do
             %{^name => value} -> {:ok, value}
