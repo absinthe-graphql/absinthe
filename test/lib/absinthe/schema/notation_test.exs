@@ -90,7 +90,7 @@ defmodule Absinthe.Schema.NotationTest do
     it "handles circular errors" do
       defmodule Circles do
         use Absinthe.Schema.Notation
-        
+
         object :foo do
           import_fields :bar
           field :name, :string
@@ -391,6 +391,20 @@ defmodule Absinthe.Schema.NotationTest do
         end
       end
       """, "Invalid schema notation: `object` must only be used toplevel"
+    end
+    it "cannot use reserved identifiers" do
+      assert_notation_error "ReservedIdentifierSubscription", """
+      object :subscription do
+      end
+      """, "Invalid schema notation: cannot create an `object` with reserved identifier `subscription`"
+      assert_notation_error "ReservedIdentifierQuery", """
+      object :query do
+      end
+      """, "Invalid schema notation: cannot create an `object` with reserved identifier `query`"
+      assert_notation_error "ReservedIdentifierMutation", """
+      object :mutation do
+      end
+      """, "Invalid schema notation: cannot create an `object` with reserved identifier `mutation`"
     end
   end
 
