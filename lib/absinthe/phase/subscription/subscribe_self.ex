@@ -66,9 +66,9 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
         {:error, error}
       val ->
         raise """
-        Invalid return from topic function!
+        Invalid return from config function!
 
-        Topic function must returne `{:ok, topic}` or `{:error, msg}`. You returned:
+        Config function must returne `{:ok, config}` or `{:error, msg}`. You returned:
 
         #{inspect val}
         """
@@ -76,11 +76,13 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
   end
 
   defp find_key!(config) do
-    config[:topic] || raise """
+    topic = config[:topic] || raise """
     Subscription config must include a non null topic!
 
     #{inspect config}
     """
+    
+    to_string(topic)
   end
 
   defp ensure_pubsub!(context) do

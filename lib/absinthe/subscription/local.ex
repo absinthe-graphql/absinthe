@@ -46,7 +46,7 @@ defmodule Absinthe.Subscription.Local do
     do_get_docs(pubsub, field, topic_fun.(mutation_result))
   end
   defp get_docs(pubsub, field, _mutation_result, key) do
-    do_get_docs(pubsub, field, key)
+    do_get_docs(pubsub, field, to_string(key))
   end
 
   defp do_get_docs(pubsub, field, keys) do
