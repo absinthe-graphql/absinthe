@@ -201,8 +201,8 @@ defmodule Absinthe.Schema do
 
       defp __do_absinthe_middleware__(middleware, field, object) do
         middleware
-        |> __MODULE__.middleware(field, object) # run field against user supplied function
         |> Absinthe.Schema.ensure_middleware(field, object) # if they forgot to add middleware set the default
+        |> __MODULE__.middleware(field, object) # run field against user supplied function
       end
 
       @doc false
