@@ -85,6 +85,7 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Validation.UniqueArgumentNames,
       Phase.Document.Validation.UniqueInputFieldNames,
       Phase.Document.Validation.FieldsOnCorrectType,
+      Phase.Document.Validation.OnlyOneSubscription,
       # Check Validation
       {Phase.Document.Validation.Result, options},
       # Prepare for Execution
@@ -95,7 +96,7 @@ defmodule Absinthe.Pipeline do
       {Phase.Document.Complexity.Analysis, options},
       {Phase.Document.Complexity.Result, options},
       # Execution
-      Phase.Subscription.SubscribeSelf,
+      {Phase.Subscription.SubscribeSelf, options},
       {Phase.Document.Execution.Resolution, options},
       # Format Result
       Phase.Document.Result

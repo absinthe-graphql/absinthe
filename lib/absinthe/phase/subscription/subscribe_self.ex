@@ -1,37 +1,46 @@
 defmodule Absinthe.Phase.Subscription.SubscribeSelf do
   use Absinthe.Phase
+  alias Absinthe.Phase
 
   @moduledoc false
 
   alias Absinthe.Blueprint
 
   @spec run(any, Keyword.t) :: {:ok, Blueprint.t}
-  def run(blueprint, _ \\ []) do
-    with %{type: :subscription} <- Blueprint.current_operation(blueprint) do
-      do_subscription(blueprint)
+  def run(blueprint, options) do
+    with %{type: :subscription} = op <- Blueprint.current_operation(blueprint) do
+      do_subscription(op, blueprint, options)
     else
       _ -> {:ok, blueprint}
     end
   end
 
-  def do_subscription(blueprint) do
+  def do_subscription(%{type: :subscription} = op, blueprint, options) do
     context = blueprint.resolution.context
     pubsub = ensure_pubsub!(context)
 
     hash = :erlang.phash2(blueprint)
     doc_id = "__absinthe__:doc:#{hash}"
 
-    with {:ok, field_key} <- get_field_key(blueprint, context) do
+    %{selections: [field]} = op
+
+    with {:ok, field_key} <- get_field_key(field, context) do
       Absinthe.Subscription.subscribe(pubsub, field_key, doc_id, blueprint)
-      {:replace, blueprint, [{Absinthe.Phase.Subscription.Result, topic: doc_id}]}
+      {:replace, blueprint, [{Phase.Subscription.Result, topic: doc_id}]}
     else
-      error ->
-        error
+      {:error, error} ->
+
+        blueprint = update_in(blueprint.resolution.validation_errors, &[error | &1])
+
+        error_pipeline = [
+          {Phase.Document.Result, options},
+        ]
+
+        {:replace, blueprint, error_pipeline}
     end
   end
 
-  defp get_field_key(blueprint, context) do
-    %{schema_node: schema_node, argument_data: argument_data} = get_field(blueprint)
+  defp get_field_key(%{schema_node: schema_node, argument_data: argument_data} = field, context) do
     name = schema_node.identifier
 
     config = case schema_node.config do
@@ -49,12 +58,17 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
         key = find_key!(config)
         {:ok, {name, key}}
       {:error, msg} ->
-        {:error, msg}
+        error = %Phase.Error{
+          phase: __MODULE__,
+          message: msg,
+          locations: [field.source_location],
+        }
+        {:error, error}
       val ->
         raise """
-        Invalid return from topic function!
+        Invalid return from config function!
 
-        Topic function must returne `{:ok, topic}` or `{:error, msg}`. You returned:
+        Config function must returne `{:ok, config}` or `{:error, msg}`. You returned:
 
         #{inspect val}
         """
@@ -62,19 +76,13 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
   end
 
   defp find_key!(config) do
-    config[:topic] || raise """
+    topic = config[:topic] || raise """
     Subscription config must include a non null topic!
 
     #{inspect config}
     """
-  end
-
-  defp get_field(blueprint) do
-    [field] =
-      blueprint
-      |> Absinthe.Blueprint.current_operation
-      |> Map.fetch!(:selections)
-    field
+    
+    to_string(topic)
   end
 
   defp ensure_pubsub!(context) do

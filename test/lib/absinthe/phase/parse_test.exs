@@ -9,7 +9,7 @@ defmodule Absinthe.Phase.ParseTest do
     assert {:error, _} = run("{ user(id: 2 { name } }")
   end
 
-  @reserved ~w(query mutation fragment on implements interface union scalar enum input extend)
+  @reserved ~w(query mutation subscription fragment on implements interface union scalar enum input extend)
   it "can parse queries with arguments and variables that are 'reserved words'" do
     @reserved
     |> Enum.each(fn

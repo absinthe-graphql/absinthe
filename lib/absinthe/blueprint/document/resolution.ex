@@ -36,8 +36,9 @@ defmodule Absinthe.Blueprint.Document.Resolution do
     result
   end
 
-  def update(resolution, result, acc) do
+  def update(resolution, result, context, acc) do
     %{resolution |
+      context: context,
       result: result,
       acc: acc
     }

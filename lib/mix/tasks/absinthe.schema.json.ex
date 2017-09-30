@@ -13,7 +13,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
 
   ## Usage
 
-      absinthe.schema.json [OPTIONS] [FILENAME]
+      absinthe.schema.json [FILENAME] [OPTIONS]
 
   ## Options
 

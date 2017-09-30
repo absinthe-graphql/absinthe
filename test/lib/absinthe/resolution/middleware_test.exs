@@ -108,7 +108,7 @@ defmodule Absinthe.MiddlewareTest do
     {authenticated { name }}
     """
     assert {:ok, %{errors: errors}} = Absinthe.run(doc, __MODULE__.Schema)
-    assert [%{locations: [%{column: 0, line: 1}], message: "In field \"authenticated\": unauthorized", path: ["authenticated"]}] == errors
+    assert [%{locations: [%{column: 0, line: 1}], message: "unauthorized", path: ["authenticated"]}] == errors
   end
 
   test "email fails with authorization error when no current user" do
@@ -116,7 +116,7 @@ defmodule Absinthe.MiddlewareTest do
     {public { name email }}
     """
     assert {:ok, %{errors: errors}} = Absinthe.run(doc, __MODULE__.Schema)
-    assert [%{locations: [%{column: 0, line: 1}], message: "In field \"email\": unauthorized", path: ["public", "email"]}] == errors
+    assert [%{locations: [%{column: 0, line: 1}], message: "unauthorized", path: ["public", "email"]}] == errors
   end
 
   test "email works when current user" do
@@ -133,7 +133,7 @@ defmodule Absinthe.MiddlewareTest do
     """
     assert {:ok, %{errors: errors}} = Absinthe.run(doc, __MODULE__.Schema)
     assert [%{locations: [%{column: 0, line: 1}],
-               message: "In field \"key\": unauthorized", path: ["returnsPrivateObject", "key"]}] == errors
+               message: "unauthorized", path: ["returnsPrivateObject", "key"]}] == errors
   end
 
   test "it can modify the context" do

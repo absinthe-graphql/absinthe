@@ -102,7 +102,27 @@ defmodule Absinthe.Execution.SubscriptionTest do
   }
   """
   it "can return an error tuple from the topic function" do
-    assert {:error, "unauthorized"} == run(@query, Schema, variables: %{"clientId" => "abc"}, context: %{pubsub: PubSub, authorized: false})
+    assert {:ok, %{errors: [%{locations: [%{column: 0, line: 2}], message: "unauthorized"}]}}
+      == run(@query, Schema, variables: %{"clientId" => "abc"}, context: %{pubsub: PubSub, authorized: false})
+  end
+  
+  @query """
+  subscription ($clientId: ID!) {
+    thing(clientId: $clientId)
+  }
+  """
+  it "stringifies topics" do
+    assert {:ok, %{"subscribed" => topic}} = run(@query, Schema, variables: %{"clientId" => "1"}, context: %{pubsub: PubSub})
+    PubSub.subscribe(topic)
+    Absinthe.Subscription.publish(PubSub, "foo", thing: 1)
+
+    assert_receive({:broadcast, msg})
+
+    assert %{
+      event: "subscription:data",
+      result: %{data: %{"thing" => "foo"}},
+      topic: topic
+    } == msg
   end
 
 end

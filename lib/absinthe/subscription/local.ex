@@ -37,6 +37,7 @@ defmodule Absinthe.Subscription.Local do
   defp do_get_docs(pubsub, field, keys) do
     keys
     |> List.wrap
+    |> Enum.map(&to_string/1)
     |> Enum.flat_map(&Absinthe.Subscription.get(pubsub, {field, &1}))
   end
 
