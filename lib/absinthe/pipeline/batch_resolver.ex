@@ -77,7 +77,7 @@ defmodule Absinthe.Pipeline.BatchResolver do
     Enum.reduce(blueprints, %{}, &Map.merge(&1.resolution.acc, &2))
   end
 
-  defp pipeline_error(exception) do
+  def pipeline_error(exception) do
     message = Exception.message(exception)
     stacktrace = System.stacktrace |> Exception.format_stacktrace
 

@@ -21,8 +21,13 @@ defmodule Absinthe.Subscription.Local do
         Absinthe.Phase.Document.Result
       ]
       for {doc, topic} <- Enum.zip(docs, topics), doc != :error do
-        {:ok, %{result: data}, _} = Absinthe.Pipeline.run(doc, pipeline)
-        :ok = pubsub.publish_subscription(topic, data)
+        try do
+          {:ok, %{result: data}, _} = Absinthe.Pipeline.run(doc, pipeline)
+          :ok = pubsub.publish_subscription(topic, data)
+        rescue
+          e ->
+            BatchResolver.pipeline_error(e)
+        end
       end
     end
   end
