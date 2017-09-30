@@ -176,7 +176,12 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
-  defmacro object(identifier, attrs \\ [], [do: block]) do
+  @reserved_identifiers ~w(query mutation subscription)a
+  defmacro object(identifier, attrs \\ [], block)
+  defmacro object(identifier, _attrs, _block) when identifier in @reserved_identifiers do
+    raise Absinthe.Schema.Notation.Error, "Invalid schema notation: cannot create an `object` with reserved identifier `#{identifier}`"
+  end
+  defmacro object(identifier, attrs, [do: block]) do
     __CALLER__
     |> recordable!(:object, @placement[:object])
     |> record_object!(identifier, attrs, block)
