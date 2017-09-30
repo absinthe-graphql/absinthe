@@ -16,11 +16,11 @@ defmodule Absinthe.Subscription.Local do
 
     if Enum.any?(docs_and_topics) do
       {topics, docs} = Enum.unzip(docs_and_topics)
-      docs = BatchResolver.run(docs, [schema: hd(docs).schema])
+      docs = BatchResolver.run(docs, [schema: hd(docs).schema, abort_on_error: false])
       pipeline = [
         Absinthe.Phase.Document.Result
       ]
-      for {doc, topic} <- Enum.zip(docs, topics) do
+      for {doc, topic} <- Enum.zip(docs, topics), doc != :error do
         {:ok, %{result: data}, _} = Absinthe.Pipeline.run(doc, pipeline)
         :ok = pubsub.publish_subscription(topic, data)
       end
