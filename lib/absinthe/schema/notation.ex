@@ -1216,7 +1216,7 @@ defmodule Absinthe.Schema.Notation do
   end
   defp do_import_types(type_module, _) do
     raise ArgumentError, """
-    #{type_module} is not a module
+    `#{Macro.to_string(type_module)}` is not a module
 
     This macro must be given a literal module name or a macro which expands to a
     literal module name. Variables are not supported at this time.
