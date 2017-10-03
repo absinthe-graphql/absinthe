@@ -381,17 +381,8 @@ defimpl Inspect, for: Absinthe.Resolution do
     inner =
       res
       |> Map.from_struct
-      |> Map.update!(:definition, fn
-        %{name: name} ->
-          name
-        _ ->
-          nil
-      end)
-      |> Map.update!(:parent_type, fn
-        %{identifier: identifier} ->
-          identifier
-        _ ->
-          nil
+      |> Map.update!(:fields_cache, fn _ ->
+        "#fieldscache<...>"
       end)
       |> Map.to_list
       |> Inspect.List.inspect(opts)

@@ -236,6 +236,16 @@ defmodule Absinthe.Schema do
     end
   end
 
+  @doc """
+  List of Plugins to run before / after resolution.
+
+  Plugins are modules that implement the `Absinthe.Plugin` behaviour. These modules
+  have the opportunity to run callbacks before and after the resolution of the entire
+  document, and have access to the resolution accumulator.
+
+  Plugins must be specified by the schema, so that Absinthe can make sure they are
+  all given a chance to run prior to resolution.
+  """
   @callback plugins() :: [Absinthe.Plugin.t]
 
   @doc false
