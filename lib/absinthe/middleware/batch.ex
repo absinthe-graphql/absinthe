@@ -95,12 +95,12 @@ defmodule Absinthe.Middleware.Batch do
 
   @type post_batch_fun :: (term -> Absinthe.Type.Field.result)
 
-  def before_resolution(acc) do
-    case acc do
+  def before_resolution(exec) do
+    case exec.acc do
       %{__MODULE__ => _} ->
-        put_in(acc[__MODULE__][:input], [])
+        put_in(exec.acc[__MODULE__][:input], [])
       _ ->
-        Map.put(acc, __MODULE__, %{input: [], output: %{}})
+        put_in(exec.acc[__MODULE__], %{input: [], output: %{}})
     end
   end
 
@@ -128,9 +128,9 @@ defmodule Absinthe.Middleware.Batch do
     |> Absinthe.Resolution.put_result(post_batch_fun.(batch_data_for_fun))
   end
 
-  def after_resolution(acc) do
-    output = do_batching(acc[__MODULE__][:input])
-    put_in(acc[__MODULE__][:output], output)
+  def after_resolution(exec) do
+    output = do_batching(exec.acc[__MODULE__][:input])
+    put_in(exec.acc[__MODULE__][:output], output)
   end
 
   defp do_batching(input) do

@@ -12,7 +12,7 @@ defmodule Absinthe.Resolution.Projector do
   the various type conditions that come along with fragments / inline fragments,
   field merging, and other wondeful stuff like that.
   """
-  def project(selections, %{identifier: identifier} = parent_type, path, cache, info) do
+  def project(selections, %{identifier: identifier} = parent_type, path, cache, exec) do
     path_names = for %{name: name, alias: alias} <- path, name, do: alias || name
     key = {identifier, path_names}
 
@@ -23,7 +23,7 @@ defmodule Absinthe.Resolution.Projector do
       _ ->
         fields =
           selections
-          |> collect(parent_type, info)
+          |> collect(parent_type, exec)
           |> rectify_order
 
         {fields, Map.put(cache, key, fields)}

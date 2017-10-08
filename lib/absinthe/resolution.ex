@@ -38,7 +38,6 @@ defmodule Absinthe.Resolution do
     fragments: [Absinthe.Blueprint.Document.Fragment.Named.t],
   }
 
-  @enforce_keys [:adapter, :context, :root_value, :schema, :source]
   defstruct [
     :value,
     :adapter,

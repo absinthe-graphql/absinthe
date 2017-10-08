@@ -8,7 +8,10 @@ Status: RC
 - Enhancement: Errors now include path information. This path information can be accessed in resolvers via `Absinthe.Resolution.path/1`
 
 - Breaking Change: Default middleware applied eagerly. If you're changing the default resolver, you WILL need to consult: https://github.com/absinthe-graphql/absinthe/pull/403
+- Breaking Change: Plugins receive an `%Absinthe.Blueprint.Execution{}` struct instead of the bare accumulator. This makes it possible for plugins to set or operate on context values.
 - Breaking Change: Errors returned from resolvers no longer say "In field #{field_name}:". The inclusion of the path information obviates the need for this data, and it makes error messages a lot easier to deal with on the front end.
+
+- Internal Change: `Absinthe.Blueprint.Document.Resolution` => `Absinthe.Blueprint.Execution`
 
 ## v1.3.2
 

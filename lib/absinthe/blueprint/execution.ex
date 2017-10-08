@@ -7,6 +7,11 @@ defmodule Absinthe.Blueprint.Execution do
   @type acc :: map
 
   defstruct [
+    :adapter,
+    :root_value,
+    :schema,
+    fragments: %{},
+    fields_cache: %{},
     validation_errors: [],
     result: nil,
     acc: %{},
@@ -25,7 +30,24 @@ defmodule Absinthe.Blueprint.Execution do
     | Result.List
     | Result.Leaf
 
-  def get_result(%__MODULE__{result: nil}, operation, root_value) do
+  def get(%{execution: %{result: nil} = exec} = bp_root, operation) do
+    result = %Absinthe.Blueprint.Result.Object{
+      root_value: exec.root_value,
+      emitter: operation,
+    }
+
+    %{exec |
+      result: result,
+      adapter: bp_root.adapter,
+      schema: bp_root.schema,
+      fragments: Map.new(bp_root.fragments, &{&1.name, &1})
+    }
+  end
+  def get(%{execution: exec}, _) do
+    exec
+  end
+
+  def get_result(%__MODULE__{result: nil, root_value: root_value}, operation) do
     %Absinthe.Blueprint.Result.Object{
       root_value: root_value,
       emitter: operation,
