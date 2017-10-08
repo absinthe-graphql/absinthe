@@ -22,7 +22,7 @@ defmodule Absinthe.ExtensionsTest do
   defmodule MyPhase do
     # rolls up the extensions data into a top level result
     def run(blueprint, _) do
-      extensions = get_ext(blueprint.resolution.result.fields)
+      extensions = get_ext(blueprint.execution.result.fields)
       result = Map.put(blueprint.result, :extensions, extensions)
       {:ok, %{blueprint | result: result}}
     end

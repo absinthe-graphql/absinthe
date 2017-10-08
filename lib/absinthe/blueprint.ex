@@ -21,7 +21,7 @@ defmodule Absinthe.Blueprint do
     flags: %{},
     errors: [],
     input: nil,
-    resolution: %Blueprint.Execution{},
+    execution: %Blueprint.Execution{},
     result: %{},
   ]
 
@@ -36,7 +36,7 @@ defmodule Absinthe.Blueprint do
     # Added by phases
     errors: [Absinthe.Phase.Error.t],
     flags: flags_t,
-    resolution: Blueprint.Document.Resolution.t,
+    execution: Blueprint.Execution.t,
     result: result_t,
   }
 

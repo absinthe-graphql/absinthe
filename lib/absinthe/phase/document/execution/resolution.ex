@@ -4,7 +4,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   # Runs resolution functions in a blueprint.
   #
-  # Blueprint results are placed under `blueprint.result.resolution`. This is
+  # Blueprint results are placed under `blueprint.result.execution`. This is
   # because the results form basically a new tree from the original blueprint.
 
   alias Absinthe.{Blueprint, Type, Phase}
@@ -22,13 +22,13 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp resolve_current(bp_root, operation, options) do
-    resolution = perform_resolution(bp_root, operation, options)
+    execution = perform_resolution(bp_root, operation, options)
 
-    blueprint = %{bp_root | resolution: resolution}
+    blueprint = %{bp_root | execution: execution}
 
     if Keyword.get(options, :plugin_callbacks, true) do
       bp_root.schema.plugins()
-      |> Absinthe.Plugin.pipeline(resolution.acc)
+      |> Absinthe.Plugin.pipeline(execution.acc)
       |> case do
         [] ->
           {:ok, blueprint}
@@ -41,11 +41,11 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp perform_resolution(bp_root, operation, options) do
-    root_value = bp_root.resolution.root_value
+    root_value = bp_root.execution.root_value
 
     info   = build_info(bp_root, root_value)
-    acc    = bp_root.resolution.acc
-    result = bp_root.resolution |> Execution.get_result(operation, root_value)
+    acc    = bp_root.execution.acc
+    result = bp_root.execution |> Execution.get_result(operation, root_value)
 
     plugins = bp_root.schema.plugins()
     run_callbacks? = Keyword.get(options, :plugin_callbacks, true)
@@ -58,7 +58,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     acc = plugins |> run_callbacks(:after_resolution, info.acc, run_callbacks?)
 
-    Execution.update(bp_root.resolution, result, info.context, acc)
+    Execution.update(bp_root.execution, result, info.context, acc)
   end
 
   defp run_callbacks(plugins, callback, acc, true) do
@@ -67,7 +67,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp run_callbacks(_, _, acc, _ ), do: acc
 
   defp build_info(bp_root, root_value) do
-    context = bp_root.resolution.context
+    context = bp_root.execution.context
 
     %Absinthe.Resolution{
       adapter: bp_root.adapter,

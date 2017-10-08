@@ -18,7 +18,7 @@ defmodule Absinthe.Phase.Document.Validation.Result do
   @spec do_run(Blueprint.t, %{result_phase: Phase.t, jump_phases: boolean}) :: Phase.result_t
   def do_run(input, %{result_phase: abort_phase, jump_phases: jump}) do
     {input, {errors, invalid}} = Blueprint.prewalk(input, {[], false}, &handle_node/2)
-    result = put_in(input.resolution.validation_errors, errors)
+    result = put_in(input.execution.validation_errors, errors)
     case {errors, invalid, jump} do
       {[], false, _} ->
         {:ok, result}
