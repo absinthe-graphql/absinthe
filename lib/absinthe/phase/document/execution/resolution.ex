@@ -8,7 +8,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   # because the results form basically a new tree from the original blueprint.
 
   alias Absinthe.{Blueprint, Type, Phase}
-  alias Blueprint.Document.Resolution
+  alias Blueprint.{Result, Execution}
 
   alias Absinthe.Phase
   use Absinthe.Phase
@@ -45,7 +45,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     info   = build_info(bp_root, root_value)
     acc    = bp_root.resolution.acc
-    result = bp_root.resolution |> Resolution.get_result(operation, root_value)
+    result = bp_root.resolution |> Execution.get_result(operation, root_value)
 
     plugins = bp_root.schema.plugins()
     run_callbacks? = Keyword.get(options, :plugin_callbacks, true)
@@ -58,7 +58,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     acc = plugins |> run_callbacks(:after_resolution, info.acc, run_callbacks?)
 
-    Resolution.update(bp_root.resolution, result, info.context, acc)
+    Execution.update(bp_root.resolution, result, info.context, acc)
   end
 
   defp run_callbacks(plugins, callback, acc, true) do
@@ -92,7 +92,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     {%{result | fields: fields}, info}
   end
-  def walk_result(%Resolution.Leaf{} = result, _, _, info, _) do
+  def walk_result(%Result.Leaf{} = result, _, _, info, _) do
     {result, info}
   end
   def walk_result(%{values: values} = result, bp_node, schema_type, info, path) do
@@ -264,24 +264,24 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   @spec to_result(resolution_result :: term, blueprint :: Blueprint.Document.Field.t, schema_type :: Type.t) ::
-    Resolution.node_t
+    Result.node_t
   defp to_result(nil, blueprint, %Type.NonNull{} = schema_type) do
     raise Absinthe.ExecutionError, nil_value_error(blueprint, schema_type)
   end
   defp to_result(nil, blueprint, _) do
-    %Resolution.Leaf{emitter: blueprint, value: nil}
+    %Result.Leaf{emitter: blueprint, value: nil}
   end
   defp to_result(root_value, blueprint, %Type.NonNull{of_type: inner_type}) do
     to_result(root_value, blueprint, inner_type)
   end
   defp to_result(root_value, blueprint, %Type.Object{}) do
-    %Resolution.Object{root_value: root_value, emitter: blueprint}
+    %Result.Object{root_value: root_value, emitter: blueprint}
   end
   defp to_result(root_value, blueprint, %Type.Interface{}) do
-    %Resolution.Object{root_value: root_value, emitter: blueprint}
+    %Result.Object{root_value: root_value, emitter: blueprint}
   end
   defp to_result(root_value, blueprint, %Type.Union{}) do
-    %Resolution.Object{root_value: root_value, emitter: blueprint}
+    %Result.Object{root_value: root_value, emitter: blueprint}
   end
   defp to_result(root_value, blueprint, %Type.List{of_type: inner_type}) do
     values =
@@ -289,16 +289,16 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       |> List.wrap
       |> Enum.map(&to_result(&1, blueprint, inner_type))
 
-    %Resolution.List{values: values, emitter: blueprint}
+    %Result.List{values: values, emitter: blueprint}
   end
   defp to_result(root_value, blueprint, %Type.Scalar{}) do
-    %Resolution.Leaf{
+    %Result.Leaf{
       emitter: blueprint,
       value: root_value,
     }
   end
   defp to_result(root_value, blueprint, %Type.Enum{}) do
-    %Resolution.Leaf{
+    %Result.Leaf{
       emitter: blueprint,
       value: root_value,
     }

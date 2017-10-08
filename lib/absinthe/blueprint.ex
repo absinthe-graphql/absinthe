@@ -21,7 +21,7 @@ defmodule Absinthe.Blueprint do
     flags: %{},
     errors: [],
     input: nil,
-    resolution: %Blueprint.Document.Resolution{},
+    resolution: %Blueprint.Execution{},
     result: %{},
   ]
 

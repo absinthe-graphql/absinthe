@@ -1,9 +1,8 @@
-defmodule Absinthe.Blueprint.Document.Resolution do
+defmodule Absinthe.Blueprint.Execution do
 
   @moduledoc false
 
   alias Absinthe.Phase
-  alias __MODULE__
 
   @type acc :: map
 
@@ -17,17 +16,17 @@ defmodule Absinthe.Blueprint.Document.Resolution do
 
   @type t :: %__MODULE__ {
     validation_errors: [Phase.Error.t],
-    result: nil | Resolution.Object.t,
+    result: nil | Result.Object.t,
     acc: acc,
   }
 
   @type node_t ::
-      Resolution.Object
-    | Resolution.List
-    | Resolution.Leaf
+      Result.Object
+    | Result.List
+    | Result.Leaf
 
   def get_result(%__MODULE__{result: nil}, operation, root_value) do
-    %Absinthe.Blueprint.Document.Resolution.Object{
+    %Absinthe.Blueprint.Result.Object{
       root_value: root_value,
       emitter: operation,
     }
