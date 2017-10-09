@@ -26,7 +26,7 @@ defmodule Absinthe.Phase.Parse do
   end
 
   defp add_validation_error(bp, error) do
-    put_in(bp.resolution.validation_errors, [error])
+    put_in(bp.execution.validation_errors, [error])
   end
 
   def handle_error(blueprint, %{jump_phases: true, result_phase: abort_phase}) do

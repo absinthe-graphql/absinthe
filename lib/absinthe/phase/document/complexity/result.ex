@@ -18,7 +18,7 @@ defmodule Absinthe.Phase.Document.Complexity.Result do
     {operation, errors} = Blueprint.prewalk(operation, [], fun)
 
     blueprint = Blueprint.update_current(input, fn(_) -> operation end)
-    blueprint = put_in(blueprint.resolution.validation_errors, errors)
+    blueprint = put_in(blueprint.execution.validation_errors, errors)
 
     case {errors, Map.new(options)} do
       {[], _} ->

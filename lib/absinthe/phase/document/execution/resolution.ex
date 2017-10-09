@@ -4,11 +4,11 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   # Runs resolution functions in a blueprint.
   #
-  # Blueprint results are placed under `blueprint.result.resolution`. This is
+  # Blueprint results are placed under `blueprint.result.execution`. This is
   # because the results form basically a new tree from the original blueprint.
 
   alias Absinthe.{Blueprint, Type, Phase}
-  alias Blueprint.Document.Resolution
+  alias Blueprint.{Result, Execution}
 
   alias Absinthe.Phase
   use Absinthe.Phase
@@ -22,13 +22,13 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp resolve_current(bp_root, operation, options) do
-    resolution = perform_resolution(bp_root, operation, options)
+    execution = perform_resolution(bp_root, operation, options)
 
-    blueprint = %{bp_root | resolution: resolution}
+    blueprint = %{bp_root | execution: execution}
 
     if Keyword.get(options, :plugin_callbacks, true) do
       bp_root.schema.plugins()
-      |> Absinthe.Plugin.pipeline(resolution.acc)
+      |> Absinthe.Plugin.pipeline(execution)
       |> case do
         [] ->
           {:ok, blueprint}
@@ -41,24 +41,18 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp perform_resolution(bp_root, operation, options) do
-    root_value = bp_root.resolution.root_value
-
-    info   = build_info(bp_root, root_value)
-    acc    = bp_root.resolution.acc
-    result = bp_root.resolution |> Resolution.get_result(operation, root_value)
+    exec = Execution.get(bp_root, operation)
 
     plugins = bp_root.schema.plugins()
     run_callbacks? = Keyword.get(options, :plugin_callbacks, true)
 
-    acc = plugins |> run_callbacks(:before_resolution, acc, run_callbacks?)
+    exec = plugins |> run_callbacks(:before_resolution, exec, run_callbacks?)
 
-    info = %{info | acc: acc}
+    {result, exec} = walk_result(exec.result, operation, operation.schema_node, exec, [operation])
 
-    {result, info} = walk_result(result, operation, operation.schema_node, info, [operation])
+    exec = plugins |> run_callbacks(:after_resolution, exec, run_callbacks?)
 
-    acc = plugins |> run_callbacks(:after_resolution, info.acc, run_callbacks?)
-
-    Resolution.update(bp_root.resolution, result, info.context, acc)
+    %{exec | result: result}
   end
 
   defp run_callbacks(plugins, callback, acc, true) do
@@ -66,65 +60,53 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
   defp run_callbacks(_, _, acc, _ ), do: acc
 
-  defp build_info(bp_root, root_value) do
-    context = bp_root.resolution.context
-
-    %Absinthe.Resolution{
-      adapter: bp_root.adapter,
-      context: context,
-      root_value: root_value,
-      schema: bp_root.schema,
-      source: root_value,
-      fragments: Map.new(bp_root.fragments, &{&1.name, &1}),
-    }
-  end
-
   @doc """
   This function walks through any existing results. If no results are found at a
   given node, it will call the requisite function to expand and build those results
   """
-  def walk_result(%{fields: nil} = result, bp_node, _schema_type, info, path) do
-    {fields, info} = resolve_fields(bp_node, info, result.root_value, path)
-    {%{result | fields: fields}, info}
+  def walk_result(%{fields: nil} = result, bp_node, _schema_type, exec, path) do
+    {fields, exec} = resolve_fields(bp_node, exec, result.root_value, path)
+    {%{result | fields: fields}, exec}
   end
-  def walk_result(%{fields: fields} = result, bp_node, schema_type, info, path) do
-    {fields, info} = walk_results(fields, bp_node, schema_type, info, [0 | path], [])
+  def walk_result(%{fields: fields} = result, bp_node, schema_type, exec, path) do
+    {fields, exec} = walk_results(fields, bp_node, schema_type, exec, [0 | path], [])
 
-    {%{result | fields: fields}, info}
+    {%{result | fields: fields}, exec}
   end
-  def walk_result(%Resolution.Leaf{} = result, _, _, info, _) do
-    {result, info}
+  def walk_result(%Result.Leaf{} = result, _, _, exec, _) do
+    {result, exec}
   end
-  def walk_result(%{values: values} = result, bp_node, schema_type, info, path) do
-    {values, info} = walk_results(values, bp_node, schema_type, info, [0 | path], [])
-    {%{result | values: values}, info}
+  def walk_result(%{values: values} = result, bp_node, schema_type, exec, path) do
+    {values, exec} = walk_results(values, bp_node, schema_type, exec, [0 | path], [])
+    {%{result | values: values}, exec}
   end
-  def walk_result(%Absinthe.Resolution{} = res, _bp_node, _schema_type, info, _path) do
-    do_resolve_field(%{res | acc: info.acc}, info, res.source, res.path)
+  def walk_result(%Absinthe.Resolution{} = res, _bp_node, _schema_type, exec, _path) do
+    res = update_persisted_fields(res, exec)
+    do_resolve_field(res, exec, res.source, res.path)
   end
 
   # walk list results
-  defp walk_results([value | values], bp_node, inner_type, info, [i | sub_path] = path, acc) do
-    {result, info} = walk_result(value, bp_node, inner_type, info, path)
-    walk_results(values, bp_node, inner_type, info, [i + 1 | sub_path], [result | acc])
+  defp walk_results([value | values], bp_node, inner_type, exec, [i | sub_path] = path, acc) do
+    {result, exec} = walk_result(value, bp_node, inner_type, exec, path)
+    walk_results(values, bp_node, inner_type, exec, [i + 1 | sub_path], [result | acc])
   end
-  defp walk_results([], _, _, info, _, acc), do: {:lists.reverse(acc), info}
+  defp walk_results([], _, _, exec, _, acc), do: {:lists.reverse(acc), exec}
 
-  defp resolve_fields(parent, info, source, path) do
+  defp resolve_fields(parent, exec, source, path) do
     parent
     # parent is the parent field, we need to get the return type of that field
     |> get_return_type
     # that return type could be an interface or union, so let's make it concrete
-    |> get_concrete_type(source, info)
+    |> get_concrete_type(source, exec)
     |> case do
       nil ->
-        {[], info}
+        {[], exec}
       parent_type ->
-        {fields, fields_cache} = Absinthe.Resolution.Projector.project(parent.selections, parent_type, path, info.fields_cache, info)
+        {fields, fields_cache} = Absinthe.Resolution.Projector.project(parent.selections, parent_type, path, exec.fields_cache, exec)
 
-        info = %{info | fields_cache: fields_cache}
+        exec = %{exec | fields_cache: fields_cache}
 
-        do_resolve_fields(fields, info, source, parent_type, path, [])
+        do_resolve_fields(fields, exec, source, parent_type, path, [])
     end
   end
 
@@ -136,38 +118,40 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
   defp get_return_type(type), do: type
 
-  defp get_concrete_type(%Type.Union{} = parent_type, source, info) do
-    Type.Union.resolve_type(parent_type, source, info)
+  defp get_concrete_type(%Type.Union{} = parent_type, source, exec) do
+    Type.Union.resolve_type(parent_type, source, exec)
   end
-  defp get_concrete_type(%Type.Interface{} = parent_type, source, info) do
-    Type.Interface.resolve_type(parent_type, source, info)
+  defp get_concrete_type(%Type.Interface{} = parent_type, source, exec) do
+    Type.Interface.resolve_type(parent_type, source, exec)
   end
-  defp get_concrete_type(parent_type, _source, _info) do
+  defp get_concrete_type(parent_type, _source, _exec) do
     parent_type
   end
 
-  defp do_resolve_fields([field | fields], info, source, parent_type, path, acc) do
-    {result, info} = resolve_field(field, info, source, parent_type, [field | path])
-    do_resolve_fields(fields, info, source, parent_type, path, [result | acc])
+  defp do_resolve_fields([field | fields], exec, source, parent_type, path, acc) do
+    {result, exec} = resolve_field(field, exec, source, parent_type, [field | path])
+    do_resolve_fields(fields, exec, source, parent_type, path, [result | acc])
   end
-  defp do_resolve_fields([], info, _, _, _, acc), do: {:lists.reverse(acc), info}
+  defp do_resolve_fields([], exec, _, _, _, acc), do: {:lists.reverse(acc), exec}
 
-  def resolve_field(field, info, source, parent_type, path) do
-    info
+  def resolve_field(field, exec, source, parent_type, path) do
+    exec
     |> build_resolution_struct(field, source, parent_type, path)
-    |> do_resolve_field(info, source, path)
+    |> do_resolve_field(exec, source, path)
   end
 
   # bp_field needs to have a concrete schema node, AKA no unions or interfaces
-  defp do_resolve_field(res, info, source, path) do
+  defp do_resolve_field(res, exec, source, path) do
     res
     |> reduce_resolution
     |> case do
       %{state: :resolved} = res ->
-        build_result(res, info, source, path)
+        exec = update_persisted_fields(exec, res)
+        build_result(res, exec, source, path)
 
-      %{state: :suspended, acc: acc} = res ->
-        {res, %{info | acc: acc}}
+      %{state: :suspended} = res ->
+        exec = update_persisted_fields(exec, res)
+        {res, exec}
 
       final_res ->
         raise """
@@ -178,15 +162,21 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     end
   end
 
-  defp build_resolution_struct(info, bp_field, source, parent_type, path) do
-    %{info |
+
+  defp update_persisted_fields(dest, %{acc: acc, context: context, fields_cache: cache}) do
+    %{dest | acc: acc, context: context, fields_cache: cache}
+  end
+
+  defp build_resolution_struct(exec, bp_field, source, parent_type, path) do
+    common = Map.take(exec, [:adapter, :context, :acc, :root_value, :schema, :fragments, :fields_cache])
+    %Absinthe.Resolution{
       path: path,
       source: source,
       parent_type: parent_type,
       middleware: bp_field.schema_node.middleware,
       definition: bp_field,
       arguments: bp_field.argument_data,
-    }
+    } |> Map.merge(common)
   end
 
   defp reduce_resolution(%{middleware: []} = res), do: res
@@ -212,36 +202,31 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     fun.(res, [])
   end
 
-  defp build_result(%{errors: []} = res, info, _source, path) do
+  defp build_result(%{errors: []} = res, exec, _source, path) do
     %{
       value: result,
-      context: context,
-      acc: acc,
       definition: bp_field,
       extensions: extensions
     } = res
 
-    full_type = Type.expand(bp_field.schema_node.type, info.schema)
+    full_type = Type.expand(bp_field.schema_node.type, exec.schema)
 
     bp_field = put_in(bp_field.schema_node.type, full_type)
-
-    info = %{info | context: context, acc: acc}
 
     result = result |> to_result(bp_field, full_type)
 
     %{result | extensions: extensions}
-    |> walk_result(bp_field, full_type, info, path)
+    |> walk_result(bp_field, full_type, exec, path)
   end
-  defp build_result(%{errors: errors} = res, info, source, path) do
-    build_error_result({:error, errors}, errors, res.acc, res.definition, info, source, path)
+  defp build_result(%{errors: errors} = res, exec, source, path) do
+    build_error_result({:error, errors}, errors, res.definition, exec, source, path)
   end
 
-  defp build_error_result(original_value, error_values, acc, bp_field, info, source, path) do
-    info = %{info | acc: acc}
-    full_type = Type.expand(bp_field.schema_node.type, info.schema)
+  defp build_error_result(original_value, error_values, bp_field, exec, source, path) do
+    full_type = Type.expand(bp_field.schema_node.type, exec.schema)
     result = to_result(nil, bp_field, full_type)
     result = Enum.reduce(Enum.reverse(error_values), result, &put_result_error_value(&1, &2, original_value, bp_field, source, path))
-    {result, info}
+    {result, exec}
   end
 
   defp put_result_error_value(error_value, result, original_value, bp_field, source, path) do
@@ -264,24 +249,24 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   @spec to_result(resolution_result :: term, blueprint :: Blueprint.Document.Field.t, schema_type :: Type.t) ::
-    Resolution.node_t
+    Result.node_t
   defp to_result(nil, blueprint, %Type.NonNull{} = schema_type) do
     raise Absinthe.ExecutionError, nil_value_error(blueprint, schema_type)
   end
   defp to_result(nil, blueprint, _) do
-    %Resolution.Leaf{emitter: blueprint, value: nil}
+    %Result.Leaf{emitter: blueprint, value: nil}
   end
   defp to_result(root_value, blueprint, %Type.NonNull{of_type: inner_type}) do
     to_result(root_value, blueprint, inner_type)
   end
   defp to_result(root_value, blueprint, %Type.Object{}) do
-    %Resolution.Object{root_value: root_value, emitter: blueprint}
+    %Result.Object{root_value: root_value, emitter: blueprint}
   end
   defp to_result(root_value, blueprint, %Type.Interface{}) do
-    %Resolution.Object{root_value: root_value, emitter: blueprint}
+    %Result.Object{root_value: root_value, emitter: blueprint}
   end
   defp to_result(root_value, blueprint, %Type.Union{}) do
-    %Resolution.Object{root_value: root_value, emitter: blueprint}
+    %Result.Object{root_value: root_value, emitter: blueprint}
   end
   defp to_result(root_value, blueprint, %Type.List{of_type: inner_type}) do
     values =
@@ -289,16 +274,16 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       |> List.wrap
       |> Enum.map(&to_result(&1, blueprint, inner_type))
 
-    %Resolution.List{values: values, emitter: blueprint}
+    %Result.List{values: values, emitter: blueprint}
   end
   defp to_result(root_value, blueprint, %Type.Scalar{}) do
-    %Resolution.Leaf{
+    %Result.Leaf{
       emitter: blueprint,
       value: root_value,
     }
   end
   defp to_result(root_value, blueprint, %Type.Enum{}) do
-    %Resolution.Leaf{
+    %Result.Leaf{
       emitter: blueprint,
       value: root_value,
     }

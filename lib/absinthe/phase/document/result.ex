@@ -13,7 +13,7 @@ defmodule Absinthe.Phase.Document.Result do
   end
 
   defp process(blueprint) do
-    result = case blueprint.resolution do
+    result = case blueprint.execution do
       %{validation_errors: [], result: nil} ->
         :execution_failed
       %{validation_errors: [], result: result} ->

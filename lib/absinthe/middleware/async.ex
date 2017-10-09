@@ -80,16 +80,16 @@ defmodule Absinthe.Middleware.Async do
   # We must set the flag to false because if a previous resolution iteration
   # set it to true it needs to go back to false now. It will be set
   # back to true if any field uses this plugin again.
-  def before_resolution(acc) do
-    Map.put(acc, __MODULE__, false)
+  def before_resolution(exec) do
+    put_in(exec.acc[__MODULE__], false)
   end
   # Nothing to do after resolution for this plugin, so we no-op
-  def after_resolution(acc), do: acc
+  def after_resolution(exec), do: exec
 
   # If the flag is set we need to do another resolution phase.
   # otherwise, we do not
-  def pipeline(pipeline, acc) do
-    case acc do
+  def pipeline(pipeline, exec) do
+    case exec.acc do
       %{__MODULE__ => true} ->
         [Absinthe.Phase.Document.Execution.Resolution | pipeline]
       _ ->

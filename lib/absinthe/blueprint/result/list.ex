@@ -1,13 +1,13 @@
-defmodule Absinthe.Blueprint.Document.Resolution.Leaf do
+defmodule Absinthe.Blueprint.Result.List do
 
   @moduledoc false
 
   alias Absinthe.{Blueprint, Phase}
 
-  @enforce_keys [:emitter, :value]
+  @enforce_keys [:emitter, :values]
   defstruct [
     :emitter,
-    :value,
+    :values,
     errors: [],
     flags: %{},
     extensions: %{},
@@ -15,7 +15,7 @@ defmodule Absinthe.Blueprint.Document.Resolution.Leaf do
 
   @type t :: %__MODULE__{
     emitter: Blueprint.Document.Field.t,
-    value: Blueprint.Document.Resolution.node_t,
+    values: [Blueprint.Document.Resolution.node_t],
     errors: [Phase.Error.t],
     flags: Blueprint.flags_t,
     extensions: %{any => any},

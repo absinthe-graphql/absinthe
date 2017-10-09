@@ -16,7 +16,7 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
   end
 
   def do_subscription(%{type: :subscription} = op, blueprint, options) do
-    context = blueprint.resolution.context
+    context = blueprint.execution.context
     pubsub = ensure_pubsub!(context)
 
     hash = :erlang.phash2(blueprint)
@@ -30,7 +30,7 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
     else
       {:error, error} ->
 
-        blueprint = update_in(blueprint.resolution.validation_errors, &[error | &1])
+        blueprint = update_in(blueprint.execution.validation_errors, &[error | &1])
 
         error_pipeline = [
           {Phase.Document.Result, options},

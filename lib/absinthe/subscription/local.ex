@@ -11,7 +11,7 @@ defmodule Absinthe.Subscription.Local do
   def publish_mutation(pubsub, mutation_result, subscribed_fields) do
     docs_and_topics = for {field, key_strategy} <- subscribed_fields,
     {topic, doc} <- get_docs(pubsub, field, mutation_result, key_strategy) do
-      {topic, put_in(doc.resolution.root_value, mutation_result)}
+      {topic, put_in(doc.execution.root_value, mutation_result)}
     end
 
     if Enum.any?(docs_and_topics) do
