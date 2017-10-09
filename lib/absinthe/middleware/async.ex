@@ -88,8 +88,8 @@ defmodule Absinthe.Middleware.Async do
 
   # If the flag is set we need to do another resolution phase.
   # otherwise, we do not
-  def pipeline(pipeline, acc) do
-    case acc do
+  def pipeline(pipeline, exec) do
+    case exec.acc do
       %{__MODULE__ => true} ->
         [Absinthe.Phase.Document.Execution.Resolution | pipeline]
       _ ->

@@ -28,7 +28,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     if Keyword.get(options, :plugin_callbacks, true) do
       bp_root.schema.plugins()
-      |> Absinthe.Plugin.pipeline(execution.acc)
+      |> Absinthe.Plugin.pipeline(execution)
       |> case do
         [] ->
           {:ok, blueprint}

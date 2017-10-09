@@ -156,8 +156,8 @@ defmodule Absinthe.Middleware.Batch do
 
   # If the flag is set we need to do another resolution phase.
   # otherwise, we do not
-  def pipeline(pipeline, acc) do
-    case acc[__MODULE__][:input] do
+  def pipeline(pipeline, exec) do
+    case exec.acc[__MODULE__][:input] do
       [_|_] ->
         [Absinthe.Phase.Document.Execution.Resolution | pipeline]
       _ ->

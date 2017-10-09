@@ -8,7 +8,8 @@ defmodule Absinthe.Resolution do
   """
 
   @typedoc """
-  Information about the current resolution.
+  Information about the current resolution. It is created by adding field specific
+  information to the more general `%Absinthe.Blueprint.Execution{}` struct.
 
   ## Contents
   - `:adapter` - The adapter used for any name conversions.

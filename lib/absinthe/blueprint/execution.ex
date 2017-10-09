@@ -1,6 +1,32 @@
 defmodule Absinthe.Blueprint.Execution do
 
-  @moduledoc false
+  @moduledoc """
+  Blueprint Execution Data
+
+  The `%Absinthe.Blueprint.Execution{}` struct holds on to the core values that
+  drive a document's execution.
+
+  Here's how the execution flow works. Given a document like:
+  ```
+  {
+    posts {
+      title
+      author { name }
+    }
+  }
+  ```
+
+  After all the validation happens, and we're actually going to execute this document,
+  an `%Execution{}` struct is created. This struct is passed to each plugin's
+  `before_resolution` callback, so that plugins can set initial values in the accumulator
+  or context.
+
+  Then the resolution phase walks the document until it hits the `posts` field.
+  To resolve the posts field, an `%Absinthe.Resolution{}` struct is created from
+  the `%Execution{}` struct. This resolution struct powers the normal middleware
+  resolution process. When a field has resolved, the `:acc`, `:context`, and `:field_cache`
+  values within the resolution struct are pulled out and used to update the execution.
+  """
 
   alias Absinthe.Phase
 

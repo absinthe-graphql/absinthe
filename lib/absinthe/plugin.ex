@@ -47,9 +47,9 @@ defmodule Absinthe.Plugin do
   end
 
   @doc false
-  def pipeline(plugins, resolution_acc) do
+  def pipeline(plugins, exec) do
     Enum.reduce(plugins, [], fn plugin, pipeline ->
-      plugin.pipeline(pipeline, resolution_acc)
+      plugin.pipeline(pipeline, exec)
     end)
     |> Enum.dedup
     |> List.flatten
