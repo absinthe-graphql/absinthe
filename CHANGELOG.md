@@ -3,15 +3,47 @@
 ## v1.4.0
 Status: RC
 
-- Enhancement: Subscriptions! See the Absinthe.Phoenix project for getting started info
+- Enhancement: Subscriptions! See the Absinthe.Phoenix project for getting started info.
 - Enhancement: Null literal support [as laid out in the October 2016 GraphQL Specification](http://facebook.github.io/graphql/#sec-Null-Value)
 - Enhancement: Errors now include path information. This path information can be accessed in resolvers via `Absinthe.Resolution.path/1`
 
 - Breaking Change: Default middleware applied eagerly. If you're changing the default resolver, you WILL need to consult: https://github.com/absinthe-graphql/absinthe/pull/403
-- Breaking Change: Plugins receive an `%Absinthe.Blueprint.Execution{}` struct instead of the bare accumulator. This makes it possible for plugins to set or operate on context values.
+
+- Breaking Change: Plugins receive an `%Absinthe.Blueprint.Execution{}` struct instead of the bare accumulator. This makes it possible for plugins to set or operate on context values. Upgrade you plugins! Change this:
+  ```
+  def before_resolution(acc) do
+    acc = # doing stuff to the acc here
+  end
+  def after_resolution(acc) do
+    acc = # doing stuff to the acc here
+  end
+  def pipeline(pipeline, acc) do
+    case acc do
+      # checking on the acc here
+    end
+  end
+  ```
+  to
+  ```
+  def before_resolution(%{acc: acc} = exec) do
+    acc = # doing stuff to the acc here
+    %{exec | acc: acc}
+  end
+  def after_resolution(%{acc: acc} = exec) do
+    acc = # doing stuff to the acc here
+    %{exec | acc: acc}
+  end
+  def pipeline(pipeline, exec) do
+    case exec.acc do
+      # checking on the acc here
+    end
+  end
+  ```
+  The reason for this is that you can also access the `context` within the `exec` value. When using something like DataLoader, it's important to have easy to the context
+
 - Breaking Change: Errors returned from resolvers no longer say "In field #{field_name}:". The inclusion of the path information obviates the need for this data, and it makes error messages a lot easier to deal with on the front end.
 
-- Internal Change: `Absinthe.Blueprint.Document.Resolution` => `Absinthe.Blueprint.Execution`
+- Internal Change: `Absinthe.Blueprint.Document.Resolution` => `Absinthe.Blueprint.Execution`. See https://github.com/absinthe-graphql/absinthe/pull/409 for details.
 
 ## v1.3.2
 
