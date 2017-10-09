@@ -18,12 +18,9 @@ defmodule Absinthe.MiddlewareTest do
 
     alias Absinthe.MiddlewareTest
 
-    def middleware(middleware, field, object = %Absinthe.Type.Object{identifier: :secret_object}) do
-      fun = &auth/2
-
-      middleware = Absinthe.Schema.ensure_middleware(middleware, field, object)
-
-      [fun | middleware]
+    def middleware(middleware, _field, %Absinthe.Type.Object{identifier: :secret_object}) do
+      fun = &auth/2 # can't inline due to Elixir bug.
+      [ fun | middleware]
     end
     def middleware(middleware, _field, _) do
       middleware
@@ -134,6 +131,13 @@ defmodule Absinthe.MiddlewareTest do
     assert {:ok, %{errors: errors}} = Absinthe.run(doc, __MODULE__.Schema)
     assert [%{locations: [%{column: 0, line: 1}],
                message: "unauthorized", path: ["returnsPrivateObject", "key"]}] == errors
+  end
+
+    test "secret object can be accessed with a current user" do
+    doc = """
+    {returnsPrivateObject { key }}
+    """
+    assert {:ok, %{data: %{"returnsPrivateObject" => %{"key" => "value"}}}} == Absinthe.run(doc, __MODULE__.Schema, context: %{current_user: %{}})
   end
 
   test "it can modify the context" do

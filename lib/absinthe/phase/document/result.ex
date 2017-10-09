@@ -75,6 +75,15 @@ defmodule Absinthe.Phase.Document.Result do
 
   defp field_data(fields, errors, acc \\ [])
   defp field_data([], errors, acc), do: {Map.new(acc), errors}
+  defp field_data([%Absinthe.Resolution{} = res | _], _errors, _acc) do
+    raise """
+    Found unresolved resolution struct!
+
+    You probably forgot to run the resolution phase again.
+
+    #{inspect res}
+    """
+  end
   defp field_data([field | fields], errors, acc) do
     {value, errors} = data(field, errors)
     field_data(fields, errors, [{field_name(field.emitter), value} | acc])
