@@ -21,7 +21,7 @@ defmodule Absinthe.Mixfile do
     [description: "GraphQL for Elixir",
      files: ["lib", "src", "priv", "mix.exs", "README*"],
      maintainers: ["Bruce Williams", "Ben Wilson"],
-     licenses: ["BSD"],
+     licenses: ["MIT"],
      links: %{github: "https://github.com/absinthe-graphql/absinthe"}]
   end
 
