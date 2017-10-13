@@ -34,6 +34,7 @@ defmodule Absinthe.Mixfile do
 
   defp deps do
     [
+      {:data_loader, github: "absinthe-graphql/data_loader", optional: true},
       {:ex_spec, "~> 2.0.0", only: :test},
       {:ex_doc, "~> 0.14", only: :dev},
       {:benchfella, "~> 0.3.0", only: :dev},

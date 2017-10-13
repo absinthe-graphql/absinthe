@@ -52,4 +52,10 @@ defmodule Absinthe.Resolution.Helpers do
     batch_config = {batch_fun, batch_data, post_batch_fun, opts}
     {:middleware, Middleware.Batch, batch_config}
   end
+
+  if Code.ensure_loaded?(DataLoader) do
+    def on_load(loader, fun) do
+      {:middleware, Absinthe.Middleware.DataLoader, {loader, fun}}
+    end
+  end
 end
