@@ -15,8 +15,8 @@ defmodule Absinthe.Resolution.Helpers do
 
   Forbidden in mutation fields. (TODO: actually enforce this)
   """
-  @spec async(( -> term)) :: {:plugin, Middleware.Async, term}
-  @spec async(( -> term), Keyword.t) :: {:plugin, Middleware.Async, term}
+  @spec async(( -> term)) :: {:middleware, Middleware.Async, term}
+  @spec async(( -> term), Keyword.t) :: {:middleware, Middleware.Async, term}
   def async(fun, opts \\ []) do
     {:middleware, Middleware.Async, {fun, opts}}
   end
