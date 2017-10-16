@@ -279,6 +279,8 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
 
         _, %{schema: schema, source: %{default_value: value, type: type}} ->
           case Absinthe.Schema.lookup_type(schema, type, unwrap: true) do
+            %Absinthe.Type.Enum{values_by_internal_value: values} ->
+              {:ok, values[value].name}
             %{serialize: serializer} ->
               {:ok, inspect serializer.(value)}
             _ ->
