@@ -15,7 +15,7 @@ if Code.ensure_loaded?(DataLoader) do
       %{resolution |
         context: Map.put(resolution.context, :loader, loader),
         state: :suspended,
-        middleware: [{__MODULE__, {:get, callback}} | resolution.middleware]
+        middleware: [{__MODULE__, callback} | resolution.middleware]
       }
     end
     def call(%{state: :suspended} = resolution, callback) do
