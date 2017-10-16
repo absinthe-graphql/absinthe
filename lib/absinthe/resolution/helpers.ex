@@ -57,5 +57,16 @@ defmodule Absinthe.Resolution.Helpers do
     def on_load(loader, fun) do
       {:middleware, Absinthe.Middleware.DataLoader, {loader, fun}}
     end
+
+    def dataloader(source, key) do
+      fn parent, args, %{context: %{loader: loader}} ->
+        loader
+        |> DataLoader.load(source, {key, args}, parent)
+        |> on_load(fn loader ->
+          result = DataLoader.get(loader, source, {key, args}, parent)
+          {:ok, result}
+        end)
+      end
+    end
   end
 end
