@@ -39,7 +39,7 @@ Status: RC
     end
   end
   ```
-  The reason for this is that you can also access the `context` within the `exec` value. When using something like DataLoader, it's important to have easy to the context
+  The reason for this is that you can also access the `context` within the `exec` value. When using something like Dataloader, it's important to have easy to the context
 
 - Breaking Change: Errors returned from resolvers no longer say "In field #{field_name}:". The inclusion of the path information obviates the need for this data, and it makes error messages a lot easier to deal with on the front end.
 

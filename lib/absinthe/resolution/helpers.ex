@@ -53,17 +53,17 @@ defmodule Absinthe.Resolution.Helpers do
     {:middleware, Middleware.Batch, batch_config}
   end
 
-  if Code.ensure_loaded?(DataLoader) do
+  if Code.ensure_loaded?(Dataloader) do
     def on_load(loader, fun) do
-      {:middleware, Absinthe.Middleware.DataLoader, {loader, fun}}
+      {:middleware, Absinthe.Middleware.Dataloader, {loader, fun}}
     end
 
     def dataloader(source, key) do
       fn parent, args, %{context: %{loader: loader}} ->
         loader
-        |> DataLoader.load(source, {key, args}, parent)
+        |> Dataloader.load(source, {key, args}, parent)
         |> on_load(fn loader ->
-          result = DataLoader.get(loader, source, {key, args}, parent)
+          result = Dataloader.get(loader, source, {key, args}, parent)
           {:ok, result}
         end)
       end
