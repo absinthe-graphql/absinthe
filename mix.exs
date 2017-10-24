@@ -102,7 +102,7 @@ defmodule Absinthe.Mixfile do
     [
       "Introduction": ~r/guides\/introduction\/.*/,
       "Tutorial": ~r/guides\/tutorial\/.*/,
-      "Guides": ~r/guides\/[^\/]+\.md/,
+      "Topics": ~r/guides\/[^\/]+\.md/,
       "Upgrade Guides": ~r/guides\/upgrading\/.*/,
     ]
   end
