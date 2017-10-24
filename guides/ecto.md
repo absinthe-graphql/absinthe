@@ -3,7 +3,7 @@
 > Much of this guide is out-of-date with recent additions to the [absinthe_ecto](https://hex.pm/packages/absinthe_ecto)
 > package.
 >
-> You can help! Please edit `guides/ecto.md` and submit a [pull request](https://github.com/absinthe-graphql/absinthe/pulls).
+> You can help! Please fork the [absinthe](https://github.com/absinthe-graphql/absinthe) repository, edit `guides/ecto.md`, and submit a [pull request](https://github.com/absinthe-graphql/absinthe/pulls).
 
 ## Avoiding N+1 Queries
 
