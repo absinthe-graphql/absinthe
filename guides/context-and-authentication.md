@@ -1,4 +1,4 @@
-# Context and Authentication
+# The Context and Authentication
 
 Absinthe context exists to provide shared values to a given document execution.
 A common use would be to pass in the current user of a given request. The context
@@ -10,7 +10,7 @@ a given execution.
 As a basic example let's think about a profile page, where we want the current user
 to be able to access basic information about themselves, but not other users.
 
-First we'll need a very basic schema
+First we'll need a very basic schema:
 
 ```elixir
 defmodule MyApp.Schema do
@@ -37,7 +37,7 @@ defmodule MyApp.Schema do
 end
 ```
 
-A query we might want would look like
+A query we might want could look like:
 
 ```graphql
 {
@@ -47,7 +47,7 @@ A query we might want would look like
 }
 ```
 
-If we're signed in as user 1, we should get only user 1's email.
+If we're signed in as user 1, we should get only user 1's email, for example:
 
 ```json
 {
@@ -57,7 +57,7 @@ If we're signed in as user 1, we should get only user 1's email.
 }
 ```
 
-In order to set the context, our call to Absinthe.run should look like:
+In order to set the context, our call to `Absinthe.run/3` should look like:
 
 ```elixir
 Absinthe.run(document, MyApp.Schema, context: %{current_user: %{id: "1"}})
@@ -154,7 +154,7 @@ plug Absinthe.Plug,
   schema: MyApp.Schema
 ```
 
-If you're using a phoenix router, add the context plug to a pipeline.
+If you're using a Phoenix router, add the context plug to a pipeline.
 
 ```elixir
 defmodule MyApp.Router do

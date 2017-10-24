@@ -1,4 +1,4 @@
-# Plug and Phoenix
+# Plug and Phoenix Setup
 
 First, install Absinthe.Plug and a JSON codec of your choice,
 eg, [Poison](https://hex.pm/packages/poison):

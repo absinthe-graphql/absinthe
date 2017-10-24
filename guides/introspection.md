@@ -1,4 +1,4 @@
-# Introspection
+# Schema Introspection
 
 You can introspect your schema using `__schema`, `__type`, and `__typename`,
 as [described in the specification](https://facebook.github.io/graphql/#sec-Introspection).
@@ -91,31 +91,24 @@ Getting the name of the fields for a named type:
 }
 ```
 
-<p class="warning">
 Note that you may have to nest several depths of <code>type</code>/<code>ofType</code>, as
 type information includes any wrapping layers of <a href="https://facebook.github.io/graphql/#sec-List">List</a>
 and/or <a href="https://facebook.github.io/graphql/#sec-Non-null">NonNull</a>.
-</p>
 
 ## Using GraphiQL
 
 The [GraphiQL project](https://github.com/graphql/graphiql) is
 "an in-browser IDE for exploring GraphQL."
 
-<figure>
-  <img src="/img/graphiql.png"/>
-  <figcaption class="description">GraphiQL in action.</figcaption>
-</figure>
-
 Absinthe provides GraphiQL via a plug in `absinthe_plug`. See the [Plug and Phoenix Guide](http://absinthe-graphql.org/guides/plug-phoenix)
-for how to install that library. Once installed, usage is simple as
+for how to install that library. Once installed, usage is simple as:
 
 ```elixir
 plug Absinthe.Plug.GraphiQL, schema: MyApp.Schema
 ```
 
 If you want to use it at a particular path (in this case `graphiql` in your Phoenix
-router, simply do
+router, simply do:
 
 ```elixir
 # filename: router.ex

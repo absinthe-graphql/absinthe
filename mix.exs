@@ -72,21 +72,21 @@ defmodule Absinthe.Mixfile do
 
       "guides/upgrading/v1.4.md",
 
-      "guides/writing-schemas.md",
+      "guides/schemas.md",
       "guides/plug-phoenix.md",
+      "guides/ecto.md",
+      "guides/middleware-and-plugins.md",
+      "guides/dataloader.md",
       "guides/context-and-authentication.md",
+      "guides/subscriptions.md",
       "guides/custom-scalars.md",
+      "guides/variables.md",
       "guides/introspection.md",
       "guides/deprecation.md",
-      "guides/variables.md",
       "guides/adapters.md",
-      "guides/ecto-best-practices.md",
-      "guides/dataloader.md",
-      "guides/middleware-and-plugins.md",
-      "guides/relay.md",
       "guides/complexity-analysis.md",
       "guides/file-uploads.md",
-      "guides/subscriptions.md",
+      "guides/relay.md",
     ]
   end
 
@@ -100,14 +100,14 @@ defmodule Absinthe.Mixfile do
 
   defp groups_for_modules do
 
-    # Others are ungrouped
+    # Ungrouped:
+    # - Absinthe
 
     [
 
       "Schema Definition and Types": [
         Absinthe.Schema,
         Absinthe.Schema.Notation,
-        Absinthe.Resolution,
         Absinthe.Resolution.Helpers,
         Absinthe.Type,
         Absinthe.Type.Custom,
@@ -161,6 +161,10 @@ defmodule Absinthe.Mixfile do
         Absinthe.Traversal,
         Absinthe.Resolution,
         Absinthe.Complexity,
+      ],
+
+      "Introspection": [
+        Absinthe.Introspection,
       ],
 
       "Testing": [

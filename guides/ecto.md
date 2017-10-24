@@ -1,8 +1,9 @@
 # Ecto Best Practices
 
-This guide is going to grow as we develop more tooling around Ecto integrations
-(it's a priority on [our roadmap](/roadmap), but there are some important things
-we can point out now that might be helpful.
+> Much of this guide is out-of-date with recent additions to the [absinthe_ecto](https://hex.pm/packages/absinthe_ecto)
+> package.
+>
+> You can help! Please edit `guides/ecto.md` and submit a [pull request](https://github.com/absinthe-graphql/absinthe/pulls).
 
 ## Avoiding N+1 Queries
 
@@ -105,8 +106,6 @@ map, letting us retrieve the individual author for each post.
 Not only is this a very efficient way to query the data, it's also 100% dynamic.
 If a query document asks for authors, they're loaded efficiently. If it does not,
 they aren't loaded at all.
-
-See FIXME link
 
 ## The Future
 

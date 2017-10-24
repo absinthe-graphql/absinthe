@@ -1,4 +1,4 @@
-# Middleware and Plugins
+# Writing Middleware and Plugins
 
 > We're sorry, this guide hasn't been written yet.
 >

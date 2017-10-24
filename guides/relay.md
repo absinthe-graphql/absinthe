@@ -1,4 +1,4 @@
-# Relay Integration
+# Use with Relay
 
 > Note: This guide was written with Relay Classic in mind. If you're building an application using Relay Modern, some of the constraints and patterns that we describe here (especially with regard to mutations) may no longer apply.
 >

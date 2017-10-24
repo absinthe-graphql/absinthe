@@ -1,5 +1,4 @@
----
-# Custom Scalars
+# Defining Custom Scalars
 
 One of the strengths of GraphQL is its extensibility -- which doesn't end with
 its object types, but is present all the way down to the scalar value level.
@@ -7,13 +6,11 @@ its object types, but is present all the way down to the scalar value level.
 Sometimes it makes sense to build custom scalar types to better model your
 domain. Here's how to do it.
 
-<p class="warning">
-  For this example, we'll be building a date-related scalar. In practice, you probably
-  want to use one of the already-created date and time scalars that ship with Absinthe as part of
-  <a href="https://hexdocs.pm/absinthe/Absinthe.Type.Custom.html#content"><code>Absinthe.Type.Custom</code></a>
-</p>
+> For this example, we'll be building a date-related scalar. In practice, you probably
+> want to use one of the already-created date and time scalars that ship with Absinthe as part of
+> <a href="https://hexdocs.pm/absinthe/Absinthe.Type.Custom.html#content"><code>Absinthe.Type.Custom</code></a>
 
-## Defining a scalar
+## The scalar macro
 
 Supporting additional scalar types is as easy as using the `scalar` macro and
 providing `parse` and `serialize` functions.
