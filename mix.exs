@@ -70,7 +70,13 @@ defmodule Absinthe.Mixfile do
       "guides/introduction/learning.md",
       "guides/introduction/community.md",
 
-      "guides/upgrading/v1.4.md",
+      "guides/tutorial/start.md",
+      "guides/tutorial/our-first-query.md",
+      "guides/tutorial/query-arguments.md",
+      "guides/tutorial/mutations.md",
+      "guides/tutorial/scalar-types.md",
+      "guides/tutorial/complex-arguments.md",
+      "guides/tutorial/conclusion.md",
 
       "guides/schemas.md",
       "guides/plug-phoenix.md",
@@ -87,14 +93,17 @@ defmodule Absinthe.Mixfile do
       "guides/complexity-analysis.md",
       "guides/file-uploads.md",
       "guides/relay.md",
+
+      "guides/upgrading/v1.4.md",
     ]
   end
 
   defp groups_for_extras do
     [
       "Introduction": ~r/guides\/introduction\/.*/,
-      "Upgrade Guides": ~r/guides\/upgrading\/.*/,
+      "Tutorial": ~r/guides\/tutorial\/.*/,
       "Guides": ~r/guides\/[^\/]+\.md/,
+      "Upgrade Guides": ~r/guides\/upgrading\/.*/,
     ]
   end
 
