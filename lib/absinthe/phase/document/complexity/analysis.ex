@@ -36,6 +36,7 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
     end)
   end
 
+  def handle_node(%Blueprint.Document.Fragment.Spread{} = node, _info, %{}), do: %{node | complexity: nil}
   def handle_node(%Blueprint.Document.Fragment.Spread{name: name} = node, _info, fragments) do
     fragment = Map.fetch!(fragments, name)
     %{node | complexity: fragment.complexity}
