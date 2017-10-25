@@ -145,32 +145,6 @@ defmodule Absinthe.Schema do
   alias Absinthe.Language
   alias __MODULE__
 
-  @doc """
-  Return the default middleware set for a field if none exists
-  """
-  def ensure_middleware([], _field, %{identifier: :subscription}) do
-    [Absinthe.Middleware.PassParent]
-  end
-  def ensure_middleware([], %{identifier: identifier}, _) do
-    [{Absinthe.Middleware.MapGet, identifier}]
-  end
-  def ensure_middleware(middleware, _field, _object) do
-    middleware
-  end
-
-  @doc """
-  Run the introspection query on a schema.
-
-  Convenience function.
-  """
-  @spec introspect(schema :: t, opts :: Absinthe.run_opts) :: Absinthe.run_result
-  def introspect(schema, opts \\ []) do
-    [:code.priv_dir(:absinthe), "graphql", "introspection.graphql"]
-    |> Path.join()
-    |> File.read!
-    |> Absinthe.run(schema, opts)
-  end
-
   defmacro __using__(opts \\ []) do
     quote do
       use Absinthe.Schema.Notation, unquote(opts)
@@ -182,16 +156,10 @@ defmodule Absinthe.Schema do
       @behaviour unquote(__MODULE__)
 
       @doc false
-      def __absinthe_middleware__(middleware, field, %{name: "__" <> _} = object) do
-        # if we have the double underscore prefix we're dealing with introspection
-        # types, which should use the built in default middleware
-        middleware
-        |> Absinthe.Schema.ensure_middleware(field, object)
-        |> __do_absinthe_middleware__(field, object)
-      end
       def __absinthe_middleware__(middleware, field, %{identifier: :mutation} = object) do
         # mutation objects should run publication triggers
         middleware
+        |> Absinthe.Schema.__ensure_middleware__(field, object)
         |> Absinthe.Subscription.add_middleware
         |> __do_absinthe_middleware__(field, object)
       end
@@ -201,8 +169,16 @@ defmodule Absinthe.Schema do
 
       defp __do_absinthe_middleware__(middleware, field, object) do
         middleware
-        |> Absinthe.Schema.ensure_middleware(field, object) # if they forgot to add middleware set the default
+        |> Absinthe.Schema.__ensure_middleware__(field, object)
         |> __MODULE__.middleware(field, object) # run field against user supplied function
+        |> case do
+          [] ->
+            raise """
+            Middleware callback must return a non empty list of middleware!
+            """
+          middleware ->
+            middleware
+        end
       end
 
       @doc false
@@ -234,6 +210,55 @@ defmodule Absinthe.Schema do
 
       defoverridable middleware: 3, plugins: 0
     end
+  end
+
+  @doc false
+  def __ensure_middleware__([], _field, %{identifier: :subscription}) do
+    [Absinthe.Middleware.PassParent]
+  end
+  def __ensure_middleware__([], %{identifier: identifier}, _) do
+    [{Absinthe.Middleware.MapGet, identifier}]
+  end
+  def __ensure_middleware__(middleware, _field, _object) do
+    middleware
+  end
+
+  @doc """
+  Run the introspection query on a schema.
+
+  Convenience function.
+  """
+  @spec introspect(schema :: t, opts :: Absinthe.run_opts) :: Absinthe.run_result
+  def introspect(schema, opts \\ []) do
+    [:code.priv_dir(:absinthe), "graphql", "introspection.graphql"]
+    |> Path.join()
+    |> File.read!
+    |> Absinthe.run(schema, opts)
+  end
+
+  @doc """
+  Replace the default middleware
+
+  ## Examples
+  Replace the default for all fields with a string lookup instead of an atom lookup:
+  ```
+  def middleware(middleware, field, object) do
+    new_middleware = {Absinthe.Middleware.MapGet, to_string(field.identifier)}
+    middleware
+    |> Absinthe.Schema.replace_default(new_middleware, field, object)
+  end
+
+  end
+  ```
+  """
+  def replace_default(middleware_list, new_middleware, %{identifier: identifer}, _object) do
+    Enum.map(middleware_list, fn middleware ->
+      case middleware do
+        {Absinthe.Middleware.MapGet, ^identifer} ->
+          new_middleware
+        middleware -> middleware
+      end
+    end)
   end
 
   @doc """

@@ -44,6 +44,8 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
           |> Enum.reverse
           |> Enum.map(&Map.fetch!(fragments, &1))
 
+        # fragments |> Enum.map(&(&1.name)) |> IO.inspect
+
         {fragments, 0}
       end
     after
@@ -67,11 +69,12 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
   @spec vertex(Blueprint.Document.Fragment.Named.t, :digraph.graph) :: Blueprint.Document.Fragment.Named.t
   defp vertex(%Blueprint.Document.Fragment.Named{} = fragment, graph) do
     :digraph.add_vertex(graph, fragment.name)
-    Enum.each(fragment.selections, fn
+    Blueprint.prewalk(fragment, fn
       %Blueprint.Document.Fragment.Spread{} = spread ->
         edge(fragment, spread, graph)
-      _ ->
-        false
+        spread
+      node ->
+        node
     end)
     fragment
   end

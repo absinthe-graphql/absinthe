@@ -1,7 +1,7 @@
 defmodule Absinthe.Mixfile do
   use Mix.Project
 
-  @version "1.4.0-rc.2"
+  @version "1.4.0-rc.3"
 
   def project do
     [app: :absinthe,
@@ -47,7 +47,7 @@ defmodule Absinthe.Mixfile do
 
   defp deps do
     [
-      {:dataloader, github: "absinthe-graphql/data_loader", optional: true},
+      {:dataloader, "~> 0.1.0", optional: true},
       {:ex_spec, "~> 2.0.0", only: :test},
       {:ex_doc, "~> 0.14", only: :dev},
       {:benchfella, "~> 0.3.0", only: :dev},
