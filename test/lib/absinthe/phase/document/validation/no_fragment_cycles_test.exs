@@ -34,17 +34,34 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
       assert ["nameFragment", "ageFragment"] = fragments |> Enum.map(&(&1.name))
 
       assert {:ok, %{fragments: fragments}} = """
-      fragment nameFragment on Dog {
-        name
-        ...ageFragment
-      }
       fragment ageFragment on Dog {
         age
+        ...nameFragment
+      }
+      fragment nameFragment on Dog {
+        name
       }
       """
       |> run
 
-      assert ["ageFragment", "nameFragment"] == fragments |> Enum.map(&(&1.name))
+      assert ["nameFragment", "ageFragment"] = fragments |> Enum.map(&(&1.name))
+
+      assert {:ok, %{fragments: fragments}} = """
+      fragment FullType on __Type {
+        fields {
+          args {
+            ...InputValue
+          }
+        }
+      }
+
+      fragment InputValue on __InputValue {
+        type { name }
+      }
+      """
+      |> run
+
+      assert ["InputValue", "FullType"] = fragments |> Enum.map(&(&1.name))
     end
 
     it "should return an error if the named fragment tries to use itself" do

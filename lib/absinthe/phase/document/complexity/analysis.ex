@@ -29,9 +29,7 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
   end
 
   defp process_fragments(input, info) do
-    input.fragments
-    |> Enum.reverse
-    |> Enum.reduce(%{}, fn fragment, processed ->
+    Enum.reduce(input.fragments, %{}, fn fragment, processed ->
       fun = &handle_node(&1, info, processed)
       fragment = Blueprint.postwalk(fragment, fun)
       Map.put(processed, fragment.name, fragment)
