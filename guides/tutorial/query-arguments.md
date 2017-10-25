@@ -16,74 +16,101 @@ This query includes arguments, which are the key value pairs contained
 within the parenthesis. To support this, we'll first create a user
 type, and then create a query in our schema that takes an id argument.
 
-In `web/schema/types`:
+We'll add another module for the account-related types; in `blog_web/schema/account_types`:
 
 ```elixir
-@desc "A user of the blog"
-object :user do
-  field :id, :id
-  field :name, :string
-  field :email, :string
-  field :posts, list_of(:post)
-end
+defmodule BlogWeb.Schema.AccountTypes do
+  use Absinthe.Schema.Notation
 
-@desc "A blog post"
+  @desc "A user of the blog"
+  object :user do
+    field :id, :id
+    field :name, :string
+    field :email, :string
+    field :posts, list_of(:post)
+  end
+
+end
+```
+
+The `:posts` field points to a list of `:post` results.
+
+We defined the `:post` type earlier. Let's add an `:author` field that
+points back to our `:user` type:
+
+``` elixir
 object :post do
-  field :title, :string
-  field :body, :string
+
+  # post fields we defined earlier...
+
   field :author, :user
+
 end
 ```
 
-In `web/schema.ex`:
+Now let's add the `:user` field to our query root object in our schema, defining a mandatory argument and using the `Resolvers.Accounts.find_user/3` resolver function. We also need to make sure we import the types from `BlogWeb.Schema.AccountTypes` so `:user` is available.
+
+In `blog_web/schema.ex`:
 
 ```elixir
-query do
+defmodule BlogWeb.Schema do
+  use Absinthe.Schema
 
-  @desc "Get all blog posts"
-  field :posts, list_of(:post) do
-    resolve &Blog.PostResolver.all/2
-  end
+  import_types Absinthe.Type.Custom
+  # Add this `import_types`:
+  import_types BlogWeb.Schema.AccountTypes
+  import_types BlogWeb.Schema.ContentTypes
 
-  @desc "Get a user of the blog"
-  field :user, type: :user do
-    arg :id, non_null(:id)
-    resolve &Blog.UserResolver.find/2
+  alias BlogWeb.Resolvers
+
+  query do
+
+    @desc "Get all posts"
+    field :posts, list_of(:post) do
+      resolve &Resolvers.Content.list_posts/3
+    end
+
+    # Add this field:
+    @desc "Get a user of the blog"
+    field :user, :user do
+      arg :id, non_null(:id)
+      resolve &Resolvers.Accounts.find_user/3
+    end
+
   end
 
 end
 ```
 
-In GraphQL you define your arguments ahead of time just like your
+In GraphQL you define your arguments ahead of time---just like your
 return values. This powers a number of very helpful features. To see
 them at work, let's look at our resolver.
 
-In `web/resolvers/user_resolver.ex`:
+In `blog_web/resolvers/accounts.ex`:
 
 ```elixir
-defmodule Blog.UserResolver do
-  def find(%{id: id}, _info) do
-    case Blog.Repo.get(User, id) do
-      nil  -> {:error, "User id #{id} not found"}
-      user -> {:ok, user}
+defmodule BlogWeb.Resolvers.Accounts do
+
+  def find_user(_parent, %{id: id}, _resolution) do
+    case Blog.Accounts.find_user(id) do
+      nil ->
+        {:error, "User ID #{id} not found"}
+      user ->
+        {:ok, user}
     end
   end
+
 end
 ```
 
-Resolve functions are expected to return either `{:ok, item}` or
-`{:error, binary | [binary, ...]}`.
-
-The first argument to every resolve function contains the GraphQL
-arguments of the query / mutation. Our schema marks the `:id` argument
-as `non_null`, so we can be certain we will receive it and just
-pattern match directly. If `:id` is left out of the query, Absinthe
-will return an informative error to the user, and the resolve function
-will not be called.
+Our schema marks the `:id` argument as `non_null`, so we can be
+certain we will receive it and just pattern match directly. If `:id`
+is left out of the query, Absinthe will return an informative error to
+the user, and the resolve function will not be called.
 
 Note also that the `:id` parameter is an atom, and not a binary like
-ordinary phoenix parameters. Absinthe knows what arguments will be
-used ahead of time, will coerce as appropriate -- and will cull any
+ordinary Phoenix parameters. Absinthe knows what arguments will be
+used ahead of time, will coerce as appropriate---and will cull any
 extraneous arguments given to a query. This means that all arguments
 can be supplied to the resolve functions with atom keys.
 
@@ -93,25 +120,43 @@ user that does not exist.
 
 ## Arguments for Non-Root Fields
 
-Let's assume, we want to query all posts from the user on a given
-date.  First, let's add a `date` field to our `Post` object. We can
-use the built-in `date` scalar from Absinthe.
+Let's assume we want to query all posts from a user published within a
+given time range. First, let's add a new field to our `:post` object
+type, `:published_at`.
+
+The GraphQL specification doesn't define any official date or time
+types, but it does support custom scalar types (we'll talk about how
+to define _those_ in the [next section](scalar-types.html), and
+Absinthe ships with several built-in scalar types. We'll use
+`:datetime` here.
+
+Edit `blog_web/schema/content_types.ex`:
 
 ```elixir
-# Import types from Absinthe
-import_types Absinthe.Type.Custom
+defmodule BlogWeb.Schema.ContentTypes do
+  # Add this:
+  use Absinthe.Schema.Notation
 
-@desc "A blog post"
-object :post do
-  field :title, :string
-  field :body, :string
-  field :author, :user
-  field :date, :date
+  @desc "A blog post"
+  object :post do
+    field :id, :id
+    field :title, :string
+    field :body, :string
+    field :author, :user
+    # Add this:
+    field :published_at, :datetime
+  end
 end
 ```
 
-Our ideal GraphQL query to get all posts from a user on a given date
-could look like this:
+To make the `:datetime` type available, add an `import_types` line to your `blog_web/schema.ex`:
+
+``` elixir
+import_types Absinthe.Type.Custom
+```
+
+Here's the query we'd like to be able to use, getting the posts for a user
+on a given date:
 
 ```graphql
 {
@@ -121,51 +166,60 @@ could look like this:
     posts(date: "2017-01-01") {
       title
       body
-      date
+      publishedAt
     }
   }
 }
 ```
 
-To use the passed date in our resolver, we need to add this argument
-to our user type definition.
+To use the passed date, we need to update our `:user` object type and
+make some changes to its `:posts` field; it needs to support  a `:date`
+argument and use a custom resolver. In `blog_web/schema/account_types.ex`:
 
 ```elixir
-@desc "A user of the blog"
-object :user do
-  field :id, :id
-  field :name, :string
-  field :email, :string
-  field :posts, list_of(:post) do
-    arg :date, :date
-    resolve &Blog.PostResolver.all/3 # We now use resolve with a 3-arity function
-  end
-end
-```
+defmodule BlogWeb.Schema.AccountTypes do
+  use Absinthe.Schema.Notation
 
-As you see, we now use `resolve/3` where the first argument is the
-parent (our user) and the second argument are the field arguments (our
-date). We now can return all posts from the given user on a given date
-in our `PostResolver`.
+  alias BlogWeb.Resolvers
 
-In `web/resolvers/post_resolver.ex`:
-
-```elixir
-defmodule Blog.PostResolver do
-  def all(%{id: id}, args, _info) do
-    query = Post
-    |> where(author_id: ^id)
-
-    query = case args[:date] do
-      nil -> query
-      date -> query |> where(date: ^date)
+  object :user do
+    field :id, :id
+    field :name, :string
+    field :email, :string
+    # Add the block here:
+    field :posts, list_of(:post) do
+      arg :date, :date
+      resolve &Resolvers.Content.list_posts/3
     end
-
-    {:ok, Blog.Repo.all(query)}
   end
+
 end
 ```
 
-Our `date` argument is optional so we can query all posts from a user
-or just the posts on the given date.  This is just an example, how you
-can build such a query with optional `where` clauses.
+For the resolver, we've added another function head to
+`Resolvers.Content.find_posts/3`. This illustrates how you can use the
+first argument to a resolver to match the parent object of a field. In
+this case, that parent object would be a `Blog.Accounts.User` Ecto
+schema:
+
+``` elixir
+# Add this:
+def list_posts(%Blog.Content.User{} = author, args, _resolution) do
+  {:ok, Blog.Content.list_posts(author, args)}
+end
+# Before this:
+def list_posts(_parent, _args, _resolution) do
+  {:ok, Blog.Content.list_posts()}
+end
+```
+
+Here we pass on the user and arguments to the domain logic function,
+`Blog.Content.list_posts/2`, which will find the posts for the user
+and date (if it's provided; the `:date` argument is optional). The
+resolver, just as when it's used for the top level query `:posts`,
+returns the posts in an `:ok` tuple.
+
+> Check out the full implementation of logic for `Blog.Content.list_posts/2` in the
+> [absinthe_tutorial](https://github.com/absinthe-graphql/absinthe_tutorial) repository.
+
+Next up, we look at how to change data from our API; [mutations](mutations.html).

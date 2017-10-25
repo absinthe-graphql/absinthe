@@ -45,3 +45,5 @@ end
 ```
 
 With this in place, we can accept posts!
+
+Now let's take a deeper look at [how custom scalars are defined](scalar-types.html).

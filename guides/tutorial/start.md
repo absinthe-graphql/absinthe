@@ -18,4 +18,4 @@ Before you start, it's a good idea to have some background into GraphQL in gener
 >  in the <a href="https://github.com/absinthe-graphql/absinthe_example">Absinthe Example</a>
 >  project on GitHub.
 
-Let's get started!
+Let's get started with [our first query](our-first-query.html)!

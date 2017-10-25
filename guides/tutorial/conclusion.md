@@ -7,6 +7,6 @@ you want the final code.
 We hope to expand this tutorial to include a comment system that will
 acquaint you with Union types and Fragments in the coming days.
 
-Head on over to the [Guides](/guides) section for further reading, and
-see the [Community](/community) for information on how to get help,
-ask questions, or contribute!
+Head on over to the topic guides for further reading, and see
+the [community page](community.html) for information
+on how to get help, ask questions, or contribute!

@@ -103,3 +103,5 @@ defp create_user(params, contact) do
   |> Blog.Repo.insert
 end
 ```
+
+Now let's [wrap things up](conclusion.html).

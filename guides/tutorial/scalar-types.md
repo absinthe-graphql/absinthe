@@ -62,3 +62,5 @@ serialized back to a string for easy JSON representation.
 > Note that Absinthe now comes complete with date types as part of the
 > [Absinthe.Type.Custom](Absinthe.Type.Custom.html) module, using the
 > date and datetime that are part of Elixir's standard library.
+
+Next up: [using complex arguments](complex-arguments.html).
