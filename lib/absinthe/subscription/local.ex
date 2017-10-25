@@ -11,7 +11,7 @@ defmodule Absinthe.Subscription.Local do
   def publish_mutation(pubsub, mutation_result, subscribed_fields) do
     docs_and_topics = for {field, key_strategy} <- subscribed_fields,
     {topic, doc} <- get_docs(pubsub, field, mutation_result, key_strategy) do
-      {topic, put_in(doc.execution.root_value, mutation_result)}
+      {{topic, {field, key_strategy}}, put_in(doc.execution.root_value, mutation_result)}
     end
 
     if Enum.any?(docs_and_topics) do
@@ -20,9 +20,15 @@ defmodule Absinthe.Subscription.Local do
       pipeline = [
         Absinthe.Phase.Document.Result
       ]
-      for {doc, topic} <- Enum.zip(docs, topics), doc != :error do
+      for {doc, {topic, key_strategy}} <- Enum.zip(docs, topics), doc != :error do
         try do
           {:ok, %{result: data}, _} = Absinthe.Pipeline.run(doc, pipeline)
+          Logger.debug("""
+          Absinthe Subscription Publication
+          Field Topic: #{inspect key_strategy}
+          Subscription id: #{inspect topic}
+          Data: #{inspect data}
+          """)
           :ok = pubsub.publish_subscription(topic, data)
         rescue
           e ->
