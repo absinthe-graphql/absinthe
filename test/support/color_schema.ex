@@ -20,7 +20,7 @@ defmodule ColorSchema do
     field :info,
       type: :channel_info,
       args: [
-        channel: [type: non_null(:channel)],
+        channel: [type: non_null(:channel), default_value: :r],
       ],
       resolve: fn
         %{channel: channel}, _ ->
@@ -49,6 +49,10 @@ defmodule ColorSchema do
 
     field :name, :string
     field :value, :integer
+  end
+
+  input_object :channel_input do
+    field :channel, :channel, default_value: :r
   end
 
 end

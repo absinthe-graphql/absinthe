@@ -139,6 +139,50 @@ defmodule Absinthe.IntrospectionTest do
       ] == values |> Enum.sort_by(&(&1["name"]))
     end
 
+    it "when used as the defaultValue of an argument" do
+      result = """
+      {
+        __schema {
+          queryType {
+            fields {
+              name
+              type {
+                name
+              }
+              args {
+                name
+                defaultValue
+              }
+            }
+          }
+        }
+      }
+      """
+      |> run(ColorSchema)
+      assert {:ok, %{data: %{"__schema" => %{"queryType" => %{"fields" => fields}}}}} = result
+      assert [
+        %{"name" => "info", "args" => [%{"name" => "channel", "defaultValue" => "RED"}]}
+      ] = fields
+    end
+
+    it "when used as the default value of an input object" do
+      result = """
+      {
+        __type(name: "ChannelInput") {
+          name
+          inputFields {
+            name
+            defaultValue
+          }
+        }
+      }
+      """
+      |> run(ColorSchema)
+      assert {:ok, %{data: %{"__type" => %{"name" => "ChannelInput", "inputFields" => input_fields}}}} = result
+      assert [
+        %{"name" => "channel", "defaultValue" => "RED"}
+      ] = input_fields
+    end
   end
 
   context "introspection of an input object type" do
