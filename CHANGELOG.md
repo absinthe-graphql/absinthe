@@ -7,7 +7,7 @@ Status: RC
 - Enhancement: Null literal support [as laid out in the October 2016 GraphQL Specification](http://facebook.github.io/graphql/#sec-Null-Value)
 - Enhancement: Errors now include path information. This path information can be accessed in resolvers via `Absinthe.Resolution.path/1`
 
-- Breaking Change: Default middleware applied eagerly. If you're changing the default resolver, you WILL need to consult: https://github.com/absinthe-graphql/absinthe/pull/403
+- Breaking Change: Default middleware applied eagerly. If you're changing the default resolver, you WILL need to consult: https://github.com/absinthe-graphql/absinthe/pull/403 See: https://hexdocs.pm/absinthe/1.4.0-rc.3/Absinthe.Schema.html#replace_default/4
 
 - Breaking Change: Plugins receive an `%Absinthe.Blueprint.Execution{}` struct instead of the bare accumulator. This makes it possible for plugins to set or operate on context values. Upgrade you plugins! Change this:
   ```
