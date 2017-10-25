@@ -12,15 +12,28 @@ defmodule Absinthe.Mixfile do
      start_permanent: Mix.env == :prod,
      package: package(),
      source_url: "https://github.com/absinthe-graphql/absinthe",
-     docs: [source_ref: "v#{@version}", main: "Absinthe"],
+     docs: [
+       source_ref: "v#{@version}",
+       main: "overview",
+       logo: "logo.png",
+       extra_section: "GUIDES",
+       assets: "guides/assets",
+       formatters: ["html", "epub"],
+       groups_for_modules: groups_for_modules(),
+       extras: extras(),
+       groups_for_extras: groups_for_extras()
+     ],
      deps: deps()
     ]
   end
 
   defp package do
     [description: "GraphQL for Elixir",
-     files: ["lib", "src", "priv", "mix.exs", "README*"],
-     maintainers: ["Bruce Williams", "Ben Wilson"],
+     files: ["lib", "src", "priv", "mix.exs", "README.md", "CHANGELOG.md"],
+     maintainers: [
+       "Bruce Williams",
+       "Ben Wilson",
+     ],
      licenses: ["MIT"],
      links: %{github: "https://github.com/absinthe-graphql/absinthe"}]
   end
@@ -44,4 +57,137 @@ defmodule Absinthe.Mixfile do
       {:mix_test_watch, "~> 0.4.1", only: [:test, :dev]}
     ]
   end
+
+
+  #
+  # Documentation
+  #
+
+  defp extras do
+    [
+      "guides/introduction/overview.md",
+      "guides/introduction/installation.md",
+      "guides/introduction/learning.md",
+      "guides/introduction/community.md",
+
+      "guides/tutorial/start.md",
+      "guides/tutorial/our-first-query.md",
+      "guides/tutorial/query-arguments.md",
+      "guides/tutorial/mutations.md",
+      "guides/tutorial/scalar-types.md",
+      "guides/tutorial/complex-arguments.md",
+      "guides/tutorial/conclusion.md",
+
+      "guides/schemas.md",
+      "guides/plug-phoenix.md",
+      "guides/ecto.md",
+      "guides/middleware-and-plugins.md",
+      "guides/dataloader.md",
+      "guides/context-and-authentication.md",
+      "guides/subscriptions.md",
+      "guides/custom-scalars.md",
+      "guides/variables.md",
+      "guides/introspection.md",
+      "guides/deprecation.md",
+      "guides/adapters.md",
+      "guides/complexity-analysis.md",
+      "guides/file-uploads.md",
+      "guides/relay.md",
+
+      "guides/upgrading/v1.4.md",
+    ]
+  end
+
+  defp groups_for_extras do
+    [
+      "Introduction": ~r/guides\/introduction\/.*/,
+      "Tutorial": ~r/guides\/tutorial\/.*/,
+      "Topics": ~r/guides\/[^\/]+\.md/,
+      "Upgrade Guides": ~r/guides\/upgrading\/.*/,
+    ]
+  end
+
+  defp groups_for_modules do
+
+    # Ungrouped:
+    # - Absinthe
+
+    [
+
+      "Schema Definition and Types": [
+        Absinthe.Schema,
+        Absinthe.Schema.Notation,
+        Absinthe.Resolution.Helpers,
+        Absinthe.Type,
+        Absinthe.Type.Custom,
+        Absinthe.Type.Argument,
+        Absinthe.Type.BuiltIns,
+        Absinthe.Type.Custom,
+        Absinthe.Type.Directive,
+        Absinthe.Type.Enum,
+        Absinthe.Type.Enum.Value,
+        Absinthe.Type.Field,
+        Absinthe.Type.InputObject,
+        Absinthe.Type.Interface,
+        Absinthe.Type.List,
+        Absinthe.Type.NonNull,
+        Absinthe.Type.Object,
+        Absinthe.Type.Scalar,
+        Absinthe.Type.Union,
+      ],
+
+      "Middleware and Plugins": [
+        Absinthe.Middleware,
+        Absinthe.Plugin,
+        Absinthe.Middleware.Async,
+        Absinthe.Middleware.Batch,
+        Absinthe.Middleware.Dataloader,
+        Absinthe.Middleware.MapGet,
+        Absinthe.Middleware.PassParent
+      ],
+
+      "Subscriptions": [
+        Absinthe.Subscription,
+        Absinthe.Subscription.Pubsub,
+      ],
+
+      "Extensibility": [
+        Absinthe.Pipeline,
+        Absinthe.Phase,
+        Absinthe.Phase.Validation.Helpers,
+        Absinthe.Pipeline.ErrorResult,
+      ],
+
+      "Document Adapters": [
+        Absinthe.Adapter,
+        Absinthe.Adapter.LanguageConventions,
+        Absinthe.Adapter.Passthrough,
+      ],
+
+      "Execution": [
+        Absinthe.Blueprint,
+        Absinthe.Blueprint.Execution,
+        Absinthe.Traversal,
+        Absinthe.Resolution,
+        Absinthe.Complexity,
+      ],
+
+      "Introspection": [
+        Absinthe.Introspection,
+      ],
+
+      "Testing": [
+        Absinthe.Test,
+      ],
+
+      "Utilities": [
+        Absinthe.Logger,
+        Absinthe.Utils,
+        Absinthe.Utils.Suggestion,
+      ],
+
+    ]
+  end
+
+
 end
