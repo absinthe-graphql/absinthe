@@ -29,14 +29,15 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
   end
 
   defp process_fragments(input, info) do
-    Enum.reduce(input.fragments, %{}, fn fragment, processed ->
+    input.fragments
+    |> Enum.reverse
+    |> Enum.reduce(%{}, fn fragment, processed ->
       fun = &handle_node(&1, info, processed)
       fragment = Blueprint.postwalk(fragment, fun)
       Map.put(processed, fragment.name, fragment)
     end)
   end
 
-  def handle_node(%Blueprint.Document.Fragment.Spread{} = node, _info, %{}), do: %{node | complexity: nil}
   def handle_node(%Blueprint.Document.Fragment.Spread{name: name} = node, _info, fragments) do
     fragment = Map.fetch!(fragments, name)
     %{node | complexity: fragment.complexity}

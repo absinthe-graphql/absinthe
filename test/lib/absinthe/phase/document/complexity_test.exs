@@ -285,7 +285,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       }
       """
 
-      assert {:ok, result, _} = run_phase(doc, operation_name: "IntrospectionQuery", variables: %{}, analyze_complexity: true)
+      assert {:ok, _, _} = run_phase(doc, operation_name: "IntrospectionQuery", variables: %{}, analyze_complexity: true)
     end
   end
 end
