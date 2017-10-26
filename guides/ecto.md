@@ -131,7 +131,7 @@ plugin that have done a good job of addressing these issues. That effort has bee
 extracted into the Dataloader project, which also draws inspiration from similar
 projects in the GraphQL world.
 
-Using data loader is as simple as doing:
+Using dataloader is as simple as doing:
 
 ```
 object :author do
