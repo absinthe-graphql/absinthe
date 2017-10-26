@@ -184,9 +184,11 @@ end
 ```
 
 
-## Legacy: Absinthe.Ecto
+## Deprecated: Absinthe.Ecto
 
-The Absinthe.Ecto project was developed as some useful helper functions built around Batching. You could use absinthe ecto like this:
+The [absinthe_ecto](https://github.com/absinthe-graphql/absinthe_ecto) project was developed to provide some useful batching helper functions for Absinthe schemas that needed access to data from Ecto.
+
+Here's an example of how it was used:
 
 ```
 use Absinthe.Ecto, repo: MyApp.Repo
@@ -197,4 +199,4 @@ object :post do
 end
 ```
 
-It also had some
+We recommend you use Dataloader instead, as described above. It's a far more flexible approach.
