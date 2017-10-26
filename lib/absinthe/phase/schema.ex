@@ -26,8 +26,17 @@ defmodule Absinthe.Phase.Schema do
     schema = Keyword.fetch!(options, :schema)
     adapter = Keyword.get(options, :adapter, Absinthe.Adapter.LanguageConventions)
 
-    result = Blueprint.prewalk(input, &handle_node(&1, schema, adapter))
+    result =
+      input
+      |> update_context(schema)
+      |> Blueprint.prewalk(&handle_node(&1, schema, adapter))
     {:ok, result}
+  end
+
+  defp update_context(input, nil), do: input
+  defp update_context(input, schema) do
+    context = schema.context(input.execution.context)
+    put_in(input.execution.context, context)
   end
 
   defp handle_node(%Blueprint{} = node, schema, adapter) do

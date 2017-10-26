@@ -58,14 +58,46 @@ defmodule Absinthe.Resolution.Helpers do
       {:middleware, Absinthe.Middleware.Dataloader, {loader, fun}}
     end
 
-    def dataloader(source, key) do
+    defp use_parent(loader, source, key, parent, args, opts) do
+      with true <- Keyword.get(opts, :use_parent, false),
+     {:ok, val} <- is_map(parent) && Map.fetch(parent, key) do
+       Dataloader.put(loader, source, {key, args}, parent, val)
+     else
+       _ -> loader
+     end
+    end
+
+    defp do_dataloader(parent, args, loader, source, key, opts) do
+      loader
+      |> use_parent(source, key, parent, args, opts)
+      |> Dataloader.load(source, {key, args}, parent)
+      |> on_load(fn loader ->
+        result = Dataloader.get(loader, source, {key, args}, parent)
+        {:ok, result}
+      end)
+    end
+
+    @type dataloader_tuple :: {:middleware, Absinthe.Middleware.Dataloader, term}
+
+    @spec dataloader(Dataloader.source_name) :: dataloader_tuple
+    def dataloader(source) do
+      fn parent, args, %{context: %{loader: loader}} = res ->
+        key = res.definition.schema_node.identifier
+        do_dataloader(parent, args, loader, source, key, [])
+      end
+    end
+
+    @spec dataloader(Dataloader.source_name, [use_parent: true | false]) :: dataloader_tuple
+    def dataloader(source, opts) when opts when is_list(opts) do
+      fn parent, args, %{context: %{loader: loader}} = res ->
+        key = res.definition.schema_node.identifier
+        do_dataloader(parent, args, loader, source, key, opts)
+      end
+    end
+    @spec dataloader(Dataloader.source_name, any, [use_parent: true | false]) :: dataloader_tuple
+    def dataloader(source, key, opts \\ []) do
       fn parent, args, %{context: %{loader: loader}} ->
-        loader
-        |> Dataloader.load(source, {key, args}, parent)
-        |> on_load(fn loader ->
-          result = Dataloader.get(loader, source, {key, args}, parent)
-          {:ok, result}
-        end)
+        do_dataloader(parent, args, loader, source, key, opts)
       end
     end
   end

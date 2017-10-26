@@ -187,6 +187,11 @@ defmodule Absinthe.Schema do
       end
 
       @doc false
+      def context(context) do
+        context
+      end
+
+      @doc false
       def __absinthe_lookup__(key) do
         key
         |> __absinthe_type__
@@ -208,7 +213,7 @@ defmodule Absinthe.Schema do
         Absinthe.Plugin.defaults()
       end
 
-      defoverridable middleware: 3, plugins: 0
+      defoverridable middleware: 3, plugins: 0, context: 1
     end
   end
 
@@ -272,6 +277,8 @@ defmodule Absinthe.Schema do
   all given a chance to run prior to resolution.
   """
   @callback plugins() :: [Absinthe.Plugin.t]
+  @callback middleware([Absinthe.Middleware.spec, ...], Type.Field.t, Type.Object.t) :: [Absinthe.Middleware.spec, ...]
+  @callback context(map) :: map
 
   @doc false
   def __after_compile__(env, _bytecode) do
