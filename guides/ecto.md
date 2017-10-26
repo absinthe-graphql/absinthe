@@ -107,24 +107,94 @@ Not only is this a very efficient way to query the data, it's also 100% dynamic.
 If a query document asks for authors, they're loaded efficiently. If it does not,
 they aren't loaded at all.
 
-## The Future
+## Dataloader
 
-The `batch` API above is a bit verbose. This verbosity happens because it's very
-generic, so you gotta give it the individual bits and pieces. However for Ecto
-associations specifically, you can easily see how the code we have above could be
-made more succinct by using information we already have on our Ecto schemas.
+`Absinthe.Middleware.Batch` achieves a lot and, with some helpers, was the
+standard way to solve this problem for a long time. While batching still has a
+place, it has a few limitations that have driven the development of Dataloader.
+There are small scale annoyances like the limitation of only being able to batch
+one thing at a time in a field, or the fact that the API can get very verbose.
 
-Thus what we hope to have soon in Absinthe.Ecto (doesn't exist yet) are functions
-that let you do something like:
+There's also some larger scale issues however. Ecto has a fair number of quirks
+that make it a difficult library to abstract access to. If you want the
+concurrent test system to work, you need to add `self()` to all the batch keys
+and do `Repo.all(caller: pid)` in every batch function so that it knows which
+sandbox to use. It gets very easy for your GraphQL functions to become full of
+direct database access, inevitably going around important data access rules you
+may want to enforce in your contexts. Alternatively, your context functions can
+end up with dozens of little functions that only exist to support batching items
+by ID.
 
-```elixir
-object :post do
-  field :name, :string
-  field :author, :user, resolve: belongs_to(User, :author)
-  field :comments, list_of(:comment), resolve: has_many(Comment)
+In time, people involved in larger projects have been able to build some
+abstractions, helpers, and conventions around the `Absinthe.Middleware.Batch`
+plugin that have done a good job of addressing these issues. That effort has been
+extracted into the Dataloader project, which also draws inspiration from similar
+projects in the GraphQL world.
+
+Using data loader is as simple as doing:
+
+```
+object :author do
+  @desc "Author of the post"
+  field :posts, list_of(:post), resolve: dataloader(Blog)
 end
 ```
 
-This `belongs_to` function would derive the right batching approach based on the
-Ecto association. These functions are mere conveniences. Everything they would do
-functionally is available to you today!
+Let's unpack what this does. The `Blog` value there is the name of a datasource which, in a Phoenix
+application will generally correspond to a context. You'd need something like this:
+
+```
+defmodule MyApp.Blog do
+  def data() do
+    Dataloader.Ecto.new(MyApp.Repo, query: &query/2)
+  end
+
+  def query(queryable, _) do
+    queryable
+  end
+end
+```
+
+The `data/0` function creates an ecto data source, to which you pass your repo and a query function. This query function
+is called every time you want to load something, and provides an opportunity to apply arguments or
+set defaults. So for example if you always want to only load non-deleted posts you can do:
+
+```
+def query(Post, _) do
+  from p in Post, where: is_nil(p.deleted_at)
+end
+def query(queryable, _) do
+  queryable
+end
+```
+
+Now any time you're loading posts, you'll just get posts that haven't been deleted. Helpfully, this rule is defined within your
+context, helping ensure that it has the final say about data access.
+
+To actually use this data source we need to add a loader to your GraphQL Context:
+
+```
+defmodule MyAppWeb.Context do
+  alias MyApp.Blog
+  def dataloader() do
+    Dataloader.new
+    |> Dataloader.add_source(Blog, Blog.data())
+  end
+end
+```
+
+
+## Legacy: Absinthe.Ecto
+
+The Absinthe.Ecto project was developed as some useful helper functions built around Batching. You could use absinthe ecto like this:
+
+```
+use Absinthe.Ecto, repo: MyApp.Repo
+
+object :post do
+  @desc "Author of the post"
+  field :author, :user, resolve: assoc(:author)
+end
+```
+
+It also had some
