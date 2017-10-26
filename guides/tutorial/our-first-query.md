@@ -152,4 +152,6 @@ Make sure that the `URL` is pointing to the correct place and press the play but
 
 <img style="box-shadow: 0 0 6px #ccc;" src="assets/tutorial/graphiql.png" alt=""/>
 
+## Next Step
+
 Now let's look at how we can [add arguments to our queries](query-arguments.html).

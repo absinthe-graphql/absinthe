@@ -26,7 +26,7 @@ mutation do
   field :post, type: :post do
     arg :title, non_null(:string)
     arg :body, non_null(:string)
-    arg :published_at, :datetime
+    arg :published_at, :naive_datetime
 
     resolve &Resolvers.Content.create_post/3
   end
@@ -56,5 +56,7 @@ Going back to the resolver code:
 
 - If the match for a current user is successful, the underlying `Blog.Content.create_post/2` function is invoked. It will return a tuple suitable for return; to read the Ecto-related nitty gritty, check out the [absithe_tutorial](https://github.com/absinthe-graphql/absinthe_tutorial) repository.
 - If the match for a current user isn't successful, the fall-through match will return an error indicating that a post can't be created.
+
+## Next Step
 
 Now let's take a look at [more complex arguments](complex-arguments.html).

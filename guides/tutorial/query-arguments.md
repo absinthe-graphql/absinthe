@@ -11,7 +11,6 @@ might look like:
 {
   user(id: "1") {
     name
-    email
     posts {
       id
       title
@@ -153,7 +152,7 @@ The GraphQL specification doesn't define any official date or time
 types, but it does support custom scalar types (you can read more
 about them in the [related guide](custom-scalar-types.html), and
 Absinthe ships with several built-in scalar types. We'll use
-`:datetime` here.
+`:naive_datetime` (which doesn't include timezone information) here.
 
 Edit `blog_web/schema/content_types.ex`:
 
@@ -168,12 +167,12 @@ defmodule BlogWeb.Schema.ContentTypes do
     field :body, :string
     field :author, :user
     # Add this:
-    field :published_at, :datetime
+    field :published_at, :naive_datetime
   end
 end
 ```
 
-To make the `:datetime` type available, add an `import_types` line to
+To make the `:naive_datetime` type available, add an `import_types` line to
 your `blog_web/schema.ex`:
 
 ``` elixir
@@ -193,7 +192,6 @@ on a given date:
 {
   user(id: "1") {
     name
-    email
     posts(date: "2017-01-01") {
       title
       body
@@ -250,7 +248,20 @@ and date (if it's provided; the `:date` argument is optional). The
 resolver, just as when it's used for the top level query `:posts`,
 returns the posts in an `:ok` tuple.
 
-> Check out the full implementation of logic for `Blog.Content.list_posts/2` in the
+> Check out the full implementation of logic for
+> `Blog.Content.list_posts/2`--and some simple seed data--in
+> the
 > [absinthe_tutorial](https://github.com/absinthe-graphql/absinthe_tutorial) repository.
 
-Next up, we look at how to change data from our API; [mutations](mutations.html).
+If you've done everything correctly (and have some data handy), if you
+start up your server with `mix phx.server` and head over
+to <http://localhost:4000/api/graphiql>, you should be able to play
+with the query.
+
+It should look something like this:
+
+<img style="box-shadow: 0 0 6px #ccc;" src="assets/tutorial/graphiql_user_posts.png" alt=""/>
+
+## Next Step
+
+Next up, we look at how to modify our data using [mutations](mutations.html).

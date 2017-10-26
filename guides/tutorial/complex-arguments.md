@@ -104,4 +104,6 @@ defp create_user(params, contact) do
 end
 ```
 
+## Next Step
+
 Now let's [wrap things up](conclusion.html).
