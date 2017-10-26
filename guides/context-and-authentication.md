@@ -104,18 +104,8 @@ defmodule MyApp.Web.Context do
   def init(opts), do: opts
 
   def call(conn, _) do
-    case build_context(conn) do
-      {:ok, context} ->
-        put_private(conn, :absinthe, %{context: context})
-      {:error, reason} ->
-        conn
-        |> send_resp(403, reason)
-        |> halt()
-      _ ->
-        conn
-        |> send_resp(400, "Bad Request")
-        |> halt()
-    end
+    context = build_context(conn)
+    put_private(conn, :absinthe, %{context: context})
   end
 
   @doc """
@@ -124,7 +114,9 @@ defmodule MyApp.Web.Context do
   def build_context(conn) do
     with ["Bearer " <> token] <- get_req_header(conn, "authorization"),
     {:ok, current_user} <- authorize(token) do
-      {:ok, %{current_user: current_user}}
+      %{current_user: current_user}
+    else
+      _ -> %{}
     end
   end
 
@@ -141,11 +133,18 @@ defmodule MyApp.Web.Context do
 end
 ```
 
-This plug will use the `authorization` header to lookup the current user, and return
-various error codes should that fail. If it succeeds, it correctly sets the absinthe context.
+This plug will use the `authorization` header to lookup the current user. If one
+is found, it correctly sets the absinthe context. If you're using Guardian or
+some other library that provides utilities for authenticating users you can use
+those here too, and just add their output to the context.
 
-Using this plug is very simple. If we're just in a normal plug context we can just
-make sure it's plugged prior to Absinthe.Plug
+If there is no current user it's better to simply not have the `:current_user`
+key inside the map, instead of doing `%{current_user: nil}`. This way you an
+just pattern match for `%{current_user: user}` in your code and not need to
+worry about the nil case.
+
+Using this plug is very simple. If we're just in a normal plug context we can
+just make sure it's plugged prior to Absinthe.Plug
 
 ```elixir
 plug MyApp.Web.Context
