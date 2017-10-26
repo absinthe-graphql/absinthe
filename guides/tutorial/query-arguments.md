@@ -114,9 +114,13 @@ used ahead of time, will coerce as appropriate---and will cull any
 extraneous arguments given to a query. This means that all arguments
 can be supplied to the resolve functions with atom keys.
 
-Finally you'll see that we need to handle the possibility that the
+Finally you'll see that we can handle the possibility that the
 query, while valid from GraphQL's perspective, may still ask for a
 user that does not exist.
+
+> There's a valid argument for just returning `{:ok, nil}` when a record can't
+> be found. Whether the absence of data constitutes an error is a decision you
+> get to make.
 
 ## Arguments for Non-Root Fields
 

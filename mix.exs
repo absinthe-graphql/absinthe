@@ -74,7 +74,6 @@ defmodule Absinthe.Mixfile do
       "guides/tutorial/our-first-query.md",
       "guides/tutorial/query-arguments.md",
       "guides/tutorial/mutations.md",
-      "guides/tutorial/scalar-types.md",
       "guides/tutorial/complex-arguments.md",
       "guides/tutorial/conclusion.md",
 
@@ -87,6 +86,8 @@ defmodule Absinthe.Mixfile do
       "guides/context-and-authentication.md",
       "guides/subscriptions.md",
       "guides/custom-scalars.md",
+      "guides/importing-types.md",
+      "guides/importing-fields.md",
       "guides/variables.md",
       "guides/introspection.md",
       "guides/deprecation.md",

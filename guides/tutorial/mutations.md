@@ -14,18 +14,21 @@ mutation CreatePost {
 Now we just need to define a `mutation` portion of our schema and
 a `:post` field:
 
-In `web/schema.ex`:
+In `blog_web/schema.ex`:
 
 ```elixir
 mutation do
 
+  # mutation fields we've defined previously...
+
+  # Add this:
   @desc "Create a post"
   field :post, type: :post do
     arg :title, non_null(:string)
     arg :body, non_null(:string)
-    arg :posted_at, non_null(:string)
+    arg :published_at, :datetime
 
-    resolve &Blog.PostResolver.create/2
+    resolve &Resolvers.Content.create_post/3
   end
 
 end
@@ -34,16 +37,22 @@ end
 The resolver in this case is responsible for making any changes and returning
 an `{:ok, post}` tuple matching the `:post` type we defined earlier:
 
-In `web/resolvers/post_resolver.ex`:
+In our `blog_web/resolvers/content.ex` module, we'll add the `create_post/3` resolver function:
 
 ```elixir
-def create(args, _info) do
-  %Post{}
-  |> Post.changeset(args)
-  |> Blog.Repo.insert
+def create_post(_parent, args, %{context: %{current_user: user}}) do
+  Blog.Content.create_post(user, args)
+end
+def create_post(_parent, _args, _resolution) do
+  {:error, "Access denied"}
 end
 ```
 
-With this in place, we can accept posts!
+This resolver adds a new concept: authorization. The resolution struct (that is, an [`Absinthe.Resolution.t`](Absinthe.Resolution.html) passed to the resolver as the third argument carries along with it the Absinthe context, a data structure that serves as the integration point with external mechanisms---like a Plug that authenticates the current user. You can learn more about how the context can be used in the [Context and Authentication](context-and-authentication.html) guide.
 
-Now let's take a deeper look at [how custom scalars are defined](scalar-types.html).
+Going back to the resolver code:
+
+- If the match for a current user is successful, the underlying `Blog.Content.create_post/2` function is invoked. It will return a tuple suitable for return; to read the Ecto-related nitty gritty, check out the [absithe_tutorial](https://github.com/absinthe-graphql/absinthe_tutorial) repository.
+- If the match for a current user isn't successful, the fall-through match will return an error indicating that a post can't be created.
+
+Now let's take a look at [more complex arguments](complex-arguments.html).
