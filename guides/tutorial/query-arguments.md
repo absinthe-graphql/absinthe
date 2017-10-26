@@ -1,22 +1,35 @@
 # Query Arguments
 
-Our blog needs users, and the ability to look up users by id. Here's
-the query we want to support:
+Our GraphQL API would be pretty boring (and useless) if clients
+couldn't retrieve filtered data.
+
+Let's assume that our API needs to add the ability to look-up users by
+their ID and get the posts that they've authored. Here's what a basic query to do that
+might look like:
 
 ```graphql
 {
   user(id: "1") {
     name
     email
+    posts {
+      id
+      title
+    }
   }
 }
 ```
 
-This query includes arguments, which are the key value pairs contained
-within the parenthesis. To support this, we'll first create a user
-type, and then create a query in our schema that takes an id argument.
+The query includes a field argument, `id`, contained within the
+parentheses after the `user` field name. To make this all work, we need to modify
+our schema a bit.
 
-We'll add another module for the account-related types; in `blog_web/schema/account_types`:
+## Defining Arguments
+
+First, let's create a `:user` type and define its relationship to
+`:post` while we're at it. We'll create a new module for the
+account-related types and put it there; in
+`blog_web/schema/account_types.ex`:
 
 ```elixir
 defmodule BlogWeb.Schema.AccountTypes do
@@ -33,10 +46,12 @@ defmodule BlogWeb.Schema.AccountTypes do
 end
 ```
 
-The `:posts` field points to a list of `:post` results.
+The `:posts` field points to a list of `:post` results. (This matches
+up with what we have on the Ecto side, where `Blog.Accounts.User`
+defines a `has_many` association with `Blog.Content.Post`.)
 
-We defined the `:post` type earlier. Let's add an `:author` field that
-points back to our `:user` type:
+We've already defined the `:post` type, but let's go ahead and add an
+`:author` field that points back to our `:user` type:
 
 ``` elixir
 object :post do
@@ -48,7 +63,11 @@ object :post do
 end
 ```
 
-Now let's add the `:user` field to our query root object in our schema, defining a mandatory argument and using the `Resolvers.Accounts.find_user/3` resolver function. We also need to make sure we import the types from `BlogWeb.Schema.AccountTypes` so `:user` is available.
+Now let's add the `:user` field to our query root object in our
+schema, defining a mandatory `:id` argument and using the
+`Resolvers.Accounts.find_user/3` resolver function. We also need to
+make sure we import the types from `BlogWeb.Schema.AccountTypes` so
+that `:user` is available.
 
 In `blog_web/schema.ex`:
 
@@ -57,8 +76,10 @@ defmodule BlogWeb.Schema do
   use Absinthe.Schema
 
   import_types Absinthe.Type.Custom
+
   # Add this `import_types`:
   import_types BlogWeb.Schema.AccountTypes
+
   import_types BlogWeb.Schema.ContentTypes
 
   alias BlogWeb.Resolvers
@@ -82,11 +103,7 @@ defmodule BlogWeb.Schema do
 end
 ```
 
-In GraphQL you define your arguments ahead of time---just like your
-return values. This powers a number of very helpful features. To see
-them at work, let's look at our resolver.
-
-In `blog_web/resolvers/accounts.ex`:
+Now lets use the argument in our resolver. In `blog_web/resolvers/accounts.ex`:
 
 ```elixir
 defmodule BlogWeb.Resolvers.Accounts do
@@ -104,33 +121,37 @@ end
 ```
 
 Our schema marks the `:id` argument as `non_null`, so we can be
-certain we will receive it and just pattern match directly. If `:id`
-is left out of the query, Absinthe will return an informative error to
-the user, and the resolve function will not be called.
+certain we will receive it. If `:id` is left out of the query,
+Absinthe will return an informative error to the user, and the resolve
+function will not be called.
 
-Note also that the `:id` parameter is an atom, and not a binary like
-ordinary Phoenix parameters. Absinthe knows what arguments will be
-used ahead of time, will coerce as appropriate---and will cull any
-extraneous arguments given to a query. This means that all arguments
-can be supplied to the resolve functions with atom keys.
+> If you have experience writing Phoenix controller actions, you might
+> wonder why we can match incoming arguments with atoms instead of
+> having to use strings.
+>
+> The answer is simple: you've defined the arguments in the schema
+> using atom identifiers, so Absinthe knows what arguments will be
+> used ahead of time, and will coerce as appropriate---culling any
+> extraneous arguments given to a query. This means that all arguments
+> can be supplied to the resolve functions with atom keys.
 
-Finally you'll see that we can handle the possibility that the
-query, while valid from GraphQL's perspective, may still ask for a
-user that does not exist.
+Finally you'll see that we can handle the possibility that the query,
+while valid from GraphQL's perspective, may still ask for a user that
+does not exist. We've decided to return an error in that case.
 
-> There's a valid argument for just returning `{:ok, nil}` when a record can't
-> be found. Whether the absence of data constitutes an error is a decision you
-> get to make.
+> There's a valid argument for just returning `{:ok, nil}` when a
+> record can't be found. Whether the absence of data constitutes an
+> error is a decision you get to make.
 
-## Arguments for Non-Root Fields
+## Arguments and Non-Root Fields
 
 Let's assume we want to query all posts from a user published within a
 given time range. First, let's add a new field to our `:post` object
 type, `:published_at`.
 
 The GraphQL specification doesn't define any official date or time
-types, but it does support custom scalar types (we'll talk about how
-to define _those_ in the [next section](scalar-types.html), and
+types, but it does support custom scalar types (you can read more
+about them in the [related guide](custom-scalar-types.html), and
 Absinthe ships with several built-in scalar types. We'll use
 `:datetime` here.
 
@@ -138,7 +159,6 @@ Edit `blog_web/schema/content_types.ex`:
 
 ```elixir
 defmodule BlogWeb.Schema.ContentTypes do
-  # Add this:
   use Absinthe.Schema.Notation
 
   @desc "A blog post"
@@ -153,11 +173,18 @@ defmodule BlogWeb.Schema.ContentTypes do
 end
 ```
 
-To make the `:datetime` type available, add an `import_types` line to your `blog_web/schema.ex`:
+To make the `:datetime` type available, add an `import_types` line to
+your `blog_web/schema.ex`:
 
 ``` elixir
 import_types Absinthe.Type.Custom
 ```
+
+> For more information about how types are imported,
+> read [the guide on the topic](importing-types.html).
+>
+> For now, just remember that `import_types` should _only_ be
+> used in top-level schema module. (Think of it like a manifest.)
 
 Here's the query we'd like to be able to use, getting the posts for a user
 on a given date:
@@ -177,7 +204,7 @@ on a given date:
 ```
 
 To use the passed date, we need to update our `:user` object type and
-make some changes to its `:posts` field; it needs to support  a `:date`
+make some changes to its `:posts` field; it needs to support a `:date`
 argument and use a custom resolver. In `blog_web/schema/account_types.ex`:
 
 ```elixir
