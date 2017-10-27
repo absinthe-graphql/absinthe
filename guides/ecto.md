@@ -131,35 +131,86 @@ plugin that have done a good job of addressing these issues. That effort has bee
 extracted into the Dataloader project, which also draws inspiration from similar
 projects in the GraphQL world.
 
+### Getting Started
+
+Let's jump straight in to getting Dataloader working, and then we'll expand on
+what's actually happening behind the scenes.
+
 Using dataloader is as simple as doing:
 
-```
+```elixir
 object :author do
   @desc "Author of the post"
   field :posts, list_of(:post), resolve: dataloader(Blog)
 end
 ```
 
-Let's unpack what this does. The `Blog` value there is the name of a datasource which, in a Phoenix
-application will generally correspond to a context. You'd need something like this:
 
+To make this work we need to setup a dataloader, add the `Blog` source to it, and
+make sure our schema knows it needs to run the dataloader.
+
+First however make sure to include the dataloader dependency in your application:
+
+```elixir
+{:dataloader, "~> 0.1.0"}
 ```
+
+Latest install instructions found here: https://github.com/absinthe-graphql/dataloader
+
+Let's start with a data source. Dataloader data sources are just structs that encode
+a way of retrieving data in batches. In a Phoenix application you'll generally have one
+source per context, so that each context can control how its data is loaded.
+
+Here is a hypothetical `Blog` context and a dataloader ecto source:
+
+```elixir
 defmodule MyApp.Blog do
   def data() do
     Dataloader.Ecto.new(MyApp.Repo, query: &query/2)
   end
 
-  def query(queryable, _) do
+  def query(queryable, _params) do
     queryable
   end
 end
 ```
 
+When integrating Dataloader with GraphQL, we want to place it in our context so
+that we can access it in our resolvers. In your schema module add:
+
+```elixir
+alias MyApp.{Blog, Foo}
+
+def context(ctx) do
+  loader =
+    Dataloader.new
+    |> Dataloader.add_source(Blog, Blog.data())
+    |> Dataloader.add_source(Foo, Foo.data()) # Foo source could be a Redis source
+
+  Map.put(ctx, :loader, loader)
+end
+
+def plugins do
+  [Absinthe.Middleware.Dataloader] ++ Absinthe.Plugin.defaults()
+end
+```
+
+The `context/1` function is a callback specified by the `Absinthe.Schema` behaviour that gives
+the schema itself an opportunity to set some values in the context that it may need in order to run.
+
+The `plugins/0` function has been around for a while, and specifies what plugins the schema needs to resolve. See more here:
+
+That's it! If you run a GraphQL query that hits that field, it will be loaded efficiently without N+1.
+
+### Unpacking Dataloader
+
+STUB
+
 The `data/0` function creates an ecto data source, to which you pass your repo and a query function. This query function
 is called every time you want to load something, and provides an opportunity to apply arguments or
 set defaults. So for example if you always want to only load non-deleted posts you can do:
 
-```
+```elixir
 def query(Post, _) do
   from p in Post, where: is_nil(p.deleted_at)
 end
@@ -168,12 +219,14 @@ def query(queryable, _) do
 end
 ```
 
-Now any time you're loading posts, you'll just get posts that haven't been deleted. Helpfully, this rule is defined within your
-context, helping ensure that it has the final say about data access.
+Now any time you're loading posts, you'll just get posts that haven't been
+deleted. Helpfully, this rule is defined within your context, helping ensure
+that it has the final say about data access.
 
-To actually use this data source we need to add a loader to your GraphQL Context:
+To actually use this data source we need to add a loader to your GraphQL
+Context:
 
-```
+```elixir
 defmodule MyAppWeb.Context do
   alias MyApp.Blog
   def dataloader() do
@@ -186,11 +239,13 @@ end
 
 ## Deprecated: Absinthe.Ecto
 
-The [absinthe_ecto](https://github.com/absinthe-graphql/absinthe_ecto) project was developed to provide some useful batching helper functions for Absinthe schemas that needed access to data from Ecto.
+The [absinthe_ecto](https://github.com/absinthe-graphql/absinthe_ecto) project
+was developed to provide some useful batching helper functions for Absinthe
+schemas that needed access to data from Ecto.
 
 Here's an example of how it was used:
 
-```
+```elixir
 use Absinthe.Ecto, repo: MyApp.Repo
 
 object :post do
@@ -199,4 +254,30 @@ object :post do
 end
 ```
 
-We recommend you use Dataloader instead, as described above. It's a far more flexible approach.
+You can pass a function to it so that you can handle query arguments:
+
+```elixir
+use Absinthe.Ecto, repo: MyApp.Repo
+import Ecto.Query
+
+object :author do
+  @desc "posts by an author"
+  field :posts, list_of(:post) do
+    arg :category_id, :id
+    resolve assoc(:posts, fn query, args, _ctx ->
+      query |> where(category_id ^args.category_id)
+    end)
+  end
+end
+```
+
+The issue here is that the resolvers become full of lots of on off SQL queries,
+without providing your domain logic any easy opportunity to apply general rules
+about how data should be accessed or loaded.
+
+Although Dataloader requires a little bit more setup, it is a lot more flexible
+since it can handle non ecto data sources, and it lets each part of your code
+focus on what it should be doing. Your resolvers handle translating GraphQL
+specific concerns into function calls to your domain logic, and your domain
+logic gets to focus on enforcing the rules you want, without getting cluttered
+up with dozens and dozens of single purpose data loading functions.
