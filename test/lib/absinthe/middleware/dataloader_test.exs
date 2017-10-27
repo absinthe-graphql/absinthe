@@ -31,6 +31,10 @@ defmodule Absinthe.Middleware.DataloaderTest do
       })
     end
 
+    def plugins do
+      [Absinthe.Middleware.Dataloader] ++ Absinthe.Plugin.defaults()
+    end
+
     object :organization do
       field :id, :integer
       field :name, :string

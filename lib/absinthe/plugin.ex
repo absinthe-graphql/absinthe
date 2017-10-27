@@ -42,14 +42,8 @@ defmodule Absinthe.Plugin do
   @doc """
   Returns the list of default plugins.
   """
-  if Code.ensure_loaded?(Dataloader) do
-    def defaults() do
-      [Absinthe.Middleware.Dataloader, Absinthe.Middleware.Batch, Absinthe.Middleware.Async]
-    end
-  else
-    def defaults() do
-      [Absinthe.Middleware.Batch, Absinthe.Middleware.Async]
-    end
+  def defaults() do
+    [Absinthe.Middleware.Batch, Absinthe.Middleware.Async]
   end
 
   @doc false
