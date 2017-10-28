@@ -48,7 +48,10 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     exec = plugins |> run_callbacks(:before_resolution, exec, run_callbacks?)
 
-    {result, exec} = walk_result(exec.result, operation, operation.schema_node, exec, [operation])
+    {result, exec} =
+      exec.result
+      |> walk_result(operation, operation.schema_node, exec, [operation])
+      |> propagate_null_trimming
 
     exec = plugins |> run_callbacks(:after_resolution, exec, run_callbacks?)
 
@@ -237,9 +240,13 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   defp propagate_null_trimming({%{fields: fields} = node, exec} = value) do
     if bad_child = Enum.find(fields, &non_null_violation?/1) do
+      bp_field = node.emitter
+      full_type = with %{type: type} <- bp_field.schema_node do
+        type
+      end
       node =
         nil
-        |> to_result(node.emitter, node.emitter.schema_node.type, node.extensions)
+        |> to_result(bp_field, full_type, node.extensions)
         # We don't have to worry about clobbering the current node's errors because,
         # if it had any errors, it wouldn't have any children and we wouldn't be
         # here anyway.

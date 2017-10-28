@@ -45,6 +45,12 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
         resolve &thing_resolver/3
       end
 
+      field :non_null_error_field, non_null(:string) do
+        resolve fn _, _ ->
+          {:error, "boom"}
+        end
+      end
+
       @desc """
       A field declared to be non null.
 
@@ -81,7 +87,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
     assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
   end
 
-  test "returning an error from a non null field makes the parent nullable null" do
+  test "error propogation to root field returns nil on data" do
     doc = """
     {
       nullable { nullable { nonNullErrorField }}
@@ -93,6 +99,20 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       %{locations: [%{column: 0, line: 2}], message: "boom", path: ["nullable", "nullable", "nonNullErrorField"]}
     ]
     assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
+  end
+
+  test "returning an error from a non null field makes the parent nullable null" do
+    doc = """
+    {
+      nonNull { nonNull { nonNullErrorField }}
+    }
+    """
+    result = Absinthe.run(doc, Schema)
+    errors = [
+      %{locations: [%{column: 0, line: 2}], message: "'Cannot return null for non-nullable field", path: ["nonNull", "nonNull", "nonNullErrorField"]},
+      %{locations: [%{column: 0, line: 2}], message: "boom", path: ["nonNull", "nonNull", "nonNullErrorField"]}
+    ]
+    assert {:ok, %{data: nil, errors: errors}} == result
   end
 
   test "returning an error from a non null field makes the parent nullable null at arbitrary depth" do
