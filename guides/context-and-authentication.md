@@ -60,7 +60,7 @@ If we're signed in as user 1, we should get only user 1's email, for example:
 In order to set the context, our call to `Absinthe.run/3` should look like:
 
 ```elixir
-Absinthe.run(document, MyApp.Schema, context: %{current_user: %{id: "1"}})
+Absinthe.run(document, MyAppWeb.Schema, context: %{current_user: %{id: "1"}})
 ```
 
 To access this, we need to update our query's resolve function:
@@ -93,7 +93,7 @@ First, our plug. We'll be checking the for the `authorization` header, and calli
 out to some unspecified authentication mechanism.
 
 ```elixir
-defmodule MyApp.Web.Context do
+defmodule MyAppWeb.Context do
   @behaviour Plug
 
   import Plug.Conn
@@ -147,29 +147,29 @@ Using this plug is very simple. If we're just in a normal plug context we can
 just make sure it's plugged prior to Absinthe.Plug
 
 ```elixir
-plug MyApp.Web.Context
+plug MyAppWeb.Context
 
 plug Absinthe.Plug,
-  schema: MyApp.Schema
+  schema: MyAppWeb.Schema
 ```
 
 If you're using a Phoenix router, add the context plug to a pipeline.
 
 ```elixir
-defmodule MyApp.Router do
+defmodule MyAppWeb.Router do
   use Phoenix.Router
 
-  resource "/pages", MyApp.PagesController
+  resource "/pages", MyAppWeb.PagesController
 
   pipeline :graphql do
-    plug MyApp.Web.Context
+    plug MyAppWeb.Context
   end
 
   scope "/api" do
     pipe_through :graphql
 
     forward "/", Absinthe.Plug,
-      schema: MyApp.Schema
+      schema: MyAppWeb.Schema
   end
 end
 ```
