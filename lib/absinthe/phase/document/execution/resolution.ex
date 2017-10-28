@@ -202,37 +202,74 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     fun.(res, [])
   end
 
-  defp build_result(%{errors: []} = res, exec, _source, path) do
+  defp build_result(%{errors: errors} = res, exec, source, path) do
     %{
-      value: result,
+      value: value,
       definition: bp_field,
-      extensions: extensions
+      extensions: extensions,
     } = res
 
     full_type = Type.expand(bp_field.schema_node.type, exec.schema)
 
     bp_field = put_in(bp_field.schema_node.type, full_type)
 
-    result = result |> to_result(bp_field, full_type)
+    # if there are any errors, the value is always nil
+    value = case errors do
+      [] -> value
+      _ -> nil
+    end
 
-    %{result | extensions: extensions}
+    errors = maybe_add_non_null_error(errors, value, full_type)
+
+    value
+    |> to_result(bp_field, full_type, extensions)
+    |> add_errors(Enum.reverse(errors), &put_result_error_value(&1, &2, bp_field, source, path))
     |> walk_result(bp_field, full_type, exec, path)
-  end
-  defp build_result(%{errors: errors} = res, exec, source, path) do
-    build_error_result({:error, errors}, errors, res.definition, exec, source, path)
+    |> propagate_null_trimming
   end
 
-  defp build_error_result(original_value, error_values, bp_field, exec, source, path) do
-    full_type = Type.expand(bp_field.schema_node.type, exec.schema)
-    result = to_result(nil, bp_field, full_type)
-    result = Enum.reduce(Enum.reverse(error_values), result, &put_result_error_value(&1, &2, original_value, bp_field, source, path))
-    {result, exec}
+  defp maybe_add_non_null_error(errors, nil, %Type.NonNull{}) do
+    ["'Cannot return null for non-nullable field" | errors]
+  end
+  defp maybe_add_non_null_error(errors, _, _) do
+    errors
   end
 
-  defp put_result_error_value(error_value, result, original_value, bp_field, source, path) do
+  defp propagate_null_trimming({%{fields: fields} = node, exec} = value) do
+    if bad_child = Enum.find(fields, &non_null_violation?/1) do
+      node =
+        nil
+        |> to_result(node.emitter, node.emitter.schema_node.type, node.extensions)
+        # We don't have to worry about clobbering the current node's errors because,
+        # if it had any errors, it wouldn't have any children and we wouldn't be
+        # here anyway.
+        |> Map.put(:errors, bad_child.errors)
+      {node, exec}
+    else
+      value
+    end
+  end
+  defp propagate_null_trimming(val) do
+    val
+  end
+
+  defp non_null_violation?(%{value: nil, emitter: %{schema_node: %{type: %Type.NonNull{}}}}) do
+    true
+  end
+  defp non_null_violation?(_) do
+    false
+  end
+
+  # defp maybe_add_non_null_error(errors, nil, %)
+
+  defp add_errors(result, errors, fun) do
+    Enum.reduce(errors, result, fun)
+  end
+
+  defp put_result_error_value(error_value, result, bp_field, source, path) do
     case split_error_value(error_value) do
       {[], _} ->
-        raise Absinthe.Resolution.result_error(original_value, bp_field, source)
+        raise Absinthe.Resolution.result_error(error_value, bp_field, source)
       {[message: message], extra} ->
         put_error(result, error(bp_field, message, path, Map.new(extra)))
     end
@@ -248,44 +285,41 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     {[message: to_string(error_value)], []}
   end
 
-  @spec to_result(resolution_result :: term, blueprint :: Blueprint.Document.Field.t, schema_type :: Type.t) ::
-    Result.node_t
-  defp to_result(nil, blueprint, %Type.NonNull{} = schema_type) do
-    raise Absinthe.ExecutionError, nil_value_error(blueprint, schema_type)
+  defp to_result(nil, blueprint, _, extensions) do
+    %Result.Leaf{emitter: blueprint, value: nil, extensions: extensions}
   end
-  defp to_result(nil, blueprint, _) do
-    %Result.Leaf{emitter: blueprint, value: nil}
+  defp to_result(root_value, blueprint, %Type.NonNull{of_type: inner_type}, extensions) do
+    to_result(root_value, blueprint, inner_type, extensions)
   end
-  defp to_result(root_value, blueprint, %Type.NonNull{of_type: inner_type}) do
-    to_result(root_value, blueprint, inner_type)
+  defp to_result(root_value, blueprint, %Type.Object{}, extensions) do
+    %Result.Object{root_value: root_value, emitter: blueprint, extensions: extensions}
   end
-  defp to_result(root_value, blueprint, %Type.Object{}) do
-    %Result.Object{root_value: root_value, emitter: blueprint}
+  defp to_result(root_value, blueprint, %Type.Interface{}, extensions) do
+    %Result.Object{root_value: root_value, emitter: blueprint, extensions: extensions}
   end
-  defp to_result(root_value, blueprint, %Type.Interface{}) do
-    %Result.Object{root_value: root_value, emitter: blueprint}
+  defp to_result(root_value, blueprint, %Type.Union{}, extensions) do
+    %Result.Object{root_value: root_value, emitter: blueprint, extensions: extensions}
   end
-  defp to_result(root_value, blueprint, %Type.Union{}) do
-    %Result.Object{root_value: root_value, emitter: blueprint}
-  end
-  defp to_result(root_value, blueprint, %Type.List{of_type: inner_type}) do
+  defp to_result(root_value, blueprint, %Type.List{of_type: inner_type}, extensions) do
     values =
       root_value
       |> List.wrap
-      |> Enum.map(&to_result(&1, blueprint, inner_type))
+      |> Enum.map(&to_result(&1, blueprint, inner_type, extensions))
 
-    %Result.List{values: values, emitter: blueprint}
+    %Result.List{values: values, emitter: blueprint, extensions: extensions}
   end
-  defp to_result(root_value, blueprint, %Type.Scalar{}) do
+  defp to_result(root_value, blueprint, %Type.Scalar{}, extensions) do
     %Result.Leaf{
       emitter: blueprint,
       value: root_value,
+      extensions: extensions,
     }
   end
-  defp to_result(root_value, blueprint, %Type.Enum{}) do
+  defp to_result(root_value, blueprint, %Type.Enum{}, extensions) do
     %Result.Leaf{
       emitter: blueprint,
       value: root_value,
+      extensions: extensions,
     }
   end
 
@@ -297,15 +331,5 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       path: Absinthe.Resolution.path(%{path: path}),
       extra: extra,
     }
-  end
-
-  defp nil_value_error(blueprint, _schema_type) do
-    """
-    The field '#{blueprint.name}' resolved to nil, but it is marked non-null in your schema.
-    Please ensure that '#{blueprint.name}' always resolves to a non-null value.
-
-    The corresponding Absinthe blueprint is:
-    #{inspect blueprint}
-    """
   end
 end
