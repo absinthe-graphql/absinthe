@@ -236,14 +236,20 @@ defmodule MyAppWeb.Context do
 end
 ```
 
+## Deprecated: Batching with Absinthe.Ecto
 
-## Deprecated: Absinthe.Ecto
+The batching helper functions present
+in [absinthe_ecto](https://github.com/absinthe-graphql/absinthe_ecto)
+provided some early support for making it easy to get data from Ecto.
 
-The [absinthe_ecto](https://github.com/absinthe-graphql/absinthe_ecto) project
-was developed to provide some useful batching helper functions for Absinthe
-schemas that needed access to data from Ecto.
+These batching features are considered *DEPRECATED* in favor of
+Dataloader, described above.
 
-Here's an example of how it was used:
+> There are a number of useful features that may be added to absinthe_ecto in the
+> future to support other integration concerns (schema definition, error handling),
+> but the batching support will eventually be phased out. Please use Dataloader.
+
+Here's an example of use:
 
 ```elixir
 use Absinthe.Ecto, repo: MyApp.Repo
@@ -276,7 +282,7 @@ without providing your domain logic any easy opportunity to apply general rules
 about how data should be accessed or loaded.
 
 Although Dataloader requires a little bit more setup, it is a lot more flexible
-since it can handle non ecto data sources, and it lets each part of your code
+since it can handle non-Ecto data sources, and it lets each part of your code
 focus on what it should be doing. Your resolvers handle translating GraphQL
 specific concerns into function calls to your domain logic, and your domain
 logic gets to focus on enforcing the rules you want, without getting cluttered
