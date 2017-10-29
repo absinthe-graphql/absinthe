@@ -236,7 +236,7 @@ defmodule MyAppWeb.Context do
 end
 ```
 
-## Deprecated: Batching with Absinthe.Ecto
+## Deprecated in v1.4: Batching with Absinthe.Ecto
 
 The batching helper functions present
 in [absinthe_ecto](https://github.com/absinthe-graphql/absinthe_ecto)
