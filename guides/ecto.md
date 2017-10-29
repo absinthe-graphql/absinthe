@@ -1,16 +1,11 @@
 # Ecto Best Practices
 
-> Much of this guide is out-of-date with recent additions to the [absinthe_ecto](https://hex.pm/packages/absinthe_ecto)
-> package.
->
-> You can help! Please fork the [absinthe](https://github.com/absinthe-graphql/absinthe) repository, edit `guides/ecto.md`, and submit a [pull request](https://github.com/absinthe-graphql/absinthe/pulls).
-
 ## Avoiding N+1 Queries
 
 In general, you want to make sure that when accessing Ecto associations that you
 preload the data in the top level resolver functions to avoid N+1 queries.
 
-Imagine this scenario: You have posts and users. A Post has an author field, which
+Imagine this scenario: You have posts and users. A `Post` has an `author` field, which
 returns a user. You want to list all posts, and get the name of their author:
 
 ```graphql
@@ -54,13 +49,11 @@ run `Post |> Repo.all`, which will retrieve _N_ posts. Then for each
 post it will resolve child fields, which runs our `Repo.one` query
 function, resulting in _N+1_ calls to the database.
 
-Instead, use batching! At the moment (Oct-31-2016) Batching is pretty new, so we
-don't yet have some of the helper functions we want to in order to make this easier.
+One way to handle this issue is with Absinthe's support for
+batching. The idea with batching is that we're gonna aggregate all the
+`author_id`s from each post, and then make one call to the user.
 
-Fortunately the batching API is pretty simple. The idea with batching is that we're
-gonna aggregate all the `author_id`s from each post, and then make one call to the user.
-
-Let's first make a function to get a model by ids.
+Let's first make a function to get a model by ids:
 
 ```elixir
 defmodule MyAppWeb.Schema.Helpers do
@@ -81,6 +74,7 @@ Now we can use this function to batch our author lookups:
 
 ```elixir
 object :post do
+
   @desc "Author of the post"
   field :author, :user do
     resolve fn post, _, _ ->
@@ -89,6 +83,7 @@ object :post do
       end)
     end
   end
+
 end
 ```
 
@@ -107,7 +102,10 @@ Not only is this a very efficient way to query the data, it's also 100% dynamic.
 If a query document asks for authors, they're loaded efficiently. If it does not,
 they aren't loaded at all.
 
-## Dataloader
+We've made it easier and more flexible, however, with
+Elixir's [dataloader](https://hex.pm/packages/dataloader) package.
+
+### Dataloader
 
 `Absinthe.Middleware.Batch` achieves a lot and, with some helpers, was the
 standard way to solve this problem for a long time. While batching still has a
@@ -131,12 +129,12 @@ plugin that have done a good job of addressing these issues. That effort has bee
 extracted into the Dataloader project, which also draws inspiration from similar
 projects in the GraphQL world.
 
-### Getting Started
+#### Getting Started
 
 Let's jump straight in to getting Dataloader working, and then we'll expand on
 what's actually happening behind the scenes.
 
-Using dataloader is as simple as doing:
+Using Dataloader is as simple as doing:
 
 ```elixir
 object :author do
@@ -202,11 +200,9 @@ The `plugins/0` function has been around for a while, and specifies what plugins
 
 That's it! If you run a GraphQL query that hits that field, it will be loaded efficiently without N+1.
 
-### Unpacking Dataloader
+#### Unpacking Dataloader
 
-STUB
-
-The `data/0` function creates an ecto data source, to which you pass your repo and a query function. This query function
+The `data/0` function creates an Ecto data source, to which you pass your repo and a query function. This query function
 is called every time you want to load something, and provides an opportunity to apply arguments or
 set defaults. So for example if you always want to only load non-deleted posts you can do:
 
@@ -223,7 +219,7 @@ Now any time you're loading posts, you'll just get posts that haven't been
 deleted. Helpfully, this rule is defined within your context, helping ensure
 that it has the final say about data access.
 
-To actually use this data source we need to add a loader to your GraphQL
+To actually use this data source we need to add a loader to your Absinthe
 Context:
 
 ```elixir
@@ -236,7 +232,7 @@ defmodule MyAppWeb.Context do
 end
 ```
 
-## Deprecated in v1.4: Batching with Absinthe.Ecto
+### Deprecated in v1.4: Batching with Absinthe.Ecto
 
 The batching helper functions present
 in [absinthe_ecto](https://github.com/absinthe-graphql/absinthe_ecto)
@@ -287,3 +283,8 @@ focus on what it should be doing. Your resolvers handle translating GraphQL
 specific concerns into function calls to your domain logic, and your domain
 logic gets to focus on enforcing the rules you want, without getting cluttered
 up with dozens and dozens of single purpose data loading functions.
+
+## Formatting Ecto.Changeset Errors
+
+You may want to look at the [errors](errors.html) guide and
+the [kronky](https://hex.pm/packages/kronky) package.
