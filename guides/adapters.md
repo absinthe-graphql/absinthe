@@ -26,7 +26,7 @@ config :absinthe,
 Or, you can provide it as an option to `Absinthe.run/3`:
 
 ```elixir
-Absinthe.run(query, MyApp.Schema,
+Absinthe.run(query, MyAppWeb.Schema,
              adapter: Absinthe.Adapter.TheAdapterName)
 ```
 

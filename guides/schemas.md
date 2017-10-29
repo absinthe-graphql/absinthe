@@ -7,7 +7,7 @@ Here's a schema that supports looking up an item by ID:
 
 ```elixir
 # filename: myapp/schema.ex
-defmodule MyApp.Schema do
+defmodule MyAppWeb.Schema do
 
   use Absinthe.Schema
 
@@ -47,7 +47,7 @@ You'll notice we mention some types being referenced: `:item` and `:id`. `:id`
 is a built-in scalar type (like `:string`, `:boolean`, and others), but `:item`
 we need to define ourselves.
 
-We can do it in the same `MyApp.Schema` module, using the `object` macro defined by `Absinthe.Schema.Notation`:
+We can do it in the same `MyAppWeb.Schema` module, using the `object` macro defined by `Absinthe.Schema.Notation`:
 
 ```elixir
 # filename: myapp/schema.ex
@@ -76,7 +76,7 @@ it would go something like this:
   }
 }
 """
-|> Absinthe.run(MyApp.Schema)
+|> Absinthe.run(MyAppWeb.Schema)
 
 # Result
 {:ok, %{data: %{"item" => %{"name" => "Foo"}}}}
@@ -84,14 +84,14 @@ it would go something like this:
 
 ## Importing Types
 
-We could also move our type definitions out into a different module, for instance, `MyApp.Schema.Types`, and then use `import_types` in our `MyApp.Schema`:
+We could also move our type definitions out into a different module, for instance, `MyAppWeb.Schema.Types`, and then use `import_types` in our `MyAppWeb.Schema`:
 
 ```elixir
 # filename: myapp/schema.ex
-defmodule MyApp.Schema do
+defmodule MyAppWeb.Schema do
   use Absinthe.Schema
 
-  import_types MyApp.Schema.Types
+  import_types MyAppWeb.Schema.Types
 
   # ...
 

@@ -63,7 +63,7 @@ gonna aggregate all the `author_id`s from each post, and then make one call to t
 Let's first make a function to get a model by ids.
 
 ```elixir
-defmodule MyApp.Schema.Helpers do
+defmodule MyAppWeb.Schema.Helpers do
   def by_id(model, ids) do
     import Ecto.Query
 
@@ -84,7 +84,7 @@ object :post do
   @desc "Author of the post"
   field :author, :user do
     resolve fn post, _, _ ->
-      batch({MyApp.Schema.Helpers, :by_id, User}, post.author_id, fn batch_results ->
+      batch({MyAppWeb.Schema.Helpers, :by_id, User}, post.author_id, fn batch_results ->
         {:ok, Map.get(batch_results, post.author_id)}
       end)
     end

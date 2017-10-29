@@ -50,7 +50,8 @@ up with what we have on the Ecto side, where `Blog.Accounts.User`
 defines a `has_many` association with `Blog.Content.Post`.)
 
 We've already defined the `:post` type, but let's go ahead and add an
-`:author` field that points back to our `:user` type:
+`:author` field that points back to our `:user` type. In
+`blog_web/schema/content_types.ex`:
 
 ``` elixir
 object :post do
@@ -233,7 +234,7 @@ schema:
 
 ``` elixir
 # Add this:
-def list_posts(%Blog.Content.User{} = author, args, _resolution) do
+def list_posts(%Blog.Accounts.User{} = author, args, _resolution) do
   {:ok, Blog.Content.list_posts(author, args)}
 end
 # Before this:

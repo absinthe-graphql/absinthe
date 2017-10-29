@@ -7,7 +7,7 @@ eg, [Poison](https://hex.pm/packages/poison):
 # filename: mix.exs
 def deps do
   [
-    {:absinthe_plug, "~> 1.1"},
+    {:absinthe_plug, "~> 1.4"},
     {:poison, "~> 2.1.0"},
   ]
 end
@@ -19,7 +19,7 @@ To use, simply `plug` Absinthe.Plug in your pipeline.
 
 ```elixir
 plug Absinthe.Plug,
-  schema: MyApp.Schema
+  schema: MyAppWeb.Schema
 ```
 
 If you are going to support content types other than simply `application/graphql`
@@ -31,7 +31,7 @@ plug Plug.Parsers,
   json_decoder: Poison
 
 plug Absinthe.Plug,
-  schema: MyApp.Schema
+  schema: MyAppWeb.Schema
 ```
 
 For more information on how the content types work, see [General Usage](#general-usage).
@@ -54,22 +54,21 @@ defmodule MyApp.Endpoint do
     json_decoder: Poison
 
   plug Absinthe.Plug,
-    schema: MyApp.Schema
+    schema: MyAppWeb.Schema
 end
 ```
 
-If you want only Absinthe.Plug to serve a particular route, configure your router
+If you want only `Absinthe.Plug` to serve a particular route, configure your router
 like:
 
 ```elixir
-# filename: web/router.ex
-defmodule MyApp.Web.Router do
+defmodule MyAppWeb.Router do
   use Phoenix.Router
 
-  resource "/pages", MyApp.PagesController
+  resource "/pages", MyAppWeb.PagesController
 
   forward "/api", Absinthe.Plug,
-    schema: MyApp.Web.Schema
+    schema: MyAppWeb.Schema
 end
 ```
 
@@ -77,7 +76,7 @@ Now Absinthe.Plug will only serve GraphQL from the `/api` url.
 
 ## Absinthe Context
 
-Absinthe.Plug will pass any values found inside `conn.private[:absinthe][:context]`
+`Absinthe.Plug` will pass any values found inside `conn.private[:absinthe][:context]`
 on to `Absinthe.run` as the context. This is how you should handle logic that
 uses headers -- most notably, Authentication.
 

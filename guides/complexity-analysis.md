@@ -9,7 +9,7 @@ For example, to enable complexity analysis and limit the complexity to a value
 of `50` -- if we were using `Absinthe.run/3` directly -- we would do this:
 
 ```elixir
-Absinthe.run(doc, MyApp.Schema, analyze_complexity: true, max_complexity: 50)
+Absinthe.run(doc, MyAppWeb.Schema, analyze_complexity: true, max_complexity: 50)
 ```
 
 That would translate to the following configuration when using
@@ -17,7 +17,7 @@ That would translate to the following configuration when using
 
 ```elixir
 plug Absinthe.Plug,
-  schema: MyApp.Schema,
+  schema: MyAppWeb.Schema,
   analyze_complexity: true,
   max_complexity: 50
 ```
@@ -39,8 +39,7 @@ and complexity can be calculated keeping that in mind. Here is a schema that
 supports analyzing (and limiting) complexity using that approach:
 
 ```elixir
-# filename: myapp/web/schema.ex
-defmodule MyApp.Schema do
+defmodule MyAppWeb.Schema do
 
   use Absinthe.Schema
 

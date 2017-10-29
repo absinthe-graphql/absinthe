@@ -13,7 +13,7 @@ to be able to access basic information about themselves, but not other users.
 First we'll need a very basic schema:
 
 ```elixir
-defmodule MyApp.Schema do
+defmodule MyAppWeb.Schema do
   use Absinthe.Schema
 
   @fakedb %{

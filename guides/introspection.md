@@ -17,7 +17,7 @@ Seeing the names of the types in the schema:
   }
 }
 """
-|> Absinthe.run(MyApp.Schema)
+|> Absinthe.run(MyAppWeb.Schema)
 {:ok,
   %{data: %{
     "__schema" => %{
@@ -45,7 +45,7 @@ Getting the name of the queried type:
   }
 }
 """
-|> Absinthe.run(MyApp.Schema)
+|> Absinthe.run(MyAppWeb.Schema)
 {:ok,
   %{data: %{
     "profile" => %{
@@ -72,7 +72,7 @@ Getting the name of the fields for a named type:
   }
 }
 """
-|> Absinthe.run(MyApp.Schema)
+|> Absinthe.run(MyAppWeb.Schema)
 {:ok,
   %{data: %{
     "__type" => %{
@@ -104,7 +104,7 @@ Absinthe provides GraphiQL via a plug in `absinthe_plug`. See the [Plug and Phoe
 for how to install that library. Once installed, usage is simple as:
 
 ```elixir
-plug Absinthe.Plug.GraphiQL, schema: MyApp.Schema
+plug Absinthe.Plug.GraphiQL, schema: MyAppWeb.Schema
 ```
 
 If you want to use it at a particular path (in this case `graphiql` in your Phoenix
@@ -112,7 +112,7 @@ router, simply do:
 
 ```elixir
 # filename: router.ex
-forward "/graphiql", Absinthe.Plug.GraphiQL, schema: MyApp.Schema
+forward "/graphiql", Absinthe.Plug.GraphiQL, schema: MyAppWeb.Schema
 ```
 
 This can be trivially reserved to just the `:dev` elixir environment by doing:
@@ -120,7 +120,7 @@ This can be trivially reserved to just the `:dev` elixir environment by doing:
 ```elixir
 # filename: router.ex
 if Mix.env == :dev do
-  forward "/graphiql", Absinthe.Plug.GraphiQL, schema: MyApp.Schema
+  forward "/graphiql", Absinthe.Plug.GraphiQL, schema: MyAppWeb.Schema
 end
 ```
 

@@ -5,25 +5,22 @@ to create a blog post:
 
 ```graphql
 mutation CreatePost {
-  post(title: "Second", body: "We're off to a great start!") {
+  createPost(title: "Second", body: "We're off to a great start!") {
     id
   }
 }
 ```
 
 Now we just need to define a `mutation` portion of our schema and
-a `:post` field:
+a `:create_post` field:
 
 In `blog_web/schema.ex`:
 
 ```elixir
 mutation do
 
-  # mutation fields we've defined previously...
-
-  # Add this:
   @desc "Create a post"
-  field :post, type: :post do
+  field :create_post, type: :post do
     arg :title, non_null(:string)
     arg :body, non_null(:string)
     arg :published_at, :naive_datetime
@@ -50,6 +47,9 @@ def create_post(_parent, _args, _resolution) do
 end
 ```
 
+> Obviously things can go wrong in a mutation. To learn more about the
+> types of error results that Absinthe supports, read [the guide](errors.html).
+
 ## Authorization
 
 This resolver adds a new concept: authorization. The resolution struct
@@ -65,9 +65,9 @@ Going back to the resolver code:
 
 - If the match for a current user is successful, the underlying
   `Blog.Content.create_post/2` function is invoked. It will return a
-  tuple suitable for return; to read the Ecto-related nitty gritty,
-  check out the [absithe_tutorial](https://github.com/absinthe-graphql/absinthe_tutorial)
-  repository.
+  tuple suitable for return. (To read the Ecto-related nitty gritty,
+  check out the [absinthe_tutorial](https://github.com/absinthe-graphql/absinthe_tutorial)
+  repository.)
 - If the match for a current user isn't successful, the fall-through
   match will return an error indicating that a post can't be created.
 
