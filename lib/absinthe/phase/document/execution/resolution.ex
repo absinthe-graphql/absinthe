@@ -232,7 +232,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp maybe_add_non_null_error(errors, nil, %Type.NonNull{}) do
-    ["'Cannot return null for non-nullable field" | errors]
+    ["Cannot return null for non-nullable field" | errors]
   end
   defp maybe_add_non_null_error(errors, _, _) do
     errors
@@ -241,9 +241,11 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp propagate_null_trimming({%{fields: fields} = node, exec} = value) do
     if bad_child = Enum.find(fields, &non_null_violation?/1) do
       bp_field = node.emitter
+
       full_type = with %{type: type} <- bp_field.schema_node do
         type
       end
+
       node =
         nil
         |> to_result(bp_field, full_type, node.extensions)
