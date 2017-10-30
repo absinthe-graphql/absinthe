@@ -44,7 +44,7 @@ defmodule Absinthe.Schema.Rule.FieldImportsExist do
 
   defp error(definition, ref) do
     msg = """
-    Field Import Erro
+    Field Import Error
 
     Object #{inspect definition.identifier} imports fields from #{inspect ref} but
     #{inspect ref} does not exist in the schema!

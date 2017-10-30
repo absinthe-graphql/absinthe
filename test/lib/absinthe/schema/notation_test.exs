@@ -83,7 +83,7 @@ defmodule Absinthe.Schema.NotationTest do
       end
 
       assert [error] = ErrorSchema.__absinthe_errors__
-      assert %{data: %{artifact: "Field Import Erro\n\nObject :bar imports fields from :asdf but\n:asdf does not exist in the schema!", value: :asdf}, location: %{file: _, line: _}, rule: Absinthe.Schema.Rule.FieldImportsExist} = error
+      assert %{data: %{artifact: "Field Import Error\n\nObject :bar imports fields from :asdf but\n:asdf does not exist in the schema!", value: :asdf}, location: %{file: _, line: _}, rule: Absinthe.Schema.Rule.FieldImportsExist} = error
 
     end
 
