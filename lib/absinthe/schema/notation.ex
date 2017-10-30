@@ -33,47 +33,6 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
-  @doc """
-  REPLACED BY `config/1`
-
-  `topic/1` macro is no longer used! replaced by `config/1`
-
-  Upgrade example:
-
-  If previously you had
-
-  topic fn args ->
-    args.foo_id
-  end
-
-  now do
-
-  config fn args, _ ->
-    {:ok, topic: args.id}
-  end
-
-  This will be removed in the final 1.4.0 release
-  """
-  defmacro topic(_) do
-    raise """
-    `topic/1` macro is no longer used! replaced by `config/1`
-
-    Upgrade example:
-
-    If previously you had
-
-    topic fn args ->
-      args.foo_id
-    end
-
-    now do
-
-    config fn args, _ ->
-      {:ok, topic: args.id}
-    end
-    """
-  end
-
   @doc false
   defmacro resolver(_) do
     raise "`resolver/1` is not a function, did you mean `resolve` ?"

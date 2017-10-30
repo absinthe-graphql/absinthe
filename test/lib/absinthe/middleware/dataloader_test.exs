@@ -16,9 +16,11 @@ defmodule Absinthe.Middleware.DataloaderTest do
       organization_id: &1,
     })
 
-    defp batch_load({:organization, test_pid}, ids) do
+    defp batch_load({:organization_id, %{pid: test_pid}}, sources) do
       send test_pid, :loading
-      Map.take(@organizations, ids)
+      Map.new(sources, fn src ->
+        {src, Map.fetch!(@organizations, src.organization_id)}
+      end)
     end
 
     def context(ctx) do
@@ -42,14 +44,13 @@ defmodule Absinthe.Middleware.DataloaderTest do
 
     object :user do
       field :name, :string
-      field :organization, :organization do
-        resolve fn user, _, %{context: %{loader: loader, test_pid: test_pid}} ->
-          loader
-          |> Dataloader.load(:test, {:organization, test_pid}, user.organization_id)
-          |> on_load(fn loader ->
-            {:ok, Dataloader.get(loader, :test, {:organization, test_pid}, user.organization_id)}
-          end)
-        end
+      field :foo_organization, :organization do
+        resolve dataloader(:test, fn _, _, %{context: %{test_pid: pid}} ->
+          {:organization_id, %{pid: pid}}
+        end)
+      end
+      field :bar_organization, :organization do
+        resolve dataloader(:test, :organization_id, args: %{pid: self()})
       end
     end
 
@@ -61,9 +62,9 @@ defmodule Absinthe.Middleware.DataloaderTest do
         arg :id, non_null(:integer)
         resolve fn _, %{id: id}, %{context: %{loader: loader, test_pid: test_pid}} ->
           loader
-          |> Dataloader.load(:test, {:organization, test_pid}, id)
+          |> Dataloader.load(:test, {:organization_id, %{pid: test_pid}}, %{organization_id: id})
           |> on_load(fn loader ->
-            {:ok, Dataloader.get(loader, :test, {:organization, test_pid}, id)}
+            {:ok, Dataloader.get(loader, :test, {:organization_id, %{pid: test_pid}}, %{organization_id: id})}
           end)
         end
       end
@@ -75,7 +76,7 @@ defmodule Absinthe.Middleware.DataloaderTest do
     doc = """
     {
       users {
-        organization {
+        organization: barOrganization {
           name
         }
       }
@@ -94,7 +95,7 @@ defmodule Absinthe.Middleware.DataloaderTest do
     doc = """
     {
       users {
-        organization {
+        organization: fooOrganization {
           name
         }
       }
