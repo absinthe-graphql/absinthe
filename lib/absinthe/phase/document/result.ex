@@ -14,10 +14,8 @@ defmodule Absinthe.Phase.Document.Result do
 
   defp process(blueprint) do
     result = case blueprint.execution do
-      %{validation_errors: [], result: nil} ->
-        :execution_failed
       %{validation_errors: [], result: result} ->
-        {:ok, field_data(result.fields, [])}
+        {:ok, data(result, [])}
       %{validation_errors: errors} ->
         {:validation_failed, errors}
     end
@@ -65,12 +63,9 @@ defmodule Absinthe.Phase.Document.Result do
 
   defp list_data(fields, errors, acc \\ [])
   defp list_data([], errors, acc), do: {:lists.reverse(acc), errors}
-  defp list_data([%{errors: []} = field | fields], errors, acc) do
+  defp list_data([%{errors: errs} = field | fields], errors, acc) do
     {value, errors} = data(field, errors)
-    list_data(fields, errors, [value | acc])
-  end
-  defp list_data([%{errors: errs} | fields], errors, acc) when length(errs) > 0 do
-    list_data(fields, errs ++ errors, acc)
+    list_data(fields, errs ++ errors, [value | acc])
   end
 
   defp field_data(fields, errors, acc \\ [])
