@@ -536,6 +536,16 @@ defmodule Absinthe.Schema do
   end
 
   @doc """
+  Get all introspection types
+  """
+  @spec introspection_types(t) :: [Type.t]
+  def introspection_types(schema) do
+    schema
+    |> Schema.types
+    |> Enum.filter(&Type.introspection?/1)
+  end
+
+  @doc """
   Get all concrete types for union, interface, or object
   """
   @spec concrete_types(t, Type.t) :: [Type.t]
@@ -550,6 +560,18 @@ defmodule Absinthe.Schema do
   end
   def concrete_types(_, type) do
     [type]
+  end
+
+  @doc """
+  Get all types that are used by an operation
+  """
+  @spec used_types(t) :: [Type.t]
+  def used_types(schema) do
+    [:query, :mutation, :subscription]
+    |> Enum.map(&lookup_type(schema, &1))
+    |> Enum.filter(&(!is_nil(&1)))
+    |> Enum.flat_map(&Type.referenced_types(&1, schema))
+    |> Enum.uniq
   end
 
   @doc """
