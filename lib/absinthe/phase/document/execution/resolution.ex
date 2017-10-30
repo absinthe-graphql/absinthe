@@ -238,34 +238,58 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     errors
   end
 
-  defp propagate_null_trimming({%{fields: fields} = node, exec} = value) do
-    if bad_child = Enum.find(fields, &non_null_violation?/1) do
+  defp propagate_null_trimming({%{values: values} = node, exec}) do
+    values = Enum.map(values, &do_propagate_null_trimming/1)
+    node = %{node | values: values}
+    {do_propagate_null_trimming(node), exec}
+  end
+  defp propagate_null_trimming({node, exec}) do
+    {do_propagate_null_trimming(node), exec}
+  end
+
+  defp do_propagate_null_trimming(node) do
+    if bad_child = find_bad_child(node) do
       bp_field = node.emitter
 
       full_type = with %{type: type} <- bp_field.schema_node do
         type
       end
 
-      node =
-        nil
-        |> to_result(bp_field, full_type, node.extensions)
-        # We don't have to worry about clobbering the current node's errors because,
-        # if it had any errors, it wouldn't have any children and we wouldn't be
-        # here anyway.
-        |> Map.put(:errors, bad_child.errors)
-      {node, exec}
+      nil
+      |> to_result(bp_field, full_type, node.extensions)
+      |> Map.put(:errors, bad_child.errors)
+      # ^ We don't have to worry about clobbering the current node's errors because,
+      # if it had any errors, it wouldn't have any children and we wouldn't be
+      # here anyway.
     else
-      value
+      node
     end
   end
-  defp propagate_null_trimming(val) do
-    val
+
+  defp find_bad_child(%{fields: fields}) do
+    Enum.find(fields, &non_null_violation?/1)
+  end
+  defp find_bad_child(%{values: values}) do
+    Enum.find(values, &non_null_list_violation?/1)
+  end
+  defp find_bad_child(_) do
+    false
   end
 
+  # FIXME: Not super happy with this lookup process
   defp non_null_violation?(%{value: nil, emitter: %{schema_node: %{type: %Type.NonNull{}}}}) do
     true
   end
   defp non_null_violation?(_) do
+    false
+  end
+
+  # FIXME: Not super happy with this lookup process.
+  # Also it would be nice if we could use the same function as above.
+  defp non_null_list_violation?(%{value: nil, emitter: %{schema_node: %{type: %Type.List{of_type: %Type.NonNull{}}}}}) do
+    true
+  end
+  defp non_null_list_violation?(_) do
     false
   end
 

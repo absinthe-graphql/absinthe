@@ -51,6 +51,18 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
         end
       end
 
+      field :nullable_list_of_nullable, list_of(:thing) do
+        resolve fn _, _ ->
+          {:ok, [%{}]}
+        end
+      end
+
+      field :nullable_list_of_non_null, list_of(non_null(:thing)) do
+        resolve fn _, _ ->
+          {:ok, [%{}]}
+        end
+      end
+
       @desc """
       A field declared to be non null.
 
@@ -128,5 +140,33 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       %{locations: [%{column: 0, line: 2}], message: "boom", path: path},
     ]
     assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
+  end
+
+  describe "lists" do
+    test "list of nullable things works when child has a null violation" do
+      doc = """
+      {
+        nullableListOfNullable { nonNull(makeNull: true) { __typename } }
+      }
+      """
+      data = %{"nullableListOfNullable" => [nil]}
+      errors = [
+        %{locations: [%{column: 0, line: 2}], message: "Cannot return null for non-nullable field", path: ["nullableListOfNullable", 0, "nonNull"]},
+      ]
+      assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
+    end
+
+    test "list of non null things works when child has a null violation" do
+      doc = """
+      {
+        nullableListOfNonNull { nonNull(makeNull: true) { __typename } }
+      }
+      """
+      data = %{"nullableListOfNonNull" => nil}
+      errors = [
+        %{locations: [%{column: 0, line: 2}], message: "Cannot return null for non-nullable field", path: ["nullableListOfNonNull", 0, "nonNull"]},
+      ]
+      assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
+    end
   end
 end
