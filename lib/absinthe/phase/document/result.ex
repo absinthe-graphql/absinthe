@@ -9,7 +9,8 @@ defmodule Absinthe.Phase.Document.Result do
 
   @spec run(Blueprint.t | Phase.Error.t, Keyword.t) :: {:ok, map}
   def run(%Blueprint{} = bp, _options \\ []) do
-    {:ok, %{bp | result: process(bp)}}
+    result = Map.merge(bp.result, process(bp))
+    {:ok, %{bp | result: result}}
   end
 
   defp process(blueprint) do

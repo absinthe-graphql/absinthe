@@ -44,4 +44,17 @@ defmodule Absinthe.ExtensionsTest do
 
     assert bp.result == %{data: %{"foo" => "hello world"}, extensions: %{foo: 1}}
   end
+
+  it "Result phase doesn't clober the extensions" do
+    doc = "{foo}"
+
+    pipeline =
+      Schema
+      |> Absinthe.Pipeline.for_document()
+      |> Absinthe.Pipeline.insert_before(Absinthe.Phase.Document.Result, MyPhase)
+
+    assert {:ok, bp, _} = Absinthe.Pipeline.run(doc, pipeline)
+
+    assert bp.result == %{data: %{"foo" => "hello world"}, extensions: %{foo: 1}}
+  end
 end
