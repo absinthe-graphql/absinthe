@@ -68,6 +68,10 @@ defmodule Absinthe.Resolution.Helpers do
     end
 
     defp do_dataloader(parent, args, loader, source, key, opts) do
+      args =
+        Keyword.get(opts, :args, %{})
+        |> Map.merge(args)
+
       loader
       |> use_parent(source, key, parent, args, opts)
       |> Dataloader.load(source, {key, args}, parent)
@@ -87,14 +91,14 @@ defmodule Absinthe.Resolution.Helpers do
       end
     end
 
-    @spec dataloader(Dataloader.source_name, [use_parent: true | false]) :: dataloader_tuple
+    @spec dataloader(Dataloader.source_name, [args: map, use_parent: true | false]) :: dataloader_tuple
     def dataloader(source, opts) when opts when is_list(opts) do
       fn parent, args, %{context: %{loader: loader}} = res ->
         key = res.definition.schema_node.identifier
         do_dataloader(parent, args, loader, source, key, opts)
       end
     end
-    @spec dataloader(Dataloader.source_name, any, [use_parent: true | false]) :: dataloader_tuple
+    @spec dataloader(Dataloader.source_name, any, [args: map, use_parent: true | false]) :: dataloader_tuple
     def dataloader(source, key, opts \\ []) do
       fn parent, args, %{context: %{loader: loader}} ->
         do_dataloader(parent, args, loader, source, key, opts)
