@@ -3,6 +3,9 @@
 ## v1.4.0
 Status: RC
 
+- Bug Fix: Ensured types that aren't used by the schema's root types aren't reported by introspection
+- Internal Change: Added `Absinthe.Schema.used_types`, `Absinthe.Schema.introspection_types/1`, and `Type.introspection?/1`
+
 - Enhancement: Subscriptions! See the Absinthe.Phoenix project for getting started info.
 - Enhancement: Null literal support [as laid out in the October 2016 GraphQL Specification](http://facebook.github.io/graphql/#sec-Null-Value)
 - Enhancement: Errors now include path information. This path information can be accessed in resolvers via `Absinthe.Resolution.path/1`

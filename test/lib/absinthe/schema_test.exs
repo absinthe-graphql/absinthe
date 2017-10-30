@@ -160,6 +160,26 @@ defmodule Absinthe.SchemaTest do
 
   end
 
+  context "used_types" do
+    it "does not contain introspection types" do
+      assert !Enum.any?(
+        Schema.used_types(ThirdSchema),
+        &Type.introspection?/1
+      )
+    end
+  end
+
+  context "introspection_types" do
+    it "is not empty" do
+      assert !Enum.empty?(Schema.introspection_types(ThirdSchema))
+    end
+    it "are introspection types" do
+      assert Enum.all?(
+        Schema.introspection_types(ThirdSchema),
+        &Type.introspection?/1
+      )
+    end
+  end
 
   context "root fields" do
 
