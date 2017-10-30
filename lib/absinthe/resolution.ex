@@ -22,6 +22,9 @@ defmodule Absinthe.Resolution do
 
   To access the schema type for this field, see the `definition.schema_node`.
   """
+  @type arguments :: %{optional(atom) => any}
+  @type source :: any
+
   @type t :: %__MODULE__{
     value: term,
     errors: [term],
@@ -31,11 +34,11 @@ defmodule Absinthe.Resolution do
     schema: Absinthe.Schema.t,
     definition: Absinthe.Blueprint.node_t,
     parent_type: Absinthe.Type.t,
-    source: any,
+    source: source,
     state: field_state,
     acc: %{any => any},
     extensions: %{any => any},
-    arguments: %{optional(atom) => any},
+    arguments: arguments,
     fragments: [Absinthe.Blueprint.Document.Fragment.Named.t],
   }
 

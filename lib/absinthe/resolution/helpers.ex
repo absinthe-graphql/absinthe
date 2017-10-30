@@ -98,8 +98,16 @@ defmodule Absinthe.Resolution.Helpers do
         do_dataloader(parent, args, loader, source, key, opts)
       end
     end
+    def dataloader(source, key, opts \\ [])
+    @spec dataloader(Dataloader.source_name, ((Absinthe.Resolution.source, Absinthe.Resolution.arguments, Absinthe.Resolution.t) -> {atom, map}), [args: map, use_parent: true | false]) :: dataloader_tuple
+    def dataloader(source, fun, opts) when is_function(fun, 3) do
+      fn parent, args, %{context: %{loader: loader}} = res ->
+        {key, args} = fun.(parent, args, res)
+        do_dataloader(parent, args, loader, source, key, opts)
+      end
+    end
     @spec dataloader(Dataloader.source_name, any, [args: map, use_parent: true | false]) :: dataloader_tuple
-    def dataloader(source, key, opts \\ []) do
+    def dataloader(source, key, opts) do
       fn parent, args, %{context: %{loader: loader}} ->
         do_dataloader(parent, args, loader, source, key, opts)
       end
