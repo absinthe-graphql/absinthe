@@ -25,6 +25,7 @@ defmodule Absinthe.Type.Directive do
   @type t :: %{
     name: binary,
     description: binary,
+    identifier: atom,
     args: map,
     locations: [location],
     expand: nil | ((Absinthe.Blueprint.node_t, map) -> {Absinthe.Blueprint.t, map}),
@@ -36,6 +37,7 @@ defmodule Absinthe.Type.Directive do
   defstruct [
     name: nil,
     description: nil,
+    identifier: nil,
     args: nil,
     locations: [],
     expand: nil,

@@ -167,6 +167,15 @@ defmodule Absinthe.SchemaTest do
         &Type.introspection?/1
       )
     end
+
+    it "contains enums" do
+      types =
+        ContactSchema
+        |> Absinthe.Schema.used_types
+        |> Enum.map(&(&1.identifier))
+
+      assert :some_enum in types
+    end
   end
 
   context "introspection_types" do

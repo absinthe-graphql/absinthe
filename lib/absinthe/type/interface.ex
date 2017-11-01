@@ -63,6 +63,7 @@ defmodule Absinthe.Type.Interface do
     name: binary,
     description: binary,
     fields: map,
+    identifier: atom,
     resolve_type: ((any, Absinthe.Resolution.t) -> atom | nil),
     __private__: Keyword.t,
     __reference__: Type.Reference.t,
@@ -72,6 +73,7 @@ defmodule Absinthe.Type.Interface do
     name: nil,
     description: nil,
     fields: nil,
+    identifier: nil,
     resolve_type: nil,
     __private__: [],
     __reference__: nil

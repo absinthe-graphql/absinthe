@@ -315,19 +315,19 @@ defmodule Absinthe.Type do
 
   @spec referenced_types(t, Schema.t) :: [t]
   def referenced_types(type, schema) do
-    referenced_types(type, schema, [])
+    referenced_types(type, schema, MapSet.new)
   end
 
-  defp referenced_types(%Type.Argument{} = arg, schema, acc) do
-    referenced_types(arg.type, schema, acc)
+  defp referenced_types(%Type.Argument{type: type}, schema, acc) do
+    referenced_types(type, schema, acc)
   end
   defp referenced_types(%Type.Directive{} = type, schema, acc) do
     type.args
     |> Map.values
     |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
   end
-  defp referenced_types(%Type.Enum{}, _schema, acc) do
-    acc
+  defp referenced_types(%Type.Enum{identifier: identifier}, _schema, acc) do
+    MapSet.put(acc, identifier)
   end
   defp referenced_types(%Type.Field{} = field, schema, acc) do
     acc =
@@ -336,22 +336,24 @@ defmodule Absinthe.Type do
       |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
     referenced_types(field.type, schema, acc)
   end
-  defp referenced_types(%Type.InputObject{} = input_object, schema, acc) do
-    if input_object in acc do
+  defp referenced_types(%Type.InputObject{identifier: identifier} = input_object, schema, acc) do
+    if identifier in acc do
       acc
     else
+      acc = MapSet.put(acc, identifier)
       input_object.fields
       |> Map.values
-      |> Enum.reduce([input_object | acc], &referenced_types(&1, schema, &2))
+      |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
     end
   end
-  defp referenced_types(%Type.Interface{} = interface, schema, acc) do
+  defp referenced_types(%Type.Interface{identifier: identifier} = interface, schema, acc) do
     if interface in acc do
       acc
     else
+      acc = MapSet.put(acc, identifier)
       interface.fields
       |> Map.values
-      |> Enum.reduce([interface | acc], &referenced_types(&1, schema, &2))
+      |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
     end
   end
   defp referenced_types(%Type.List{of_type: inner_type}, schema, acc) do
@@ -360,34 +362,33 @@ defmodule Absinthe.Type do
   defp referenced_types(%Type.NonNull{of_type: inner_type}, schema, acc) do
     referenced_types(inner_type, schema, acc)
   end
-  defp referenced_types(%Type.Object{} = object, schema, acc) do
-    if object in acc do
+  defp referenced_types(%Type.Object{identifier: identifier} = object, schema, acc) do
+    if identifier in acc do
       acc
     else
+      acc = MapSet.put(acc, identifier)
       object.fields
       |> Map.values
-      |> Enum.reduce([object | acc], &referenced_types(&1, schema, &2))
+      |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
     end
   end
   defp referenced_types(%Type.Reference{} = ref, schema, acc) do
+    ref |> IO.inspect
     referenced_types(ref.identifier, schema, acc)
   end
-  defp referenced_types(%Type.Scalar{} = type, _schema, acc) do
-    if type in acc do
-      acc
-    else
-      [type | acc]
-    end
+  defp referenced_types(%Type.Scalar{identifier: identifier}, _schema, acc) do
+    MapSet.put(acc, identifier)
   end
-  defp referenced_types(%Type.Union{} = union, schema, acc) do
-    if union in acc do
+  defp referenced_types(%Type.Union{identifier: identifier} = union, schema, acc) do
+    if identifier in acc do
       acc
     else
+      acc = MapSet.put(acc, identifier)
       union.types
-      |> Enum.reduce([union | acc], &referenced_types(&1, schema, &2))
+      |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
     end
   end
-  defp referenced_types(type, schema, acc) when is_atom(type) do
+  defp referenced_types(type, schema, acc) when is_atom(type) and type != nil do
     referenced_types(Schema.lookup_type(schema, type), schema, acc)
   end
 

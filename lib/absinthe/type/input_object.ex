@@ -50,6 +50,7 @@ defmodule Absinthe.Type.InputObject do
     name: binary,
     description: binary,
     fields: map | (() -> map),
+    identifier: atom,
     __private__: Keyword.t,
     __reference__: Type.Reference.t,
   }
@@ -58,6 +59,7 @@ defmodule Absinthe.Type.InputObject do
     name: nil,
     description: nil,
     fields: %{},
+    identifier: nil,
     __private__: [],
     __reference__: nil,
     field_imports: [],

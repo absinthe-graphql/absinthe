@@ -67,6 +67,7 @@ defmodule Absinthe.Type.Scalar do
     description: binary,
     serialize: (value_t -> any),
     parse: (any -> {:ok, value_t} | :error),
+    identifier: atom,
     __private__: Keyword.t,
     __reference__: Type.Reference.t,
   }
@@ -76,6 +77,7 @@ defmodule Absinthe.Type.Scalar do
     description: nil,
     serialize: nil,
     parse: nil,
+    identifier: nil,
     __private__: [],
     __reference__: nil,
   ]
