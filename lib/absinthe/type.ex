@@ -326,8 +326,8 @@ defmodule Absinthe.Type do
     |> Map.values
     |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
   end
-  defp referenced_types(%Type.Enum{}, _schema, acc) do
-    acc
+  defp referenced_types(%Type.Enum{} = type, _schema, acc) do
+    [type | acc]
   end
   defp referenced_types(%Type.Field{} = field, schema, acc) do
     acc =
