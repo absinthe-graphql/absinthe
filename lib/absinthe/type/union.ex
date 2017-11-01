@@ -44,6 +44,7 @@ defmodule Absinthe.Type.Union do
     description: binary,
     types: [Type.identifier_t],
     resolve_type: ((any, Absinthe.Resolution.t) -> atom | nil),
+    identifier: atom,
     __private__: Keyword.t,
     __reference__: Type.Reference.t,
   }
@@ -52,6 +53,7 @@ defmodule Absinthe.Type.Union do
     name: nil,
     description: nil,
     resolve_type: nil,
+    identifier: nil,
     types: [],
     __private__: [],
     __reference__: nil,

@@ -72,6 +72,7 @@ defmodule Absinthe.Type.Enum do
     name: binary,
     description: binary,
     values: %{binary => Type.Enum.Value.t},
+    identifier: atom,
     __private__: Keyword.t,
     __reference__: Type.Reference.t,
   }
@@ -79,6 +80,7 @@ defmodule Absinthe.Type.Enum do
   defstruct [
     name: nil,
     description: nil,
+    identifier: nil,
     values: %{},
     values_by_internal_value: %{},
     values_by_name: %{},

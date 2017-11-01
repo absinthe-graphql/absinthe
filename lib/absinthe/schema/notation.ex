@@ -298,6 +298,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record an interface type
   def record_interface!(env, identifier, attrs, block) do
+    attrs = Keyword.put(attrs, :identifier, identifier)
     scope(env, :interface, identifier, attrs, block)
   end
 
@@ -661,6 +662,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record a scalar type
   def record_scalar!(env, identifier, attrs, block) do
+    attrs = Keyword.put(attrs, :identifier, identifier)
     scope(env, :scalar, identifier, attrs, block)
   end
 
@@ -788,6 +790,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record a directive
   def record_directive!(env, identifier, attrs, block) do
+    attrs = Keyword.put(attrs, :identifier, identifier)
     scope(env, :directive, identifier, attrs, block)
   end
 
@@ -900,6 +903,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record an input object type
   def record_input_object!(env, identifier, attrs, block) do
+    attrs = Keyword.put(attrs, :identifier, identifier)
     scope(env, :input_object, identifier, attrs, block)
   end
 
@@ -938,6 +942,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record a union type
   def record_union!(env, identifier, attrs, block) do
+    attrs = Keyword.put(attrs, :identifier, identifier)
     scope(env, :union, identifier, attrs, block)
   end
 
@@ -1047,6 +1052,7 @@ defmodule Absinthe.Schema.Notation do
   # Record an enum type
   def record_enum!(env, identifier, attrs, block) do
     attrs = expand(attrs, env)
+    attrs = Keyword.put(attrs, :identifier, identifier)
     scope(env, :enum, identifier, attrs, block)
   end
 

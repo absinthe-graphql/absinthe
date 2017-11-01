@@ -571,7 +571,8 @@ defmodule Absinthe.Schema do
     |> Enum.map(&lookup_type(schema, &1))
     |> Enum.filter(&(!is_nil(&1)))
     |> Enum.flat_map(&Type.referenced_types(&1, schema))
-    |> Enum.uniq
+    |> MapSet.new
+    |> Enum.map(&Schema.lookup_type(schema, &1))
   end
 
   @doc """

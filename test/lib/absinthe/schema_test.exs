@@ -172,7 +172,7 @@ defmodule Absinthe.SchemaTest do
       types =
         ContactSchema
         |> Absinthe.Schema.used_types
-        |> Enum.map(&(&1.__reference__.identifier))
+        |> Enum.map(&(&1.identifier))
 
       assert :some_enum in types
     end
