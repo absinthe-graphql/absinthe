@@ -7,7 +7,7 @@ following in mind when submitting an issue:
 - For help and support, use:
   - Our Slack channel (#absinthe-graphql): https://elixir-slackin.herokuapp.com
   - The Elixir Forum: https://elixirforum.com
-  - The documentation: https://hexdocs.pm/absinthe
+  - The documentation, to include guides: https://hexdocs.pm/absinthe
 - For new features, consider discussing the idea with us via Slack/Forum before submitting an issue
 - For bugs, do a quick search and make sure the bug has not yet been reported
 - Please try to ensure that your issue is related to the core Absinthe package and not one of the
