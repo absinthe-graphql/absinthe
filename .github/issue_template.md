@@ -24,7 +24,7 @@ If submitting a bug, please provide the following:
 ### Environment
 
 * Elixir version (elixir -v):
-* Absinthe version (mix deps; please list all Absinthe-related packages):
+* Absinthe version (mix deps | grep absinthe):
 * Client Framework and version (Relay, Apollo, etc):
 
 ### Expected behavior
