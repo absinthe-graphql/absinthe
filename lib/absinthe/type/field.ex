@@ -136,7 +136,7 @@ defmodule Absinthe.Type.Field do
   ### Custom Complexity
 
   When accepting arguments, however, you probably need to use them for
-  something. Here's an example of definining a field that looks up at most
+  something. Here's an example of defining a field that looks up at most
   `limit` users:
   ```
   query do
