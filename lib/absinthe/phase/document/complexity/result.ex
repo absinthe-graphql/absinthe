@@ -67,4 +67,7 @@ defmodule Absinthe.Phase.Document.Complexity.Result do
   defp describe_node(%Blueprint.Document.Field{name: name}) do
     "Field #{name}"
   end
+  defp describe_node(%Blueprint.Document.Fragment.Spread{name: name}) do
+    "Spread #{name}"
+  end
 end
