@@ -324,7 +324,7 @@ defmodule Absinthe.Type do
   defp referenced_types(%Type.Directive{} = type, schema, acc) do
     type.args
     |> Map.values
-    |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
+    |> Enum.reduce(acc, &referenced_types(&1.type, schema, &2))
   end
   defp referenced_types(%Type.Enum{identifier: identifier}, _schema, acc) do
     MapSet.put(acc, identifier)
@@ -373,7 +373,6 @@ defmodule Absinthe.Type do
     end
   end
   defp referenced_types(%Type.Reference{} = ref, schema, acc) do
-    ref |> IO.inspect
     referenced_types(ref.identifier, schema, acc)
   end
   defp referenced_types(%Type.Scalar{identifier: identifier}, _schema, acc) do

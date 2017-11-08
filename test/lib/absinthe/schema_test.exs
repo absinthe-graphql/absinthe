@@ -96,8 +96,20 @@ defmodule Absinthe.SchemaTest do
   defmodule ThirdSchema do
     use Absinthe.Schema
 
+    enum :some_enum do
+      values [:a, :b]
+    end
+
+    directive :foo do
+      arg :baz, :dir_enum
+    end
+
+    enum :dir_enum do
+      value :foo
+    end
+
     query do
-      #Query type must exist
+      field :enum_field, :some_enum
     end
 
     import_types UserSchema
@@ -170,11 +182,12 @@ defmodule Absinthe.SchemaTest do
 
     it "contains enums" do
       types =
-        ContactSchema
+        ThirdSchema
         |> Absinthe.Schema.used_types
         |> Enum.map(&(&1.identifier))
 
       assert :some_enum in types
+      assert :dir_enum in types
     end
   end
 

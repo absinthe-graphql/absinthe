@@ -45,7 +45,7 @@ defmodule Absinthe.IntrospectionTest do
         ContactSchema
       )
       names = types |> Enum.map(&(&1["name"])) |> Enum.sort
-      expected = ~w(Int SomeEnum String Boolean Contact Person Business ProfileInput SearchResult NamedEntity RootMutationType RootQueryType RootSubscriptionType __Schema __Directive __DirectiveLocation __EnumValue __Field __InputValue __Type) |> Enum.sort
+      expected = ~w(Int String Boolean Contact Person Business ProfileInput SearchResult NamedEntity RootMutationType RootQueryType RootSubscriptionType __Schema __Directive __DirectiveLocation __EnumValue __Field __InputValue __Type) |> Enum.sort
       assert expected == names
     end
 

@@ -8,12 +8,7 @@ defmodule ContactSchema do
   ]
   @business %{name: "Someplace", employee_count: 11}
 
-  enum :some_enum do
-    values [:a, :b]
-  end
-
   query do
-    field :enum_field, :some_enum
 
     field :person,
       type: :person,
