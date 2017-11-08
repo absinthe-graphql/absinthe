@@ -35,11 +35,14 @@ defmodule Absinthe.Pipeline do
     jump_phases: true,
   ]
 
+  def options(overrides \\ []) do
+    Keyword.merge(@defaults, overrides)
+  end
+
   @spec for_document(Absinthe.Schema.t) :: t
   @spec for_document(Absinthe.Schema.t, Keyword.t) :: t
   def for_document(schema, options \\ []) do
-    options = @defaults
-    |> Keyword.merge(Keyword.put(options, :schema, schema))
+    options = options(Keyword.put(options, :schema, schema))
     [
       # Parse Document
       {Phase.Parse, options},
@@ -254,6 +257,10 @@ defmodule Absinthe.Pipeline do
         run_phase(from(todo, destination_phase), result, [phase | done])
       {:insert, result, extra_pipeline} ->
         run_phase(List.wrap(extra_pipeline) ++ todo, result, [phase | done])
+      {:swap, result, target, replacements} ->
+        todo
+        |> replace(target, replacements)
+        |> run_phase(result, [phase | done])
       {:replace, result, final_pipeline} ->
         run_phase(List.wrap(final_pipeline), result, [phase | done])
       {:error, message} ->
