@@ -15,7 +15,7 @@ Let's say you have a schema that looks something like this:
 defmodule MyAppWeb.Schema do
   use Absinthe.Schema
 
-  object :person do
+  object :user do
     field :name, :string
   end
 
@@ -24,13 +24,13 @@ defmodule MyAppWeb.Schema do
 end
 ```
 
-You could extract your `:person` type into a module, `MyAppWeb.Schema.AccountTypes`:
+You could extract your `:user` type into a module, `MyAppWeb.Schema.AccountTypes`:
 
 ``` elixir
 defmodule MyAppWeb.Schema.AccountTypes do
   use Absinthe.Schema.Notation
 
-  object :person do
+  object :user do
     field :name, :string
   end
 end
@@ -55,7 +55,7 @@ end
 > Important: You should _only_ use `import_types` from your schema
 > module; think of it like a manifest.
 
-Now, your schema will be able to resolve any references to your `:person` type
+Now, your schema will be able to resolve any references to your `:user` type
 during compilation.
 
 ## What about root types?
