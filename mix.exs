@@ -95,7 +95,10 @@ defmodule Absinthe.Mixfile do
       "guides/adapters.md",
       "guides/complexity-analysis.md",
       "guides/file-uploads.md",
-      "guides/relay.md",
+
+      "guides/client/javascript.md",
+      "guides/client/apollo.md",
+      "guides/client/relay.md",
 
       "guides/upgrading/v1.4.md",
     ]
@@ -106,6 +109,7 @@ defmodule Absinthe.Mixfile do
       "Introduction": ~r/guides\/introduction\/.*/,
       "Tutorial": ~r/guides\/tutorial\/.*/,
       "Topics": ~r/guides\/[^\/]+\.md/,
+      "Client Guides": ~r/guides\/client\/.*/,
       "Upgrade Guides": ~r/guides\/upgrading\/.*/,
     ]
   end
