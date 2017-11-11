@@ -99,5 +99,3 @@ The serializer of `:datetime` is a pretty simple affair; it uses the
 `DateTime.to_iso8601/1` utility function. It would be called to
 serialize the `%DateTime{}` struct for the requested `:published_at`
 field in the result.
-
-Next up: [using complex arguments](complex-arguments.html).
