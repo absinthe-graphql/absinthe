@@ -1,7 +1,79 @@
 # Importing Types
 
-> We're sorry, this guide hasn't been written yet.
->
-> You can help! Please fork the [absinthe](https://github.com/absinthe-graphql/absinthe) repository, edit `guides/importing-types.md`, and submit a [pull request](https://github.com/absinthe-graphql/absinthe/pulls).
+It doesn't take long for a schema module to become crowded with types,
+resolvers, and other customizations.
 
-In the meantime, see the `Absinthe.Schema.Notation.import_types/1` macro documentation for more information.
+A good first step in cleaning up your schema is extracting your types,
+organizing them into other modules, and then using `Absinthe.Schema.Notation.import_types/1`
+to make them available to your schema.
+
+## Example
+
+Let's say you have a schema that looks something like this:
+
+``` elixir
+defmodule MyAppWeb.Schema do
+  use Absinthe.Schema
+
+  object :person do
+    field :name, :string
+  end
+
+  # Rest of the schema...
+
+end
+```
+
+You could extract your `:person` type into a module, `MyAppWeb.Schema.AccountTypes`:
+
+``` elixir
+defmodule MyAppWeb.Schema.AccountTypes do
+  use Absinthe.Schema.Notation
+
+  object :person do
+    field :name, :string
+  end
+end
+```
+
+> Note that, unlike your schema module, _type modules_ should use
+> `Absinthe.Schema.Notation`, *not* `Absinthe.Schema`.
+
+Now, you need to make sure you use `import_types` to tell your schema
+where to find additional types:
+
+``` elixir
+defmodule MyAppWeb.Schema do
+  use Absinthe.Schema
+
+  import_types MyAppWeb.Schema.AccountTypes
+
+  # Rest of the schema...
+end
+```
+
+> Important: You should _only_ use `import_types` from your schema
+> module; think of it like a manifest.
+
+Now, your schema will be able to resolve any references to your `:person` type
+during compilation.
+
+## What about root types?
+
+Root types (which are defined using the `query`, `mutation`, and
+`subscription` macros), can only be defined on the schema module---you
+can't extract them, but you can use the `import_fields` mechanism to
+extract their contents.
+
+Here's an example:
+
+``` elixir
+query do
+  import_fields :account_queries
+end
+```
+
+This will look for a matching object type `:account_queries`, and pull
+its fields into the root query type.
+
+For more information, see the [guide](importing-fields.html).
