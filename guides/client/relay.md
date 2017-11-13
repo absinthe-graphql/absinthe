@@ -1,13 +1,8 @@
-# Use with Relay
-
-> Note: This guide was written with Relay Classic in mind. If you're building an application using Relay Modern, some of the constraints and patterns that we describe here (especially with regard to mutations) may no longer apply.
->
-> You can help! If you can improve this guide for Relay Modern users, please edit `guides/relay.md` and submit a [pull request](https://github.com/absinthe-graphql/absinthe/pulls).
+# Using with Relay
 
 While GraphQL specifies what queries, mutations, and object types should look
 like, Relay is a client-side implementation of an efficient data storage and
 (re-)fetching system that is designed to work with a GraphQL server.
-
 
 To allow Relay to work its magic on the client side, all GraphQL queries and
 mutations need to follow certain conventions. `Absinthe.Relay` provides
@@ -16,7 +11,7 @@ requiring only minimal changes to your existing code.
 
 `Absinthe.Relay` supports three fundamental pieces of the Relay puzzle: *nodes*,
 which are normal GraphQL objects with a unique global ID scheme; *mutations*,
-which in Relay conform to a certain input and output structure; and
+which in Relay Classic conform to a certain input and output structure; and
 *connections*, which provide enhanced functionality around many-to-one lists
 (most notably pagination).
 
@@ -31,12 +26,17 @@ To add Relay support schemas should start with `use Absinthe.Relay.Schema`, eg:
 ```elixir
 defmodule Schema do
   use Absinthe.Schema
-  use Absinthe.Relay.Schema
+  use Absinthe.Relay.Schema, :classic
 
   # ...
 
 end
 ```
+
+> Note that this schema is being prepared to support Relay Classic; if
+> you do not provide either a `:classic` or `:modern` option,
+> `:classic` is currently selected as the default, but a warning is
+> output; `:modern` will be the default option in v1.5.
 
 If you're defining your types in a separate type module that you're using via
 `import_types` in your schema, use the `Notation` module instead:
@@ -44,7 +44,7 @@ If you're defining your types in a separate type module that you're using via
 ```elixir
 defmodule Schema.Types do
   use Absinthe.Schema.Notation
-  use Absinthe.Relay.Schema.Notation
+  use Absinthe.Relay.Schema.Notation, :classic
 
   # ...
 
@@ -214,8 +214,15 @@ cleaner.
 
 ## Mutations
 
-Relay sets some specific constraints around the way arguments and results for
+Relay Classic sets some specific constraints around the way arguments and results for
 mutations are structured.
+
+> In Relay Modern (if you're using the `:modern` option when defining
+> the schema), you'll have access to a similar set of macros as
+> discussed here, but be aware that the constraints mentioned (on
+> `input`, on `clientMutationId`, etc) don't apply. See the
+> documentation for [Absinthe.Relay.Mutation.Modern](https://hexdocs.pm/absinthe_relay/Absinthe.Relay.Mutation.Modern.html) for more
+> specific instructions.
 
 Relay expects mutations to accept exactly one argument, `input`, an
 `InputObject`. On the JavaScript side, it automatically populates a field on the
@@ -265,8 +272,10 @@ Note the `payload` macro introduces a Relay mutation, `input` defines the fields
 (inside the `input` argument), and `output` defines the fields available as part
 of the result.
 
-See the [documentation on Absinthe.Relay.Mutation](https://hexdocs.pm/absinthe_relay/Absinthe.Relay.Mutation.html)
-for more information.
+See the module documentation for more information:
+
+- [Absinthe.Relay.Mutation.Classic](https://hexdocs.pm/absinthe_relay/Absinthe.Relay.Mutation.Classic.html)
+- [Absinthe.Relay.Mutation.Modern](https://hexdocs.pm/absinthe_relay/Absinthe.Relay.Mutation.Modern.html)
 
 ### Referencing existing nodes in mutation inputs
 
