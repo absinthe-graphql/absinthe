@@ -100,7 +100,7 @@ and/or <a href="https://facebook.github.io/graphql/#sec-Non-null">NonNull</a>.
 The [GraphiQL project](https://github.com/graphql/graphiql) is
 "an in-browser IDE for exploring GraphQL."
 
-Absinthe provides GraphiQL via a plug in `absinthe_plug`. See the [Plug and Phoenix Guide](http://absinthe-graphql.org/guides/plug-phoenix)
+Absinthe provides GraphiQL via a plug in `absinthe_plug`. See the [Plug and Phoenix Guide](plug-phoenix.html)
 for how to install that library. Once installed, usage is simple as:
 
 ```elixir
