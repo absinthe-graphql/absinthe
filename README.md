@@ -77,15 +77,7 @@ Install from [Hex.pm](https://hex.pm/packages/absinthe):
 
 ```elixir
 def deps do
-  [{:absinthe, "~> 1.3.2"}]
-end
-```
-
-Add it to your `applications` configuration in `mix.exs`, too:
-
-```elixir
-def application do
-  [applications: [:absinthe]]
+  [{:absinthe, "~> 1.4.0"}]
 end
 ```
 

@@ -1,7 +1,6 @@
 # Changelog
 
 ## v1.4.0
-Status: RC
 
 - Bug Fix: Ensured types that aren't used by the schema's root types aren't reported by introspection
 - Internal Change: Added `Absinthe.Schema.used_types`, `Absinthe.Schema.introspection_types/1`, and `Type.introspection?/1`
