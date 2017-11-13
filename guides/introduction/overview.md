@@ -38,8 +38,8 @@ Absinthe integrates with a number of other important projects, both on the backe
   * Support for HTTP APIs using [Plug and Phoenix](plug-phoenix.html) via the [absinthe_plug](https://hex.pm/packages/absinthe_plug) and [absinthe_phoenix](https://hex.pm/packages/absinthe_phoenix) packages
   * Support for [Ecto](ecto.html) via the [absinthe_ecto](https://hex.pm/packages/absinthe_ecto) package
 * JavaScript (client-side)
-  * Support for specific [Relay Framework](relay.html) patterns
-  * Support for Absinthe's channel-based subscriptions. This in an evolving area, see [absinthe_phoenix](https://github.com/absinthe-graphql/absinthe_phoenix) for links to related projects.
+  * Support for [Relay](relay.html) and [Apollo Client](apollo.html)
+  * Support for Absinthe's channel-based subscriptions. See [absinthe-socket](https://github.com/absinthe-graphql/absinthe-socket).
 
 ## Guides
 
