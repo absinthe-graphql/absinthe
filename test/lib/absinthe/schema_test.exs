@@ -96,11 +96,16 @@ defmodule Absinthe.SchemaTest do
   defmodule ThirdSchema do
     use Absinthe.Schema
 
+    interface :named do
+      field :name, :string
+      resolve_type fn _ -> nil end
+    end
+
     enum :some_enum do
       values [:a, :b]
     end
 
-    directive :foo do
+    directive :directive do
       arg :baz, :dir_enum
     end
 
@@ -110,9 +115,15 @@ defmodule Absinthe.SchemaTest do
 
     query do
       field :enum_field, :some_enum
+      field :object_field, :user
     end
 
     import_types UserSchema
+
+    object :user do
+      field :name, :string
+      interface :named
+    end
 
     object :baz do
       field :name, :string
@@ -188,6 +199,15 @@ defmodule Absinthe.SchemaTest do
 
       assert :some_enum in types
       assert :dir_enum in types
+    end
+
+    it "contains interfaces" do
+      types =
+        ThirdSchema
+        |> Absinthe.Schema.used_types
+        |> Enum.map(&(&1.identifier))
+
+      assert :named in types
     end
   end
 

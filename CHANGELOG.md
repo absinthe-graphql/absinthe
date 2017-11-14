@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.1
+
+- Bug Fix: fix regression where interfaces wouldn't show up in GraphiQL unless used as a field return type.
+
 ## v1.4.0
 
 - Bug Fix: Ensured types that aren't used by the schema's root types aren't reported by introspection
