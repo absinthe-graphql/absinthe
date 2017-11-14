@@ -150,7 +150,7 @@ make sure our schema knows it needs to run the dataloader.
 First however make sure to include the dataloader dependency in your application:
 
 ```elixir
-{:dataloader, "~> 0.1.0"}
+{:dataloader, "~> 1.0.0"}
 ```
 
 Latest install instructions found here: https://github.com/absinthe-graphql/dataloader
