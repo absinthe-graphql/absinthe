@@ -7,6 +7,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
     description "Represents a schema"
 
     field :types, list_of(:__type) do
+      complexity 0
       resolve fn
         _, %{schema: schema} ->
           {:ok, Absinthe.Schema.used_types(schema) ++ Absinthe.Schema.introspection_types(schema)}
@@ -14,6 +15,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
     end
 
     field :query_type,
+      complexity: 0,
       type: :__type,
       resolve: fn
         _, %{schema: schema} ->
@@ -21,6 +23,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       end
 
     field :mutation_type,
+      complexity: 0,
       type: :__type,
       resolve: fn
         _, %{schema: schema} ->
@@ -28,6 +31,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       end
 
     field :subscription_type,
+      complexity: 0,
       type: :__type,
       resolve: fn
         _, %{schema: schema} ->
@@ -35,6 +39,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       end
 
     field :directives,
+      complexity: 0,
       type: list_of(:__directive),
       resolve: fn
         _, %{schema: schema} ->
@@ -46,11 +51,12 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
   object :__directive do
     description "Represents a directive"
 
-    field :name, :string
+    field :name, :string, complexity: 0
 
-    field :description, :string
+    field :description, :string, complexity: 0
 
     field :args,
+      complexity: 0,
       type: list_of(:__inputvalue),
       resolve: fn
         _, %{source: source} ->
@@ -59,6 +65,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       end
 
     field :on_operation,
+      complexity: 0,
       deprecate: "Check `locations` field for enum value OPERATION",
       type: :boolean,
       resolve: fn
@@ -67,6 +74,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       end
 
     field :on_fragment,
+      complexity: 0,
       deprecate: "Check `locations` field for enum value FRAGMENT_SPREAD",
       type: :boolean,
       resolve: fn
@@ -75,6 +83,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       end
 
     field :on_field,
+      complexity: 0,
       type: :boolean,
       deprecate: "Check `locations` field for enum value FIELD",
       resolve: fn
@@ -82,7 +91,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
           {:ok, Enum.member?(source.locations, :field)}
       end
 
-    field :locations, list_of(:__directive_location)
+    field :locations, list_of(:__directive_location), complexity: 0
 
   end
 
@@ -102,17 +111,19 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
     description "Represents scalars, interfaces, object types, unions, enums in the system"
 
     field :kind,
+      complexity: 0,
       type: :string,
       resolve: fn
         _, %{source: %{__struct__: type}} ->
           {:ok, type.kind}
       end
 
-    field :name, :string
+    field :name, :string, complexity: 0
 
-    field :description, :string
+    field :description, :string, complexity: 0
 
     field :fields, list_of(:__field) do
+      complexity 0
       arg :include_deprecated, :boolean, default_value: false
       resolve fn
         %{include_deprecated: show_deprecated}, %{source: %{__struct__: str, fields: fields}} when str in [Absinthe.Type.Object, Absinthe.Type.Interface] ->
@@ -132,6 +143,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
     end
 
     field :interfaces,
+      complexity: 0,
       type: list_of(:__type),
       resolve: fn
         _, %{schema: schema, source: %{interfaces: interfaces}} ->
@@ -146,6 +158,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       end
 
     field :possible_types,
+      complexity: 0,
       type: list_of(:__type),
       resolve: fn
         _, %{schema: schema, source: %{types: types}} ->
@@ -158,6 +171,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       end
 
     field :enum_values,
+      complexity: 0,
       type: list_of(:__enumvalue),
       args: [
         include_deprecated: [
@@ -182,6 +196,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       end
 
     field :input_fields,
+      complexity: 0,
       type: list_of(:__inputvalue),
       resolve: fn
         _, %{source: %Absinthe.Type.InputObject{fields: fields}} ->
@@ -192,6 +207,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       end
 
     field :of_type,
+      complexity: 0,
       type: :__type,
       resolve: fn
         _, %{schema: schema, source: %{of_type: type}} ->
@@ -205,15 +221,17 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
   object :__field do
 
     field :name,
+      complexity: 0,
       type: :string,
       resolve: fn
         _, %{adapter: adapter, source: source} ->
           {:ok, adapter.to_external_name(source.name, :field)}
       end
 
-    field :description, :string
+    field :description, :string, complexity: 0
 
     field :args,
+      complexity: 0,
       type: list_of(:__inputvalue),
       resolve: fn
         _, %{source: source} ->
@@ -221,6 +239,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       end
 
     field :type,
+      complexity: 0,
       type: :__type,
       resolve: fn
         _, %{schema: schema, source: source} ->
@@ -234,6 +253,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       end
 
     field :is_deprecated,
+      complexity: 0,
       type: :boolean,
       resolve: fn
         _, %{source: %{deprecation: nil}} ->
@@ -243,6 +263,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       end
 
     field :deprecation_reason,
+      complexity: 0,
       type: :string,
       resolve: fn
         _, %{source: %{deprecation: nil}} ->
@@ -256,14 +277,16 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
   object :__inputvalue, name: "__InputValue" do
 
     field :name,
+      complexity: 0,
       type: :string,
       resolve: fn
         _, %{adapter: adapter, source: source} ->
           {:ok, adapter.to_external_name(source.name, :field)}
       end
 
-    field :description, :string
+    field :description, :string, complexity: 0
     field :type,
+      complexity: 0,
       type: :__type,
       resolve: fn
         _, %{schema: schema, source: %{type: ident}} ->
@@ -272,6 +295,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       end
 
     field :default_value,
+      complexity: 0,
       type: :string,
       resolve: fn
         _, %{source: %{default_value: nil}} ->
@@ -295,11 +319,12 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
 
   object :__enumvalue, name: "__EnumValue" do
 
-    field :name, :string
+    field :name, :string, complexity: 0
 
-    field :description, :string
+    field :description, :string, complexity: 0
 
     field :is_deprecated,
+      complexity: 0,
       type: :boolean,
       resolve: fn
         _, %{source: %{deprecation: nil}} ->
@@ -309,6 +334,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       end
 
     field :deprecation_reason,
+      complexity: 0,
       type: :string,
       resolve: fn
         _, %{source: %{deprecation: nil}} ->
