@@ -75,7 +75,7 @@ defmodule Absinthe.Execution.ListTest.Schema do
 end
 
 defmodule Absinthe.Execution.ListTest do
-  use Absinthe.Case, async: true
+  use Absinthe.Case, async: false, ordered: false
 
   @query """
   {

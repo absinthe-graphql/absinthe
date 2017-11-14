@@ -1,5 +1,5 @@
 defmodule Absinthe.Execution.InlineFragmentsTest do
-  use Absinthe.Case, async: true
+  use Absinthe.Case, async: false, ordered: false
 
   @query """
   {

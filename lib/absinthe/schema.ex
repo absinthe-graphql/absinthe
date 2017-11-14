@@ -222,7 +222,7 @@ defmodule Absinthe.Schema do
     [Absinthe.Middleware.PassParent]
   end
   def __ensure_middleware__([], %{identifier: identifier}, _) do
-    [{Absinthe.Middleware.MapGet, identifier}]
+    [{Absinthe.Utils.getDefaultMiddleware(), identifier}]
   end
   def __ensure_middleware__(middleware, _field, _object) do
     middleware
@@ -248,7 +248,8 @@ defmodule Absinthe.Schema do
   Replace the default for all fields with a string lookup instead of an atom lookup:
   ```
   def middleware(middleware, field, object) do
-    new_middleware = {Absinthe.Middleware.MapGet, to_string(field.identifier)}
+    defaultMiddleware = Utils.getDefaultDocumentResult()
+    new_middleware = {^defaultMiddleware, to_string(field.identifier)}
     middleware
     |> Absinthe.Schema.replace_default(new_middleware, field, object)
   end
@@ -257,9 +258,10 @@ defmodule Absinthe.Schema do
   ```
   """
   def replace_default(middleware_list, new_middleware, %{identifier: identifer}, _object) do
+    defaultMiddleware = Absinthe.Utils.getDefaultMiddleware()
     Enum.map(middleware_list, fn middleware ->
       case middleware do
-        {Absinthe.Middleware.MapGet, ^identifer} ->
+        {^defaultMiddleware, ^identifer} ->
           new_middleware
         middleware -> middleware
       end

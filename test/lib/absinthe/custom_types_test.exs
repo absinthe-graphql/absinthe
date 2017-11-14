@@ -1,5 +1,5 @@
 defmodule Absinthe.CustomTypesTest do
-  use Absinthe.Case, async: true
+  use Absinthe.Case, async: false, ordered: false
   import AssertResult
 
   defmodule Schema do

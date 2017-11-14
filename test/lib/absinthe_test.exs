@@ -1,5 +1,5 @@
 defmodule AbsintheTest do
-  use Absinthe.Case, async: true
+  use Absinthe.Case, async: false, ordered: false
   import AssertResult
 
   it "can return multiple errors" do

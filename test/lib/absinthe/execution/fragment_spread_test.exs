@@ -1,5 +1,5 @@
 defmodule Absinthe.Execution.FragmentSpreadTest do
-  use Absinthe.Case, async: true
+  use Absinthe.Case, async: false, ordered: false
 
   @query """
   query AbstractFragmentSpread {

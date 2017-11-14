@@ -1,5 +1,5 @@
 defmodule Absinthe.Execution.DefaultResolverTest do
-  use Absinthe.Case, async: true
+  use Absinthe.Case, async: false, ordered: false
 
   @root %{:foo => "baz", "bar" => "quux"}
   @query "{ foo bar }"

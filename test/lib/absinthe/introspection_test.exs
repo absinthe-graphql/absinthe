@@ -1,5 +1,5 @@
 defmodule Absinthe.IntrospectionTest do
-  use Absinthe.Case, async: true
+  use Absinthe.Case, async: false, ordered: false
   import AssertResult
 
   alias Absinthe.Schema

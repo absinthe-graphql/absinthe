@@ -1,7 +1,6 @@
 defmodule GraphQL.Specification.NullValues.InputObjectTest do
-  use Absinthe.Case, async: true
+  use Absinthe.Case, async: false, ordered: false
   import AssertResult
-
 
   defmodule Schema do
     use Absinthe.Schema

@@ -1,5 +1,5 @@
 defmodule Absinthe.MiddlewareTest do
-  use Absinthe.Case, async: true
+  use Absinthe.Case, async: false, ordered: false
 
   defmodule Auth do
     def call(res, _) do
@@ -90,7 +90,7 @@ defmodule Absinthe.MiddlewareTest do
     object :user do
       field :email, :string do
         middleware MiddlewareTest.Auth
-        middleware Absinthe.Middleware.MapGet, :email
+        middleware {Absinthe.Utils.getDefaultMiddleware(), :call}, :email
         middleware fn res, _ ->
           # no-op, mostly making sure this form works
           res

@@ -1,5 +1,5 @@
 defmodule Absinthe.ExtensionsTest do
-  use Absinthe.Case, async: true
+  use Absinthe.Case, async: false, ordered: false
 
   defmodule Schema do
     use Absinthe.Schema
@@ -38,7 +38,7 @@ defmodule Absinthe.ExtensionsTest do
     pipeline =
       Schema
       |> Absinthe.Pipeline.for_document()
-      |> Absinthe.Pipeline.insert_after(Absinthe.Phase.Document.Result, MyPhase)
+      |> Absinthe.Pipeline.insert_after(Absinthe.Utils.getDefaultDocumentResult(), MyPhase)
 
     assert {:ok, bp, _} = Absinthe.Pipeline.run(doc, pipeline)
 

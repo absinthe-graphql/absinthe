@@ -235,7 +235,7 @@ defmodule Absinthe.Middleware do
   **It is important to note that we are matching for the `:query`, `:subscription` or
   `:mutation` identifier types. We do this because the middleware function will be
   called for each field in the schema. It is also important to provide a fallback so
-  that the default `Absinthe.Middleware.MapGet` is configured.**
+  that the default `Absinthe.Middleware.MapGet` or `Absinthe.Middleware.OrdMapGet` is configured.**
 
   ## Main Points
 

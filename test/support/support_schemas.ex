@@ -6,7 +6,7 @@ defmodule SupportSchemas do
   end
 
   def load_schema(name) do
-    Code.require_file("test/support/schemas/#{name}.exs")
+    Code.load_file("test/support/schemas/#{name}.exs")
   end
 
   @doc """

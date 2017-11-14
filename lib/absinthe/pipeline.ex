@@ -31,15 +31,16 @@ defmodule Absinthe.Pipeline do
     context: %{},
     root_value: %{},
     validation_result_phase: Phase.Document.Validation.Result,
-    result_phase: Phase.Document.Result,
+    result_phase: nil,
     jump_phases: true,
   ]
 
   @spec for_document(Absinthe.Schema.t) :: t
   @spec for_document(Absinthe.Schema.t, Keyword.t) :: t
   def for_document(schema, options \\ []) do
-    options = @defaults
+    options = @defaults    
     |> Keyword.merge(Keyword.put(options, :schema, schema))
+    |> Keyword.put(:result_phase, Keyword.get(options, :result_phase, Absinthe.Utils.getDefaultDocumentResult()))
     [
       # Parse Document
       {Phase.Parse, options},
@@ -99,7 +100,7 @@ defmodule Absinthe.Pipeline do
       {Phase.Subscription.SubscribeSelf, options},
       {Phase.Document.Execution.Resolution, options},
       # Format Result
-      Phase.Document.Result
+      Absinthe.Utils.getDefaultDocumentResult()
     ]
   end
 

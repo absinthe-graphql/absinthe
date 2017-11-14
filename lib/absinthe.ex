@@ -85,7 +85,7 @@ defmodule Absinthe do
     root_value: term,
     operation_name: String.t,
     analyze_complexity: boolean,
-    max_complexity: non_neg_integer | :infinity
+    max_complexity: non_neg_integer | :infinity,
   ]
 
   @type run_result :: {:ok, result_t} | {:error, String.t}

@@ -33,7 +33,7 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
         blueprint = update_in(blueprint.execution.validation_errors, &[error | &1])
 
         error_pipeline = [
-          {Phase.Document.Result, options},
+          {Absinthe.Utils.getDefaultDocumentResult(), options}
         ]
 
         {:replace, blueprint, error_pipeline}

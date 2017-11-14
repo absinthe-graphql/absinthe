@@ -119,4 +119,17 @@ defmodule Absinthe.Utils do
     """
   end
 
+  @doc false
+  def getDefaultMiddleware() do
+    # IO.inspect Application.get_env(:absinthe, :ordered), label: "ENV__ORDERD_MIDDLEWARE"
+    ordered = Application.get_env(:absinthe, :ordered, false)
+    unless ordered, do: Absinthe.Middleware.MapGet, else: Absinthe.Middleware.OrdMapGet
+  end
+
+  @doc false
+  def getDefaultDocumentResult() do
+    # IO.inspect Application.get_env(:absinthe, :ordered), label: "ENV__ORDERD_DOC"
+    ordered = Application.get_env(:absinthe, :ordered, false)
+    unless ordered, do: Absinthe.Phase.Document.Result, else: Absinthe.Phase.Document.OrderedResult
+  end
 end

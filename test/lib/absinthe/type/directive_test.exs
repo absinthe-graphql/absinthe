@@ -1,5 +1,5 @@
 defmodule Absinthe.Type.DirectiveTest do
-  use Absinthe.Case, async: true
+  use Absinthe.Case, async: false, ordered: false
 
   alias Absinthe.Schema
   import AssertResult

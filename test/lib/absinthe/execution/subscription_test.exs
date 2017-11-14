@@ -1,5 +1,5 @@
 defmodule Absinthe.Execution.SubscriptionTest do
-  use ExUnit.Case
+  use Absinthe.Case, async: false, ordered: false, import_run: false
 
   import ExUnit.CaptureLog
 

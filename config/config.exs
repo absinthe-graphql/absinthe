@@ -4,6 +4,9 @@ use Mix.Config
 
 config :logger, level: :debug
 
+# Results will be ordered lists of tuples instead of maps
+# config :absinthe, ordered: true
+
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
 # file won't be loaded nor affect the parent project. For this reason,

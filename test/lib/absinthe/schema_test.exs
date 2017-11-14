@@ -1,5 +1,5 @@
 defmodule Absinthe.SchemaTest do
-  use Absinthe.Case, async: true
+  use Absinthe.Case, async: false, ordered: false
   use SupportSchemas
   import AssertResult
 

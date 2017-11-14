@@ -1,5 +1,5 @@
 defmodule Absinthe.Middleware.AsyncTest do
-  use Absinthe.Case, async: true
+  use Absinthe.Case, async: false, ordered: false
 
   defmodule Schema do
     use Absinthe.Schema
