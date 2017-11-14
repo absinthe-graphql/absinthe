@@ -2,8 +2,10 @@ defmodule Absinthe.Resolution.Helpers do
   @moduledoc """
   Handy functions for returning async or batched resolution functions
 
-  It is automatically imported into all modules using `Absinthe.Schema.Notation`
-  or (by extension) `Absinthe.Schema`.
+  Using `Absinthe.Schema.Notation` or (by extension) `Absinthe.Schema` will
+  automatically import the `batch` and `async` helpers. Dataloader helpers
+  require an explicit `import Absinthe.Resolution.Helpers` invocation, since
+  dataloader is an optional dependency.
   """
 
   alias Absinthe.Middleware
@@ -57,6 +59,12 @@ defmodule Absinthe.Resolution.Helpers do
     @doc """
     Dataloader helper function
 
+    This function is not imported by default. To make it available in your module do
+
+    ```
+    import Absinthe.Resolution.Helpers
+    ```
+
     This function helps you use data loader in a direct way within your schema.
     While normally the `dataloader/1,2,3` helpers are enough, `on_load/2` is useful
     when you want to load multiple things in a single resolver, or when you need
@@ -93,6 +101,12 @@ defmodule Absinthe.Resolution.Helpers do
     @doc """
     Resolve a field with a dataloader source.
 
+    This function is not imported by default. To make it available in your module do
+
+    ```
+    import Absinthe.Resolution.Helpers
+    ```
+
     Same as `dataloader/3`, but it infers the resource name from the field name.
 
     ## Examples
@@ -117,6 +131,12 @@ defmodule Absinthe.Resolution.Helpers do
 
     @doc """
     Resolve a field with Dataloader
+
+    This function is not imported by default. To make it available in your module do
+
+    ```
+    import Absinthe.Resolution.Helpers
+    ```
 
     While `on_load/2` makes using dataloader directly easy within a resolver function,
     it is often unnecessary to need this level of direct control.
