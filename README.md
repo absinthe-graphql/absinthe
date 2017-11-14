@@ -64,12 +64,13 @@ clients, too.
 
 ### An Active Community
 
-The project is under constant improvement by a growing list of contributors,
-and your feedback is important. Please
-[join us](http://absinthe-graphql.org/community/)!
+The project is under constant improvement by a growing list of
+contributors, and your feedback is important. Please join us in Slack
+(`#absinthe-graphql` under the Elixir Slack account) or the Elixir Forum
+(tagged `absinthe`).
 
-Please remember that all interactions in our official spaces follow our [Code of
-Conduct](./CODE_OF_CONDUCT.md).
+Please remember that all interactions in our official spaces follow
+our [Code of Conduct](./CODE_OF_CONDUCT.md).
 
 ## Installation
 
