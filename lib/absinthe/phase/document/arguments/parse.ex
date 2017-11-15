@@ -19,7 +19,19 @@ defmodule Absinthe.Phase.Document.Arguments.Parse do
   defp handle_node(%{normalized: nil} = node, _context) do
     node
   end
-  defp handle_node(%Input.Value{normalized: normalized} = node, context) do
+  defp handle_node(%Input.Value{schema_node: %Type.InputObject{object_aware: true}} = node, context) do
+    {_, fields} = node.normalized.fields
+    |> Enum.reduce({%{}, []}, fn
+      %Input.Field{input_value: input_value, name: name} = child_node, {parse_context, fields} ->
+        input_value = handle_node(input_value, Map.merge(context, %{parse_context: parse_context}))
+        child_node = %{child_node | input_value: input_value}
+        parse_context = Map.put(parse_context, name, input_value.data)
+        {parse_context, fields ++ [child_node]}
+    end)
+
+    %{node | normalized: %{node.normalized | fields: fields}}
+  end
+  defp handle_node(%Input.Value{normalized: normalized, data: nil} = node, context) do
     case build_value(normalized, node.schema_node, context) do
       {:ok, value} ->
         %{node | data: value}
