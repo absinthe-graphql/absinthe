@@ -1,7 +1,6 @@
 defmodule Absinthe.Type.Custom.TypeB
-  use Hyr.Command
-  
-  input_object :type_b do
+
+  object :type_b do
     field :b_id, non_null(:id)
     field :b_string, non_null(:string)
   end
