@@ -1142,11 +1142,11 @@ defmodule Absinthe.Schema.Notation do
     {:ok, _} =
       type_module_ast
       |> Macro.expand(env)
-      |> do_input_types(env)
+      |> do_import_types(env)
     :ok
   end
 
-  defp do_input_types({{:., _, [root_ast, :{}]}, _, modules_ast_list}, env) do
+  defp do_import_types({{:., _, [root_ast, :{}]}, _, modules_ast_list}, env) do
     # root_ast = {:__aliases__, [alias: false], [:MyApp, :Schema, :Types]}
     # modules_ast_list = [
     #    {:__aliases__, [alias: false], [:TypesA]},
