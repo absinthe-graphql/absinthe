@@ -1,4 +1,5 @@
 defmodule Absinthe.Type.Custom.TypeA
+  use Absinthe.Schema.Notation
   
   object :type_a do
     field :a_id, non_null(:id)
