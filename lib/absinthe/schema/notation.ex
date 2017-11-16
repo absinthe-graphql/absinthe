@@ -1133,6 +1133,8 @@ defmodule Absinthe.Schema.Notation do
   ## Examples
   ```
   import_types MyApp.Schema.Types
+
+  import_types MyApp.Schema.Types.{TypesA, TypesB}
   ```
   """
   defmacro import_types(type_module_ast) do
@@ -1140,8 +1142,20 @@ defmodule Absinthe.Schema.Notation do
     {:ok, _} =
       type_module_ast
       |> Macro.expand(env)
-      |> do_import_types(env)
+      |> do_input_types(env)
     :ok
+  end
+
+  defp do_input_types({{:., _, [root_ast, :{}]}, _, modules_ast_list}, env) do
+    # root_ast = {:__aliases__, [alias: false], [:MyApp, :Schema, :Types]}
+    # modules_ast_list = [
+    #    {:__aliases__, [alias: false], [:TypesA]},
+    #    {:__aliases__, [alias: false], [:TypesB]}
+    #  ]
+    {_, _, root} = root_ast
+    Enum.each(modules_ast_list, fn {_, _, leaf} ->
+      do_import_types({:__aliases__, [alias: false], root ++ leaf}, env)
+    end)
   end
 
   defp do_import_types(type_module, env) when is_atom(type_module) do
