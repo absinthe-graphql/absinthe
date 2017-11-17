@@ -278,6 +278,13 @@ defmodule Absinthe.Execution.ArgumentsTest do
         """
         assert_result {:ok, %{data: %{"contact" => nil}}}, doc |> run(Schema)
       end
+
+      it "should pass nil as an argument to the resolver for enum types" do
+        doc = """
+        query GetContact($type:ContactType){ contact(type: $type) }
+        """
+        assert_result {:ok, %{data: %{"contact" => nil}}}, doc |> run(Schema, variables: %{"type" => nil})
+      end
     end
 
     context "enum types" do
