@@ -1,4 +1,4 @@
-defmodule Absinthe.Type.Custom.TypeB
+defmodule Absinthe.Type.Custom.TypeB do
   use Absinthe.Schema.Notation
 
   object :type_b do

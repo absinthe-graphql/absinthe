@@ -1154,7 +1154,7 @@ defmodule Absinthe.Schema.Notation do
     #  ]
     {_, _, root} = root_ast
     Enum.each(modules_ast_list, fn {_, _, leaf} ->
-      do_import_types({:__aliases__, [alias: false], root ++ leaf}, env)
+      do_import_types( root ++ leaf |> Enum.join(".") |> String.to_atom , env)
     end)
   end
 

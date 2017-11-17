@@ -24,7 +24,7 @@ defmodule Absinthe.Type.ImportTypesTest do
 
       it "are defined" do
         type_a = TestSchema.__absinthe_type__(:type_a)
-        type_b = TestSchema.__absinthe_type__(:type_a)
+        type_b = TestSchema.__absinthe_type__(:type_b)
         assert type_a == type_b
       end
 
