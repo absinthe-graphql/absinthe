@@ -42,6 +42,9 @@ defmodule Absinthe.Phase.Document.Arguments.Parse do
         {:ok, val}
     end
   end
+  defp build_value(%Input.Null{}, %Type.Enum{}, _) do
+    {:ok, nil}
+  end
   defp build_value(normalized, %Type.Enum{} = schema_node, _) do
     case Type.Enum.parse(schema_node, normalized) do
       {:ok, %{value: value}} ->
