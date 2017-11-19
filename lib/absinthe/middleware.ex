@@ -2,8 +2,8 @@ defmodule Absinthe.Middleware do
   @moduledoc """
   Middleware enables custom resolution behaviour on a field.
 
-  All resolution happens through middleware. Even `resolve` functions are middleware,
-  as the `resolve` macro is just
+  All resolution happens through middleware. Even `resolve` functions are
+  middleware, as the `resolve` macro is just
 
   ```
   quote do
@@ -11,8 +11,8 @@ defmodule Absinthe.Middleware do
   end
   ```
 
-  Resolution happens by reducing a list of middleware spec onto an `%Absinthe.Resolution{}`
-  struct.
+  Resolution happens by reducing a list of middleware spec onto an
+  `%Absinthe.Resolution{}` struct.
 
   ## Example
 
@@ -33,13 +33,13 @@ defmodule Absinthe.Middleware do
   ```
 
   By specifying `@behaviour Absinthe.Middleware` the compiler will ensure that
-  we provide a `def call` callback. This function takes an `%Absinthe.Resolution{}`
-  struct and will also need to return one such struct.
+  we provide a `def call` callback. This function takes an
+  `%Absinthe.Resolution{}` struct and will also need to return one such struct.
 
   On that struct there is a `context` key which holds the absinthe context. This
-  is generally where things like the current user are placed. For more information
-  on how the current user ends up in the context please see our full authentication
-  guide on the website.
+  is generally where things like the current user are placed. For more
+  information on how the current user ends up in the context please see our full
+  authentication guide on the website.
 
   Our `call/2` function simply checks the context to see if there is a current
   user. If there is, we pass the resolution onward. If there is not, we update
@@ -47,9 +47,11 @@ defmodule Absinthe.Middleware do
 
   Middleware can be placed on a field in three different ways:
 
-  1. Using the `Absinthe.Schema.Notation.middleware/2` macro used inside a field definition
+  1. Using the `Absinthe.Schema.Notation.middleware/2`
+  macro used inside a field definition
   2. Using the `middleware/3` callback in your schema.
-  3. Returning a `{:middleware, middleware_spec, config}` tuple from a resolution function.
+  3. Returning a `{:middleware, middleware_spec, config}`
+  tuple from a resolution function.
 
   ## The `middleware/2` macro
 
@@ -105,10 +107,10 @@ defmodule Absinthe.Middleware do
 
   ## The `middleware/3` callback.
 
-  `middleware/3` is a function callback on a schema. When you `use Absinthe.Schema`
-  a default implementation of this function is placed in your schema. It is passed
-  the existing middleware for a field, the field itself, and the object
-  that the field is a part of.
+  `middleware/3` is a function callback on a schema. When you `use
+  Absinthe.Schema` a default implementation of this function is placed in your
+  schema. It is passed the existing middleware for a field, the field itself,
+  and the object that the field is a part of.
 
   So for example if your schema contained:
 
@@ -144,12 +146,12 @@ defmodule Absinthe.Middleware do
   case that is the `:user` object and the `:query` object. `field` is every
   field on that object, and middleware is a list of whatever middleware
   spec have been configured by the schema on that field. Concretely
-  then, the function is called 3 times for that document, with the following arguments:
+  then, the function will be called , with the following arguments:
 
   ```
   YourSchema.middleware([{Absinthe.Resolution, #Function<20.52032458/0>}], lookup_user_field_of_root_query_object, root_query_object)
-  YourSchema.middleware([], name_field_of_user, user_object)
-  YourSchema.middleware([], age_field_of_user, user_object)
+  YourSchema.middleware([{Absinthe.Middleware.Map.Get, :name}], name_field_of_user, user_object)
+  YourSchema.middleware([{Absinthe.Middleware.Map.Get, :age}], age_field_of_user, user_object)
   ```
 
   In the latter two cases we see that the middleware list is empty. In the first
@@ -158,20 +160,22 @@ defmodule Absinthe.Middleware do
 
   ### Default Middleware
 
-  One use of `middleware/3` is setting the default middleware on a field,
-  replacing the `default_resolver` macro. By default middleware is placed on a
-  field that looks up a field by its snake case identifier, ie `:resource_name`.
+  One use of `middleware/3` is setting the default middleware on a field
+  By default middleware is placed on a
+  field that looks up a field by its snake case identifier, ie `:resource_name`
   Here is an example of how to change the default to use a camel cased string,
   IE, "resourceName".
 
   ```
-  def middleware([], %{identifier: identifier}, _object) do
+  def middleware(middleware, %{identifier: identifier} = field, object) do
     camelized =
       identifier
       |> Atom.to_string
       |> Macro.camelize
 
-    [{{__MODULE__, :get_camelized_key}, camelized}]
+    new_middleware_spec = {{__MODULE__, :get_camelized_key}, camelized}
+
+    Absinthe.Schema.replace_default(middleware, new_middleware_spec, field, object)
   end
   def middleware(middleware, _field, _object) do
     middleware
@@ -182,28 +186,42 @@ defmodule Absinthe.Middleware do
   end
   ```
 
-  There's a lot going on here so let's unpack it. The first thing to note
-  is that we're using two clauses. We only want to set this middleware if there
-  is not already middleware defined (by a resolve function or otherwise), so we
-  pattern match on an empty list. Generating the camelized key is a simple matter
-  of camelizing the field identifier.
-
-  Next we need to build a list that defines what middleware we want to use. The
-  form we're using is `{{MODULE, :function_to_call}, options_of_middleware}`. For
-  our purposes we're simply going to use a function in the schema module itself
+  There's a lot going on here so let's unpack it. We need to define a
+  specification to tell Absinthe what middleware to run. The form we're using is
+  `{{MODULE, :function_to_call}, options_of_middleware}`. For our purposes we're
+  simply going to use a function in the schema module itself
   `get_camelized_key`.
 
-  Like all middleware functions, it takes a resolution struct, and options. The
-  options is the camelized key we generated. We get the camelized string from
-  the parent map, and set it as the value of the resolution struct. Finally we
-  mark the resolution state `:resolved`.
+  We then use the `Absinthe.Schema.replace_default/4` function to swap out the
+  default middleware already present in the middleware list with the new one we
+  want to use. It handles going through the existing list of middleware and
+  seeing if it's using the default or if it has custom resolvers on it. If it's
+  using the default, the function applies our newly defined middleware spec.
 
-  Side note: This `middleware/3` function is called whenever we pull
-  the type out of the schema. The middleware itself is run every time
-  we get a field on an object. If we have 1000 objects and we were
-  doing the camelization logic INSIDE the middleware, we would compute
-  the camelized string 1000 times. By doing it in the `def middleware`
-  callback we do it just once.
+  Like all middleware functions, `:get_camelized_key` takes a resolution struct,
+  and options. The options is the camelized key we generated. We get the
+  camelized string from the parent map, and set it as the value of the
+  resolution struct. Finally we mark the resolution state `:resolved`.
+
+  Side note: This `middleware/3` function is called whenever we pull the type
+  out of the schema. The middleware itself is run every time we get a field on
+  an object. If we have 1000 objects and we were doing the camelization logic
+  INSIDE the middleware, we would compute the camelized string 1000 times. By
+  doing it in the `def middleware` callback we do it just once.
+
+  ### Changes Since 1.3
+
+  In Absinthe 1.3, fields without any `middleware/2` or `resolve/1` calls would
+  show up with an empty list `[]` as its middleware in the `middleware/3`
+  function. If no middleware was applied in the function and it also returned `[]`,
+  THEN Absinthe would apply the default.
+
+  This made it very easy to accidently break your schema if you weren't
+  particularly careful with your pattern matching. Now the defaults are applied
+  FIRST by absinthe, and THEN passed to `middleware/3`. Consequently, the
+  middlware list argument should always have at least one value. This is also
+  why there is now the `replace_default/4` function, because it handles telling
+  the difference between a field with a resolver and a field with the default.
 
   ### Object Wide Authentication
 
@@ -232,10 +250,12 @@ defmodule Absinthe.Middleware do
   end
   ```
 
-  **It is important to note that we are matching for the `:query`, `:subscription` or
-  `:mutation` identifier types. We do this because the middleware function will be
-  called for each field in the schema. It is also important to provide a fallback so
-  that the default `Absinthe.Middleware.MapGet` is configured.**
+  It is important to note that we are matching for the `:query`, `:subscription`
+  or `:mutation` identifier types. We do this because the middleware function
+  will be called for each field in the schema. If we didn't limit it to those
+  types, we would be applying authentication to every field in the entire
+  schema, even stuff like `:name` or `:age`. This generally isn't necessary
+  provided you authenticate at the entrypoints.
 
   ## Main Points
 
