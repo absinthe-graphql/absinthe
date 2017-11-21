@@ -320,8 +320,8 @@ defmodule Absinthe.Schema do
   ```
   mutation do
     field :create_user, :user do
-      arg :name, non_nulL(:string)
-      arg :email, non_nulL(:string)
+      arg :name, non_null(:string)
+      arg :email, non_null(:string)
 
       resolve &MyApp.Web.BlogResolvers.create_user/2
     end
