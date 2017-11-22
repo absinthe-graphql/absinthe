@@ -1,44 +1,29 @@
 defmodule Absinthe.Type.ImportTypesTest do
   use Absinthe.Case, async: true
 
-  defmodule TestSchema do
-    use Absinthe.Schema
+  alias Absinthe.Test.ImportTypes
 
-    import_types Absinthe.Type.Custom.{TypeA, TypeB}
+  context "import_types" do
 
-    query do
-      field :apple, :type_a
-      field :bob, :type_b
+    it "works with a plain atom" do
+      assert Absinthe.Schema.lookup_type(ImportTypes.Schema, :receipt)
     end
 
-  end
-
-  context "imported types" do
-
-    # it "can be defined" do
-    #   assert %Absinthe.Type.InputObject{name: "Profile", description: "A profile"} = TestSchema.__absinthe_type__(:type_a)
-    #   assert %{profile: "Profile"} = TestSchema.__absinthe_types__
-    # end
-
-    context "types" do
-
-      it "are defined" do
-        type_a = TestSchema.__absinthe_type__(:type_a)
-        type_b = TestSchema.__absinthe_type__(:type_b)
-        assert type_a == type_b
-      end
-
+    it "works with {}" do
+      assert Absinthe.Schema.lookup_type(ImportTypes.Schema, :customer)
+      assert Absinthe.Schema.lookup_type(ImportTypes.Schema, :employee)
+      assert Absinthe.Schema.lookup_type(ImportTypes.Schema, :order)
     end
 
-    # context "arguments" do
+    it "works with an alias and plain atom" do
+      assert Absinthe.Schema.lookup_type(ImportTypes.Schema, :weekly_schedule)
+    end
 
-    #   it "are defined" do
-    #     field = TestSchema.__absinthe_type__(:profile).fields.profile_picture
-    #     assert %Absinthe.Type.Argument{name: "width", type: :integer} = field.args.width
-    #     assert %Absinthe.Type.Argument{name: "height", type: :integer} = field.args.height
-    #   end
-
-    # end
+    it "works with an alias and {}" do
+      assert Absinthe.Schema.lookup_type(ImportTypes.Schema, :mailing_address)
+      assert Absinthe.Schema.lookup_type(ImportTypes.Schema, :contact_method)
+      assert Absinthe.Schema.lookup_type(ImportTypes.Schema, :contact_kind)
+    end
 
   end
 

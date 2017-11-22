@@ -1139,29 +1139,30 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro import_types(type_module_ast) do
     env = __CALLER__
-    {:ok, _} =
-      type_module_ast
-      |> Macro.expand(env)
-      |> do_import_types(env)
+    type_module_ast
+    |> Macro.expand(env)
+    |> do_import_types(env)
     :ok
   end
 
   defp do_import_types({{:., _, [root_ast, :{}]}, _, modules_ast_list}, env) do
-    # root_ast = {:__aliases__, [alias: false], [:MyApp, :Schema, :Types]}
-    # modules_ast_list = [
-    #    {:__aliases__, [alias: false], [:TypesA]},
-    #    {:__aliases__, [alias: false], [:TypesB]}
-    #  ]
-    {_, _, root} = root_ast
-    Enum.each(modules_ast_list, fn {_, _, leaf} ->
-      do_import_types( root ++ leaf |> Enum.join(".") |> String.to_atom , env)
-    end)
-  end
+    {:__aliases__, _, root} = root_ast
 
+    root_module = Module.concat(root)
+    root_module_with_alias = Keyword.get(env.aliases, root_module, root_module)
+
+    for {_, _, leaf} <- modules_ast_list do
+      type_module = Module.concat([root_module_with_alias | leaf])
+      if Code.ensure_loaded?(type_module) do
+        do_import_types(type_module, env)
+      else
+        raise ArgumentError, "module #{type_module} is not available"
+      end
+    end
+  end
   defp do_import_types(type_module, env) when is_atom(type_module) do
     imports = Module.get_attribute(env.module, :absinthe_imports) || []
     _ = Module.put_attribute(env.module, :absinthe_imports, [type_module | imports])
-
     types = for {ident, name} <- type_module.__absinthe_types__, ident in type_module.__absinthe_exports__ do
       put_definition(
         env.module,
@@ -1190,8 +1191,6 @@ defmodule Absinthe.Schema.Notation do
         }
       )
     end
-
-    {:ok, types: types, directives: directives}
   end
   defp do_import_types(type_module, _) do
     raise ArgumentError, """
