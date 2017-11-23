@@ -19,9 +19,7 @@ defmodule MyApp.Middlewares.HandleChangesetErrors do
       |> Ecto.Changeset.traverse_errors(fn {err, _opts} -> err end)
       |> Enum.map(fn({k,v}) -> "#{k}: #{v}" end)
   end
-  defp handle_error(error) do
-    [error]
-  end
+  defp handle_error(error), do: [error]
 end
 ```
 
@@ -53,7 +51,7 @@ def middleware(middleware, _field, %{identifier: :mutation}) do
   middleware ++ [MyApp.Middlewares.HandleChangesetErrors]
 end
 # if it's any other object keep things as is
-def middleware(middleware, _field, _object) do: middleware
+def middleware(middleware, _field, _object), do: middleware
 ```
 
 ### 3. Returning a `{:middleware, middleware_spec, config}` tuple from a resolution function.
