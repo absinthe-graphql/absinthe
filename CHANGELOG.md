@@ -1,8 +1,12 @@
 # Changelog
 
+## v1.4.3
+
+- Bug Fix: fix regression where types only connected to the root query via interfaces wouldn't show up in GraphiQL.
+
 ## v1.4.2
 
-- Bug fix: `null` can be properly used for enum inputs.
+- Bug Fix: `null` can be properly used for enum inputs.
 
 ## v1.4.1
 
