@@ -98,7 +98,20 @@ defmodule Absinthe.SchemaTest do
 
     interface :named do
       field :name, :string
-      resolve_type fn _ -> nil end
+      resolve_type fn _, _ -> nil end
+    end
+
+    interface :aged do
+      field :age, :integer
+      resolve_type fn _, _ -> nil end
+    end
+
+    union :pet do
+      types [:dog]
+    end
+
+    object :dog do
+      field :name, :string
     end
 
     enum :some_enum do
@@ -116,6 +129,13 @@ defmodule Absinthe.SchemaTest do
     query do
       field :enum_field, :some_enum
       field :object_field, :user
+      field :interface_field, :aged
+      field :union_field, :pet
+    end
+
+    object :person do
+      field :age, :integer
+      interface :aged
     end
 
     import_types UserSchema
@@ -208,6 +228,24 @@ defmodule Absinthe.SchemaTest do
         |> Enum.map(&(&1.identifier))
 
       assert :named in types
+    end
+
+    it "contains types only connected via interfaces" do
+      types =
+        ThirdSchema
+        |> Absinthe.Schema.used_types
+        |> Enum.map(&(&1.identifier))
+
+      assert :person in types
+    end
+
+    it "contains types only connected via union" do
+      types =
+        ThirdSchema
+        |> Absinthe.Schema.used_types
+        |> Enum.map(&(&1.identifier))
+
+      assert :dog in types
     end
   end
 

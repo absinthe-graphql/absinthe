@@ -351,8 +351,13 @@ defmodule Absinthe.Type do
       acc
     else
       acc = MapSet.put(acc, identifier)
-      interface.fields
-      |> Map.values
+      acc =
+        interface.fields
+        |> Map.values
+        |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
+
+      schema
+      |> Absinthe.Schema.implementors(identifier)
       |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
     end
   end
