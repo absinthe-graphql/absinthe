@@ -2,7 +2,7 @@ defmodule Absinthe.Blueprint.Input.Null do
 
   @moduledoc false
 
-  alias Absinthe.{Phase}
+  alias Absinthe.{Blueprint, Phase}
 
   defstruct [
     :source_location,
