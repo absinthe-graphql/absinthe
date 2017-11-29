@@ -24,7 +24,7 @@ A simple error message:
 Multiple error messages:
 
 ``` elixir
-{:error, ["Something bad", "Even worse"]
+{:error, ["Something bad", "Even worse"]}
 ```
 
 Single custom errors (note the required `:message` keys):
