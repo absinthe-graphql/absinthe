@@ -167,12 +167,12 @@ defmodule Absinthe.Pipeline do
 
   Replace a phase with options, retaining them:
 
-      iex> Pipeline.replace([A, {B, [name: "Thing]}, C], B, X)
+      iex> Pipeline.replace([A, {B, [name: "Thing"]}, C], B, X)
       [A, {X, [name: "Thing"]}, C]
 
   Replace a phase with options, overriding them:
 
-      iex> Pipeline.replace([A, {B, [name: "Thing]}, C], B, {X, [name: "Nope"]})
+      iex> Pipeline.replace([A, {B, [name: "Thing"]}, C], B, {X, [name: "Nope"]})
       [A, {X, [name: "Nope"]}, C]
 
   """
