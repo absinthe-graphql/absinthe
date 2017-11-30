@@ -221,7 +221,7 @@ mutations are structured.
 > the schema), you'll have access to a similar set of macros as
 > discussed here, but be aware that the constraints mentioned (on
 > `input`, on `clientMutationId`, etc) don't apply. See the
-> documentation for [Absinthe.Relay.Mutation.Modern](https://hexdocs.pm/absinthe_relay/Absinthe.Relay.Mutation.Notation.Modern.html) for more
+> documentation for [Absinthe.Relay.Mutation.Notation.Modern](https://hexdocs.pm/absinthe_relay/Absinthe.Relay.Mutation.Notation.Modern.html) for more
 > specific instructions.
 
 Relay expects mutations to accept exactly one argument, `input`, an
@@ -274,8 +274,8 @@ of the result.
 
 See the module documentation for more information:
 
-- [Absinthe.Relay.Mutation.Classic](https://hexdocs.pm/absinthe_relay/Absinthe.Relay.Mutation.Notation.Classic.html)
-- [Absinthe.Relay.Mutation.Modern](https://hexdocs.pm/absinthe_relay/Absinthe.Relay.Mutation.Notation.Modern.html)
+- [Absinthe.Relay.Mutation.Notation.Classic](https://hexdocs.pm/absinthe_relay/Absinthe.Relay.Mutation.Notation.Classic.html)
+- [Absinthe.Relay.Mutation.Notation.Modern](https://hexdocs.pm/absinthe_relay/Absinthe.Relay.Mutation.Notation.Modern.html)
 
 ### Referencing existing nodes in mutation inputs
 
