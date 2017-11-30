@@ -177,9 +177,6 @@ defmodule Absinthe.Middleware do
 
     Absinthe.Schema.replace_default(middleware, new_middleware_spec, field, object)
   end
-  def middleware(middleware, _field, _object) do
-    middleware
-  end
 
   def get_camelized_key(%{source: source} = res, key) do
     %{res | state: :resolved, value: Map.get(source, key)}
