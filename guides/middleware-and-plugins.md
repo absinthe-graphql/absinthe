@@ -3,7 +3,7 @@
 Middleware enables custom resolution behaviour on a field. You can use them to share common logic that needs to happen before or after resolving fields. Things like authentication and error handling.
 
 ## Create a Middleware
-In order to create a `Middleware` you need a module that implements behaviour of `Absinthe.Middleware`. Your module needs to have a `call/2` method which gets `Absinthe.Resolution` and `config` as its parameters and returns a resolution.
+In order to create a `Middleware` you need a module that implements `Absinthe.Middleware` behaviour . Your module needs to have a `call/2` method which receives an `%Absinthe.Resolution{}` struct and some options as its parameters, and then returns a possibly altered resolution struct.
 
 Here is an example of a middleware that handle `Ecto.Changeset` errors and makes sure we properly add error message to the `errors` in the response.
 
@@ -11,7 +11,9 @@ Here is an example of a middleware that handle `Ecto.Changeset` errors and makes
 defmodule MyApp.Middlewares.HandleChangesetErrors do
   @behaviour Absinthe.Middleware
   def call(resolution, _) do
-    %{resolution | errors: Enum.flat_map(resolution.errors, &handle_error/1)}
+    %{resolution |
+      errors: Enum.flat_map(resolution.errors, &handle_error/1)
+    }
   end
 
   defp handle_error(%Ecto.Changeset{} = changeset) do
@@ -23,7 +25,7 @@ defmodule MyApp.Middlewares.HandleChangesetErrors do
 end
 ```
 
-You can access absinthe's context by accessing `context` attribute of current resolution. Absinthe context is generally where things like the current user are placed. For more information on how the current user ends up in the context please see our full [authentication guide](context-and-authentication.html).
+The resolution struct has all kinds of useful values inside of it. You can access the Absinthe context, the root value, information about the current field's AST, and more. For more information on how the current user ends up in the context please see our full [authentication guide](context-and-authentication.html).
 
 ## Using Middlewares
 Middleware can be placed on a field in few different ways:
