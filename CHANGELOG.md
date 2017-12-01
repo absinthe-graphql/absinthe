@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.4
+
+- Bug Fix: fix where self referential interface type would cause infinite loop when introspecting.
+
 ## v1.4.3
 
 - Bug Fix: fix regression where types only connected to the root query via interfaces wouldn't show up in GraphiQL.

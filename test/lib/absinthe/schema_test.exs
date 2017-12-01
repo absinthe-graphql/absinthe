@@ -118,6 +118,10 @@ defmodule Absinthe.SchemaTest do
       values [:a, :b]
     end
 
+    interface :loop do
+      field :loop, :loop
+    end
+
     directive :directive do
       arg :baz, :dir_enum
     end
@@ -127,6 +131,7 @@ defmodule Absinthe.SchemaTest do
     end
 
     query do
+      field :loop, :loop
       field :enum_field, :some_enum
       field :object_field, :user
       field :interface_field, :aged
