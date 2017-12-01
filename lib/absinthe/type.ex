@@ -347,7 +347,7 @@ defmodule Absinthe.Type do
     end
   end
   defp referenced_types(%Type.Interface{identifier: identifier} = interface, schema, acc) do
-    if interface in acc do
+    if identifier in acc do
       acc
     else
       acc = MapSet.put(acc, identifier)
