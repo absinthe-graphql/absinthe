@@ -261,54 +261,174 @@ TypeExtensionDefinition -> 'extend' ObjectTypeDefinition :
 
 Erlang code.
 
-extract_atom({Value, _Line}) -> Value.
-extract_binary(Value) when is_binary(Value) -> Value;
-extract_binary({Token, _Line}) -> list_to_binary(atom_to_list(Token));
-extract_binary({_Token, _Line, Value}) -> list_to_binary(Value).
-extract_quoted_string_token({_Token, _Line, Value}) -> iolist_to_binary(process_string(lists:sublist(Value, 2, length(Value) - 2))).
-extract_quoted_block_string_token({_Token, _Line, Value}) -> iolist_to_binary(process_block_string(lists:sublist(Value, 4, length(Value) - 6))).
+% Line-Level Utilities
 
-process_block_string(Escaped) -> process_block_string(Escaped, []).
-
-process_block_string([], Acc) -> lists:reverse(Acc);
-process_block_string([$\r, $\n | T], Acc) -> process_block_string(T, [$\n | Acc]);
-process_block_string([$\\, $", $", $" | T], Acc) -> process_block_string(T, [$", $", $"] ++ Acc);
-process_block_string([H | T], Acc) -> process_block_string(T, [H | Acc]).
-
-process_string(Escaped) -> process_string(Escaped, []).
-
-process_string([], Acc) -> lists:reverse(Acc);
-process_string([$\\, $" | T], Acc) -> process_string(T, [$" | Acc]);
-process_string([$\\, $\\ | T], Acc) -> process_string(T, [$\\ | Acc]);
-process_string([$\\, $/ | T], Acc) -> process_string(T, [$/ | Acc]);
-process_string([$\\, $b | T], Acc) -> process_string(T, [$\b | Acc]);
-process_string([$\\, $f | T], Acc) -> process_string(T, [$\f | Acc]);
-process_string([$\\, $n | T], Acc) -> process_string(T, [$\n | Acc]);
-process_string([$\\, $r | T], Acc) -> process_string(T, [$\r | Acc]);
-process_string([$\\, $t | T], Acc) -> process_string(T, [$\t | Acc]);
-process_string([$\\, $u, A, B, C, D | T], Acc) -> process_string(T, [hexlist_to_utf8_binary([A, B, C, D]) | Acc]);
-process_string([H | T], Acc) -> process_string(T, [H | Acc]).
-
-hexlist_to_utf8_binary(HexList) -> unicode:characters_to_binary([httpd_util:hexlist_to_integer(HexList)]).
-
-extract_integer({_Token, _Line, Value}) ->
-  {Int, []} = string:to_integer(Value), Int.
-extract_float({_Token, _Line, Value}) ->
-  {Float, []} = string:to_float(Value), Float.
-extract_boolean({_Token, _Line, "true"}) -> true;
-extract_boolean({_Token, _Line, "false"}) -> false.
-extract_line({_Token, Line}) -> Line;
-extract_line({_Token, Line, _Value}) -> Line;
-extract_line(_) -> nil.
+extract_line({_Token, Line}) ->
+  Line;
+extract_line({_Token, Line, _Value}) ->
+  Line;
+extract_line(_) ->
+  nil.
 
 extract_child_line([Head|_]) ->
-    extract_child_line(Head);
+  extract_child_line(Head);
 extract_child_line(#{loc := #{'start_line' := Line}}) ->
-    Line;
+  Line;
 extract_child_line(_) ->
-    nil.
+  nil.
+
+
+% Value-level Utilities
+
+extract_atom({Value, _Line}) ->
+  Value.
+
+extract_binary(Value) when is_binary(Value) ->
+  Value;
+
+extract_binary({Token, _Line}) ->
+  list_to_binary(atom_to_list(Token));
+
+extract_binary({_Token, _Line, Value}) ->
+  list_to_binary(Value).
+
+
+% AST Generation
 
 build_ast_node(Type, Node, #{'start_line' := nil}) ->
   build_ast_node(Type, Node, nil);
 build_ast_node(Type, Node, Loc) ->
   'Elixir.Kernel':struct(list_to_atom("Elixir.Absinthe.Language." ++ atom_to_list(Type)), Node#{loc => Loc}).
+
+
+% String
+
+extract_quoted_string_token({_Token, _Line, Value}) ->
+  iolist_to_binary(process_string(lists:sublist(Value, 2, length(Value) - 2))).
+
+process_string(Escaped) ->
+  process_string(Escaped, []).
+
+process_string([], Acc) ->
+  lists:reverse(Acc);
+process_string([$\\, $" | T], Acc) ->
+  process_string(T, [$" | Acc]);
+process_string([$\\, $\\ | T], Acc) ->
+  process_string(T, [$\\ | Acc]);
+process_string([$\\, $/ | T], Acc) ->
+  process_string(T, [$/ | Acc]);
+process_string([$\\, $b | T], Acc) ->
+  process_string(T, [$\b | Acc]);
+process_string([$\\, $f | T], Acc) ->
+  process_string(T, [$\f | Acc]);
+process_string([$\\, $n | T], Acc) ->
+  process_string(T, [$\n | Acc]);
+process_string([$\\, $r | T], Acc) ->
+  process_string(T, [$\r | Acc]);
+process_string([$\\, $t | T], Acc) ->
+  process_string(T, [$\t | Acc]);
+process_string([$\\, $u, A, B, C, D | T], Acc) ->
+  process_string(T, [hexlist_to_utf8_binary([A, B, C, D]) | Acc]);
+process_string([H | T], Acc) ->
+  process_string(T, [H | Acc]).
+
+hexlist_to_utf8_binary(HexList) ->
+  unicode:characters_to_binary([httpd_util:hexlist_to_integer(HexList)]).
+
+
+% Block String
+
+extract_quoted_block_string_token({_Token, _Line, Value}) -> iolist_to_binary(process_block_string(lists:sublist(Value, 4, length(Value) - 6))).
+
+process_block_string(Escaped) -> process_block_string(Escaped, []).
+
+process_block_string([], Acc) ->
+  block_string_value(lists:reverse(Acc));
+process_block_string([$\r, $\n | T], Acc) -> process_block_string(T, [$\n | Acc]);
+process_block_string([$\\, $", $", $" | T], Acc) -> process_block_string(T, [$", $", $"] ++ Acc);
+process_block_string([H | T], Acc) -> process_block_string(T, [H | Acc]).
+
+block_string_value(Value) ->
+  [FirstLine | Rest] = string:split(Value, "\n", all),
+  Prefix = indentation_prefix(common_indent(Rest)),
+  UnindentedLines = unindent(Rest, Prefix),
+  Lines = trim_blank_lines([FirstLine | UnindentedLines]),
+  string:join(Lines, "\n").
+
+trim_blank_lines(Lines) ->
+  trim_blank_lines(trim_blank_lines(Lines, leading), trailing).
+
+trim_blank_lines(Lines, leading) ->
+  lists:dropwhile(fun is_blank/1, Lines);
+trim_blank_lines(Lines, trailing) ->
+  lists:reverse(trim_blank_lines(lists:reverse(Lines), leading)).
+
+indentation_prefix(Indent) ->
+  lists:map(fun(_) -> 32 end, lists:seq(1, Indent)).
+
+unindent(Lines, Prefix) ->
+  do_unindent(Lines, Prefix, []).
+
+do_unindent([], _Prefix, Result) ->
+  lists:reverse(Result);
+do_unindent([H | T], Prefix, Result) ->
+  case string:prefix(H, Prefix) of
+    nomatch ->
+      do_unindent(T, Prefix, [H | Result]);
+    Unindented ->
+      do_unindent(T, Prefix, [Unindented | Result])
+  end.
+
+common_indent(Lines) ->
+  case do_common_indent(Lines, noindent) of
+    noindent ->
+      0;
+    Indent ->
+      Indent
+  end.
+
+do_common_indent([], Indent) ->
+    Indent;
+do_common_indent([H | T], Indent) ->
+  CurrentIndent = leading_whitespace(H),
+  if
+    (CurrentIndent < length(H)) and ((Indent == noindent) or (CurrentIndent < Indent)) ->
+      do_common_indent(T, CurrentIndent);
+    true ->
+      do_common_indent(T, Indent)
+  end.
+
+leading_whitespace(BlockStringValue) ->
+  do_leading_whitespace(BlockStringValue, 0).
+
+do_leading_whitespace([], N) ->
+  N;
+do_leading_whitespace([32 | T], N) ->
+  do_leading_whitespace(T, N + 1);
+do_leading_whitespace([$\t | T], N) ->
+  do_leading_whitespace(T, N + 1);
+do_leading_whitespace([_H | _T], N) ->
+  N.
+
+is_blank(BlockStringValue) ->
+    leading_whitespace(BlockStringValue) == length(BlockStringValue).
+
+
+% Integer
+
+extract_integer({_Token, _Line, Value}) ->
+  {Int, []} = string:to_integer(Value), Int.
+
+
+% Float
+
+extract_float({_Token, _Line, Value}) ->
+  {Float, []} = string:to_float(Value), Float.
+
+
+% Boolean
+
+extract_boolean({_Token, _Line, "true"}) ->
+  true;
+extract_boolean({_Token, _Line, "false"}) ->
+  false.
