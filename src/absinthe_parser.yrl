@@ -338,16 +338,21 @@ hexlist_to_utf8_binary(HexList) ->
 
 % Block String
 
-extract_quoted_block_string_token({_Token, _Line, Value}) -> iolist_to_binary(process_block_string(lists:sublist(Value, 4, length(Value) - 6))).
+extract_quoted_block_string_token({_Token, _Line, Value}) ->
+  iolist_to_binary(process_block_string(lists:sublist(Value, 4, length(Value) - 6))).
 
-process_block_string(Escaped) -> process_block_string(Escaped, []).
+-spec process_block_string(string()) -> string().
+process_block_string(Escaped) ->
+  process_block_string(Escaped, []).
 
+-spec process_block_string(string(), string()) -> string().
 process_block_string([], Acc) ->
   block_string_value(lists:reverse(Acc));
 process_block_string([$\r, $\n | T], Acc) -> process_block_string(T, [$\n | Acc]);
 process_block_string([$\\, $", $", $" | T], Acc) -> process_block_string(T, [$", $", $"] ++ Acc);
 process_block_string([H | T], Acc) -> process_block_string(T, [H | Acc]).
 
+-spec block_string_value(string()) -> string().
 block_string_value(Value) ->
   [FirstLine | Rest] = string:split(Value, "\n", all),
   Prefix = indentation_prefix(common_indent(Rest)),
@@ -355,61 +360,71 @@ block_string_value(Value) ->
   Lines = trim_blank_lines([FirstLine | UnindentedLines]),
   string:join(Lines, "\n").
 
+-spec trim_blank_lines([string()]) -> [string()].
 trim_blank_lines(Lines) ->
   trim_blank_lines(trim_blank_lines(Lines, leading), trailing).
 
+-spec trim_blank_lines([string()], leading | trailing) -> [string()].
 trim_blank_lines(Lines, leading) ->
   lists:dropwhile(fun is_blank/1, Lines);
 trim_blank_lines(Lines, trailing) ->
   lists:reverse(trim_blank_lines(lists:reverse(Lines), leading)).
 
+-spec indentation_prefix(non_neg_integer()) -> string().
 indentation_prefix(Indent) ->
   lists:map(fun(_) -> 32 end, lists:seq(1, Indent)).
 
+-spec unindent([string()], string()) -> [string()].
 unindent(Lines, Prefix) ->
-  do_unindent(Lines, Prefix, []).
+  unindent(Lines, Prefix, []).
 
-do_unindent([], _Prefix, Result) ->
+-spec unindent([string()], string(), [string()]) -> [string()].
+unindent([], _Prefix, Result) ->
   lists:reverse(Result);
-do_unindent([H | T], Prefix, Result) ->
+unindent([H | T], Prefix, Result) ->
   case string:prefix(H, Prefix) of
     nomatch ->
-      do_unindent(T, Prefix, [H | Result]);
+      unindent(T, Prefix, [H | Result]);
     Unindented ->
-      do_unindent(T, Prefix, [Unindented | Result])
+      unindent(T, Prefix, [Unindented | Result])
   end.
 
+-spec common_indent([string()]) -> non_neg_integer().
 common_indent(Lines) ->
-  case do_common_indent(Lines, noindent) of
+  case common_indent(Lines, noindent) of
     noindent ->
       0;
     Indent ->
       Indent
   end.
 
-do_common_indent([], Indent) ->
+-spec common_indent([string()], noindent | non_neg_integer()) -> noindent | non_neg_integer().
+common_indent([], Indent) ->
     Indent;
-do_common_indent([H | T], Indent) ->
+common_indent([H | T], Indent) ->
   CurrentIndent = leading_whitespace(H),
   if
     (CurrentIndent < length(H)) and ((Indent == noindent) or (CurrentIndent < Indent)) ->
-      do_common_indent(T, CurrentIndent);
+      common_indent(T, CurrentIndent);
     true ->
-      do_common_indent(T, Indent)
+      common_indent(T, Indent)
   end.
 
+-spec leading_whitespace(string()) -> non_neg_integer().
 leading_whitespace(BlockStringValue) ->
-  do_leading_whitespace(BlockStringValue, 0).
+  leading_whitespace(BlockStringValue, 0).
 
-do_leading_whitespace([], N) ->
+-spec leading_whitespace(string(), non_neg_integer()) -> non_neg_integer().
+leading_whitespace([], N) ->
   N;
-do_leading_whitespace([32 | T], N) ->
-  do_leading_whitespace(T, N + 1);
-do_leading_whitespace([$\t | T], N) ->
-  do_leading_whitespace(T, N + 1);
-do_leading_whitespace([_H | _T], N) ->
+leading_whitespace([32 | T], N) ->
+  leading_whitespace(T, N + 1);
+leading_whitespace([$\t | T], N) ->
+  leading_whitespace(T, N + 1);
+leading_whitespace([_H | _T], N) ->
   N.
 
+-spec is_blank(string()) -> boolean().
 is_blank(BlockStringValue) ->
     leading_whitespace(BlockStringValue) == length(BlockStringValue).
 
