@@ -354,7 +354,7 @@ process_block_string([H | T], Acc) -> process_block_string(T, [H | Acc]).
 
 -spec block_string_value(string()) -> string().
 block_string_value(Value) ->
-  [FirstLine | Rest] = string:split(Value, "\n", all),
+  [FirstLine | Rest] = re:split(Value, "\n", [{return,list}]),
   Prefix = indentation_prefix(common_indent(Rest)),
   UnindentedLines = unindent(Rest, Prefix),
   Lines = trim_blank_lines([FirstLine | UnindentedLines]),
