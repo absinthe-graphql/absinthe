@@ -265,28 +265,29 @@ extract_atom({Value, _Line}) -> Value.
 extract_binary(Value) when is_binary(Value) -> Value;
 extract_binary({Token, _Line}) -> list_to_binary(atom_to_list(Token));
 extract_binary({_Token, _Line, Value}) -> list_to_binary(Value).
-extract_quoted_string_token({_Token, _Line, Value}) -> iolist_to_binary(unescape(lists:sublist(Value, 2, length(Value) - 2))).
-extract_quoted_block_string_token({_Token, _Line, Value}) -> iolist_to_binary(unescape_block(lists:sublist(Value, 4, length(Value) - 4))).
+extract_quoted_string_token({_Token, _Line, Value}) -> iolist_to_binary(process_string(lists:sublist(Value, 2, length(Value) - 2))).
+extract_quoted_block_string_token({_Token, _Line, Value}) -> iolist_to_binary(process_block_string(lists:sublist(Value, 4, length(Value) - 6))).
 
-unescape_block(Escaped) -> unescape_block(Escaped, []).
+process_block_string(Escaped) -> process_block_string(Escaped, []).
 
-unescape_block([], Acc) -> lists:reverse(Acc);
-unescape_block([$\\, $", $", $" | T], Acc) -> unescape_block(T, [$", $", $"] ++ Acc);
-unescape_block([H | T], Acc) -> unescape_block(T, [H | Acc]).
+process_block_string([], Acc) -> lists:reverse(Acc);
+process_block_string([$\r, $\n | T], Acc) -> process_block_string(T, [$\n | Acc]);
+process_block_string([$\\, $", $", $" | T], Acc) -> process_block_string(T, [$", $", $"] ++ Acc);
+process_block_string([H | T], Acc) -> process_block_string(T, [H | Acc]).
 
-unescape(Escaped) -> unescape(Escaped, []).
+process_string(Escaped) -> process_string(Escaped, []).
 
-unescape([], Acc) -> lists:reverse(Acc);
-unescape([$\\, $" | T], Acc) -> unescape(T, [$" | Acc]);
-unescape([$\\, $\\ | T], Acc) -> unescape(T, [$\\ | Acc]);
-unescape([$\\, $/ | T], Acc) -> unescape(T, [$/ | Acc]);
-unescape([$\\, $b | T], Acc) -> unescape(T, [$\b | Acc]);
-unescape([$\\, $f | T], Acc) -> unescape(T, [$\f | Acc]);
-unescape([$\\, $n | T], Acc) -> unescape(T, [$\n | Acc]);
-unescape([$\\, $r | T], Acc) -> unescape(T, [$\r | Acc]);
-unescape([$\\, $t | T], Acc) -> unescape(T, [$\t | Acc]);
-unescape([$\\, $u, A, B, C, D | T], Acc) -> unescape(T, [hexlist_to_utf8_binary([A, B, C, D]) | Acc]);
-unescape([H | T], Acc) -> unescape(T, [H | Acc]).
+process_string([], Acc) -> lists:reverse(Acc);
+process_string([$\\, $" | T], Acc) -> process_string(T, [$" | Acc]);
+process_string([$\\, $\\ | T], Acc) -> process_string(T, [$\\ | Acc]);
+process_string([$\\, $/ | T], Acc) -> process_string(T, [$/ | Acc]);
+process_string([$\\, $b | T], Acc) -> process_string(T, [$\b | Acc]);
+process_string([$\\, $f | T], Acc) -> process_string(T, [$\f | Acc]);
+process_string([$\\, $n | T], Acc) -> process_string(T, [$\n | Acc]);
+process_string([$\\, $r | T], Acc) -> process_string(T, [$\r | Acc]);
+process_string([$\\, $t | T], Acc) -> process_string(T, [$\t | Acc]);
+process_string([$\\, $u, A, B, C, D | T], Acc) -> process_string(T, [hexlist_to_utf8_binary([A, B, C, D]) | Acc]);
+process_string([H | T], Acc) -> process_string(T, [H | Acc]).
 
 hexlist_to_utf8_binary(HexList) -> unicode:characters_to_binary([httpd_util:hexlist_to_integer(HexList)]).
 
