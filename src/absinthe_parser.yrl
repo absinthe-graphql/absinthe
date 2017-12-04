@@ -19,7 +19,7 @@ Terminals
   '{' '}' '(' ')' '[' ']' '!' ':' '@' '$' '=' '|' '...'
   'query' 'mutation' 'subscription' 'fragment' 'on' 'directive'
   'type' 'implements' 'interface' 'union' 'scalar' 'enum' 'input' 'extend' 'schema'
-  name int_value float_value string_value boolean_value null.
+  name int_value float_value string_value block_string_value boolean_value null.
 
 Rootsymbol Document.
 
@@ -141,6 +141,7 @@ Name -> 'on' : extract_binary('$1').
 Value -> Variable : '$1'.
 Value -> int_value :     build_ast_node('IntValue',     #{'value' => extract_integer('$1')},             #{'start_line' => extract_line('$1')}).
 Value -> float_value :   build_ast_node('FloatValue',   #{'value' => extract_float('$1')},               #{'start_line' => extract_line('$1')}).
+Value -> block_string_value :  build_ast_node('StringValue',  #{'value' => extract_quoted_block_string_token('$1')}, #{'start_line' => extract_line('$1')}).
 Value -> string_value :  build_ast_node('StringValue',  #{'value' => extract_quoted_string_token('$1')}, #{'start_line' => extract_line('$1')}).
 Value -> boolean_value : build_ast_node('BooleanValue', #{'value' => extract_boolean('$1')},             #{'start_line' => extract_line('$1')}).
 Value -> null :          build_ast_node('NullValue',    #{},                 #{'start_line' => extract_line('$1')}).
@@ -265,6 +266,13 @@ extract_binary(Value) when is_binary(Value) -> Value;
 extract_binary({Token, _Line}) -> list_to_binary(atom_to_list(Token));
 extract_binary({_Token, _Line, Value}) -> list_to_binary(Value).
 extract_quoted_string_token({_Token, _Line, Value}) -> iolist_to_binary(unescape(lists:sublist(Value, 2, length(Value) - 2))).
+extract_quoted_block_string_token({_Token, _Line, Value}) -> iolist_to_binary(unescape_block(lists:sublist(Value, 4, length(Value) - 4))).
+
+unescape_block(Escaped) -> unescape_block(Escaped, []).
+
+unescape_block([], Acc) -> lists:reverse(Acc);
+unescape_block([$\\, $", $", $" | T], Acc) -> unescape_block(T, [$", $", $"] ++ Acc);
+unescape_block([H | T], Acc) -> unescape_block(T, [H | Acc]).
 
 unescape(Escaped) -> unescape(Escaped, []).
 
