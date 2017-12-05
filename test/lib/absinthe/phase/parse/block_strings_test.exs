@@ -147,12 +147,12 @@ defmodule Absinthe.Phase.Parse.BlockStringsTest do
     assert {:ok, result} = run(~S<query ($body: String = """text""") { post(title: "single", body: $body) { name } }>)
     assert "text" == get_in(result,
       [
-        Access.key(:definitions),
+        Access.key(:definitions, []),
         Access.at(0),
-        Access.key(:variable_definitions),
+        Access.key(:variable_definitions, %{}),
         Access.at(0),
-        Access.key(:default_value),
-        Access.key(:value)
+        Access.key(:default_value, %{}),
+        Access.key(:value, nil)
       ]
     )
   end
@@ -161,10 +161,10 @@ defmodule Absinthe.Phase.Parse.BlockStringsTest do
   defp extract_error_message(err) do
     get_in(err,
       [
-        Access.key(:execution),
-        Access.key(:validation_errors),
+        Access.key(:execution, %{}),
+        Access.key(:validation_errors, []),
         Access.at(0),
-        Access.key(:message)
+        Access.key(:message, nil)
       ]
     )
   end
