@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.5
+
+- Feature: Support for `"""`-quoted block strings, as defined in the GraphQL Specification (See facebook/graphql#397).
+
 ## v1.4.4
 
 - Bug Fix: fix where self referential interface type would cause infinite loop when introspecting.
