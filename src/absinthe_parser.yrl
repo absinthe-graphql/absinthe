@@ -382,11 +382,19 @@ unindent(Lines, Prefix) ->
 unindent([], _Prefix, Result) ->
   lists:reverse(Result);
 unindent([H | T], Prefix, Result) ->
-  case string:prefix(H, Prefix) of
-    nomatch ->
-      unindent(T, Prefix, [H | Result]);
-    Unindented ->
-      unindent(T, Prefix, [Unindented | Result])
+  Processed = prefix(H, Prefix),
+  unindent(T, Prefix, [Processed | Result]).
+
+-spec prefix(string(), string()) -> string().
+prefix(Line, []) ->
+  Line;
+prefix(Line, Prefix) ->
+  Prefixed = lists:prefix(Prefix, Line),
+  if
+    Prefixed ->
+      string:substr(Line, length(Prefix) + 1);
+    true ->
+      Line
   end.
 
 -spec common_indent([string()]) -> non_neg_integer().
