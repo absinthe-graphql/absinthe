@@ -2,7 +2,7 @@
 
 ## v1.4.5
 
-- Feature: Support for `"""`-quoted block strings, as defined in the GraphQL Specification (See facebook/graphql#397).
+- Feature: Support for `"""`-quoted block strings, as defined in the GraphQL Specification (See facebook/graphql#327).
 
 ## v1.4.4
 
