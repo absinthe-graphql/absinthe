@@ -709,10 +709,31 @@ defmodule Absinthe.Schema.Notation do
     |> record_private!(:meta, key, value)
   end
 
+  @doc """
+  Defines list of metadata's key/value pair for a custom type.
+  """
+  defmacro meta(keyword_list) do
+    __CALLER__
+    |> recordable!(:meta, @placement[:meta])
+    |> record_private!(:meta, keyword_list)
+  end
+
+  @doc false
+  # Record private values
+  def record_private!(env, raw_owner, raw_keyword_list) when is_list(raw_keyword_list) do
+    [owner, keyword_list] = Enum.map([raw_owner, raw_keyword_list], &Macro.expand(&1, env))
+    keyword_list
+    |> Enum.each(fn {k,v} -> do_record_private!(env, owner, k, v) end)
+  end
+
   @doc false
   # Record a private value
   def record_private!(env, raw_owner, raw_key, raw_value) do
     [owner, key, value] = Enum.map([raw_owner, raw_key, raw_value], &Macro.expand(&1, env))
+    do_record_private!(env, owner, key, value)
+  end
+
+  defp do_record_private!(env, owner, key, value) do
     new_attrs = Scope.current(env.module).attrs
     |> Keyword.put_new(:__private__, [])
     |> update_in([:__private__, owner], &List.wrap(&1))
