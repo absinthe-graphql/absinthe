@@ -90,6 +90,10 @@ defmodule Absinthe.Middleware.Batch do
   ```
   It could also be used to set options unique to the execution of a particular
   batching function.
+  
+  Be warned batch will be grouped by `{module, function, param}`, so you should not
+  use dynamically generated data in `param`. And you should keep `param` small, 
+  because it copied between processes (do not pass resolver info in it).
   """
   @type batch_fun :: {module, atom} | {module, atom, term}
 
