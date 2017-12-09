@@ -241,7 +241,7 @@ defmodule Absinthe.Schema do
   all given a chance to run prior to resolution.
   """
   @callback plugins() :: [Absinthe.Plugin.t]
-  @callback middleware([Absinthe.Middleware.spec, ...], Type.Field.t, Type.Object.t) :: [Absinthe.Middleware.spec, ...]
+  @callback middleware([Absinthe.Middleware.spec, ...], Type.Field.t, Type.Object.t) :: [Absinthe.Middleware.spec]
   @callback context(map) :: map
 
   @doc false
