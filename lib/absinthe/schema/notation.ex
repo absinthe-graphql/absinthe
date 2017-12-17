@@ -1303,9 +1303,23 @@ defmodule Absinthe.Schema.Notation do
   end
   # NOTATION UTILITIES
 
+  defp handle_meta(attrs) do
+    {meta, attrs} = Keyword.pop(attrs, :meta)
+    if meta do
+      Keyword.update(attrs, :__private__, [meta: meta], fn private ->
+        Keyword.update(private, :meta, meta, fn existing_meta ->
+          meta |> Enum.into(existing_meta)
+        end)
+      end)
+    else
+      attrs
+    end
+  end
+
   # Define a notation scope that will accept attributes
   @doc false
   def scope(env, kind, identifier, attrs, block) do
+    attrs = attrs |> handle_meta
     open_scope(kind, env, identifier, attrs)
 
     # this is probably too simple for now.

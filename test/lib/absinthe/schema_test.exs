@@ -342,7 +342,7 @@ defmodule Absinthe.SchemaTest do
       #Query type must exist
     end
 
-    object :foo do
+    object :foo, meta: [foo: "bar"] do
       meta :sql_table, "foos"
       meta [cache: false, eager: true]
       field :bar, :string do
@@ -388,7 +388,7 @@ defmodule Absinthe.SchemaTest do
     @tag :wip
     it "sets object metadata" do
       foo = Schema.lookup_type(MetadataSchema, :foo)
-      assert Keyword.equal?([sql_table: "foos", cache: false, eager: true], foo.__private__[:meta])
+      assert [eager: true, cache: false, sql_table: "foos", foo: "bar"] == foo.__private__[:meta]
       assert Type.meta(foo, :sql_table) == "foos"
       assert Type.meta(foo, :cache) == false
       assert Type.meta(foo, :eager) == true
