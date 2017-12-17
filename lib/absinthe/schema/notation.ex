@@ -703,6 +703,8 @@ defmodule Absinthe.Schema.Notation do
   @doc """
   Defines a metadata key/value pair for a custom type.
 
+  For more info see `meta/1`
+
   ### Examples
 
   ```
@@ -722,10 +724,28 @@ defmodule Absinthe.Schema.Notation do
   @doc """
   Defines list of metadata's key/value pair for a custom type.
 
+  This is generally used to facilitate libraries that want to augment Absinthe
+  functionality
+
   ## Examples
 
   ```
-  meta cache: true, ttl: 22_000
+  object :user do
+    meta cache: true, ttl: 22_000
+  end
+
+  object :user, meta: [cache: true, ttl: 22_000] do
+    # ...
+  end
+  ```
+
+  The meta can be accessed on the `:__private__[:meta]` key of a type struct.
+
+  ```
+  user_type = Absinthe.Schema.lookup_type(MyApp.Schema, :user)
+
+  user.__private__[:meta]
+  #=> [cache: true, ttl: 22_000]
   ```
 
   ## Placement
