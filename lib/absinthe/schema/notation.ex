@@ -696,23 +696,78 @@ defmodule Absinthe.Schema.Notation do
   defmacro private(owner, key, value) do
     __CALLER__
     |> recordable!(:private, @placement[:private])
-    |> record_private!(owner, key, value)
+    |> record_private!(owner, [{key, value}])
   end
 
   @placement {:meta, [under: [:field, :object, :input_object, :enum, :scalar, :interface, :union]]}
   @doc """
   Defines a metadata key/value pair for a custom type.
+
+  For more info see `meta/1`
+
+  ### Examples
+
+  ```
+  meta :cache, false
+  ```
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
   """
   defmacro meta(key, value) do
     __CALLER__
     |> recordable!(:meta, @placement[:meta])
-    |> record_private!(:meta, key, value)
+    |> record_private!(:meta, [{key, value}])
+  end
+
+  @doc """
+  Defines list of metadata's key/value pair for a custom type.
+
+  This is generally used to facilitate libraries that want to augment Absinthe
+  functionality
+
+  ## Examples
+
+  ```
+  object :user do
+    meta cache: true, ttl: 22_000
+  end
+
+  object :user, meta: [cache: true, ttl: 22_000] do
+    # ...
+  end
+  ```
+
+  The meta can be accessed on the `:__private__[:meta]` key of a type struct.
+
+  ```
+  user_type = Absinthe.Schema.lookup_type(MyApp.Schema, :user)
+
+  user.__private__[:meta]
+  #=> [cache: true, ttl: 22_000]
+  ```
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+  """
+  defmacro meta(keyword_list) do
+    __CALLER__
+    |> recordable!(:meta, @placement[:meta])
+    |> record_private!(:meta, keyword_list)
   end
 
   @doc false
-  # Record a private value
-  def record_private!(env, raw_owner, raw_key, raw_value) do
-    [owner, key, value] = Enum.map([raw_owner, raw_key, raw_value], &Macro.expand(&1, env))
+  # Record private values
+  def record_private!(env, owner, keyword_list) when is_list(keyword_list) do
+    owner = expand(owner, env)
+    keyword_list = expand(keyword_list, env)
+    keyword_list
+    |> Enum.each(fn {k,v} -> do_record_private!(env, owner, k, v) end)
+  end
+
+  defp do_record_private!(env, owner, key, value) do
     new_attrs = Scope.current(env.module).attrs
     |> Keyword.put_new(:__private__, [])
     |> update_in([:__private__, owner], &List.wrap(&1))
@@ -1282,9 +1337,23 @@ defmodule Absinthe.Schema.Notation do
   end
   # NOTATION UTILITIES
 
+  defp handle_meta(attrs) do
+    {meta, attrs} = Keyword.pop(attrs, :meta)
+    if meta do
+      Keyword.update(attrs, :__private__, [meta: meta], fn private ->
+        Keyword.update(private, :meta, meta, fn existing_meta ->
+          meta |> Enum.into(existing_meta)
+        end)
+      end)
+    else
+      attrs
+    end
+  end
+
   # Define a notation scope that will accept attributes
   @doc false
   def scope(env, kind, identifier, attrs, block) do
+    attrs = attrs |> handle_meta
     open_scope(kind, env, identifier, attrs)
 
     # this is probably too simple for now.
