@@ -1191,6 +1191,7 @@ defmodule Absinthe.Schema.Notation do
         }
       )
     end
+    {:ok, types: types, directives: directives}
   end
   defp do_import_types(type_module, _) do
     raise ArgumentError, """
