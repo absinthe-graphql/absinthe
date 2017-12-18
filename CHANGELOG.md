@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.6
+
+- Feature: Support for `meta` macro keyword list args.
+
 ## v1.4.5
 
 - Feature: Support for `"""`-quoted block strings, as defined in the GraphQL Specification (See facebook/graphql#327).
