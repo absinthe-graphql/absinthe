@@ -147,7 +147,7 @@ $ mix phx.server
 
 Absinthe does a number of sanity checks during compilation, so if you misspell a type or make another schema-related gaffe, you'll be notified.
 
-Once it's up-and-running, take a look at [http://localhost:4000/graphiql](http://localhost:4000/graphiql):
+Once it's up-and-running, take a look at [http://localhost:4000/api/graphiql](http://localhost:4000/api/graphiql):
 
 <img style="box-shadow: 0 0 6px #ccc;" src="assets/tutorial/graphiql_blank.png" alt=""/>
 
