@@ -48,7 +48,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   @introspection_graphql Path.join([:code.priv_dir(:absinthe), "graphql", "introspection.graphql"])
 
   def run(argv) do
-    Mix.Task.run("app.start", [])
+    Application.ensure_all_started(:absinthe)
 
     {opts, args, _} = OptionParser.parse(argv)
 
