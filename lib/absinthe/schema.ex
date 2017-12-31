@@ -137,14 +137,6 @@ defmodule Absinthe.Schema do
         middleware
         |> Absinthe.Schema.__ensure_middleware__(field, object)
         |> __MODULE__.middleware(field, object) # run field against user supplied function
-        |> case do
-          [] ->
-            raise """
-            Middleware callback must return a non empty list of middleware!
-            """
-          middleware ->
-            middleware
-        end
       end
 
       @doc false
