@@ -6,7 +6,7 @@ defmodule Absinthe.SchemaTest do
   alias Absinthe.Schema
   alias Absinthe.Type
 
-  context "built-in types" do
+  describe "built-in types" do
 
     def load_valid_schema do
       load_schema("valid_schema")
@@ -27,7 +27,7 @@ defmodule Absinthe.SchemaTest do
 
   end
 
-  context "using the same identifier" do
+  describe "using the same identifier" do
 
     test "raises an exception" do
       assert_schema_error("schema_with_duplicate_identifiers",
@@ -36,7 +36,7 @@ defmodule Absinthe.SchemaTest do
 
   end
 
-  context "using the same name" do
+  describe "using the same name" do
 
     def load_duplicate_name_schema do
       load_schema("schema_with_duplicate_names")
@@ -161,7 +161,7 @@ defmodule Absinthe.SchemaTest do
   end
 
 
-  context "using import_types" do
+  describe "using import_types" do
 
     test "adds the types from a parent" do
       assert %{foo: "Foo", bar: "Bar"} = UserSchema.__absinthe_types__
@@ -175,7 +175,7 @@ defmodule Absinthe.SchemaTest do
 
   end
 
-  context "lookup_type" do
+  describe "lookup_type" do
 
     test "is supported" do
       assert "Foo" == Schema.lookup_type(ThirdSchema, :foo).name
@@ -208,7 +208,7 @@ defmodule Absinthe.SchemaTest do
 
   end
 
-  context "used_types" do
+  describe "used_types" do
     test "does not contain introspection types" do
       assert !Enum.any?(
         Schema.used_types(ThirdSchema),
@@ -254,7 +254,7 @@ defmodule Absinthe.SchemaTest do
     end
   end
 
-  context "introspection_types" do
+  describe "introspection_types" do
     test "is not empty" do
       assert !Enum.empty?(Schema.introspection_types(ThirdSchema))
     end
@@ -266,7 +266,7 @@ defmodule Absinthe.SchemaTest do
     end
   end
 
-  context "root fields" do
+  describe "root fields" do
 
     test "can have a default name" do
       assert "RootQueryType" == Schema.lookup_type(RootsSchema, :query).name
@@ -283,7 +283,7 @@ defmodule Absinthe.SchemaTest do
 
   end
 
-  context "fields" do
+  describe "fields" do
 
     test "have the correct structure in query" do
       assert %Type.Field{name: "name"} = Schema.lookup_type(RootsSchema, :query).fields.name
@@ -295,7 +295,7 @@ defmodule Absinthe.SchemaTest do
 
   end
 
-  context "arguments" do
+  describe "arguments" do
 
     test "have the correct structure" do
       assert %Type.Argument{name: "family_name"} = Schema.lookup_type(RootsSchema, :query).fields.name.args.family_name
@@ -321,7 +321,7 @@ defmodule Absinthe.SchemaTest do
 
   end
 
-  context "multiple fragment spreads" do
+  describe "multiple fragment spreads" do
 
     @query """
     query Viewer{viewer{id,...F1}}
@@ -383,7 +383,7 @@ defmodule Absinthe.SchemaTest do
 
   end
 
-  context "can add metadata to an object" do
+  describe "can add metadata to an object" do
 
     @tag :wip
     test "sets object metadata" do

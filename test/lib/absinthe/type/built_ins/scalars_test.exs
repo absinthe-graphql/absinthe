@@ -24,7 +24,7 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
     |> Type.Scalar.parse(value)
   end
 
-  context ":integer" do
+  describe ":integer" do
     test "serializes as an integer" do
       assert 1 == serialize(:integer, 1)
     end
@@ -49,7 +49,7 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
     end
   end
 
-  context ":float" do
+  describe ":float" do
     test "serializes as a float" do
       assert 1.0 == serialize(:float, 1.0)
     end
@@ -72,7 +72,7 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
     end
   end
 
-  context ":string" do
+  describe ":string" do
     test "serializes as a string" do
       assert "" == serialize(:string, "")
       assert "string" == serialize(:string, "string")
@@ -92,7 +92,7 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
     end
   end
 
-  context ":id" do
+  describe ":id" do
     test "serializes as a string" do
       assert "1" == serialize(:id, 1)
       assert "1" == serialize(:id, "1")
@@ -114,7 +114,7 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
     end
   end
 
-  context ":boolean" do
+  describe ":boolean" do
     test "serializes as a boolean" do
       assert true == serialize(:boolean, true)
       assert false == serialize(:boolean, false)

@@ -11,7 +11,7 @@ defmodule Absinthe.Language.FieldDefinitionTest do
   }
   """
 
-  context "converting to Blueprint" do
+  describe "converting to Blueprint" do
 
     test "works, given a Blueprint Schema object field definition" do
       {doc, fields} = fields_from_input(@idl)

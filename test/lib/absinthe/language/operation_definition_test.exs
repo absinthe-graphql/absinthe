@@ -9,7 +9,7 @@ defmodule Absinthe.Language.OperationDefinitionTest do
   }
   """
 
-  context "converting to Blueprint" do
+  describe "converting to Blueprint" do
 
     test "builds a Operation.t" do
       assert %Blueprint.Document.Operation{name: "Foo", type: :query, variable_definitions: [%Blueprint.Document.VariableDefinition{name: "showFoo", type: %Blueprint.TypeReference.Name{name: "Boolean"}, default_value: %Blueprint.Input.Boolean{value: true}}], source_location: %Blueprint.Document.SourceLocation{line: 1}} = from_input(@query)

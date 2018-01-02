@@ -37,7 +37,7 @@ defmodule Absinthe.Type.EnumTest do
 
   end
 
-  context "enums" do
+  describe "enums" do
     test "can be defined by a map with defined values" do
       type = TestSchema.__absinthe_type__(:color_channel)
       assert %Type.Enum{} = type

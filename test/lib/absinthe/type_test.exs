@@ -3,11 +3,11 @@ defmodule Absinthe.TypeTest do
 
   alias Absinthe.Type
 
-  context "absinthe_types" do
+  describe "absinthe_types" do
 
-    context "when a function is tagged as defining a type" do
+    describe "when a function is tagged as defining a type" do
 
-      context "without a different identifier" do
+      describe "without a different identifier" do
 
         it 'includes a defined entry' do
           assert %Type.Object{name: "Item"} = FooBarSchema.__absinthe_type__(:item)
@@ -23,7 +23,7 @@ defmodule Absinthe.TypeTest do
 
       end
 
-      context "with a different identifier" do
+      describe "with a different identifier" do
 
         it 'includes a defined entry' do
           assert %Type.Object{name: "Author"} = FooBarSchema.__absinthe_type__(:author)
@@ -63,15 +63,15 @@ defmodule Absinthe.TypeTest do
   @without_meta Absinthe.Schema.lookup_type(MetadataSchema, :without_meta)
 
 
-  context ".meta/1" do
+  describe ".meta/1" do
 
-    context "when no metadata is defined" do
+    describe "when no metadata is defined" do
       test "returns an empty map" do
         assert Type.meta(@without_meta) == %{}
       end
     end
 
-    context "when metadata is defined" do
+    describe "when metadata is defined" do
       test "returns the metadata as a map" do
         assert Type.meta(@with_meta) == %{foo: "bar"}
       end
@@ -79,22 +79,22 @@ defmodule Absinthe.TypeTest do
 
   end
 
-  context ".meta/2" do
+  describe ".meta/2" do
 
-    context "when no metadata field is defined" do
+    describe "when no metadata field is defined" do
       test "returns nil" do
         assert Type.meta(@without_meta, :bar) == nil
       end
     end
 
-    context "when the requested metadata field is not defined" do
+    describe "when the requested metadata field is not defined" do
       test "returns nil" do
         assert Type.meta(@with_meta, :bar) == nil
       end
     end
 
 
-    context "when the metadata is defined" do
+    describe "when the metadata is defined" do
       test "returns the value" do
         assert Type.meta(@with_meta, :foo) == "bar"
       end

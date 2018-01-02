@@ -87,7 +87,7 @@ defmodule Absinthe.Phase.Document.SchemaTest do
   }
   """
 
-  context ".run" do
+  describe ".run" do
 
     test "sets the root schema field" do
       {:ok, result} = input(@query)

@@ -34,7 +34,7 @@ defmodule Absinthe.Type.CustomTest do
     |> Type.Scalar.parse(value)
   end
 
-  context ":datetime" do
+  describe ":datetime" do
     test "serializes as an ISO8601 date and time string with UTC timezone marker" do
       assert "2017-01-27T20:31:55Z" == serialize(:datetime, @datetime)
     end
@@ -70,7 +70,7 @@ defmodule Absinthe.Type.CustomTest do
     end
   end
 
-  context ":naive_datetime" do
+  describe ":naive_datetime" do
     test "serializes as an ISO8601 date and time string" do
       assert "2017-01-27T20:31:55" == serialize(:naive_datetime, @naive_datetime)
     end
@@ -93,7 +93,7 @@ defmodule Absinthe.Type.CustomTest do
     end
   end
 
-  context ":date" do
+  describe ":date" do
     test "serializes as an ISO8601 date string" do
       assert "2017-01-27" == serialize(:date, @date)
     end
@@ -119,7 +119,7 @@ defmodule Absinthe.Type.CustomTest do
     end
   end
 
-  context ":time" do
+  describe ":time" do
     test "serializes as an ISO8601 time string" do
       assert "20:31:55" == serialize(:time, @time)
     end
@@ -145,7 +145,7 @@ defmodule Absinthe.Type.CustomTest do
     end
   end
 
-  context ":decimal" do
+  describe ":decimal" do
     test "serializes as a string" do
       assert "-3.49" == serialize(:decimal, @decimal)
       assert "3" == serialize(:decimal, @decimal_int)

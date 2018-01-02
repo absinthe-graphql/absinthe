@@ -15,7 +15,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownFragmentNamesTest do
     )
   end
 
-  context "Validate: Known fragment names" do
+  describe "Validate: Known fragment names" do
 
     test "known fragment names are valid" do
       assert_passes_rule(@rule,

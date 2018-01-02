@@ -15,7 +15,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueVariableNamesTest do
     )
   end
 
-  context "Validate: Unique variable names" do
+  describe "Validate: Unique variable names" do
 
     test "unique variable names" do
       assert_passes_rule(@rule,

@@ -27,11 +27,11 @@ defmodule GraphQL.Specification.NullValues.ScalarTest do
 
   end
 
-  context "as a literal" do
+  describe "as a literal" do
 
-    context "to a nullable argument with a default value" do
+    describe "to a nullable argument with a default value" do
 
-      context "(control): if not passed" do
+      describe "(control): if not passed" do
 
         @query """
         { times(base: 4) }
@@ -42,7 +42,7 @@ defmodule GraphQL.Specification.NullValues.ScalarTest do
 
       end
 
-      context "if passed" do
+      describe "if passed" do
 
         @query """
         { times(base: 4, multiplier: null) }
@@ -55,9 +55,9 @@ defmodule GraphQL.Specification.NullValues.ScalarTest do
 
     end
 
-    context "to a non-nullable argument" do
+    describe "to a non-nullable argument" do
 
-      context "if passed" do
+      describe "if passed" do
 
         @query """
         { times(base: null) }
@@ -72,11 +72,11 @@ defmodule GraphQL.Specification.NullValues.ScalarTest do
 
   end
 
-  context "as a variable value" do
+  describe "as a variable value" do
 
-    context "to a variable with a default value" do
+    describe "to a variable with a default value" do
 
-      context "if not passed (control)" do
+      describe "if not passed (control)" do
 
         @query """
         query Test($mult: Int = 6) { times(base: 4, multiplier: $mult) }
@@ -87,7 +87,7 @@ defmodule GraphQL.Specification.NullValues.ScalarTest do
 
       end
 
-      context "if passed" do
+      describe "if passed" do
 
         @query """
         query Test($mult: Int = 6) { times(base: 4, multiplier: $mult) }
@@ -100,9 +100,9 @@ defmodule GraphQL.Specification.NullValues.ScalarTest do
 
     end
 
-    context "to a non-nullable variable" do
+    describe "to a non-nullable variable" do
 
-      context "if passed" do
+      describe "if passed" do
 
         @query """
         query Test($mult: Int!) { times(base: 4, multiplier: $mult) }

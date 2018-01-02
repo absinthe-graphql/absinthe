@@ -58,7 +58,7 @@ defmodule Absinthe.Type.InterfaceTest do
 
   end
 
-  context "interface" do
+  describe "interface" do
 
     test "can be defined" do
       obj = TestSchema.__absinthe_type__(:named)
@@ -83,9 +83,9 @@ defmodule Absinthe.Type.InterfaceTest do
 
   end
 
-  context "an object that implements an interface" do
+  describe "an object that implements an interface" do
 
-    context "with the interface as a field type" do
+    describe "with the interface as a field type" do
 
       test "can select fields that are declared by the interface" do
         result = """
@@ -111,7 +111,7 @@ defmodule Absinthe.Type.InterfaceTest do
 
   end
 
-  context "when it doesn't define those fields" do
+  describe "when it doesn't define those fields" do
 
     test "reports schema errors" do
       assert_schema_error(

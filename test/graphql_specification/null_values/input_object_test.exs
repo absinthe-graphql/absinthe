@@ -27,11 +27,11 @@ defmodule GraphQL.Specification.NullValues.InputObjectTest do
 
   end
 
-  context "as a literal" do
+  describe "as a literal" do
 
-    context "to a nullable input object field with a default value" do
+    describe "to a nullable input object field with a default value" do
 
-      context "(control): if not passed" do
+      describe "(control): if not passed" do
 
         @query """
         { times: objTimes(input: {base: 4}) }
@@ -42,7 +42,7 @@ defmodule GraphQL.Specification.NullValues.InputObjectTest do
 
       end
 
-      context "if passed" do
+      describe "if passed" do
 
         @query """
         { times: objTimes(input: {base: 4, multiplier: null}) }
@@ -55,9 +55,9 @@ defmodule GraphQL.Specification.NullValues.InputObjectTest do
 
     end
 
-    context "to a non-nullable input object field" do
+    describe "to a non-nullable input object field" do
 
-      context "if passed" do
+      describe "if passed" do
 
         @query """
         { times: objTimes(input: {base: null}) }
@@ -72,11 +72,11 @@ defmodule GraphQL.Specification.NullValues.InputObjectTest do
 
   end
 
- context "as a variable" do
+ describe "as a variable" do
 
-    context "to a nullable input object field with a default value" do
+    describe "to a nullable input object field with a default value" do
 
-      context "if passed" do
+      describe "if passed" do
 
         @query """
         query ($value: Int) { times: objTimes(input: {base: 4, multiplier: $value}) }
@@ -89,9 +89,9 @@ defmodule GraphQL.Specification.NullValues.InputObjectTest do
 
     end
 
-    context "to a non-nullable input object field" do
+    describe "to a non-nullable input object field" do
 
-      context "if passed" do
+      describe "if passed" do
 
         @query """
         query ($value: Int!) { times: objTimes(input: {base: $value}) }

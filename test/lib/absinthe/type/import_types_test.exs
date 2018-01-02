@@ -3,7 +3,7 @@ defmodule Absinthe.Type.ImportTypesTest do
 
   alias Absinthe.Test.ImportTypes
 
-  context "import_types" do
+  describe "import_types" do
 
     test "works with a plain atom" do
       assert Absinthe.Schema.lookup_type(ImportTypes.Schema, :receipt)

@@ -6,7 +6,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
   use Support.Harness.Validation
   alias Absinthe.{Blueprint}
 
-  context "Validate: Provided required arguments" do
+  describe "Validate: Provided required arguments" do
 
     test "ignores unknown arguments" do
       assert_passes_rule(@rule,
@@ -21,7 +21,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
       )
     end
 
-    context "Valid non-nullable value" do
+    describe "Valid non-nullable value" do
 
       test "Arg on optional arg" do
         assert_passes_rule(@rule,
@@ -156,7 +156,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
     end
 
 
-    context "Invalid non-nullable value" do
+    describe "Invalid non-nullable value" do
 
       test "Missing one non-nullable argument" do
         assert_fails_rule(@rule,
@@ -219,7 +219,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
 
     end
 
-    context "Directive arguments" do
+    describe "Directive arguments" do
 
       test "ignores unknown directives" do
         assert_passes_rule(@rule,

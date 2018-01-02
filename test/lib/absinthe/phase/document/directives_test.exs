@@ -35,7 +35,7 @@ defmodule Absinthe.Phase.Document.DirectivesTest do
   }
   """
 
-  context ".run with built-in @include" do
+  describe ".run with built-in @include" do
 
     test "returns a blueprint" do
       {:ok, result} = input(@query, %{"cats" => true})

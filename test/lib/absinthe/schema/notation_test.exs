@@ -1,7 +1,7 @@
 defmodule Absinthe.Schema.NotationTest do
   use Absinthe.Case, async: true
 
-  context "import fields" do
+  describe "import fields" do
     test "fields can be imported" do
       defmodule Foo do
         use Absinthe.Schema
@@ -172,7 +172,7 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
-  context "arg" do
+  describe "arg" do
     test "can be under field as an attribute" do
       assert_no_notation_error "ArgFieldValid", """
       object :foo do
@@ -196,7 +196,7 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
-  context "directive" do
+  describe "directive" do
     test "can be toplevel" do
       assert_no_notation_error "DirectiveValid", """
       directive :foo do
@@ -213,7 +213,7 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
-  context "enum" do
+  describe "enum" do
     test "can be toplevel" do
       assert_no_notation_error "EnumValid", """
       enum :foo do
@@ -230,7 +230,7 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
-  context "field" do
+  describe "field" do
     test "can be under object as an attribute" do
       assert_no_notation_error "FieldObjectValid", """
       object :bar do
@@ -259,7 +259,7 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
-  context "input_object" do
+  describe "input_object" do
     test "can be toplevel" do
       assert_no_notation_error "InputObjectValid", """
       input_object :foo do
@@ -276,7 +276,7 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
-  context "instruction" do
+  describe "instruction" do
     test "can be under directive as an attribute" do
       assert_no_notation_error "InstructionValid", """
       directive :bar do
@@ -298,7 +298,7 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
-  context "interface" do
+  describe "interface" do
     test "can be toplevel" do
       assert_no_notation_error "InterfaceToplevelValid", """
       interface :foo do
@@ -332,7 +332,7 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
-  context "interfaces" do
+  describe "interfaces" do
     test "can be under object as an attribute" do
       assert_no_notation_error "InterfacesValid", """
       interface :bar do
@@ -355,7 +355,7 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
-  context "is_type_of" do
+  describe "is_type_of" do
     test "can be under object as an attribute" do
       assert_no_notation_error "IsTypeOfValid", """
       object :bar do
@@ -377,7 +377,7 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
-  context "object" do
+  describe "object" do
     test "can be toplevel" do
       assert_no_notation_error "ObjectValid", """
       object :foo do
@@ -408,7 +408,7 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
-  context "on" do
+  describe "on" do
     test "can be under directive as an attribute" do
       assert_no_notation_error "OnValid", """
       directive :foo do
@@ -423,7 +423,7 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
-  context "parse" do
+  describe "parse" do
     test "can be under scalar as an attribute" do
       assert_no_notation_error "ParseValid", """
       scalar :foo do
@@ -438,7 +438,7 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
-  context "resolve" do
+  describe "resolve" do
     test "can be under field as an attribute" do
       assert_no_notation_error "ResolveValid", """
       object :bar do
@@ -462,7 +462,7 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
-  context "resolve_type" do
+  describe "resolve_type" do
     test "can be under interface as an attribute" do
       assert_no_notation_error "ResolveTypeValidInterface", """
       interface :bar do
@@ -491,7 +491,7 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
-  context "scalar" do
+  describe "scalar" do
     test "can be toplevel" do
       assert_no_notation_error "ScalarValid", """
       scalar :foo do
@@ -508,7 +508,7 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
-  context "serialize" do
+  describe "serialize" do
     test "can be under scalar as an attribute" do
       assert_no_notation_error "SerializeValid", """
       scalar :foo do
@@ -523,7 +523,7 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
-  context "types" do
+  describe "types" do
     test "can be under union as an attribute" do
       assert_no_notation_error "TypesValid", """
       object :audi do
@@ -540,7 +540,7 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
-  context "value" do
+  describe "value" do
     test "can be under enum as an attribute" do
       assert_no_notation_error "ValueValid", """
       enum :color do
@@ -555,7 +555,7 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
-  context "description" do
+  describe "description" do
     test "can be under object as an attribute" do
       assert_no_notation_error "DescriptionValid", """
       object :item do

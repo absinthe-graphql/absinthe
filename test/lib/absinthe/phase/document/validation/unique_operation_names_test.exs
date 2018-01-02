@@ -15,7 +15,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNamesTest do
     )
   end
 
-  context "Validate: Unique operation names" do
+  describe "Validate: Unique operation names" do
 
     test "no operations" do
       assert_passes_rule(@rule,

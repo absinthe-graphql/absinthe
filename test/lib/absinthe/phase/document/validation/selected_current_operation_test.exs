@@ -14,7 +14,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
     )
   end
 
-  context "Given an operation name" do
+  describe "Given an operation name" do
 
     test "passes when the operation is provided" do
       assert_passes_rule(@rule,
@@ -47,7 +47,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
 
   end
 
-  context "Not given an operation name" do
+  describe "Not given an operation name" do
 
     test "passes when only one operation is given and is named" do
       assert_passes_rule(@rule,

@@ -24,7 +24,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
     )
   end
 
-  context "Validate: Known directives" do
+  describe "Validate: Known directives" do
 
     test "with no directives" do
       assert_passes_rule(@rule,
@@ -138,7 +138,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
       )
     end
 
-    context "within schema language" do
+    describe "within schema language" do
 
       test "with well placed directives" do
         assert_passes_rule(@rule,

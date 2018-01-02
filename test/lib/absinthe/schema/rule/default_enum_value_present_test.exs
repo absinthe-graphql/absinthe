@@ -2,7 +2,7 @@ defmodule Absinthe.Schema.Rule.DefaultEnumValuePresentTest do
   use Absinthe.Case, async: true
   use SupportSchemas
 
-  context "rule" do
+  describe "rule" do
     test "is enforced when the defaultValue is not in the enum" do
       schema =
         """

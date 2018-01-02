@@ -65,7 +65,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
 
   use Harness.Document.Phase, phase: Absinthe.Phase.Document.Complexity.Result, schema: Schema
 
-  context "analysing complexity a document" do
+  describe "analysing complexity a document" do
     test "use union" do
       doc = """
       query UnionComplexity {

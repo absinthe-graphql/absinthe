@@ -13,7 +13,7 @@ defmodule Absinthe.Type.DirectiveTest do
 
   end
 
-  context "directives" do
+  describe "directives" do
     test "are loaded as built-ins" do
       assert %{skip: "skip", include: "include"} = TestSchema.__absinthe_directives__
       assert TestSchema.__absinthe_directive__(:skip)
@@ -24,7 +24,7 @@ defmodule Absinthe.Type.DirectiveTest do
 
   end
 
-  context "the `@skip` directive" do
+  describe "the `@skip` directive" do
     @query_field """
     query Test($skipPerson: Boolean) {
       person @skip(if: $skipPerson) {
@@ -59,7 +59,7 @@ defmodule Absinthe.Type.DirectiveTest do
     end
   end
 
-  context "the `@include` directive" do
+  describe "the `@include` directive" do
     @query_field """
     query Test($includePerson: Boolean) {
       person @include(if: $includePerson) {
@@ -98,7 +98,7 @@ defmodule Absinthe.Type.DirectiveTest do
     end
   end
 
-  context "for inline fragments without type conditions" do
+  describe "for inline fragments without type conditions" do
 
     @query """
     query Q($skipAge: Boolean = false) {
@@ -119,7 +119,7 @@ defmodule Absinthe.Type.DirectiveTest do
 
   end
 
-  context "for inline fragments with type conditions" do
+  describe "for inline fragments with type conditions" do
 
     @query """
     query Q($skipAge: Boolean = false) {

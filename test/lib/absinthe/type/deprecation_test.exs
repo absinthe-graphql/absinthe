@@ -34,7 +34,7 @@ defmodule Absinthe.Type.DeprecationTest do
 
   end
 
-  context "fields" do
+  describe "fields" do
 
     test "can be deprecated" do
       obj = TestSchema.__absinthe_type__(:profile)
@@ -46,7 +46,7 @@ defmodule Absinthe.Type.DeprecationTest do
 
   end
 
-  context "arguments" do
+  describe "arguments" do
 
     test "can be deprecated" do
       field = TestSchema.__absinthe_type__(:profile).fields.profile_picture

@@ -24,7 +24,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
       <> Enum.join(verbose_errors, "\n")
   end
 
-  context "Valid values" do
+  describe "Valid values" do
 
     test "Good int value" do
       assert_passes_rule(@rule,
@@ -134,7 +134,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
   end
 
 
-  context "Invalid String values" do
+  describe "Invalid String values" do
 
     test "Int into String" do
       assert_fails_rule(@rule,
@@ -194,7 +194,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
 
   end
 
-  context "Invalid Int values" do
+  describe "Invalid Int values" do
 
     test "String into Int" do
       assert_fails_rule(@rule,
@@ -268,7 +268,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
 
   end
 
-  context "Invalid Float values" do
+  describe "Invalid Float values" do
 
     test "String into Float" do
       assert_fails_rule(@rule,
@@ -314,7 +314,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
 
   end
 
-  context "Invalid Boolean value" do
+  describe "Invalid Boolean value" do
 
     test "Int into Boolean" do
       assert_fails_rule(@rule,
@@ -375,7 +375,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
   end
 
 
-  context "Invalid ID value" do
+  describe "Invalid ID value" do
 
     test "Float into ID" do
       assert_fails_rule(@rule,
@@ -421,7 +421,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
 
   end
 
-  context "Invalid Enum value" do
+  describe "Invalid Enum value" do
 
     test "Int into Enum" do
       assert_fails_rule(@rule,
@@ -509,7 +509,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
 
   end
 
-  context "Valid List value" do
+  describe "Valid List value" do
 
     test "Good list value" do
       assert_passes_rule(@rule,
@@ -565,7 +565,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
 
   end
 
-  context "Invalid List value" do
+  describe "Invalid List value" do
 
     test "Incorrect item type" do
       assert_fails_rule(@rule,
@@ -609,7 +609,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
 
   end
 
-  context "Valid non-nullable value" do
+  describe "Valid non-nullable value" do
 
     test "Arg on optional arg" do
       assert_passes_rule(@rule,
@@ -743,7 +743,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
 
   end
 
-  context "Invalid non-nullable value" do
+  describe "Invalid non-nullable value" do
 
     test "Incorrect value type" do
       assert_fails_rule(@rule,
@@ -778,7 +778,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
 
   end
 
-  context "Valid input object value" do
+  describe "Valid input object value" do
 
     test "Optional arg, despite required field in type" do
       assert_passes_rule(@rule,
@@ -872,7 +872,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
 
   end
 
-  context "Invalid input object value" do
+  describe "Invalid input object value" do
 
     test "Partial object, missing required" do
       assert_fails_rule(@rule,
@@ -941,7 +941,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
 
   end
 
-  context "Directive arguments" do
+  describe "Directive arguments" do
 
     test "with directives of valid types" do
       assert_passes_rule(@rule,

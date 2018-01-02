@@ -24,7 +24,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNamesTest do
     end
   end
 
-  context "Validate: Unique input field names" do
+  describe "Validate: Unique input field names" do
 
     test "input object with fields" do
       assert_passes_rule(@rule,

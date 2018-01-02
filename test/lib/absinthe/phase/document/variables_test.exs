@@ -18,7 +18,7 @@ defmodule Absinthe.Phase.Document.VariablesTest do
     }
   """
 
-  context "when not providing a value for an optional variable with a default value" do
+  describe "when not providing a value for an optional variable with a default value" do
     test "uses the default value" do
       result = input(@query, %{"name" => "Bruce"})
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
@@ -29,7 +29,7 @@ defmodule Absinthe.Phase.Document.VariablesTest do
     end
   end
 
-  context "when providing an explicit null value for an optional variable with a default value" do
+  describe "when providing an explicit null value for an optional variable with a default value" do
     test "uses null" do
       result = input(@query, %{"name" => "Bruce", "age" => nil})
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
@@ -40,7 +40,7 @@ defmodule Absinthe.Phase.Document.VariablesTest do
     end
   end
 
-  context "when providing a value for an optional variable with a default value" do
+  describe "when providing a value for an optional variable with a default value" do
     test "uses the default value" do
       result = input(@query, %{"age" => 4, "name" => "Bruce"})
       op = result.operations |> Enum.find(&(&1.name == "Profile"))

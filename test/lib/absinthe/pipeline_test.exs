@@ -11,7 +11,7 @@ defmodule Absinthe.PipelineTest do
     end
   end
 
-  context ".run an operation" do
+  describe ".run an operation" do
 
     @query """
     { foo { bar } }
@@ -25,7 +25,7 @@ defmodule Absinthe.PipelineTest do
 
   end
 
-  context ".run an idl" do
+  describe ".run an idl" do
 
     @query """
     type Person {
@@ -77,7 +77,7 @@ defmodule Absinthe.PipelineTest do
     end
   end
 
-  context ".run with options" do
+  describe ".run with options" do
     test "should work" do
       assert {:ok, "oof.oof.oof", [Phase3, Phase2, Phase1]} == Pipeline.run("foo", [Phase1, {Phase2, times: 3}, {Phase3, reverse: false}])
       assert {:ok, "foo.foo.foo", [Phase3, Phase2, Phase1]} == Pipeline.run("foo", [Phase1, {Phase2, times: 3}, {Phase3, reverse: true}])
@@ -91,7 +91,7 @@ defmodule Absinthe.PipelineTest do
     end
   end
 
-  context ".run with a bad phase result" do
+  describe ".run with a bad phase result" do
     test "should return a nice error object" do
       assert {:error, "Last phase did not return a valid result tuple.", [BadPhase]} == Pipeline.run("foo", [BadPhase])
     end
@@ -99,7 +99,7 @@ defmodule Absinthe.PipelineTest do
 
   @pipeline [A, B, C, D, {E, [name: "e"]}, F]
 
-  context ".before" do
+  describe ".before" do
 
     test "raises an exception if one can't be found" do
       assert_raise RuntimeError, fn -> Pipeline.before([], Anything) end
@@ -113,7 +113,7 @@ defmodule Absinthe.PipelineTest do
 
   end
 
-  context ".insert_before" do
+  describe ".insert_before" do
 
     test "raises an exception if one can't be found" do
       assert_raise RuntimeError, fn -> Pipeline.insert_before([], Anything, X) end
@@ -126,7 +126,7 @@ defmodule Absinthe.PipelineTest do
 
   end
 
-  context ".upto" do
+  describe ".upto" do
 
     test "raises an exception if one can't be found" do
       assert_raise RuntimeError, fn -> Pipeline.upto([], Anything) end
@@ -139,7 +139,7 @@ defmodule Absinthe.PipelineTest do
 
   end
 
-  context ".upto" do
+  describe ".upto" do
 
     test "returns the pipeline without specified phase" do
       assert [A, B, D, {E, [name: "e"]}, F] == Pipeline.without(@pipeline, C)
@@ -148,29 +148,29 @@ defmodule Absinthe.PipelineTest do
 
   end
 
-  context ".replace" do
+  describe ".replace" do
 
-    context "when not found" do
+    describe "when not found" do
       test "returns the pipeline unchanged" do
         assert @pipeline == Pipeline.replace(@pipeline, X, ABC)
       end
     end
 
-    context "when found" do
-      context "when the target has options" do
-        context "when no replacement options are given" do
+    describe "when found" do
+      describe "when the target has options" do
+        describe "when no replacement options are given" do
           test "replaces the phase but reuses the options" do
             assert [A, B, C, D, {X, [name: "e"]}, F] == Pipeline.replace(@pipeline, E, X)
           end
         end
-        context "when replacement options are given" do
+        describe "when replacement options are given" do
           test "replaces the phase and uses the new options" do
             assert [A, B, C, D, {X, [name: "Custom"]}, F] == Pipeline.replace(@pipeline, E, {X, [name: "Custom"]})
             assert [A, B, C, D, {X, []}, F] == Pipeline.replace(@pipeline, E, {X, []})
           end
         end
       end
-      context "when the target has no options" do
+      describe "when the target has no options" do
         test "simply replaces the phase" do
           assert [A, B, C, X, {E, [name: "e"]}, F] == Pipeline.replace(@pipeline, D, X)
           assert [A, B, C, {X, [name: "Custom Opt"]}, {E, [name: "e"]}, F] == Pipeline.replace(@pipeline, D, {X, [name: "Custom Opt"]})

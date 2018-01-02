@@ -15,7 +15,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
     )
   end
 
-  context "Validate: No undefined variables" do
+  describe "Validate: No undefined variables" do
 
     test "all variables defined" do
       assert_passes_rule(@rule,

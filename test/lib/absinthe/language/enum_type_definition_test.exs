@@ -3,7 +3,7 @@ defmodule Absinthe.Language.EnumTypeDefinitionTest do
 
   alias Absinthe.Blueprint
 
-  context "converting to Blueprint" do
+  describe "converting to Blueprint" do
 
     test "works, given a Blueprint Schema 'enum' definition" do
       rep = "enum Episode { NEWHOPE, EMPIRE, JEDI }" |> from_input

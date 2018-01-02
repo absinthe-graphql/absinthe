@@ -24,14 +24,14 @@ defmodule Absinthe.Type.ObjectTest do
 
   end
 
-  context "object" do
+  describe "object" do
 
     test "can be defined" do
       assert %Absinthe.Type.Object{name: "Person", description: "A person"} = TestSchema.__absinthe_type__(:person)
       assert %{person: "Person"} = TestSchema.__absinthe_types__
     end
 
-    context "fields" do
+    describe "fields" do
 
       test "are defined" do
         obj = TestSchema.__absinthe_type__(:person)
@@ -40,7 +40,7 @@ defmodule Absinthe.Type.ObjectTest do
 
     end
 
-    context "arguments" do
+    describe "arguments" do
 
       test "are defined" do
         field = TestSchema.__absinthe_type__(:person).fields.profile_picture

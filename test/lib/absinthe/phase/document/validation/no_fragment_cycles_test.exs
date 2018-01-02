@@ -5,7 +5,7 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
 
   @rule Absinthe.Phase.Document.Validation.NoFragmentCycles
 
-  context ".run" do
+  describe ".run" do
 
     test "should return ok if a fragment does not cycle" do
       assert {:ok, _} = """

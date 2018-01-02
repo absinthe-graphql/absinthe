@@ -86,11 +86,11 @@ defmodule GraphQL.Specification.NullValues.ListTest do
 
   end
 
-  context "as a literal" do
+  describe "as a literal" do
 
-    context "to an [Int]" do
+    describe "to an [Int]" do
 
-      context "if passed as the value" do
+      describe "if passed as the value" do
         @query """
         {
           nullableList(input: null) {
@@ -113,7 +113,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
         end
       end
 
-      context "if passed as an element" do
+      describe "if passed as an element" do
         @query """
         {
           nullableList(input: [null, 1]) {
@@ -143,9 +143,9 @@ defmodule GraphQL.Specification.NullValues.ListTest do
 
     end
 
-    context "to an [Int]!" do
+    describe "to an [Int]!" do
 
-      context "if passed as the value" do
+      describe "if passed as the value" do
         @query """
         {
           nonNullableList(input: null) {
@@ -166,7 +166,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
         end
       end
 
-      context "if passed as an element" do
+      describe "if passed as an element" do
         @query """
         {
           nonNullableList(input: [null, 1]) {
@@ -196,9 +196,9 @@ defmodule GraphQL.Specification.NullValues.ListTest do
 
     end
 
-    context "to an [Int!]" do
+    describe "to an [Int!]" do
 
-      context "if passed as the value" do
+      describe "if passed as the value" do
         @query """
         {
           nullableListOfNonNullableType(input: null) {
@@ -221,7 +221,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
         end
       end
 
-      context "if passed as an element" do
+      describe "if passed as an element" do
         @query """
         {
           nullableListOfNonNullableType(input: [null, 1]) {
@@ -246,9 +246,9 @@ defmodule GraphQL.Specification.NullValues.ListTest do
 
     end
 
-    context "to an [Int!]!" do
+    describe "to an [Int!]!" do
 
-      context "if passed as the value" do
+      describe "if passed as the value" do
         @query """
         {
           nonNullableListOfNonNullableType(input: null) {
@@ -269,7 +269,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
         end
       end
 
-      context "if passed as an element" do
+      describe "if passed as an element" do
         @query """
         {
           nonNullableListOfNonNullableType(input: [null, 1]) {
@@ -296,11 +296,11 @@ defmodule GraphQL.Specification.NullValues.ListTest do
 
   end
 
- context "as a variable" do
+ describe "as a variable" do
 
-    context "to an [Int]" do
+    describe "to an [Int]" do
 
-      context "if passed as the value" do
+      describe "if passed as the value" do
         @query """
         query ($value: [Int]) {
           nullableList(input: $value) {
@@ -323,7 +323,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
         end
       end
 
-      context "if passed as an element" do
+      describe "if passed as an element" do
         @query """
         query ($value: [Int] ){
           nullableList(input: $value) {
@@ -353,9 +353,9 @@ defmodule GraphQL.Specification.NullValues.ListTest do
 
     end
 
-    context "to an [Int]!" do
+    describe "to an [Int]!" do
 
-      context "if passed as the value" do
+      describe "if passed as the value" do
         @query """
         query ($value: [Int]!) {
           nonNullableList(input: $value) {
@@ -376,7 +376,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
         end
       end
 
-      context "if passed as an element" do
+      describe "if passed as an element" do
         @query """
         query ($value: [Int]!){
           nonNullableList(input: $value) {
@@ -406,9 +406,9 @@ defmodule GraphQL.Specification.NullValues.ListTest do
 
     end
 
-    context "to an [Int!]" do
+    describe "to an [Int!]" do
 
-      context "if passed as the value" do
+      describe "if passed as the value" do
         @query """
         query ($value: [Int!]) {
           nullableListOfNonNullableType(input: $value) {
@@ -431,7 +431,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
         end
       end
 
-      context "if passed as an element" do
+      describe "if passed as an element" do
         @query """
         query ($value: [Int!]){
           nullableListOfNonNullableType(input: $value) {
@@ -456,9 +456,9 @@ defmodule GraphQL.Specification.NullValues.ListTest do
 
     end
 
-    context "to an [Int!]!" do
+    describe "to an [Int!]!" do
 
-      context "if passed as the value" do
+      describe "if passed as the value" do
         @query """
         query ($value: [Int!]!){
           nonNullableListOfNonNullableType(input: $value) {
@@ -479,7 +479,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
         end
       end
 
-      context "if passed as an element" do
+      describe "if passed as an element" do
         @query """
         query ($value: [Int!]!) {
           nonNullableListOfNonNullableType(input: $value) {

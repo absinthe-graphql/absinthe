@@ -15,7 +15,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
     )
   end
 
-  context "Validate: Fields on correct type" do
+  describe "Validate: Fields on correct type" do
 
     test "Object field selection" do
       assert_passes_rule(@rule,
@@ -258,7 +258,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
       )
     end
 
-    context "Fields on correct type error message" do
+    describe "Fields on correct type error message" do
 
       test "Works with no suggestions" do
         assert ~s(Cannot query field "f" on type "T".) == @rule.error_message("f", "T", [], [])

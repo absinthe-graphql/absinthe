@@ -24,9 +24,9 @@ defmodule Absinthe.Language.DocumentTest do
 
   """
 
-  context "get_operation/2" do
+  describe "get_operation/2" do
 
-    context "given an existing operation name" do
+    describe "given an existing operation name" do
 
       test "returns the operation definition" do
         {:ok, %{input: doc}} = Absinthe.Phase.Parse.run(@input)
@@ -36,7 +36,7 @@ defmodule Absinthe.Language.DocumentTest do
 
     end
 
-    context "given a non-existing operation name" do
+    describe "given a non-existing operation name" do
       {:ok, %{input: doc}} = Absinthe.Phase.Parse.run(@input)
       result = Document.get_operation(doc, "DoesNotExist")
       assert nil == result
@@ -44,7 +44,7 @@ defmodule Absinthe.Language.DocumentTest do
 
   end
 
-  context "converting to Blueprint" do
+  describe "converting to Blueprint" do
 
     test "returns a Blueprint.t" do
       assert %Blueprint{} = ir("{ foo }")
@@ -114,7 +114,7 @@ defmodule Absinthe.Language.DocumentTest do
 
   end
 
-  context "converting to Blueprint for Schema" do
+  describe "converting to Blueprint for Schema" do
 
     @idl """
     enum Episode { NEWHOPE, EMPIRE, JEDI }
