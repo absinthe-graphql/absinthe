@@ -26,7 +26,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
 
   context "Validate: Known directives" do
 
-    it "with no directives" do
+    test "with no directives" do
       assert_passes_rule(@rule,
         """
         query Foo {
@@ -42,7 +42,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
       )
     end
 
-    it "with known directives" do
+    test "with known directives" do
       assert_passes_rule(@rule,
         """
         {
@@ -58,7 +58,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
       )
     end
 
-    it "with unknown directive" do
+    test "with unknown directive" do
       assert_fails_rule(@rule,
         """
         {
@@ -74,7 +74,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
       )
     end
 
-    it "with many unknown directives" do
+    test "with many unknown directives" do
       assert_fails_rule(@rule,
         """
         {
@@ -98,7 +98,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
       )
     end
 
-    it "with well placed directives" do
+    test "with well placed directives" do
       assert_passes_rule(@rule,
         """
         query Foo @onQuery {
@@ -116,7 +116,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
       )
     end
 
-    it "with misplaced directives" do
+    test "with misplaced directives" do
       assert_fails_rule(@rule,
         """
         query Foo @include(if: true) {
@@ -140,7 +140,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
 
     context "within schema language" do
 
-      it "with well placed directives" do
+      test "with well placed directives" do
         assert_passes_rule(@rule,
           """
           type MyObj implements MyInterface @onObject {
@@ -171,7 +171,7 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
         )
       end
 
-      it "with misplaced directives" do
+      test "with misplaced directives" do
         assert_fails_rule(@rule,
           """
           type MyObj implements MyInterface @onInterface {

@@ -26,14 +26,14 @@ defmodule Absinthe.Type.InputObjectTest do
 
   context "input object" do
 
-    it "can be defined" do
+    test "can be defined" do
       assert %Absinthe.Type.InputObject{name: "Profile", description: "A profile"} = TestSchema.__absinthe_type__(:profile)
       assert %{profile: "Profile"} = TestSchema.__absinthe_types__
     end
 
     context "fields" do
 
-      it "are defined" do
+      test "are defined" do
         obj = TestSchema.__absinthe_type__(:profile)
         assert %Absinthe.Type.Field{name: "name", type: :string} = obj.fields.name
       end
@@ -42,7 +42,7 @@ defmodule Absinthe.Type.InputObjectTest do
 
     context "arguments" do
 
-      it "are defined" do
+      test "are defined" do
         field = TestSchema.__absinthe_type__(:profile).fields.profile_picture
         assert %Absinthe.Type.Argument{name: "width", type: :integer} = field.args.width
         assert %Absinthe.Type.Argument{name: "height", type: :integer} = field.args.height

@@ -36,7 +36,7 @@ defmodule GraphQL.Specification.NullValues.ScalarTest do
         @query """
         { times(base: 4) }
         """
-        it "uses the default value" do
+        test "uses the default value" do
           assert_result {:ok, %{data: %{"times" => 8}}}, run(@query, Schema)
         end
 
@@ -47,7 +47,7 @@ defmodule GraphQL.Specification.NullValues.ScalarTest do
         @query """
         { times(base: 4, multiplier: null) }
         """
-        it "overrides the default and is passed as nil to the resolver" do
+        test "overrides the default and is passed as nil to the resolver" do
           assert_result {:ok, %{data: %{"times" => 4}}}, run(@query, Schema)
         end
 
@@ -62,7 +62,7 @@ defmodule GraphQL.Specification.NullValues.ScalarTest do
         @query """
         { times(base: null) }
         """
-        it "adds an error" do
+        test "adds an error" do
           assert_result {:ok, %{errors: [%{message: "Argument \"base\" has invalid value null."}]}}, run(@query, Schema)
         end
 
@@ -81,7 +81,7 @@ defmodule GraphQL.Specification.NullValues.ScalarTest do
         @query """
         query Test($mult: Int = 6) { times(base: 4, multiplier: $mult) }
         """
-        it "uses the default variable value" do
+        test "uses the default variable value" do
           assert_result {:ok, %{data: %{"times" => 24}}}, run(@query, Schema)
         end
 
@@ -92,7 +92,7 @@ defmodule GraphQL.Specification.NullValues.ScalarTest do
         @query """
         query Test($mult: Int = 6) { times(base: 4, multiplier: $mult) }
         """
-        it "overrides the default and is passed as nil to the resolver" do
+        test "overrides the default and is passed as nil to the resolver" do
           assert_result {:ok, %{data: %{"times" => 4}}}, run(@query, Schema, variables: %{"mult" => nil})
         end
 
@@ -107,7 +107,7 @@ defmodule GraphQL.Specification.NullValues.ScalarTest do
         @query """
         query Test($mult: Int!) { times(base: 4, multiplier: $mult) }
         """
-        it "adds an error" do
+        test "adds an error" do
           assert_result {:ok, %{errors: [%{message: "Variable \"mult\": Expected non-null, found null."}]}}, run(@query, Schema, variables: %{"mult" => nil})
         end
 

@@ -16,7 +16,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedAnOperationTest do
 
   context "Given an operation" do
 
-    it "passes" do
+    test "passes" do
       assert_passes_rule(@rule,
         """
         query Bar {
@@ -31,7 +31,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedAnOperationTest do
 
   context "When empty" do
 
-    it "fails" do
+    test "fails" do
       assert_fails_rule(@rule,
         "",
         [],
@@ -43,7 +43,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedAnOperationTest do
 
   context "When given fragments" do
 
-    it "fails" do
+    test "fails" do
       assert_fails_rule(@rule,
         """
         fragment Foo on QueryRootType {

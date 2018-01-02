@@ -19,7 +19,7 @@ defmodule Absinthe.Phase.Document.VariablesTest do
   """
 
   context "when not providing a value for an optional variable with a default value" do
-    it "uses the default value" do
+    test "uses the default value" do
       result = input(@query, %{"name" => "Bruce"})
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
       assert op.provided_values == %{
@@ -30,7 +30,7 @@ defmodule Absinthe.Phase.Document.VariablesTest do
   end
 
   context "when providing an explicit null value for an optional variable with a default value" do
-    it "uses null" do
+    test "uses null" do
       result = input(@query, %{"name" => "Bruce", "age" => nil})
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
       assert op.provided_values == %{
@@ -41,7 +41,7 @@ defmodule Absinthe.Phase.Document.VariablesTest do
   end
 
   context "when providing a value for an optional variable with a default value" do
-    it "uses the default value" do
+    test "uses the default value" do
       result = input(@query, %{"age" => 4, "name" => "Bruce"})
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
       assert op.provided_values == %{
@@ -51,7 +51,7 @@ defmodule Absinthe.Phase.Document.VariablesTest do
     end
   end
 
-  it "should prevent using non input types as variables" do
+  test "should prevent using non input types as variables" do
     doc = """
     query Foo($input: Thing) {
       version

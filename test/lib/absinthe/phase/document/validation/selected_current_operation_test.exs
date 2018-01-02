@@ -16,7 +16,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
 
   context "Given an operation name" do
 
-    it "passes when the operation is provided" do
+    test "passes when the operation is provided" do
       assert_passes_rule(@rule,
         """
         query Bar {
@@ -30,7 +30,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
       )
     end
 
-    it "fails when the operation is not provided" do
+    test "fails when the operation is not provided" do
       assert_fails_rule(@rule,
         """
         query Bar {
@@ -49,7 +49,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
 
   context "Not given an operation name" do
 
-    it "passes when only one operation is given and is named" do
+    test "passes when only one operation is given and is named" do
       assert_passes_rule(@rule,
         """
         query Bar {
@@ -59,7 +59,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
         []
       )
     end
-    it "passes when only one operation is given anonymously" do
+    test "passes when only one operation is given anonymously" do
       assert_passes_rule(@rule,
         """
         {
@@ -70,7 +70,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
       )
     end
 
-    it "fails when more that one operation is given" do
+    test "fails when more that one operation is given" do
       assert_fails_rule(@rule,
         """
         query Bar {

@@ -5,11 +5,11 @@ defmodule Absinthe.Language.InputObjectTypeDefinitionTest do
 
   context "converting to Blueprint" do
 
-    it "works, given a Blueprint Schema 'input' definition" do
+    test "works, given a Blueprint Schema 'input' definition" do
       assert %Blueprint.Schema.InputObjectTypeDefinition{name: "Profile"} = from_input("input Profile { name: String! }")
     end
 
-    it "works, given a Blueprint Schema 'input' definition and a directive" do
+    test "works, given a Blueprint Schema 'input' definition and a directive" do
       rep = """
       input Profile
       @description(text: "A person's profile")

@@ -36,7 +36,7 @@ defmodule GraphQL.Specification.NullValues.InputObjectTest do
         @query """
         { times: objTimes(input: {base: 4}) }
         """
-        it "uses the default value" do
+        test "uses the default value" do
           assert_result {:ok, %{data: %{"times" => 8}}}, run(@query, Schema)
         end
 
@@ -47,7 +47,7 @@ defmodule GraphQL.Specification.NullValues.InputObjectTest do
         @query """
         { times: objTimes(input: {base: 4, multiplier: null}) }
         """
-        it "overrides the default and is passed as nil to the resolver" do
+        test "overrides the default and is passed as nil to the resolver" do
           assert_result {:ok, %{data: %{"times" => 4}}}, run(@query, Schema)
         end
 
@@ -62,7 +62,7 @@ defmodule GraphQL.Specification.NullValues.InputObjectTest do
         @query """
         { times: objTimes(input: {base: null}) }
         """
-        it "adds an error" do
+        test "adds an error" do
           assert_result {:ok, %{errors: [%{message: "Argument \"input\" has invalid value {base: null}.\nIn field \"base\": Expected type \"Int!\", found null."}]}}, run(@query, Schema)
         end
 
@@ -81,7 +81,7 @@ defmodule GraphQL.Specification.NullValues.InputObjectTest do
         @query """
         query ($value: Int) { times: objTimes(input: {base: 4, multiplier: $value}) }
         """
-        it "overrides the default and is passed as nil to the resolver" do
+        test "overrides the default and is passed as nil to the resolver" do
           assert_result {:ok, %{data: %{"times" => 4}}}, run(@query, Schema, variables: %{"value" => nil})
         end
 
@@ -96,7 +96,7 @@ defmodule GraphQL.Specification.NullValues.InputObjectTest do
         @query """
         query ($value: Int!) { times: objTimes(input: {base: $value}) }
         """
-        it "adds an error" do
+        test "adds an error" do
           assert_result {:ok, %{errors: [%{message: "Argument \"input\" has invalid value {base: $value}.\nIn field \"base\": Expected type \"Int!\", found $value."}, %{message: "Variable \"value\": Expected non-null, found null."}]}}, run(@query, Schema, variables: %{"value" => nil})
         end
 

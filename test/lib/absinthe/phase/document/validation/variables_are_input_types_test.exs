@@ -17,7 +17,7 @@ defmodule Absinthe.Phase.Document.Validation.VariablesAreInputTypesTest do
 
   context "Validate: Variables are input types" do
 
-    it "input types are valid" do
+    test "input types are valid" do
       assert_passes_rule(@rule,
       """
         query Foo($a: String, $b: [Boolean!]!, $c: ComplexInput) {
@@ -28,7 +28,7 @@ defmodule Absinthe.Phase.Document.Validation.VariablesAreInputTypesTest do
     )
     end
 
-    it "output types are invalid" do
+    test "output types are invalid" do
       assert_fails_rule(@rule,
         """
         query Foo($a: Dog, $b: [[CatOrDog!]]!, $c: Pet) {

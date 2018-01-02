@@ -13,11 +13,11 @@ defmodule Absinthe.TypeTest do
           assert %Type.Object{name: "Item"} = FooBarSchema.__absinthe_type__(:item)
         end
 
-        it "that defines its own name" do
+        test "that defines its own name" do
           assert %Type.Object{name: "NonFictionBook"} = FooBarSchema.__absinthe_type__(:book)
         end
 
-        it "that uses a name derived from the identifier" do
+        test "that uses a name derived from the identifier" do
           assert %Type.Object{name: "Item"} = FooBarSchema.__absinthe_type__(:item)
         end
 
@@ -33,11 +33,11 @@ defmodule Absinthe.TypeTest do
 
     end
 
-    it "defines a query type" do
+    test "defines a query type" do
       assert ContactSchema.__absinthe_type__(:query).name == "RootQueryType"
     end
 
-    it "defines a mutation type" do
+    test "defines a mutation type" do
       assert ContactSchema.__absinthe_type__(:mutation).name == "RootMutationType"
     end
 
@@ -66,13 +66,13 @@ defmodule Absinthe.TypeTest do
   context ".meta/1" do
 
     context "when no metadata is defined" do
-      it "returns an empty map" do
+      test "returns an empty map" do
         assert Type.meta(@without_meta) == %{}
       end
     end
 
     context "when metadata is defined" do
-      it "returns the metadata as a map" do
+      test "returns the metadata as a map" do
         assert Type.meta(@with_meta) == %{foo: "bar"}
       end
     end
@@ -82,20 +82,20 @@ defmodule Absinthe.TypeTest do
   context ".meta/2" do
 
     context "when no metadata field is defined" do
-      it "returns nil" do
+      test "returns nil" do
         assert Type.meta(@without_meta, :bar) == nil
       end
     end
 
     context "when the requested metadata field is not defined" do
-      it "returns nil" do
+      test "returns nil" do
         assert Type.meta(@with_meta, :bar) == nil
       end
     end
 
 
     context "when the metadata is defined" do
-      it "returns the value" do
+      test "returns the value" do
         assert Type.meta(@with_meta, :foo) == "bar"
       end
     end

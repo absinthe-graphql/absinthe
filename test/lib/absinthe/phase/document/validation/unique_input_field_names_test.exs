@@ -26,7 +26,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNamesTest do
 
   context "Validate: Unique input field names" do
 
-    it "input object with fields" do
+    test "input object with fields" do
       assert_passes_rule(@rule,
         """
         {
@@ -37,7 +37,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNamesTest do
       )
     end
 
-    it "same input object within two args" do
+    test "same input object within two args" do
       assert_passes_rule(@rule,
         """
         {
@@ -48,7 +48,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNamesTest do
       )
     end
 
-    it "multiple input object fields" do
+    test "multiple input object fields" do
       assert_passes_rule(@rule,
         """
         {
@@ -59,7 +59,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNamesTest do
       )
     end
 
-    it "allows for nested input objects with similar fields" do
+    test "allows for nested input objects with similar fields" do
       assert_passes_rule(@rule,
         """
         {
@@ -78,7 +78,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNamesTest do
       )
     end
 
-    it "duplicate input object fields" do
+    test "duplicate input object fields" do
       assert_fails_rule(@rule,
         """
         {
@@ -90,7 +90,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNamesTest do
       )
     end
 
-    it "many duplicate input object fields" do
+    test "many duplicate input object fields" do
       assert_fails_rule(@rule,
         """
         {

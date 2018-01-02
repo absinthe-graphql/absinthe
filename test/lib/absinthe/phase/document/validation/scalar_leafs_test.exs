@@ -26,7 +26,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
 
   context "Validate: Scalar leafs" do
 
-    it "valid scalar selection" do
+    test "valid scalar selection" do
       assert_passes_rule(@rule,
         """
         fragment scalarSelection on Dog {
@@ -37,7 +37,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
       )
     end
 
-    it "object type missing selection" do
+    test "object type missing selection" do
       assert_fails_rule(@rule,
         """
         query directQueryOnObjectWithoutSubFields {
@@ -49,7 +49,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
       )
     end
 
-    it "interface type missing selection" do
+    test "interface type missing selection" do
       assert_fails_rule(@rule,
         """
         {
@@ -61,7 +61,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
       )
     end
 
-    it "valid scalar selection with args" do
+    test "valid scalar selection with args" do
       assert_passes_rule(@rule,
         """
         fragment scalarSelectionWithArgs on Dog {
@@ -72,7 +72,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
       )
     end
 
-    it "scalar selection not allowed on Boolean" do
+    test "scalar selection not allowed on Boolean" do
       assert_fails_rule(@rule,
         """
         fragment scalarSelectionsNotAllowedOnBoolean on Dog {
@@ -84,7 +84,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
       )
     end
 
-    it "scalar selection not allowed on Enum" do
+    test "scalar selection not allowed on Enum" do
       assert_fails_rule(@rule,
         """
         fragment scalarSelectionsNotAllowedOnEnum on Cat {
@@ -96,7 +96,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
       )
     end
 
-    it "scalar selection not allowed with args" do
+    test "scalar selection not allowed with args" do
       assert_fails_rule(@rule,
         """
         fragment scalarSelectionsNotAllowedWithArgs on Dog {
@@ -108,7 +108,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
       )
     end
 
-    it "Scalar selection not allowed with directives" do
+    test "Scalar selection not allowed with directives" do
       assert_fails_rule(@rule,
         """
         fragment scalarSelectionsNotAllowedWithDirectives on Dog {
@@ -120,7 +120,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
       )
     end
 
-    it "Scalar selection not allowed with directives and args" do
+    test "Scalar selection not allowed with directives and args" do
       assert_fails_rule(@rule,
         """
         fragment scalarSelectionsNotAllowedWithDirectivesAndArgs on Dog {

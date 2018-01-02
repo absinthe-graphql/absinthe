@@ -7,7 +7,7 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
 
   context ".run" do
 
-    it "should return ok if a fragment does not cycle" do
+    test "should return ok if a fragment does not cycle" do
       assert {:ok, _} = """
       fragment nameFragment on Dog {
         name
@@ -19,7 +19,7 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
       |> run
     end
 
-    it "should sort fragments properly" do
+    test "should sort fragments properly" do
       assert {:ok, %{fragments: fragments}} = """
       fragment nameFragment on Dog {
         name
@@ -64,7 +64,7 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
       assert ["InputValue", "FullType"] = fragments |> Enum.map(&(&1.name))
     end
 
-    it "should return an error if the named fragment tries to use itself" do
+    test "should return an error if the named fragment tries to use itself" do
 
       {:jump, blueprint, _} = """
       fragment nameFragment on Dog {
@@ -83,7 +83,7 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCyclesTest do
      end)
     end
 
-    it "should add errors to named fragments that form a cycle" do
+    test "should add errors to named fragments that form a cycle" do
       {:jump, blueprint, _} = """
       {
         dog {

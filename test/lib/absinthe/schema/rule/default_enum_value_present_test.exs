@@ -3,7 +3,7 @@ defmodule Absinthe.Schema.Rule.DefaultEnumValuePresentTest do
   use SupportSchemas
 
   context "rule" do
-    it "is enforced when the defaultValue is not in the enum" do
+    test "is enforced when the defaultValue is not in the enum" do
       schema =
         """
         defmodule BadColorSchema do

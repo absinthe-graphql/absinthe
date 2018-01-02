@@ -83,7 +83,7 @@ defmodule Absinthe.Execution.ListTest do
   }
   """
 
-  it "should resolve list of strings" do
+  test "should resolve list of strings" do
     assert {:ok, %{data: %{"categories" => ["foo", "bar", "baz"]}}} ==
       Absinthe.run(@query, __MODULE__.Schema)
   end
@@ -94,7 +94,7 @@ defmodule Absinthe.Execution.ListTest do
   }
   """
 
-  it "should resolve list of numbers" do
+  test "should resolve list of numbers" do
     assert {:ok, %{data: %{"numbers" => [1,2,3]}}} ==
       Absinthe.run(@query, __MODULE__.Schema)
   end
@@ -107,7 +107,7 @@ defmodule Absinthe.Execution.ListTest do
   }
   """
 
-  it "should resolve list of objects with a list of scalars inside" do
+  test "should resolve list of objects with a list of scalars inside" do
     assert {:ok, %{data: %{"items" => [%{"categories" => ["foo", "bar"]}, %{"categories" => ["baz", "buz"]}]}}} ==
       Absinthe.run(@query, __MODULE__.Schema)
   end
@@ -117,7 +117,7 @@ defmodule Absinthe.Execution.ListTest do
     listOfListOfNumbers
   }
   """
-  it "should resolve list of list of numbers" do
+  test "should resolve list of list of numbers" do
     assert {:ok, %{data: %{"listOfListOfNumbers" => [[1,2,3],[4,5,6]]}}} ==
       Absinthe.run(@query, __MODULE__.Schema)
   end
@@ -127,7 +127,7 @@ defmodule Absinthe.Execution.ListTest do
     bigNestingOfNumbers
   }
   """
-  it "should resolve list of lists of... numbers with a depth of 4" do
+  test "should resolve list of lists of... numbers with a depth of 4" do
     list = [[
       [
         [1, 2, 3], [4, 5, 6]
@@ -150,7 +150,7 @@ defmodule Absinthe.Execution.ListTest do
     }
   }
   """
-  it "should resolve list of list of books" do
+  test "should resolve list of list of books" do
     books = [[
       %{"name" => "foo"},
       %{"name" => "bar"},
@@ -168,7 +168,7 @@ defmodule Absinthe.Execution.ListTest do
     }
   }
   """
-  it "should resolve list of list of items" do
+  test "should resolve list of list of items" do
     items = [[
       %{"categories" => ["foo", "bar"]},
       %{"categories" => ["baz", "buz"]},

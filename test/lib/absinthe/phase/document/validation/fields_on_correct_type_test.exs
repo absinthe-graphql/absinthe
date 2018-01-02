@@ -17,7 +17,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
 
   context "Validate: Fields on correct type" do
 
-    it "Object field selection" do
+    test "Object field selection" do
       assert_passes_rule(@rule,
         """
         fragment objectFieldSelection on Dog {
@@ -29,7 +29,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
       )
     end
 
-    it "Aliased object field selection" do
+    test "Aliased object field selection" do
       assert_passes_rule(@rule,
         """
         fragment aliasedObjectFieldSelection on Dog {
@@ -41,7 +41,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
       )
     end
 
-    it "Interface field selection" do
+    test "Interface field selection" do
       assert_passes_rule(@rule,
         """
         fragment interfaceFieldSelection on Pet {
@@ -53,7 +53,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
       )
     end
 
-    it "Aliased interface field selection" do
+    test "Aliased interface field selection" do
       assert_passes_rule(@rule,
         """
         fragment interfaceFieldSelection on Pet {
@@ -64,7 +64,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
       )
     end
 
-    it "Lying alias selection" do
+    test "Lying alias selection" do
       assert_passes_rule(@rule,
         """
         fragment lyingAliasSelection on Dog {
@@ -75,7 +75,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
       )
     end
 
-    it "Ignores fields on unknown type" do
+    test "Ignores fields on unknown type" do
       assert_passes_rule(@rule,
         """
         fragment unknownSelection on UnknownType {
@@ -86,7 +86,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
       )
     end
 
-    it "reports errors when type is known again" do
+    test "reports errors when type is known again" do
       assert_fails_rule(@rule,
         """
         fragment typeKnownAgain on Pet {
@@ -105,7 +105,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
       )
     end
 
-    it "Field not defined on fragment" do
+    test "Field not defined on fragment" do
       assert_fails_rule(@rule,
         """
         fragment fieldNotDefined on Dog {
@@ -117,7 +117,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
       )
     end
 
-    it "Ignores deeply unknown field" do
+    test "Ignores deeply unknown field" do
       assert_fails_rule(@rule,
         """
         fragment deepFieldNotDefined on Dog {
@@ -131,7 +131,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
       )
     end
 
-    it "Sub-field not defined" do
+    test "Sub-field not defined" do
       assert_fails_rule(@rule,
         """
         fragment subFieldNotDefined on Human {
@@ -145,7 +145,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
       )
     end
 
-    it "Field not defined on inline fragment" do
+    test "Field not defined on inline fragment" do
       assert_fails_rule(@rule,
         """
         fragment fieldNotDefined on Pet {
@@ -159,7 +159,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
       )
     end
 
-    it "Aliased field target not defined" do
+    test "Aliased field target not defined" do
       assert_fails_rule(@rule,
         """
         fragment aliasedFieldTargetNotDefined on Dog {
@@ -171,7 +171,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
       )
     end
 
-    it "Aliased lying field target not defined" do
+    test "Aliased lying field target not defined" do
       assert_fails_rule(@rule,
         """
         fragment aliasedLyingFieldTargetNotDefined on Dog {
@@ -183,7 +183,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
       )
     end
 
-    it "Not defined on interface" do
+    test "Not defined on interface" do
       assert_fails_rule(@rule,
         """
         fragment notDefinedOnInterface on Pet {
@@ -195,7 +195,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
       )
     end
 
-    it "Defined on implementors but not on interface" do
+    test "Defined on implementors but not on interface" do
       assert_fails_rule(@rule,
         """
         fragment definedOnImplementorsButNotInterface on Pet {
@@ -207,7 +207,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
       )
     end
 
-    it "Meta field selection on union" do
+    test "Meta field selection on union" do
       assert_passes_rule(@rule,
         """
         fragment directFieldSelectionOnUnion on CatOrDog {
@@ -218,7 +218,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
       )
     end
 
-    it "Direct field selection on union" do
+    test "Direct field selection on union" do
       assert_fails_rule(@rule,
         """
         fragment directFieldSelectionOnUnion on CatOrDog {
@@ -230,7 +230,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
       )
     end
 
-    it "Defined on implementors queried on union" do
+    test "Defined on implementors queried on union" do
       assert_fails_rule(@rule,
         """
         fragment definedOnImplementorsQueriedOnUnion on CatOrDog {
@@ -242,7 +242,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
       )
     end
 
-    it "valid field in inline fragment" do
+    test "valid field in inline fragment" do
       assert_passes_rule(@rule,
         """
         fragment objectFieldSelection on Pet {
@@ -260,27 +260,27 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
 
     context "Fields on correct type error message" do
 
-      it "Works with no suggestions" do
+      test "Works with no suggestions" do
         assert ~s(Cannot query field "f" on type "T".) == @rule.error_message("f", "T", [], [])
       end
 
-      it "Works with no small numbers of type suggestions" do
+      test "Works with no small numbers of type suggestions" do
         assert ~s(Cannot query field "f" on type "T". Did you mean to use an inline fragment on "A" or "B"?) == @rule.error_message("f", "T", [ "A", "B" ], [])
       end
 
-      it "Works with no small numbers of field suggestions" do
+      test "Works with no small numbers of field suggestions" do
         assert ~s(Cannot query field "f" on type "T". Did you mean "z" or "y"?) == @rule.error_message("f", "T", [], [ "z", "y" ])
       end
 
-      it "Only shows one set of suggestions at a time, preferring types" do
+      test "Only shows one set of suggestions at a time, preferring types" do
         assert ~s(Cannot query field "f" on type "T". Did you mean to use an inline fragment on "A" or "B"?) == @rule.error_message("f", "T", [ "A", "B" ], [ "z", "y" ])
       end
 
-      it "Limits lots of type suggestions" do
+      test "Limits lots of type suggestions" do
         assert ~s(Cannot query field "f" on type "T". Did you mean to use an inline fragment on "A", "B", "C", "D", or "E"?) == @rule.error_message("f", "T", [ "A", "B", "C", "D", "E", "F" ], [])
       end
 
-      it "Limits lots of field suggestions" do
+      test "Limits lots of field suggestions" do
         assert ~s(Cannot query field "f" on type "T". Did you mean "z", "y", "x", "w", or "v"?) == @rule.error_message("f", "T", [], [ "z", "y", "x", "w", "v", "u" ])
       end
 

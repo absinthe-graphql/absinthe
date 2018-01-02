@@ -28,7 +28,7 @@ defmodule Absinthe.Language.DocumentTest do
 
     context "given an existing operation name" do
 
-      it "returns the operation definition" do
+      test "returns the operation definition" do
         {:ok, %{input: doc}} = Absinthe.Phase.Parse.run(@input)
         result = Document.get_operation(doc, "MyQuery2")
         assert %OperationDefinition{name: "MyQuery2", operation: :query} = result

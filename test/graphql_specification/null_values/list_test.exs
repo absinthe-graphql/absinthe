@@ -101,7 +101,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
           }
         }
         """
-        it "is treated as a null argument" do
+        test "is treated as a null argument" do
           assert_result {
             :ok,
             %{
@@ -124,7 +124,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
           }
         }
         """
-        it "is treated as a valid value" do
+        test "is treated as a valid value" do
           assert_result {
             :ok,
             %{
@@ -156,7 +156,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
           }
         }
         """
-        it "is treated as a null argument" do
+        test "is treated as a null argument" do
           assert_result {
             :ok,
             %{
@@ -177,7 +177,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
           }
         }
         """
-        it "is treated as a valid value" do
+        test "is treated as a valid value" do
           assert_result {
             :ok,
             %{
@@ -209,7 +209,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
           }
         }
         """
-        it "is treated as a null argument" do
+        test "is treated as a null argument" do
           assert_result {
             :ok,
             %{
@@ -232,7 +232,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
           }
         }
         """
-        it "returns an error" do
+        test "returns an error" do
           assert_result {
             :ok,
             %{
@@ -259,7 +259,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
           }
         }
         """
-        it "is treated as a null argument" do
+        test "is treated as a null argument" do
           assert_result {
             :ok,
             %{
@@ -280,7 +280,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
           }
         }
         """
-        it "returns an error" do
+        test "returns an error" do
           assert_result {
             :ok,
             %{
@@ -311,7 +311,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
           }
         }
         """
-        it "is treated as a null argument" do
+        test "is treated as a null argument" do
           assert_result {
             :ok,
             %{
@@ -334,7 +334,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
           }
         }
         """
-        it "is treated as a valid value" do
+        test "is treated as a valid value" do
           assert_result {
             :ok,
             %{
@@ -366,7 +366,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
           }
         }
         """
-        it "is treated as a null argument" do
+        test "is treated as a null argument" do
           assert_result {
             :ok,
             %{
@@ -387,7 +387,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
           }
         }
         """
-        it "is treated as a valid value" do
+        test "is treated as a valid value" do
           assert_result {
             :ok,
             %{
@@ -419,7 +419,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
           }
         }
         """
-        it "is treated as a null argument" do
+        test "is treated as a null argument" do
           assert_result {
             :ok,
             %{
@@ -442,7 +442,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
           }
         }
         """
-        it "returns an error" do
+        test "returns an error" do
           assert_result {
             :ok,
             %{
@@ -469,7 +469,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
           }
         }
         """
-        it "is treated as a null argument" do
+        test "is treated as a null argument" do
           assert_result {
             :ok,
             %{
@@ -491,7 +491,7 @@ defmodule GraphQL.Specification.NullValues.ListTest do
         }
         """
         @tag :check
-        it "returns an error" do
+        test "returns an error" do
           assert_result {
             :ok,
             %{

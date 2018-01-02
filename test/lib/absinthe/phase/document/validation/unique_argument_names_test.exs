@@ -25,7 +25,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
 
   context "Validate: Unique argument names" do
 
-    it "no arguments on field" do
+    test "no arguments on field" do
       assert_passes_rule(@rule,
         """
         {
@@ -36,7 +36,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
       )
     end
 
-    it "no arguments on directive" do
+    test "no arguments on directive" do
       assert_passes_rule(@rule,
         """
         {
@@ -47,7 +47,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
       )
     end
 
-    it "argument on field" do
+    test "argument on field" do
       assert_passes_rule(@rule,
         """
         {
@@ -58,7 +58,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
       )
     end
 
-    it "argument on directive" do
+    test "argument on directive" do
       assert_passes_rule(@rule,
         """
         {
@@ -69,7 +69,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
       )
     end
 
-    it "same argument on two fields" do
+    test "same argument on two fields" do
       assert_passes_rule(@rule,
         """
         {
@@ -81,7 +81,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
       )
     end
 
-    it "same argument on field and directive" do
+    test "same argument on field and directive" do
       assert_passes_rule(@rule,
         """
         {
@@ -92,7 +92,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
       )
     end
 
-    it "same argument on two directives" do
+    test "same argument on two directives" do
       assert_passes_rule(@rule,
       """
         {
@@ -103,7 +103,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
       )
     end
 
-    it "multiple field arguments" do
+    test "multiple field arguments" do
       assert_passes_rule(@rule,
         """
         {
@@ -114,7 +114,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
       )
     end
 
-    it "multiple directive arguments" do
+    test "multiple directive arguments" do
       assert_passes_rule(@rule,
         """
         {
@@ -125,7 +125,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
       )
     end
 
-    it "duplicate field arguments" do
+    test "duplicate field arguments" do
       assert_fails_rule(@rule,
         """
         {
@@ -137,7 +137,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
       )
     end
 
-    it "many duplicate field arguments" do
+    test "many duplicate field arguments" do
       assert_fails_rule(@rule,
         """
         {
@@ -149,7 +149,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
       )
     end
 
-    it "duplicate directive arguments" do
+    test "duplicate directive arguments" do
       assert_fails_rule(@rule,
         """
         {
@@ -161,7 +161,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
       )
     end
 
-    it "many duplicate directive arguments" do
+    test "many duplicate directive arguments" do
       assert_fails_rule(@rule,
         """
         {

@@ -69,7 +69,7 @@ defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
   """
 
   context "when not providing a value for an optional variable with a default value" do
-    it "uses the default value" do
+    test "uses the default value" do
       {:ok, result, _} = run_phase(@query, variables: %{}, operation_name: "Profile")
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
       field = op.selections |> List.first
@@ -81,7 +81,7 @@ defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
   end
 
   context "when providing a value for an optional variable with a default value" do
-    it "uses the default value" do
+    test "uses the default value" do
       {:ok, result, _} = run_phase(@query, variables: %{"age" => 4}, operation_name: "Profile")
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
       field = op.selections |> List.first
@@ -93,7 +93,7 @@ defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
   end
 
   context "when providing an input to a fragment" do
-    it "normalizes the input" do
+    test "normalizes the input" do
       {:ok, result, _} = run_phase(@fragment_query, variables: %{"id" => "foo"})
       frag = result.fragments |> Enum.find(&(&1.name == "thingsFragment"))
       field = frag.selections |> List.first

@@ -16,7 +16,7 @@ defmodule Absinthe.Phase.Document.Validation.LoneAnonymousOperationTest do
 
   context "Validate: Anonymous operation must be alone" do
 
-    it "no operations" do
+    test "no operations" do
       assert_passes_rule(@rule,
         """
         fragment fragA on Type {
@@ -27,7 +27,7 @@ defmodule Absinthe.Phase.Document.Validation.LoneAnonymousOperationTest do
       )
     end
 
-    it "one anon operation" do
+    test "one anon operation" do
       assert_passes_rule(@rule,
         """
         {
@@ -38,7 +38,7 @@ defmodule Absinthe.Phase.Document.Validation.LoneAnonymousOperationTest do
       )
     end
 
-    it "multiple named operations" do
+    test "multiple named operations" do
       assert_passes_rule(@rule,
         """
         query Foo {
@@ -53,7 +53,7 @@ defmodule Absinthe.Phase.Document.Validation.LoneAnonymousOperationTest do
       )
     end
 
-    it "anon operation with fragment" do
+    test "anon operation with fragment" do
       assert_passes_rule(@rule,
         """
         {
@@ -67,7 +67,7 @@ defmodule Absinthe.Phase.Document.Validation.LoneAnonymousOperationTest do
       )
     end
 
-    it "multiple anon operations" do
+    test "multiple anon operations" do
       assert_fails_rule(@rule,
         """
         {
@@ -85,7 +85,7 @@ defmodule Absinthe.Phase.Document.Validation.LoneAnonymousOperationTest do
       )
     end
 
-    it "anon operation with a mutation" do
+    test "anon operation with a mutation" do
       assert_fails_rule(@rule,
         """
         {
@@ -102,7 +102,7 @@ defmodule Absinthe.Phase.Document.Validation.LoneAnonymousOperationTest do
       )
     end
 
-    it "anon operation with a subscription" do
+    test "anon operation with a subscription" do
       assert_fails_rule(@rule,
         """
         {

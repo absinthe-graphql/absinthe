@@ -60,13 +60,13 @@ defmodule Absinthe.Type.InterfaceTest do
 
   context "interface" do
 
-    it "can be defined" do
+    test "can be defined" do
       obj = TestSchema.__absinthe_type__(:named)
       assert %Absinthe.Type.Interface{name: "Named", description: "An interface"} = obj
       assert obj.resolve_type
     end
 
-    it "captures the relationships in the schema" do
+    test "captures the relationships in the schema" do
       implementors = Map.get(TestSchema.__absinthe_interface_implementors__, :named, [])
       assert :foo in implementors
       assert :bar in implementors
@@ -76,7 +76,7 @@ defmodule Absinthe.Type.InterfaceTest do
       assert :baz in implementors
     end
 
-    it "can find implementors" do
+    test "can find implementors" do
       obj = TestSchema.__absinthe_type__(:named)
       assert length(Schema.implementors(TestSchema, obj)) == 3
     end
@@ -87,20 +87,20 @@ defmodule Absinthe.Type.InterfaceTest do
 
     context "with the interface as a field type" do
 
-      it "can select fields that are declared by the interface" do
+      test "can select fields that are declared by the interface" do
         result = """
         { contact { entity { name } } }
         """ |> Absinthe.run(ContactSchema)
         assert_result {:ok, %{data: %{"contact" => %{"entity" => %{"name" => "Bruce"}}}}}, result
       end
-    it "can't select fields from an implementing type without 'on'" do
+    test "can't select fields from an implementing type without 'on'" do
         result = """
         { contact { entity { name age } } }
         """ |> Absinthe.run(ContactSchema)
         assert_result {:ok, %{errors: [%{message: ~s(Cannot query field "age" on type "NamedEntity". Did you mean to use an inline fragment on "Person"?)}]}}, result
       end
 
-      it "can select fields from an implementing type with 'on'" do
+      test "can select fields from an implementing type with 'on'" do
         result = """
         { contact { entity { name ... on Person { age } } } }
         """ |> Absinthe.run(ContactSchema)
@@ -113,7 +113,7 @@ defmodule Absinthe.Type.InterfaceTest do
 
   context "when it doesn't define those fields" do
 
-    it "reports schema errors" do
+    test "reports schema errors" do
       assert_schema_error(
         "bad_interface_schema",
         [
@@ -126,7 +126,7 @@ defmodule Absinthe.Type.InterfaceTest do
     end
   end
 
-  it "can query simple InterfaceSubtypeSchema" do
+  test "can query simple InterfaceSubtypeSchema" do
     result = """
     {
       box {
@@ -141,7 +141,7 @@ defmodule Absinthe.Type.InterfaceTest do
     assert_result {:ok, %{data: %{"box" => %{"item" => %{"name" => "Computer", "cost" => 1000}}}}}, result
   end
 
-  it "can query InterfaceSubtypeSchema treating box as HasItem" do
+  test "can query InterfaceSubtypeSchema treating box as HasItem" do
     result = """
     {
       box {
@@ -157,7 +157,7 @@ defmodule Absinthe.Type.InterfaceTest do
     assert_result {:ok, %{data: %{"box" => %{"item" => %{"name" => "Computer"}}}}}, result
   end
 
-  it "can query InterfaceSubtypeSchema treating box as HasItem and item as ValuedItem" do
+  test "can query InterfaceSubtypeSchema treating box as HasItem and item as ValuedItem" do
     result = """
     {
       box {
@@ -176,7 +176,7 @@ defmodule Absinthe.Type.InterfaceTest do
     assert_result {:ok, %{data: %{"box" => %{"item" => %{"name" => "Computer", "cost" => 1000}}}}}, result
   end
 
-  it "rejects querying InterfaceSubtypeSchema treating box as HasItem asking for cost" do
+  test "rejects querying InterfaceSubtypeSchema treating box as HasItem asking for cost" do
     result = """
     {
       box {
@@ -193,7 +193,7 @@ defmodule Absinthe.Type.InterfaceTest do
     assert_result {:ok, %{errors: [%{message: "Cannot query field \"cost\" on type \"Item\". Did you mean to use an inline fragment on \"ValuedItem\"?"}]}}, result
   end
 
-  it "works even when resolve_type returns nil" do
+  test "works even when resolve_type returns nil" do
     result = """
     {
       namedThing {

@@ -8,7 +8,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
 
   context "Validate: Provided required arguments" do
 
-    it "ignores unknown arguments" do
+    test "ignores unknown arguments" do
       assert_passes_rule(@rule,
         """
         {
@@ -23,7 +23,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
 
     context "Valid non-nullable value" do
 
-      it "Arg on optional arg" do
+      test "Arg on optional arg" do
         assert_passes_rule(@rule,
           """
           {
@@ -36,7 +36,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
         )
       end
 
-      it "No Arg on optional arg" do
+      test "No Arg on optional arg" do
         assert_passes_rule(@rule,
           """
           {
@@ -49,7 +49,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
         )
       end
 
-      it "Multiple args" do
+      test "Multiple args" do
         assert_passes_rule(@rule,
           """
           {
@@ -62,7 +62,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
         )
       end
 
-      it "Multiple args reverse order" do
+      test "Multiple args reverse order" do
         assert_passes_rule(@rule,
           """
           {
@@ -75,7 +75,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
         )
       end
 
-      it "No args on multiple optional" do
+      test "No args on multiple optional" do
         assert_passes_rule(@rule,
           """
           {
@@ -88,7 +88,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
         )
       end
 
-      it "One arg on multiple optional" do
+      test "One arg on multiple optional" do
         assert_passes_rule(@rule,
           """
           {
@@ -101,7 +101,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
         )
       end
 
-      it "Second arg on multiple optional" do
+      test "Second arg on multiple optional" do
         assert_passes_rule(@rule,
           """
           {
@@ -114,7 +114,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
         )
       end
 
-      it "Multiple reqs on mixedList" do
+      test "Multiple reqs on mixedList" do
         assert_passes_rule(@rule,
           """
           {
@@ -127,7 +127,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
         )
       end
 
-      it "Multiple reqs and one opt on mixedList" do
+      test "Multiple reqs and one opt on mixedList" do
         assert_passes_rule(@rule,
           """
           {
@@ -140,7 +140,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
         )
       end
 
-      it "All reqs and opts on mixedList" do
+      test "All reqs and opts on mixedList" do
         assert_passes_rule(@rule,
           """
           {
@@ -158,7 +158,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
 
     context "Invalid non-nullable value" do
 
-      it "Missing one non-nullable argument" do
+      test "Missing one non-nullable argument" do
         assert_fails_rule(@rule,
           """
           {
@@ -172,7 +172,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
         )
       end
 
-      it "Missing one non-nullable argument using a variable" do
+      test "Missing one non-nullable argument using a variable" do
         assert_fails_rule(@rule,
           """
           query WithReq1Blank($value: Int) {
@@ -186,7 +186,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
         )
       end
 
-      it "Missing multiple non-nullable arguments" do
+      test "Missing multiple non-nullable arguments" do
         assert_fails_rule(@rule,
           """
           {
@@ -203,7 +203,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
         )
       end
 
-      it "Incorrect value and missing argument" do
+      test "Incorrect value and missing argument" do
         assert_fails_rule(@rule,
           """
           {
@@ -221,7 +221,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
 
     context "Directive arguments" do
 
-      it "ignores unknown directives" do
+      test "ignores unknown directives" do
         assert_passes_rule(@rule,
         """
           {
@@ -232,7 +232,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
       )
       end
 
-      it "with directives of valid types" do
+      test "with directives of valid types" do
         assert_passes_rule(@rule,
         """
           {
@@ -248,7 +248,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
       )
       end
 
-      it "with directive with missing types" do
+      test "with directive with missing types" do
         assert_fails_rule(@rule,
           """
           {

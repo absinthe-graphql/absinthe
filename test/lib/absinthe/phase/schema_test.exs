@@ -25,7 +25,7 @@ defmodule Absinthe.Phase.SchemaTest do
     { test(integer: [1]) }
     """
 
-    it "doesn't raise an exception" do
+    test "doesn't raise an exception" do
       assert {:ok, _} = run(@query)
     end
 

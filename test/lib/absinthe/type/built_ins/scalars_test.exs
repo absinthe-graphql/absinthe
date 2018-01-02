@@ -25,11 +25,11 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
   end
 
   context ":integer" do
-    it "serializes as an integer" do
+    test "serializes as an integer" do
       assert 1 == serialize(:integer, 1)
     end
 
-    it "can be parsed from an integer within the valid range" do
+    test "can be parsed from an integer within the valid range" do
       assert {:ok, 0} == parse(:integer, 0)
       assert {:ok, 1} == parse(:integer, 1)
       assert {:ok, -1} == parse(:integer, -1)
@@ -39,98 +39,98 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
       assert :error == parse(:integer, @min_int - 1)
     end
 
-    it "cannot be parsed from a float" do
+    test "cannot be parsed from a float" do
       assert :error == parse(:integer, 0.0)
     end
 
-    it "cannot be parsed from a binary" do
+    test "cannot be parsed from a binary" do
       assert :error == parse(:integer, "")
       assert :error == parse(:integer, "0")
     end
   end
 
   context ":float" do
-    it "serializes as a float" do
+    test "serializes as a float" do
       assert 1.0 == serialize(:float, 1.0)
     end
 
-    it "can be parsed from an integer" do
+    test "can be parsed from an integer" do
       assert {:ok, 0.0} == parse(:float, 0)
       assert {:ok, 1.0} == parse(:float, 1)
       assert {:ok, -1.0} == parse(:float, -1)
     end
 
-    it "can be parsed from a float" do
+    test "can be parsed from a float" do
       assert {:ok, 0.0} == parse(:float, 0.0)
       assert {:ok, 1.9} == parse(:float, 1.9)
       assert {:ok, -1.9} == parse(:float, -1.9)
     end
 
-    it "cannot be parsed from a binary" do
+    test "cannot be parsed from a binary" do
       assert :error == parse(:float, "")
       assert :error == parse(:float, "0.0")
     end
   end
 
   context ":string" do
-    it "serializes as a string" do
+    test "serializes as a string" do
       assert "" == serialize(:string, "")
       assert "string" == serialize(:string, "string")
     end
 
-    it "can be parsed from a binary" do
+    test "can be parsed from a binary" do
       assert {:ok, ""} == parse(:string, "")
       assert {:ok, "string"} == parse(:string, "string")
     end
 
-    it "cannot be parsed from an integer" do
+    test "cannot be parsed from an integer" do
       assert :error == parse(:string, 0)
     end
 
-    it "cannot be parsed from a float" do
+    test "cannot be parsed from a float" do
       assert :error == parse(:string, 1.9)
     end
   end
 
   context ":id" do
-    it "serializes as a string" do
+    test "serializes as a string" do
       assert "1" == serialize(:id, 1)
       assert "1" == serialize(:id, "1")
     end
 
-    it "can be parsed from a binary" do
+    test "can be parsed from a binary" do
       assert {:ok, ""} == parse(:id, "")
       assert {:ok, "abc123"} == parse(:id, "abc123")
     end
 
-    it "can be parsed from an integer" do
+    test "can be parsed from an integer" do
       assert {:ok, "0"} == parse(:id, 0)
       assert {:ok, Integer.to_string(@max_int)} == parse(:id, @max_int)
       assert {:ok, Integer.to_string(@min_int)} == parse(:id, @min_int)
     end
 
-    it "cannot be parsed from a float" do
+    test "cannot be parsed from a float" do
       assert :error == parse(:id, 1.9)
     end
   end
 
   context ":boolean" do
-    it "serializes as a boolean" do
+    test "serializes as a boolean" do
       assert true == serialize(:boolean, true)
       assert false == serialize(:boolean, false)
     end
 
-    it "can be parsed from a boolean" do
+    test "can be parsed from a boolean" do
       assert {:ok, true} == parse(:boolean, true)
       assert {:ok, false} == parse(:boolean, false)
     end
 
-    it "cannot be parsed from a number" do
+    test "cannot be parsed from a number" do
       assert :error == parse(:boolean, 0)
       assert :error == parse(:boolean, 0.0)
     end
 
-    it "cannot be parsed from a binary" do
+    test "cannot be parsed from a binary" do
       assert :error == parse(:boolean, "true")
       assert :error == parse(:boolean, "false")
     end

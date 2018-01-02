@@ -54,12 +54,12 @@ defmodule Absinthe.CustomTypesTest do
   end
 
   context "custom datetime type" do
-    it "can use datetime type in queries" do
+    test "can use datetime type in queries" do
       result = "{ custom_types_query { datetime } }" |> run(Schema)
       assert_result {:ok, %{data: %{"custom_types_query" =>
         %{"datetime" => "2017-01-27T20:31:55Z"}}}}, result
     end
-    it "can use datetime type in input_object" do
+    test "can use datetime type in input_object" do
       request = """
       mutation {
         custom_types_mutation(args: { datetime: "2017-01-27T20:31:55Z" }) {
@@ -71,7 +71,7 @@ defmodule Absinthe.CustomTypesTest do
       assert_result {:ok, %{data: %{"custom_types_mutation" =>
         %{"message" => "ok"}}}}, result
     end
-    it "can use null in input_object" do
+    test "can use null in input_object" do
       request = """
       mutation {
         custom_types_mutation(args: { datetime: null }) {
@@ -83,7 +83,7 @@ defmodule Absinthe.CustomTypesTest do
       assert_result {:ok, %{data: %{"custom_types_mutation" =>
         %{"message" => "ok"}}}}, result
     end
-    it "returns an error when datetime value cannot be parsed" do
+    test "returns an error when datetime value cannot be parsed" do
       request = """
       mutation {
         custom_types_mutation(args: { datetime: "abc" }) {
@@ -96,12 +96,12 @@ defmodule Absinthe.CustomTypesTest do
   end
 
   context "custom naive datetime type" do
-    it "can use naive datetime type in queries" do
+    test "can use naive datetime type in queries" do
       result = "{ custom_types_query { naive_datetime } }" |> run(Schema)
       assert_result {:ok, %{data: %{"custom_types_query" =>
         %{"naive_datetime" => "2017-01-27T20:31:55"}}}}, result
     end
-    it "can use naive datetime type in input_object" do
+    test "can use naive datetime type in input_object" do
       request = """
       mutation {
         custom_types_mutation(args: { naive_datetime: "2017-01-27T20:31:55" }) {
@@ -113,7 +113,7 @@ defmodule Absinthe.CustomTypesTest do
       assert_result {:ok, %{data: %{"custom_types_mutation" =>
         %{"message" => "ok"}}}}, result
     end
-    it "can use null in input_object" do
+    test "can use null in input_object" do
       request = """
       mutation {
         custom_types_mutation(args: { naive_datetime: null }) {
@@ -125,7 +125,7 @@ defmodule Absinthe.CustomTypesTest do
       assert_result {:ok, %{data: %{"custom_types_mutation" =>
         %{"message" => "ok"}}}}, result
     end
-    it "returns an error when naive datetime value cannot be parsed" do
+    test "returns an error when naive datetime value cannot be parsed" do
       request = """
       mutation {
         custom_types_mutation(args: { naive_datetime: "abc" }) {
@@ -138,12 +138,12 @@ defmodule Absinthe.CustomTypesTest do
   end
 
   context "custom date type" do
-    it "can use date type in queries" do
+    test "can use date type in queries" do
       result = "{ custom_types_query { date } }" |> run(Schema)
       assert_result {:ok, %{data: %{"custom_types_query" =>
         %{"date" => "2017-01-27"}}}}, result
     end
-    it "can use date type in input_object" do
+    test "can use date type in input_object" do
       request = """
       mutation {
         custom_types_mutation(args: { date: "2017-01-27" }) {
@@ -155,7 +155,7 @@ defmodule Absinthe.CustomTypesTest do
       assert_result {:ok, %{data: %{"custom_types_mutation" =>
         %{"message" => "ok"}}}}, result
     end
-    it "can use null in input_object" do
+    test "can use null in input_object" do
       request = """
       mutation {
         custom_types_mutation(args: { date: null }) {
@@ -167,7 +167,7 @@ defmodule Absinthe.CustomTypesTest do
       assert_result {:ok, %{data: %{"custom_types_mutation" =>
         %{"message" => "ok"}}}}, result
     end
-    it "returns an error when date value cannot be parsed" do
+    test "returns an error when date value cannot be parsed" do
       request = """
       mutation {
         custom_types_mutation(args: { date: "abc" }) {
@@ -180,12 +180,12 @@ defmodule Absinthe.CustomTypesTest do
   end
 
   context "custom time type" do
-    it "can use time type in queries" do
+    test "can use time type in queries" do
       result = "{ custom_types_query { time } }" |> run(Schema)
       assert_result {:ok, %{data: %{"custom_types_query" =>
       %{"time" => "20:31:55"}}}}, result
     end
-    it "can use time type in input_object" do
+    test "can use time type in input_object" do
       request = """
       mutation {
         custom_types_mutation(args: { time: "20:31:55" }) {
@@ -197,7 +197,7 @@ defmodule Absinthe.CustomTypesTest do
       assert_result {:ok, %{data: %{"custom_types_mutation" =>
         %{"message" => "ok"}}}}, result
     end
-    it "can use null in input_object" do
+    test "can use null in input_object" do
       request = """
       mutation {
         custom_types_mutation(args: { time: null }) {
@@ -209,7 +209,7 @@ defmodule Absinthe.CustomTypesTest do
       assert_result {:ok, %{data: %{"custom_types_mutation" =>
         %{"message" => "ok"}}}}, result
     end
-    it "returns an error when time value cannot be parsed" do
+    test "returns an error when time value cannot be parsed" do
       request = """
       mutation {
         custom_types_mutation(args: { time: "abc" }) {
@@ -222,12 +222,12 @@ defmodule Absinthe.CustomTypesTest do
   end
 
   context "custom decimal type" do
-    it "can use decimal type in queries" do
+    test "can use decimal type in queries" do
       result = "{ custom_types_query { decimal } }" |> run(Schema)
       assert_result {:ok, %{data: %{"custom_types_query" =>
       %{"decimal" => "-3.49"}}}}, result
     end
-    it "can use decimal type as string in input_object" do
+    test "can use decimal type as string in input_object" do
       request = """
       mutation {
         custom_types_mutation(args: { decimal: "-3.49" }) {
@@ -239,7 +239,7 @@ defmodule Absinthe.CustomTypesTest do
       assert_result {:ok, %{data: %{"custom_types_mutation" =>
         %{"message" => "ok"}}}}, result
     end
-    it "can use decimal type as integer in input_object" do
+    test "can use decimal type as integer in input_object" do
       request = """
       mutation {
         custom_types_mutation(args: { decimal: 3 }) {
@@ -251,7 +251,7 @@ defmodule Absinthe.CustomTypesTest do
       assert_result {:ok, %{data: %{"custom_types_mutation" =>
         %{"message" => "ok"}}}}, result
     end
-    it "can use decimal type as float in input_object" do
+    test "can use decimal type as float in input_object" do
       request = """
       mutation {
         custom_types_mutation(args: { decimal: -3.49 }) {
@@ -263,7 +263,7 @@ defmodule Absinthe.CustomTypesTest do
       assert_result {:ok, %{data: %{"custom_types_mutation" =>
         %{"message" => "ok"}}}}, result
     end
-    it "can use null in input_object" do
+    test "can use null in input_object" do
       request = """
       mutation {
         custom_types_mutation(args: { decimal: null }) {
@@ -275,7 +275,7 @@ defmodule Absinthe.CustomTypesTest do
       assert_result {:ok, %{data: %{"custom_types_mutation" =>
         %{"message" => "ok"}}}}, result
     end
-    it "returns an error when decimal value cannot be parsed" do
+    test "returns an error when decimal value cannot be parsed" do
       request = """
       mutation {
         custom_types_mutation(args: { decimal: "abc" }) {

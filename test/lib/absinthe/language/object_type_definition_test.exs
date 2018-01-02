@@ -5,11 +5,11 @@ defmodule Absinthe.Language.ObjectTypeDefinitionTest do
 
   context "converting to Blueprint" do
 
-    it "works, given a Blueprint Schema 'type' definition" do
+    test "works, given a Blueprint Schema 'type' definition" do
       assert %Blueprint.Schema.ObjectTypeDefinition{name: "Person"} = from_input("type Person { name: String! }")
     end
 
-    it "works, given a Blueprint Schema 'type' definition and a directive" do
+    test "works, given a Blueprint Schema 'type' definition and a directive" do
       rep = """
       type Person
       @description(text: "A person")
@@ -20,7 +20,7 @@ defmodule Absinthe.Language.ObjectTypeDefinitionTest do
       assert %Blueprint.Schema.ObjectTypeDefinition{name: "Person", directives: [%{name: "description"}]} = rep
     end
 
-    it "works, given a Blueprint Schema 'type' definition that implements an interface" do
+    test "works, given a Blueprint Schema 'type' definition that implements an interface" do
       rep = """
       type Person implements Entity {
         name: String!
@@ -29,7 +29,7 @@ defmodule Absinthe.Language.ObjectTypeDefinitionTest do
       assert %Blueprint.Schema.ObjectTypeDefinition{name: "Person", interfaces: [%Blueprint.TypeReference.Name{name: "Entity"}]} = rep
     end
 
-    it "works, given a Blueprint Schema 'type' definition that implements an interface and uses a directive" do
+    test "works, given a Blueprint Schema 'type' definition that implements an interface and uses a directive" do
       rep = """
       type Person implements Entity
       @description(text: "A person entity")

@@ -5,11 +5,11 @@ defmodule Absinthe.Language.ScalarTypeDefinitionTest do
 
   context "converting to Blueprint" do
 
-    it "works, given a Blueprint Schema 'scalar' definition" do
+    test "works, given a Blueprint Schema 'scalar' definition" do
       assert %Blueprint.Schema.ScalarTypeDefinition{name: "Time"} = from_input("scalar Time")
     end
 
-    it "works, given a Blueprint Schema 'scalar' definition with a directive" do
+    test "works, given a Blueprint Schema 'scalar' definition with a directive" do
       rep = """
       scalar Time @description(text: "A datetime with a timezone")
       """ |> from_input

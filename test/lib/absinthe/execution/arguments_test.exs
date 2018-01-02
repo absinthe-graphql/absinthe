@@ -142,7 +142,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
   end
 
   context "arguments with variables" do
-    it "should raise an error when a non null argument variable is null" do
+    test "should raise an error when a non null argument variable is null" do
       doc = """
       query GetContacts($contacts:[ContactInput]){contacts(contacts:$contacts)}
       """
@@ -152,21 +152,21 @@ defmodule Absinthe.Execution.ArgumentsTest do
 
     context "list inputs" do
 
-      it "works with basic scalars" do
+      test "works with basic scalars" do
         doc = """
         query GetNumbers($numbers:[Int!]!){numbers(numbers:$numbers)}
         """
         assert_result {:ok, %{data: %{"numbers" => [1, 2]}}}, doc |> run(Schema, variables: %{"numbers" =>[1, 2]})
       end
 
-      it "works with custom scalars" do
+      test "works with custom scalars" do
         doc = """
         query GetNames($names:[Name!]!){names(names:$names)}
         """
         assert_result {:ok, %{data: %{"names" => ["Joe", "bob"]}}}, doc |> run(Schema, variables: %{"names" => ["Joe", "bob"]})
       end
 
-      it "works with input objects" do
+      test "works with input objects" do
         doc = """
         query GetContacts($contacts:[ContactInput]){contacts(contacts:$contacts)}
         """
@@ -175,7 +175,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
     end
 
     context "input object arguments" do
-      it "works in a basic case" do
+      test "works in a basic case" do
         doc = """
         query FindUser($contact: ContactInput!){
           user(contact:$contact)
@@ -186,21 +186,21 @@ defmodule Absinthe.Execution.ArgumentsTest do
     end
 
     context "custom scalar arguments" do
-      it "works when specified as non null" do
+      test "works when specified as non null" do
         doc = """
         { requiredThing(name: "bob") }
         """
         assert_result {:ok, %{data: %{"requiredThing" => "bob"}}}, doc |> run(Schema)
       end
 
-      it "works when passed to resolution" do
+      test "works when passed to resolution" do
         assert_result {:ok, %{data: %{"something" => "bob"}}}, "{ something(name: \"bob\") }" |> run(Schema)
       end
     end
 
     context "boolean arguments" do
 
-      it "are passed as arguments to resolution functions correctly" do
+      test "are passed as arguments to resolution functions correctly" do
         doc = """
         query DoSomething($flag: Boolean!) {
           something(flag:$flag)
@@ -210,7 +210,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"something" => "NO"}}}, doc |> run(Schema, variables: %{"flag" => false})
       end
 
-      it "If a variable is not provided schema default value is used" do
+      test "If a variable is not provided schema default value is used" do
         doc = """
         query DoSomething($flag: Boolean) {
           something(flag: $flag)
@@ -219,14 +219,14 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"something" => "NO"}}}, doc |> Absinthe.run(Schema, variables: %{})
       end
 
-      it "works with input objects with inner variables" do
+      test "works with input objects with inner variables" do
         doc = """
         query Blah($email: String){contacts(contacts: [{email: $email}, {email: $email}])}
         """
         assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "a@b.com"]}}}, doc |> run(Schema, variables: %{"email" => "a@b.com"})
       end
 
-      it "enforces non_null fields in input passed as variable" do
+      test "enforces non_null fields in input passed as variable" do
         query = """
         query Stuff($input: InputStuff!) {
           stuff(stuff: $input)
@@ -239,7 +239,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{errors: [%{message: ~s(Argument "stuff" has invalid value $input.\nIn field "nonNullField": Expected type "String!", found null.)}]}}, result
       end
 
-      it "can set input object default values" do
+      test "can set input object default values" do
         doc = """
         query FooIsMissing($email: String, $defaultWithString: String) {
           user(contact: {email: $email, defaultWithString: $defaultWithString})
@@ -248,21 +248,21 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"user" => "bubba@joe.comasdf"}}}, doc |> run(Schema, variables: %{"email" => "bubba@joe.com"})
       end
 
-      it "works with input objects with inner variables when no variables are given" do
+      test "works with input objects with inner variables when no variables are given" do
         doc = """
         query Blah($email: String){contacts(contacts: [{email: $email}, {email: $email}])}
         """
         assert_result {:ok, %{errors: [%{message: "Argument \"contacts\" has invalid value [{email: $email}, {email: $email}].\nIn element #1: Expected type \"ContactInput\", found {email: $email}.\nIn field \"email\": Expected type \"String!\", found $email.\nIn element #2: Expected type \"ContactInput\", found {email: $email}.\nIn field \"email\": Expected type \"String!\", found $email."}]}}, doc |> run(Schema, variables: %{})
       end
 
-      it "works with lists with inner variables" do
+      test "works with lists with inner variables" do
         doc = """
         query Blah($contact: ContactInput){contacts(contacts: [$contact, $contact])}
         """
         assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "a@b.com"]}}}, doc |> run(Schema, variables: %{"contact" => %{"email" => "a@b.com"}})
       end
 
-      it "works with lists with inner variables when no variables are given" do
+      test "works with lists with inner variables when no variables are given" do
         doc = """
         query Blah($contact: ContactInput){contacts(contacts: [$contact, $contact])}
         """
@@ -272,14 +272,14 @@ defmodule Absinthe.Execution.ArgumentsTest do
     end
 
     context "nullable arguments" do
-      it "if omitted should still be passed as an argument map to the resolver" do
+      test "if omitted should still be passed as an argument map to the resolver" do
         doc = """
         query GetContact{ contact }
         """
         assert_result {:ok, %{data: %{"contact" => nil}}}, doc |> run(Schema)
       end
 
-      it "should pass nil as an argument to the resolver for enum types" do
+      test "should pass nil as an argument to the resolver for enum types" do
         doc = """
         query GetContact($type:ContactType){ contact(type: $type) }
         """
@@ -288,14 +288,14 @@ defmodule Absinthe.Execution.ArgumentsTest do
     end
 
     context "enum types" do
-      it "should work with valid values" do
+      test "should work with valid values" do
         doc = """
         query GetContact($type:ContactType){ contact(type: $type) }
         """
         assert_result {:ok, %{data: %{"contact" => "Email"}}}, doc |> run(Schema, variables: %{"type" => "Email"})
       end
 
-      it "should work when nested" do
+      test "should work when nested" do
         doc = """
         query FindUser($contact: ContactInput!){
           user(contact:$contact)
@@ -304,7 +304,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"user" => "bubba@joe.comasdf"}}}, doc |> run(Schema, variables: %{"contact" => %{"email" => "bubba@joe.com", "contactType" => "Email"}})
       end
 
-      it "should return an error with invalid values" do
+      test "should return an error with invalid values" do
         assert_result {:ok, %{errors: [%{message: ~s(Argument "type" has invalid value "bagel".)}]}},
           "{ contact(type: \"bagel\") }" |> run(Schema)
       end
@@ -314,7 +314,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
 
   context "literal arguments" do
     context "missing arguments" do
-      it "returns the appropriate error" do
+      test "returns the appropriate error" do
         doc = """
         { requiredThing }
         """
@@ -323,14 +323,14 @@ defmodule Absinthe.Execution.ArgumentsTest do
     end
 
     context "list inputs" do
-      it "works with basic scalars" do
+      test "works with basic scalars" do
         doc = """
         {numbers(numbers: [1, 2])}
         """
         assert_result {:ok, %{data: %{"numbers" => [1, 2]}}}, doc |> run(Schema)
       end
 
-      it "works for nested lists" do
+      test "works for nested lists" do
         doc = """
         {
           listOfLists(items: [["foo"], ["bar", "baz"]])
@@ -339,7 +339,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"listOfLists" => [["foo"], ["bar", "baz"]]}}}, doc |> run(Schema)
       end
 
-      it "it will coerce a non list item if it's of the right type" do
+      test "it will coerce a non list item if it's of the right type" do
         # per https://facebook.github.io/graphql/#sec-Lists
         doc = """
         {numbers(numbers: 1)}
@@ -347,21 +347,21 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"numbers" => [1]}}}, doc |> run(Schema)
       end
 
-      it "works with custom scalars" do
+      test "works with custom scalars" do
         doc = """
         {names(names: ["Joe", "bob"])}
         """
         assert_result {:ok, %{data: %{"names" => ["Joe", "bob"]}}}, doc |> run(Schema)
       end
 
-      it "works with input objects" do
+      test "works with input objects" do
         doc = """
         {contacts(contacts: [{email: "a@b.com"}, {email: "c@d.com"}])}
         """
         assert_result {:ok, %{data: %{"contacts" => ["a@b.com", "c@d.com"]}}}, doc |> run(Schema)
       end
 
-      it "returns deeply nested errors" do
+      test "returns deeply nested errors" do
         doc = """
         {contacts(contacts: [{email: "a@b.com"}, {foo: "c@d.com"}])}
         """
@@ -373,14 +373,14 @@ defmodule Absinthe.Execution.ArgumentsTest do
     end
 
     context "input object arguments" do
-      it "works in a basic case" do
+      test "works in a basic case" do
         doc = """
         {user(contact: {email: "bubba@joe.com"})}
         """
         assert_result {:ok, %{data: %{"user" => "bubba@joe.comasdf"}}}, doc |> run(Schema)
       end
 
-      it "works with inner booleans set to false" do
+      test "works with inner booleans set to false" do
         # This makes sure we don't accidentally filter out booleans when trying
         # to filter out nils
         doc = """
@@ -389,14 +389,14 @@ defmodule Absinthe.Execution.ArgumentsTest do
         assert_result {:ok, %{data: %{"testBooleanInputObject" => false}}}, doc |> run(Schema)
       end
 
-      it "works in a nested case" do
+      test "works in a nested case" do
         doc = """
         {user(contact: {email: "bubba@joe.com", nestedContactInput: {email: "foo"}})}
         """
         assert_result {:ok, %{data: %{"user" => "bubba@joe.comasdf"}}}, doc |> run(Schema)
       end
 
-      it "returns the correct error if an inner field is marked non null but is missing" do
+      test "returns the correct error if an inner field is marked non null but is missing" do
         doc = """
         {user(contact: {foo: "buz"})}
         """
@@ -406,7 +406,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
           doc |> run(Schema)
       end
 
-      it "returns an error if extra fields are given" do
+      test "returns an error if extra fields are given" do
         doc = """
         {user(contact: {email: "bubba", foo: "buz"})}
         """
@@ -416,36 +416,36 @@ defmodule Absinthe.Execution.ArgumentsTest do
     end
 
     context "custom scalar arguments" do
-      it "works when specified as non null" do
+      test "works when specified as non null" do
         doc = """
         { requiredThing(name: "bob") }
         """
         assert_result {:ok, %{data: %{"requiredThing" => "bob"}}}, doc |> run(Schema)
       end
-      it "works when passed to resolution" do
+      test "works when passed to resolution" do
         assert_result {:ok, %{data: %{"something" => "bob"}}}, "{ something(name: \"bob\") }" |> run(Schema)
       end
     end
 
     context "boolean arguments" do
 
-      it "are passed as arguments to resolution functions correctly" do
+      test "are passed as arguments to resolution functions correctly" do
         assert_result {:ok, %{data: %{"something" => "YES"}}}, "{ something(flag: true) }" |> run(Schema)
         assert_result {:ok, %{data: %{"something" => "NO"}}}, "{ something(flag: false) }" |> run(Schema)
         assert_result {:ok, %{data: %{"something" => "NO"}}}, "{ something }" |> run(Schema)
       end
 
-      it "returns a correct error when passed the wrong type" do
+      test "returns a correct error when passed the wrong type" do
         assert_result {:ok, %{errors: [%{message: ~s(Argument "flag" has invalid value {foo: 1}.\nIn field \"foo\": Unknown field.)}]}},
           "{ something(flag: {foo: 1}) }" |> run(Schema)
       end
     end
 
     context "enum types" do
-      it "should work with valid values" do
+      test "should work with valid values" do
         assert_result {:ok, %{data: %{"contact" => "Email"}}}, "{ contact(type: Email) }" |> run(Schema)
       end
-      it "should return an error with invalid values" do
+      test "should return an error with invalid values" do
         assert_result {:ok, %{errors: [%{message: ~s(Argument "type" has invalid value "bagel".)}]}},
           "{ contact(type: \"bagel\") }" |> run(Schema)
       end
@@ -453,7 +453,7 @@ defmodule Absinthe.Execution.ArgumentsTest do
   end
 
   context "camelized errors" do
-    it "should adapt internal field names on error" do
+    test "should adapt internal field names on error" do
       doc = """
       query FindUser {
         user(contact: {email: "bubba@joe.com", contactType: 1})

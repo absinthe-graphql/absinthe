@@ -16,7 +16,7 @@ defmodule Absinthe.Execution.DefaultResolverTest do
 
     end
 
-    it "should resolve using atoms" do
+    test "should resolve using atoms" do
       assert {:ok, %{data: %{"foo" => "baz", "bar" => nil}}} == Absinthe.run(@query, NormalSchema, root_value: @root)
     end
 
@@ -49,7 +49,7 @@ defmodule Absinthe.Execution.DefaultResolverTest do
 
     end
 
-    it "should resolve using as defined" do
+    test "should resolve using as defined" do
       assert {:ok, %{data: %{"foo" => "baz", "bar" => "quux"}}} == Absinthe.run(@query, CustomSchema, root_value: @root)
     end
 

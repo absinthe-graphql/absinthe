@@ -66,7 +66,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
   use Harness.Document.Phase, phase: Absinthe.Phase.Document.Complexity.Result, schema: Schema
 
   context "analysing complexity a document" do
-    it "use union" do
+    test "use union" do
       doc = """
       query UnionComplexity {
         unionComplexity {
@@ -84,7 +84,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       assert errors == []
     end
 
-    it "uses arguments and defaults to complexity of 1 for a field" do
+    test "uses arguments and defaults to complexity of 1 for a field" do
       doc = """
       query ComplexityArg {
         fooComplexity(limit: 3) {
@@ -100,7 +100,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       assert errors == []
     end
 
-    it "uses variable arguments" do
+    test "uses variable arguments" do
       doc = """
       query ComplexityVar($limit: Int!) {
         fooComplexity(limit: $limit) {
@@ -117,7 +117,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       assert errors == []
     end
 
-    it "supports access to context" do
+    test "supports access to context" do
       doc = """
       query ContextComplexity {
         contextAwareComplexity {
@@ -141,7 +141,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
 
     end
 
-    it "uses fragments" do
+    test "uses fragments" do
       doc = """
       query ComplexityFrag {
         fooComplexity(limit: 7) {
@@ -159,7 +159,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       assert op.complexity == 19
     end
 
-    it "raises error on negative complexity" do
+    test "raises error on negative complexity" do
       doc = """
       query ComplexityNeg {
         fooComplexity(limit: -20) {
@@ -174,7 +174,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
     end
 
 
-    it "does not error when complex child is discounted by parent" do
+    test "does not error when complex child is discounted by parent" do
       doc = """
       query ComplexityDiscount {
         discountChildComplexity {
@@ -191,7 +191,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       assert errors == []
     end
 
-    it "errors when too complex" do
+    test "errors when too complex" do
       doc = """
       query ComplexityError {
         fooComplexity(limit: 1) {
@@ -208,7 +208,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       ]
     end
 
-    it "errors when too complex but not for discounted complex child" do
+    test "errors when too complex but not for discounted complex child" do
       doc = """
       query ComplexityNested {
         nestedComplexity {
@@ -228,7 +228,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       ]
     end
 
-    it "errors when too complex and nil operation name" do
+    test "errors when too complex and nil operation name" do
       doc = """
       {
         fooComplexity(limit: 1) {
@@ -245,7 +245,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       ]
     end
 
-    it "skips analysis when disabled" do
+    test "skips analysis when disabled" do
       doc = """
       query ComplexitySkip {
         fooComplexity(limit: 3) {
@@ -262,7 +262,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
     end
 
 
-    it "handles GraphQL introspection" do
+    test "handles GraphQL introspection" do
       doc= """
       query IntrospectionQuery {
         __schema {

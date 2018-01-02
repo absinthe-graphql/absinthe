@@ -5,18 +5,18 @@ defmodule Absinthe.IntrospectionTest do
   alias Absinthe.Schema
 
   context "introspection of an object" do
-    it "returns the name of the object type currently being queried without an alias" do
+    test "returns the name of the object type currently being queried without an alias" do
       result = "{ person { __typename name } }" |> run(ContactSchema)
       assert_result {:ok, %{data: %{"person" => %{"name" => "Bruce", "__typename" => "Person"}}}}, result
     end
-    it "returns the name of the object type currently being queried witho an alias" do
+    test "returns the name of the object type currently being queried witho an alias" do
       result = "{ person { kind: __typename name } }" |> run(ContactSchema)
       assert_result {:ok, %{data: %{"person" => %{"name" => "Bruce", "kind" => "Person"}}}}, result
     end
   end
 
   context "introspection of an interface" do
-    it "returns the name of the object type currently being queried" do
+    test "returns the name of the object type currently being queried" do
       # Without an alias
       result = "{ contact { entity { __typename name } } }" |> run(ContactSchema)
       assert_result {:ok, %{data: %{"contact" => %{"entity" => %{"name" => "Bruce", "__typename" => "Person"}}}}}, result
@@ -27,7 +27,7 @@ defmodule Absinthe.IntrospectionTest do
   end
 
   context "when querying against a union" do
-    it "returns the name of the object type currently being queried" do
+    test "returns the name of the object type currently being queried" do
       # Simple type
       result = "{ firstSearchResult { __typename } }" |> run(ContactSchema)
       assert_result {:ok, %{data: %{"firstSearchResult" => %{"__typename" => "Person"}}}}, result
@@ -39,7 +39,7 @@ defmodule Absinthe.IntrospectionTest do
 
   context "introspection of a schema" do
 
-    it "can use __schema to get types" do
+    test "can use __schema to get types" do
       {:ok, %{data: %{"__schema" => %{"types" => types}}}} = run(
         "{ __schema { types { name } } }",
         ContactSchema
@@ -49,22 +49,22 @@ defmodule Absinthe.IntrospectionTest do
       assert expected == names
     end
 
-    it "can use __schema to get the query type" do
+    test "can use __schema to get the query type" do
       result = "{ __schema { queryType { name kind } } }" |> run(ContactSchema)
       assert_result {:ok, %{data: %{"__schema" => %{"queryType" => %{"name" => "RootQueryType", "kind" => "OBJECT"}}}}}, result
     end
 
-    it "can use __schema to get the mutation type" do
+    test "can use __schema to get the mutation type" do
       result = "{ __schema { mutationType { name kind } } }" |> run(ContactSchema)
       assert_result {:ok, %{data: %{"__schema" => %{"mutationType" => %{"name" => "RootMutationType", "kind" => "OBJECT"}}}}}, result
     end
 
-    it "can use __schema to get the subscription type" do
+    test "can use __schema to get the subscription type" do
       result = "{ __schema { subscriptionType { name kind } } }" |> Absinthe.run(ContactSchema)
       assert_result {:ok, %{data: %{"__schema" => %{"subscriptionType" => %{"name" => "RootSubscriptionType", "kind" => "OBJECT"}}}}}, result
     end
 
-    it "can use __schema to get the directives" do
+    test "can use __schema to get the directives" do
       result = """
       {
         __schema {
@@ -90,7 +90,7 @@ defmodule Absinthe.IntrospectionTest do
 
   context "introspection of an enum type" do
 
-    it "can use __type and value information with deprecations" do
+    test "can use __type and value information with deprecations" do
       result = """
       {
         __type(name: "Channel") {
@@ -116,7 +116,7 @@ defmodule Absinthe.IntrospectionTest do
       ] == values |> Enum.sort_by(&(&1["name"]))
     end
 
-    it "can use __type and value information without deprecations" do
+    test "can use __type and value information without deprecations" do
       result = """
       {
         __type(name: "Channel") {
@@ -139,7 +139,7 @@ defmodule Absinthe.IntrospectionTest do
       ] == values |> Enum.sort_by(&(&1["name"]))
     end
 
-    it "when used as the defaultValue of an argument" do
+    test "when used as the defaultValue of an argument" do
       result = """
       {
         __schema {
@@ -165,7 +165,7 @@ defmodule Absinthe.IntrospectionTest do
       ] = fields
     end
 
-    it "when used as the default value of an input object" do
+    test "when used as the default value of an input object" do
       result = """
       {
         __type(name: "ChannelInput") {
@@ -187,7 +187,7 @@ defmodule Absinthe.IntrospectionTest do
 
   context "introspection of an input object type" do
 
-    it "can use __type and ignore deprecated fields" do
+    test "can use __type and ignore deprecated fields" do
       result = """
       {
         __type(name: "ProfileInput") {
@@ -223,7 +223,7 @@ defmodule Absinthe.IntrospectionTest do
 
   context "introspection of an interface type" do
 
-    it "can use __type and get possible types" do
+    test "can use __type and get possible types" do
       result = """
       {
         __type(name: "NamedEntity") {
@@ -244,7 +244,7 @@ defmodule Absinthe.IntrospectionTest do
 
   context "introspection of an object type that includes a list" do
 
-    it "can use __type and see fields with the wrapping list types" do
+    test "can use __type and see fields with the wrapping list types" do
       result = """
       {
         __type(name: "Person") {
@@ -279,7 +279,7 @@ defmodule Absinthe.IntrospectionTest do
 
   context "introspection of an object type" do
 
-    it "can use __type and ignore deprecated fields" do
+    test "can use __type and ignore deprecated fields" do
       result = """
       {
         __type(name: "Person") {
@@ -296,7 +296,7 @@ defmodule Absinthe.IntrospectionTest do
       assert_result {:ok, %{data: %{"__type" => %{"name" => "Person", "description" => "A person", "kind" => "OBJECT", "fields" => [%{"name" => "age"}, %{"name" => "name"}, %{"name" => "others"}]}}}}, result
     end
 
-    it "can use __type and include deprecated fields" do
+    test "can use __type and include deprecated fields" do
       result = """
       {
         __type(name: "Person") {
@@ -317,7 +317,7 @@ defmodule Absinthe.IntrospectionTest do
                   %{"deprecationReason" => nil, "isDeprecated" => false, "name" => "name"}, %{"deprecationReason" => nil, "isDeprecated" => false, "name" => "others"}], "kind" => "OBJECT", "name" => "Person"}}}}, result
     end
 
-    it "can use __type to view interfaces" do
+    test "can use __type to view interfaces" do
       result = """
       {
         __type(name: "Person") {
@@ -345,7 +345,7 @@ defmodule Absinthe.IntrospectionTest do
 
     end
 
-    it "can use __type with a field named 'kind'" do
+    test "can use __type with a field named 'kind'" do
       result = """
       {
         __type(name: "Foo") {
@@ -364,7 +364,7 @@ defmodule Absinthe.IntrospectionTest do
       assert {:ok, %{data: %{"__type" => %{"fields" => [%{"name" => "kind", "type" => %{"kind" => "SCALAR", "name" => "String"}}, %{"name" => "name", "type" => %{"kind" => "SCALAR", "name" => "String"}}], "name" => "Foo"}}}} = result
     end
 
-    it "can use __schema with a field named 'kind'" do
+    test "can use __schema with a field named 'kind'" do
       result = """
         {
           __schema {
@@ -403,7 +403,7 @@ defmodule Absinthe.IntrospectionTest do
   end
 
   context "introspection of a scalar type" do
-    it "can use __type" do
+    test "can use __type" do
       result = """
       {
         __type(name: "String") {
@@ -425,7 +425,7 @@ defmodule Absinthe.IntrospectionTest do
 
   context "introspection of a union type" do
 
-    it "can use __type and get possible types" do
+    test "can use __type and get possible types" do
       result = """
       {
         __type(name: "SearchResult") {
@@ -449,7 +449,7 @@ defmodule Absinthe.IntrospectionTest do
     @filename "graphql/introspection.graphql"
     @query File.read!(Path.join([:code.priv_dir(:absinthe), @filename]))
 
-    it "runs" do
+    test "runs" do
       result = @query |> run(ContactSchema)
       assert {:ok, %{data: %{"__schema" => _}}} = result
     end

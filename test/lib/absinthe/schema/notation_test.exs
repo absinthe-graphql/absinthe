@@ -2,7 +2,7 @@ defmodule Absinthe.Schema.NotationTest do
   use Absinthe.Case, async: true
 
   context "import fields" do
-    it "fields can be imported" do
+    test "fields can be imported" do
       defmodule Foo do
         use Absinthe.Schema
 
@@ -23,7 +23,7 @@ defmodule Absinthe.Schema.NotationTest do
       assert [:email, :name] = Foo.__absinthe_type__(:bar).fields |> Map.keys |> Enum.sort
     end
 
-    it "works for input objects" do
+    test "works for input objects" do
       defmodule InputFoo do
         use Absinthe.Schema
 
@@ -46,7 +46,7 @@ defmodule Absinthe.Schema.NotationTest do
       assert [:email, :name] = fields |> Map.keys |> Enum.sort
     end
 
-    it "can work transitively" do
+    test "can work transitively" do
       defmodule Bar do
         use Absinthe.Schema
 
@@ -72,7 +72,7 @@ defmodule Absinthe.Schema.NotationTest do
       assert [:age, :email, :name] == Bar.__absinthe_type__(:baz).fields |> Map.keys |> Enum.sort
     end
 
-    it "raises errors nicely" do
+    test "raises errors nicely" do
       defmodule ErrorSchema do
         use Absinthe.Schema.Notation
 
@@ -87,7 +87,7 @@ defmodule Absinthe.Schema.NotationTest do
 
     end
 
-    it "handles circular errors" do
+    test "handles circular errors" do
       defmodule Circles do
         use Absinthe.Schema.Notation
 
@@ -106,7 +106,7 @@ defmodule Absinthe.Schema.NotationTest do
       assert %{data: %{artifact: "Field Import Cycle Error\n\nField Import in object `foo' `import_fields(:bar) forms a cycle via: (`foo' => `bar' => `foo')", value: :bar}, location: %{file: _, line: _}, rule: Absinthe.Schema.Rule.NoCircularFieldImports} = error
     end
 
-    it "can import types from more than one thing" do
+    test "can import types from more than one thing" do
       defmodule Multiples do
         use Absinthe.Schema
 
@@ -128,7 +128,7 @@ defmodule Absinthe.Schema.NotationTest do
       assert [:age, :email, :name] == Multiples.__absinthe_type__(:query).fields |> Map.keys |> Enum.sort
     end
 
-    it "can import fields from imported types" do
+    test "can import fields from imported types" do
       defmodule Source1 do
         use Absinthe.Schema
 
@@ -173,7 +173,7 @@ defmodule Absinthe.Schema.NotationTest do
   end
 
   context "arg" do
-    it "can be under field as an attribute" do
+    test "can be under field as an attribute" do
       assert_no_notation_error "ArgFieldValid", """
       object :foo do
         field :picture, :string do
@@ -182,14 +182,14 @@ defmodule Absinthe.Schema.NotationTest do
       end
       """
     end
-    it "can be under directive as an attribute" do
+    test "can be under directive as an attribute" do
       assert_no_notation_error "ArgDirectiveValid", """
       directive :test do
         arg :if, :boolean
       end
       """
     end
-    it "cannot be toplevel" do
+    test "cannot be toplevel" do
       assert_notation_error "ArgToplevelInvalid", """
       arg :name, :string
       """, "Invalid schema notation: `arg` must only be used within `directive`, `field`"
@@ -197,13 +197,13 @@ defmodule Absinthe.Schema.NotationTest do
   end
 
   context "directive" do
-    it "can be toplevel" do
+    test "can be toplevel" do
       assert_no_notation_error "DirectiveValid", """
       directive :foo do
       end
       """
     end
-    it "cannot be non-toplevel" do
+    test "cannot be non-toplevel" do
       assert_notation_error "DirectiveInvalid", """
       directive :foo do
         directive :bar do
@@ -214,13 +214,13 @@ defmodule Absinthe.Schema.NotationTest do
   end
 
   context "enum" do
-    it "can be toplevel" do
+    test "can be toplevel" do
       assert_no_notation_error "EnumValid", """
       enum :foo do
       end
       """
     end
-    it "cannot be non-toplevel" do
+    test "cannot be non-toplevel" do
       assert_notation_error "EnumInvalid", """
       enum :foo do
         enum :bar do
@@ -231,28 +231,28 @@ defmodule Absinthe.Schema.NotationTest do
   end
 
   context "field" do
-    it "can be under object as an attribute" do
+    test "can be under object as an attribute" do
       assert_no_notation_error "FieldObjectValid", """
       object :bar do
         field :name, :string
       end
       """
     end
-    it "can be under input_object as an attribute" do
+    test "can be under input_object as an attribute" do
       assert_no_notation_error "FieldInputObjectValid", """
       input_object :bar do
         field :name, :string
       end
       """
     end
-    it "can be under interface as an attribute" do
+    test "can be under interface as an attribute" do
       assert_no_notation_error "FieldInterfaceValid", """
       interface :bar do
         field :name, :string
       end
       """
     end
-    it "cannot be toplevel" do
+    test "cannot be toplevel" do
       assert_notation_error "FieldToplevelInvalid", """
       field :foo, :string
       """, "Invalid schema notation: `field` must only be used within `input_object`, `interface`, `object`"
@@ -260,13 +260,13 @@ defmodule Absinthe.Schema.NotationTest do
   end
 
   context "input_object" do
-    it "can be toplevel" do
+    test "can be toplevel" do
       assert_no_notation_error "InputObjectValid", """
       input_object :foo do
       end
       """
     end
-    it "cannot be non-toplevel" do
+    test "cannot be non-toplevel" do
       assert_notation_error "InputObjectInvalid", """
       input_object :foo do
         input_object :bar do
@@ -277,19 +277,19 @@ defmodule Absinthe.Schema.NotationTest do
   end
 
   context "instruction" do
-    it "can be under directive as an attribute" do
+    test "can be under directive as an attribute" do
       assert_no_notation_error "InstructionValid", """
       directive :bar do
         instruction fn -> :ok end
       end
       """
     end
-    it "cannot be toplevel" do
+    test "cannot be toplevel" do
       assert_notation_error "InstructionToplevelInvalid", """
       instruction fn -> :ok end
       """, "Invalid schema notation: `instruction` must only be used within `directive`"
     end
-    it "cannot be within object" do
+    test "cannot be within object" do
       assert_notation_error "InstructionObjectInvalid", """
       object :foo do
         instruction fn -> :ok end
@@ -299,7 +299,7 @@ defmodule Absinthe.Schema.NotationTest do
   end
 
   context "interface" do
-    it "can be toplevel" do
+    test "can be toplevel" do
       assert_no_notation_error "InterfaceToplevelValid", """
       interface :foo do
         field :name, :string
@@ -307,7 +307,7 @@ defmodule Absinthe.Schema.NotationTest do
       end
       """
     end
-    it "can be under object as an attribute" do
+    test "can be under object as an attribute" do
       assert_no_notation_error "InterfaceObjectValid", """
       interface :foo do
         field :name, :string
@@ -319,7 +319,7 @@ defmodule Absinthe.Schema.NotationTest do
       end
       """
     end
-    it "cannot be under input_object as an attribute" do
+    test "cannot be under input_object as an attribute" do
       assert_notation_error "InterfaceInputObjectInvalid", """
       interface :foo do
         field :name, :string
@@ -333,7 +333,7 @@ defmodule Absinthe.Schema.NotationTest do
   end
 
   context "interfaces" do
-    it "can be under object as an attribute" do
+    test "can be under object as an attribute" do
       assert_no_notation_error "InterfacesValid", """
       interface :bar do
         field :name, :string
@@ -345,7 +345,7 @@ defmodule Absinthe.Schema.NotationTest do
       end
       """
     end
-    it "cannot be toplevel" do
+    test "cannot be toplevel" do
       assert_notation_error "InterfacesInvalid", """
       interface :bar do
         field :name, :string
@@ -356,19 +356,19 @@ defmodule Absinthe.Schema.NotationTest do
   end
 
   context "is_type_of" do
-    it "can be under object as an attribute" do
+    test "can be under object as an attribute" do
       assert_no_notation_error "IsTypeOfValid", """
       object :bar do
         is_type_of fn _, _ -> true end
       end
       """
     end
-    it "cannot be toplevel" do
+    test "cannot be toplevel" do
       assert_notation_error "IsTypeOfToplevelInvalid", """
       is_type_of fn _, _ -> true end
       """, "Invalid schema notation: `is_type_of` must only be used within `object`"
     end
-    it "cannot be within interface" do
+    test "cannot be within interface" do
       assert_notation_error "IsTypeOfInterfaceInvalid", """
       interface :foo do
         is_type_of fn _, _ -> :bar end
@@ -378,13 +378,13 @@ defmodule Absinthe.Schema.NotationTest do
   end
 
   context "object" do
-    it "can be toplevel" do
+    test "can be toplevel" do
       assert_no_notation_error "ObjectValid", """
       object :foo do
       end
       """
     end
-    it "cannot be non-toplevel" do
+    test "cannot be non-toplevel" do
       assert_notation_error "ObjectInvalid", """
       object :foo do
         object :bar do
@@ -392,7 +392,7 @@ defmodule Absinthe.Schema.NotationTest do
       end
       """, "Invalid schema notation: `object` must only be used toplevel"
     end
-    it "cannot use reserved identifiers" do
+    test "cannot use reserved identifiers" do
       assert_notation_error "ReservedIdentifierSubscription", """
       object :subscription do
       end
@@ -409,14 +409,14 @@ defmodule Absinthe.Schema.NotationTest do
   end
 
   context "on" do
-    it "can be under directive as an attribute" do
+    test "can be under directive as an attribute" do
       assert_no_notation_error "OnValid", """
       directive :foo do
         on [Foo, Bar]
       end
       """
     end
-    it "cannot be toplevel" do
+    test "cannot be toplevel" do
       assert_notation_error "OnInvalid", """
       on [Foo, Bar]
       """, "Invalid schema notation: `on` must only be used within `directive`"
@@ -424,14 +424,14 @@ defmodule Absinthe.Schema.NotationTest do
   end
 
   context "parse" do
-    it "can be under scalar as an attribute" do
+    test "can be under scalar as an attribute" do
       assert_no_notation_error "ParseValid", """
       scalar :foo do
         parse &(&1)
       end
       """
     end
-    it "cannot be toplevel" do
+    test "cannot be toplevel" do
       assert_notation_error "ParseInvalid", """
       parse &(&1)
       """, "Invalid schema notation: `parse` must only be used within `scalar`"
@@ -439,7 +439,7 @@ defmodule Absinthe.Schema.NotationTest do
   end
 
   context "resolve" do
-    it "can be under field as an attribute" do
+    test "can be under field as an attribute" do
       assert_no_notation_error "ResolveValid", """
       object :bar do
         field :foo, :integer do
@@ -448,12 +448,12 @@ defmodule Absinthe.Schema.NotationTest do
       end
       """
     end
-    it "cannot be toplevel" do
+    test "cannot be toplevel" do
       assert_notation_error "ResolveInvalid", """
       resolve fn _, _ -> {:ok, 1} end
       """, "Invalid schema notation: `resolve` must only be used within `field`"
     end
-    it "cannot be within object" do
+    test "cannot be within object" do
       assert_notation_error "ResolveInvalid2", """
       object :foo do
         resolve fn _, _ -> {:ok, 1} end
@@ -463,26 +463,26 @@ defmodule Absinthe.Schema.NotationTest do
   end
 
   context "resolve_type" do
-    it "can be under interface as an attribute" do
+    test "can be under interface as an attribute" do
       assert_no_notation_error "ResolveTypeValidInterface", """
       interface :bar do
         resolve_type fn _, _ -> :baz end
       end
       """
     end
-    it "can be under union as an attribute" do
+    test "can be under union as an attribute" do
       assert_no_notation_error "ResolveTypeValidUnion", """
         union :bar do
           resolve_type fn _, _ -> :baz end
         end
       """
     end
-    it "cannot be toplevel" do
+    test "cannot be toplevel" do
       assert_notation_error "ResolveTypeInvalidToplevel", """
       resolve_type fn _, _ -> :bar end
       """, "Invalid schema notation: `resolve_type` must only be used within `interface`, `union`"
     end
-    it "cannot be within object" do
+    test "cannot be within object" do
       assert_notation_error "ResolveTypeInvalidObject", """
       object :foo do
         resolve_type fn _, _ -> :bar end
@@ -492,13 +492,13 @@ defmodule Absinthe.Schema.NotationTest do
   end
 
   context "scalar" do
-    it "can be toplevel" do
+    test "can be toplevel" do
       assert_no_notation_error "ScalarValid", """
       scalar :foo do
       end
       """
     end
-    it "cannot be non-toplevel" do
+    test "cannot be non-toplevel" do
       assert_notation_error "ScalarInvalid", """
       scalar :foo do
         scalar :bar do
@@ -509,14 +509,14 @@ defmodule Absinthe.Schema.NotationTest do
   end
 
   context "serialize" do
-    it "can be under scalar as an attribute" do
+    test "can be under scalar as an attribute" do
       assert_no_notation_error "SerializeValid", """
       scalar :foo do
         serialize &(&1)
       end
       """
     end
-    it "cannot be toplevel" do
+    test "cannot be toplevel" do
       assert_notation_error "SerializeInvalid", """
       serialize &(&1)
       """, "Invalid schema notation: `serialize` must only be used within `scalar`"
@@ -524,7 +524,7 @@ defmodule Absinthe.Schema.NotationTest do
   end
 
   context "types" do
-    it "can be under union as an attribute" do
+    test "can be under union as an attribute" do
       assert_no_notation_error "TypesValid", """
       object :audi do
       end
@@ -535,13 +535,13 @@ defmodule Absinthe.Schema.NotationTest do
       end
       """
     end
-    it "cannot be toplevel" do
+    test "cannot be toplevel" do
       assert_notation_error "TypesInvalid", "types [:foo]", "Invalid schema notation: `types` must only be used within `union`"
     end
   end
 
   context "value" do
-    it "can be under enum as an attribute" do
+    test "can be under enum as an attribute" do
       assert_no_notation_error "ValueValid", """
       enum :color do
         value :red
@@ -550,13 +550,13 @@ defmodule Absinthe.Schema.NotationTest do
       end
       """
     end
-    it "cannot be toplevel" do
+    test "cannot be toplevel" do
       assert_notation_error "ValueInvalid", "value :b", "Invalid schema notation: `value` must only be used within `enum`"
     end
   end
 
   context "description" do
-    it "can be under object as an attribute" do
+    test "can be under object as an attribute" do
       assert_no_notation_error "DescriptionValid", """
       object :item do
         description \"""
@@ -565,7 +565,7 @@ defmodule Absinthe.Schema.NotationTest do
       end
       """
     end
-    it "cannot be toplevel" do
+    test "cannot be toplevel" do
       assert_notation_error "DescriptionInvalid", ~s(description "test"), "Invalid schema notation: `description` must not be used toplevel"
     end
   end

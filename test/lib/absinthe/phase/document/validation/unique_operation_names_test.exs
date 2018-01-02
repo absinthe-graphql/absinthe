@@ -17,7 +17,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNamesTest do
 
   context "Validate: Unique operation names" do
 
-    it "no operations" do
+    test "no operations" do
       assert_passes_rule(@rule,
         """
         fragment fragA on Type {
@@ -28,7 +28,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNamesTest do
       )
     end
 
-    it "one anon operation" do
+    test "one anon operation" do
       assert_passes_rule(@rule,
         """
         {
@@ -39,7 +39,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNamesTest do
       )
     end
 
-    it "one named operation" do
+    test "one named operation" do
       assert_passes_rule(@rule,
         """
         query Foo {
@@ -50,7 +50,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNamesTest do
       )
     end
 
-    it "multiple operations" do
+    test "multiple operations" do
       assert_passes_rule(@rule,
         """
         query Foo {
@@ -65,7 +65,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNamesTest do
       )
     end
 
-    it "multiple operations of different types" do
+    test "multiple operations of different types" do
       assert_passes_rule(@rule,
         """
         query Foo {
@@ -84,7 +84,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNamesTest do
       )
     end
 
-    it "fragment and operation named the same" do
+    test "fragment and operation named the same" do
       assert_passes_rule(@rule,
         """
         query Foo {
@@ -98,7 +98,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNamesTest do
       )
     end
 
-    it "multiple operations of same name" do
+    test "multiple operations of same name" do
       assert_fails_rule(@rule,
         """
         query Foo {
@@ -116,7 +116,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNamesTest do
       )
     end
 
-    it "multiple ops of same name of different types (mutation)" do
+    test "multiple ops of same name of different types (mutation)" do
       assert_fails_rule(@rule,
         """
         query Foo {
@@ -134,7 +134,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNamesTest do
       )
     end
 
-    it "multiple ops of same name of different types (subscription)" do
+    test "multiple ops of same name of different types (subscription)" do
       assert_fails_rule(@rule,
         """
         query Foo {

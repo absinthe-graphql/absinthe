@@ -49,7 +49,7 @@ defmodule Absinthe.Middleware.BatchTest do
     end
   end
 
-  it "can resolve a field using the normal async helper" do
+  test "can resolve a field using the normal async helper" do
     doc = """
     {
       users {
@@ -66,7 +66,7 @@ defmodule Absinthe.Middleware.BatchTest do
   end
 
 
-  it "can resolve batched fields cross-query that have different data requirements" do
+  test "can resolve batched fields cross-query that have different data requirements" do
     doc = """
     {
       users {

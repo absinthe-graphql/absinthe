@@ -16,7 +16,7 @@ defmodule Absinthe.Middleware.AliasTest do
     end
   end
 
-  it "can resolve different sub-fields on aliased fields" do
+  test "can resolve different sub-fields on aliased fields" do
     doc = """
     {
       userId : user {
