@@ -258,33 +258,30 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
       )
     end
 
-    describe "Fields on correct type error message" do
-
-      test "Works with no suggestions" do
-        assert ~s(Cannot query field "f" on type "T".) == @rule.error_message("f", "T", [], [])
-      end
-
-      test "Works with no small numbers of type suggestions" do
-        assert ~s(Cannot query field "f" on type "T". Did you mean to use an inline fragment on "A" or "B"?) == @rule.error_message("f", "T", [ "A", "B" ], [])
-      end
-
-      test "Works with no small numbers of field suggestions" do
-        assert ~s(Cannot query field "f" on type "T". Did you mean "z" or "y"?) == @rule.error_message("f", "T", [], [ "z", "y" ])
-      end
-
-      test "Only shows one set of suggestions at a time, preferring types" do
-        assert ~s(Cannot query field "f" on type "T". Did you mean to use an inline fragment on "A" or "B"?) == @rule.error_message("f", "T", [ "A", "B" ], [ "z", "y" ])
-      end
-
-      test "Limits lots of type suggestions" do
-        assert ~s(Cannot query field "f" on type "T". Did you mean to use an inline fragment on "A", "B", "C", "D", or "E"?) == @rule.error_message("f", "T", [ "A", "B", "C", "D", "E", "F" ], [])
-      end
-
-      test "Limits lots of field suggestions" do
-        assert ~s(Cannot query field "f" on type "T". Did you mean "z", "y", "x", "w", or "v"?) == @rule.error_message("f", "T", [], [ "z", "y", "x", "w", "v", "u" ])
-      end
-
+    test "fields on correct type error message: Works with no suggestions" do
+      assert ~s(Cannot query field "f" on type "T".) == @rule.error_message("f", "T", [], [])
     end
+
+    test "fields on correct type error message: Works with no small numbers of type suggestions" do
+      assert ~s(Cannot query field "f" on type "T". Did you mean to use an inline fragment on "A" or "B"?) == @rule.error_message("f", "T", [ "A", "B" ], [])
+    end
+
+    test "fields on correct type error message: Works with no small numbers of field suggestions" do
+      assert ~s(Cannot query field "f" on type "T". Did you mean "z" or "y"?) == @rule.error_message("f", "T", [], [ "z", "y" ])
+    end
+
+    test "fields on correct type error message: Only shows one set of suggestions at a time, preferring types" do
+      assert ~s(Cannot query field "f" on type "T". Did you mean to use an inline fragment on "A" or "B"?) == @rule.error_message("f", "T", [ "A", "B" ], [ "z", "y" ])
+    end
+
+    test "fields on correct type error message: Limits lots of type suggestions" do
+      assert ~s(Cannot query field "f" on type "T". Did you mean to use an inline fragment on "A", "B", "C", "D", or "E"?) == @rule.error_message("f", "T", [ "A", "B", "C", "D", "E", "F" ], [])
+    end
+
+    test "fields on correct type error message: Limits lots of field suggestions" do
+      assert ~s(Cannot query field "f" on type "T". Did you mean "z", "y", "x", "w", or "v"?) == @rule.error_message("f", "T", [], [ "z", "y", "x", "w", "v", "u" ])
+    end
+
   end
 
 end

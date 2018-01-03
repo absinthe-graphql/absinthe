@@ -1,53 +1,30 @@
 defmodule Absinthe.Type.InputObjectTest do
   use Absinthe.Case, async: true
 
-  defmodule TestSchema do
+  defmodule Schema do
     use Absinthe.Schema
 
     query do
-      #Query type must exist
+      # Query type must exist
     end
 
+    @desc "A profile"
     input_object :profile do
-      description "A profile"
-
       field :name, :string
-
-      field :profile_picture,
-        type: :string,
-        args: [
-          width: [type: :integer],
-          height: [type: :integer]
-        ]
-
+      field :profile_picture, :string
     end
-
   end
 
-  describe "input object" do
+  describe "input object types" do
 
     test "can be defined" do
-      assert %Absinthe.Type.InputObject{name: "Profile", description: "A profile"} = TestSchema.__absinthe_type__(:profile)
-      assert %{profile: "Profile"} = TestSchema.__absinthe_types__
+      assert %Absinthe.Type.InputObject{name: "Profile", description: "A profile"} = Schema.__absinthe_type__(:profile)
+      assert %{profile: "Profile"} = Schema.__absinthe_types__
     end
 
-    describe "fields" do
-
-      test "are defined" do
-        obj = TestSchema.__absinthe_type__(:profile)
-        assert %Absinthe.Type.Field{name: "name", type: :string} = obj.fields.name
-      end
-
-    end
-
-    describe "arguments" do
-
-      test "are defined" do
-        field = TestSchema.__absinthe_type__(:profile).fields.profile_picture
-        assert %Absinthe.Type.Argument{name: "width", type: :integer} = field.args.width
-        assert %Absinthe.Type.Argument{name: "height", type: :integer} = field.args.height
-      end
-
+    test "can define fields" do
+      obj = Schema.__absinthe_type__(:profile)
+      assert %Absinthe.Type.Field{name: "name", type: :string} = obj.fields.name
     end
 
   end
