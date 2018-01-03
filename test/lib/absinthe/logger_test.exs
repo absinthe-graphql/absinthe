@@ -25,46 +25,34 @@ defmodule Absinthe.LoggerTest do
 
   describe "Absinthe.Logger.document/1" do
 
-    describe "given nil" do
-      @document nil
-      test "is [EMPTY]" do
-        assert "[EMPTY]" = Absinthe.Logger.document(@document)
-      end
+    @document nil
+    test "given nil, is [EMPTY]" do
+      assert "[EMPTY]" = Absinthe.Logger.document(@document)
     end
 
-    describe "given an empty string" do
-      @document ""
-      test "is alse [EMPTY]" do
-        assert "[EMPTY]" = Absinthe.Logger.document(@document)
-      end
+    @document ""
+    test "given an empty string, is also [EMPTY]" do
+      assert "[EMPTY]" = Absinthe.Logger.document(@document)
     end
 
-    describe "given a non-empty string" do
-      @document "{ foo }"
-      test "is the document with a leading newline" do
-        assert @document == Absinthe.Logger.document(@document)
-      end
+    @document "{ foo }"
+    test "given a non-empty string, is the document with a leading newline" do
+      assert @document == Absinthe.Logger.document(@document)
     end
 
-    describe "given a blueprint document with a name" do
-      @document %Absinthe.Blueprint{name: "name"}
-      test "is [COMPILED#<name>]" do
-        assert "[COMPILED#<name>]" == Absinthe.Logger.document(@document)
-      end
+    @document %Absinthe.Blueprint{name: "name"}
+    test "given a blueprint document with a name, is [COMPILED#<name>]" do
+      assert "[COMPILED#<name>]" == Absinthe.Logger.document(@document)
     end
 
-    describe "given a blueprint document without a name" do
-      @document %Absinthe.Blueprint{}
-      test "is [COMPILED]" do
-        assert "[COMPILED]" == Absinthe.Logger.document(@document)
-      end
+    @document %Absinthe.Blueprint{}
+    test "given a blueprint document without a name, is [COMPILED]" do
+      assert "[COMPILED]" == Absinthe.Logger.document(@document)
     end
 
-    describe "given something else" do
-      @document %{}
-      test "is inspected" do
-        assert "%{}" == Absinthe.Logger.document(@document)
-      end
+    @document %{}
+    test "given something else, is inspected" do
+      assert "%{}" == Absinthe.Logger.document(@document)
     end
 
   end
