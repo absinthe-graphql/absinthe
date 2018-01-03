@@ -2,7 +2,6 @@ defmodule Absinthe.Type.DirectiveTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.Schema
-  import AssertResult
 
   defmodule TestSchema do
     use Absinthe.Schema

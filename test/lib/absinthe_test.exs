@@ -1,6 +1,5 @@
 defmodule AbsintheTest do
   use Absinthe.Case, async: true
-  import AssertResult
 
   test "can return multiple errors" do
     query = "mutation { failingThing(type: MULTIPLE) { name } }"

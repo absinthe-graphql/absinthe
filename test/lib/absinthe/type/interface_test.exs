@@ -1,6 +1,5 @@
 defmodule Absinthe.Type.InterfaceTest do
   use Absinthe.Case, async: true
-  import AssertResult
   use SupportSchemas
 
   alias Absinthe.Schema.Rule
