@@ -322,7 +322,7 @@ defmodule Absinthe.Schema do
   mutation {
     createUser(accountId: 1, name: "bob") {
       id
-      account { name}
+      account { name }
     }
   }
   ```
@@ -334,7 +334,7 @@ defmodule Absinthe.Schema do
   subscription {
     newUsers {
       id
-      account { name}
+      account { name }
     }
   }
   ```
