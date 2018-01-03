@@ -38,21 +38,21 @@ defmodule Absinthe.Middleware.AsyncTest do
 
   end
 
-  it "can resolve a field using the normal async helper" do
+  test "can resolve a field using the normal async helper" do
     doc = """
     {asyncThing}
     """
     assert {:ok, %{data: %{"asyncThing" => "we async now"}}} == Absinthe.run(doc, Schema)
   end
 
-  it "can resolve a field using a cooler but probably confusing to some people helper" do
+  test "can resolve a field using a cooler but probably confusing to some people helper" do
     doc = """
     {otherAsyncThing}
     """
     assert {:ok, %{data: %{"otherAsyncThing" => "magic"}}} == Absinthe.run(doc, Schema)
   end
 
-  it "can return nil from an async field safely" do
+  test "can return nil from an async field safely" do
     doc = """
     {returnsNil}
     """

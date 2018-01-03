@@ -4,9 +4,9 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlacedTest do
 
   alias Absinthe.Schema.Rule
 
-  context "rule" do
+  describe "rule" do
 
-    it "is enforced with input types on arguments" do
+    test "is enforced with input types on arguments" do
       assert_schema_error("invalid_input_types",
                           [
                             %{rule: Rule.InputOuputTypesCorrectlyPlaced, data: %{argument: :invalid_arg, struct: Absinthe.Type.Object, type: :user}},

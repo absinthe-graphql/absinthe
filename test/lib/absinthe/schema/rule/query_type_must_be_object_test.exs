@@ -4,9 +4,9 @@ defmodule Absinthe.Schema.Rule.QueryTypeMustBeObjectTest do
 
   alias Absinthe.Schema.Rule
 
-  context "rule" do
+  describe "rule" do
 
-    it "is enforced" do
+    test "is enforced" do
       assert_schema_error("empty_schema",
                           [
                             %{rule: Rule.QueryTypeMustBeObject, data: %{}},

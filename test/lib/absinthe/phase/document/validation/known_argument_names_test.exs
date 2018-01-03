@@ -6,9 +6,9 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
   use Support.Harness.Validation
   alias Absinthe.{Blueprint}
 
-  context "Valid" do
+  describe "Valid" do
 
-    it "single arg is known" do
+    test "single arg is known" do
       assert_passes_rule(@rule,
         """
         fragment argOnRequiredArg on Dog {
@@ -19,7 +19,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
       )
     end
 
-    it "multiple args are known" do
+    test "multiple args are known" do
       assert_passes_rule(@rule,
         """
         fragment multipleArgs on ComplicatedArgs {
@@ -30,7 +30,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
       )
     end
 
-    it "multiple args in reverse order are known" do
+    test "multiple args in reverse order are known" do
       assert_passes_rule(@rule,
         """
         fragment multipleArgsReverseOrder on ComplicatedArgs {
@@ -41,7 +41,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
       )
     end
 
-    it "no args on optional arg" do
+    test "no args on optional arg" do
       assert_passes_rule(@rule,
         """
         fragment noArgOnOptionalArg on Dog {
@@ -52,7 +52,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
       )
     end
 
-    it "args are known deeply" do
+    test "args are known deeply" do
       assert_passes_rule(@rule,
         """
         {
@@ -72,7 +72,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
       )
     end
 
-    it "directive args are known" do
+    test "directive args are known" do
       assert_passes_rule(@rule,
         """
         {
@@ -85,9 +85,9 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
 
   end
 
-  context "Invalid" do
+  describe "Invalid" do
 
-    it "undirective args are invalid" do
+    test "undirective args are invalid" do
       assert_fails_rule(@rule,
         """
         {
@@ -101,7 +101,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
       )
     end
 
-    it "invalid arg name" do
+    test "invalid arg name" do
       assert_fails_rule(@rule,
         """
         fragment invalidArgName on Dog {
@@ -115,7 +115,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
       )
     end
 
-    it "unknown args amongst known args" do
+    test "unknown args amongst known args" do
       assert_fails_rule(@rule,
         """
         fragment oneGoodArgOneInvalidArg on Dog {
@@ -130,7 +130,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
       )
     end
 
-    it "unknown args deeply" do
+    test "unknown args deeply" do
       assert_fails_rule(@rule,
         """
         {

@@ -12,7 +12,7 @@ defmodule Absinthe.Execution.InlineFragmentsTest do
   }
   """
 
-  it "adds fields in a simple case" do
+  test "adds fields in a simple case" do
     assert {:ok, %{data: %{"person" => %{"name" => "Bruce", "age" => 35}}}} == Absinthe.run(@query, ContactSchema)
   end
 
@@ -32,10 +32,10 @@ defmodule Absinthe.Execution.InlineFragmentsTest do
   }
   """
 
-  it "adds fields in an interface query based on a type" do
+  test "adds fields in an interface query based on a type" do
     assert {:ok, %{data: %{"contact" => %{"entity" => %{"name" => "Bruce", "age" => 35}}}}} == run(@query, ContactSchema, variables: %{"business" => false})
   end
-  it "adds fields in an interface query based on another type" do
+  test "adds fields in an interface query based on another type" do
     assert {:ok, %{data: %{"contact" => %{"entity" => %{"name" => "Someplace", "employeeCount" => 11}}}}} == run(@query, ContactSchema, variables: %{"business" => true})
   end
 

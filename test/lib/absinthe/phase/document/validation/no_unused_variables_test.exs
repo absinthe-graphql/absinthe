@@ -15,9 +15,9 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
     )
   end
 
-  context "Validate: No unused variables" do
+  describe "Validate: No unused variables" do
 
-    it "uses all variables" do
+    test "uses all variables" do
       assert_passes_rule(@rule,
         """
         query ($a: String, $b: String, $c: String) {
@@ -28,7 +28,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
       )
     end
 
-    it "uses all variables deeply" do
+    test "uses all variables deeply" do
       assert_passes_rule(@rule,
         """
         query Foo($a: String, $b: String, $c: String) {
@@ -43,7 +43,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
       )
     end
 
-    it "uses all variables deeply in inline fragments" do
+    test "uses all variables deeply in inline fragments" do
       assert_passes_rule(@rule,
         """
         query Foo($a: String, $b: String, $c: String) {
@@ -62,7 +62,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
       )
     end
 
-    it "uses all variables in fragments" do
+    test "uses all variables in fragments" do
       assert_passes_rule(@rule,
         """
         query Foo($a: String, $b: String, $c: String) {
@@ -86,7 +86,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
       )
     end
 
-    it "variable used by fragment in multiple operations" do
+    test "variable used by fragment in multiple operations" do
       assert_passes_rule(@rule,
         """
         query Foo($a: String) {
@@ -106,7 +106,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
       )
     end
 
-    it "variable used by recursive fragment" do
+    test "variable used by recursive fragment" do
       assert_passes_rule(@rule,
         """
         query Foo($a: String) {
@@ -122,7 +122,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
       )
     end
 
-    it "variable not used" do
+    test "variable not used" do
       assert_fails_rule(@rule,
         """
         query ($a: String, $b: String, $c: String) {
@@ -136,7 +136,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
       )
     end
 
-    it "multiple variables not used" do
+    test "multiple variables not used" do
       assert_fails_rule(@rule,
         """
         query Foo($a: String, $b: String, $c: String) {
@@ -151,7 +151,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
       )
     end
 
-    it "variable not used in fragments" do
+    test "variable not used in fragments" do
       assert_fails_rule(@rule,
         """
         query Foo($a: String, $b: String, $c: String) {
@@ -178,7 +178,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
       )
     end
 
-    it "multiple variables not used in fragments" do
+    test "multiple variables not used in fragments" do
       assert_fails_rule(@rule,
         """
         query Foo($a: String, $b: String, $c: String) {
@@ -206,7 +206,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
       )
     end
 
-    it "variable not used by unreferenced fragment" do
+    test "variable not used by unreferenced fragment" do
       assert_fails_rule(@rule,
         """
         query Foo($b: String) {
@@ -226,7 +226,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariablesTest do
       )
     end
 
-    it "variable not used by fragment used by other operation" do
+    test "variable not used by fragment used by other operation" do
       assert_fails_rule(@rule,
         """
         query Foo($b: String) {

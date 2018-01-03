@@ -31,8 +31,8 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
   use Harness.Document.Phase, phase: Absinthe.Phase.Document.Arguments.CoerceLists, schema: Schema
 
 
-  context "when using an List type input argument" do
-    it "coerces the type from a single element to List" do
+  describe "when using an List type input argument" do
+    test "coerces the type from a single element to List" do
       doc = """
       query List {
         fooIntList(input: 42) {
@@ -48,7 +48,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
       assert %Blueprint.Input.List{items: [%Blueprint.Input.Value{literal: %Blueprint.Input.Integer{value: 42}}]} = input_argument.input_value.normalized
     end
 
-    it "coerces the type from a single element to List when supplying variables" do
+    test "coerces the type from a single element to List when supplying variables" do
       doc = """
       query ListVar($input: Int) {
         fooIntList(input: $input) {
@@ -65,8 +65,8 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
     end
   end
 
-  context "when using a wrapped List type input argument" do
-    it "coerces the type from a single element to List" do
+  describe "when using a wrapped List type input argument" do
+    test "coerces the type from a single element to List" do
       doc = """
       query List {
         fooWrappedIntList(input: 42) {
@@ -82,7 +82,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
       assert %Blueprint.Input.List{items: [%Blueprint.Input.Value{literal: %Blueprint.Input.Integer{value: 42}}]} = input_argument.input_value.normalized
     end
 
-    it "coerces the type from a single element to List when supplying variables" do
+    test "coerces the type from a single element to List when supplying variables" do
       doc = """
       query ListVar($input: Int!) {
         fooWrappedIntList(input: $input) {
@@ -99,8 +99,8 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
     end
   end
 
-  context "when using a List of a coercable type input argument" do
-    it "coerces the type from a single element to List" do
+  describe "when using a List of a coercable type input argument" do
+    test "coerces the type from a single element to List" do
       doc = """
       query List {
         fooWrappedEnumList(input: BAZ) {
@@ -116,7 +116,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
       assert %Blueprint.Input.List{items: [%Blueprint.Input.Value{literal: %Blueprint.Input.Enum{value: "BAZ"}}]} = input_argument.input_value.normalized
     end
 
-    it "coerces the type from a single element to List when supplying variables" do
+    test "coerces the type from a single element to List when supplying variables" do
       doc = """
       query ListVar($input: Type!) {
         fooWrappedEnumList(input: $input) {

@@ -3,44 +3,68 @@ defmodule Absinthe.TypeTest do
 
   alias Absinthe.Type
 
-  context "absinthe_types" do
+  defmodule BasicSchema do
+    use Absinthe.Schema
 
-    context "when a function is tagged as defining a type" do
+    @items %{
+      "foo" => %{id: "foo", name: "Foo"},
+      "bar" => %{id: "bar", name: "Bar"}
+    }
 
-      context "without a different identifier" do
+    query do
 
-        it 'includes a defined entry' do
-          assert %Type.Object{name: "Item"} = FooBarSchema.__absinthe_type__(:item)
-        end
-
-        it "that defines its own name" do
-          assert %Type.Object{name: "NonFictionBook"} = FooBarSchema.__absinthe_type__(:book)
-        end
-
-        it "that uses a name derived from the identifier" do
-          assert %Type.Object{name: "Item"} = FooBarSchema.__absinthe_type__(:item)
-        end
-
-      end
-
-      context "with a different identifier" do
-
-        it 'includes a defined entry' do
-          assert %Type.Object{name: "Author"} = FooBarSchema.__absinthe_type__(:author)
-        end
-
+      field :item,
+        type: :item,
+        args: [
+          id: [type: non_null(:id)]
+        ],
+        resolve: fn %{id: item_id}, _ ->
+        {:ok, @items[item_id]}
       end
 
     end
 
-    it "defines a query type" do
-      assert ContactSchema.__absinthe_type__(:query).name == "RootQueryType"
+    object :item do
+      description "A Basic Type"
+
+      field :id, :id
+      field :name, :string
     end
 
-    it "defines a mutation type" do
-      assert ContactSchema.__absinthe_type__(:mutation).name == "RootMutationType"
+    object :author do
+      description "An author"
+
+      field :id, :id
+      field :first_name, :string
+      field :last_name, :string
+      field :books, list_of(:book)
     end
 
+    object :book, name: "NonFictionBook" do
+      description "A Book"
+
+      field :id, :id
+      field :title, :string
+      field :isbn, :string
+      field :authors, list_of(:author)
+    end
+
+  end
+
+  test "definition with custom name" do
+    assert %Type.Object{name: "NonFictionBook"} = BasicSchema.__absinthe_type__(:book)
+  end
+
+  test "that uses a name derived from the identifier" do
+    assert %Type.Object{name: "Item"} = BasicSchema.__absinthe_type__(:item)
+  end
+
+  test "root query type definition" do
+    assert ContactSchema.__absinthe_type__(:query).name == "RootQueryType"
+  end
+
+  test "root mutation type definition" do
+    assert ContactSchema.__absinthe_type__(:mutation).name == "RootMutationType"
   end
 
   defmodule MetadataSchema do
@@ -62,42 +86,30 @@ defmodule Absinthe.TypeTest do
   @with_meta Absinthe.Schema.lookup_type(MetadataSchema, :with_meta)
   @without_meta Absinthe.Schema.lookup_type(MetadataSchema, :without_meta)
 
+  describe ".meta/1" do
 
-  context ".meta/1" do
-
-    context "when no metadata is defined" do
-      it "returns an empty map" do
-        assert Type.meta(@without_meta) == %{}
-      end
+    test "when no metadata is defined, returns an empty map" do
+      assert Type.meta(@without_meta) == %{}
     end
 
-    context "when metadata is defined" do
-      it "returns the metadata as a map" do
-        assert Type.meta(@with_meta) == %{foo: "bar"}
-      end
+    test "when metadata is defined, returns the metadata as a map" do
+      assert Type.meta(@with_meta) == %{foo: "bar"}
     end
 
   end
 
-  context ".meta/2" do
+  describe ".meta/2" do
 
-    context "when no metadata field is defined" do
-      it "returns nil" do
-        assert Type.meta(@without_meta, :bar) == nil
-      end
+    test "when no metadata field is defined, returns nil" do
+      assert Type.meta(@without_meta, :bar) == nil
     end
 
-    context "when the requested metadata field is not defined" do
-      it "returns nil" do
-        assert Type.meta(@with_meta, :bar) == nil
-      end
+    test "when the requested metadata field is not defined, returns nil" do
+      assert Type.meta(@with_meta, :bar) == nil
     end
 
-
-    context "when the metadata is defined" do
-      it "returns the value" do
-        assert Type.meta(@with_meta, :foo) == "bar"
-      end
+    test "when the metadata is defined, returns the value" do
+      assert Type.meta(@with_meta, :foo) == "bar"
     end
 
   end

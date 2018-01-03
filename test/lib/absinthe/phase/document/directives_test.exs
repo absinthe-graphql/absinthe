@@ -35,20 +35,20 @@ defmodule Absinthe.Phase.Document.DirectivesTest do
   }
   """
 
-  context ".run with built-in @include" do
+  describe ".run with built-in @include" do
 
-    it "returns a blueprint" do
+    test "returns a blueprint" do
       {:ok, result} = input(@query, %{"cats" => true})
       assert %Blueprint{} = result
     end
 
-    it "adds a :skip flag" do
+    test "adds a :skip flag" do
       {:ok, result} = input(@query, %{"cats" => false})
       node = named(result, Blueprint.Document.Field, "categories")
       assert Blueprint.flagged?(node, :skip)
     end
 
-    it "adds an :include flag" do
+    test "adds an :include flag" do
       {:ok, result} = input(@query, %{"cats" => true})
       node = named(result, Blueprint.Document.Field, "categories")
       assert Blueprint.flagged?(node, :include)

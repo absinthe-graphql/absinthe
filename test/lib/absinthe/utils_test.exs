@@ -6,25 +6,25 @@ defmodule Absinthe.UtilsTest do
   @snake "foo_bar"
   @preunderscored_snake "__foo_bar"
 
-  context "camelize with :lower" do
+  describe "camelize with :lower" do
 
-    it "handles normal snake-cased values" do
+    test "handles normal snake-cased values" do
       assert "fooBar" == Utils.camelize(@snake, lower: true)
     end
 
-    it "handles snake-cased values starting with double underscores" do
+    test "handles snake-cased values starting with double underscores" do
       assert "__fooBar" == Utils.camelize(@preunderscored_snake, lower: true)
     end
 
   end
 
-  context "camelize without :lower" do
+  describe "camelize without :lower" do
 
-    it "handles normal snake-cased values" do
+    test "handles normal snake-cased values" do
       assert "FooBar" == Utils.camelize(@snake)
     end
 
-    it "handles snake-cased values starting with double underscores" do
+    test "handles snake-cased values starting with double underscores" do
       assert "__FooBar" == Utils.camelize(@preunderscored_snake)
     end
 

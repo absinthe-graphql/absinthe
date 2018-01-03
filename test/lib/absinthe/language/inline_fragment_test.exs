@@ -12,9 +12,9 @@ defmodule Absinthe.Language.InlineFragmentTest do
   }
   """
 
-  context "converting to Blueprint" do
+  describe "converting to Blueprint" do
 
-    it "builds a Document.Fragment.Inline.t" do
+    test "builds a Document.Fragment.Inline.t" do
       assert %Blueprint.Document.Fragment.Inline{type_condition: %Blueprint.TypeReference.Name{name: "RootQueryType"}, selections: [%Blueprint.Document.Field{name: "foo"}, %Blueprint.Document.Field{name: "bar"}]} = from_input(@query)
     end
 

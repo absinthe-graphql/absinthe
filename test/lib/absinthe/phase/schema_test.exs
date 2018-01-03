@@ -1,31 +1,30 @@
 defmodule Absinthe.Phase.SchemaTest do
   use Absinthe.Case, async: true
 
-  context "when given [Int] for Int schema node" do
+  defmodule IntegerInputSchema do
+    use Absinthe.Schema
 
-    defmodule IntegerInputSchema do
-      use Absinthe.Schema
+    query do
 
-      query do
-
-        field :test, :string do
-          arg :integer, :integer
-          resolve fn
-            _, _, _ ->
-              {:ok, "ayup"}
-          end
+      field :test, :string do
+        arg :integer, :integer
+        resolve fn
+          _, _, _ ->
+            {:ok, "ayup"}
         end
-
       end
 
     end
 
+  end
+
+  describe "when given [Int] for Int schema node" do
 
     @query """
     { test(integer: [1]) }
     """
 
-    it "doesn't raise an exception" do
+    test "doesn't raise an exception" do
       assert {:ok, _} = run(@query)
     end
 

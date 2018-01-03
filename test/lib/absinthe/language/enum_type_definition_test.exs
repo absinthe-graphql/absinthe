@@ -3,14 +3,14 @@ defmodule Absinthe.Language.EnumTypeDefinitionTest do
 
   alias Absinthe.Blueprint
 
-  context "converting to Blueprint" do
+  describe "converting to Blueprint" do
 
-    it "works, given a Blueprint Schema 'enum' definition" do
+    test "works, given a Blueprint Schema 'enum' definition" do
       rep = "enum Episode { NEWHOPE, EMPIRE, JEDI }" |> from_input
       assert %Blueprint.Schema.EnumTypeDefinition{name: "Episode", values: [%Blueprint.Schema.EnumValueDefinition{value: "NEWHOPE"}, %Blueprint.Schema.EnumValueDefinition{value: "EMPIRE"}, %Blueprint.Schema.EnumValueDefinition{value: "JEDI"}]} = rep
     end
 
-    it "works, given a Blueprint Schema 'enum' definition with a directive" do
+    test "works, given a Blueprint Schema 'enum' definition with a directive" do
       rep = """
       enum Episode @description(text: "An episode") { NEWHOPE, EMPIRE, JEDI }
       """ |> from_input

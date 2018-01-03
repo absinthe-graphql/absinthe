@@ -72,7 +72,7 @@ defmodule Absinthe.Middleware.DataloaderTest do
 
   end
 
-  it "can resolve a field using the normal dataloader helper" do
+  test "can resolve a field using the normal dataloader helper" do
     doc = """
     {
       users {
@@ -91,7 +91,7 @@ defmodule Absinthe.Middleware.DataloaderTest do
     refute_receive(:loading)
   end
 
-  it "can resolve batched fields cross-query that have different data requirements" do
+  test "can resolve batched fields cross-query that have different data requirements" do
     doc = """
     {
       users {

@@ -34,9 +34,9 @@ defmodule Absinthe.Type.DeprecationTest do
 
   end
 
-  context "fields" do
+  describe "fields" do
 
-    it "can be deprecated" do
+    test "can be deprecated" do
       obj = TestSchema.__absinthe_type__(:profile)
       assert Type.deprecated?(obj.fields.email_address)
       assert "privacy" == obj.fields.email_address.deprecation.reason
@@ -46,9 +46,9 @@ defmodule Absinthe.Type.DeprecationTest do
 
   end
 
-  context "arguments" do
+  describe "arguments" do
 
-    it "can be deprecated" do
+    test "can be deprecated" do
       field = TestSchema.__absinthe_type__(:profile).fields.profile_picture
       assert Type.deprecated?(field.args.size)
       assert "Not explicit enough" == field.args.size.deprecation.reason

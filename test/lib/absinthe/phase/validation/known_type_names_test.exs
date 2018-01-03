@@ -37,9 +37,9 @@ defmodule Absinthe.Phase.Validation.KnownTypeNamesTest do
     ~s(Unknown type "#{type}".)
   end
 
-  context "Validate: Known type names" do
+  describe "Validate: Known type names" do
 
-    it "known type names are valid" do
+    test "known type names are valid" do
       assert_passes_rule(@rule,
         """
         query Foo($var: String, $required: [String!]!) {
@@ -55,7 +55,7 @@ defmodule Absinthe.Phase.Validation.KnownTypeNamesTest do
       )
     end
 
-    it "unknown type names are invalid" do
+    test "unknown type names are invalid" do
       assert_fails_rule(@rule,
         """
         query Foo($var: JumbledUpLetters) {
@@ -77,7 +77,7 @@ defmodule Absinthe.Phase.Validation.KnownTypeNamesTest do
       )
     end
 
-    it "ignores type definitions" do
+    test "ignores type definitions" do
       assert_fails_rule(@rule,
         """
         type NotInTheSchema {

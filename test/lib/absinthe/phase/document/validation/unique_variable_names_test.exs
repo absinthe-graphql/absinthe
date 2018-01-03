@@ -15,9 +15,9 @@ defmodule Absinthe.Phase.Document.Validation.UniqueVariableNamesTest do
     )
   end
 
-  context "Validate: Unique variable names" do
+  describe "Validate: Unique variable names" do
 
-    it "unique variable names" do
+    test "unique variable names" do
       assert_passes_rule(@rule,
         """
         query A($x: Int, $y: String) { __typename }
@@ -27,7 +27,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueVariableNamesTest do
       )
     end
 
-    it "duplicate variable names" do
+    test "duplicate variable names" do
       assert_fails_rule(@rule,
         """
         query A($x: Int, $x: Int, $x: String) { __typename }
