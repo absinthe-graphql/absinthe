@@ -270,7 +270,7 @@ defmodule Absinthe.Middleware do
 
   It receives an `%Absinthe.Resolution{}` struct and it needs to return an
   `%Absinthe.Resolution{}` struct. The second argument will be whatever value
-  was passed to the `plug` call that setup the middleware.
+  was passed to the `middleware` call that setup the middleware.
   """
   @callback call(Absinthe.Resolution.t, term) :: Absinthe.Resolution.t
 end
