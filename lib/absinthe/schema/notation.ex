@@ -739,12 +739,15 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
 
-  The meta can be accessed on the `:__private__[:meta]` key of a type struct.
+  The meta can be accessed via the `Absinthe.Type.meta/2` function.
 
   ```
   user_type = Absinthe.Schema.lookup_type(MyApp.Schema, :user)
 
-  user.__private__[:meta]
+  Absinthe.Type.meta(user_type, :cache)
+  #=> true
+
+  Absinthe.Type.meta(user_type)
   #=> [cache: true, ttl: 22_000]
   ```
 
