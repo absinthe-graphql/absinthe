@@ -1,0 +1,9 @@
+query {
+  ... Fields
+}
+
+fragment Fields on RootQueryType {
+  thing(id: "foo") {
+    name
+  }
+}
