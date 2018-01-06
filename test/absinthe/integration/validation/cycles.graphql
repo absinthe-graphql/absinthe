@@ -1,0 +1,11 @@
+query Foo {
+  name
+}
+fragment Foo on Blag {
+  name
+  ...Bar
+}
+fragment Bar on Blah {
+  age
+  ...Foo
+}

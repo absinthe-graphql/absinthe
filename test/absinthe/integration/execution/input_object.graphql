@@ -1,0 +1,6 @@
+mutation {
+  updateThing(id: "foo", thing: {value: 100}) {
+    name
+    value
+  }
+}

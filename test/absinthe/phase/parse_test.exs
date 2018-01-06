@@ -9,6 +9,18 @@ defmodule Absinthe.Phase.ParseTest do
     assert {:error, _} = run("{ user(id: 2 { name } }")
   end
 
+  @graphql """
+  query {
+    item(this-won't-lex)
+  }
+  """
+  test "should wrap all lexer errors and return if not aborting to a phase" do
+    assert {:error, bp} = Absinthe.Phase.Parse.run(@graphql, jump_phases: false)
+    assert [%Absinthe.Phase.Error{extra: %{},
+                                  locations: [%{column: 0, line: 2}], message: "illegal: -w",
+                                  phase: Absinthe.Phase.Parse}] == bp.execution.validation_errors
+  end
+
   @reserved ~w(query mutation subscription fragment on implements interface union scalar enum input extend)
   test "can parse queries with arguments and variables that are 'reserved words'" do
     @reserved
