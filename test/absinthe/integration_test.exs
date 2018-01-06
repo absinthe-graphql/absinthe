@@ -1,47 +1,25 @@
 defmodule Absinthe.IntegrationTest do
-  use Absinthe.Case, async: true
 
-    @default_schema Absinthe.Fixtures.ThingsSchema
-  @root "test/absinthe/integration"
+  use Absinthe.IntegrationCase,
+    root: "test/absinthe/integration",
+    default_schema: Absinthe.Fixtures.ThingsSchema,
+    async: true
 
-  load = &(elem(Code.eval_file(&1), 0))
-
-  for graphql_file <- Path.wildcard(Path.join(@root, "**/*.graphql")) do
-    dirname = Path.dirname(graphql_file)
-    basename = Path.basename(graphql_file, ".graphql")
-    integration_name = Path.join(String.replace_leading(dirname, @root, ""), basename)
-    result_file  = Path.join(dirname, basename <> ".result.exs")
-    options_file = Path.join(dirname, basename <> ".options.exs")
-    graphql = File.read!(graphql_file)
-    schema =
-      case Regex.run(~r/^#\s*schema:\s*(\S+)/i, graphql) do
-        nil ->
-          @default_schema
-        [_, schema_name] ->
-          Module.concat(Absinthe.Fixtures, String.to_atom(schema_name))
-      end
-    options =
-      case File.exists?(options_file) do
-        true ->
-          load.(options_file)
-        false ->
-          []
-      end
-    integration_name = "integration '#{integration_name}' (schema: #{schema})"
-    case File.exists?(result_file) do
+  for {name, definition} <- @integration_tests do
+    case File.exists?(definition.result_file) do
       true ->
-        result = load.(result_file)
-        test integration_name do
+        result = Absinthe.IntegrationCase.read_integration_file!(definition.result_file)
+        test name do
           assert_result(
             unquote(Macro.escape(result)),
-            run(unquote(graphql), unquote(schema), unquote(Macro.escape(options)))
+            run(unquote(definition.graphql), unquote(definition.schema), unquote(Macro.escape(definition.options)))
           )
         end
       false ->
-        test integration_name do
+        test name do
           assert_raise(
             Absinthe.ExecutionError,
-            fn -> run(unquote(graphql), unquote(schema), unquote(Macro.escape(options))) end
+            fn -> run(unquote(definition.graphql), unquote(definition.schema), unquote(Macro.escape(definition.options))) end
           )
         end
     end
