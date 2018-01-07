@@ -5,23 +5,23 @@ defmodule Absinthe.IntegrationTest do
     default_schema: Absinthe.Fixtures.ThingsSchema,
     async: true
 
-  for {name, definition} <- @integration_tests do
-    case File.exists?(definition.result_file) do
-      true ->
-        result = Absinthe.IntegrationCase.read_integration_file!(definition.result_file)
-        test name do
-          assert_result(
-            unquote(Macro.escape(result)),
-            run(unquote(definition.graphql), unquote(definition.schema), unquote(Macro.escape(definition.options)))
-          )
+  for test_definition <- @integration_tests do
+    test "integration #{test_definition.name}" do
+      definition = unquote(Macro.escape(test_definition))
+      for setting <- definition.settings do
+        case setting do
+          {options, {:raise, exception}} ->
+            assert_raise(
+              exception,
+              fn -> run(definition.graphql, definition.schema, options) end
+            )
+          {options, result} ->
+            assert_result(
+              result,
+              run(definition.graphql, definition.schema, options)
+            )
         end
-      false ->
-        test name do
-          assert_raise(
-            Absinthe.ExecutionError,
-            fn -> run(unquote(definition.graphql), unquote(definition.schema), unquote(Macro.escape(definition.options))) end
-          )
-        end
+      end
     end
   end
 
