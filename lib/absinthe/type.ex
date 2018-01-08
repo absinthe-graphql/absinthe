@@ -17,7 +17,7 @@ defmodule Absinthe.Type do
   @type t :: custom_t | wrapping_t
 
   @typedoc "A type identifier"
-  @type identifier_t :: atom
+  @type identifier_t :: atom | String.t
 
   @typedoc "A type reference"
   @type reference_t :: identifier_t | t
@@ -252,6 +252,10 @@ defmodule Absinthe.Type do
   def expand(ref, schema) when is_atom(ref) do
     schema.__absinthe_lookup__(ref)
   end
+  @doc "Expand any string type references inside a List or NonNull"
+  def expand("" <> ref, schema) do
+    schema.__absinthe_lookup__(ref)
+  end
   def expand(%{of_type: contents} = ref, schema) do
     %{ref | of_type: expand(contents, schema)}
   end
@@ -396,8 +400,7 @@ defmodule Absinthe.Type do
       |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
     end
   end
-  defp referenced_types(type, schema, acc) when is_atom(type) and type != nil do
+  defp referenced_types(type, schema, acc) when type != nil do
     referenced_types(Schema.lookup_type(schema, type), schema, acc)
   end
-
 end

@@ -1507,15 +1507,26 @@ defmodule Absinthe.Schema.Notation do
   end
 
   # Find the name, or default as necessary
-  defp default_name(identifier, nil, opts) do
-    if opts[:title] do
-      identifier |> Atom.to_string |> Utils.camelize
-    else
-      identifier |> Atom.to_string
-    end
+  defp default_name(identifier, nil, opts) when is_atom(identifier) do
+    identifier
+    |> Atom.to_string
+    |> camelize_identifier(opts)
   end
+
+  defp default_name("" <> identifier, nil, opts) do
+    identifier |> camelize_identifier(opts)
+  end
+
   defp default_name(_, name, _) do
     name
+  end
+
+  defp camelize_identifier(identifier, opts) do
+    if opts[:title] do
+      identifier |> Utils.camelize
+    else
+      identifier
+    end
   end
 
   @doc false

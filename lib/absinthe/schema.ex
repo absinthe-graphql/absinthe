@@ -525,13 +525,13 @@ defmodule Absinthe.Schema do
   List all implementors of an interface on a schema
   """
   @spec implementors(t, Type.identifier_t | Type.Interface.t) :: [Type.Object.t]
-  def implementors(schema, ident) when is_atom(ident) do
+  def implementors(schema, %Type.Interface{} = iface) do
+    implementors(schema, iface.__reference__.identifier)
+  end
+  def implementors(schema, ident) do
     schema.__absinthe_interface_implementors__
     |> Map.get(ident, [])
     |> Enum.map(&lookup_type(schema, &1))
-  end
-  def implementors(schema, %Type.Interface{} = iface) do
-    implementors(schema, iface.__reference__.identifier)
   end
 
   @doc false
