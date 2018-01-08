@@ -16,13 +16,10 @@ documents that don't get executed), put it in `parsing/` or
 (executed) scenario, put it in `execution/`.
 
 Try to keep the directory structure fairly flat under
-`execution/`. Group by type of thing, not specific testing
-context. For instance, if you wanted to add an integration test around
-the use of the `null` input type literal, when used as an element of a
-list (that is a non-nullable argument), it's better to name it
-something like
-`execution/input_types/null/non_nullable_arg_list_element_literal.graphql`,
-not
-`execution/input_types/null/non_nullable_arg/list/element/literal.graphql`);
-it's easier to scan the various permutations in a single directory of
-files.
+`execution/`. Create subdirectories for type of thing, not specific testing
+context. Try to keep to existing file naming conventions.
+
+Feel free to use GraphQL type names, prefixed with `type_` in
+filenames (describing types longhand is too verbose/inexact). Use the
+example type `T` to indicate any type. (Example:
+`execution/input_types/null/literal_as_type_[T!]!_element.graphql`)
