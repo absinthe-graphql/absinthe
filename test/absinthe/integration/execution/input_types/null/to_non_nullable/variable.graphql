@@ -1,0 +1,2 @@
+# Schema: TimesSchema
+query ($value: Int!) { times: objTimes(input: {base: $value}) }
