@@ -1,31 +1,31 @@
 defmodule Absinthe.IntegrationCase.Definition do
 
-  @enforce_keys [:name, :schema, :graphql, :settings]
+  @enforce_keys [:name, :schema, :graphql, :scenarios]
 
   defstruct [
     :name,
     :schema,
     :graphql,
-    settings: [],
+    scenarios: [],
   ]
 
   @type expect_exception :: {:raise, module}
-  @type expectation :: Absinthe.run_result | expect_exception
-  @type setting :: {Absinthe.run_opts, expectation}
+  @type expectation :: Absinthe.run_result | expect_exception | :custom_assertion
+  @type scenario :: {Absinthe.run_opts, expectation}
 
   @type t :: %__MODULE__{
     name: String.t,
     schema: Absinthe.Schema.t,
     graphql: String.t,
-    settings: [setting],
+    scenarios: [scenario],
   }
 
-  def create(name, graphql, default_schema, settings) do
+  def create(name, graphql, default_schema, scenarios) do
     %__MODULE__{
       name: name,
       graphql: graphql,
       schema: normalize_schema(default_schema, graphql),
-      settings: normalize_settings(settings),
+      scenarios: normalize_scenarios(scenarios),
     }
   end
 
@@ -38,11 +38,12 @@ defmodule Absinthe.IntegrationCase.Definition do
     end
   end
 
-  defp normalize_settings(settings) do
-    List.wrap(settings)
-    |> Enum.map(&do_normalize_settings/1)
+  defp normalize_scenarios(scenarios) do
+    List.wrap(scenarios)
+    |> Enum.map(&normalize_scenario/1)
   end
-  defp do_normalize_settings({_options, {_, _} = _result} = setting), do: setting
-  defp do_normalize_settings(result), do: {[], result}
+
+  defp normalize_scenario({_options, {_, _} = _result} = scenario), do: scenario
+  defp normalize_scenario(result), do: {[], result}
 
 end
