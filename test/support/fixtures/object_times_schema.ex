@@ -1,4 +1,4 @@
-defmodule Absinthe.Fixtures.TimesSchema do
+defmodule Absinthe.Fixtures.ObjectTimesSchema do
   use Absinthe.Schema
 
   query do

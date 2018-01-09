@@ -1,4 +1,4 @@
-# Schema: TimesSchema
+# Schema: ObjectTimesSchema
 query {
   times: objTimes(input: {base: null})
 }
