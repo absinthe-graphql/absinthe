@@ -29,7 +29,7 @@ defmodule Absinthe.Mixfile do
 
   defp package do
     [description: "GraphQL for Elixir",
-     files: ["lib", "src", "priv", "mix.exs", "README.md", "CHANGELOG.md"],
+     files: ["lib", "src", "priv", "mix.exs", "README.md", "CHANGELOG.md", ".formatter.exs"],
      maintainers: [
        "Bruce Williams",
        "Ben Wilson",
