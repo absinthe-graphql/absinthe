@@ -90,9 +90,7 @@ See [CHANGELOG](./CHANGELOG.md) for upgrade steps between versions.
 
 ## Documentation
 
-- For the tutorial, guides, and general information about Absinthe-related
-  projects, see [http://absinthe-graphql.org](http://absinthe-graphql.org).
-- Links to the API documentation are available in the [project list](http://absinthe-graphql.org/projects/).
+See [HexDocs](https://hexdocs.pm/absinthe) and <http://absinthe-graphql.org>.
 
 ### Mix Tasks
 
@@ -102,11 +100,11 @@ Run `mix help` in your project and look for tasks starting with `absinthe`.
 
 ### Roadmap
 
-See the Roadmap on [absinthe-graphql.org](http://absinthe-graphql.org/roadmap/).
+See the [Roadmap project board](https://github.com/absinthe-graphql/absinthe/projects/2) for longer term plans. 
 
 ## Related Projects
 
-See the Project List on [absinthe-graphql.org](http://absinthe-graphql.org/projects).
+See the [GitHub organization](https://github.com/absinthe-graphql).
 
 ## License
 
