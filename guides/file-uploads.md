@@ -4,7 +4,7 @@ Absinthe provides a unique pattern to support file uploads in conjunction with n
 
 ## Example
 
-Te following schema includes a mutation field that accepts multiple uploaded files as arguments (`:users` and `:metadata`):
+The following schema includes a mutation field that accepts multiple uploaded files as arguments (`:users` and `:metadata`):
 
 ```elixir
 defmodule MyAppWeb.Schema do
