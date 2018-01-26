@@ -3,90 +3,6 @@ defmodule Absinthe.IntrospectionTest do
 
   alias Absinthe.Schema
 
-  describe "introspection of an object" do
-    test "returns the name of the object type currently being queried without an alias" do
-      result = "{ person { __typename name } }" |> run(Absinthe.Fixtures.ContactSchema)
-      assert_result {:ok, %{data: %{"person" => %{"name" => "Bruce", "__typename" => "Person"}}}}, result
-    end
-    test "returns the name of the object type currently being queried witho an alias" do
-      result = "{ person { kind: __typename name } }" |> run(Absinthe.Fixtures.ContactSchema)
-      assert_result {:ok, %{data: %{"person" => %{"name" => "Bruce", "kind" => "Person"}}}}, result
-    end
-  end
-
-  describe "introspection of an interface" do
-    test "returns the name of the object type currently being queried" do
-      # Without an alias
-      result = "{ contact { entity { __typename name } } }" |> run(Absinthe.Fixtures.ContactSchema)
-      assert_result {:ok, %{data: %{"contact" => %{"entity" => %{"name" => "Bruce", "__typename" => "Person"}}}}}, result
-      # With an alias
-      result = "{ contact { entity { kind: __typename name } } }" |> run(Absinthe.Fixtures.ContactSchema)
-      assert_result {:ok, %{data: %{"contact" => %{"entity" => %{"name" => "Bruce", "kind" => "Person"}}}}}, result
-    end
-  end
-
-  describe "when querying against a union" do
-    test "returns the name of the object type currently being queried" do
-      # Simple type
-      result = "{ firstSearchResult { __typename } }" |> run(Absinthe.Fixtures.ContactSchema)
-      assert_result {:ok, %{data: %{"firstSearchResult" => %{"__typename" => "Person"}}}}, result
-      # Wrapped type
-      result = "{ searchResults { __typename } }" |> run(Absinthe.Fixtures.ContactSchema)
-      assert_result {:ok, %{data: %{"searchResults" => [%{"__typename" => "Person"}, %{"__typename" => "Business"}]}}}, result
-    end
-  end
-
-  describe "introspection of a schema" do
-
-    test "can use __schema to get types" do
-      {:ok, %{data: %{"__schema" => %{"types" => types}}}} = run(
-        "{ __schema { types { name } } }",
-        Absinthe.Fixtures.ContactSchema
-      )
-      names = types |> Enum.map(&(&1["name"])) |> Enum.sort
-      expected = ~w(Int String Boolean Contact Person Business ProfileInput SearchResult NamedEntity RootMutationType RootQueryType RootSubscriptionType __Schema __Directive __DirectiveLocation __EnumValue __Field __InputValue __Type) |> Enum.sort
-      assert expected == names
-    end
-
-    test "can use __schema to get the query type" do
-      result = "{ __schema { queryType { name kind } } }" |> run(Absinthe.Fixtures.ContactSchema)
-      assert_result {:ok, %{data: %{"__schema" => %{"queryType" => %{"name" => "RootQueryType", "kind" => "OBJECT"}}}}}, result
-    end
-
-    test "can use __schema to get the mutation type" do
-      result = "{ __schema { mutationType { name kind } } }" |> run(Absinthe.Fixtures.ContactSchema)
-      assert_result {:ok, %{data: %{"__schema" => %{"mutationType" => %{"name" => "RootMutationType", "kind" => "OBJECT"}}}}}, result
-    end
-
-    test "can use __schema to get the subscription type" do
-      result = "{ __schema { subscriptionType { name kind } } }" |> Absinthe.run(Absinthe.Fixtures.ContactSchema)
-      assert_result {:ok, %{data: %{"__schema" => %{"subscriptionType" => %{"name" => "RootSubscriptionType", "kind" => "OBJECT"}}}}}, result
-    end
-
-    test "can use __schema to get the directives" do
-      result = """
-      {
-        __schema {
-          directives {
-            name
-            args { name type { kind ofType { name kind } } }
-            locations
-            onField
-            onFragment
-            onOperation
-          }
-        }
-      }
-      """ |> run(Absinthe.Fixtures.ContactSchema)
-      assert {:ok,
-              %{data: %{"__schema" => %{
-                         "directives" => [
-                         %{"args" => [%{"name" => "if", "type" => %{"kind" => "NON_NULL", "ofType" => %{"kind" => "SCALAR", "name" => "Boolean"}}}], "name" => "include", "locations" => ["INLINE_FRAGMENT", "FRAGMENT_SPREAD", "FIELD"], "onField" => true, "onFragment" => true, "onOperation" => false},
-                         %{"args" => [%{"name" => "if", "type" => %{"kind" => "NON_NULL", "ofType" => %{"kind" => "SCALAR", "name" => "Boolean"}}}], "name" => "skip", "locations" => ["INLINE_FRAGMENT", "FRAGMENT_SPREAD", "FIELD"], "onField" => true, "onFragment" => true, "onOperation" => false}]}}}} == result
-    end
-
-  end
-
   describe "introspection of an enum type" do
 
     test "can use __type and value information with deprecations" do
@@ -164,24 +80,6 @@ defmodule Absinthe.IntrospectionTest do
       ] = fields
     end
 
-    test "when used as the default value of an input object" do
-      result = """
-      {
-        __type(name: "ChannelInput") {
-          name
-          inputFields {
-            name
-            defaultValue
-          }
-        }
-      }
-      """
-      |> run(Absinthe.Fixtures.ColorSchema)
-      assert {:ok, %{data: %{"__type" => %{"name" => "ChannelInput", "inputFields" => input_fields}}}} = result
-      assert [
-        %{"name" => "channel", "defaultValue" => "RED"}
-      ] = input_fields
-    end
   end
 
   describe "introspection of an input object type" do
@@ -219,62 +117,6 @@ defmodule Absinthe.IntrospectionTest do
     end
 
   end
-
-  describe "introspection of an interface type" do
-
-    test "can use __type and get possible types" do
-      result = """
-      {
-        __type(name: "NamedEntity") {
-          kind
-          name
-          description
-          possibleTypes {
-            name
-          }
-        }
-      }
-      """
-      |> run(Absinthe.Fixtures.ContactSchema)
-      assert_result {:ok, %{data: %{"__type" => %{"description" => "A named entity", "kind" => "INTERFACE", "name" => "NamedEntity", "possibleTypes" => [%{"name" => "Person"}, %{"name" => "Business"}]}}}}, result
-    end
-
-  end
-
-  describe "introspection of an object type that includes a list" do
-
-    test "can use __type and see fields with the wrapping list types" do
-      result = """
-      {
-        __type(name: "Person") {
-          fields(include_deprecated: true) {
-            name
-            type {
-              kind
-              name
-              ofType {
-                kind
-                name
-              }
-            }
-          }
-        }
-      }
-      """
-      |> run(Absinthe.Fixtures.ContactSchema)
-      assert_result {:ok,
-                     %{data:
-                       %{"__type" => %{
-                          "fields" => [
-        %{"name" => "address", "type" => %{"kind" => "SCALAR", "name" => "String", "ofType" => nil}},
-        %{"name" => "age", "type" => %{"kind" => "SCALAR", "name" => "Int", "ofType" => nil}},
-        %{"name" => "name", "type" => %{"kind" => "SCALAR", "name" => "String", "ofType" => nil}},
-        %{"name" => "others", "type" => %{"kind" => "LIST", "name" => nil, "ofType" => %{"kind" => "OBJECT", "name" => "Person"}}}
-      ]}}}}, result
-    end
-
-  end
-
 
   describe "introspection of an object type" do
 
@@ -439,18 +281,6 @@ defmodule Absinthe.IntrospectionTest do
       """
       |> run(Absinthe.Fixtures.ContactSchema)
       assert_result {:ok, %{data: %{"__type" => %{"description" => "A search result", "kind" => "UNION", "name" => "SearchResult", "possibleTypes" => [%{"name" => "Business"}, %{"name" => "Person"}]}}}}, result
-    end
-
-  end
-
-  describe "full introspection" do
-
-    @filename "graphql/introspection.graphql"
-    @query File.read!(Path.join([:code.priv_dir(:absinthe), @filename]))
-
-    test "runs" do
-      result = @query |> run(Absinthe.Fixtures.ContactSchema)
-      assert {:ok, %{data: %{"__schema" => _}}} = result
     end
 
   end
