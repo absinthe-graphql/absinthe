@@ -16,6 +16,8 @@ defmodule Absinthe.Middleware.DataloaderTest do
       organization_id: &1,
     })
 
+    def organizations(), do: @organizations
+
     defp batch_load({:organization_id, %{pid: test_pid}}, sources) do
       send test_pid, :loading
       Map.new(sources, fn src ->
@@ -23,12 +25,15 @@ defmodule Absinthe.Middleware.DataloaderTest do
       end)
     end
 
-    def context(ctx) do
+    def dataloader() do
       source = Dataloader.KV.new(&batch_load/2)
-      loader = Dataloader.add_source(Dataloader.new, :test, source)
+      Dataloader.add_source(Dataloader.new, :test, source)
+    end
 
-      Map.merge(ctx, %{
-        loader: loader,
+    def context(ctx) do
+      ctx
+      |> Map.put_new(:loader, dataloader())
+      |> Map.merge(%{
         test_pid: self()
       })
     end
@@ -116,6 +121,34 @@ defmodule Absinthe.Middleware.DataloaderTest do
     assert {:ok, %{data: data}} = Absinthe.run(doc, Schema)
     assert expected_data == data
     assert_receive(:loading)
+    refute_receive(:loading)
+  end
+
+  test "using a cached field doesn't explode" do
+    doc = """
+    {
+      organization(id: 1) {
+        id
+      }
+    }
+    """
+    expected_data =  %{"organization" => %{"id" => 1}}
+
+    org = Schema.organizations[1]
+
+    # Get the dataloader, and warm the cache for the organization key we're going
+    # to try to access via graphql.
+    dataloader =
+      Schema.dataloader()
+      |> Dataloader.put(:test, {:organization_id, %{pid: self()}}, %{organization_id: 1}, org)
+
+    context = %{
+      loader: dataloader
+    }
+
+    assert {:ok, %{data: data}} = Absinthe.run(doc, Schema, context: context)
+    assert expected_data == data
+
     refute_receive(:loading)
   end
 

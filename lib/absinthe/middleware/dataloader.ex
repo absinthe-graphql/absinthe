@@ -12,13 +12,21 @@ if Code.ensure_loaded?(Dataloader) do
     end
 
     def call(%{state: :unresolved} = resolution, {loader, callback}) do
-      %{resolution |
-        context: Map.put(resolution.context, :loader, loader),
-        state: :suspended,
-        middleware: [{__MODULE__, callback} | resolution.middleware]
-      }
+      if resolution.context.loader == loader do
+        get_result(resolution, callback)
+      else
+        %{resolution |
+          context: Map.put(resolution.context, :loader, loader),
+          state: :suspended,
+          middleware: [{__MODULE__, callback} | resolution.middleware]
+        }
+      end
     end
     def call(%{state: :suspended} = resolution, callback) do
+      get_result(resolution, callback)
+    end
+
+    defp get_result(resolution, callback) do
       value = callback.(resolution.context.loader)
       Absinthe.Resolution.put_result(resolution, value)
     end
