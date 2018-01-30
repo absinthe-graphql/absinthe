@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.4.7
+
+- Bug Fix: Update `result_selection_t` typespec.
+- Feature: Added `.formatter.exs` for use with Elixir v1.6's `mix format`.
+- Chore: Type fixes and updated links in README and documentation.
+
 ## v1.4.6
 
 - Feature: Support for `meta` macro keyword list args.
