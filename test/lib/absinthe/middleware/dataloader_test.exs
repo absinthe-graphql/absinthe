@@ -68,6 +68,7 @@ defmodule Absinthe.Middleware.DataloaderTest do
         resolve fn _, %{id: id}, %{context: %{loader: loader, test_pid: test_pid}} ->
           loader
           |> Dataloader.load(:test, {:organization_id, %{pid: test_pid}}, %{organization_id: id})
+          |> Dataloader.put(:test, {:organization_id, %{pid: self()}}, %{organization_id: 123}, %{})
           |> on_load(fn loader ->
             {:ok, Dataloader.get(loader, :test, {:organization_id, %{pid: test_pid}}, %{organization_id: id})}
           end)
