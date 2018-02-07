@@ -88,6 +88,19 @@ We could also move our type definitions out into a different module, for instanc
 
 ```elixir
 # filename: myapp/schema.ex
+defmodule MyAppWeb.Schema.Types do
+  use Absinthe.Schema.Notation
+
+  object :item do
+    field :id, :id
+    field :name, :string
+  end
+
+  # ...
+
+end
+
+# filename: myapp/schema.ex
 defmodule MyAppWeb.Schema do
   use Absinthe.Schema
 
@@ -100,3 +113,5 @@ end
 
 It's a nice way of separating the top-level `query` and `mutation` information,
 which define the surface area of the API, with the actual types that it uses.
+
+See [Importing Types](importing-types.html) for a full guide to importing types.
