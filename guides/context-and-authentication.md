@@ -80,8 +80,8 @@ And now it works!
 ## Context and Plugs
 
 When using Absinthe.Plug you don't have direct access to the Absinthe.run call.
-Instead, we can use `Plug.Conn.put_private/3` to set context values which Absinthe.Plug
-will pass it along to Absinthe.run.
+Instead, we can use `Absinthe.Plug.put_options/2` to set context values which
+Absinthe.Plug will use to pass it along to Absinthe.run.
 
 Setting up your GraphQL context is as simple as writing a plug that inserts the
 appropriate values into the connection.
@@ -105,7 +105,7 @@ defmodule MyAppWeb.Context do
 
   def call(conn, _) do
     context = build_context(conn)
-    put_private(conn, :absinthe, %{context: context})
+    Absinthe.Plug.put_options(conn, context: context)
   end
 
   @doc """
