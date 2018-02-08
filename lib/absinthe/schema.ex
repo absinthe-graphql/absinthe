@@ -112,7 +112,7 @@ defmodule Absinthe.Schema do
   alias __MODULE__
 
   defmacro __using__(opts \\ []) do
-    quote do
+    quote(generated: true) do
       use Absinthe.Schema.Notation, unquote(opts)
       import unquote(__MODULE__), only: :macros
 
