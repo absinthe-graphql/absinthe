@@ -137,6 +137,8 @@ what's actually happening behind the scenes.
 Using Dataloader is as simple as doing:
 
 ```elixir
+import Absinthe.Resolution.Helpers, only: [dataloader: 1]
+
 object :author do
   @desc "Author of the post"
   field :posts, list_of(:post), resolve: dataloader(Blog)
