@@ -1,15 +1,11 @@
 defmodule Absinthe.Resolution do
   @moduledoc """
-  The primary struct of resolution.
+  Information about the current resolution. It is created by adding field specific
+  information to the more general `%Absinthe.Blueprint.Execution{}` struct.
 
   In many ways like the `%Conn{}` from `Plug`, the `%Absinthe.Resolution{}` is the
   piece of information that passed along from middleware to middleware as part of
   resolution.
-  """
-
-  @typedoc """
-  Information about the current resolution. It is created by adding field specific
-  information to the more general `%Absinthe.Blueprint.Execution{}` struct.
 
   ## Contents
   - `:adapter` - The adapter used for any name conversions.
@@ -17,10 +13,28 @@ defmodule Absinthe.Resolution do
   - `:context` - The context passed to `Absinthe.run`.
   - `:root_value` - The root value passed to `Absinthe.run`, if any.
   - `:parent_type` - The parent type for the field.
+  - `:private` - Operates similarly to the `:private` key on a `%Plug.Conn{}`
+    and is a place for libraries (and similar) to store their information.
   - `:schema` - The current schema.
   - `:source` - The resolved parent object; source of this field.
 
+  When a `%Resolution{}` is accessed via middleware, you may want to update the
+  context (e.g. to cache a dataloader instance or the result of an ecto query).
+  Updating the context can be done simply by using the map updating syntax (or
+  `Map.put/4`):
+
+  ```elixir
+  %{resolution | context: new_context}
+  # OR
+  Map.put(resolution, :context, new_context)
+  ```
+
   To access the schema type for this field, see the `definition.schema_node`.
+  """
+
+  @typedoc """
+  The arguments that are passed from the schema. (e.g. id of the record to be
+  fetched)
   """
   @type arguments :: %{optional(atom) => any}
   @type source :: any
