@@ -41,6 +41,7 @@
       trigger: 2,
       types: 1,
       union: 3,
+      value: 1,
       value: 2,
     ]
   ]
