@@ -16,7 +16,7 @@ end
 ## Usage
 
 The core concept of dataloader is a data source which is just a struct
-that encodes a way of retrieving data. More info in the (Sources)[#sources] section.
+that encodes a way of retrieving data. More info in the [Sources](#sources) section.
 
 ### Schema
 
