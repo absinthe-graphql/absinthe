@@ -91,7 +91,7 @@ defmodule Absinthe.Schema.Notation.Experimental do
     [
       push_scope(scope),
       body,
-      pop_scope
+      pop_scope()
     ]
   end
 
@@ -135,14 +135,18 @@ defmodule Absinthe.Schema.Notation.Experimental do
   end
 
   def object_definition(identifier, attrs, body) do
+    {desc, attrs} =
+      attrs
+      |> Keyword.put_new(:name, default_object_name(identifier))
+      |> Keyword.pop(:description)
+
     [
       quote do
         @absinthe_blueprint unquote(__MODULE__).put_type(
           @absinthe_blueprint,
           %Absinthe.Blueprint.Schema.ObjectTypeDefinition{
             unquote_splicing(attrs),
-            name: unquote(attrs[:name] || default_object_name(identifier)),
-            description: @desc || unquote(attrs[:description]),
+            description: @desc || unquote(desc),
             identifier: unquote(identifier)
           }
         )
@@ -199,6 +203,11 @@ defmodule Absinthe.Schema.Notation.Experimental do
 
   @spec field_definition(atom, Keyword.t, Macro.t) :: Macro.t
   def field_definition(identifier, attrs, body) do
+    {desc, attrs} =
+      attrs
+      |> Keyword.put_new(:name, default_field_name(identifier))
+      |> Keyword.pop(:description)
+
     [
       quote do
         @absinthe_blueprint unquote(__MODULE__).put_field(
@@ -206,8 +215,7 @@ defmodule Absinthe.Schema.Notation.Experimental do
           hd(@absinthe_scopes),
           %Absinthe.Blueprint.Schema.FieldDefinition{
             unquote_splicing(attrs),
-            name: unquote(attrs[:name] || default_field_name(identifier)),
-            description: @desc || unquote(attrs[:description]),
+            description: @desc || unquote(desc),
             identifier: unquote(identifier),
           }
         )
@@ -215,7 +223,7 @@ defmodule Absinthe.Schema.Notation.Experimental do
         @desc nil
       end,
       body,
-      pop_scope
+      pop_scope()
     ]
   end
 
