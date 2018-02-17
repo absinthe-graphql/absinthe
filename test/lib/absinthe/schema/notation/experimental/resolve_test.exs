@@ -64,35 +64,23 @@ defmodule Absinthe.Schema.Notation.Experimental.ResolveTest do
   end
 
   describe "resolve" do
-    describe "when given an anonymous function literal" do
-      it "adds the resolver to the field" do
-        assert_resolver(:anon_literal)
-      end
+    test "when given an anonymous function literal" do
+      assert_resolver(:anon_literal)
     end
-    describe "when given a local private function capture" do
-      it "adds the resolver to the field" do
-        assert_resolver(:local_private)
-      end
+    test "when given a local private function capture" do
+      assert_resolver(:local_private)
     end
-    describe "when given a local public function capture" do
-      it "adds the resolver to the field" do
-        assert_resolver(:local_public)
-      end
+    test "when given a local public function capture" do
+      assert_resolver(:local_public)
     end
-    describe "when given a remote public function capture" do
-      it "adds the resolver to the field" do
-        assert_resolver(:remote)
-      end
+    test "when given a remote public function capture" do
+      assert_resolver(:remote)
     end
-    describe "when given a remote ref" do
-      it "adds the resolver to the field" do
-        assert_resolver(:remote_ref)
-      end
+    test "when given a remote ref" do
+      assert_resolver(:remote_ref)
     end
-    describe "when given the result of a function invocation" do
-      it "adds the resolver to the field" do
-        assert_resolver(:invocation_result)
-      end
+    test "when given the result of a function invocation" do
+      assert_resolver(:invocation_result)
     end
   end
 

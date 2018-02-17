@@ -34,45 +34,26 @@ defmodule Absinthe.Schema.Notation.Experimental.ObjectTest do
   end
 
   describe "object" do
-    describe "without attributes" do
-      it "correctly builds the object definition" do
-        assert %{name: "NoAttrs", identifier: :no_attrs} = lookup_type(Definition, :no_attrs)
-      end
+    test "without attributes" do
+      assert %{name: "NoAttrs", identifier: :no_attrs} = lookup_type(Definition, :no_attrs)
     end
-    describe "with a name attribute" do
-      it "correctly builds the object definition" do
-        assert %{name: "Named", identifier: :with_attr} = lookup_type(Definition, :with_attr)
-      end
+    test "with a name attribute" do
+      assert %{name: "Named", identifier: :with_attr} = lookup_type(Definition, :with_attr)
     end
-    describe "with a @desc" do
-      describe "and no description attr" do
-        it "correctly builds the object definition" do
-          assert %{description: "Desc One"} = lookup_type(Definition, :with_desc)
-        end
-      end
-      describe "using an assignment" do
-        it "correctly builds the object definition" do
-          assert %{description: "Desc Three"} = lookup_type(Definition, :with_desc_assign)
-        end
-      end
-
-      describe "and a description attr" do
-        it "overrides the description attr" do
-          assert %{description: "Desc Two"} = lookup_type(Definition, :with_desc_attr)
-        end
-      end
+    test "with a @desc and no description attr" do
+      assert %{description: "Desc One"} = lookup_type(Definition, :with_desc)
     end
-    describe "with a description attribute" do
-      describe "as a literal" do
-        it "correctly builds the object definition" do
-          assert %{description: "Desc Four"} = lookup_type(Definition, :with_desc_attr_literal)
-        end
-      end
-      describe "from a module attribute" do
-        it "correctly builds the object definition" do
-          assert %{description: "Desc Five"} = lookup_type(Definition, :with_desc_attr_mod)
-        end
-      end
+    test "with a @desc using an assignment" do
+      assert %{description: "Desc Three"} = lookup_type(Definition, :with_desc_assign)
+    end
+    test "with a @desc and a description attr" do
+      assert %{description: "Desc Two"} = lookup_type(Definition, :with_desc_attr)
+    end
+    test "with a description attribute as a literal" do
+      assert %{description: "Desc Four"} = lookup_type(Definition, :with_desc_attr_literal)
+    end
+    test "from a module attribute" do
+      assert %{description: "Desc Five"} = lookup_type(Definition, :with_desc_attr_mod)
     end
   end
 

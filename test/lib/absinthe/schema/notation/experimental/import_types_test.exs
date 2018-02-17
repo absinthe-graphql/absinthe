@@ -33,22 +33,15 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportTypesTest do
   end
 
   describe "import_types" do
-    describe "without options" do
-      it "imports the correct types" do
-        assert 3 == type_count(WithoutOptions)
-      end
+    test "without options" do
+      assert 3 == type_count(WithoutOptions)
     end
-    describe "with :only" do
-      it "imports the correct types" do
-        assert 2 == type_count(UsingOnlyOption)
-      end
+    test "with :only" do
+      assert 2 == type_count(UsingOnlyOption)
     end
-    describe "with :except" do
-      it "imports the correct types" do
-        assert 1 == type_count(UsingExceptOption)
-      end
+    test "with :except" do
+      assert 1 == type_count(UsingExceptOption)
     end
-
   end
 
 end

@@ -83,43 +83,24 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportFieldsTest do
   end
 
   describe "import_fields" do
-    describe "without options" do
-      describe "from an internal source" do
-        it "imports the correct fields" do
-          assert 3 == length(lookup_type(WithoutOptions, :internal_target).fields)
-        end
-      end
-      describe "from an external source" do
-        it "imports the correct fields" do
-          assert 3 == length(lookup_type(WithoutOptions, :external_target).fields)
-        end
-      end
+    test "without options from an internal source" do
+      assert 3 == length(lookup_type(WithoutOptions, :internal_target).fields)
     end
-    describe "with :only" do
-      describe "from an internal source" do
-        it "imports the correct fields" do
-          assert 2 == length(lookup_type(UsingOnlyOption, :internal_target).fields)
-        end
-      end
-      describe "from external source" do
-        it "imports the correct fields" do
-          assert 2 == length(lookup_type(UsingOnlyOption, :external_target).fields)
-        end
-      end
+    test "without options from an external source" do
+      assert 3 == length(lookup_type(WithoutOptions, :external_target).fields)
     end
-    describe "with :except" do
-      describe "from an internal source" do
-        it "imports the correct fields" do
-          assert 1 == length(lookup_type(UsingExceptOption, :internal_target).fields)
-        end
-      end
-      describe "from external source" do
-        it "imports the correct fields" do
-          assert 1 == length(lookup_type(UsingExceptOption, :external_target).fields)
-        end
-      end
+    test "with :only from an internal source" do
+      assert 2 == length(lookup_type(UsingOnlyOption, :internal_target).fields)
     end
-
+    test "with :only from external source" do
+      assert 2 == length(lookup_type(UsingOnlyOption, :external_target).fields)
+    end
+    test "with :except from an internal source" do
+      assert 1 == length(lookup_type(UsingExceptOption, :internal_target).fields)
+    end
+    test "with :except from external source" do
+      assert 1 == length(lookup_type(UsingExceptOption, :external_target).fields)
+    end
   end
 
 end
