@@ -50,11 +50,11 @@ defmodule Absinthe.Phase.Document.Validation.LoneAnonymousOperation do
   # Generate the error for the node
   @spec error(Blueprint.node_t) :: Phase.Error.t
   defp error(node) do
-    Phase.Error.new(
-      __MODULE__,
-      "This anonymous operation must be the only defined operation.",
-      location: node.source_location
-    )
+    %Phase.Error{
+      phase: __MODULE__,
+      message: "This anonymous operation must be the only defined operation.",
+      locations: [node.source_location]
+    }
   end
 
 end

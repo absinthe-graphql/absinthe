@@ -13,7 +13,12 @@ defmodule Absinthe.Schema.Notation do
   defmacro __using__(opts \\ []) do
     import_opts = opts |> Keyword.put(:only, :macros)
     quote do
-      import Absinthe.Resolution.Helpers, only: [async: 1, batch: 3]
+      import Absinthe.Resolution.Helpers, only: [
+        async: 1,
+        async: 2,
+        batch: 3,
+        batch: 4
+      ]
       import unquote(__MODULE__), unquote(import_opts)
       Module.register_attribute __MODULE__, :absinthe_definitions, accumulate: true
       Module.register_attribute(__MODULE__, :absinthe_descriptions, accumulate: true)
@@ -31,6 +36,78 @@ defmodule Absinthe.Schema.Notation do
       @absinthe_descriptions {unquote(identifier), @desc}
       @desc nil
     end
+  end
+
+  @doc false
+  defmacro resolver(_) do
+    raise "`resolver/1` is not a function, did you mean `resolve` ?"
+  end
+
+  @placement {:config, [under: [:field]]}
+  @doc """
+  Configure a subscription field.
+
+  ## Example
+
+  ```elixir
+  config fn args, %{context: context} ->
+    if authorized?(context) do
+      {:ok, topic: args.client_id}
+    else
+      {:error, "unauthorized"}
+    end
+  end
+  ```
+
+  See `Absinthe.Schema.subscription/1` for details
+  """
+  defmacro config(config_fun) do
+    env = __CALLER__
+    recordable!(env, :config, @placement[:config])
+    Scope.put_attribute(env.module, :config, config_fun)
+    []
+  end
+
+  @placement {:trigger, [under: [:field]]}
+  @doc """
+  Set a trigger for a subscription field.
+
+  It accepts one or more mutation field names, and can be called more than once.
+
+  ```
+  mutation do
+    field :gps_event, :gps_event
+    field :user_checkin, :user
+  end
+  subscription do
+    field :location_update, :user do
+      arg :user_id, non_null(:id)
+
+      config fn args, _ ->
+        {:ok, topic: args.user_id}
+      end
+
+      trigger :gps_event, topic: fn event ->
+        event.user_id
+      end
+
+      trigger :user_checkin, topic: fn user ->
+        [user.id, user.parent_id]
+      end
+    end
+  end
+  ```
+
+  Trigger functions are only called once per event, so database calls within
+  them do not present a significant burden.
+
+  See the `subscription/2` macro docs for additional details
+  """
+  defmacro trigger(mutations, attrs) do
+    env = __CALLER__
+    recordable!(env, :trigger, @placement[:trigger])
+    Scope.put_attribute(env.module, :triggers, {List.wrap(mutations), attrs}, accumulate: true)
+    :ok
   end
 
   # OBJECT
@@ -63,7 +140,12 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
-  defmacro object(identifier, attrs \\ [], [do: block]) do
+  @reserved_identifiers ~w(query mutation subscription)a
+  defmacro object(identifier, attrs \\ [], block)
+  defmacro object(identifier, _attrs, _block) when identifier in @reserved_identifiers do
+    raise Absinthe.Schema.Notation.Error, "Invalid schema notation: cannot create an `object` with reserved identifier `#{identifier}`"
+  end
+  defmacro object(identifier, attrs, [do: block]) do
     __CALLER__
     |> recordable!(:object, @placement[:object])
     |> record_object!(identifier, attrs, block)
@@ -71,6 +153,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def record_object!(env, identifier, attrs, block) do
+    attrs = Keyword.put(attrs, :identifier, identifier)
     scope(env, :object, identifier, attrs, block)
   end
 
@@ -220,6 +303,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record an interface type
   def record_interface!(env, identifier, attrs, block) do
+    attrs = Keyword.put(attrs, :identifier, identifier)
     scope(env, :interface, identifier, attrs, block)
   end
 
@@ -342,18 +426,35 @@ defmodule Absinthe.Schema.Notation do
   @doc """
   Defines a resolve function for a field
 
-  Specify a 2 arity function to call when resolving a field. Resolve functions
-  must return either `{:ok, term}` or `{:error, binary | [binary, ...]}`.
+  Specify a 2 or 3 arity function to call when resolving a field.
 
   You can either hard code a particular anonymous function, or have a function
-  call that returns a 2 arity anonymous function. See examples for more information.
-
-  The first argument to the function are the GraphQL arguments, and the latter
-  is an `Absinthe.Resolution` struct. It is where you can access the GraphQL
-  context and other execution data.
+  call that returns a 2 or 3 arity anonymous function. See examples for more information.
 
   Note that when using a hard coded anonymous function, the function will not
   capture local variables.
+
+  ### 3 Arity Functions
+
+  The first argument to the function is the parent entity.
+  ```
+  {
+    user(id: 1) {
+      name
+    }
+  }
+  ```
+  A resolution function on the `name` field would have the result of the `user(id: 1)` field
+  as its first argument. Top level fields have the `root_value` as their first argument.
+  Unless otherwise specified, this defaults to an empty map.
+
+  The second argument to the resolution function is the field arguments. The final
+  argument is an `Absinthe.Resolution` struct, which includes information like
+  the `context` and other execution data.
+
+  ### 2 Arity Function
+
+  Exactly the same as the 3 arity version, but without the first argument (the parent entity)
 
   ## Placement
 
@@ -372,7 +473,7 @@ defmodule Absinthe.Schema.Notation do
   query do
     field :person, :person do
       resolve fn %{id: id}, _ ->
-        Person.find(id)
+        {:ok, Person.find(id)}
       end
     end
   end
@@ -387,7 +488,7 @@ defmodule Absinthe.Schema.Notation do
 
   def lookup(:person) do
     fn %{id: id}, _ ->
-      Person.find(id)
+      {:ok, Person.find(id)}
     end
   end
   ```
@@ -395,7 +496,9 @@ defmodule Absinthe.Schema.Notation do
   defmacro resolve(func_ast) do
     __CALLER__
     |> recordable!(:resolve, @placement[:resolve])
-    |> record_resolve!(func_ast)
+    quote do
+      middleware Absinthe.Resolution, unquote(func_ast)
+    end
   end
 
   @doc false
@@ -404,6 +507,48 @@ defmodule Absinthe.Schema.Notation do
     Scope.put_attribute(env.module, :resolve, func_ast)
     Scope.recorded!(env.module, :attr, :resolve)
     :ok
+  end
+
+  @placement {:complexity, [under: [:field]]}
+  defmacro complexity(func_ast) do
+    __CALLER__
+    |> recordable!(:complexity, @placement[:complexity])
+    |> record_complexity!(func_ast)
+  end
+
+  @doc false
+  # Record a complexity analyzer in the current scope
+  def record_complexity!(env, func_ast) do
+    Scope.put_attribute(env.module, :complexity, func_ast)
+    Scope.recorded!(env.module, :attr, :complexity)
+    :ok
+  end
+
+  @placement {:middleware, [under: [:field]]}
+  defmacro middleware(new_middleware, opts \\ []) do
+    env = __CALLER__
+
+    new_middleware = Macro.expand(new_middleware, env)
+
+    middleware = Scope.current(env.module).attrs
+    |> Keyword.get(:middleware, [])
+
+    new_middleware = case new_middleware do
+      {module, fun} ->
+        {:{}, [], [{module, fun}, opts]}
+      atom when is_atom(atom) ->
+        case Atom.to_string(atom) do
+          "Elixir." <> _ ->
+            {:{}, [], [{atom, :call}, opts]}
+          _ ->
+            {:{}, [], [{env.module, atom}, opts]}
+        end
+      val ->
+        val
+    end
+
+    Scope.put_attribute(env.module, :middleware, [new_middleware | middleware])
+    nil
   end
 
   @placement {:is_type_of, [under: [:object]]}
@@ -488,10 +633,9 @@ defmodule Absinthe.Schema.Notation do
 
   ## Examples
   ```
-  scalar :time do
-    description "ISOz time"
-    parse &Timex.DateFormat.parse(&1, "{ISOz}")
-    serialize &Timex.DateFormat.format!(&1, "{ISOz}")
+  scalar :time, description: "ISOz time" do
+    parse &Timex.parse(&1.value, "{ISOz}")
+    serialize &Timex.format!(&1, "{ISOz}")
   end
   ```
   """
@@ -523,6 +667,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record a scalar type
   def record_scalar!(env, identifier, attrs, block) do
+    attrs = Keyword.put(attrs, :identifier, identifier)
     scope(env, :scalar, identifier, attrs, block)
   end
 
@@ -556,23 +701,81 @@ defmodule Absinthe.Schema.Notation do
   defmacro private(owner, key, value) do
     __CALLER__
     |> recordable!(:private, @placement[:private])
-    |> record_private!(owner, key, value)
+    |> record_private!(owner, [{key, value}])
   end
 
   @placement {:meta, [under: [:field, :object, :input_object, :enum, :scalar, :interface, :union]]}
   @doc """
   Defines a metadata key/value pair for a custom type.
+
+  For more info see `meta/1`
+
+  ### Examples
+
+  ```
+  meta :cache, false
+  ```
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
   """
   defmacro meta(key, value) do
     __CALLER__
     |> recordable!(:meta, @placement[:meta])
-    |> record_private!(:meta, key, value)
+    |> record_private!(:meta, [{key, value}])
+  end
+
+  @doc """
+  Defines list of metadata's key/value pair for a custom type.
+
+  This is generally used to facilitate libraries that want to augment Absinthe
+  functionality
+
+  ## Examples
+
+  ```
+  object :user do
+    meta cache: true, ttl: 22_000
+  end
+
+  object :user, meta: [cache: true, ttl: 22_000] do
+    # ...
+  end
+  ```
+
+  The meta can be accessed via the `Absinthe.Type.meta/2` function.
+
+  ```
+  user_type = Absinthe.Schema.lookup_type(MyApp.Schema, :user)
+
+  Absinthe.Type.meta(user_type, :cache)
+  #=> true
+
+  Absinthe.Type.meta(user_type)
+  #=> [cache: true, ttl: 22_000]
+  ```
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+  """
+  defmacro meta(keyword_list) do
+    __CALLER__
+    |> recordable!(:meta, @placement[:meta])
+    |> record_private!(:meta, keyword_list)
   end
 
   @doc false
-  # Record a private value
-  def record_private!(env, raw_owner, raw_key, raw_value) do
-    [owner, key, value] = Enum.map([raw_owner, raw_key, raw_value], &Macro.expand(&1, env))
+  # Record private values
+  def record_private!(env, owner, keyword_list) when is_list(keyword_list) do
+    owner = expand(owner, env)
+    keyword_list = expand(keyword_list, env)
+    keyword_list
+    |> Enum.each(fn {k,v} -> do_record_private!(env, owner, k, v) end)
+  end
+
+  defp do_record_private!(env, owner, key, value) do
     new_attrs = Scope.current(env.module).attrs
     |> Keyword.put_new(:__private__, [])
     |> update_in([:__private__, owner], &List.wrap(&1))
@@ -650,6 +853,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record a directive
   def record_directive!(env, identifier, attrs, block) do
+    attrs = Keyword.put(attrs, :identifier, identifier)
     scope(env, :directive, identifier, attrs, block)
   end
 
@@ -762,6 +966,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record an input object type
   def record_input_object!(env, identifier, attrs, block) do
+    attrs = Keyword.put(attrs, :identifier, identifier)
     scope(env, :input_object, identifier, attrs, block)
   end
 
@@ -800,6 +1005,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record a union type
   def record_union!(env, identifier, attrs, block) do
+    attrs = Keyword.put(attrs, :identifier, identifier)
     scope(env, :union, identifier, attrs, block)
   end
 
@@ -908,6 +1114,8 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record an enum type
   def record_enum!(env, identifier, attrs, block) do
+    attrs = expand(attrs, env)
+    attrs = Keyword.put(attrs, :identifier, identifier)
     scope(env, :enum, identifier, attrs, block)
   end
 
@@ -960,7 +1168,7 @@ defmodule Absinthe.Schema.Notation do
     |> record_description!(text)
   end
 
-  defp reformat_description(text), do: String.strip(text)
+  defp reformat_description(text), do: String.trim(text)
 
   @doc false
   # Record a description in the current scope
@@ -988,6 +1196,8 @@ defmodule Absinthe.Schema.Notation do
   ## Examples
   ```
   import_types MyApp.Schema.Types
+
+  import_types MyApp.Schema.Types.{TypesA, TypesB}
   ```
   """
   defmacro import_types(type_module_ast) do
@@ -995,10 +1205,27 @@ defmodule Absinthe.Schema.Notation do
     type_module_ast
     |> Macro.expand(env)
     |> do_import_types(env)
+    :ok
   end
 
-  defp do_import_types(type_module, env) when is_atom(type_module) do
+  defp do_import_types({{:., _, [root_ast, :{}]}, _, modules_ast_list}, env) do
+    {:__aliases__, _, root} = root_ast
 
+    root_module = Module.concat(root)
+    root_module_with_alias = Keyword.get(env.aliases, root_module, root_module)
+
+    for {_, _, leaf} <- modules_ast_list do
+      type_module = Module.concat([root_module_with_alias | leaf])
+      if Code.ensure_loaded?(type_module) do
+        do_import_types(type_module, env)
+      else
+        raise ArgumentError, "module #{type_module} is not available"
+      end
+    end
+  end
+  defp do_import_types(type_module, env) when is_atom(type_module) do
+    imports = Module.get_attribute(env.module, :absinthe_imports) || []
+    _ = Module.put_attribute(env.module, :absinthe_imports, [type_module | imports])
     types = for {ident, name} <- type_module.__absinthe_types__, ident in type_module.__absinthe_exports__ do
       put_definition(
         env.module,
@@ -1027,12 +1254,11 @@ defmodule Absinthe.Schema.Notation do
         }
       )
     end
-
     {:ok, types: types, directives: directives}
   end
   defp do_import_types(type_module, _) do
     raise ArgumentError, """
-    #{type_module} is not a module
+    `#{Macro.to_string(type_module)}` is not a module
 
     This macro must be given a literal module name or a macro which expands to a
     literal module name. Variables are not supported at this time.
@@ -1042,6 +1268,48 @@ defmodule Absinthe.Schema.Notation do
   @placement {:import_fields, [under: [:input_object, :interface, :object]]}
   @doc """
   Import fields from another object
+
+  ## Example
+  ```
+  object :news_queries do
+    field :all_links, list_of(:link)
+    field :main_story, :link
+  end
+
+  object :admin_queries do
+    field :users, list_of(:user)
+    field :pending_posts, list_of(:post)
+  end
+
+  query do
+    import_fields :news_queries
+    import_fields :admin_queries
+  end
+  ```
+
+  Import fields can also be used on objects created inside other modules that you
+  have used import_types on.
+
+  ```
+  defmodule MyApp.Schema.NewsTypes do
+    use Absinthe.Schema.Notation
+
+    object :news_queries do
+      field :all_links, list_of(:link)
+      field :main_story, :link
+    end
+  end
+  defmodule MyApp.Schema.Schema do
+    use Absinthe.Schema
+
+    import_types MyApp.Schema.NewsTypes
+
+    query do
+      import_fields :news_queries
+      # ...
+    end
+  end
+  ```
   """
   defmacro import_fields(type_name, opts \\ []) do
     __CALLER__
@@ -1077,9 +1345,23 @@ defmodule Absinthe.Schema.Notation do
   end
   # NOTATION UTILITIES
 
+  defp handle_meta(attrs) do
+    {meta, attrs} = Keyword.pop(attrs, :meta)
+    if meta do
+      Keyword.update(attrs, :__private__, [meta: meta], fn private ->
+        Keyword.update(private, :meta, meta, fn existing_meta ->
+          meta |> Enum.into(existing_meta)
+        end)
+      end)
+    else
+      attrs
+    end
+  end
+
   # Define a notation scope that will accept attributes
   @doc false
   def scope(env, kind, identifier, attrs, block) do
+    attrs = attrs |> handle_meta
     open_scope(kind, env, identifier, attrs)
 
     # this is probably too simple for now.
@@ -1131,6 +1413,7 @@ defmodule Absinthe.Schema.Notation do
         attrs
 
       desc ->
+        desc = Macro.expand(desc, env)
         Module.put_attribute(env.module, :__absinthe_desc__, nil)
         Keyword.put(attrs, :description, reformat_description(desc))
     end

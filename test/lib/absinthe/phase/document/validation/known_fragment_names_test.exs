@@ -17,7 +17,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownFragmentNamesTest do
 
   describe "Validate: Known fragment names" do
 
-    it "known fragment names are valid" do
+    test "known fragment names are valid" do
       assert_passes_rule(@rule,
       """
         {
@@ -46,7 +46,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownFragmentNamesTest do
       )
     end
 
-    it "unknown fragment names are invalid" do
+    test "unknown fragment names are invalid" do
       assert_fails_rule(@rule,
         """
         {

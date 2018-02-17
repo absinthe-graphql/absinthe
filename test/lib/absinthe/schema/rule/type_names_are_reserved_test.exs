@@ -6,7 +6,7 @@ defmodule Absinthe.Schema.Rule.TypeNamesAreReservedTest do
 
   describe "rule" do
 
-    it "is enforced" do
+    test "is enforced" do
       assert_schema_error("prefix_schema",
                           [
                             %{rule: Rule.TypeNamesAreReserved, data: %{artifact: "type name", value: "__MyThing"}},

@@ -26,7 +26,7 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedAnOperation do
   defp handle_node(%Blueprint{operations: []} = node) do
     node
     |> flag_invalid(:no_operations)
-    |> put_error(error)
+    |> put_error(error())
   end
   defp handle_node(node) do
     node
@@ -43,10 +43,10 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedAnOperation do
   # Generate the error for the node
   @spec error() :: Phase.Error.t
   defp error do
-    Phase.Error.new(
-      __MODULE__,
-      error_message
-    )
+    %Phase.Error{
+      phase: __MODULE__,
+      message: error_message(),
+    }
   end
 
 end

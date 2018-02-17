@@ -29,7 +29,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceEnumsTest do
 
 
   describe "when using an Enum type input argument" do
-    it "coerces the type from String to Enum" do
+    test "coerces the type from String to Enum" do
       doc = """
       query Enum {
         fooEnum(input: BAZ) {
@@ -45,7 +45,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceEnumsTest do
       assert %Blueprint.Input.Enum{value: "BAZ"} = input_argument.input_value.normalized
     end
 
-    it "coerces the type from String to Enum when supplying variables" do
+    test "coerces the type from String to Enum when supplying variables" do
       doc = """
       query EnumVar($input: Type!) {
         fooEnum(input: $input) {
@@ -63,7 +63,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceEnumsTest do
   end
 
   describe "when using a non-null Enum type input argument" do
-    it "coerces the type from String to Enum" do
+    test "coerces the type from String to Enum" do
       doc = """
       query Enum {
         fooNonNullEnum(input: BAZ) {
@@ -79,7 +79,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceEnumsTest do
       assert %Blueprint.Input.Enum{value: "BAZ"} = input_argument.input_value.normalized
     end
 
-    it "coerces the type from String to Enum when supplying variables" do
+    test "coerces the type from String to Enum when supplying variables" do
       doc = """
       query EnumVar($input: Type!) {
         fooNonNullEnum(input: $input) {

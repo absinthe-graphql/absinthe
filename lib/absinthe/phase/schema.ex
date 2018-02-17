@@ -26,8 +26,17 @@ defmodule Absinthe.Phase.Schema do
     schema = Keyword.fetch!(options, :schema)
     adapter = Keyword.get(options, :adapter, Absinthe.Adapter.LanguageConventions)
 
-    result = Blueprint.prewalk(input, &handle_node(&1, schema, adapter))
+    result =
+      input
+      |> update_context(schema)
+      |> Blueprint.prewalk(&handle_node(&1, schema, adapter))
     {:ok, result}
+  end
+
+  defp update_context(input, nil), do: input
+  defp update_context(input, schema) do
+    context = schema.context(input.execution.context)
+    put_in(input.execution.context, context)
   end
 
   defp handle_node(%Blueprint{} = node, schema, adapter) do
@@ -49,8 +58,12 @@ defmodule Absinthe.Phase.Schema do
   end
 
   # Do note, the `parent` arg is the parent blueprint node, not the parent's schema node.
-  defp set_schema_node(%Blueprint.Document.Fragment.Inline{type_condition: %{name: type_name}} = node, _parent, schema, _adapter) do
-    %{node | schema_node: schema.__absinthe_type__(type_name)}
+  defp set_schema_node(%Blueprint.Document.Fragment.Inline{type_condition: %{name: type_name} = condition} = node, _parent, schema, _adapter) do
+    schema_node = Absinthe.Schema.cached_lookup_type(schema, type_name)
+    %{node |
+      schema_node: schema_node,
+      type_condition: %{condition | schema_node: schema_node},
+    }
   end
   defp set_schema_node(%Blueprint.Directive{name: name} = node, _parent, schema, adapter) do
     schema_node =
@@ -61,10 +74,14 @@ defmodule Absinthe.Phase.Schema do
     %{node | schema_node: schema_node}
   end
   defp set_schema_node(%Blueprint.Document.Operation{type: op_type} = node, _parent, schema, _adapter) do
-    %{node | schema_node: schema.__absinthe_type__(op_type)}
+    %{node | schema_node: Absinthe.Schema.cached_lookup_type(schema, op_type)}
   end
-  defp set_schema_node(%Blueprint.Document.Fragment.Named{} = node, _parent, schema, _adapter) do
-    %{node | schema_node: schema.__absinthe_type__(node.type_condition.name)}
+  defp set_schema_node(%Blueprint.Document.Fragment.Named{type_condition: %{name: type_name} = condition} = node, _parent, schema, _adapter) do
+    schema_node = Absinthe.Schema.cached_lookup_type(schema, type_name)
+    %{node |
+      schema_node: schema_node,
+      type_condition: %{condition | schema_node: schema_node},
+    }
   end
   defp set_schema_node(%Blueprint.Document.VariableDefinition{type: type_reference} = node, _parent, schema, _adapter) do
     wrapped =
@@ -91,7 +108,7 @@ defmodule Absinthe.Phase.Schema do
       |> Type.expand(schema)
       |> Type.unwrap
 
-    set_schema_node(%{node | type_condition: %Blueprint.TypeReference.Name{name: type.name}}, parent, schema, adapter)
+    set_schema_node(%{node | type_condition: %Blueprint.TypeReference.Name{name: type.name, schema_node: type}}, parent, schema, adapter)
   end
   defp set_schema_node(%Blueprint.Document.Field{} = node, parent, schema, adapter) do
     %{node | schema_node: find_schema_field(parent.schema_node, node.name, schema, adapter)}
@@ -103,7 +120,12 @@ defmodule Absinthe.Phase.Schema do
     node
   end
   defp set_schema_node(%Blueprint.Input.Field{} = node, parent, schema, adapter) do
-    %{node | schema_node: find_schema_field(parent.schema_node, node.name, schema, adapter)}
+    case node.name do
+      "__" <> _ ->
+        %{node | schema_node: nil}
+      name ->
+        %{node | schema_node: find_schema_field(parent.schema_node, name, schema, adapter)}
+    end
   end
   defp set_schema_node(%Blueprint.Input.List{} = node, parent, _schema, _adapter) do
     case Type.unwrap_non_null(parent.schema_node) do
@@ -155,7 +177,7 @@ defmodule Absinthe.Phase.Schema do
   end
   defp find_schema_field(%Type.Field{type: maybe_wrapped_type}, name, schema, adapter) do
     type = Type.unwrap(maybe_wrapped_type)
-    |> schema.__absinthe_type__
+    |> schema.__absinthe_lookup__
     find_schema_field(type, name, schema, adapter)
   end
   defp find_schema_field(_, _, _, _) do
@@ -166,8 +188,8 @@ defmodule Absinthe.Phase.Schema do
     Blueprint.TypeReference.List => Type.List,
     Blueprint.TypeReference.NonNull => Type.NonNull
   }
-  defp type_reference_to_type(%Blueprint.TypeReference.Name{} = node, schema) do
-    Schema.lookup_type(schema, node.name)
+  defp type_reference_to_type(%Blueprint.TypeReference.Name{name: name}, schema) do
+    Schema.lookup_type(schema, name)
   end
   for {blueprint_type, core_type} <- @type_mapping do
     defp type_reference_to_type(%unquote(blueprint_type){} = node, schema) do

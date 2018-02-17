@@ -31,6 +31,11 @@ ExponentIndicator   = [eE]
 ExponentPart        = {ExponentIndicator}{Sign}?{Digit}+
 FloatValue          = {IntegerPart}{FractionalPart}|{IntegerPart}{ExponentPart}|{IntegerPart}{FractionalPart}{ExponentPart}
 
+% Block String Value
+EscapedBlockStringQuote = (\\""")
+BlockStringCharacter    = (\n|\t|\r|[^\x{0000}-\x{001F}]|{EscapedBlockStringQuote})
+BlockStringValue        = """{BlockStringCharacter}*"""
+
 % String Value
 HexDigit            = [0-9A-Fa-f]
 EscapedUnicode      = u{HexDigit}{HexDigit}{HexDigit}{HexDigit}
@@ -40,7 +45,6 @@ StringValue         = "{StringCharacter}*"
 
 % Boolean Value
 BooleanValue        = true|false
-
 
 % Reserved words
 ReservedWord        = query|mutation|subscription|fragment|on|implements|interface|union|scalar|enum|input|extend|type|directive|ON|null|schema
@@ -52,6 +56,7 @@ Rules.
 {ReservedWord}      : {token, {list_to_atom(TokenChars), TokenLine}}.
 {IntValue}          : {token, {int_value, TokenLine, TokenChars}}.
 {FloatValue}        : {token, {float_value, TokenLine, TokenChars}}.
+{BlockStringValue}  : {token, {block_string_value, TokenLine, TokenChars}}.
 {StringValue}       : {token, {string_value, TokenLine, TokenChars}}.
 {BooleanValue}      : {token, {boolean_value, TokenLine, TokenChars}}.
 {Name}              : {token, {name, TokenLine, TokenChars}}.

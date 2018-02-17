@@ -10,6 +10,7 @@ defmodule BadInterfaceSchema do
   object :foo do
     field :not_name, :string
     interface :named
+    interface :aged
     is_type_of fn
       _ ->
         true
@@ -32,6 +33,10 @@ defmodule BadInterfaceSchema do
 
    interface :named do
      field :name, :string
+   end
+
+   interface :aged do
+     field :age, :integer
    end
 
 end

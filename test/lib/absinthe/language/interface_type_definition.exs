@@ -20,14 +20,14 @@ defmodule Absinthe.Language.InterfaceTypeDefinitionTest do
 
   describe "converting to Blueprint" do
 
-    it "works, given a Blueprint Schema 'interface' definition" do
+    test "works, given a Blueprint Schema 'interface' definition" do
       assert %Blueprint.Schema.InterfaceTypeDefinition{name: "Entity", directives: [%{name: "description"}]} = from_input(@idl)
     end
 
   end
 
   defp from_input(text) do
-    {:ok, doc} = Absinthe.Phase.Parse.run(text)
+    {:ok, %{input: doc}} = Absinthe.Phase.Parse.run(text)
 
     doc
     |> extract_ast_node

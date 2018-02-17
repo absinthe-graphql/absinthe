@@ -22,10 +22,10 @@ defmodule Absinthe.Phase.Document.Arguments.FlagInvalid do
     node |> flag_invalid(:extra)
   end
   defp handle_node(%Blueprint.Input.Argument{} = node) do
-    check_children(node, node.input_value.normalized, :bad_argument)
+    check_child(node, node.input_value.normalized, :bad_argument)
   end
   defp handle_node(%Blueprint.Input.Field{} = node) do
-    check_children(node, node.input_value.normalized, :bad_field)
+    check_child(node, node.input_value.normalized, :bad_field)
   end
   defp handle_node(%Blueprint.Input.List{} = node) do
     check_children(node, node.items |> Enum.map(&(&1.normalized)), :bad_list)
@@ -35,17 +35,23 @@ defmodule Absinthe.Phase.Document.Arguments.FlagInvalid do
   end
   defp handle_node(node), do: node
 
+  defp check_child(node, %{flags: %{invalid: _}}, flag) do
+    flag_invalid(node, flag)
+  end
+  defp check_child(node, _, _) do
+    node
+  end
+
   defp check_children(node, children, flag) do
-    children
-    |> Blueprint.prewalk(true, fn
-      %{flags: %{invalid: _}} = child, _ ->
-        {:halt, child, false}
-      node, acc ->
-        {:halt, node, acc}
-    end)
-    |> case do
-      {_, true} -> node
-      {_, false} -> node |> flag_invalid(flag)
+    invalid? =
+      fn
+        %{flags: %{invalid: _}} -> true
+        _                       -> false
+      end
+    if Enum.any?(children, invalid?) do
+      flag_invalid(node, flag)
+    else
+      node
     end
   end
 end

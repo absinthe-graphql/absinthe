@@ -22,11 +22,11 @@ defmodule Absinthe.Schema.Error do
 
   defp indent(text) do
     text
-    |> String.strip
+    |> String.trim
     |> String.split("\n")
     |> Enum.map(&"  #{&1}")
     |> Enum.join("\n")
-    |> String.lstrip
+    |> String.trim_leading
   end
 
 end

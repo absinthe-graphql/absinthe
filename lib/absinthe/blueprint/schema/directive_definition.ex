@@ -17,7 +17,7 @@ defmodule Absinthe.Blueprint.Schema.DirectiveDefinition do
   @type t :: %__MODULE__{
     name: String.t,
     description: nil,
-    arguments: [Blueprint.ArgumentDefinition.t],
+    arguments: [Blueprint.Schema.InputValueDefinition.t],
     locations: [String.t],
     errors: [Absinthe.Phase.Error.t],
   }

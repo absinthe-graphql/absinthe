@@ -4,7 +4,7 @@ defmodule Absinthe.Phase do
   Behaviour for Absinthe Phases.
 
   A phase takes an `Absinthe.Blueprint` document and returns another blueprint document.
-  All validation, resolution, and result bulding happens via phases. See
+  All validation, resolution, and result building happens via phases. See
   `Absinthe.Pipeline` for information on how to run phases. See the code under
   this namespace for information on individual phases.
   """
@@ -18,10 +18,12 @@ defmodule Absinthe.Phase do
     | {:error, String.t}
 
   alias __MODULE__
+  alias Absinthe.Blueprint
 
   defmacro __using__(_) do
     quote do
       @behaviour Phase
+      import(unquote(__MODULE__))
 
       @spec flag_invalid(Blueprint.node_t) :: Blueprint.node_t
       def flag_invalid(%{flags: _} = node) do
@@ -38,15 +40,6 @@ defmodule Absinthe.Phase do
         Absinthe.Blueprint.put_flag(node, flag, __MODULE__)
       end
 
-      @spec put_error(Blueprint.node_t, Phase.Error.t) :: Blueprint.node_t
-      def put_error(%{errors: _} = node, error) do
-        update_in(node.errors, &[error | &1])
-      end
-
-      def any_invalid?(nodes) do
-        Enum.any?(nodes, &match?(%{flags: %{invalid: _}}, &1))
-      end
-
       def inherit_invalid(%{flags: _} = node, children, add_flag) do
         case any_invalid?(children) do
           true ->
@@ -57,6 +50,15 @@ defmodule Absinthe.Phase do
       end
 
     end
+  end
+
+  @spec put_error(Blueprint.node_t, Phase.Error.t) :: Blueprint.node_t
+  def put_error(%{errors: _} = node, error) do
+    update_in(node.errors, &[error | &1])
+  end
+
+  def any_invalid?(nodes) do
+    Enum.any?(nodes, &match?(%{flags: %{invalid: _}}, &1))
   end
 
   @callback run(any, any) :: result_t

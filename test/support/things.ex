@@ -6,9 +6,18 @@ defmodule Things do
     "bar" => %{id: "bar", name: "Bar", value: 5}
   }
 
+  enum :sigils_work, values: ~w(foo bar)a
+
+  enum :sigils_work_inside do
+    values ~w(foo bar)a
+  end
+
   enum :failure_type do
+    value :multiple
     value :with_code
     value :without_message
+    value :multiple_with_code
+    value :multiple_without_message
   end
 
   mutation do
@@ -31,10 +40,16 @@ defmodule Things do
     field :failing_thing, type: :thing do
       arg :type, type: :failure_type
       resolve fn
-        (%{type: :with_code}, _) ->
+        %{type: :multiple}, _ ->
+          {:error, ["one", "two"]}
+        %{type: :with_code}, _ ->
           {:error, message: "Custom Error", code: 42}
-        (%{type: :without_message}, _) ->
+        %{type: :without_message}, _ ->
           {:error, code: 42}
+        %{type: :multiple_with_code}, _ ->
+          {:error, [%{message: "Custom Error 1", code: 1}, %{message: "Custom Error 2", code: 2}]}
+        %{type: :multiple_without_message}, _ ->
+          {:error, [%{message: "Custom Error 1", code: 1}, %{code: 2}]}
       end
     end
 
@@ -106,11 +121,7 @@ defmodule Things do
       ],
       resolve: fn
         %{id: id}, _ ->
-          # {:ok, @db |> Map.get(id)}
-          Absinthe.Resolution.Helpers.async(fn ->
-            {:ok, @db |> Map.get(id)}
-          end)
-
+          {:ok, @db |> Map.get(id)}
       end
 
     field :deprecated_thing,
@@ -140,13 +151,6 @@ defmodule Things do
         %{id: id}, _ ->
           {:ok, @db |> Map.get(id)}
       end
-
-    field :things,
-      type: list_of(:thing),
-      resolve: fn
-        _, _ ->
-          {:ok, Map.values(@db)}
-      end
   end
 
   input_object :input_thing do
@@ -155,11 +159,22 @@ defmodule Things do
     field :deprecated_field, :string, deprecate: true
     field :deprecated_field_with_reason, :string, deprecate: "reason"
     field :deprecated_non_null_field, non_null(:string), deprecate: true
-    field :deprecated_field_with_reason, :string, deprecate: "reason"
   end
 
   object :thing do
     description "A thing"
+
+    field :fail, :id do
+      @desc "the id we want this field to fail on"
+      arg :id, :id
+
+      resolve fn
+        %{id: id}, %{id: id}, _ ->
+          {:error, "fail"}
+        %{id: id}, _, _ ->
+          {:ok, id}
+      end
+    end
 
     field :id, non_null(:string),
       description: "The ID of the thing"

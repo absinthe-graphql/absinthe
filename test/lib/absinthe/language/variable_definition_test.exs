@@ -11,14 +11,14 @@ defmodule Absinthe.Language.VariableDefinitionTest do
 
   describe "converting to Blueprint" do
 
-    it "builds a VariableDefinition.t" do
+    test "builds a VariableDefinition.t" do
       assert %Blueprint.Document.VariableDefinition{name: "showFoo", type: %Blueprint.TypeReference.Name{name: "Boolean"}, default_value: %Blueprint.Input.Boolean{value: true}, source_location: %Blueprint.Document.SourceLocation{line: 1}} = from_input(@query)
     end
 
   end
 
   defp from_input(text) do
-    {:ok, doc} = Absinthe.Phase.Parse.run(text)
+    {:ok, %{input: doc}} = Absinthe.Phase.Parse.run(text)
 
     doc
     |> extract_ast_node

@@ -2,7 +2,6 @@ defmodule Absinthe.Type.DirectiveTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.Schema
-  import AssertResult
 
   defmodule TestSchema do
     use Absinthe.Schema
@@ -14,7 +13,7 @@ defmodule Absinthe.Type.DirectiveTest do
   end
 
   describe "directives" do
-    it "are loaded as built-ins" do
+    test "are loaded as built-ins" do
       assert %{skip: "skip", include: "include"} = TestSchema.__absinthe_directives__
       assert TestSchema.__absinthe_directive__(:skip)
       assert TestSchema.__absinthe_directive__("skip") == TestSchema.__absinthe_directive__(:skip)
@@ -32,10 +31,10 @@ defmodule Absinthe.Type.DirectiveTest do
       }
     }
     """
-    it "is defined" do
+    test "is defined" do
       assert Schema.lookup_directive(ContactSchema, :skip)
     end
-    it "behaves as expected for a field" do
+    test "behaves as expected for a field" do
       assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query_field, ContactSchema, variables: %{"skipPerson" => false})
       assert {:ok, %{data: %{}}} == Absinthe.run(@query_field, ContactSchema, variables: %{"skipPerson" => true})
       assert_result {:ok, %{errors: [%{message: ~s(In argument "if": Expected type "Boolean!", found null.)}]}}, run(@query_field, ContactSchema)
@@ -52,7 +51,7 @@ defmodule Absinthe.Type.DirectiveTest do
       age
     }
     """
-    it "behaves as expected for a fragment" do
+    test "behaves as expected for a fragment" do
       assert_result {:ok, %{data: %{"person" => %{"name" => "Bruce", "age" => 35}}}}, run(@query_fragment, ContactSchema, variables: %{"skipAge" => false})
       assert_result {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}}, run(@query_fragment, ContactSchema, variables: %{"skipAge" => true})
       assert_result {:ok, %{errors: [%{message: ~s(In argument "if": Expected type "Boolean!", found null.)}]}}, run(@query_fragment, ContactSchema)
@@ -67,10 +66,10 @@ defmodule Absinthe.Type.DirectiveTest do
       }
     }
     """
-    it "is defined" do
+    test "is defined" do
       assert Schema.lookup_directive(ContactSchema, :include)
     end
-    it "behaves as expected for a field" do
+    test "behaves as expected for a field" do
       assert_result {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}}, run(@query_field, ContactSchema, variables: %{"includePerson" => true})
       assert_result {:ok, %{data: %{}}}, run(@query_field, ContactSchema, variables: %{"includePerson" => false})
       assert_result {:ok, %{errors: [%{locations: [%{column: 0, line: 2}], message: ~s(In argument "if": Expected type "Boolean!", found null.)}]}}, run(@query_field, ContactSchema)
@@ -87,12 +86,12 @@ defmodule Absinthe.Type.DirectiveTest do
       age
     }
     """
-    it "behaves as expected for a fragment" do
+    test "behaves as expected for a fragment" do
       assert {:ok, %{data: %{"person" => %{"name" => "Bruce", "age" => 35}}}} == Absinthe.run(@query_fragment, ContactSchema, variables: %{"includeAge" => true})
       assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query_fragment, ContactSchema, variables: %{"includeAge" => false})
     end
 
-    it "should return an error if the variable is not supplied" do
+    test "should return an error if the variable is not supplied" do
       assert {:ok, %{errors: errors}} = Absinthe.run(@query_fragment, ContactSchema)
       assert [] != errors
     end
@@ -111,7 +110,7 @@ defmodule Absinthe.Type.DirectiveTest do
     }
     """
 
-    it "works as expected" do
+    test "works as expected" do
       assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query, ContactSchema, variables: %{"skipAge" => true})
       assert {:ok, %{data: %{"person" => %{"name" => "Bruce", "age" => 35}}}} == Absinthe.run(@query, ContactSchema, variables: %{"skipAge" => false})
       assert {:ok, %{data: %{"person" => %{"name" => "Bruce", "age" => 35}}}} == Absinthe.run(@query, ContactSchema)
@@ -132,7 +131,7 @@ defmodule Absinthe.Type.DirectiveTest do
     }
     """
 
-    it "works as expected" do
+    test "works as expected" do
       assert {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}} == Absinthe.run(@query, ContactSchema, variables: %{"skipAge" => true})
       assert {:ok, %{data: %{"person" => %{"name" => "Bruce", "age" => 35}}}} == Absinthe.run(@query, ContactSchema, variables: %{"skipAge" => false})
       assert {:ok, %{data: %{"person" => %{"name" => "Bruce", "age" => 35}}}} == Absinthe.run(@query, ContactSchema)

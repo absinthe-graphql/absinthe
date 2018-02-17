@@ -13,19 +13,19 @@ defmodule Absinthe.Language.FieldDefinitionTest do
 
   describe "converting to Blueprint" do
 
-    it "works, given a Blueprint Schema object field definition" do
+    test "works, given a Blueprint Schema object field definition" do
       {doc, fields} = fields_from_input(@idl)
       field_def = fields |> List.first |> Blueprint.Draft.convert(doc)
       assert %Blueprint.Schema.FieldDefinition{name: "bar", identifier: :bar, type: %Blueprint.TypeReference.NonNull{of_type: %Blueprint.TypeReference.List{of_type: %Blueprint.TypeReference.NonNull{of_type: %Blueprint.TypeReference.Name{name: "String"}}}}} = field_def
     end
 
-    it "captures directives" do
+    test "captures directives" do
       {doc, fields} = fields_from_input(@idl)
       field_def = fields |> Enum.at(1) |> Blueprint.Draft.convert(doc)
       assert %Blueprint.Schema.FieldDefinition{name: "baz"} = field_def
     end
 
-    it "includes argument definitions" do
+    test "includes argument definitions" do
       {doc, fields} = fields_from_input(@idl)
       field_def = fields |> Enum.at(2) |> Blueprint.Draft.convert(doc)
       assert %Blueprint.Schema.FieldDefinition{name: "quuxes", identifier: :quuxes, type: %Blueprint.TypeReference.List{of_type: %Blueprint.TypeReference.Name{name: "Quux"}}, arguments: [%Blueprint.Schema.InputValueDefinition{name: "limit", type: %Blueprint.TypeReference.Name{name: "Int"}, default_value: %Blueprint.Input.Integer{value: 4, source_location: %Blueprint.Document.SourceLocation{column: nil, line: 4}}}]} == field_def
@@ -34,7 +34,7 @@ defmodule Absinthe.Language.FieldDefinitionTest do
   end
 
   defp fields_from_input(text) do
-    {:ok, doc} = Absinthe.Phase.Parse.run(text)
+    {:ok, %{input: doc}} = Absinthe.Phase.Parse.run(text)
 
     doc
     |> extract_fields

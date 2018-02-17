@@ -50,6 +50,9 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
     |> Enum.map(&(&1.normalized))
     |> Enum.with_index
     |> Enum.flat_map(fn
+      {%{schema_node: nil} = child, _} ->
+        collect_child_errors(child, schema)
+
       {%{flags: %{invalid: _}} = child, idx} ->
         child_type_name =
           child.schema_node
@@ -103,11 +106,11 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
   # Generate the error for the node
   @spec error(Blueprint.node_t, String.t) :: Phase.Error.t
   defp error(node, message) do
-    Phase.Error.new(
-      __MODULE__,
-      message,
-      location: node.source_location
-    )
+    %Phase.Error{
+      phase: __MODULE__,
+      message: message,
+      locations: [node.source_location]
+    }
   end
 
   def error_message(arg_name, inspected_value, verbose_errors \\ [])

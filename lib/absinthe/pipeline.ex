@@ -35,16 +35,19 @@ defmodule Absinthe.Pipeline do
     jump_phases: true,
   ]
 
+  def options(overrides \\ []) do
+    Keyword.merge(@defaults, overrides)
+  end
+
   @spec for_document(Absinthe.Schema.t) :: t
   @spec for_document(Absinthe.Schema.t, Keyword.t) :: t
   def for_document(schema, options \\ []) do
-    options = @defaults
-    |> Keyword.merge(Keyword.put(options, :schema, schema))
+    options = options(Keyword.put(options, :schema, schema))
     [
       # Parse Document
       {Phase.Parse, options},
       # Convert to Blueprint
-      Phase.Blueprint,
+      {Phase.Blueprint, options},
       # Find Current Operation (if any)
       {Phase.Document.Validation.ProvidedAnOperation, options},
       {Phase.Document.CurrentOperation, options},
@@ -62,6 +65,7 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Validation.UniqueVariableNames,
       # Apply Input
       {Phase.Document.Variables, options},
+      Phase.Document.Validation.ProvidedNonNullVariables,
       Phase.Document.Arguments.Normalize,
       # Map to Schema
       {Phase.Schema, options},
@@ -70,7 +74,7 @@ defmodule Absinthe.Pipeline do
       # Process Arguments
       Phase.Document.Arguments.CoerceEnums,
       Phase.Document.Arguments.CoerceLists,
-      Phase.Document.Arguments.Parse,
+      {Phase.Document.Arguments.Parse, options},
       Phase.Document.MissingVariables,
       Phase.Document.MissingLiterals,
       Phase.Document.Arguments.FlagInvalid,
@@ -84,15 +88,18 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Validation.UniqueArgumentNames,
       Phase.Document.Validation.UniqueInputFieldNames,
       Phase.Document.Validation.FieldsOnCorrectType,
+      Phase.Document.Validation.OnlyOneSubscription,
       # Check Validation
       {Phase.Document.Validation.Result, options},
-      # Apply Directives
-      Phase.Document.Arguments.Data,
-      Phase.Document.Directives,
       # Prepare for Execution
-      Phase.Document.CascadeInvalid,
-      Phase.Document.Flatten,
+      Phase.Document.Arguments.Data,
+      # Apply Directives
+      Phase.Document.Directives,
+      # Analyse Complexity
+      {Phase.Document.Complexity.Analysis, options},
+      {Phase.Document.Complexity.Result, options},
       # Execution
+      {Phase.Subscription.SubscribeSelf, options},
       {Phase.Document.Execution.Resolution, options},
       # Format Result
       Phase.Document.Result
@@ -147,6 +154,51 @@ defmodule Absinthe.Pipeline do
     end
   end
 
+  @doc """
+  Replace a phase in a pipeline with another, supporting reusing the same
+  options.
+
+  ## Examples
+
+  Replace a simple phase (without options):
+
+      iex> Pipeline.replace([A, B, C], B, X)
+      [A, X, C]
+
+  Replace a phase with options, retaining them:
+
+      iex> Pipeline.replace([A, {B, [name: "Thing"]}, C], B, X)
+      [A, {X, [name: "Thing"]}, C]
+
+  Replace a phase with options, overriding them:
+
+      iex> Pipeline.replace([A, {B, [name: "Thing"]}, C], B, {X, [name: "Nope"]})
+      [A, {X, [name: "Nope"]}, C]
+
+  """
+  @spec replace(t, Phase.t, phase_config_t) :: t
+  def replace(pipeline, phase, replacement) do
+    Enum.map(pipeline, fn
+      candidate ->
+        case match_phase?(phase, candidate) do
+          true ->
+            case phase_invocation(candidate) do
+              {_, []} ->
+                replacement
+              {_, opts} ->
+                case is_atom(replacement) do
+                  true ->
+                    {replacement, opts}
+                  false ->
+                    replacement
+                end
+            end
+          false ->
+            candidate
+        end
+    end)
+  end
+
   # Whether a phase configuration is for a given phase
   @spec match_phase?(Phase.t, phase_config_t) :: boolean
   defp match_phase?(phase, phase), do: true
@@ -169,16 +221,16 @@ defmodule Absinthe.Pipeline do
     |> Enum.filter(&(not match_phase?(phase, &1)))
   end
 
-  @spec insert_before(t, Phase.t, Phase.t) :: t
+  @spec insert_before(t, Phase.t, phase_config_t | [phase_config_t]) :: t
   def insert_before(pipeline, phase, additional) do
     beginning = before(pipeline, phase)
-    beginning ++ [additional] ++ (pipeline -- beginning)
+    beginning ++ List.wrap(additional) ++ (pipeline -- beginning)
   end
 
-  @spec insert_before(t, Phase.t, Phase.t) :: t
+  @spec insert_after(t, Phase.t, phase_config_t | [phase_config_t]) :: t
   def insert_after(pipeline, phase, additional) do
     beginning = upto(pipeline, phase)
-    beginning ++ [additional] ++ (pipeline -- beginning)
+    beginning ++ List.wrap(additional) ++ (pipeline -- beginning)
   end
 
   @spec reject(t, Regex.t) :: t
@@ -205,6 +257,10 @@ defmodule Absinthe.Pipeline do
         run_phase(from(todo, destination_phase), result, [phase | done])
       {:insert, result, extra_pipeline} ->
         run_phase(List.wrap(extra_pipeline) ++ todo, result, [phase | done])
+      {:swap, result, target, replacements} ->
+        todo
+        |> replace(target, replacements)
+        |> run_phase(result, [phase | done])
       {:replace, result, final_pipeline} ->
         run_phase(List.wrap(final_pipeline), result, [phase | done])
       {:error, message} ->

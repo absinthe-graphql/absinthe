@@ -59,7 +59,10 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNames do
 
   @spec type_name(Type.t, Schema.t) :: String.t
   defp type_name(%Type.Field{} = node, schema) do
-    schema.__absinthe_type__(node.type).name
+    node.type
+    |> Type.unwrap
+    |> schema.__absinthe_lookup__()
+    |> Map.fetch!(:name)
   end
   defp type_name(node, _) do
     node.name
@@ -68,21 +71,21 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNames do
   # Generate the error for a directive argument
   @spec directive_error(Blueprint.node_t, Blueprint.node_t) :: Phase.Error.t
   defp directive_error(argument_node, directive_node) do
-    Phase.Error.new(
-      __MODULE__,
-      directive_error_message(argument_node.name, directive_node.name),
-      location: argument_node.source_location
-    )
+    %Phase.Error{
+      phase: __MODULE__,
+      message: directive_error_message(argument_node.name, directive_node.name),
+      locations: [argument_node.source_location],
+    }
   end
 
   # Generate the error for a field argument
   @spec field_error(Blueprint.node_t, Blueprint.node_t, String.t) :: Phase.Error.t
   defp field_error(argument_node, field_node, type_name) do
-    Phase.Error.new(
-      __MODULE__,
-      field_error_message(argument_node.name, field_node.name, type_name),
-      location: argument_node.source_location
-    )
+    %Phase.Error{
+      phase: __MODULE__,
+      message: field_error_message(argument_node.name, field_node.name, type_name),
+      locations: [argument_node.source_location],
+    }
   end
 
   @doc """

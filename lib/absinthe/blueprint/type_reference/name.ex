@@ -7,6 +7,7 @@ defmodule Absinthe.Blueprint.TypeReference.Name do
   @enforce_keys [:name]
   defstruct [
     :name,
+    :schema_node,
     errors: []
   ]
 

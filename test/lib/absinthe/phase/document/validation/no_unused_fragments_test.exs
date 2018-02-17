@@ -17,7 +17,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedFragmentsTest do
 
   describe "Validate: No unused fragments" do
 
-    it "all fragment names are used" do
+    test "all fragment names are used" do
       assert_passes_rule(@rule,
         """
         {
@@ -44,7 +44,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedFragmentsTest do
     end
 
 
-    it "all fragment names are used by multiple operations" do
+    test "all fragment names are used by multiple operations" do
       assert_passes_rule(@rule,
         """
         query Foo {
@@ -72,7 +72,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedFragmentsTest do
       )
     end
 
-    it "contains unknown fragments" do
+    test "contains unknown fragments" do
       assert_fails_rule(@rule,
         """
         query Foo {
@@ -110,7 +110,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedFragmentsTest do
       )
     end
 
-    it "contains unknown fragments with ref cycle" do
+    test "contains unknown fragments with ref cycle" do
       assert_fails_rule(@rule,
         """
         query Foo {
@@ -150,7 +150,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedFragmentsTest do
       )
     end
 
-    it "contains unknown and undef fragments" do
+    test "contains unknown and undef fragments" do
       assert_fails_rule(@rule,
         """
         query Foo {

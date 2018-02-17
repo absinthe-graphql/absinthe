@@ -38,11 +38,11 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedFragments do
   # Generate the error for the node
   @spec error(Blueprint.Document.Fragment.Named.t) :: Phase.Error.t
   defp error(node) do
-    Phase.Error.new(
-      __MODULE__,
-      error_message(node.name),
-      location: node.source_location
-    )
+    %Phase.Error{
+      phase: __MODULE__,
+      message: error_message(node.name),
+      locations: [node.source_location]
+    }
   end
 
   @doc """

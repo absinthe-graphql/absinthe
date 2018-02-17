@@ -6,7 +6,6 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   @shortdoc "Generate a schema.json file for an Absinthe schema"
 
   @default_filename "./schema.json"
-  @default_codec Poison
   @default_codec_name "Poison"
 
   @moduledoc """
@@ -14,7 +13,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
 
   ## Usage
 
-      absinthe.schema.json [OPTIONS] [FILENAME]
+      absinthe.schema.json [FILENAME] [OPTIONS]
 
   ## Options
 
@@ -49,7 +48,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   @introspection_graphql Path.join([:code.priv_dir(:absinthe), "graphql", "introspection.graphql"])
 
   def run(argv) do
-    Mix.Task.run("app.start", [])
+    Application.ensure_all_started(:absinthe)
 
     {opts, args, _} = OptionParser.parse(argv)
 

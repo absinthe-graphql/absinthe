@@ -39,11 +39,12 @@ defmodule Absinthe.Type.Union do
   The `__private__` and `:__reference__` keys are for internal use.
 
   """
-  @type t :: %{
+  @type t :: %__MODULE__{
     name: binary,
     description: binary,
     types: [Type.identifier_t],
-    resolve_type: ((any, Absinthe.Execution.t) -> atom | nil),
+    resolve_type: ((any, Absinthe.Resolution.t) -> atom | nil),
+    identifier: atom,
     __private__: Keyword.t,
     __reference__: Type.Reference.t,
   }
@@ -52,6 +53,7 @@ defmodule Absinthe.Type.Union do
     name: nil,
     description: nil,
     resolve_type: nil,
+    identifier: nil,
     types: [],
     __private__: [],
     __reference__: nil,
@@ -72,8 +74,9 @@ defmodule Absinthe.Type.Union do
 
   @doc false
   @spec resolve_type(t, any, Absinthe.Resolution.t) :: Type.t | nil
-  def resolve_type(%{resolve_type: nil, types: types}, obj, %{schema: schema}) do
-    Enum.find(types, fn
+  def resolve_type(type, object, env, opts \\ [lookup: true])
+  def resolve_type(%{resolve_type: nil, types: types}, obj, %{schema: schema}, opts) do
+    type_name = Enum.find(types, fn
       %{is_type_of: nil} ->
         false
       type ->
@@ -86,13 +89,22 @@ defmodule Absinthe.Type.Union do
             check.(obj)
         end
     end)
+    if opts[:lookup] do
+      Schema.lookup_type(schema, type_name)
+    else
+      type_name
+    end
   end
-  def resolve_type(%{resolve_type: resolver}, obj, %{schema: schema} = env) do
+  def resolve_type(%{resolve_type: resolver}, obj, %{schema: schema} = env, opts) do
     case resolver.(obj, env) do
       nil ->
         nil
       ident when is_atom(ident) ->
-        Absinthe.Schema.lookup_type(schema, ident)
+        if opts[:lookup] do
+          Absinthe.Schema.lookup_type(schema, ident)
+        else
+          ident
+        end
     end
   end
 

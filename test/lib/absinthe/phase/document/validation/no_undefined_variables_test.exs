@@ -17,7 +17,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
 
   describe "Validate: No undefined variables" do
 
-    it "all variables defined" do
+    test "all variables defined" do
       assert_passes_rule(@rule,
         """
         query Foo($a: String, $b: String, $c: String) {
@@ -28,7 +28,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
       )
     end
 
-    it "all variables deeply defined" do
+    test "all variables deeply defined" do
       assert_passes_rule(@rule,
         """
         query Foo($a: String, $b: String, $c: String) {
@@ -43,7 +43,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
       )
     end
 
-    it "all variables deeply in inline fragments defined" do
+    test "all variables deeply in inline fragments defined" do
       assert_passes_rule(@rule,
         """
         query Foo($a: String, $b: String, $c: String) {
@@ -62,7 +62,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
         )
     end
 
-    it "all variables in fragments deeply defined" do
+    test "all variables in fragments deeply defined" do
       assert_passes_rule(@rule,
         """
         query Foo($a: String, $b: String, $c: String) {
@@ -86,7 +86,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
       )
     end
 
-    it "variable within single fragment defined in multiple operations" do
+    test "variable within single fragment defined in multiple operations" do
       assert_passes_rule(@rule,
         """
         query Foo($a: String) {
@@ -103,7 +103,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
       )
     end
 
-    it "variable within fragments defined in operations" do
+    test "variable within fragments defined in operations" do
       assert_passes_rule(@rule,
         """
         query Foo($a: String) {
@@ -123,7 +123,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
       )
     end
 
-    it "variable within recursive fragment defined" do
+    test "variable within recursive fragment defined" do
       assert_passes_rule(@rule,
         """
         query Foo($a: String) {
@@ -139,7 +139,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
       )
     end
 
-    it "variable not defined" do
+    test "variable not defined" do
       assert_fails_rule(@rule,
         """
         query Foo($a: String, $b: String, $c: String) {
@@ -153,7 +153,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
       )
     end
 
-    it "variable not defined by un-named query" do
+    test "variable not defined by un-named query" do
       assert_fails_rule(@rule,
         """
         {
@@ -167,7 +167,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
       )
     end
 
-    it "multiple variables not defined" do
+    test "multiple variables not defined" do
       assert_fails_rule(@rule,
         """
         query Foo($b: String) {
@@ -182,7 +182,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
       )
     end
 
-    it "variable in fragment not defined by un-named query" do
+    test "variable in fragment not defined by un-named query" do
       assert_fails_rule(@rule,
         """
         {
@@ -199,7 +199,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
       )
     end
 
-    it "variable in fragment not defined by operation" do
+    test "variable in fragment not defined by operation" do
       assert_fails_rule(@rule,
         """
         query Foo($a: String, $b: String) {
@@ -226,7 +226,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
       )
     end
 
-    it "multiple variables in fragments not defined" do
+    test "multiple variables in fragments not defined" do
       assert_fails_rule(@rule,
         """
         query Foo($b: String) {
@@ -254,7 +254,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
       )
     end
 
-    it "single variable in fragment not defined by multiple operations" do
+    test "single variable in fragment not defined by multiple operations" do
       assert_fails_rule(@rule,
         """
         query Foo($a: String) {
@@ -275,7 +275,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
       )
     end
 
-    it "variables in fragment not defined by multiple operations" do
+    test "variables in fragment not defined by multiple operations" do
       assert_fails_rule(@rule,
         """
         query Foo($b: String) {
@@ -296,7 +296,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
       )
     end
 
-    it "variable in fragment used by other operation" do
+    test "variable in fragment used by other operation" do
       assert_fails_rule(@rule,
         """
         query Foo($b: String) {
@@ -320,7 +320,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
       )
     end
 
-    it "multiple undefined variables produce multiple errors" do
+    test "multiple undefined variables produce multiple errors" do
       assert_fails_rule(@rule,
         """
         query Foo($b: String) {

@@ -34,13 +34,13 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNames do
   end
 
   # Check an argument, finding any duplicates
-  @spec process(Blueprint.Argument.t, [Blueprint.Input.Argument.t]) :: Blueprint.Input.Argument.t
+  @spec process(Blueprint.Input.Argument.t, [Blueprint.Input.Argument.t]) :: Blueprint.Input.Argument.t
   defp process(argument, arguments) do
     check_duplicates(argument, Enum.filter(arguments, &(&1.name == argument.name)))
   end
 
   # Add flags and errors if necessary for each argument.
-  @spec check_duplicates(Blueprint.Argument.t, [Blueprint.Input.Argument.t]) :: Blueprint.Input.Argument.t
+  @spec check_duplicates(Blueprint.Input.Argument.t, [Blueprint.Input.Argument.t]) :: Blueprint.Input.Argument.t
   defp check_duplicates(argument, [_single]) do
     argument
   end
@@ -51,13 +51,13 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNames do
   end
 
   # Generate an error for a duplicate argument.
-  @spec error(Blueprint.Argument.t) :: Phase.Error.t
+  @spec error(Blueprint.Input.Argument.t) :: Phase.Error.t
   defp error(node) do
-    Phase.Error.new(
-      __MODULE__,
-      error_message,
-      location: node.source_location
-    )
+    %Phase.Error{
+      phase: __MODULE__,
+      message: error_message(),
+      locations: [node.source_location],
+    }
   end
 
   @doc """

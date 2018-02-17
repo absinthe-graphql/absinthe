@@ -20,7 +20,8 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNames do
     {:ok, result}
   end
 
-  @spec process(Blueprint.Document.Operation.t, [Blueprint.Document.Operation.t]) :: boolean
+  @spec process(Blueprint.Document.Operation.t, [Blueprint.Document.Operation.t]) ::
+    Blueprint.Document.Operation.t
   defp process(%{name: nil} = operation, _) do
     operation
   end
@@ -43,11 +44,11 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNames do
   # Generate an error for a duplicate operation.
   @spec error(Blueprint.Document.Operation.t) :: Phase.Error.t
   defp error(node) do
-    Phase.Error.new(
-      __MODULE__,
-      error_message(node.name),
-      location: node.source_location
-    )
+    %Phase.Error{
+      phase: __MODULE__,
+      message: error_message(node.name),
+      locations: [node.source_location],
+    }
   end
 
   @doc """

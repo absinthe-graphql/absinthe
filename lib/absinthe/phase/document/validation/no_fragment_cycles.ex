@@ -22,7 +22,7 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
   @spec do_run(Blueprint.t, %{validation_result_phase: Phase.t}) :: Phase.result_t
   def do_run(input, %{validation_result_phase: abort_phase}) do
     {fragments, error_count} = check(input.fragments)
-    result = put_in(input.fragments, fragments)
+    result = %{input | fragments: fragments}
     if error_count > 0 do
       {:jump, result, abort_phase}
     else
@@ -33,31 +33,53 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
   # Check a list of fragments for cycles
   @spec check([Blueprint.Document.Fragment.Named.t]) :: {[Blueprint.Document.Fragment.Named.t], integer}
   defp check(fragments) do
-    {_, graph} = Blueprint.prewalk(fragments, :digraph.new([:cyclic]), &vertex/2)
+    graph = :digraph.new([:cyclic])
+    try do
+      with {fragments, 0} <- check(fragments, graph) do
+        fragments = Map.new(fragments, &{&1.name, &1})
+
+        fragments =
+          graph
+          |> :digraph_utils.topsort
+          |> Enum.reverse
+          |> Enum.map(&Map.fetch!(fragments, &1))
+
+        # fragments |> Enum.map(&(&1.name)) |> IO.inspect
+
+        {fragments, 0}
+      end
+    after
+      :digraph.delete(graph)
+    end
+  end
+
+  @spec check([Blueprint.Document.Fragment.Named.t], :digraph.graph) :: {[Blueprint.Document.Fragment.Named.t], integer}
+  defp check(fragments, graph) do
+    Enum.each(fragments, fn(node) -> Blueprint.prewalk(node, &vertex(&1, graph)) end)
     {modified, error_count} = Enum.reduce(fragments, {[], 0}, fn
       fragment, {processed, error_count} ->
         errors_to_add = cycle_errors(fragment, :digraph.get_cycle(graph, fragment.name))
         fragment_with_errors = update_in(fragment.errors, &(errors_to_add ++ &1))
         {[fragment_with_errors | processed], error_count + length(errors_to_add)}
     end)
-    :digraph.delete(graph)
     {modified, error_count}
   end
 
   # Add a vertex modeling a fragment
-  @spec vertex(Blueprint.Document.Fragment.Named.t, :digraph.graph) :: {Blueprint.Document.Fragment.Named.t, :digraph.graph}
+  @spec vertex(Blueprint.Document.Fragment.Named.t, :digraph.graph) :: Blueprint.Document.Fragment.Named.t
   defp vertex(%Blueprint.Document.Fragment.Named{} = fragment, graph) do
     :digraph.add_vertex(graph, fragment.name)
-    Enum.each(fragment.selections, fn
+    Blueprint.prewalk(fragment, fn
       %Blueprint.Document.Fragment.Spread{} = spread ->
         edge(fragment, spread, graph)
-      _ ->
-        false
+        spread
+      node ->
+        node
     end)
-    {fragment, graph}
+    fragment
   end
-  defp vertex(fragment, graph) do
-    {fragment, graph}
+  defp vertex(fragment, _graph) do
+    fragment
   end
 
   # Add an edge, modeling the relationship between two fragments
@@ -90,7 +112,7 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
   end
 
   # Generate the error for a fragment cycle
-  @spec cycle_error(Blueprint.Document.Fragment.Named.t, String.t) :: Phase.t
+  @spec cycle_error(Blueprint.Document.Fragment.Named.t, String.t) :: Phase.Error.t
   defp cycle_error(fragment, message) do
     %Phase.Error{
       message: message,

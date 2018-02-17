@@ -14,13 +14,13 @@ defmodule Absinthe.Type do
   @type custom_t :: Type.Scalar.t | Type.Object.t | Type.Field.t | Type.Interface.t | Type.Union.t | Type.Enum.t | Type.InputObject.t
 
   @typedoc "All the possible types"
-  @type t :: custom_t | Type.List.t | Type.NonNull.t
+  @type t :: custom_t | wrapping_t
 
   @typedoc "A type identifier"
   @type identifier_t :: atom
 
   @typedoc "A type reference"
-  @type reference_t :: identifier_t | t | wrapping_t
+  @type reference_t :: identifier_t | t
 
   def identifier(%{__reference__: %{identifier: ident}}) do
     ident
@@ -161,7 +161,7 @@ defmodule Absinthe.Type do
 
   # NULLABLE TYPES
 
-  @nullable_type_modules [Type.Scalar, Type.Object, Type.Interface, Type.Union, Type.Enum, Type.InputObject, Type.List]
+  # @nullable_type_modules [Type.Scalar, Type.Object, Type.Interface, Type.Union, Type.Enum, Type.InputObject, Type.List]
 
   @typedoc "These types can all accept null as a value."
   @type nullable_t :: Type.Scalar.t | Type.Object.t | Type.Interface.t | Type.Union.t | Type.Enum.t | Type.InputObject.t | Type.List.t
@@ -209,12 +209,14 @@ defmodule Absinthe.Type do
   def wrapped?(_), do: false
 
   @doc "Unwrap a type from a List or NonNull"
-  @spec unwrap(wrapping_t | t) :: t
+  @spec unwrap(wrapping_t) :: custom_t
+  @spec unwrap(type) :: type when type: custom_t
   def unwrap(%{of_type: t}), do: unwrap(t)
   def unwrap(type), do: type
 
   @doc "Unwrap a type from NonNull"
-  @spec unwrap_non_null(Type.NonNull.t | t) :: t
+  @spec unwrap_non_null(Type.NonNull.t) :: custom_t
+  @spec unwrap_non_null(type) :: type when type: custom_t | Type.List.t
   def unwrap_non_null(%Type.NonNull{of_type: t}), do: unwrap_non_null(t)
   def unwrap_non_null(type), do: type
 
@@ -248,13 +250,23 @@ defmodule Absinthe.Type do
   @doc "Expand any atom type references inside a List or NonNull"
   @spec expand(reference_t, Schema.t) :: wrapping_t | t
   def expand(ref, schema) when is_atom(ref) do
-    schema.__absinthe_type__(ref)
+    schema.__absinthe_lookup__(ref)
   end
   def expand(%{of_type: contents} = ref, schema) do
     %{ref | of_type: expand(contents, schema)}
   end
   def expand(type, _) do
     type
+  end
+
+  # INTROSPECTION TYPE
+
+  @spec introspection?(t) :: boolean
+  def introspection?(%{name: "__" <> _}) do
+    true
+  end
+  def introspection?(_) do
+    false
   end
 
   # VALUE TYPE
@@ -300,4 +312,92 @@ defmodule Absinthe.Type do
   def field(_, _name) do
     nil
   end
+
+  @spec referenced_types(t, Schema.t) :: [t]
+  def referenced_types(type, schema) do
+    referenced_types(type, schema, MapSet.new)
+  end
+
+  defp referenced_types(%Type.Argument{type: type}, schema, acc) do
+    referenced_types(type, schema, acc)
+  end
+  defp referenced_types(%Type.Directive{} = type, schema, acc) do
+    type.args
+    |> Map.values
+    |> Enum.reduce(acc, &referenced_types(&1.type, schema, &2))
+  end
+  defp referenced_types(%Type.Enum{identifier: identifier}, _schema, acc) do
+    MapSet.put(acc, identifier)
+  end
+  defp referenced_types(%Type.Field{} = field, schema, acc) do
+    acc =
+      field.args
+      |> Map.values
+      |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
+    referenced_types(field.type, schema, acc)
+  end
+  defp referenced_types(%Type.InputObject{identifier: identifier} = input_object, schema, acc) do
+    if identifier in acc do
+      acc
+    else
+      acc = MapSet.put(acc, identifier)
+      input_object.fields
+      |> Map.values
+      |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
+    end
+  end
+  defp referenced_types(%Type.Interface{identifier: identifier} = interface, schema, acc) do
+    if identifier in acc do
+      acc
+    else
+      acc = MapSet.put(acc, identifier)
+      acc =
+        interface.fields
+        |> Map.values
+        |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
+
+      schema
+      |> Absinthe.Schema.implementors(identifier)
+      |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
+    end
+  end
+  defp referenced_types(%Type.List{of_type: inner_type}, schema, acc) do
+    referenced_types(inner_type, schema, acc)
+  end
+  defp referenced_types(%Type.NonNull{of_type: inner_type}, schema, acc) do
+    referenced_types(inner_type, schema, acc)
+  end
+  defp referenced_types(%Type.Object{identifier: identifier} = object, schema, acc) do
+    if identifier in acc do
+      acc
+    else
+      acc = MapSet.put(acc, identifier)
+      acc =
+        object.fields
+        |> Map.values
+        |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
+
+      object.interfaces
+      |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
+    end
+  end
+  defp referenced_types(%Type.Reference{} = ref, schema, acc) do
+    referenced_types(ref.identifier, schema, acc)
+  end
+  defp referenced_types(%Type.Scalar{identifier: identifier}, _schema, acc) do
+    MapSet.put(acc, identifier)
+  end
+  defp referenced_types(%Type.Union{identifier: identifier} = union, schema, acc) do
+    if identifier in acc do
+      acc
+    else
+      acc = MapSet.put(acc, identifier)
+      union.types
+      |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
+    end
+  end
+  defp referenced_types(type, schema, acc) when is_atom(type) and type != nil do
+    referenced_types(Schema.lookup_type(schema, type), schema, acc)
+  end
+
 end

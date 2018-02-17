@@ -1,5 +1,165 @@
 # Changelog
 
+## v1.4.8
+
+- Bug Fix: Dataloader won't explode if a given pass uses only already cached values
+
+## v1.4.7
+
+- Bug Fix: Update `result_selection_t` typespec.
+- Feature: Added `.formatter.exs` for use with Elixir v1.6's `mix format`.
+- Chore: Type fixes and updated links in README and documentation.
+
+## v1.4.6
+
+- Feature: Support for `meta` macro keyword list args.
+
+## v1.4.5
+
+- Feature: Support for `"""`-quoted block strings, as defined in the GraphQL Specification (See facebook/graphql#327).
+
+## v1.4.4
+
+- Bug Fix: fix where self referential interface type would cause infinite loop when introspecting.
+
+## v1.4.3
+
+- Bug Fix: fix regression where types only connected to the root query via interfaces wouldn't show up in GraphiQL.
+
+## v1.4.2
+
+- Bug Fix: `null` can be properly used for enum inputs.
+
+## v1.4.1
+
+- Bug Fix: fix regression where interfaces wouldn't show up in GraphiQL unless used as a field return type.
+
+## v1.4.0
+
+- Bug Fix: Ensured types that aren't used by the schema's root types aren't reported by introspection
+- Internal Change: Added `Absinthe.Schema.used_types`, `Absinthe.Schema.introspection_types/1`, and `Type.introspection?/1`
+
+- Enhancement: Subscriptions! See the Absinthe.Phoenix project for getting started info.
+- Enhancement: Null literal support [as laid out in the October 2016 GraphQL Specification](http://facebook.github.io/graphql/#sec-Null-Value)
+- Enhancement: Errors now include path information. This path information can be accessed in resolvers via `Absinthe.Resolution.path/1`
+
+- Breaking Change: Default middleware applied eagerly. If you're changing the default resolver, you WILL need to consult: https://github.com/absinthe-graphql/absinthe/pull/403 See: https://hexdocs.pm/absinthe/1.4.0-rc.3/Absinthe.Schema.html#replace_default/4
+
+- Breaking Change: Plugins receive an `%Absinthe.Blueprint.Execution{}` struct instead of the bare accumulator. This makes it possible for plugins to set or operate on context values. Upgrade you plugins! Change this:
+  ```
+  def before_resolution(acc) do
+    acc = # doing stuff to the acc here
+  end
+  def after_resolution(acc) do
+    acc = # doing stuff to the acc here
+  end
+  def pipeline(pipeline, acc) do
+    case acc do
+      # checking on the acc here
+    end
+  end
+  ```
+  to
+  ```
+  def before_resolution(%{acc: acc} = exec) do
+    acc = # doing stuff to the acc here
+    %{exec | acc: acc}
+  end
+  def after_resolution(%{acc: acc} = exec) do
+    acc = # doing stuff to the acc here
+    %{exec | acc: acc}
+  end
+  def pipeline(pipeline, exec) do
+    case exec.acc do
+      # checking on the acc here
+    end
+  end
+  ```
+  The reason for this is that you can also access the `context` within the `exec` value. When using something like Dataloader, it's important to have easy to the context
+
+- Breaking Change: Errors returned from resolvers no longer say "In field #{field_name}:". The inclusion of the path information obviates the need for this data, and it makes error messages a lot easier to deal with on the front end.
+
+- Internal Change: `Absinthe.Blueprint.Document.Resolution` => `Absinthe.Blueprint.Execution`. See https://github.com/absinthe-graphql/absinthe/pull/409 for details.
+
+## v1.3.2
+
+- Bug Fix: Handle OTP 20.0 warnings.
+- Bug Fix: Ensure `%Absinthe.Resolution{}` struct can be inspect inside `resolve_type` and similar.
+- Bug Fix: Handle `nil` return values from `resolve_type`
+
+## v1.3.1
+
+- Enhancement: Improved nested fragment handling when merging is required.
+- Enhancement: Performance improvements, particularly for documents containing fragments
+- Enhancement: `Absinthe.Resolution.project/1,2` which returns the child fields under the current field. This is an improvement upon the previous recommendation, which was to get child fields via using internal data structures found in info, and required manual handling of type conditions.
+
+- NOTE: If you were previously computing subfields by looking at `%Absinthe.Blueprint.Document.Field{}` internals, do note that their structure has changed a little. Notably, there is no longer a `:fields` key.
+
+## v1.3.0
+
+- Added `Absinthe.Logger` -- adds configurable pipeline and variable logging
+  with filtering support (filters "token" and "password" by default). Used by
+  the `absinthe_plug` package.
+
+- Enhancement: Added resolution middleware. See the `Absinthe.Middleware`
+  moduledocs.
+- Enhancement: Middleware can be used to change the context. Use this
+  judiciously.
+- Enhancement: Added built-in date and time types. Simply `import_types
+  Absinthe.Type.Custom` in your schema to use.
+- Enhancement: Error tuple values can now be anything that's compatible with
+  `to_string/1`
+- Enhancement: Substantial performance improvements for type conditions and
+  abstract type return values
+- Enhancement: Added `Absinthe.Pipeline.replace/3` for easier modification of
+  pipeline phases.
+- Enhancement: Scalar and Enum serialization moved to the
+  `Absinthe.Phase.Document.Result` phase, making customization of serialization
+  easier.
+
+- Bug Fix: All interfaces an object claims to implement are checked at compile
+  time, instead of just the first.
+
+- Breaking change: Plugins have been replaced by middleware, see the middleware
+  docs.
+- Breaking change: `default_resolve` is no longer valid, see
+  `Absinthe.Middleware`.
+- Breaking change: A root `query` object is now required, per the GraphQL spec.
+- Breaking change: `Absinthe.Type.Interface.implements/2` is now `implements/3`
+  with the last argument being the schema.
+
+- Cleanup: Undocumented module `InterfaceMap` removed as it was no longer being
+  used.
+
+## v1.2.6
+
+- Enhancement: Query complexity analysis!
+- Bug fix: Fields with runtime errors are presented with `null` values in the result data instead of elided entirely.
+
+## v1.2.5
+
+- Enhancement: Scalar type parse functions can access the context. This enables
+uploaded files with Absinthe.Plug
+
+## v1.2.4
+- Enhancement: Complex errors. You can now return `{:error, %{message: "...", other_key: value}}`
+- Bug Fix: Invalid Arguments on a field that is under a list field doesn't error.
+- Bug Fix: Deeper fragment merging.
+
+## v1.2.3
+- Bug Fix: When there are no arguments, an empty map should be passed to the resolution functions not `nil`
+
+## v1.2.2
+- Enhancement: Enable `import_fields` for input objects. In the future we will
+enforce that `input_objects` can only import fields from other `input_objects`.
+- Enhancement: Improved exception when returning `nil` from a field marked `non_null`
+- Enhancement: Allow returning complex errors from resolution functions.
+- Enhancement: Minor tweaks to support the in-progress Elixir 1.4 release
+- Bug fix: Handle fragments on the root query and root mutation types
+- Bug fix: Handle errors on variables when no operation name.
+- Bug fix: input objects passed in as variables with missing internal fields marked non null are correctly caught
+- Assorted other bug fixes
+
 ## v1.2.1
 
 - Stricter, spec-compliant scalar parsing rules (#194)

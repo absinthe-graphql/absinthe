@@ -105,6 +105,7 @@ defmodule ContactSchema do
         _, _ ->
           {:ok, @others}
       end
+
     interface :named_entity
   end
 
@@ -130,6 +131,10 @@ defmodule ContactSchema do
 
   object :contact do
     field :entity, :named_entity
+    import_fields :contact_method
+  end
+
+  object :contact_method do
     field :phone_number, :string
     field :address, :string
   end
@@ -142,6 +147,10 @@ defmodule ContactSchema do
       _ ->
         :error
     end
+  end
+
+  object :unused do
+    field :an_unused_field, :string
   end
 
 end

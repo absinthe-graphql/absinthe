@@ -19,7 +19,7 @@ defmodule Absinthe.Phase.Document.VariablesTest do
   """
 
   describe "when not providing a value for an optional variable with a default value" do
-    it "uses the default value" do
+    test "uses the default value" do
       result = input(@query, %{"name" => "Bruce"})
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
       assert op.provided_values == %{
@@ -29,8 +29,19 @@ defmodule Absinthe.Phase.Document.VariablesTest do
     end
   end
 
+  describe "when providing an explicit null value for an optional variable with a default value" do
+    test "uses null" do
+      result = input(@query, %{"name" => "Bruce", "age" => nil})
+      op = result.operations |> Enum.find(&(&1.name == "Profile"))
+      assert op.provided_values == %{
+        "age" => %Blueprint.Input.Null{},
+        "name" => %Blueprint.Input.String{value: "Bruce"},
+      }
+    end
+  end
+
   describe "when providing a value for an optional variable with a default value" do
-    it "uses the default value" do
+    test "uses the default value" do
       result = input(@query, %{"age" => 4, "name" => "Bruce"})
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
       assert op.provided_values == %{
@@ -38,6 +49,21 @@ defmodule Absinthe.Phase.Document.VariablesTest do
         "name" => %Blueprint.Input.String{value: "Bruce"},
       }
     end
+  end
+
+  test "should prevent using non input types as variables" do
+    doc = """
+    query Foo($input: Thing) {
+      version
+    }
+    """
+
+    expected = %{errors: [%{locations: [%{column: 0, line: 1}],
+         message: "Variable \"input\" cannot be non-input type \"Thing\"."},
+       %{locations: [%{column: 0, line: 1}, %{column: 0, line: 1}],
+         message: "Variable \"input\" is never used in operation \"Foo\"."}]}
+
+    assert {:ok, expected} == Absinthe.run(doc, Things)
   end
 
   def input(query, values) do

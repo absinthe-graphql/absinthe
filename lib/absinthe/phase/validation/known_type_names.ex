@@ -34,7 +34,7 @@ defmodule Absinthe.Phase.Validation.KnownTypeNames do
   end
   defp handle_node(%Blueprint.Document.VariableDefinition{schema_node: nil} = node, schema) do
     name = Blueprint.TypeReference.unwrap(node.type).name
-    inner_schema_type = schema.__absinthe_type__(name)
+    inner_schema_type = schema.__absinthe_lookup__(name)
     if inner_schema_type do
       node
     else
@@ -49,11 +49,11 @@ defmodule Absinthe.Phase.Validation.KnownTypeNames do
 
   @spec error(Blueprint.node_t, String.t) :: Phase.Error.t
   defp error(node, name) do
-    Phase.Error.new(
-      __MODULE__,
-      ~s(Unknown type "#{name}".),
-      location: node.source_location
-    )
+    %Phase.Error{
+      phase: __MODULE__,
+      message: ~s(Unknown type "#{name}".),
+      locations: [node.source_location]
+    }
   end
 
 end

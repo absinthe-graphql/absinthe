@@ -1,6 +1,7 @@
 defmodule Absinthe.Blueprint.Document do
 
   @moduledoc false
+  alias Absinthe.Blueprint
 
   @type t ::
       Blueprint.Document.Field.t
@@ -9,7 +10,7 @@ defmodule Absinthe.Blueprint.Document do
     | Blueprint.Document.VariableDefinition.t
 
   @type selection_t ::
-      Field.t
+      Blueprint.Document.Field.t
     | Blueprint.Document.Fragment.Inline.t
     | Blueprint.Document.Fragment.Spread.t
 

@@ -9,7 +9,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
     field :types, list_of(:__type) do
       resolve fn
         _, %{schema: schema} ->
-          {:ok, Absinthe.Schema.types(schema)}
+          {:ok, Absinthe.Schema.used_types(schema) ++ Absinthe.Schema.introspection_types(schema)}
       end
     end
 
@@ -279,6 +279,8 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
 
         _, %{schema: schema, source: %{default_value: value, type: type}} ->
           case Absinthe.Schema.lookup_type(schema, type, unwrap: true) do
+            %Absinthe.Type.Enum{values_by_internal_value: values} ->
+              {:ok, values[value].name}
             %{serialize: serializer} ->
               {:ok, inspect serializer.(value)}
             _ ->

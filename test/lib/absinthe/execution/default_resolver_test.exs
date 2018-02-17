@@ -16,7 +16,7 @@ defmodule Absinthe.Execution.DefaultResolverTest do
 
     end
 
-    it "should resolve using atoms" do
+    test "should resolve using atoms" do
       assert {:ok, %{data: %{"foo" => "baz", "bar" => nil}}} == Absinthe.run(@query, NormalSchema, root_value: @root)
     end
 
@@ -32,17 +32,24 @@ defmodule Absinthe.Execution.DefaultResolverTest do
         field :bar, :string
       end
 
-      default_resolve fn
-        _, %{source: source, definition: %{name: name}} ->
-          {
-            :ok,
-            Map.get(source, name) || Map.get(source, String.to_existing_atom(name))
-          }
+      def middleware(middleware, %{name: name, identifier: identifier} = field, obj) do
+        middleware_spec = Absinthe.Resolution.resolver_spec(fn parent, _, _ ->
+          case parent do
+            %{^name => value} -> {:ok, value}
+            %{^identifier => value} -> {:ok, value}
+            _ -> {:ok, nil}
+          end
+        end)
+
+        Absinthe.Schema.replace_default(middleware, middleware_spec, field, obj)
+      end
+      def middleware(middleware, _, _) do
+        middleware
       end
 
     end
 
-    it "should resolve using as defined" do
+    test "should resolve using as defined" do
       assert {:ok, %{data: %{"foo" => "baz", "bar" => "quux"}}} == Absinthe.run(@query, CustomSchema, root_value: @root)
     end
 

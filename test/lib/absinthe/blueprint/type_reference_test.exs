@@ -5,7 +5,7 @@ defmodule Absinthe.Blueprint.TypeReferenceTest do
 
   describe ".unwrap of Name" do
 
-    it "is left intact" do
+    test "is left intact" do
       name = %Blueprint.TypeReference.Name{name: "Foo"}
       assert Blueprint.TypeReference.unwrap(name) == name
     end
@@ -14,13 +14,13 @@ defmodule Absinthe.Blueprint.TypeReferenceTest do
 
   describe ".unwrap of List" do
 
-    it "extracts the inner name" do
+    test "extracts the inner name" do
       name = %Blueprint.TypeReference.Name{name: "Foo"}
       list = %Blueprint.TypeReference.List{of_type: name}
       assert Blueprint.TypeReference.unwrap(list) == name
     end
 
-    it "extracts the inner name, even when multiple deep" do
+    test "extracts the inner name, even when multiple deep" do
       name = %Blueprint.TypeReference.Name{name: "Foo"}
       list_1 = %Blueprint.TypeReference.List{of_type: name}
       list_2 = %Blueprint.TypeReference.List{of_type: list_1}
@@ -31,13 +31,13 @@ defmodule Absinthe.Blueprint.TypeReferenceTest do
 
   describe ".unwrap of NonNull" do
 
-    it "extracts the inner name" do
+    test "extracts the inner name" do
       name = %Blueprint.TypeReference.Name{name: "Foo"}
       list = %Blueprint.TypeReference.NonNull{of_type: name}
       assert Blueprint.TypeReference.unwrap(list) == name
     end
 
-    it "extracts the inner name, even when multiple deep" do
+    test "extracts the inner name, even when multiple deep" do
       name = %Blueprint.TypeReference.Name{name: "Foo"}
       non_null = %Blueprint.TypeReference.NonNull{of_type: name}
       list = %Blueprint.TypeReference.List{of_type: non_null}

@@ -16,8 +16,8 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArguments do
     {:ok, result}
   end
 
-  # Find the missing arguments
   @spec handle_node(Blueprint.node_t, Schema.t) :: Blueprint.node_t
+  # Missing Arguments
   defp handle_node(%Blueprint.Input.Argument{value: nil, flags: %{missing: _}} = node, schema) do
     node = node |> put_error(error(node, node.schema_node.type, schema))
     {:halt, node}
@@ -30,11 +30,11 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArguments do
   @spec error(Blueprint.node_t, Type.t, Schema.t) :: Phase.Error.t
   defp error(node, type, schema) do
     type_name = Type.name(type, schema)
-    Phase.Error.new(
-      __MODULE__,
-      error_message(node.name, type_name),
-      location: node.source_location
-    )
+    %Phase.Error{
+      phase: __MODULE__,
+      message: error_message(node.name, type_name),
+      locations: [node.source_location]
+    }
   end
 
   @doc """

@@ -38,17 +38,17 @@ defmodule Absinthe.Type.EnumTest do
   end
 
   describe "enums" do
-    it "can be defined by a map with defined values" do
+    test "can be defined by a map with defined values" do
       type = TestSchema.__absinthe_type__(:color_channel)
       assert %Type.Enum{} = type
       assert %Type.Enum.Value{name: "RED", value: :r, description: "Color Red"} = type.values[:red]
     end
-    it "can be defined by a map without defined values" do
+    test "can be defined by a map without defined values" do
       type = TestSchema.__absinthe_type__(:color_channel2)
       assert %Type.Enum{} = type
       assert %Type.Enum.Value{name: "RED", value: :red} = type.values[:red]
     end
-    it "can be defined by a shorthand list of atoms" do
+    test "can be defined by a shorthand list of atoms" do
       type = TestSchema.__absinthe_type__(:color_channel3)
       assert %Type.Enum{} = type
       assert %Type.Enum.Value{name: "RED", value: :red, description: nil} = type.values[:red]

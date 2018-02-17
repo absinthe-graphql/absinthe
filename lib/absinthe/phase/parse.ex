@@ -7,21 +7,33 @@ defmodule Absinthe.Phase.Parse do
   alias Absinthe.{Language, Phase}
 
   @spec run(Language.Source.t, Keyword.t) :: Phase.result_t
-  def run(input, options \\ []) do
-    result(parse(input), Map.new(options))
+  def run(input, options \\ [])
+  def run(%Absinthe.Blueprint{} = blueprint, options) do
+    options = Map.new(options)
+
+    case parse(blueprint.input) do
+      {:ok, value} ->
+        {:ok, %{blueprint | input: value}}
+
+      {:error, error} ->
+        blueprint
+        |> add_validation_error(error)
+        |> handle_error(options)
+    end
+  end
+  def run(input, options) do
+    run(%Absinthe.Blueprint{input: input}, options)
   end
 
-  defp result({:error, %{message: msg, locations: [%{line: line}]}}, %{jump_phases: false}) do
-    {:error, msg <> ", on line #{line}"}
+  defp add_validation_error(bp, error) do
+    put_in(bp.execution.validation_errors, [error])
   end
-  defp result({:error, %{message: msg}}, %{jump_phases: false}) do
-    {:error, msg}
+
+  def handle_error(blueprint, %{jump_phases: true, result_phase: abort_phase}) do
+    {:jump, blueprint, abort_phase}
   end
-  defp result({:error, error}, %{jump_phases: true, result_phase: abort_phase}) do
-    {:jump, error, abort_phase}
-  end
-  defp result(res, _) do
-    res
+  def handle_error(blueprint, _) do
+    {:error, blueprint}
   end
 
   @spec tokenize(binary) :: {:ok, [tuple]} | {:error, binary}
@@ -59,12 +71,12 @@ defmodule Absinthe.Phase.Parse do
     end
   end
 
-  @spec format_raw_parse_error({integer, :absinthe_parser, [char_list]}) :: Phase.Error.t
+  @spec format_raw_parse_error({integer, :absinthe_parser, [charlist]}) :: Phase.Error.t
   defp format_raw_parse_error({line, :absinthe_parser, msgs}) do
     message = msgs |> Enum.map(&to_string/1) |> Enum.join("")
     %Phase.Error{message: message, locations: [%{line: line, column: 0}], phase: __MODULE__}
   end
-  @spec format_raw_parse_error({integer, :absinthe_lexer, {atom, char_list}}) :: Phase.Error.t
+  @spec format_raw_parse_error({integer, :absinthe_lexer, {atom, charlist}}) :: Phase.Error.t
   defp format_raw_parse_error({line, :absinthe_lexer, {problem, field}}) do
     message = "#{problem}: #{field}"
     %Phase.Error{message: message, locations: [%{line: line, column: 0}], phase: __MODULE__}

@@ -46,10 +46,11 @@ defmodule Absinthe.Type.InputObject do
 
   The `__private__` and `:__reference__` fields are for internal use.
   """
-  @type t :: %{
+  @type t :: %__MODULE__{
     name: binary,
     description: binary,
     fields: map | (() -> map),
+    identifier: atom,
     __private__: Keyword.t,
     __reference__: Type.Reference.t,
   }
@@ -58,13 +59,22 @@ defmodule Absinthe.Type.InputObject do
     name: nil,
     description: nil,
     fields: %{},
+    identifier: nil,
     __private__: [],
     __reference__: nil,
+    field_imports: [],
   ]
 
   def build(%{attrs: attrs}) do
-    fields = Type.Field.build(attrs[:fields] || [])
-    quote do: %unquote(__MODULE__){unquote_splicing(attrs), fields: unquote(fields)}
+    fields =
+      attrs
+      |> Keyword.get(:fields, [])
+      |> Type.Field.build
+      |> Type.Object.handle_imports(attrs[:field_imports])
+
+    attrs = Keyword.put(attrs, :fields, fields)
+
+    quote do: %unquote(__MODULE__){unquote_splicing(attrs)}
   end
 
   defimpl Absinthe.Traversal.Node do

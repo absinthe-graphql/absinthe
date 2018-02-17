@@ -4,25 +4,20 @@ defmodule Absinthe.Phase.Document.Result do
 
   # Produces data fit for external encoding from annotated value tree
 
-  alias Absinthe.{Blueprint, Phase}
+  alias Absinthe.{Blueprint, Phase, Type}
   use Absinthe.Phase
 
   @spec run(Blueprint.t | Phase.Error.t, Keyword.t) :: {:ok, map}
-  def run(input, _options \\ []) do
-    result = input |> process
-    {:ok, result}
+  def run(%Blueprint{} = bp, _options \\ []) do
+    result = Map.merge(bp.result, process(bp))
+    {:ok, %{bp | result: result}}
   end
 
-  defp process(%Phase.Error{} = error) do
-    format_result({:parse_failed, error})
-  end
-  defp process(%Blueprint{} = blueprint) do
-    result = case blueprint.resolution do
-      %{validation: [], result: nil} ->
-        :execution_failed
-      %{validation: [], result: result} ->
-        {:ok, field_data(result.fields, [])}
-      %{validation: errors} ->
+  defp process(blueprint) do
+    result = case blueprint.execution do
+      %{validation_errors: [], result: result} ->
+        {:ok, data(result, [])}
+      %{validation_errors: errors} ->
         {:validation_failed, errors}
     end
     format_result(result)
@@ -46,8 +41,20 @@ defmodule Absinthe.Phase.Document.Result do
     %{errors: [format_error(error)]}
   end
 
+  defp data(%{errors: [_|_] = field_errors}, errors), do: {nil, field_errors ++ errors}
+
   # Leaf
-  defp data(%{value: value}, errors), do: {value, errors}
+  defp data(%{value: nil}, errors), do: {nil, errors}
+  defp data(%{value: value, emitter: emitter}, errors) do
+    value =
+      case Type.unwrap(emitter.schema_node.type) do
+        %Type.Scalar{} = schema_node ->
+          Type.Scalar.serialize(schema_node, value)
+        %Type.Enum{} = schema_node ->
+          Type.Enum.serialize(schema_node, value)
+      end
+    {value, errors}
+  end
 
   # Object
   defp data(%{fields: fields}, errors), do: field_data(fields, errors)
@@ -57,49 +64,30 @@ defmodule Absinthe.Phase.Document.Result do
 
   defp list_data(fields, errors, acc \\ [])
   defp list_data([], errors, acc), do: {:lists.reverse(acc), errors}
-  defp list_data([%{errors: []} = field | fields], errors, acc) do
+  defp list_data([%{errors: errs} = field | fields], errors, acc) do
     {value, errors} = data(field, errors)
-    list_data(fields, errors, [value | acc])
-  end
-  defp list_data([%{errors: errs} | fields], errors, acc) when length(errs) > 0 do
-    list_data(fields, errs ++ errors, acc)
-  end
-
-  defp deep_merge(list) when is_list(list) and length(list) <= 1 do
-    :maps.from_list(list)
-  end
-
-  defp deep_merge(list) when is_list(list) do
-    list
-    |> Enum.map(&Map.new([&1]))
-    |> Enum.reduce(&do_deep_merge/2)
-  end
-
-  def do_deep_merge(right, left) do
-    Map.merge(left, right, &do_deep_resolve/3)
-  end
-
-  defp do_deep_resolve(_key, [%{} = left], [%{} = right]) do
-    [do_deep_merge(right, left)]
-  end
-
-  defp do_deep_resolve(_key, _left, right) do
-   right
+    list_data(fields, errs ++ errors, [value | acc])
   end
 
   defp field_data(fields, errors, acc \\ [])
-  defp field_data([], errors, acc), do: {deep_merge(acc), errors}
-  defp field_data([%{errors: []} = field | fields], errors, acc) do
-    {value, errors} = data(field, errors)
-    field_data(fields, errors, [{field_name(field), value} | acc])
+  defp field_data([], errors, acc), do: {Map.new(acc), errors}
+  defp field_data([%Absinthe.Resolution{} = res | _], _errors, _acc) do
+    raise """
+    Found unresolved resolution struct!
+
+    You probably forgot to run the resolution phase again.
+
+    #{inspect res}
+    """
   end
-  defp field_data([%{errors: errs} | fields], errors, acc) when length(errs) > 0 do
-    field_data(fields, errs ++ errors, acc)
+  defp field_data([field | fields], errors, acc) do
+    {value, errors} = data(field, errors)
+    field_data(fields, errors, [{field_name(field.emitter), value} | acc])
   end
 
-  defp field_name(%{emitter: %{alias: nil, name: name}}), do: name
-  defp field_name(%{emitter: %{alias: name}}), do: name
-  defp field_name(%{emitter: %{name: name}}), do: name
+  defp field_name(%{alias: nil, name: name}), do: name
+  defp field_name(%{alias: name}), do: name
+  defp field_name(%{name: name}), do: name
 
   defp format_error(%Phase.Error{locations: []} = error) do
     error_object = %{message: error.message}
@@ -108,13 +96,18 @@ defmodule Absinthe.Phase.Document.Result do
   defp format_error(%Phase.Error{} = error) do
     error_object = %{
       message: error.message,
-      locations: Enum.map(error.locations, &format_location/1)
+      locations: Enum.flat_map(error.locations, &format_location/1),
     }
+    error_object = case error.path do
+      [] -> error_object
+      path -> Map.put(error_object, :path, path)
+    end
     Map.merge(Map.new(error.extra), error_object)
   end
 
   defp format_location(%{line: line, column: col}) do
-    %{line: line || 0, column: col || 0}
+    [%{line: line || 0, column: col || 0}]
   end
+  defp format_location(_), do: []
 
 end

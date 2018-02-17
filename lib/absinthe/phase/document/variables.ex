@@ -45,35 +45,46 @@ defmodule Absinthe.Phase.Document.Variables do
 
   @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
   def run(input, options \\ []) do
-    do_run(input, Map.new(options))
+    variables = options[:variables] || %{}
+    {:ok, update_operations(input, variables)}
   end
 
-  def do_run(input, %{variables: values}) do
-    acc = %{raw: values, processed: %{}}
-    {node, _} = Blueprint.postwalk(input, acc, &handle_node/2)
-    {:ok, node}
+  def update_operations(input, variables) do
+    operations = for op <- input.operations do
+      update_operation(op, variables)
+    end
+
+    %{input | operations: operations}
   end
 
-  @spec handle_node(Blueprint.node_t, map) :: {Blueprint.node_t, map}
-  defp handle_node(%Blueprint.Document.VariableDefinition{} = node, acc) do
-    provided_value =
-      acc.raw
-      |> Map.get(node.name, node.default_value)
-      |> Blueprint.Input.parse
+  def update_operation(%{variable_definitions: variable_definitions} = operation, variables) do
+    {variable_definitions, provided_values} = Enum.map_reduce(variable_definitions, %{}, fn
+      node, acc ->
+        provided_value = calculate_value(node, variables)
+        {
+          %{node | provided_value: provided_value},
+          Map.put(acc, node.name, provided_value)
+        }
+    end)
 
-    {
-      %{node | provided_value: provided_value},
-      update_in(acc.processed, &Map.put(&1, node.name, provided_value))
+    %{operation |
+      variable_definitions: variable_definitions,
+      provided_values: provided_values
     }
   end
-  defp handle_node(%Blueprint.Document.Operation{} = node, acc) do
-    {
-      %{node | provided_values: acc.processed},
-      acc
-    }
+
+  defp calculate_value(node, variables) do
+    case Map.fetch(variables, node.name) do
+      :error ->
+        node.default_value
+      {:ok, value} ->
+        value
+        |> preparse_nil
+        |> Blueprint.Input.parse
+    end
   end
-  defp handle_node(node, acc) do
-    {node, acc}
-  end
+
+  defp preparse_nil(nil), do: %Blueprint.Input.Null{}
+  defp preparse_nil(other), do: other
 
 end

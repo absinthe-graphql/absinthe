@@ -14,7 +14,7 @@ defmodule Absinthe.Blueprint.Document.Fragment.Named do
     source_location: nil,
     # Populated by phases
     schema_node: nil,
-    fields: [],
+    complexity: nil,
     flags: %{},
     errors: [],
   ]
@@ -22,7 +22,6 @@ defmodule Absinthe.Blueprint.Document.Fragment.Named do
   @type t :: %__MODULE__{
     directives: [Blueprint.Directive.t],
     errors: [Absinthe.Phase.Error.t],
-    fields: [Blueprint.Document.Field.t],
     name: String.t,
     selections: [Blueprint.Document.selection_t],
     schema_node: nil | Absinthe.Type.t,
