@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.8
+
+- Bug Fix: Dataloader won't explode if a given pass uses only already cached values
+
 ## v1.4.7
 
 - Bug Fix: Update `result_selection_t` typespec.
