@@ -235,10 +235,16 @@ defmodule Absinthe.Schema.Notation.Experimental do
 
   defmacro resolve(fun) do
     quote do
+      middleware Absinthe.Resolution, unquote(fun)
+    end
+  end
+
+  defmacro middleware(module, opts) do
+    quote do
       @absinthe_blueprint unquote(__MODULE__).put_attrs(
         @absinthe_blueprint,
         hd(@absinthe_scopes),
-        resolve_ast: unquote(Macro.escape(fun))
+        middleware: [{unquote(module), unquote(Macro.escape(opts))}]
       )
     end
   end

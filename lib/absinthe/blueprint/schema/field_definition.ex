@@ -14,7 +14,7 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
     directives: [],
     # Added by DSL
     description: nil,
-    resolve_ast: nil,
+    middleware: [],
     # Added by phases
     flags: %{},
     errors: [],
@@ -29,7 +29,7 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
     directives: [Blueprint.Directive.t],
     # Added by DSL
     description: nil | String.t,
-    resolve_ast: nil | Macro.t,
+    middleware: [any],
     # Added by phases
     flags: Blueprint.flags_t,
     errors: [Absinthe.Phase.Error.t]
