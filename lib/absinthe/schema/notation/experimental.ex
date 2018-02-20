@@ -3,39 +3,6 @@ defmodule Absinthe.Schema.Notation.Experimental do
 
   alias Absinthe.Blueprint
 
-  @spec concat_types(Blueprint.t, Blueprint.t, Keyword.t) :: Blueprint.t
-  def concat_types(blueprint, other, opts) do
-    selected = select_import(other.types, Map.new(opts))
-    update_in(blueprint.types, &(selected ++ &1))
-  end
-
-  defp select_import(collection, %{only: ids}) when is_list(ids) do
-    Enum.filter(collection, &(&1.identifier in ids))
-  end
-  defp select_import(collection, %{except: ids}) when is_list(ids) do
-    collection -- select_import(collection, %{only: ids})
-  end
-  defp select_import(collection, opts) when map_size(opts) == 0 do
-    collection
-  end
-
-  def concat_fields(blueprint, {:type, _} = scope, {mod, source_type_identifier} = criteria, opts) do
-    Blueprint.Schema.lookup_type(mod.__absinthe_blueprint__(), source_type_identifier)
-    |> do_concat_fields(blueprint, scope, criteria, opts)
-  end
-  def concat_fields(blueprint, {:type, _} = scope, source_type_identifier = criteria, opts) when is_atom(source_type_identifier) do
-    Blueprint.Schema.lookup_type(blueprint, source_type_identifier)
-    |> do_concat_fields(blueprint, scope, criteria, opts)
-  end
-
-  defp do_concat_fields(%{fields: fields}, blueprint, scope, _criteria, opts) do
-    selected = select_import(fields, Map.new(opts))
-    # Enum.reduce(selected, blueprint, &put_field(&2, scope, &1))
-  end
-  defp do_concat_fields(_, _, _, criteria, _) do
-    raise "Not a valid source for fields: #{inspect(criteria)}"
-  end
-
   defmacro __using__(_opts) do
     Module.register_attribute(__CALLER__.module, :absinthe_blueprint, [])
     Module.put_attribute(__CALLER__.module, :absinthe_blueprint, [%Absinthe.Blueprint{}])
@@ -95,11 +62,6 @@ defmodule Absinthe.Schema.Notation.Experimental do
   @spec import_types(atom) :: Macro.t
   defmacro import_types(module, opts \\ []) do
     quote do
-      @absinthe_blueprint unquote(__MODULE__).concat_types(
-        @absinthe_blueprint,
-        unquote(module).__absinthe_blueprint__(),
-        unquote(opts)
-      )
     end
   end
 
@@ -137,12 +99,16 @@ defmodule Absinthe.Schema.Notation.Experimental do
 
     [
       quote do
-        Module.put_attribute(__MODULE__, :absinthe_desc, {unquote(identifier), @desc})
-        @desc nil
+        unquote(__MODULE__).grab_desc(__MODULE__, unquote(identifier))
       end,
-      [],
+      body,
       quote do: unquote(__MODULE__).close_scope()
     ]
+  end
+
+  def grab_desc(module, identifier) do
+    Module.put_attribute(module, :absinthe_desc, {identifier, Module.get_attribute(module, :desc)})
+    Module.delete_attribute(module, :desc)
   end
 
   def object_definition(caller, identifier, attrs, body) do
@@ -157,8 +123,7 @@ defmodule Absinthe.Schema.Notation.Experimental do
 
     [
       quote do
-        Module.put_attribute(__MODULE__, :absinthe_desc, {unquote(identifier), @desc})
-        @desc nil
+        unquote(__MODULE__).grab_desc(__MODULE__, unquote(identifier))
       end,
       body,
       quote do: unquote(__MODULE__).close_scope()
@@ -187,6 +152,10 @@ defmodule Absinthe.Schema.Notation.Experimental do
     end
   end
 
+  def noop(_desc) do
+    :ok
+  end
+
   defmacro __before_compile__(env) do
     attrs =
       env.module
@@ -194,6 +163,7 @@ defmodule Absinthe.Schema.Notation.Experimental do
       |> Enum.reverse
     blueprint = build_blueprint(attrs)
     quote do
+      unquote(__MODULE__).noop(@desc)
       def __absinthe_blueprint__ do
         unquote(Macro.escape(blueprint))
       end
@@ -206,8 +176,9 @@ defmodule Absinthe.Schema.Notation.Experimental do
     Map.merge(bp, types)
   end
 
-  defp build_types([%Schema.ObjectTypeDefinition{} = obj | rest], tmp, finished) do
-    finished
+  defp build_types([obj | rest], tmp, finished) do
+    build_types(rest, tmp, finished)
   end
+  defp build_types([], _, finished), do: finished
 
 end
