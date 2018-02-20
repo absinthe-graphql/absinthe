@@ -30,7 +30,7 @@ defmodule Absinthe.Schema.Notation.Experimental.FieldTest do
 
       field :with_desc_attr_literal, type: :string, description: "Desc Four"
 
-      @desc_five "Desc Five"
+      @desc "Desc Five"
       field :with_desc_attr_mod, type: :string, description: @desc_five
 
     end

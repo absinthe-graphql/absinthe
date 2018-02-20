@@ -27,7 +27,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ObjectTest do
     object :with_desc_attr_literal, description: "Desc Four" do
     end
 
-    @desc_five "Desc Five"
+    @desc "Desc Five"
     object :with_desc_attr_mod, description: @desc_five do
     end
 

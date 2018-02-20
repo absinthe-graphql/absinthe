@@ -108,7 +108,7 @@ defmodule Absinthe.Schema.Notation.Experimental do
 
   def grab_desc(module, identifier) do
     Module.put_attribute(module, :absinthe_desc, {identifier, Module.get_attribute(module, :desc)})
-    Module.delete_attribute(module, :desc)
+    Module.put_attribute(module, :desc, nil)
   end
 
   def object_definition(caller, identifier, attrs, body) do
