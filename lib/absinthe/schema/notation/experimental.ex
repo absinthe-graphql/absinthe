@@ -2,6 +2,7 @@
 defmodule Absinthe.Schema.Notation.Experimental do
 
   alias Absinthe.Blueprint
+  alias Absinthe.Blueprint.Schema
 
   defmacro __using__(_opts) do
     Module.register_attribute(__CALLER__.module, :absinthe_blueprint, [])
@@ -93,21 +94,21 @@ defmodule Absinthe.Schema.Notation.Experimental do
       |> Keyword.put(:identifier, identifier)
       |> Keyword.put_new(:name, default_field_name(identifier))
 
-    field = struct(Absinthe.Blueprint.Schema.FieldDefinition, attrs)
+    field = struct(Schema.FieldDefinition, attrs)
 
     put_attr(caller.module, field)
 
     [
       quote do
-        unquote(__MODULE__).grab_desc(__MODULE__, unquote(identifier))
+        unquote(__MODULE__).put_desc(__MODULE__, Schema.FieldDefinition, unquote(identifier))
       end,
       body,
       quote do: unquote(__MODULE__).close_scope()
     ]
   end
 
-  def grab_desc(module, identifier) do
-    Module.put_attribute(module, :absinthe_desc, {identifier, Module.get_attribute(module, :desc)})
+  def put_desc(module, type, identifier) do
+    Module.put_attribute(module, :absinthe_desc, {{type, identifier}, Module.get_attribute(module, :desc)})
     Module.put_attribute(module, :desc, nil)
   end
 
@@ -117,13 +118,13 @@ defmodule Absinthe.Schema.Notation.Experimental do
       |> Keyword.put(:identifier, identifier)
       |> Keyword.put_new(:name, default_object_name(identifier))
 
-    object = struct(Absinthe.Blueprint.Schema.ObjectTypeDefinition, attrs)
+    object = struct(Schema.ObjectTypeDefinition, attrs)
 
     put_attr(caller.module, object)
 
     [
       quote do
-        unquote(__MODULE__).grab_desc(__MODULE__, unquote(identifier))
+        unquote(__MODULE__).put_desc(__MODULE__, Schema.ObjectTypeDefinition, unquote(identifier))
       end,
       body,
       quote do: unquote(__MODULE__).close_scope()
@@ -157,10 +158,17 @@ defmodule Absinthe.Schema.Notation.Experimental do
   end
 
   defmacro __before_compile__(env) do
+    module_attribute_descs =
+      env.module
+      |> Module.get_attribute(:absinthe_desc)
+      |> Map.new
+
     attrs =
       env.module
       |> Module.get_attribute(:absinthe_blueprint)
       |> Enum.reverse
+      |> intersperse_descriptions(module_attribute_descs)
+
     blueprint = build_blueprint(attrs)
     quote do
       unquote(__MODULE__).noop(@desc)
@@ -170,15 +178,41 @@ defmodule Absinthe.Schema.Notation.Experimental do
     end
   end
 
-  alias Absinthe.Blueprint.Schema
-  defp build_blueprint([%Absinthe.Blueprint{} = bp | attrs]) do
-    types = build_types(attrs, [], %{types: []})
-    Map.merge(bp, types)
+  defp intersperse_descriptions(attrs, descs) do
+    Enum.flat_map(attrs, fn
+      %struct{identifier: identifier} = val ->
+        case Map.get(descs, {struct, identifier}) do
+          nil -> [val]
+          desc -> [val, {:desc, desc}]
+        end
+      val ->
+        [val]
+    end)
   end
 
-  defp build_types([obj | rest], tmp, finished) do
-    build_types(rest, tmp, finished)
+  defp build_blueprint([%Absinthe.Blueprint{} = bp | attrs]) do
+    build_types(attrs, [bp])
   end
-  defp build_types([], _, finished), do: finished
+  defp build_types([], [bp]) do
+    Map.update!(bp, :types, &Enum.reverse/1)
+  end
+  defp build_types([{:desc, desc} | rest], [item | stack]) do
+    build_types(rest, [%{item | description: desc} | stack])
+  end
+  defp build_types([%Schema.ObjectTypeDefinition{} = obj | rest], stack) do
+    build_types(rest, [obj | stack])
+  end
+  defp build_types([%Schema.FieldDefinition{} = field | rest], stack) do
+    build_types(rest, [field | stack])
+  end
+  defp build_types([:close | rest], [%Schema.FieldDefinition{} = field, obj | stack]) do
+    obj = Map.update!(obj, :fields, &[field | &1])
+    build_types(rest, [obj | stack])
+  end
+  defp build_types([:close | rest], [%Schema.ObjectTypeDefinition{} = obj, bp]) do
+    obj = Map.update!(obj, :fields, &Enum.reverse/1)
+    bp = Map.update!(bp, :types, &[obj | &1])
+    build_types(rest, [bp])
+  end
 
 end
