@@ -157,7 +157,7 @@ defmodule Absinthe.Schema.Notation.Experimental do
 
     [
       quote do
-        @absinthe_desc {:desc, @desc}
+        Module.put_attribute(__MODULE__, :absinthe_desc, {unquote(identifier), @desc})
         @desc nil
       end,
       body,
