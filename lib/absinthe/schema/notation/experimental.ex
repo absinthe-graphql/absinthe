@@ -9,6 +9,7 @@ defmodule Absinthe.Schema.Notation.Experimental do
     Module.put_attribute(__CALLER__.module, :absinthe_blueprint, [%Absinthe.Blueprint{}])
     Module.register_attribute(__CALLER__.module, :absinthe_desc, [accumulate: true])
     quote do
+      Module.register_attribute(__MODULE__, :__absinthe_type_import__, accumulate: true)
       @desc nil
       import unquote(__MODULE__), only: :macros
       @before_compile unquote(__MODULE__)
@@ -60,10 +61,33 @@ defmodule Absinthe.Schema.Notation.Experimental do
     |> Absinthe.Utils.camelize
   end
 
-  @spec import_types(atom) :: Macro.t
-  defmacro import_types(module, opts \\ []) do
-    quote do
+  defmacro import_types(type_module_ast, opts \\ []) do
+    env = __CALLER__
+
+    type_module_ast
+    |> Macro.expand(env)
+    |> do_import_types(env, opts)
+  end
+
+  defp do_import_types({{:., _, [root_ast, :{}]}, _, modules_ast_list}, env, opts) do
+    {:__aliases__, _, root} = root_ast
+
+    root_module = Module.concat(root)
+    root_module_with_alias = Keyword.get(env.aliases, root_module, root_module)
+
+    for {_, _, leaf} <- modules_ast_list do
+      type_module = Module.concat([root_module_with_alias | leaf])
+      if Code.ensure_loaded?(type_module) do
+        do_import_types(type_module, env, opts)
+      else
+        raise ArgumentError, "module #{type_module} is not available"
+      end
     end
+  end
+
+  defp do_import_types(module, env, opts) do
+    Module.put_attribute(env.module, :__absinthe_type_imports__, [{module, opts} | Module.get_attribute(env.module, :__absinthe_type_imports__) || []])
+    []
   end
 
   @spec import_fields(atom | {module, atom}, Keyword.t) :: Macro.t
@@ -164,13 +188,37 @@ defmodule Absinthe.Schema.Notation.Experimental do
       |> Enum.reverse
       |> intersperse_descriptions(module_attribute_descs)
 
-    blueprint = build_blueprint(attrs)
+    imports = Module.get_attribute(env.module, :__absinthe_type_imports__) || []
+
+    blueprint =
+      attrs
+      |> build_blueprint()
+      |> add_imports(imports)
+
     quote do
       unquote(__MODULE__).noop(@desc)
       def __absinthe_blueprint__ do
         unquote(Macro.escape(blueprint))
       end
     end
+  end
+
+  defp add_imports(blueprint, imports) do
+    Enum.reduce(imports, blueprint, fn
+      {module, []}, blueprint ->
+        %{types: types} = module.__absinthe_blueprint__()
+        Map.update!(blueprint, :types, &(types ++ &1))
+
+      {module, [only: only]}, blueprint ->
+        %{types: types} = module.__absinthe_blueprint__()
+        types = Enum.filter(types, fn type -> type.identifier in only end)
+        Map.update!(blueprint, :types, &(types ++ &1))
+
+      {module, [except: except]}, blueprint ->
+        %{types: types} = module.__absinthe_blueprint__()
+        types = Enum.filter(types, fn type -> not(type.identifier in except) end)
+        Map.update!(blueprint, :types, &(types ++ &1))
+    end)
   end
 
   defp intersperse_descriptions(attrs, descs) do
