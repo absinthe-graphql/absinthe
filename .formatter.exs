@@ -29,6 +29,7 @@
       meta: 1,
       meta: 2,
       middleware: 2,
+      middleware: 1,
       object: 3,
       on: 1,
       parse: 1,
