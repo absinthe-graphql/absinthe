@@ -18,6 +18,7 @@
       field: 3,
       field: 4,
       import_fields: 2,
+      import_fields: 1,
       import_types: 1,
       input_object: 3,
       instruction: 1,
