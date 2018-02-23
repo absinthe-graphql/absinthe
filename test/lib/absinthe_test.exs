@@ -21,6 +21,11 @@ defmodule AbsintheTest do
     assert_result {:ok, %{data: %{"failingThing" => nil}, errors: [%{code: 1, message: "Custom Error 1", path: ["failingThing"]}, %{code: 2, message: "Custom Error 2", path: ["failingThing"]}]}}, run(query, Things)
   end
 
+  test "can return excpetion in a status tuple" do
+    query = "mutation { failingThing(type: STATUS_TUPLE_WITH_EXCEPTION) { name } }"
+    assert_result {:ok, %{data: %{"failingThing" => nil}, errors: [%{message: "Message", path: ["failingThing"]}]}}, run(query, Things)
+  end
+
   test "requires message in extended errors, when multiple errors are given" do
     query = "mutation { failingThing(type: MULTIPLE_WITHOUT_MESSAGE) { name } }"
     assert_raise Absinthe.ExecutionError, fn -> run(query, Things) end
