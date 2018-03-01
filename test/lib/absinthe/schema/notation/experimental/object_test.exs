@@ -2,6 +2,8 @@ defmodule Absinthe.Schema.Notation.Experimental.ObjectTest do
   use Absinthe.Case
   import ExperimentalNotationHelpers
 
+  @moduletag :experimental
+
   defmodule Definition do
     use Absinthe.Schema.Notation.Experimental
 

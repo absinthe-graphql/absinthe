@@ -52,7 +52,7 @@ defmodule Absinthe.Blueprint.Transform do
   defp pass(x, acc), do: {x, acc}
 
   nodes_with_children = %{
-    Blueprint => [:fragments, :operations, :types, :directives],
+    Blueprint => [:fragments, :operations, :schema_definitions, :directives],
     Blueprint.Directive => [:arguments],
     Blueprint.Document.Field => [:selections, :arguments, :directives],
     Blueprint.Document.Operation => [:selections, :variable_definitions, :directives],

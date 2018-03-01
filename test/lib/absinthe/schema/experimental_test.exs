@@ -1,6 +1,8 @@
 defmodule Absinthe.Schema.ExperimentalTest do
   use Absinthe.Case
 
+  @moduletag :experimental
+
   defmodule Schema do
     use Absinthe.Schema.Experimental
 

@@ -206,18 +206,18 @@ defmodule Absinthe.Schema.Notation.Experimental do
   defp add_imports(blueprint, imports) do
     Enum.reduce(imports, blueprint, fn
       {module, []}, blueprint ->
-        %{types: types} = module.__absinthe_blueprint__()
-        Map.update!(blueprint, :types, &(types ++ &1))
+        %{schema_definitions: types} = module.__absinthe_blueprint__()
+        Map.update!(blueprint, :schema_definitions, &(types ++ &1))
 
       {module, [only: only]}, blueprint ->
-        %{types: types} = module.__absinthe_blueprint__()
+        %{schema_definitions: types} = module.__absinthe_blueprint__()
         types = Enum.filter(types, fn type -> type.identifier in only end)
-        Map.update!(blueprint, :types, &(types ++ &1))
+        Map.update!(blueprint, :schema_definitions, &(types ++ &1))
 
       {module, [except: except]}, blueprint ->
-        %{types: types} = module.__absinthe_blueprint__()
+        %{schema_definitions: types} = module.__absinthe_blueprint__()
         types = Enum.filter(types, fn type -> not(type.identifier in except) end)
-        Map.update!(blueprint, :types, &(types ++ &1))
+        Map.update!(blueprint, :schema_definitions, &(types ++ &1))
     end)
   end
 
@@ -237,7 +237,7 @@ defmodule Absinthe.Schema.Notation.Experimental do
     build_types(attrs, [bp])
   end
   defp build_types([], [bp]) do
-    Map.update!(bp, :types, &Enum.reverse/1)
+    Map.update!(bp, :schema_definitions, &Enum.reverse/1)
   end
   defp build_types([%Schema.ObjectTypeDefinition{} = obj | rest], stack) do
     build_types(rest, [obj | stack])
@@ -259,7 +259,7 @@ defmodule Absinthe.Schema.Notation.Experimental do
   end
   defp build_types([:close | rest], [%Schema.ObjectTypeDefinition{} = obj, bp]) do
     obj = Map.update!(obj, :fields, &Enum.reverse/1)
-    bp = Map.update!(bp, :types, &[obj | &1])
+    bp = Map.update!(bp, :schema_definitions, &[obj | &1])
     build_types(rest, [bp])
   end
 

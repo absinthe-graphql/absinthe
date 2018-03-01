@@ -11,10 +11,10 @@ defmodule Absinthe.Blueprint do
 
   defstruct [
     operations: [],
-    types: [],
     directives: [],
     fragments: [],
     name: nil,
+    schema_definitions: [],
     schema: nil,
     adapter: nil,
     # Added by phases
@@ -27,7 +27,7 @@ defmodule Absinthe.Blueprint do
 
   @type t :: %__MODULE__{
     operations: [Blueprint.Document.Operation.t],
-    types: [Blueprint.Schema.t],
+    schema_definitions: [Blueprint.Schema.t],
     directives: [Blueprint.Schema.DirectiveDefinition.t],
     name: nil | String.t,
     fragments: [Blueprint.Document.Fragment.Named.t],

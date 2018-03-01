@@ -72,7 +72,7 @@ defmodule Absinthe.Language.Document do
       update_in(blueprint.operations, &[Blueprint.Draft.convert(node, doc) | &1])
     end
     defp convert_definition(%struct{} = node, doc, blueprint) when struct in @types do
-      update_in(blueprint.types, &[Blueprint.Draft.convert(node, doc) | &1])
+      update_in(blueprint.schema_definitions, &[Blueprint.Draft.convert(node, doc) | &1])
     end
     defp convert_definition(%struct{} = node, doc, blueprint) when struct in @directives do
       update_in(blueprint.directives, &[Blueprint.Draft.convert(node, doc) | &1])
