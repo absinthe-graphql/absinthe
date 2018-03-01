@@ -18,7 +18,7 @@ defmodule Absinthe.Language.SchemaDefinition do
   defimpl Blueprint.Draft do
     def convert(node, doc) do
       %Blueprint.Schema.SchemaDefinition{
-        fields: Absinthe.Blueprint.Draft.convert(node.fields, doc),
+        types: Absinthe.Blueprint.Draft.convert(node.fields, doc),
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
       }
     end

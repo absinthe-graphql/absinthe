@@ -28,7 +28,7 @@ defmodule Absinthe.Schema.ExperimentalTest do
 
   describe "__absinthe_blueprint__/0" do
     test "returns the blueprint" do
-      assert 2 == length(Schema.__absinthe_blueprint__().types)
+      assert 2 == length(Schema.__absinthe_blueprint__().schema_definitions |> List.first |> Map.get(:types))
     end
   end
 

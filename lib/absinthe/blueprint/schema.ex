@@ -19,7 +19,10 @@ defmodule Absinthe.Blueprint.Schema do
   """
   @spec lookup_type(Blueprint.t, atom) :: nil | Blueprint.Schema.type_t
   def lookup_type(blueprint, identifier) do
-    Enum.find(blueprint.types, fn
+    blueprint.schema_definitions
+    |> List.first
+    |> Map.get(:types)
+    |> Enum.find(fn
       %{identifier: ^identifier} ->
         true
       _ ->

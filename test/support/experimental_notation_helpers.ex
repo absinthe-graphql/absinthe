@@ -17,7 +17,10 @@ defmodule ExperimentalNotationHelpers do
   end
 
   def type_count(mod) do
-    length(mod.__absinthe_blueprint__().types)
+    mod.__absinthe_blueprint__().schema_definitions
+    |> List.first
+    |> Map.fetch!(:types)
+    |> length
   end
 
 end

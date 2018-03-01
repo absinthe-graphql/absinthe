@@ -6,16 +6,18 @@ defmodule Absinthe.Blueprint.Schema.SchemaDefinition do
 
   defstruct [
     description: nil,
-    fields: [],
+    types: [],
+    type_extensions: [],
     directives: [],
     # Added by phases
     flags: %{},
+    imports: [],
     errors: [],
   ]
 
   @type t :: %__MODULE__{
     description: nil | String.t,
-    fields: [Blueprint.Schema.FieldDefinition.t],
+    # types: [Blueprint.Schema.FieldDefinition.t],
     directives: [Blueprint.Directive.t],
     # Added by phases
     flags: Blueprint.flags_t,

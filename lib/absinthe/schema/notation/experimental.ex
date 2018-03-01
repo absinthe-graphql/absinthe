@@ -185,6 +185,7 @@ defmodule Absinthe.Schema.Notation.Experimental do
     attrs =
       env.module
       |> Module.get_attribute(:absinthe_blueprint)
+      |> List.insert_at(0, :close)
       |> Enum.reverse
       |> intersperse_descriptions(module_attribute_descs)
 
@@ -192,8 +193,8 @@ defmodule Absinthe.Schema.Notation.Experimental do
 
     blueprint =
       attrs
+      |> List.insert_at(1, %Blueprint.Schema.SchemaDefinition{imports: imports})
       |> build_blueprint()
-      |> add_imports(imports)
 
     quote do
       unquote(__MODULE__).noop(@desc)
@@ -201,24 +202,6 @@ defmodule Absinthe.Schema.Notation.Experimental do
         unquote(Macro.escape(blueprint))
       end
     end
-  end
-
-  defp add_imports(blueprint, imports) do
-    Enum.reduce(imports, blueprint, fn
-      {module, []}, blueprint ->
-        %{schema_definitions: types} = module.__absinthe_blueprint__()
-        Map.update!(blueprint, :schema_definitions, &(types ++ &1))
-
-      {module, [only: only]}, blueprint ->
-        %{schema_definitions: types} = module.__absinthe_blueprint__()
-        types = Enum.filter(types, fn type -> type.identifier in only end)
-        Map.update!(blueprint, :schema_definitions, &(types ++ &1))
-
-      {module, [except: except]}, blueprint ->
-        %{schema_definitions: types} = module.__absinthe_blueprint__()
-        types = Enum.filter(types, fn type -> not(type.identifier in except) end)
-        Map.update!(blueprint, :schema_definitions, &(types ++ &1))
-    end)
   end
 
   defp intersperse_descriptions(attrs, descs) do
@@ -239,6 +222,12 @@ defmodule Absinthe.Schema.Notation.Experimental do
   defp build_types([], [bp]) do
     Map.update!(bp, :schema_definitions, &Enum.reverse/1)
   end
+  defp build_types([%Schema.SchemaDefinition{} = schema | rest], stack) do
+    build_types(rest, [schema | stack])
+  end
+  defp build_types([%Schema.ObjectTypeDefinition{} = obj | rest], stack) do
+    build_types(rest, [obj | stack])
+  end
   defp build_types([%Schema.ObjectTypeDefinition{} = obj | rest], stack) do
     build_types(rest, [obj | stack])
   end
@@ -257,9 +246,13 @@ defmodule Absinthe.Schema.Notation.Experimental do
     obj = Map.update!(obj, :fields, &[field | &1])
     build_types(rest, [obj | stack])
   end
-  defp build_types([:close | rest], [%Schema.ObjectTypeDefinition{} = obj, bp]) do
+  defp build_types([:close | rest], [%Schema.ObjectTypeDefinition{} = obj, schema | stack]) do
     obj = Map.update!(obj, :fields, &Enum.reverse/1)
-    bp = Map.update!(bp, :schema_definitions, &[obj | &1])
+    schema = Map.update!(schema, :types, &[obj | &1])
+    build_types(rest, [schema | stack])
+  end
+  defp build_types([:close | rest], [%Schema.SchemaDefinition{} = schema, bp]) do
+    bp = Map.update!(bp, :schema_definitions, &[schema | &1])
     build_types(rest, [bp])
   end
 
