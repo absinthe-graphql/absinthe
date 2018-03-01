@@ -49,6 +49,12 @@ defmodule Absinthe.TypeTest do
       field :authors, list_of(:author)
     end
 
+    object "animal" do
+      description "A Basic Type with a string identifier"
+
+      field :id, :id
+      field :name, :string
+    end
   end
 
   test "definition with custom name" do
@@ -57,6 +63,10 @@ defmodule Absinthe.TypeTest do
 
   test "that uses a name derived from the identifier" do
     assert %Type.Object{name: "Item"} = BasicSchema.__absinthe_type__(:item)
+  end
+
+  test "that uses a name derived from a string identifier" do
+    assert %Type.Object{name: "Animal"} = BasicSchema.__absinthe_type__("animal")
   end
 
   test "root query type definition" do

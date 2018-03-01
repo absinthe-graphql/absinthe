@@ -153,6 +153,10 @@ defmodule Absinthe.SchemaTest do
       field :name, :string
     end
 
+    object "buzz" do
+      field :name, :string
+    end
+
   end
 
   test "can have a description on the root query" do
@@ -178,6 +182,10 @@ defmodule Absinthe.SchemaTest do
 
     test "is supported" do
       assert "Foo" == Schema.lookup_type(ThirdSchema, :foo).name
+    end
+
+    test "is supported for string identifiers" do
+      assert "Buzz" == Schema.lookup_type(ThirdSchema, "buzz").name
     end
 
   end
