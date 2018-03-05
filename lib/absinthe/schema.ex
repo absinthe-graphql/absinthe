@@ -43,9 +43,9 @@ defmodule Absinthe.Schema do
     field :item, :item do
 
       @desc "The ID of the item"
-      arg :id, type: :id
+      arg :id, type: non_null(:id)
 
-      resolve fn _, %{id: id}, _ ->
+      resolve fn %{id: id}, _ ->
         {:ok, Map.get(@fake_db, id)}
       end
     end
