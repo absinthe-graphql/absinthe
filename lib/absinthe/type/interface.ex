@@ -7,7 +7,7 @@ defmodule Absinthe.Type.Interface do
   Fields on an interface have the same rules as fields on an
   `Absinthe.Type.Object`.
 
-  If an `Absinthe.Type.Object` lists an interface in its `:interfaces` entry, it
+  If an `Absinthe.Type.Object` lists an interface in its `:interfaces` entry,
   it guarantees that it defines the same fields and arguments that the
   interface does.
 
