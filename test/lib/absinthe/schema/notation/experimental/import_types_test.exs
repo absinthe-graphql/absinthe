@@ -1,6 +1,5 @@
 defmodule Absinthe.Schema.Notation.Experimental.ImportTypesTest do
   use Absinthe.Case
-  import ExperimentalNotationHelpers
 
   @moduletag :experimental
 
@@ -36,14 +35,19 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportTypesTest do
 
   describe "import_types" do
     test "without options" do
-      assert 3 == type_count(WithoutOptions)
+      assert [{Source, []}] == imports(WithoutOptions)
     end
     test "with :only" do
-      assert 2 == type_count(UsingOnlyOption)
+      assert [{Source, only: [:one, :two]}] == imports(UsingOnlyOption)
     end
     test "with :except" do
-      assert 1 == type_count(UsingExceptOption)
+      assert [{Source, except: [:one, :two]}] == imports(UsingExceptOption)
     end
+  end
+
+  defp imports(module) do
+    %{schema_definitions: [schema]} = module.__absinthe_blueprint__
+    schema.imports
   end
 
 end

@@ -92,8 +92,12 @@ defmodule Absinthe.Schema.Notation.Experimental do
 
   @spec import_fields(atom | {module, atom}, Keyword.t) :: Macro.t
   defmacro import_fields(source_criteria, opts \\ []) do
-    quote do
-    end
+    source_criteria =
+      source_criteria
+      |> Macro.prewalk(&Macro.expand(&1, __CALLER__))
+
+    put_attr(__CALLER__.module, {:import_fields, {source_criteria, opts}})
+    []
   end
 
   @spec field(atom, atom | Keyword.t) :: Macro.t
@@ -189,7 +193,7 @@ defmodule Absinthe.Schema.Notation.Experimental do
       |> Enum.reverse
       |> intersperse_descriptions(module_attribute_descs)
 
-    imports = Module.get_attribute(env.module, :__absinthe_type_imports__) || []
+    imports = Enum.uniq(Module.get_attribute(env.module, :__absinthe_type_imports__) || [])
 
     blueprint =
       attrs
@@ -233,6 +237,10 @@ defmodule Absinthe.Schema.Notation.Experimental do
   end
   defp build_types([%Schema.FieldDefinition{} = field | rest], stack) do
     build_types(rest, [field | stack])
+  end
+  defp build_types([{:import_fields, criterion} | rest], [obj | stack]) do
+    obj = Map.update!(obj, :imports, &[criterion | &1])
+    build_types(rest, [obj | stack])
   end
   defp build_types([{:desc, desc} | rest], [item | stack]) do
     build_types(rest, [%{item | description: desc} | stack])

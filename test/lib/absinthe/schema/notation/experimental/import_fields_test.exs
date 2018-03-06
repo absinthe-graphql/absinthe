@@ -86,23 +86,27 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportFieldsTest do
 
   describe "import_fields" do
     test "without options from an internal source" do
-      assert 3 == length(lookup_type(WithoutOptions, :internal_target).fields)
+      assert [{:internal_source, []}] == imports(WithoutOptions, :internal_target)
     end
     test "without options from an external source" do
-      assert 3 == length(lookup_type(WithoutOptions, :external_target).fields)
+      assert [{{Source, :source}, []}] == imports(WithoutOptions, :external_target)
     end
     test "with :only from an internal source" do
-      assert 2 == length(lookup_type(UsingOnlyOption, :internal_target).fields)
+      assert [{:internal_source, only: [:one, :two]}] == imports(UsingOnlyOption, :internal_target)
     end
     test "with :only from external source" do
-      assert 2 == length(lookup_type(UsingOnlyOption, :external_target).fields)
+      assert [{{Source, :source}, only: [:one, :two]}] == imports(UsingOnlyOption, :external_target)
     end
     test "with :except from an internal source" do
-      assert 1 == length(lookup_type(UsingExceptOption, :internal_target).fields)
+      assert [{:internal_source, [except: [:one, :two]]}] == imports(UsingExceptOption, :internal_target)
     end
     test "with :except from external source" do
-      assert 1 == length(lookup_type(UsingExceptOption, :external_target).fields)
+      assert [{{Source, :source}, [except: [:one, :two]]}] == imports(UsingExceptOption, :external_target)
     end
+  end
+
+  defp imports(module, type) do
+    lookup_type(module, type).imports
   end
 
 end
