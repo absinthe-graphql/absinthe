@@ -5,12 +5,58 @@ if Code.ensure_loaded?(Dataloader) do
 
     def before_resolution(%{context: context} = exec) do
       context = Map.put_new(context, :values, %{})
-      old_values = Map.keys(context[:values] || %{})
+      unevaluated_values = Map.keys(context[:values] || %{})
 
+      evaluated_values =
+        unevaluated_values
+        |> Enum.zip(Dataloader.evaluate_single_pass(unevaluated_values))
+        |> Map.new()
+
+      %{exec | context: Map.put(context, :values, evaluated_values)}
+    end
+
+    defp get_resolution(
+           %Dataloader.Value{lazy?: false, value: value},
+           resolution = %{context: context},
+           val
+         ) do
+      values = Map.delete(context.values, val)
+
+      %{resolution | context: Map.put(context, :values, values)}
+      |> Absinthe.Resolution.put_result(value)
+    end
+
+    defp get_resolution(
+           cached_val = %Dataloader.Value{lazy?: true},
+           resolution = %{context: context},
+           val
+         ) do
       values =
-        Enum.zip(old_values, Dataloader.evaluate(old_values, single_pass: true)) |> Map.new()
+        context.values
+        |> Map.delete(val)
+        |> Map.put(cached_val, nil)
 
-      %{exec | context: Map.put(context, :values, values)}
+      %{
+        resolution
+        | context: Map.put(context, :values, values),
+          state: :suspended,
+          middleware: [{__MODULE__, val} | resolution.middleware]
+      }
+    end
+
+    defp get_resolution(
+           nil,
+           resolution = %{context: context},
+           val = %Dataloader.Value{lazy?: true}
+         ) do
+      values = Map.put(context.values, val, nil)
+
+      %{
+        resolution
+        | context: Map.put(context, :values, values),
+          state: :suspended,
+          middleware: [{__MODULE__, val} | resolution.middleware]
+      }
     end
 
     def call(resolution, %Dataloader.Value{lazy?: false, value: value}) do
@@ -21,39 +67,7 @@ if Code.ensure_loaded?(Dataloader) do
           resolution = %{context: context},
           val = %Dataloader.Value{}
         ) do
-      case Map.get(context.values, val) do
-        %Dataloader.Value{lazy?: false, value: value} ->
-          values = Map.delete(context.values, val)
-
-          resolution = %{resolution | context: Map.put(context, :values, values)}
-          Absinthe.Resolution.put_result(resolution, value)
-
-        # replace by the new value
-        new_val = %Dataloader.Value{lazy?: true} ->
-          values =
-            context.values
-            |> Map.delete(val)
-            |> Map.put(new_val, nil)
-
-          %{
-            resolution
-            | context: Map.put(context, :values, values),
-              state: :suspended,
-              middleware: [{__MODULE__, val} | resolution.middleware]
-          }
-
-        nil ->
-          values =
-            context.values
-            |> Map.put(val, nil)
-
-          %{
-            resolution
-            | context: Map.put(context, :values, values),
-              state: :suspended,
-              middleware: [{__MODULE__, val} | resolution.middleware]
-          }
-      end
+      get_resolution(context[:values][val], resolution, val)
     end
 
     def after_resolution(exec) do
