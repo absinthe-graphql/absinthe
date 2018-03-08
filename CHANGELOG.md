@@ -2,6 +2,8 @@
 
 ## v1.4.8
 
+- Doc Improvements
+- Formatter Improvements
 - Bug Fix: Dataloader won't explode if a given pass uses only already cached values
 
 ## v1.4.7
