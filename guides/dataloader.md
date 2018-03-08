@@ -108,8 +108,11 @@ defmodule MyProject.Loaders.Nhl do
     Dataloader.KV.new(&fetch/2)
   end
 
-  def fetch(batch, ids) do
-    # must return a map keyed by the ids
+  def fetch(batch, args) do
+    # must return a map keyed by the args
+    # args is a list of the args used to resolve your field
+    # for example, if you have arg(:foo, non_null(:string))
+    # args will look like: [%{foo: "value of foo here")}]
   end
 end
 ```
