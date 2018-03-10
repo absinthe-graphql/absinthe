@@ -50,6 +50,10 @@ defmodule Absinthe.Middleware.DataloaderTest do
       [Absinthe.Middleware.Dataloader] ++ Absinthe.Plugin.defaults()
     end
 
+    def middleware(middleware, _field, _object) do
+      middleware ++ [Absinthe.Middleware.Dataloader]
+    end
+
     object :organization do
       field(:id, :integer)
       field(:name, :string)

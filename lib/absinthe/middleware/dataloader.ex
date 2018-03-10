@@ -4,70 +4,66 @@ if Code.ensure_loaded?(Dataloader) do
     @behaviour Absinthe.Plugin
 
     def before_resolution(%{context: context} = exec) do
-      context = Map.put_new(context, :values, %{})
-      unevaluated_values = Map.keys(context[:values] || %{})
+      context =
+        with %{loader: loader} <- context do
+          %{context | loader: Dataloader.run(loader)}
+        end
 
-      evaluated_values =
-        unevaluated_values
-        |> Enum.zip(Dataloader.evaluate_single_pass(unevaluated_values))
-        |> Map.new()
-
-      %{exec | context: Map.put(context, :values, evaluated_values)}
+      %{exec | context: context}
     end
 
-    defp get_resolution(
-           %Dataloader.Value{lazy?: false, value: value},
-           resolution = %{context: context},
-           val
-         ) do
-      values = Map.delete(context.values, val)
+    def call(%{state: :unresolved} = resolution, {:dataloader, loader, callback}) do
+      previous_loader_state = resolution.context.loader
 
-      %{resolution | context: Map.put(context, :values, values)}
-      |> Absinthe.Resolution.put_result(value)
+      if previous_loader_state == loader || !Dataloader.pending_batches?(loader) do
+        get_result(resolution, callback)
+      else
+        %{
+          resolution
+          | context: Map.put(resolution.context, :loader, loader),
+            state: :suspended,
+            middleware: [{__MODULE__, {:dataloader, callback}} | resolution.middleware]
+        }
+      end
     end
 
-    defp get_resolution(
-           cached_val = %Dataloader.Value{lazy?: true},
-           resolution = %{context: context},
-           val
-         ) do
-      values =
-        context.values
-        |> Map.delete(val)
-        |> Map.put(cached_val, nil)
-
-      %{
-        resolution
-        | context: Map.put(context, :values, values),
-          state: :suspended,
-          middleware: [{__MODULE__, val} | resolution.middleware]
-      }
-    end
-
-    defp get_resolution(
-           nil,
-           resolution = %{context: context},
-           val = %Dataloader.Value{lazy?: true}
-         ) do
-      values = Map.put(context.values, val, nil)
-
-      %{
-        resolution
-        | context: Map.put(context, :values, values),
-          state: :suspended,
-          middleware: [{__MODULE__, val} | resolution.middleware]
-      }
-    end
-
-    def call(resolution, %Dataloader.Value{lazy?: false, value: value}) do
-      Absinthe.Resolution.put_result(resolution, value)
+    def call(%{state: :suspended} = resolution, {:dataloader, callback}) do
+      get_result(resolution, callback)
     end
 
     def call(
-          resolution = %{context: context},
-          val = %Dataloader.Value{}
+          resolution = %{value: %Lazyloader.Deferrable{evaluated?: true, value: value}},
+          _key
         ) do
-      get_resolution(context[:values][val], resolution, val)
+      Absinthe.Resolution.put_result(resolution, value)
+    end
+
+    def call(resolution = %{value: deferrable = %Lazyloader.Deferrable{}}, _key) do
+      case Lazyloader.Deferrable.run_callbacks(deferrable, resolution.context.dataloader, nil) do
+        %Lazyloader.Deferrable{evaluated?: true, value: value} ->
+          Absinthe.Resolution.put_result(resolution, value)
+
+        %Lazyloader.Deferrable{} = result ->
+          %{
+            resolution
+            | context:
+                Map.put(
+                  resolution.context,
+                  :loader,
+                  Lazyloader.Deferrable.apply_operations(result.dataloader, result)
+                ),
+              state: :suspended,
+              value: result,
+              middleware: [__MODULE__ | resolution.middleware]
+          }
+      end
+    end
+
+    def call(res, _key), do: res
+
+    defp get_result(resolution, callback) do
+      value = callback.(resolution.context.loader)
+      Absinthe.Resolution.put_result(resolution, value)
     end
 
     def after_resolution(exec) do
@@ -75,7 +71,8 @@ if Code.ensure_loaded?(Dataloader) do
     end
 
     def pipeline(pipeline, exec) do
-      with true <- exec.context[:values] != %{} do
+      with %{loader: loader} <- exec.context,
+           true <- Dataloader.pending_batches?(loader) do
         [Absinthe.Phase.Document.Execution.Resolution | pipeline]
       else
         _ -> pipeline

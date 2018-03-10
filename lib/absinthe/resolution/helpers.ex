@@ -97,8 +97,7 @@ defmodule Absinthe.Resolution.Helpers do
     ```
     """
     def on_load(loader, fun) do
-      value = Dataloader.on_load(loader, fun)
-      {:middleware, Absinthe.Middleware.Dataloader, value}
+      {:middleware, Absinthe.Middleware.Dataloader, {:dataloader, loader, fun}}
     end
 
     @type dataloader_tuple :: {:middleware, Absinthe.Middleware.Dataloader, term}
