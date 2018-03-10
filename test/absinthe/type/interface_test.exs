@@ -9,6 +9,7 @@ defmodule Absinthe.Type.InterfaceTest do
     query do
       field :foo, type: :foo
       field :bar, type: :bar
+
       field :named_thing, :named do
         resolve fn _, _ ->
           {:ok, %{}}
@@ -18,45 +19,47 @@ defmodule Absinthe.Type.InterfaceTest do
 
     object :foo do
       field :name, :string
-      is_type_of fn
-        _ ->
-          true
+
+      is_type_of fn _ ->
+        true
       end
+
       interface :named
     end
 
     object :bar do
       field :name, :string
-      is_type_of fn
-        _ ->
-          true
+
+      is_type_of fn _ ->
+        true
       end
+
       interface :named
     end
 
     # NOT USED IN THE QUERY
     object :baz do
       field :name, :string
-      is_type_of fn
-        _ ->
-          true
+
+      is_type_of fn _ ->
+        true
       end
+
       interfaces [:named]
     end
 
     interface :named do
       description "An interface"
       field :name, :string
-      resolve_type fn
-        _, _ ->
-          nil # just a value
+
+      resolve_type fn _, _ ->
+        # just a value
+        nil
       end
     end
-
   end
 
   describe "interface" do
-
     test "can be defined" do
       obj = Schema.__absinthe_type__(:named)
       assert %Absinthe.Type.Interface{name: "Named", description: "An interface"} = obj
@@ -64,7 +67,7 @@ defmodule Absinthe.Type.InterfaceTest do
     end
 
     test "captures the relationships in the schema" do
-      implementors = Map.get(Schema.__absinthe_interface_implementors__, :named, [])
+      implementors = Map.get(Schema.__absinthe_interface_implementors__(), :named, [])
       assert :foo in implementors
       assert :bar in implementors
       # Not directly in query, but because it's
@@ -77,11 +80,9 @@ defmodule Absinthe.Type.InterfaceTest do
       obj = Schema.__absinthe_type__(:named)
       assert length(Absinthe.Schema.implementors(Schema, obj)) == 3
     end
-
   end
 
   describe "an object that implements an interface" do
-
     @graphql """
     query {
       contact {
@@ -90,8 +91,10 @@ defmodule Absinthe.Type.InterfaceTest do
     }
     """
     test "with the interface as a field type, can select fields that are declared by the interface" do
-      assert_data %{"contact" => %{"entity" => %{"name" => "Bruce"}}},
+      assert_data(
+        %{"contact" => %{"entity" => %{"name" => "Bruce"}}},
         run(@graphql, Absinthe.Fixtures.ContactSchema)
+      )
     end
 
     @graphql """
@@ -102,8 +105,10 @@ defmodule Absinthe.Type.InterfaceTest do
     }
     """
     test "with the interface as a field type, can't select fields from an implementing type without 'on'" do
-      assert_error_message ~s(Cannot query field "age" on type "NamedEntity". Did you mean to use an inline fragment on "Person"?),
+      assert_error_message(
+        ~s(Cannot query field "age" on type "NamedEntity". Did you mean to use an inline fragment on "Person"?),
         run(@graphql, Absinthe.Fixtures.ContactSchema)
+      )
     end
 
     @graphql """
@@ -117,24 +122,21 @@ defmodule Absinthe.Type.InterfaceTest do
     }
     """
     test "with the interface as a field type, can select fields from an implementing type with 'on'" do
-      assert_data %{"contact" => %{"entity" => %{"name" => "Bruce", "age" => 35}}},
+      assert_data(
+        %{"contact" => %{"entity" => %{"name" => "Bruce", "age" => 35}}},
         run(@graphql, Absinthe.Fixtures.ContactSchema)
+      )
     end
-
   end
 
   describe "when it doesn't define those fields" do
-
     test "reports schema errors" do
-      assert_schema_error(
-        "bad_interface_schema",
-        [
-          %{rule: Rule.ObjectMustImplementInterfaces, data: %{object: "Foo", interface: "Aged"}},
-          %{rule: Rule.ObjectMustImplementInterfaces, data: %{object: "Foo", interface: "Named"}},
-          %{rule: Rule.ObjectInterfacesMustBeValid, data: %{object: "Quux", interface: "Foo"}},
-          %{rule: Rule.InterfacesMustResolveTypes, data: "Named"},
-        ]
-      )
+      assert_schema_error("bad_interface_schema", [
+        %{rule: Rule.ObjectMustImplementInterfaces, data: %{object: "Foo", interface: "Aged"}},
+        %{rule: Rule.ObjectMustImplementInterfaces, data: %{object: "Foo", interface: "Named"}},
+        %{rule: Rule.ObjectInterfacesMustBeValid, data: %{object: "Quux", interface: "Foo"}},
+        %{rule: Rule.InterfacesMustResolveTypes, data: "Named"}
+      ])
     end
   end
 
@@ -147,13 +149,12 @@ defmodule Absinthe.Type.InterfaceTest do
     }
 
     query do
-
       field :box,
         type: :box,
         args: [],
         resolve: fn _, _ ->
-        {:ok, @box}
-      end
+          {:ok, @box}
+        end
     end
 
     object :box do
@@ -190,8 +191,10 @@ defmodule Absinthe.Type.InterfaceTest do
   }
   """
   test "can query an interface field type's fields" do
-    assert_data %{"box" => %{"item" => %{"name" => "Computer", "cost" => 1000}}},
+    assert_data(
+      %{"box" => %{"item" => %{"name" => "Computer", "cost" => 1000}}},
       run(@graphql, InterfaceSchema)
+    )
   end
 
   @graphql """
@@ -206,8 +209,7 @@ defmodule Absinthe.Type.InterfaceTest do
   }
   """
   test "can query an interface field using a fragment and access its type's fields" do
-    assert_data %{"box" => %{"item" => %{"name" => "Computer"}}},
-      run(@graphql, InterfaceSchema)
+    assert_data(%{"box" => %{"item" => %{"name" => "Computer"}}}, run(@graphql, InterfaceSchema))
   end
 
   @graphql """
@@ -225,8 +227,10 @@ defmodule Absinthe.Type.InterfaceTest do
   }
   """
   test "can query InterfaceSubtypeSchema treating box as HasItem and item as ValuedItem" do
-    assert_data %{"box" => %{"item" => %{"name" => "Computer", "cost" => 1000}}},
+    assert_data(
+      %{"box" => %{"item" => %{"name" => "Computer", "cost" => 1000}}},
       run(@graphql, InterfaceSchema)
+    )
   end
 
   @graphql """
@@ -242,8 +246,10 @@ defmodule Absinthe.Type.InterfaceTest do
   }
   """
   test "rejects querying InterfaceSubtypeSchema treating box as HasItem asking for cost" do
-    assert_error_message ~s(Cannot query field "cost" on type "Item". Did you mean to use an inline fragment on "ValuedItem"?),
+    assert_error_message(
+      ~s(Cannot query field "cost" on type "Item". Did you mean to use an inline fragment on "ValuedItem"?),
       run(@graphql, InterfaceSchema)
+    )
   end
 
   @graphql """
@@ -254,7 +260,6 @@ defmodule Absinthe.Type.InterfaceTest do
   }
   """
   test "works even when resolve_type returns nil" do
-    assert_data %{"namedThing" => %{}},
-      run(@graphql, Schema)
+    assert_data(%{"namedThing" => %{}}, run(@graphql, Schema))
   end
 end

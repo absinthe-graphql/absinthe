@@ -1,5 +1,4 @@
 defmodule Absinthe.Blueprint.Input.Field do
-
   @moduledoc false
 
   alias Absinthe.{Blueprint, Type}
@@ -12,16 +11,15 @@ defmodule Absinthe.Blueprint.Input.Field do
     flags: %{},
     source_location: nil,
     schema_node: nil,
-    errors: [],
+    errors: []
   ]
 
   @type t :: %__MODULE__{
-    name: String.t,
-    input_value: Blueprint.Input.Value.t,
-    flags: Blueprint.flags_t,
-    schema_node: nil | Type.Field.t,
-    source_location: Blueprint.Document.SourceLocation.t,
-    errors: [Absinthe.Phase.Error.t],
-  }
-
+          name: String.t(),
+          input_value: Blueprint.Input.Value.t(),
+          flags: Blueprint.flags_t(),
+          schema_node: nil | Type.Field.t(),
+          source_location: Blueprint.Document.SourceLocation.t(),
+          errors: [Absinthe.Phase.Error.t()]
+        }
 end

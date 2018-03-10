@@ -16,15 +16,15 @@ defmodule Absinthe.Middleware.AsyncTest do
       end
 
       field :other_async_thing, :string do
-        resolve cool_async fn _, _, _ ->
-          {:ok, "magic"}
-        end
+        resolve cool_async(fn _, _, _ ->
+                  {:ok, "magic"}
+                end)
       end
 
       field :returns_nil, :string do
-        resolve cool_async fn _, _, _ ->
-          {:ok, nil}
-        end
+        resolve cool_async(fn _, _, _ ->
+                  {:ok, nil}
+                end)
       end
     end
 
@@ -35,13 +35,13 @@ defmodule Absinthe.Middleware.AsyncTest do
         end)
       end
     end
-
   end
 
   test "can resolve a field using the normal async helper" do
     doc = """
     {asyncThing}
     """
+
     assert {:ok, %{data: %{"asyncThing" => "we async now"}}} == Absinthe.run(doc, Schema)
   end
 
@@ -49,6 +49,7 @@ defmodule Absinthe.Middleware.AsyncTest do
     doc = """
     {otherAsyncThing}
     """
+
     assert {:ok, %{data: %{"otherAsyncThing" => "magic"}}} == Absinthe.run(doc, Schema)
   end
 
@@ -56,7 +57,7 @@ defmodule Absinthe.Middleware.AsyncTest do
     doc = """
     {returnsNil}
     """
+
     assert {:ok, %{data: %{"returnsNil" => nil}}} == Absinthe.run(doc, Schema)
   end
-
 end

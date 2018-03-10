@@ -1,5 +1,4 @@
 defmodule Absinthe do
-
   @moduledoc """
   Documentation for the Absinthe package, a toolkit for building GraphQL
   APIs with Elixir.
@@ -23,25 +22,24 @@ defmodule Absinthe do
   end
 
   @type result_selection_t :: %{
-    String.t =>
-        nil
-      | integer
-      | float
-      | boolean
-      | binary
-      | atom
-      | [result_selection_t]
-  }
+          String.t() =>
+            nil
+            | integer
+            | float
+            | boolean
+            | binary
+            | atom
+            | [result_selection_t]
+        }
 
   @type result_error_t ::
-      %{message: String.t}
-    | %{message: String.t,
-        locations: [%{line: integer, column: integer}]}
+          %{message: String.t()}
+          | %{message: String.t(), locations: [%{line: integer, column: integer}]}
 
   @type result_t ::
-      %{data: nil | result_selection_t}
-    | %{data: nil | result_selection_t, errors: [result_error_t]}
-    | %{errors: [result_error_t]}
+          %{data: nil | result_selection_t}
+          | %{data: nil | result_selection_t, errors: [result_error_t]}
+          | %{errors: [result_error_t]}
 
   @doc """
   Evaluates a query document against a schema, with options.
@@ -80,17 +78,21 @@ defmodule Absinthe do
 
   """
   @type run_opts :: [
-    context: %{},
-    adapter: Absinthe.Adapter.t,
-    root_value: term,
-    operation_name: String.t,
-    analyze_complexity: boolean,
-    max_complexity: non_neg_integer | :infinity
-  ]
+          context: %{},
+          adapter: Absinthe.Adapter.t(),
+          root_value: term,
+          operation_name: String.t(),
+          analyze_complexity: boolean,
+          max_complexity: non_neg_integer | :infinity
+        ]
 
-  @type run_result :: {:ok, result_t} | {:error, String.t}
+  @type run_result :: {:ok, result_t} | {:error, String.t()}
 
-  @spec run(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, run_opts) :: run_result
+  @spec run(
+          binary | Absinthe.Language.Source.t() | Absinthe.Language.Document.t(),
+          Absinthe.Schema.t(),
+          run_opts
+        ) :: run_result
   def run(document, schema, options \\ []) do
     pipeline =
       schema
@@ -99,6 +101,7 @@ defmodule Absinthe do
     case Absinthe.Pipeline.run(document, pipeline) do
       {:ok, %{result: result}, _phases} ->
         {:ok, result}
+
       {:error, msg, _phases} ->
         {:error, msg}
     end
@@ -111,12 +114,15 @@ defmodule Absinthe do
 
   See `run/3` for the available options.
   """
-  @spec run!(binary | Absinthe.Language.Source.t | Absinthe.Language.Document.t, Absinthe.Schema.t, Keyword.t) :: result_t | no_return
+  @spec run!(
+          binary | Absinthe.Language.Source.t() | Absinthe.Language.Document.t(),
+          Absinthe.Schema.t(),
+          Keyword.t()
+        ) :: result_t | no_return
   def run!(input, schema, options \\ []) do
     case run(input, schema, options) do
       {:ok, result} -> result
       {:error, err} -> raise ExecutionError, message: err
     end
   end
-
 end

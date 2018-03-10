@@ -13,12 +13,12 @@ defmodule Absinthe.Language.InputValueDefinition do
   ]
 
   @type t :: %__MODULE__{
-    name: String.t,
-    type: Language.input_t,
-    default_value: Language.input_t,
-    directives: [Language.Directive.t],
-    loc: Language.loc_t,
-  }
+          name: String.t(),
+          type: Language.input_t(),
+          default_value: Language.input_t(),
+          directives: [Language.Directive.t()],
+          loc: Language.loc_t()
+        }
 
   defimpl Blueprint.Draft do
     def convert(node, doc) do
@@ -26,9 +26,8 @@ defmodule Absinthe.Language.InputValueDefinition do
         name: node.name,
         type: Blueprint.Draft.convert(node.type, doc),
         default_value: Blueprint.Draft.convert(node.default_value, doc),
-        directives: Blueprint.Draft.convert(node.directives, doc),
+        directives: Blueprint.Draft.convert(node.directives, doc)
       }
     end
   end
-
 end

@@ -19,7 +19,8 @@ defmodule Absinthe.Execution.FragmentSpreadTest do
   """
 
   test "spreads fragments with abstract target" do
-    assert {:ok, %{data: %{"firstSearchResult" => %{"__typename" => "Person", "age" => 35}}}} == Absinthe.run(@query, Absinthe.Fixtures.ContactSchema)
+    assert {:ok, %{data: %{"firstSearchResult" => %{"__typename" => "Person", "age" => 35}}}} ==
+             Absinthe.run(@query, Absinthe.Fixtures.ContactSchema)
   end
 
   test "spreads errors fragments that don't refer to a real type" do
@@ -31,7 +32,10 @@ defmodule Absinthe.Execution.FragmentSpreadTest do
       name
     }
     """
-    assert {:ok, %{errors: [%{locations: [%{column: 0, line: 4}], message: "Unknown type \"Foo\"."}]}} == Absinthe.run(query, Absinthe.Fixtures.ContactSchema)
+
+    assert {:ok,
+            %{errors: [%{locations: [%{column: 0, line: 4}], message: "Unknown type \"Foo\"."}]}} ==
+             Absinthe.run(query, Absinthe.Fixtures.ContactSchema)
   end
 
   test "errors properly when spreading fragments that don't exist" do
@@ -41,7 +45,15 @@ defmodule Absinthe.Execution.FragmentSpreadTest do
       ... NonExistentFragment
     }
     """
-    assert {:ok, %{errors: [%{locations: [%{column: 0, line: 3}], message: "Unknown fragment \"NonExistentFragment\""}]}} == Absinthe.run(query, Absinthe.Fixtures.ContactSchema)
-  end
 
+    assert {:ok,
+            %{
+              errors: [
+                %{
+                  locations: [%{column: 0, line: 3}],
+                  message: "Unknown fragment \"NonExistentFragment\""
+                }
+              ]
+            }} == Absinthe.run(query, Absinthe.Fixtures.ContactSchema)
+  end
 end

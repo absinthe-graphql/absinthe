@@ -15,10 +15,9 @@ defmodule Absinthe.Complexity do
   - `:schema` - The current schema.
   """
   @type t :: %__MODULE__{
-    definition: Blueprint.node_t,
-    context: map,
-    root_value: any,
-    schema: Schema.t
-  }
-
+          definition: Blueprint.node_t(),
+          context: map,
+          root_value: any,
+          schema: Schema.t()
+        }
 end

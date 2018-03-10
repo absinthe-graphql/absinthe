@@ -17,7 +17,6 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNamesTest do
   end
 
   describe "Validate: Unique operation names" do
-
     test "no operations" do
       assert_passes_validation(
         """
@@ -152,7 +151,5 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNamesTest do
         ]
       )
     end
-
   end
-
 end

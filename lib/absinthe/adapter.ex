@@ -1,5 +1,4 @@
 defmodule Absinthe.Adapter do
-
   @moduledoc """
   Absinthe supports an adapter mechanism that allows developers to define their
   schema using one code convention (eg, `snake_cased` fields and arguments), but
@@ -69,11 +68,8 @@ defmodule Absinthe.Adapter do
         internal_name
       end
 
-      defoverridable [
-        to_internal_name: 2,
-        to_external_name: 2
-      ]
-
+      defoverridable to_internal_name: 2,
+                     to_external_name: 2
     end
   end
 
@@ -111,5 +107,4 @@ defmodule Absinthe.Adapter do
   ```
   """
   @callback to_external_name(binary, role_t) :: binary
-
 end

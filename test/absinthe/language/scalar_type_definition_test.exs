@@ -4,19 +4,22 @@ defmodule Absinthe.Language.ScalarTypeDefinitionTest do
   alias Absinthe.Blueprint
 
   describe "converting to Blueprint" do
-
     test "works, given a Blueprint Schema 'scalar' definition" do
       assert %Blueprint.Schema.ScalarTypeDefinition{name: "Time"} = from_input("scalar Time")
     end
 
     test "works, given a Blueprint Schema 'scalar' definition with a directive" do
-      rep = """
-      scalar Time @description(text: "A datetime with a timezone")
-      """ |> from_input
-      assert %Blueprint.Schema.ScalarTypeDefinition{name: "Time", directives: [%{name: "description"}]} = rep
+      rep =
+        """
+        scalar Time @description(text: "A datetime with a timezone")
+        """
+        |> from_input
+
+      assert %Blueprint.Schema.ScalarTypeDefinition{
+               name: "Time",
+               directives: [%{name: "description"}]
+             } = rep
     end
-
-
   end
 
   defp from_input(text) do
@@ -30,5 +33,4 @@ defmodule Absinthe.Language.ScalarTypeDefinitionTest do
   defp extract_ast_node(%Absinthe.Language.Document{definitions: [node]}) do
     node
   end
-
 end

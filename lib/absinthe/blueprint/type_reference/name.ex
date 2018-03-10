@@ -1,5 +1,4 @@
 defmodule Absinthe.Blueprint.TypeReference.Name do
-
   @moduledoc false
 
   alias Absinthe.Phase
@@ -12,8 +11,7 @@ defmodule Absinthe.Blueprint.TypeReference.Name do
   ]
 
   @type t :: %__MODULE__{
-    name: String.t,
-    errors: [Phase.Error.t]
-  }
-
+          name: String.t(),
+          errors: [Phase.Error.t()]
+        }
 end

@@ -15,23 +15,25 @@ defmodule Absinthe.Case.Assertions.Schema do
   ```
   """
   def assert_schema_error(schema_name, patterns) do
-    err = assert_raise Absinthe.Schema.Error, fn ->
-      load_schema(schema_name)
-    end
+    err =
+      assert_raise Absinthe.Schema.Error, fn ->
+        load_schema(schema_name)
+      end
+
     patterns
-    |> Enum.filter(fn
-      pattern ->
-        assert Enum.find(err.details, fn
-          detail ->
-            pattern.rule == detail.rule && pattern.data == detail.data
-        end), "Could not find error detail pattern #{inspect pattern} in #{inspect err.details}"
+    |> Enum.filter(fn pattern ->
+      assert Enum.find(err.details, fn detail ->
+               pattern.rule == detail.rule && pattern.data == detail.data
+             end),
+             "Could not find error detail pattern #{inspect(pattern)} in #{inspect(err.details)}"
     end)
+
     assert length(patterns) == length(err.details)
   end
+
   def assert_notation_error(name) do
     assert_raise(Absinthe.Schema.Notation.Error, fn ->
       load_schema(name)
     end)
   end
-
 end

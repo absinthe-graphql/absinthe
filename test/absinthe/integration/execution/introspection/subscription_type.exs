@@ -1,1 +1,8 @@
-{:ok, %{data: %{"__schema" => %{"subscriptionType" => %{"name" => "RootSubscriptionType", "kind" => "OBJECT"}}}}}
+{:ok,
+ %{
+   data: %{
+     "__schema" => %{
+       "subscriptionType" => %{"name" => "RootSubscriptionType", "kind" => "OBJECT"}
+     }
+   }
+ }}

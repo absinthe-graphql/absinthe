@@ -1,9 +1,9 @@
-{[variables: %{"value" => nil}], {
+{[variables: %{"value" => nil}],
+ {
    :ok,
    %{
      data: %{
        "nullableListOfNonNullableType" => nil
      }
    }
- }
-}
+ }}

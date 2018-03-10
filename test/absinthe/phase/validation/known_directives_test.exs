@@ -138,7 +138,6 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
   end
 
   describe "within schema language" do
-
     test "with well placed directives" do
       assert_passes_validation(
         """
@@ -211,11 +210,9 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
           misplaced_directive("onUnion", "ENUM_VALUE", 14),
           misplaced_directive("onEnum", "INPUT_OBJECT", 17),
           misplaced_directive("onArgumentDefinition", "INPUT_FIELD_DEFINITION", 18),
-          misplaced_directive("onObject", "SCHEMA", 21),
+          misplaced_directive("onObject", "SCHEMA", 21)
         ]
       )
     end
-
   end
-
 end

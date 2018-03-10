@@ -12,16 +12,14 @@ defmodule Absinthe.TypeTest do
     }
 
     query do
-
       field :item,
         type: :item,
         args: [
           id: [type: non_null(:id)]
         ],
         resolve: fn %{id: item_id}, _ ->
-        {:ok, @items[item_id]}
-      end
-
+          {:ok, @items[item_id]}
+        end
     end
 
     object :item do
@@ -48,7 +46,6 @@ defmodule Absinthe.TypeTest do
       field :isbn, :string
       field :authors, list_of(:author)
     end
-
   end
 
   test "definition with custom name" do
@@ -71,7 +68,7 @@ defmodule Absinthe.TypeTest do
     use Absinthe.Schema
 
     query do
-      #Query type must exist
+      # Query type must exist
     end
 
     object :with_meta do
@@ -80,14 +77,12 @@ defmodule Absinthe.TypeTest do
 
     object :without_meta do
     end
-
   end
 
   @with_meta Absinthe.Schema.lookup_type(MetadataSchema, :with_meta)
   @without_meta Absinthe.Schema.lookup_type(MetadataSchema, :without_meta)
 
   describe ".meta/1" do
-
     test "when no metadata is defined, returns an empty map" do
       assert Type.meta(@without_meta) == %{}
     end
@@ -95,11 +90,9 @@ defmodule Absinthe.TypeTest do
     test "when metadata is defined, returns the metadata as a map" do
       assert Type.meta(@with_meta) == %{foo: "bar"}
     end
-
   end
 
   describe ".meta/2" do
-
     test "when no metadata field is defined, returns nil" do
       assert Type.meta(@without_meta, :bar) == nil
     end
@@ -111,7 +104,5 @@ defmodule Absinthe.TypeTest do
     test "when the metadata is defined, returns the value" do
       assert Type.meta(@with_meta, :foo) == "bar"
     end
-
   end
-
 end

@@ -17,8 +17,9 @@ defmodule Absinthe.Schema.Rule.TypeNamesAreReserved do
 
   def explanation(%{data: %{artifact: artifact, value: value}}) do
     artifact_name = String.capitalize(artifact)
+
     """
-    #{artifact_name} #{inspect value} starts with two leading underscores.
+    #{artifact_name} #{inspect(value)} starts with two leading underscores.
 
     #{@description}
     """
@@ -31,21 +32,21 @@ defmodule Absinthe.Schema.Rule.TypeNamesAreReserved do
 
   defp check_type(schema, %{fields: fields} = type) do
     check_named(schema, type, "type", type) ++
-      Enum.flat_map(fields |> Map.values,
-                    &check_field(schema, type, &1))
+      Enum.flat_map(fields |> Map.values(), &check_field(schema, type, &1))
   end
+
   defp check_type(schema, type) do
     check_named(schema, type, "type", type)
   end
 
   defp check_field(schema, type, field) do
     check_named(schema, type, "field", field) ++
-      Enum.flat_map(field.args |> Map.values, &check_arg(schema, type, &1))
+      Enum.flat_map(field.args |> Map.values(), &check_arg(schema, type, &1))
   end
 
   defp check_directive(schema, directive) do
     check_named(schema, directive, "directive", directive) ++
-      Enum.flat_map(directive.args |> Map.values, &check_arg(schema, directive, &1))
+      Enum.flat_map(directive.args |> Map.values(), &check_arg(schema, directive, &1))
   end
 
   defp check_arg(schema, type, arg) do
@@ -56,12 +57,11 @@ defmodule Absinthe.Schema.Rule.TypeNamesAreReserved do
     if Absinthe.Type.built_in?(type) do
       []
     else
-      [report(entity.__reference__.location,
-              %{artifact: "#{kind} name", value: entity.name})]
+      [report(entity.__reference__.location, %{artifact: "#{kind} name", value: entity.name})]
     end
   end
+
   defp check_named(_, _, _, _) do
     []
   end
-
 end

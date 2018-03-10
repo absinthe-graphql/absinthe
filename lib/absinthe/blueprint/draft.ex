@@ -1,5 +1,4 @@
 defprotocol Absinthe.Blueprint.Draft do
-
   @moduledoc false
 
   def convert(node, root)

@@ -5,16 +5,18 @@ defmodule Absinthe.Schema.Rule.FieldImportsExist do
   def check({definitions, errors}) do
     definition_map = build_definition_map(definitions)
 
-    errors = Enum.reduce(definitions, errors, fn definition, errors ->
-      definition.attrs
-      |> Keyword.get(:field_imports)
-      |> case do
-        [_ | _] = imports ->
-          check_imports(definition, imports, definition_map, errors)
-        _ ->
-          errors
-      end
-    end)
+    errors =
+      Enum.reduce(definitions, errors, fn definition, errors ->
+        definition.attrs
+        |> Keyword.get(:field_imports)
+        |> case do
+          [_ | _] = imports ->
+            check_imports(definition, imports, definition_map, errors)
+
+          _ ->
+            errors
+        end
+      end)
 
     {definitions, errors}
   end
@@ -24,6 +26,7 @@ defmodule Absinthe.Schema.Rule.FieldImportsExist do
       case Map.fetch(definition_map, ref) do
         {:ok, _} ->
           errors
+
         _ ->
           [error(definition, ref) | errors]
       end
@@ -39,17 +42,24 @@ defmodule Absinthe.Schema.Rule.FieldImportsExist do
   def explanation(%{data: %{artifact: msg}}) do
     """
       #{msg}
-    """ |> String.trim
+    """
+    |> String.trim()
   end
 
   defp error(definition, ref) do
-    msg = """
-    Field Import Error
+    msg =
+      """
+      Field Import Error
 
-    Object #{inspect definition.identifier} imports fields from #{inspect ref} but
-    #{inspect ref} does not exist in the schema!
-    """ |> String.trim
+      Object #{inspect(definition.identifier)} imports fields from #{inspect(ref)} but
+      #{inspect(ref)} does not exist in the schema!
+      """
+      |> String.trim()
 
-    %{data: %{artifact: msg, value: ref}, location: %{file: definition.file, line: definition.line}, rule: __MODULE__}
+    %{
+      data: %{artifact: msg, value: ref},
+      location: %{file: definition.file, line: definition.line},
+      rule: __MODULE__
+    }
   end
 end

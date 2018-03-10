@@ -21,12 +21,15 @@ defmodule Absinthe.Subscription.Pubsub do
   @doc """
 
   """
-  @callback publish_mutation(proxy_topic :: binary, mutation_result :: term, subscribed_fields :: list) :: term
+  @callback publish_mutation(
+              proxy_topic :: binary,
+              mutation_result :: term,
+              subscribed_fields :: list
+            ) :: term
 
   @doc """
   Publish the results of a particular subscription document. This should be a local
   node broadcast. If you can
   """
   @callback publish_subscription(topic :: binary, data :: map) :: term
-
 end

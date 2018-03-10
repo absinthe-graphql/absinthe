@@ -4,7 +4,6 @@ defmodule Absinthe.Type.ImportTypesTest do
   alias Absinthe.Fixtures.ImportTypes
 
   describe "import_types" do
-
     test "works with a plain atom" do
       assert Absinthe.Schema.lookup_type(ImportTypes.Schema, :receipt)
     end
@@ -24,7 +23,5 @@ defmodule Absinthe.Type.ImportTypesTest do
       assert Absinthe.Schema.lookup_type(ImportTypes.Schema, :contact_method)
       assert Absinthe.Schema.lookup_type(ImportTypes.Schema, :contact_kind)
     end
-
   end
-
 end

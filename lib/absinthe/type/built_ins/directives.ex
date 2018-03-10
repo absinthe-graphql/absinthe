@@ -16,10 +16,10 @@ defmodule Absinthe.Type.BuiltIns.Directives do
     expand fn
       %{if: true}, node ->
         Blueprint.put_flag(node, :include, __MODULE__)
+
       _, node ->
         Blueprint.put_flag(node, :skip, __MODULE__)
     end
-
   end
 
   directive :skip do
@@ -34,10 +34,9 @@ defmodule Absinthe.Type.BuiltIns.Directives do
     expand fn
       %{if: true}, node ->
         Blueprint.put_flag(node, :skip, __MODULE__)
+
       _, node ->
         Blueprint.put_flag(node, :include, __MODULE__)
     end
-
   end
-
 end

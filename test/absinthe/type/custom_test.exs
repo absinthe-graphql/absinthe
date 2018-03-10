@@ -13,9 +13,16 @@ defmodule Absinthe.Type.CustomTest do
   end
 
   @datetime %DateTime{
-    year: 2017, month: 1, day: 27,
-    hour: 20, minute: 31, second: 55,
-    time_zone: "Etc/UTC", zone_abbr: "UTC", utc_offset: 0, std_offset: 0,
+    year: 2017,
+    month: 1,
+    day: 27,
+    hour: 20,
+    minute: 31,
+    second: 55,
+    time_zone: "Etc/UTC",
+    zone_abbr: "UTC",
+    utc_offset: 0,
+    std_offset: 0
   }
 
   @naive_datetime ~N[2017-01-27 20:31:55]
@@ -45,7 +52,8 @@ defmodule Absinthe.Type.CustomTest do
     end
 
     test "can be parsed from an ISO8601 date and time string including zero UTC offset" do
-      assert {:ok, @datetime} == parse(:datetime, %Input.String{value: "2017-01-27T20:31:55+00:00"})
+      assert {:ok, @datetime} ==
+               parse(:datetime, %Input.String{value: "2017-01-27T20:31:55+00:00"})
     end
 
     test "cannot be parsed when a non-zero UTC offset is included" do
@@ -76,9 +84,14 @@ defmodule Absinthe.Type.CustomTest do
     end
 
     test "can be parsed from an ISO8601 date and time string" do
-      assert {:ok, @naive_datetime} == parse(:naive_datetime, %Input.String{value: "2017-01-27T20:31:55Z"})
-      assert {:ok, @naive_datetime} == parse(:naive_datetime, %Input.String{value: "2017-01-27 20:31:55Z"})
-      assert {:ok, @naive_datetime} == parse(:naive_datetime, %Input.String{value: "2017-01-27 20:31:55"})
+      assert {:ok, @naive_datetime} ==
+               parse(:naive_datetime, %Input.String{value: "2017-01-27T20:31:55Z"})
+
+      assert {:ok, @naive_datetime} ==
+               parse(:naive_datetime, %Input.String{value: "2017-01-27 20:31:55Z"})
+
+      assert {:ok, @naive_datetime} ==
+               parse(:naive_datetime, %Input.String{value: "2017-01-27 20:31:55"})
     end
 
     test "cannot be parsed when date or time is missing" do

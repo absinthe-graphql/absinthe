@@ -12,14 +12,17 @@ defmodule Absinthe.Phase.Document.Validation.OnlyOneSubscription do
   @doc """
   Run the validation.
   """
-  @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
+  @spec run(Blueprint.t(), Keyword.t()) :: Phase.result_t()
   def run(input, _options \\ []) do
-    bp = Blueprint.update_current(input, fn
-      %{type: :subscription} = op ->
-        check_op(op)
-      op ->
-        op
-    end)
+    bp =
+      Blueprint.update_current(input, fn
+        %{type: :subscription} = op ->
+          check_op(op)
+
+        op ->
+          op
+      end)
+
     {:ok, bp}
   end
 
@@ -27,12 +30,13 @@ defmodule Absinthe.Phase.Document.Validation.OnlyOneSubscription do
     error = %Phase.Error{
       phase: __MODULE__,
       message: "Only one field is permitted on the root object when subscribing",
-      locations: [op.source_location],
+      locations: [op.source_location]
     }
 
     op
     |> flag_invalid(:too_many_fields)
     |> put_error(error)
   end
+
   defp check_op(op), do: op
 end

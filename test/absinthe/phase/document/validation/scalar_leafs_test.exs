@@ -26,7 +26,6 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
   end
 
   describe "Validate: Scalar leafs" do
-
     test "valid scalar selection" do
       assert_passes_validation(
         """
@@ -132,7 +131,5 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
         no_scalar_subselection("doesKnowCommand", "Boolean", 2)
       )
     end
-
   end
-
 end

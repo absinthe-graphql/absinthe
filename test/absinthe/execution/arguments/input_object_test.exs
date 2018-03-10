@@ -9,9 +9,14 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
   }
   """
   test "as variable, should work when nested" do
-    assert_data %{"user" => "bubba@joe.comasdf"},
-      run(@graphql, @schema,
-        variables: %{"contact" => %{"email" => "bubba@joe.com", "contactType" => "Email"}})
+    assert_data(
+      %{"user" => "bubba@joe.comasdf"},
+      run(
+        @graphql,
+        @schema,
+        variables: %{"contact" => %{"email" => "bubba@joe.com", "contactType" => "Email"}}
+      )
+    )
   end
 
   @graphql """
@@ -20,9 +25,10 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
   }
   """
   test "using variables, works in a basic case" do
-    assert_data %{"user" => "bubba@joe.comasdf"},
-      run(@graphql, @schema,
-        variables: %{"contact" => %{"email" => "bubba@joe.com"}})
+    assert_data(
+      %{"user" => "bubba@joe.comasdf"},
+      run(@graphql, @schema, variables: %{"contact" => %{"email" => "bubba@joe.com"}})
+    )
   end
 
   @graphql """
@@ -31,9 +37,10 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
   }
   """
   test "using inner variables" do
-    assert_data %{"contacts" => ["a@b.com", "a@b.com"]},
-      run(@graphql, @schema,
-        variables: %{"email" => "a@b.com"})
+    assert_data(
+      %{"contacts" => ["a@b.com", "a@b.com"]},
+      run(@graphql, @schema, variables: %{"email" => "a@b.com"})
+    )
   end
 
   @graphql """
@@ -42,17 +49,21 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
   }
   """
   test "enforces non_null fields in input passed as variable" do
-    assert_error_message_lines [
-      ~s(Argument "stuff" has invalid value $input.),
-      ~s(In field "nonNullField": Expected type "String!", found null.)
-    ], run(@graphql, @schema,
-      variables: %{"input" => %{"value" => 5, "nonNullField" => nil}})
+    assert_error_message_lines(
+      [
+        ~s(Argument "stuff" has invalid value $input.),
+        ~s(In field "nonNullField": Expected type "String!", found null.)
+      ],
+      run(@graphql, @schema, variables: %{"input" => %{"value" => 5, "nonNullField" => nil}})
+    )
 
-    assert_error_message_lines [
-      ~s(Argument "stuff" has invalid value $input.),
-      ~s(In field "nonNullField": Expected type "String!", found null.)
-    ], run(@graphql, @schema,
-      variables: %{"input" => %{"value" => 5}})
+    assert_error_message_lines(
+      [
+        ~s(Argument "stuff" has invalid value $input.),
+        ~s(In field "nonNullField": Expected type "String!", found null.)
+      ],
+      run(@graphql, @schema, variables: %{"input" => %{"value" => 5}})
+    )
   end
 
   @graphql """
@@ -61,9 +72,10 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
   }
   """
   test "can set field default values" do
-    assert_data %{"user" => "bubba@joe.comasdf"},
-      run(@graphql, @schema,
-        variables: %{"email" => "bubba@joe.com"})
+    assert_data(
+      %{"user" => "bubba@joe.comasdf"},
+      run(@graphql, @schema, variables: %{"email" => "bubba@joe.com"})
+    )
   end
 
   @graphql """
@@ -72,14 +84,16 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
   }
   """
   test "with inner variables, when no variables are given, returns an error" do
-    assert_error_message_lines [
-      ~s(Argument "contacts" has invalid value [{email: $email}, {email: $email}].),
-      ~s(In element #1: Expected type "ContactInput", found {email: $email}.),
-      ~s(In field "email": Expected type "String!", found $email.),
-      ~s(In element #2: Expected type "ContactInput", found {email: $email}.),
-      ~s(In field "email": Expected type "String!", found $email.)
-    ], run(@graphql, @schema,
-      variables: %{})
+    assert_error_message_lines(
+      [
+        ~s(Argument "contacts" has invalid value [{email: $email}, {email: $email}].),
+        ~s(In element #1: Expected type "ContactInput", found {email: $email}.),
+        ~s(In field "email": Expected type "String!", found $email.),
+        ~s(In element #2: Expected type "ContactInput", found {email: $email}.),
+        ~s(In field "email": Expected type "String!", found $email.)
+      ],
+      run(@graphql, @schema, variables: %{})
+    )
   end
 
   @graphql """
@@ -88,8 +102,7 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
   }
   """
   test "using literals, works in a basic case" do
-    assert_data %{"user" => "bubba@joe.comasdf"},
-      run(@graphql, @schema)
+    assert_data(%{"user" => "bubba@joe.comasdf"}, run(@graphql, @schema))
   end
 
   @graphql """
@@ -100,8 +113,7 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
   test "works with inner booleans set to false" do
     # This makes sure we don't accidentally filter out booleans when trying
     # to filter out nils
-    assert_data %{"testBooleanInputObject" => false},
-      run(@graphql, @schema)
+    assert_data(%{"testBooleanInputObject" => false}, run(@graphql, @schema))
   end
 
   @graphql """
@@ -110,8 +122,7 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
   }
   """
   test "works in a nested case" do
-    assert_data %{"user" => "bubba@joe.comasdf"},
-      run(@graphql, @schema)
+    assert_data(%{"user" => "bubba@joe.comasdf"}, run(@graphql, @schema))
   end
 
   @graphql """
@@ -120,11 +131,14 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
   }
   """
   test "returns the correct error if an inner field is marked non null but is missing" do
-    assert_error_message_lines [
-      ~s(Argument "contact" has invalid value {foo: "buz"}.),
-      ~s(In field "email": Expected type "String!", found null.),
-      ~s(In field "foo": Unknown field.)
-    ], run(@graphql, @schema)
+    assert_error_message_lines(
+      [
+        ~s(Argument "contact" has invalid value {foo: "buz"}.),
+        ~s(In field "email": Expected type "String!", found null.),
+        ~s(In field "foo": Unknown field.)
+      ],
+      run(@graphql, @schema)
+    )
   end
 
   @graphql """
@@ -133,10 +147,12 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
   }
   """
   test "returns an error if extra fields are given" do
-    assert_error_message_lines [
-      ~s(Argument "contact" has invalid value {email: "bubba", foo: "buz"}.),
-      ~s(In field "foo": Unknown field.)
-    ], run(@graphql, @schema)
+    assert_error_message_lines(
+      [
+        ~s(Argument "contact" has invalid value {email: "bubba", foo: "buz"}.),
+        ~s(In field "foo": Unknown field.)
+      ],
+      run(@graphql, @schema)
+    )
   end
-
 end

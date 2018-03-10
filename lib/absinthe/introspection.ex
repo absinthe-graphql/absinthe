@@ -1,5 +1,4 @@
 defmodule Absinthe.Introspection do
-
   @moduledoc """
   Introspection support.
 
@@ -106,5 +105,4 @@ defmodule Absinthe.Introspection do
   @spec type?(any) :: boolean
   def type?(%Type.Object{name: "__" <> _}), do: true
   def type?(_), do: false
-
 end

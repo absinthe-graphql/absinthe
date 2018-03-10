@@ -9,9 +9,13 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNamesTest do
 
   defp duplicate(name, line, values) do
     List.wrap(values)
-    |> Enum.map(fn
-      value ->
-        bad_value(Blueprint.Input.Field, @phase.error_message, line, literal_value_check(name, value))
+    |> Enum.map(fn value ->
+      bad_value(
+        Blueprint.Input.Field,
+        @phase.error_message,
+        line,
+        literal_value_check(name, value)
+      )
     end)
   end
 
@@ -19,13 +23,13 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNamesTest do
     fn
       %{name: ^name, input_value: %{literal: %{value: ^value}}} ->
         true
+
       _ ->
         false
     end
   end
 
   describe "Validate: Unique input field names" do
-
     test "input object with fields" do
       assert_passes_validation(
         """
@@ -101,7 +105,5 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNamesTest do
         duplicate("f1", 2, ~w(value1 value2 value3))
       )
     end
-
   end
-
 end

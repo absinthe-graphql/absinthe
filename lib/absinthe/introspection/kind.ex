@@ -1,5 +1,4 @@
 defmodule Absinthe.Introspection.Kind do
-
   @moduledoc false
 
   defmacro __using__(_opts) do
@@ -7,21 +6,21 @@ defmodule Absinthe.Introspection.Kind do
       @behaviour unquote(__MODULE__)
       def kind do
         __MODULE__
-        |> Module.split
-        |> List.last
-        |> Absinthe.Introspection.Kind.upcase
+        |> Module.split()
+        |> List.last()
+        |> Absinthe.Introspection.Kind.upcase()
       end
-      defoverridable [kind: 0]
+
+      defoverridable kind: 0
     end
   end
 
   def upcase(name) do
     Regex.scan(~r{[A-Z]+[a-z]+}, name)
-    |> List.flatten
+    |> List.flatten()
     |> Enum.map(&String.upcase/1)
     |> Enum.join("_")
   end
 
   @callback kind :: binary
-
 end

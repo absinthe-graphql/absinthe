@@ -1,5 +1,4 @@
 defmodule Absinthe.Case.Assertions.Result do
-
   import ExUnit.Assertions
 
   def assert_result({lflag, lhs}, {rflag, rhs}) do
@@ -17,21 +16,23 @@ defmodule Absinthe.Case.Assertions.Result do
 
   def assert_error_message(error_message, result) do
     assert {:ok, %{errors: errors}} = result
+
     assert Enum.any?(errors, fn %{message: message} ->
-      message == error_message
-    end)
+             message == error_message
+           end)
   end
 
   defp clean(%{errors: errors} = result) do
-    cleaned = errors
-    |> Enum.map(fn
-      err ->
+    cleaned =
+      errors
+      |> Enum.map(fn err ->
         Map.delete(err, :locations)
-    end)
+      end)
+
     %{result | errors: cleaned}
   end
+
   defp clean(result) do
     result
   end
-
 end

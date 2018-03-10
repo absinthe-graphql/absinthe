@@ -119,14 +119,18 @@ defmodule Absinthe.IntegrationCase do
     for graphql_file <- Path.wildcard(Path.join(root, "**/*.graphql")) do
       dirname = Path.dirname(graphql_file)
       basename = Path.basename(graphql_file, ".graphql")
+
       integration_name =
         String.replace_leading(dirname, root, "")
         |> Path.join(basename)
         |> String.slice(1..-1)
+
       graphql = File.read!(graphql_file)
+
       raw_scenarios =
         Path.join(dirname, basename <> ".exs")
         |> term_from_file!
+
       __MODULE__.Definition.create(
         integration_name,
         graphql,
@@ -138,6 +142,7 @@ defmodule Absinthe.IntegrationCase do
 
   def scenario_tests(definition) do
     count = length(definition.scenarios)
+
     for {scenario, index} <- Enum.with_index(definition.scenarios) do
       quote do
         test unquote(definition.name) <> ", scenario #{unquote(index) + 1} of #{unquote(count)}" do
@@ -151,6 +156,7 @@ defmodule Absinthe.IntegrationCase do
     root = Keyword.fetch!(opts, :root)
     default_schema = Macro.expand(Keyword.fetch!(opts, :default_schema), __ENV__)
     definitions = definitions(root, default_schema)
+
     [
       quote do
         use Absinthe.Case, unquote(opts)
@@ -165,11 +171,9 @@ defmodule Absinthe.IntegrationCase do
   defmacro __before_compile__(_env) do
     quote do
       def assert_scenario(definition, {options, {:raise, exception}}) when is_list(options) do
-        assert_raise(
-          exception,
-          fn -> run(definition.graphql, definition.schema, options) end
-        )
+        assert_raise(exception, fn -> run(definition.graphql, definition.schema, options) end)
       end
+
       def assert_scenario(definition, {options, result}) when is_list(options) do
         assert_result(
           result,
@@ -178,5 +182,4 @@ defmodule Absinthe.IntegrationCase do
       end
     end
   end
-
 end

@@ -40,21 +40,21 @@ defmodule Absinthe.Resolution do
   @type source :: any
 
   @type t :: %__MODULE__{
-    value: term,
-    errors: [term],
-    adapter: Absinthe.Adapter.t,
-    context: map,
-    root_value: any,
-    schema: Absinthe.Schema.t,
-    definition: Absinthe.Blueprint.node_t,
-    parent_type: Absinthe.Type.t,
-    source: source,
-    state: field_state,
-    acc: %{any => any},
-    extensions: %{any => any},
-    arguments: arguments,
-    fragments: [Absinthe.Blueprint.Document.Fragment.Named.t],
-  }
+          value: term,
+          errors: [term],
+          adapter: Absinthe.Adapter.t(),
+          context: map,
+          root_value: any,
+          schema: Absinthe.Schema.t(),
+          definition: Absinthe.Blueprint.node_t(),
+          parent_type: Absinthe.Type.t(),
+          source: source,
+          state: field_state,
+          acc: %{any => any},
+          extensions: %{any => any},
+          arguments: arguments,
+          fragments: [Absinthe.Blueprint.Document.Fragment.Named.t()]
+        }
 
   defstruct [
     :value,
@@ -74,7 +74,7 @@ defmodule Absinthe.Resolution do
     path: [],
     state: :unresolved,
     fragments: [],
-    fields_cache: %{},
+    fields_cache: %{}
   ]
 
   def resolver_spec(fun) do
@@ -92,8 +92,10 @@ defmodule Absinthe.Resolution do
     case info.definition.schema_node.type do
       %Absinthe.Type.Interface{} ->
         raise need_concrete_type_error()
+
       %Absinthe.Type.Union{} ->
         raise need_concrete_type_error()
+
       schema_node ->
         project(info, schema_node)
     end
@@ -128,7 +130,7 @@ defmodule Absinthe.Resolution do
   """
   def path(%{path: path}) do
     path
-    |> Enum.reverse
+    |> Enum.reverse()
     |> Enum.drop(1)
     |> Enum.map(&field_name/1)
   end
@@ -175,12 +177,14 @@ defmodule Absinthe.Resolution do
 
   you would still get a nice and simple `child_fields` that was `["id", "name"]`.
   """
-  def project(%{
-      definition: %{selections: selections},
-      path: path,
-      fields_cache: cache,
-    } = info, type) do
-
+  def project(
+        %{
+          definition: %{selections: selections},
+          path: path,
+          fields_cache: cache
+        } = info,
+        type
+      ) do
     type = Absinthe.Schema.lookup_type(info.schema, type)
 
     {fields, _} = Absinthe.Resolution.Projector.project(selections, type, path, cache, info)
@@ -196,32 +200,38 @@ defmodule Absinthe.Resolution do
   end
 
   def call(%{state: :unresolved} = res, resolution_function) do
-    result = case resolution_function do
-      fun when is_function(fun, 2) ->
-        fun.(res.arguments, res)
-      fun when is_function(fun, 3) ->
-        fun.(res.source, res.arguments, res)
-      {mod, fun} ->
-        apply(mod, fun, [res.source, res.arguments, res])
-      _ ->
-        raise Absinthe.ExecutionError, """
-        Field resolve property must be a 2 arity anonymous function, 3 arity
-        anonymous function, or a `{Module, :function}` tuple.
+    result =
+      case resolution_function do
+        fun when is_function(fun, 2) ->
+          fun.(res.arguments, res)
 
-        Instead got: #{inspect resolution_function}
+        fun when is_function(fun, 3) ->
+          fun.(res.source, res.arguments, res)
 
-        Info: #{inspect res}
-        """
-    end
+        {mod, fun} ->
+          apply(mod, fun, [res.source, res.arguments, res])
+
+        _ ->
+          raise Absinthe.ExecutionError, """
+          Field resolve property must be a 2 arity anonymous function, 3 arity
+          anonymous function, or a `{Module, :function}` tuple.
+
+          Instead got: #{inspect(resolution_function)}
+
+          Info: #{inspect(res)}
+          """
+      end
 
     put_result(res, result)
   end
+
   def call(res, _), do: res
 
   def path_string(%__MODULE__{path: path}) do
     Enum.map(path, fn
       %{name: name, alias: alias} ->
         alias || name
+
       %{schema_node: schema_node} ->
         schema_node.name
     end)
@@ -244,18 +254,23 @@ defmodule Absinthe.Resolution do
   def put_result(res, {:ok, value}) do
     %{res | state: :resolved, value: value}
   end
+
   def put_result(res, {:error, [{_, _} | _] = error_keyword}) do
     %{res | state: :resolved, errors: [error_keyword]}
   end
+
   def put_result(res, {:error, errors}) do
     %{res | state: :resolved, errors: List.wrap(errors)}
   end
+
   def put_result(res, {:plugin, module, opts}) do
     put_result(res, {:middleware, module, opts})
   end
+
   def put_result(res, {:middleware, module, opts}) do
     %{res | state: :unresolved, middleware: [{module, opts} | res.middleware]}
   end
+
   def put_result(res, result) do
     raise result_error(result, res.definition, res.source)
   end
@@ -263,13 +278,18 @@ defmodule Absinthe.Resolution do
   @doc false
   def result_error({:error, _} = value, field, source) do
     result_error(
-      value, field, source,
+      value,
+      field,
+      source,
       "You're returning an :error tuple, but did you forget to include a `:message`\nkey in every custom error (map or keyword list)?"
     )
   end
+
   def result_error(value, field, source) do
     result_error(
-      value, field, source,
+      value,
+      field,
+      source,
       "Did you forget to return a valid `{:ok, any}` | `{:error, error_value}` tuple?"
     )
   end
@@ -281,16 +301,19 @@ defmodule Absinthe.Resolution do
     case resolution_function do
       fun when is_function(fun, 2) ->
         fun.(args, field_info)
+
       fun when is_function(fun, 3) ->
         fun.(parent, args, field_info)
+
       {mod, fun} ->
         apply(mod, fun, [parent, args, field_info])
+
       _ ->
         raise Absinthe.ExecutionError, """
         Field resolve property must be a 2 arity anonymous function, 3 arity
         anonymous function, or a `{Module, :function}` tuple.
-        Instead got: #{inspect resolution_function}
-        Info: #{inspect field_info}
+        Instead got: #{inspect(resolution_function)}
+        Info: #{inspect(field_info)}
         """
     end
   end
@@ -367,15 +390,17 @@ defmodule Absinthe.Resolution do
 
     Defined at:
 
-        #{field.schema_node.__reference__.location.file}:#{field.schema_node.__reference__.location.line}
+        #{field.schema_node.__reference__.location.file}:#{
+      field.schema_node.__reference__.location.line
+    }
 
     Resolving on:
 
-        #{inspect source}
+        #{inspect(source)}
 
     Got value:
 
-        #{inspect value}
+        #{inspect(value)}
 
     ...
 
@@ -397,13 +422,13 @@ defimpl Inspect, for: Absinthe.Resolution do
     # TODO: better inspect representation
     inner =
       res
-      |> Map.from_struct
+      |> Map.from_struct()
       |> Map.update!(:fields_cache, fn _ ->
         "#fieldscache<...>"
       end)
-      |> Map.to_list
+      |> Map.to_list()
       |> Inspect.List.inspect(opts)
 
-    concat ["#Absinthe.Resolution<", inner, ">"]
+    concat(["#Absinthe.Resolution<", inner, ">"])
   end
 end

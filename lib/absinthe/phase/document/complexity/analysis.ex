@@ -12,7 +12,7 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
   @doc """
   Run complexity analysis.
   """
-  @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
+  @spec run(Blueprint.t(), Keyword.t()) :: Phase.result_t()
   def run(input, options \\ []) do
     if Keyword.get(options, :analyze_complexity, false) do
       do_run(input, options)
@@ -40,13 +40,25 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
     fragment = Map.fetch!(fragments, name)
     %{node | complexity: fragment.complexity}
   end
-  def handle_node(%Blueprint.Document.Fragment.Named{selections: fields} = node, _info, _fragments) do
+
+  def handle_node(
+        %Blueprint.Document.Fragment.Named{selections: fields} = node,
+        _info,
+        _fragments
+      ) do
     %{node | complexity: sum_complexity(fields)}
   end
-  def handle_node(%Blueprint.Document.Field{complexity: nil,
-                                            selections: fields,
-                                            argument_data: args,
-                                            schema_node: schema_node} = node, info, _fragments) do
+
+  def handle_node(
+        %Blueprint.Document.Field{
+          complexity: nil,
+          selections: fields,
+          argument_data: args,
+          schema_node: schema_node
+        } = node,
+        info,
+        _fragments
+      ) do
     # NOTE:
     # This really should be more nuanced. If this particular field's schema node
     # is a union type, right now the complexity of:
@@ -61,16 +73,20 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
     # You would have to evaluate the complexity for every possible type which can get
     # pretty unwieldy. For now, simple types it is.
     child_complexity = sum_complexity(fields)
+
     case field_complexity(schema_node, args, child_complexity, info, node) do
       complexity when is_integer(complexity) and complexity >= 0 ->
         %{node | complexity: complexity}
+
       other ->
         raise Absinthe.AnalysisError, field_value_error(node, other)
     end
   end
+
   def handle_node(%Blueprint.Document.Operation{complexity: nil, selections: fields} = node, _, _) do
     %{node | complexity: sum_complexity(fields)}
   end
+
   def handle_node(node, _, _) do
     node
   end
@@ -78,19 +94,23 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
   defp field_complexity(%{complexity: nil}, _, child_complexity, _, _) do
     @default_complexity + child_complexity
   end
+
   defp field_complexity(%{complexity: complexity}, arg, child_complexity, _, _)
        when is_function(complexity, 2) do
     complexity.(arg, child_complexity)
   end
+
   defp field_complexity(%{complexity: complexity}, arg, child_complexity, info, node)
        when is_function(complexity, 3) do
     info = struct(Complexity, Map.put(info, :definition, node))
     complexity.(arg, child_complexity, info)
   end
+
   defp field_complexity(%{complexity: {mod, fun}}, arg, child_complexity, info, node) do
     info = struct(Complexity, Map.put(info, :definition, node))
     apply(mod, fun, [arg, child_complexity, info])
   end
+
   defp field_complexity(%{complexity: complexity}, _, _, _, _) do
     complexity
   end
@@ -105,11 +125,13 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
 
     Defined at:
 
-      #{field.schema_node.__reference__.location.file}:#{field.schema_node.__reference__.location.line}
+      #{field.schema_node.__reference__.location.file}:#{
+      field.schema_node.__reference__.location.line
+    }
 
     Got value:
 
-        #{inspect value}
+        #{inspect(value)}
 
     The complexity value must be a non negative integer.
     """
@@ -135,5 +157,4 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
       schema: bp_root.schema
     }
   end
-
 end

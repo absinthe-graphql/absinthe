@@ -16,7 +16,6 @@ defmodule Absinthe.Phase.Document.Validation.LoneAnonymousOperationTest do
   end
 
   describe "Validate: Anonymous operation must be alone" do
-
     test "no operations" do
       assert_passes_validation(
         """
@@ -119,7 +118,5 @@ defmodule Absinthe.Phase.Document.Validation.LoneAnonymousOperationTest do
         ]
       )
     end
-
   end
-
 end

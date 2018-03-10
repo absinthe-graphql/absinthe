@@ -7,7 +7,7 @@ defmodule Absinthe.Type.DeprecationTest do
     use Absinthe.Schema
 
     query do
-      #Query type must exist
+      # Query type must exist
     end
 
     input_object :profile do
@@ -29,13 +29,10 @@ defmodule Absinthe.Type.DeprecationTest do
       end
 
       field :address, :string, deprecate: true
-
     end
-
   end
 
   describe "fields" do
-
     test "can be deprecated" do
       obj = TestSchema.__absinthe_type__(:profile)
       assert Type.deprecated?(obj.fields.email_address)
@@ -43,11 +40,9 @@ defmodule Absinthe.Type.DeprecationTest do
       assert Type.deprecated?(obj.fields.address)
       assert nil == obj.fields.address.deprecation.reason
     end
-
   end
 
   describe "arguments" do
-
     test "can be deprecated" do
       field = TestSchema.__absinthe_type__(:profile).fields.profile_picture
       assert Type.deprecated?(field.args.size)
@@ -55,7 +50,5 @@ defmodule Absinthe.Type.DeprecationTest do
       assert Type.deprecated?(field.args.source)
       assert nil == field.args.source.deprecation.reason
     end
-
   end
-
 end

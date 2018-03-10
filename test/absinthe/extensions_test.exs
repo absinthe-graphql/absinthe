@@ -11,11 +11,7 @@ defmodule Absinthe.ExtensionsTest do
     end
 
     def resolve_foo(res, _opts) do
-      %{res |
-        value: "hello world",
-        state: :resolved,
-        extensions: %{foo: 1},
-      }
+      %{res | value: "hello world", state: :resolved, extensions: %{foo: 1}}
     end
   end
 

@@ -27,30 +27,38 @@ defmodule Absinthe.Fixtures.PetsSchema do
 
   object :dog do
     is_type_of fn _ -> true end
+
     field :name, :string do
       arg :surname, :boolean
     end
+
     field :nickname, :string
     field :bark_volume, :integer
     field :barks, :boolean
+
     field :does_know_command, :boolean do
       arg :dog_command, :dog_command
     end
+
     field :is_housetrained, :boolean do
       arg :at_other_homes, :boolean, default_value: true
     end
+
     field :is_at_location, :boolean do
       arg :x, :integer
       arg :y, :integer
     end
+
     interfaces [:being, :pet, :canine]
   end
 
   object :cat do
     is_type_of fn _ -> true end
+
     field :name, :string do
       arg :surname, :boolean
     end
+
     field :nickname, :string
     field :meows, :boolean
     field :meow_volume, :integer
@@ -69,9 +77,11 @@ defmodule Absinthe.Fixtures.PetsSchema do
   object :human do
     is_type_of fn _ -> true end
     interfaces [:being, :intelligent]
+
     field :name, :string do
       arg :surname, :boolean
     end
+
     field :pets, list_of(:pet)
     field :relatives, list_of(:human)
     field :iq, :integer
@@ -81,9 +91,11 @@ defmodule Absinthe.Fixtures.PetsSchema do
     is_type_of fn _ -> true end
     interfaces [:being, :intelligent]
     field :iq, :integer
+
     field :name, :string do
       arg :surname, :boolean
     end
+
     field :num_eyes, :integer
   end
 
@@ -114,38 +126,49 @@ defmodule Absinthe.Fixtures.PetsSchema do
     field :int_arg_field, :string do
       arg :int_arg, :integer
     end
+
     field :non_null_int_arg_field, :string do
       arg :non_null_int_arg, non_null(:integer)
     end
+
     field :string_arg_field, :string do
       arg :string_arg, :string
     end
+
     field :boolean_arg_field, :string do
       arg :boolean_arg, :boolean
     end
+
     field :float_arg_field, :string do
       arg :float_arg, :float
     end
+
     field :id_arg_field, :string do
       arg :id_arg, :id
     end
+
     field :string_list_arg_field, :string do
       arg :string_list_arg, list_of(:string)
     end
+
     field :string_list_of_list_arg_field, :string do
       arg :string_list_of_list_arg, list_of(list_of(:string))
     end
+
     field :complex_arg_field, :string do
       arg :complex_arg, :complex_input
     end
+
     field :multiple_reqs, :string do
       arg :req1, non_null(:integer)
       arg :req2, non_null(:integer)
     end
+
     field :multiple_opts, :string do
       arg :opt1, :integer, default_value: 0
       arg :opt2, :integer, default_value: 0
     end
+
     field :multiple_opt_and_req, :string do
       arg :req1, non_null(:integer)
       arg :req2, non_null(:integer)
@@ -158,6 +181,7 @@ defmodule Absinthe.Fixtures.PetsSchema do
     field :human, :human do
       arg :id, :id
     end
+
     field :alien, :alien
     field :dog, :dog
     field :cat, :cat
@@ -239,5 +263,4 @@ defmodule Absinthe.Fixtures.PetsSchema do
   directive :on_input_field_definition do
     on [:input_field_definition]
   end
-
 end

@@ -19,11 +19,12 @@ defmodule Absinthe.Language.InterfaceTypeDefinitionTest do
   """
 
   describe "converting to Blueprint" do
-
     test "works, given a Blueprint Schema 'interface' definition" do
-      assert %Blueprint.Schema.InterfaceTypeDefinition{name: "Entity", directives: [%{name: "description"}]} = from_input(@idl)
+      assert %Blueprint.Schema.InterfaceTypeDefinition{
+               name: "Entity",
+               directives: [%{name: "description"}]
+             } = from_input(@idl)
     end
-
   end
 
   defp from_input(text) do
@@ -35,7 +36,6 @@ defmodule Absinthe.Language.InterfaceTypeDefinitionTest do
   end
 
   defp extract_ast_node(%Absinthe.Language.Document{definitions: definitions}) do
-    definitions |> List.first
+    definitions |> List.first()
   end
-
 end

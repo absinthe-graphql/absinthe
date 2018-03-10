@@ -8,6 +8,7 @@ defmodule Absinthe.UnionFragmentTest do
       field :name, :string do
         resolve fn user, _, _ -> {:ok, user.username} end
       end
+
       field :todos, list_of(:todo)
       interface :named
     end
@@ -16,6 +17,7 @@ defmodule Absinthe.UnionFragmentTest do
       field :name, :string do
         resolve fn todo, _, _ -> {:ok, todo.title} end
       end
+
       field :completed, :boolean
       interface :named
       interface :completable
@@ -45,15 +47,16 @@ defmodule Absinthe.UnionFragmentTest do
     query do
       field :viewer, :viewer do
         resolve fn _, _ ->
-          {:ok, %{
-            objects: [
-              %{type: :user, username: "foo", completed: true},
-              %{type: :todo, title: "do stuff", completed: false},
-              %{type: :user, username: "bar"},
-            ],
-            me: %{type: :user, username: "baz", todos: [], name: "should not be exposed"},
-            named_thing: %{type: :todo, title: "do stuff", completed: false}
-          }}
+          {:ok,
+           %{
+             objects: [
+               %{type: :user, username: "foo", completed: true},
+               %{type: :todo, title: "do stuff", completed: false},
+               %{type: :user, username: "bar"}
+             ],
+             me: %{type: :user, username: "baz", todos: [], name: "should not be exposed"},
+             named_thing: %{type: :todo, title: "do stuff", completed: false}
+           }}
         end
       end
     end
@@ -77,11 +80,17 @@ defmodule Absinthe.UnionFragmentTest do
     }
 
     """
-    expected = %{"viewer" => %{"objects" => [
-      %{"__typename" => "User", "name" => "foo"},
-      %{"__typename" => "Todo", "completed" => false},
-      %{"__typename" => "User", "name" => "bar"},
-    ]}}
+
+    expected = %{
+      "viewer" => %{
+        "objects" => [
+          %{"__typename" => "User", "name" => "foo"},
+          %{"__typename" => "Todo", "completed" => false},
+          %{"__typename" => "User", "name" => "bar"}
+        ]
+      }
+    }
+
     assert {:ok, %{data: expected}} == Absinthe.run(doc, Schema)
   end
 
@@ -99,6 +108,7 @@ defmodule Absinthe.UnionFragmentTest do
     }
 
     """
+
     expected = %{"viewer" => %{"me" => %{"__typename" => "User", "name" => "baz"}}}
     assert {:ok, %{data: expected}} == Absinthe.run(doc, Schema)
   end
@@ -117,11 +127,17 @@ defmodule Absinthe.UnionFragmentTest do
     }
 
     """
-    expected = %{"viewer" => %{"objects" => [
-      %{"__typename" => "User", "name" => "foo"},
-      %{"__typename" => "Todo", "name" => "do stuff"},
-      %{"__typename" => "User", "name" => "bar"},
-    ]}}
+
+    expected = %{
+      "viewer" => %{
+        "objects" => [
+          %{"__typename" => "User", "name" => "foo"},
+          %{"__typename" => "Todo", "name" => "do stuff"},
+          %{"__typename" => "User", "name" => "bar"}
+        ]
+      }
+    }
+
     assert {:ok, %{data: expected}} == Absinthe.run(doc, Schema)
   end
 
@@ -140,10 +156,13 @@ defmodule Absinthe.UnionFragmentTest do
     }
 
     """
-    expected = %{"viewer" => %{"namedThing" =>
-      %{"__typename" => "Todo", "name" => "do stuff", "completed" => false},
-    }}
+
+    expected = %{
+      "viewer" => %{
+        "namedThing" => %{"__typename" => "Todo", "name" => "do stuff", "completed" => false}
+      }
+    }
+
     assert {:ok, %{data: expected}} == Absinthe.run(doc, Schema)
   end
-
 end

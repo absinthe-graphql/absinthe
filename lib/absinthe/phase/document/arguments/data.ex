@@ -36,23 +36,29 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
   def handle_node(%Blueprint.Document.Field{arguments: []} = node) do
     node
   end
+
   def handle_node(%Blueprint.Document.Field{arguments: args} = node) do
     %{node | argument_data: Input.Argument.value_map(args)}
   end
+
   def handle_node(%Input.Argument{input_value: input} = node) do
     %{node | value: input.data}
   end
+
   def handle_node(%Input.Value{normalized: %Input.List{items: items}} = node) do
     data_list = for %{data: data} = item <- items, Input.Value.valid?(item), do: data
     %{node | data: data_list}
   end
+
   def handle_node(%Input.Value{normalized: %Input.Object{fields: fields}} = node) do
-    data = for field <- fields, include_field?(field), into: %{} do
-      {field.schema_node.__reference__.identifier, field.input_value.data}
-    end
+    data =
+      for field <- fields, include_field?(field), into: %{} do
+        {field.schema_node.__reference__.identifier, field.input_value.data}
+      end
 
     %{node | data: data}
   end
+
   def handle_node(node) do
     node
   end
@@ -60,5 +66,4 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
   defp include_field?(%{input_value: %{normalized: %Input.Null{}}}), do: true
   defp include_field?(%{input_value: %{data: nil}}), do: false
   defp include_field?(_), do: true
-
 end

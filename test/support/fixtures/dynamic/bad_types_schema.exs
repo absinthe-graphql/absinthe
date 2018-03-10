@@ -7,7 +7,6 @@ defmodule Absinthe.TestSupport.Schemas.BadTypesSchema do
   }
 
   mutation do
-
     field :update_thing,
       type: :thing,
       args: [
@@ -18,20 +17,19 @@ defmodule Absinthe.TestSupport.Schemas.BadTypesSchema do
         %{id: id, thing: %{value: val}}, _ ->
           found = @db |> Map.get(id)
           {:ok, %{found | value: val}}
+
         %{id: id, thing: fields}, _ ->
           found = @db |> Map.get(id)
-        {:ok, found |> Map.merge(fields)}
+          {:ok, found |> Map.merge(fields)}
       end
-
   end
 
   query do
-
     field :version, :string
 
     field :bad_resolution,
       type: :thing,
-      resolve: fn(_, _) ->
+      resolve: fn _, _ ->
         :not_expected
       end
 
@@ -41,8 +39,8 @@ defmodule Absinthe.TestSupport.Schemas.BadTypesSchema do
         val: [type: non_null(:integer)]
       ],
       resolve: fn
-       %{val: v}, _ -> {:ok, v |> to_string}
-       args, _ -> {:error, "got #{inspect args}"}
+        %{val: v}, _ -> {:ok, v |> to_string}
+        args, _ -> {:error, "got #{inspect(args)}"}
       end
 
     field :thing_by_context,
@@ -50,6 +48,7 @@ defmodule Absinthe.TestSupport.Schemas.BadTypesSchema do
       resolve: fn
         _, %{context: %{thing: id}} ->
           {:ok, @db |> Map.get(id)}
+
         _, _ ->
           {:error, "No :id context provided"}
       end
@@ -65,7 +64,6 @@ defmodule Absinthe.TestSupport.Schemas.BadTypesSchema do
           description: "This is a deprecated arg",
           type: :string,
           deprecate: true
-
         ],
         deprecated_non_null_arg: [
           description: "This is a non-null deprecated arg",
@@ -81,11 +79,10 @@ defmodule Absinthe.TestSupport.Schemas.BadTypesSchema do
           description: "This is a non-null deprecated arg with a reasor",
           type: non_null(:string),
           deprecate: "reason"
-        ],
+        ]
       ],
-      resolve: fn
-        %{id: id}, _ ->
-          {:ok, @db |> Map.get(id)}
+      resolve: fn %{id: id}, _ ->
+        {:ok, @db |> Map.get(id)}
       end
 
     field :deprecated_thing,
@@ -96,9 +93,8 @@ defmodule Absinthe.TestSupport.Schemas.BadTypesSchema do
           type: non_null(:string)
         ]
       ],
-      resolve: fn
-        %{id: id}, _ ->
-          {:ok, @db |> Map.get(id)}
+      resolve: fn %{id: id}, _ ->
+        {:ok, @db |> Map.get(id)}
       end,
       deprecate: true
 
@@ -111,11 +107,9 @@ defmodule Absinthe.TestSupport.Schemas.BadTypesSchema do
         ]
       ],
       deprecate: "use `thing' instead",
-      resolve: fn
-        %{id: id}, _ ->
-          {:ok, @db |> Map.get(id)}
+      resolve: fn %{id: id}, _ ->
+        {:ok, @db |> Map.get(id)}
       end
-
   end
 
   input_object :input_thing do
@@ -130,24 +124,19 @@ defmodule Absinthe.TestSupport.Schemas.BadTypesSchema do
   object :thing do
     description "A thing"
 
-    field :id, non_null(:string),
-      description: "The ID of the thing"
+    field :id, non_null(:string), description: "The ID of the thing"
 
-    field :name, :string,
-      description: "The name of the thing"
+    field :name, :string, description: "The name of the thing"
 
-    field :value, :integer,
-      description: "The value of the thing"
+    field :value, :integer, description: "The value of the thing"
 
     field :other_thing,
       type: :thing,
-      resolve: fn (_, %{source: %{id: id}}) ->
+      resolve: fn _, %{source: %{id: id}} ->
         case id do
           "foo" -> {:ok, @db |> Map.get("bar")}
           "bar" -> {:ok, @db |> Map.get("foo")}
         end
       end
-
   end
-
 end

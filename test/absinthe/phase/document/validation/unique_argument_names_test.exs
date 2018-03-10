@@ -9,9 +9,13 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
 
   defp duplicate(name, line, values) do
     List.wrap(values)
-    |> Enum.map(fn
-      value ->
-        bad_value(Blueprint.Input.Argument, @phase.error_message, line, literal_value_check(name, value))
+    |> Enum.map(fn value ->
+      bad_value(
+        Blueprint.Input.Argument,
+        @phase.error_message,
+        line,
+        literal_value_check(name, value)
+      )
     end)
   end
 
@@ -19,13 +23,13 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
     fn
       %{name: ^name, input_value: %{literal: %{value: ^value}}} ->
         true
+
       _ ->
         false
     end
   end
 
   describe "Validate: Unique argument names" do
-
     test "no arguments on field" do
       assert_passes_validation(
         """
@@ -95,7 +99,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
 
     test "same argument on two directives" do
       assert_passes_validation(
-      """
+        """
         {
           field @directive1(arg: "value") @directive2(arg: "value")
         }
@@ -173,7 +177,5 @@ defmodule Absinthe.Phase.Document.Validation.UniqueArgumentNamesTest do
         duplicate("arg1", 2, ~w(value1 value2 value3))
       )
     end
-
   end
-
 end

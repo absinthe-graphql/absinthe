@@ -13,9 +13,11 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
       field :foo_int_list, :foo do
         arg :input, list_of(:integer)
       end
+
       field :foo_wrapped_int_list, :foo do
         arg :input, non_null(list_of(non_null(:integer)))
       end
+
       field :foo_wrapped_enum_list, :foo do
         arg :input, non_null(list_of(non_null(:type)))
       end
@@ -28,7 +30,6 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
     enum :type do
       value :baz
     end
-
   end
 
   describe "when using an List type input argument" do
@@ -43,9 +44,12 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
 
       {:ok, result, _} = run_phase(doc, operation_name: "List", variables: %{})
       op = result.operations |> Enum.find(&(&1.name == "List"))
-      field = op.selections |> List.first
+      field = op.selections |> List.first()
       input_argument = field.arguments |> Enum.find(&(&1.name == "input"))
-      assert %Blueprint.Input.List{items: [%Blueprint.Input.Value{literal: %Blueprint.Input.Integer{value: 42}}]} = input_argument.input_value.normalized
+
+      assert %Blueprint.Input.List{
+               items: [%Blueprint.Input.Value{literal: %Blueprint.Input.Integer{value: 42}}]
+             } = input_argument.input_value.normalized
     end
 
     test "coerces the type from a single element to List when supplying variables" do
@@ -59,9 +63,12 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
 
       {:ok, result, _} = run_phase(doc, operation_name: "ListVar", variables: %{"input" => 42})
       op = result.operations |> Enum.find(&(&1.name == "ListVar"))
-      field = op.selections |> List.first
+      field = op.selections |> List.first()
       input_argument = field.arguments |> Enum.find(&(&1.name == "input"))
-      assert %Blueprint.Input.List{items: [%Blueprint.Input.Value{literal: %Blueprint.Input.Integer{value: 42}}]} = input_argument.input_value.normalized
+
+      assert %Blueprint.Input.List{
+               items: [%Blueprint.Input.Value{literal: %Blueprint.Input.Integer{value: 42}}]
+             } = input_argument.input_value.normalized
     end
   end
 
@@ -77,9 +84,12 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
 
       {:ok, result, _} = run_phase(doc, operation_name: "List", variables: %{})
       op = result.operations |> Enum.find(&(&1.name == "List"))
-      field = op.selections |> List.first
+      field = op.selections |> List.first()
       input_argument = field.arguments |> Enum.find(&(&1.name == "input"))
-      assert %Blueprint.Input.List{items: [%Blueprint.Input.Value{literal: %Blueprint.Input.Integer{value: 42}}]} = input_argument.input_value.normalized
+
+      assert %Blueprint.Input.List{
+               items: [%Blueprint.Input.Value{literal: %Blueprint.Input.Integer{value: 42}}]
+             } = input_argument.input_value.normalized
     end
 
     test "coerces the type from a single element to List when supplying variables" do
@@ -93,9 +103,12 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
 
       {:ok, result, _} = run_phase(doc, operation_name: "ListVar", variables: %{"input" => 42})
       op = result.operations |> Enum.find(&(&1.name == "ListVar"))
-      field = op.selections |> List.first
+      field = op.selections |> List.first()
       input_argument = field.arguments |> Enum.find(&(&1.name == "input"))
-      assert %Blueprint.Input.List{items: [%Blueprint.Input.Value{literal: %Blueprint.Input.Integer{value: 42}}]} = input_argument.input_value.normalized
+
+      assert %Blueprint.Input.List{
+               items: [%Blueprint.Input.Value{literal: %Blueprint.Input.Integer{value: 42}}]
+             } = input_argument.input_value.normalized
     end
   end
 
@@ -111,9 +124,12 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
 
       {:ok, result, _} = run_phase(doc, operation_name: "List", variables: %{})
       op = result.operations |> Enum.find(&(&1.name == "List"))
-      field = op.selections |> List.first
+      field = op.selections |> List.first()
       input_argument = field.arguments |> Enum.find(&(&1.name == "input"))
-      assert %Blueprint.Input.List{items: [%Blueprint.Input.Value{literal: %Blueprint.Input.Enum{value: "BAZ"}}]} = input_argument.input_value.normalized
+
+      assert %Blueprint.Input.List{
+               items: [%Blueprint.Input.Value{literal: %Blueprint.Input.Enum{value: "BAZ"}}]
+             } = input_argument.input_value.normalized
     end
 
     test "coerces the type from a single element to List when supplying variables" do
@@ -127,9 +143,12 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
 
       {:ok, result, _} = run_phase(doc, operation_name: "ListVar", variables: %{"input" => "BAZ"})
       op = result.operations |> Enum.find(&(&1.name == "ListVar"))
-      field = op.selections |> List.first
+      field = op.selections |> List.first()
       input_argument = field.arguments |> Enum.find(&(&1.name == "input"))
-      assert %Blueprint.Input.List{items: [%Blueprint.Input.Value{literal: %Blueprint.Input.Enum{value: "BAZ"}}]} = input_argument.input_value.normalized
+
+      assert %Blueprint.Input.List{
+               items: [%Blueprint.Input.Value{literal: %Blueprint.Input.Enum{value: "BAZ"}}]
+             } = input_argument.input_value.normalized
     end
   end
 end

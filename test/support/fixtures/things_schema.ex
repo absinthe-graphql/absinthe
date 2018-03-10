@@ -9,7 +9,7 @@ defmodule Absinthe.Fixtures.ThingsSchema do
   enum :sigils_work, values: ~w(foo bar)a
 
   enum :sigils_work_inside do
-    values ~w(foo bar)a
+    values(~w(foo bar)a)
   end
 
   enum :failure_type do
@@ -21,7 +21,6 @@ defmodule Absinthe.Fixtures.ThingsSchema do
   end
 
   mutation do
-
     field :update_thing,
       type: :thing,
       args: [
@@ -32,6 +31,7 @@ defmodule Absinthe.Fixtures.ThingsSchema do
         %{id: id, thing: %{value: val}}, _ ->
           found = @db |> Map.get(id)
           {:ok, %{found | value: val}}
+
         %{id: id, thing: fields}, _ ->
           found = @db |> Map.get(id)
           {:ok, found |> Map.merge(fields)}
@@ -39,29 +39,32 @@ defmodule Absinthe.Fixtures.ThingsSchema do
 
     field :failing_thing, type: :thing do
       arg :type, type: :failure_type
+
       resolve fn
         %{type: :multiple}, _ ->
           {:error, ["one", "two"]}
+
         %{type: :with_code}, _ ->
           {:error, message: "Custom Error", code: 42}
+
         %{type: :without_message}, _ ->
           {:error, code: 42}
+
         %{type: :multiple_with_code}, _ ->
           {:error, [%{message: "Custom Error 1", code: 1}, %{message: "Custom Error 2", code: 2}]}
+
         %{type: :multiple_without_message}, _ ->
           {:error, [%{message: "Custom Error 1", code: 1}, %{code: 2}]}
       end
     end
-
   end
 
   query do
-
     field :version, :string
 
     field :bad_resolution,
       type: :thing,
-      resolve: fn(_, _) ->
+      resolve: fn _, _ ->
         :not_expected
       end
 
@@ -71,8 +74,8 @@ defmodule Absinthe.Fixtures.ThingsSchema do
         val: [type: non_null(:integer)]
       ],
       resolve: fn
-       %{val: v}, _ -> {:ok, v |> to_string}
-       args, _ -> {:error, "got #{inspect args}"}
+        %{val: v}, _ -> {:ok, v |> to_string}
+        args, _ -> {:error, "got #{inspect(args)}"}
       end
 
     field :thing_by_context,
@@ -80,13 +83,14 @@ defmodule Absinthe.Fixtures.ThingsSchema do
       resolve: fn
         _, %{context: %{thing: id}} ->
           {:ok, @db |> Map.get(id)}
+
         _, _ ->
           {:error, "No :id context provided"}
       end
 
     field :things, list_of(:thing) do
       resolve fn _, _ ->
-        {:ok, @db |> Map.values |> Enum.sort_by(&(&1.id))}
+        {:ok, @db |> Map.values() |> Enum.sort_by(& &1.id)}
       end
     end
 
@@ -101,7 +105,6 @@ defmodule Absinthe.Fixtures.ThingsSchema do
           description: "This is a deprecated arg",
           type: :string,
           deprecate: true
-
         ],
         deprecated_non_null_arg: [
           description: "This is a non-null deprecated arg",
@@ -117,11 +120,10 @@ defmodule Absinthe.Fixtures.ThingsSchema do
           description: "This is a non-null deprecated arg with a reasor",
           type: non_null(:string),
           deprecate: "reason"
-        ],
+        ]
       ],
-      resolve: fn
-        %{id: id}, _ ->
-          {:ok, @db |> Map.get(id)}
+      resolve: fn %{id: id}, _ ->
+        {:ok, @db |> Map.get(id)}
       end
 
     field :deprecated_thing,
@@ -132,9 +134,8 @@ defmodule Absinthe.Fixtures.ThingsSchema do
           type: non_null(:string)
         ]
       ],
-      resolve: fn
-        %{id: id}, _ ->
-          {:ok, @db |> Map.get(id)}
+      resolve: fn %{id: id}, _ ->
+        {:ok, @db |> Map.get(id)}
       end,
       deprecate: true
 
@@ -147,9 +148,8 @@ defmodule Absinthe.Fixtures.ThingsSchema do
         ]
       ],
       deprecate: "use `thing' instead",
-      resolve: fn
-        %{id: id}, _ ->
-          {:ok, @db |> Map.get(id)}
+      resolve: fn %{id: id}, _ ->
+        {:ok, @db |> Map.get(id)}
       end
   end
 
@@ -171,29 +171,25 @@ defmodule Absinthe.Fixtures.ThingsSchema do
       resolve fn
         %{id: id}, %{id: id}, _ ->
           {:error, "fail"}
+
         %{id: id}, _, _ ->
           {:ok, id}
       end
     end
 
-    field :id, non_null(:string),
-      description: "The ID of the thing"
+    field :id, non_null(:string), description: "The ID of the thing"
 
-    field :name, :string,
-      description: "The name of the thing"
+    field :name, :string, description: "The name of the thing"
 
-    field :value, :integer,
-      description: "The value of the thing"
+    field :value, :integer, description: "The value of the thing"
 
     field :other_thing,
       type: :thing,
-      resolve: fn (_, %{source: %{id: id}}) ->
+      resolve: fn _, %{source: %{id: id}} ->
         case id do
           "foo" -> {:ok, @db |> Map.get("bar")}
           "bar" -> {:ok, @db |> Map.get("foo")}
         end
       end
-
   end
-
 end

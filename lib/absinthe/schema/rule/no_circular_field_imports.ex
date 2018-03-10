@@ -12,6 +12,7 @@ defmodule Absinthe.Schema.Rule.NoCircularFieldImports do
     :digraph.delete(graph)
     {:lists.reverse(acc), errors}
   end
+
   defp do_check([definition | rest], graph, errors, acc) do
     {acc, errors} =
       definition.attrs
@@ -19,6 +20,7 @@ defmodule Absinthe.Schema.Rule.NoCircularFieldImports do
       |> case do
         [_ | _] = imports ->
           check_imports(definition, imports, graph, errors, acc)
+
         _ ->
           {[definition | acc], errors}
       end
@@ -28,8 +30,10 @@ defmodule Absinthe.Schema.Rule.NoCircularFieldImports do
 
   defp check_imports(definition, imports, graph, errors, acc) do
     :digraph.add_vertex(graph, definition.identifier)
+
     Enum.reduce(imports, [], fn {ref, _}, errors ->
       :digraph.add_vertex(graph, ref)
+
       case :digraph.add_edge(graph, definition.identifier, ref) do
         {:error, {:bad_edge, path}} ->
           # All just error generation logic
@@ -38,11 +42,14 @@ defmodule Absinthe.Schema.Rule.NoCircularFieldImports do
             |> Enum.map(&"`#{&1}'")
             |> Enum.join(" => ")
 
-          msg = String.trim """
-          Field Import Cycle Error
+          msg =
+            String.trim("""
+            Field Import Cycle Error
 
-          Field Import in object `#{definition.identifier}' `import_fields(#{inspect ref}) forms a cycle via: (#{deps})
-          """
+            Field Import in object `#{definition.identifier}' `import_fields(#{inspect(ref)}) forms a cycle via: (#{
+              deps
+            })
+            """)
 
           error = %{
             rule: __MODULE__,

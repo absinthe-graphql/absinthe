@@ -10,11 +10,14 @@ defmodule Absinthe.Language.VariableDefinitionTest do
   """
 
   describe "converting to Blueprint" do
-
     test "builds a VariableDefinition.t" do
-      assert %Blueprint.Document.VariableDefinition{name: "showFoo", type: %Blueprint.TypeReference.Name{name: "Boolean"}, default_value: %Blueprint.Input.Boolean{value: true}, source_location: %Blueprint.Document.SourceLocation{line: 1}} = from_input(@query)
+      assert %Blueprint.Document.VariableDefinition{
+               name: "showFoo",
+               type: %Blueprint.TypeReference.Name{name: "Boolean"},
+               default_value: %Blueprint.Input.Boolean{value: true},
+               source_location: %Blueprint.Document.SourceLocation{line: 1}
+             } = from_input(@query)
     end
-
   end
 
   defp from_input(text) do
@@ -27,7 +30,6 @@ defmodule Absinthe.Language.VariableDefinitionTest do
 
   defp extract_ast_node(%Language.Document{definitions: [node]}) do
     node.variable_definitions
-    |> List.first
+    |> List.first()
   end
-
 end

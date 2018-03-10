@@ -1,5 +1,4 @@
 defmodule Absinthe.Type.Argument do
-
   @moduledoc """
   Used to define an argument.
 
@@ -20,14 +19,20 @@ defmodule Absinthe.Type.Argument do
   * `:description` - Description of an argument, useful for introspection.
   """
   @type t :: %__MODULE__{
-    name: binary,
-    type: Type.identifier_t,
-    default_value: any,
-    deprecation: Type.Deprecation.t | nil,
-    description: binary | nil,
-    __reference__: Type.Reference.t}
+          name: binary,
+          type: Type.identifier_t(),
+          default_value: any,
+          deprecation: Type.Deprecation.t() | nil,
+          description: binary | nil,
+          __reference__: Type.Reference.t()
+        }
 
-  defstruct name: nil, description: nil, type: nil, deprecation: nil, default_value: nil, __reference__: nil
+  defstruct name: nil,
+            description: nil,
+            type: nil,
+            deprecation: nil,
+            default_value: nil,
+            __reference__: nil
 
   @doc """
   Build an AST of the args map for inclusion in other types
@@ -46,20 +51,25 @@ defmodule Absinthe.Type.Argument do
   ```
   """
   def build(args) when is_list(args) do
-    ast = for {arg_name, arg_attrs} <- args do
-      name = arg_name |> Atom.to_string
-      arg_data = arg_attrs |> Keyword.put(:name, name)
-      arg_ast = quote do: %Absinthe.Type.Argument{unquote_splicing(arg_data |> Absinthe.Type.Deprecation.from_attribute)}
-      {arg_name, arg_ast}
-    end
+    ast =
+      for {arg_name, arg_attrs} <- args do
+        name = arg_name |> Atom.to_string()
+        arg_data = arg_attrs |> Keyword.put(:name, name)
+
+        arg_ast =
+          quote do: %Absinthe.Type.Argument{
+                  unquote_splicing(arg_data |> Absinthe.Type.Deprecation.from_attribute())
+                }
+
+        {arg_name, arg_ast}
+      end
+
     quote do: %{unquote_splicing(ast)}
   end
-
 
   defimpl Absinthe.Traversal.Node do
     def children(node, _traversal) do
       [node.type]
     end
   end
-
 end

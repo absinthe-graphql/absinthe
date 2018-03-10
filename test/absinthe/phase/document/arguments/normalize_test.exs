@@ -13,10 +13,12 @@ defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
       field :foo, :foo do
         arg :id, non_null(:id)
       end
+
       field :profile, :user do
         arg :name, :string
         arg :age, :integer
       end
+
       field :things, :things
     end
 
@@ -39,8 +41,6 @@ defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
     object :item do
       field :id, :id
     end
-
-
   end
 
   @query """
@@ -73,11 +73,20 @@ defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
     test "uses the default value" do
       {:ok, result, _} = run_phase(@query, variables: %{}, operation_name: "Profile")
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
-      field = op.selections |> List.first
+      field = op.selections |> List.first()
       age_argument = field.arguments |> Enum.find(&(&1.name == "age"))
-      assert %Blueprint.Input.Integer{value: 36, source_location: %Blueprint.Document.SourceLocation{column: nil, line: 6}} == age_argument.input_value.normalized
+
+      assert %Blueprint.Input.Integer{
+               value: 36,
+               source_location: %Blueprint.Document.SourceLocation{column: nil, line: 6}
+             } == age_argument.input_value.normalized
+
       name_argument = field.arguments |> Enum.find(&(&1.name == "name"))
-      assert %Blueprint.Input.String{value: "Bruce", source_location: %Blueprint.Document.SourceLocation{column: nil, line: 7}} == name_argument.input_value.normalized
+
+      assert %Blueprint.Input.String{
+               value: "Bruce",
+               source_location: %Blueprint.Document.SourceLocation{column: nil, line: 7}
+             } == name_argument.input_value.normalized
     end
   end
 
@@ -85,11 +94,15 @@ defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
     test "uses the default value" do
       {:ok, result, _} = run_phase(@query, variables: %{"age" => 4}, operation_name: "Profile")
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
-      field = op.selections |> List.first
+      field = op.selections |> List.first()
       age_argument = field.arguments |> Enum.find(&(&1.name == "age"))
       assert %Blueprint.Input.Integer{value: 4} == age_argument.input_value.normalized
       name_argument = field.arguments |> Enum.find(&(&1.name == "name"))
-      assert %Blueprint.Input.String{value: "Bruce", source_location: %Blueprint.Document.SourceLocation{column: nil, line: 7}} == name_argument.input_value.normalized
+
+      assert %Blueprint.Input.String{
+               value: "Bruce",
+               source_location: %Blueprint.Document.SourceLocation{column: nil, line: 7}
+             } == name_argument.input_value.normalized
     end
   end
 
@@ -97,10 +110,9 @@ defmodule Absinthe.Phase.Document.Arguments.NormalizeTest do
     test "normalizes the input" do
       {:ok, result, _} = run_phase(@fragment_query, variables: %{"id" => "foo"})
       frag = result.fragments |> Enum.find(&(&1.name == "thingsFragment"))
-      field = frag.selections |> List.first
+      field = frag.selections |> List.first()
       id_argument = field.arguments |> Enum.find(&(&1.name == "id"))
       assert %Blueprint.Input.String{value: "foo"} == id_argument.input_value.normalized
     end
   end
-
 end

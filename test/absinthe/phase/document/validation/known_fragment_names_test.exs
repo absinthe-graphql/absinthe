@@ -17,10 +17,9 @@ defmodule Absinthe.Phase.Document.Validation.KnownFragmentNamesTest do
   end
 
   describe "Validate: Known fragment names" do
-
     test "known fragment names are valid" do
       assert_passes_validation(
-      """
+        """
         {
           human(id: 4) {
             ... HumanFields1
@@ -71,7 +70,5 @@ defmodule Absinthe.Phase.Document.Validation.KnownFragmentNamesTest do
         ]
       )
     end
-
   end
-
 end

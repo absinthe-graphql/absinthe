@@ -15,7 +15,7 @@ defmodule Absinthe.Plugin do
   NOTE: This function is given the full accumulator. Namespacing is suggested to
   avoid conflicts.
   """
-  @callback before_resolution(execution :: Document.Execution.t) :: Document.Execution.t
+  @callback before_resolution(execution :: Document.Execution.t()) :: Document.Execution.t()
 
   @doc """
   callback to do something with the resolution accumulator after
@@ -24,7 +24,7 @@ defmodule Absinthe.Plugin do
   NOTE: This function is given the full accumulator. Namespacing is suggested to
   avoid conflicts.
   """
-  @callback after_resolution(execution :: Document.Execution.t) :: Document.Execution.t
+  @callback after_resolution(execution :: Document.Execution.t()) :: Document.Execution.t()
 
   @doc """
   callback used to specify additional phases to run.
@@ -36,8 +36,8 @@ defmodule Absinthe.Plugin do
   NOTE: This function is given the whole pipeline to be inserted after the current
   phase completes.
   """
-  @callback pipeline(next_pipeline :: Absinthe.Pipeline.t, execution :: Document.Execution.t) :: Absinthe.Pipeline.t
-
+  @callback pipeline(next_pipeline :: Absinthe.Pipeline.t(), execution :: Document.Execution.t()) ::
+              Absinthe.Pipeline.t()
 
   @doc """
   Returns the list of default plugins.
@@ -51,8 +51,7 @@ defmodule Absinthe.Plugin do
     Enum.reduce(plugins, [], fn plugin, pipeline ->
       plugin.pipeline(pipeline, exec)
     end)
-    |> Enum.dedup
-    |> List.flatten
+    |> Enum.dedup()
+    |> List.flatten()
   end
-
 end

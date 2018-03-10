@@ -1,5 +1,4 @@
 defmodule Absinthe.Blueprint.Result.Leaf do
-
   @moduledoc false
 
   alias Absinthe.{Blueprint, Phase}
@@ -10,15 +9,14 @@ defmodule Absinthe.Blueprint.Result.Leaf do
     :value,
     errors: [],
     flags: %{},
-    extensions: %{},
+    extensions: %{}
   ]
 
   @type t :: %__MODULE__{
-    emitter: Blueprint.Document.Field.t,
-    value: Blueprint.Document.Resolution.node_t,
-    errors: [Phase.Error.t],
-    flags: Blueprint.flags_t,
-    extensions: %{any => any},
-  }
-
+          emitter: Blueprint.Document.Field.t(),
+          value: Blueprint.Document.Resolution.node_t(),
+          errors: [Phase.Error.t()],
+          flags: Blueprint.flags_t(),
+          extensions: %{any => any}
+        }
 end

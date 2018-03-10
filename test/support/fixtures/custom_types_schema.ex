@@ -5,14 +5,21 @@ defmodule Absinthe.Fixtures.CustomTypesSchema do
 
   @custom_types %{
     datetime: %DateTime{
-      year: 2017, month: 1, day: 27,
-      hour: 20, minute: 31, second: 55,
-      time_zone: "Etc/UTC", zone_abbr: "UTC", utc_offset: 0, std_offset: 0,
+      year: 2017,
+      month: 1,
+      day: 27,
+      hour: 20,
+      minute: 31,
+      second: 55,
+      time_zone: "Etc/UTC",
+      zone_abbr: "UTC",
+      utc_offset: 0,
+      std_offset: 0
     },
     naive_datetime: ~N[2017-01-27 20:31:55],
     date: ~D[2017-01-27],
     time: ~T[20:31:55],
-    decimal: Decimal.new("-3.49"),
+    decimal: Decimal.new("-3.49")
   }
 
   query do
