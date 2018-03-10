@@ -43,6 +43,7 @@ defmodule Absinthe.Schema.ExperimentalTest do
     query = """
     { user { fullName }}
     """
+
     assert :ok = Absinthe.run(query, Schema)
   end
 end
