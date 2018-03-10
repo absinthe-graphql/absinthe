@@ -1,0 +1,16 @@
+# Schema: ContactSchema
+query {
+  __type(name: "Person") {
+    fields(include_deprecated: true) {
+      name
+      type {
+        kind
+        name
+        ofType {
+          kind
+          name
+        }
+      }
+    }
+  }
+}

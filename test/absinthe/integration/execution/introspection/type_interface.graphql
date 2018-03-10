@@ -1,0 +1,11 @@
+# Schema: ContactSchema
+query {
+  __type(name: "NamedEntity") {
+    kind
+    name
+    description
+    possibleTypes {
+      name
+    }
+  }
+}
