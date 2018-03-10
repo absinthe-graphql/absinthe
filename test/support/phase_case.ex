@@ -1,7 +1,5 @@
 defmodule Absinthe.PhaseCase do
 
-  import ExUnit.Assertions
-
   defmacro __using__(opts) do
     phase = Keyword.fetch!(opts, :phase)
     schema = Keyword.fetch!(opts, :schema)
