@@ -1,4 +1,5 @@
-{[variables: %{"value" => [nil, 1]}], {
+{[variables: %{"value" => [nil, 1]}],
+ {
    :ok,
    %{
      data: %{
@@ -7,8 +8,7 @@
          "content" => [nil, 1],
          "nullCount" => 1,
          "nonNullCount" => 1
-        }
-      }
-    }
-  }
-}
+       }
+     }
+   }
+ }}

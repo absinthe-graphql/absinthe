@@ -9,8 +9,7 @@ defmodule Absinthe.Execution.Arguments.EnumTest do
   }
   """
   test "for invalid values, returns an error with" do
-    assert_error_message ~s(Argument "type" has invalid value "bagel".),
-      run(@graphql, @schema)
+    assert_error_message(~s(Argument "type" has invalid value "bagel".), run(@graphql, @schema))
   end
 
   @graphql """
@@ -19,8 +18,7 @@ defmodule Absinthe.Execution.Arguments.EnumTest do
   }
   """
   test "should pass nil as an argument to the resolver for enum types" do
-    assert_data %{"contact" => nil},
-      run(@graphql, @schema, variables: %{"type" => nil})
+    assert_data(%{"contact" => nil}, run(@graphql, @schema, variables: %{"type" => nil}))
   end
 
   @graphql """
@@ -29,8 +27,7 @@ defmodule Absinthe.Execution.Arguments.EnumTest do
   }
   """
   test "should work with valid values" do
-    assert_data %{"contact" => "Email"},
-      run(@graphql, @schema)
+    assert_data(%{"contact" => "Email"}, run(@graphql, @schema))
   end
 
   @graphql """
@@ -39,8 +36,7 @@ defmodule Absinthe.Execution.Arguments.EnumTest do
   }
   """
   test "should return an error with invalid values" do
-    assert_error_message ~s(Argument "type" has invalid value "bagel".),
-      run(@graphql, @schema)
+    assert_error_message(~s(Argument "type" has invalid value "bagel".), run(@graphql, @schema))
   end
 
   @graphql """
@@ -49,8 +45,6 @@ defmodule Absinthe.Execution.Arguments.EnumTest do
   }
   """
   test "as variable, should work with valid values" do
-    assert_data %{"contact" => "Email"},
-      run(@graphql, @schema, variables: %{"type" => "Email"})
+    assert_data(%{"contact" => "Email"}, run(@graphql, @schema, variables: %{"type" => "Email"}))
   end
-
 end

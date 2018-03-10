@@ -15,12 +15,15 @@ defmodule Absinthe.Phase.Validation.KnownTypeNamesTest do
       &(Blueprint.TypeReference.unwrap(&1.type).name == name)
     )
   end
+
   def unknown_type(:named_type_condition, name, line) do
     unknown_type_condition(Blueprint.Document.Fragment.Named, name, line)
   end
+
   def unknown_type(:spread_type_condition, name, line) do
     unknown_type_condition(Blueprint.Document.Fragment.Spread, name, line)
   end
+
   def unknown_type(:inline_type_condition, name, line) do
     unknown_type_condition(Blueprint.Document.Fragment.Inline, name, line)
   end
@@ -39,7 +42,6 @@ defmodule Absinthe.Phase.Validation.KnownTypeNamesTest do
   end
 
   describe "Validate: Known type names" do
-
     test "known type names are valid" do
       assert_passes_validation(
         """
@@ -71,9 +73,9 @@ defmodule Absinthe.Phase.Validation.KnownTypeNamesTest do
         """,
         [],
         [
-         unknown_type(:variable_definition, "JumbledUpLetters", 1),
-         unknown_type(:inline_type_condition, "Badger", 4),
-         unknown_type(:named_type_condition, "Peettt", 7)
+          unknown_type(:variable_definition, "JumbledUpLetters", 1),
+          unknown_type(:inline_type_condition, "Badger", 4),
+          unknown_type(:named_type_condition, "Peettt", 7)
         ]
       )
     end
@@ -101,7 +103,5 @@ defmodule Absinthe.Phase.Validation.KnownTypeNamesTest do
         unknown_type(:variable_definition, "NotInTheSchema", 11)
       )
     end
-
   end
-
 end

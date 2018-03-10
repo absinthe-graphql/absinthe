@@ -1,6 +1,7 @@
 [
   # Passed, causes error
-  {[variables: %{"mult" => nil}], {:ok, %{errors: [%{message: "Variable \"mult\": Expected non-null, found null."}]}}},
+  {[variables: %{"mult" => nil}],
+   {:ok, %{errors: [%{message: "Variable \"mult\": Expected non-null, found null."}]}}},
   # Not passed, causes error
   {:ok, %{errors: [%{message: "Variable \"mult\": Expected non-null, found null."}]}},
   # Control

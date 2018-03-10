@@ -21,7 +21,6 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
   end
 
   describe "Valid non-nullable value" do
-
     test "with a valid non-nullable value: Arg on optional arg" do
       assert_passes_validation(
         """
@@ -151,12 +150,9 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
         []
       )
     end
-
   end
 
-
   describe "Invalid non-nullable value" do
-
     test "with an invalid non-nullable value: Missing one non-nullable argument" do
       assert_fails_validation(
         """
@@ -196,8 +192,18 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
         """,
         [],
         [
-          bad_value(Blueprint.Input.Argument, @phase.error_message("req1", "Int!"), 3, name: "req1"),
-          bad_value(Blueprint.Input.Argument, @phase.error_message("req2", "Int!"), 3, name: "req2")
+          bad_value(
+            Blueprint.Input.Argument,
+            @phase.error_message("req1", "Int!"),
+            3,
+            name: "req1"
+          ),
+          bad_value(
+            Blueprint.Input.Argument,
+            @phase.error_message("req2", "Int!"),
+            3,
+            name: "req2"
+          )
         ]
       )
     end
@@ -215,25 +221,23 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
         bad_value(Blueprint.Input.Argument, @phase.error_message("req2", "Int!"), 3, name: "req2")
       )
     end
-
   end
 
   describe "Directive arguments" do
-
     test "for directive arguments, ignores unknown directives" do
       assert_passes_validation(
-      """
+        """
         {
           dog @unknown
         }
         """,
-      []
-    )
+        []
+      )
     end
 
     test "for directive arguments, with directives of valid types" do
       assert_passes_validation(
-      """
+        """
         {
           dog @include(if: true) {
             name
@@ -243,8 +247,8 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
           }
         }
         """,
-      []
-    )
+        []
+      )
     end
 
     test "for directive arguments, with directive with missing types" do
@@ -258,12 +262,20 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullArgumentsTest do
         """,
         [],
         [
-          bad_value(Blueprint.Input.Argument, @phase.error_message("if", "Boolean!"), 2, name: "if"),
-          bad_value(Blueprint.Input.Argument, @phase.error_message("if", "Boolean!"), 3, name: "if"),
+          bad_value(
+            Blueprint.Input.Argument,
+            @phase.error_message("if", "Boolean!"),
+            2,
+            name: "if"
+          ),
+          bad_value(
+            Blueprint.Input.Argument,
+            @phase.error_message("if", "Boolean!"),
+            3,
+            name: "if"
+          )
         ]
       )
     end
-
   end
-
 end

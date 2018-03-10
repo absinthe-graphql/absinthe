@@ -7,9 +7,7 @@ defmodule Absinthe.ResolutionTest do
     interface :named do
       field :name, :string
 
-      resolve_type fn
-        _, _ -> :user
-      end
+      resolve_type fn _, _ -> :user end
     end
 
     object :user do
@@ -21,10 +19,10 @@ defmodule Absinthe.ResolutionTest do
     query do
       field :user, :user do
         resolve fn _, info ->
-          fields = Absinthe.Resolution.project(info) |> Enum.map(&(&1.name))
+          fields = Absinthe.Resolution.project(info) |> Enum.map(& &1.name)
 
           # ghetto escape hatch
-          send self(), {:fields, fields}
+          send(self(), {:fields, fields})
           {:ok, nil}
         end
       end

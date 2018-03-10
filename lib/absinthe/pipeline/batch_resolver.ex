@@ -6,6 +6,7 @@ defmodule Absinthe.Pipeline.BatchResolver do
   @moduledoc false
 
   def run([], _), do: []
+
   def run([bp | _] = blueprints, options) do
     schema = Keyword.fetch!(options, :schema)
     plugins = schema.plugins()
@@ -14,12 +15,13 @@ defmodule Absinthe.Pipeline.BatchResolver do
     ctx = init(blueprints, :context)
 
     # This will serve as a generic cross document execution struct
-    exec = %{ bp.execution |
-      acc: acc,
-      context: ctx,
-      fragments: %{},
-      validation_errors: [],
-      result: nil,
+    exec = %{
+      bp.execution
+      | acc: acc,
+        context: ctx,
+        fragments: %{},
+        validation_errors: [],
+        result: nil
     }
 
     resolution_phase = {Execution.Resolution, [plugin_callbacks: false] ++ options}
@@ -34,25 +36,30 @@ defmodule Absinthe.Pipeline.BatchResolver do
   # defp update()
 
   defp do_resolve(blueprints, phases, exec, plugins, resolution_phase_template, options) do
-    exec = Enum.reduce(plugins, exec, fn plugin, exec ->
-      plugin.before_resolution(exec)
-    end)
+    exec =
+      Enum.reduce(plugins, exec, fn plugin, exec ->
+        plugin.before_resolution(exec)
+      end)
 
     abort_on_error? = Keyword.get(options, :abort_on_error, true)
 
     {blueprints, exec} = execute(blueprints, phases, abort_on_error?, [], exec)
 
-    exec = Enum.reduce(plugins, exec, fn plugin, exec ->
-      plugin.after_resolution(exec)
-    end)
+    exec =
+      Enum.reduce(plugins, exec, fn plugin, exec ->
+        plugin.after_resolution(exec)
+      end)
 
     plugins
     |> Absinthe.Plugin.pipeline(exec)
     |> case do
       [] ->
         blueprints
+
       pipeline ->
-        pipeline = Absinthe.Pipeline.replace(pipeline, Execution.Resolution, resolution_phase_template)
+        pipeline =
+          Absinthe.Pipeline.replace(pipeline, Execution.Resolution, resolution_phase_template)
+
         do_resolve(blueprints, pipeline, exec, plugins, resolution_phase_template, options)
     end
   end
@@ -60,6 +67,7 @@ defmodule Absinthe.Pipeline.BatchResolver do
   defp execute([], _phases, _abort_on_error?, results, exec) do
     {:lists.reverse(results), exec}
   end
+
   defp execute([bp | rest], phases, abort_on_error?, results, exec) do
     bp
     |> update_exec(exec)
@@ -69,6 +77,7 @@ defmodule Absinthe.Pipeline.BatchResolver do
         %{acc: acc, context: ctx} = bp.execution
         exec = %{exec | acc: acc, context: ctx}
         execute(rest, phases, abort_on_error?, [bp | results], exec)
+
       :error ->
         execute(rest, phases, abort_on_error?, [:error | results], exec)
     end
@@ -94,7 +103,7 @@ defmodule Absinthe.Pipeline.BatchResolver do
 
   def pipeline_error(exception) do
     message = Exception.message(exception)
-    stacktrace = System.stacktrace |> Exception.format_stacktrace
+    stacktrace = System.stacktrace() |> Exception.format_stacktrace()
 
     Logger.error("""
     #{message}

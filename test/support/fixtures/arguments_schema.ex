@@ -13,9 +13,11 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
 
   scalar :name do
     serialize &to_string/1
+
     parse fn
       %Absinthe.Blueprint.Input.String{} = string ->
         string.value
+
       _ ->
         :error
     end
@@ -50,6 +52,7 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
   query do
     field :stuff, :integer do
       arg :stuff, non_null(:input_stuff)
+
       resolve fn _, _ ->
         {:ok, 14}
       end
@@ -89,24 +92,25 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
       resolve fn %{items: items}, _ ->
         {:ok, items}
       end
-     end
+    end
 
     field :numbers, list_of(:integer) do
       arg :numbers, list_of(:integer)
 
-      resolve fn
-        %{numbers: numbers}, _ ->
-          {:ok, numbers}
-        end
+      resolve fn %{numbers: numbers}, _ ->
+        {:ok, numbers}
+      end
     end
 
     field :user, :string do
       arg :contact, :contact_input
+
       resolve fn
         %{contact: %{email: email} = contact}, _ ->
           {:ok, "#{email}#{contact[:default_with_string]}"}
+
         args, _ ->
-          {:error, "Got #{inspect args} instead"}
+          {:error, "Got #{inspect(args)} instead"}
       end
     end
 
@@ -114,24 +118,26 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
       type: :string,
       args: [
         name: [type: :input_name],
-        flag: [type: :boolean, default_value: false],
+        flag: [type: :boolean, default_value: false]
       ],
       resolve: fn
         %{name: %{first_name: name}}, _ ->
           {:ok, name}
+
         %{flag: val}, _ ->
           {:ok, @res[val]}
+
         _, _ ->
           {:error, "No value provided for flag argument"}
       end
+
     field :required_thing, :string do
       arg :name, non_null(:input_name)
+
       resolve fn
         %{name: %{first_name: name}}, _ -> {:ok, name}
-        args, _ -> {:error, "Got #{inspect args} instead"}
+        args, _ -> {:error, "Got #{inspect(args)} instead"}
       end
     end
-
   end
-
 end

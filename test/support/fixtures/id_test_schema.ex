@@ -8,16 +8,14 @@ defmodule Absinthe.Fixtures.IdTestSchema do
   }
 
   query do
-
     field :item,
       type: :item,
       args: [
         id: [type: non_null(:id)]
       ],
       resolve: fn %{id: item_id}, _ ->
-      {:ok, @items[item_id]}
-    end
-
+        {:ok, @items[item_id]}
+      end
   end
 
   object :item do
@@ -25,5 +23,4 @@ defmodule Absinthe.Fixtures.IdTestSchema do
     field :id, :id
     field :name, :string
   end
-
 end

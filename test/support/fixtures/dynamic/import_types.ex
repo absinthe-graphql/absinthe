@@ -1,5 +1,4 @@
 defmodule Absinthe.Fixtures.ImportTypes do
-
   defmodule AccountTypes do
     use Absinthe.Schema.Notation
 
@@ -65,7 +64,7 @@ defmodule Absinthe.Fixtures.ImportTypes do
     end
 
     enum :contact_kind do
-      values [:email, :phone]
+      values([:email, :phone])
     end
   end
 
@@ -84,7 +83,5 @@ defmodule Absinthe.Fixtures.ImportTypes do
       field :employees, list_of(:employee)
       field :customers, list_of(:customer)
     end
-
   end
-
 end

@@ -1,5 +1,4 @@
 defmodule Absinthe.Introspection.Field do
-
   @moduledoc false
 
   use Absinthe.Schema.Notation
@@ -12,24 +11,30 @@ defmodule Absinthe.Introspection.Field do
       name: "__typename",
       type: :string,
       description: "The name of the object type currently being queried.",
-      middleware: [Absinthe.Resolution.resolver_spec(fn
-        _, %{parent_type: %Type.Object{} = type} ->
-          {:ok, type.name}
-        _, %{source: source, parent_type: %Type.Interface{} = iface} = env ->
-          case Type.Interface.resolve_type(iface, source, env) do
-            nil ->
-              {:error, "Could not resolve type of concrete " <> iface.name}
-            type ->
-              {:ok, type.name}
-          end
-        _, %{source: source, parent_type: %Type.Union{} = union} = env ->
-          case Type.Union.resolve_type(union, source, env) do
-            nil ->
-              {:error, "Could not resolve type of concrete " <> union.name}
-            type ->
-              {:ok, type.name}
-          end
-      end)]
+      middleware: [
+        Absinthe.Resolution.resolver_spec(fn
+          _, %{parent_type: %Type.Object{} = type} ->
+            {:ok, type.name}
+
+          _, %{source: source, parent_type: %Type.Interface{} = iface} = env ->
+            case Type.Interface.resolve_type(iface, source, env) do
+              nil ->
+                {:error, "Could not resolve type of concrete " <> iface.name}
+
+              type ->
+                {:ok, type.name}
+            end
+
+          _, %{source: source, parent_type: %Type.Union{} = union} = env ->
+            case Type.Union.resolve_type(union, source, env) do
+              nil ->
+                {:error, "Could not resolve type of concrete " <> union.name}
+
+              type ->
+                {:ok, type.name}
+            end
+        end)
+      ]
     }
   end
 
@@ -48,10 +53,11 @@ defmodule Absinthe.Introspection.Field do
           }
         }
       },
-      middleware: [Absinthe.Resolution.resolver_spec(fn
-        %{name: name}, %{schema: schema} ->
+      middleware: [
+        Absinthe.Resolution.resolver_spec(fn %{name: name}, %{schema: schema} ->
           {:ok, Schema.lookup_type(schema, name)}
-      end)]
+        end)
+      ]
     }
   end
 
@@ -60,11 +66,11 @@ defmodule Absinthe.Introspection.Field do
       name: "__schema",
       type: :__schema,
       description: "Represents the schema",
-      middleware: [Absinthe.Resolution.resolver_spec(fn
-        _, %{schema: schema} ->
+      middleware: [
+        Absinthe.Resolution.resolver_spec(fn _, %{schema: schema} ->
           {:ok, schema}
-      end)]
+        end)
+      ]
     }
   end
-
 end

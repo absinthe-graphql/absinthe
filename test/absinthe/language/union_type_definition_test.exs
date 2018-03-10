@@ -20,11 +20,16 @@ defmodule Absinthe.Language.UnionTypeDefinitionTest do
   """
 
   describe "converting to Blueprint" do
-
     test "works, given a Blueprint Schema 'union' definition" do
-      assert %Blueprint.Schema.UnionTypeDefinition{name: "Baz", types: [%Blueprint.TypeReference.Name{name: "Foo"}, %Blueprint.TypeReference.Name{name: "Bar"}], directives: [%{name: "description"}]} = from_input(@idl)
+      assert %Blueprint.Schema.UnionTypeDefinition{
+               name: "Baz",
+               types: [
+                 %Blueprint.TypeReference.Name{name: "Foo"},
+                 %Blueprint.TypeReference.Name{name: "Bar"}
+               ],
+               directives: [%{name: "description"}]
+             } = from_input(@idl)
     end
-
   end
 
   defp from_input(text) do
@@ -36,7 +41,6 @@ defmodule Absinthe.Language.UnionTypeDefinitionTest do
   end
 
   defp extract_ast_node(%Absinthe.Language.Document{definitions: definitions}) do
-    definitions |> List.last
+    definitions |> List.last()
   end
-
 end

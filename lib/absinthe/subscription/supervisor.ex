@@ -14,7 +14,11 @@ defmodule Absinthe.Subscription.Supervisor do
     meta = [pool_size: pool_size]
 
     children = [
-      supervisor(Registry, [:duplicate, registry_name, [partitions: System.schedulers_online(), meta: meta]]),
+      supervisor(Registry, [
+        :duplicate,
+        registry_name,
+        [partitions: System.schedulers_online(), meta: meta]
+      ]),
       supervisor(Absinthe.Subscription.ProxySupervisor, [pubsub, registry_name, pool_size])
     ]
 

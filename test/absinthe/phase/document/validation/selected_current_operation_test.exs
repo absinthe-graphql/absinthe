@@ -16,7 +16,6 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
   end
 
   describe "Given an operation name" do
-
     test "passes when the operation is provided" do
       assert_passes_validation(
         """
@@ -27,7 +26,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
           name
         }
         """,
-        [operation_name: "Foo"]
+        operation_name: "Foo"
       )
     end
 
@@ -45,11 +44,9 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
         no_current_operation()
       )
     end
-
   end
 
   describe "Not given an operation name" do
-
     test "passes when only one operation is given and is named" do
       assert_passes_validation(
         """
@@ -60,6 +57,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
         []
       )
     end
+
     test "passes when only one operation is given anonymously" do
       assert_passes_validation(
         """
@@ -85,7 +83,5 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
         no_current_operation()
       )
     end
-
   end
-
 end

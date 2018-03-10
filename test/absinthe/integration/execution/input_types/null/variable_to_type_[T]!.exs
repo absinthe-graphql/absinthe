@@ -1,4 +1,5 @@
-{[variables: %{"value" => nil}], {
+{[variables: %{"value" => nil}],
+ {
    :ok,
    %{
      errors: [
@@ -6,5 +7,4 @@
        %{message: "Variable \"value\": Expected non-null, found null."}
      ]
    }
- }
-}
+ }}

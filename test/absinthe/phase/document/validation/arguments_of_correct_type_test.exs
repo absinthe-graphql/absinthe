@@ -19,14 +19,12 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
   defp error_message(name, inspected_value, []) do
     @phase.error_message(name, inspected_value)
   end
+
   defp error_message(name, inspected_value, verbose_errors) do
-    @phase.error_message(name, inspected_value)
-      <> "\n"
-      <> Enum.join(verbose_errors, "\n")
+    @phase.error_message(name, inspected_value) <> "\n" <> Enum.join(verbose_errors, "\n")
   end
 
   describe "Valid values" do
-
     test "Good int value" do
       assert_passes_validation(
         """
@@ -39,7 +37,6 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         []
       )
     end
-
 
     test "Good boolean value" do
       assert_passes_validation(
@@ -82,7 +79,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
 
     test "Int into Float" do
       assert_passes_validation(
-          """
+        """
         {
           complicatedArgs {
             floatArgField(floatArg: 1)
@@ -95,7 +92,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
 
     test "Int into ID" do
       assert_passes_validation(
-          """
+        """
         {
           complicatedArgs {
             idArgField(idArg: 1)
@@ -131,12 +128,9 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         []
       )
     end
-
   end
 
-
   describe "Invalid String values" do
-
     test "Int into String" do
       assert_fails_validation(
         """
@@ -192,11 +186,9 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         bad_argument("stringArg", "String", "BAR", 3, [])
       )
     end
-
   end
 
   describe "Invalid Int values" do
-
     test "String into Int" do
       assert_fails_validation(
         """
@@ -266,11 +258,9 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         bad_argument("intArg", "Int", "3.333", 3, [])
       )
     end
-
   end
 
   describe "Invalid Float values" do
-
     test "String into Float" do
       assert_fails_validation(
         """
@@ -312,11 +302,9 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         bad_argument("floatArg", "Float", "FOO", 3, [])
       )
     end
-
   end
 
   describe "Invalid Boolean value" do
-
     test "Int into Boolean" do
       assert_fails_validation(
         """
@@ -372,12 +360,9 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         bad_argument("booleanArg", "Boolean", "TRUE", 3, [])
       )
     end
-
   end
 
-
   describe "Invalid ID value" do
-
     test "Float into ID" do
       assert_fails_validation(
         """
@@ -419,11 +404,9 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         bad_argument("idArg", "ID", "SOMETHING", 3, [])
       )
     end
-
   end
 
   describe "Invalid Enum value" do
-
     test "Int into Enum" do
       assert_fails_validation(
         """
@@ -507,11 +490,9 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         bad_argument("dogCommand", "DogCommand", "sit", 3, [])
       )
     end
-
   end
 
   describe "Valid List value" do
-
     test "Good list value" do
       assert_passes_validation(
         """
@@ -563,11 +544,9 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         []
       )
     end
-
   end
 
   describe "Invalid List value" do
-
     test "Incorrect item type" do
       assert_fails_validation(
         """
@@ -579,11 +558,9 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         """,
         [],
         [
-          bad_argument("stringListArg", "[String]", ~s(["one", 2]), 3,
-            [
-              @phase.value_error_message(1, "String", "2")
-            ]
-          )
+          bad_argument("stringListArg", "[String]", ~s(["one", 2]), 3, [
+            @phase.value_error_message(1, "String", "2")
+          ])
         ]
       )
     end
@@ -599,19 +576,15 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         """,
         [],
         [
-          bad_argument("stringListArg", "[String]", "1", 3,
-            [
-              @phase.value_error_message(0, "[String]", "1")
-            ]
-          )
+          bad_argument("stringListArg", "[String]", "1", 3, [
+            @phase.value_error_message(0, "[String]", "1")
+          ])
         ]
       )
     end
-
   end
 
   describe "Valid non-nullable value" do
-
     test "Arg on optional arg" do
       assert_passes_validation(
         """
@@ -741,11 +714,9 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         []
       )
     end
-
   end
 
   describe "Invalid non-nullable value" do
-
     test "Incorrect value type" do
       assert_fails_validation(
         """
@@ -776,11 +747,9 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         bad_argument("req1", "Int!", ~s("one"), 3, [])
       )
     end
-
   end
 
   describe "Valid input object value" do
-
     test "Optional arg, despite required field in type" do
       assert_passes_validation(
         """
@@ -870,11 +839,9 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         []
       )
     end
-
   end
 
   describe "Invalid input object value" do
-
     test "Partial object, missing required" do
       assert_fails_validation(
         """
@@ -886,11 +853,9 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         """,
         [],
         [
-          bad_argument("complexArg", "ComplexInput", "{intField: 4}", 3,
-            [
-              @phase.value_error_message("requiredField", "Boolean!", "null")
-            ]
-          )
+          bad_argument("complexArg", "ComplexInput", "{intField: 4}", 3, [
+            @phase.value_error_message("requiredField", "Boolean!", "null")
+          ])
         ]
       )
     end
@@ -909,7 +874,11 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         """,
         [],
         [
-          bad_argument("complexArg", "ComplexInput", ~s({stringListField: ["one", 2], requiredField: true}), 3,
+          bad_argument(
+            "complexArg",
+            "ComplexInput",
+            ~s({stringListField: ["one", 2], requiredField: true}),
+            3,
             [
               @phase.value_error_message("stringListField", "[String]", ~s(["one", 2])),
               @phase.value_error_message(1, "String", "2")
@@ -932,18 +901,20 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         }
         """,
         [],
-        bad_argument("complexArg", "ComplexInput", ~s({requiredField: true, unknownField: "value"}), 3,
+        bad_argument(
+          "complexArg",
+          "ComplexInput",
+          ~s({requiredField: true, unknownField: "value"}),
+          3,
           [
             @phase.unknown_field_error_message("unknownField")
           ]
         )
       )
     end
-
   end
 
   describe "Directive arguments" do
-
     test "with directives of valid types" do
       assert_passes_validation(
         """
@@ -976,7 +947,5 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         ]
       )
     end
-
   end
-
 end

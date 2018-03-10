@@ -11,11 +11,16 @@ defmodule Absinthe.Language.FragmentTest do
   """
 
   describe "converting to Blueprint" do
-
     test "builds a Document.Fragment.Named.t" do
-      assert %Blueprint.Document.Fragment.Named{name: "FooFields", type_condition: %Blueprint.TypeReference.Name{name: "Foo"}, selections: [%Blueprint.Document.Field{name: "foo"}, %Blueprint.Document.Field{name: "bar"}]} = from_input(@query)
+      assert %Blueprint.Document.Fragment.Named{
+               name: "FooFields",
+               type_condition: %Blueprint.TypeReference.Name{name: "Foo"},
+               selections: [
+                 %Blueprint.Document.Field{name: "foo"},
+                 %Blueprint.Document.Field{name: "bar"}
+               ]
+             } = from_input(@query)
     end
-
   end
 
   defp from_input(text) do
@@ -28,7 +33,6 @@ defmodule Absinthe.Language.FragmentTest do
 
   defp extract_ast_node(%Language.Document{definitions: nodes}) do
     nodes
-    |> List.first
+    |> List.first()
   end
-
 end

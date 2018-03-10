@@ -7,12 +7,12 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
     use Absinthe.Schema
 
     query do
-      #Query type must exist
+      # Query type must exist
     end
   end
 
-  @max_int 9007199254740991
-  @min_int -9007199254740991
+  @max_int 9_007_199_254_740_991
+  @min_int -9_007_199_254_740_991
 
   defp serialize(type, value) do
     TestSchema.__absinthe_type__(type)

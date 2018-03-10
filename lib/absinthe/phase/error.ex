@@ -1,5 +1,4 @@
 defmodule Absinthe.Phase.Error do
-
   @moduledoc false
 
   @enforce_keys [:message, :phase]
@@ -8,17 +7,16 @@ defmodule Absinthe.Phase.Error do
     :phase,
     locations: [],
     extra: %{},
-    path: [],
+    path: []
   ]
 
   @type loc_t :: %{optional(any) => any, line: integer, column: nil | integer}
 
   @type t :: %__MODULE__{
-    message: String.t,
-    phase: module,
-    locations: [loc_t],
-    path: [],
-    extra: map
-  }
-
+          message: String.t(),
+          phase: module,
+          locations: [loc_t],
+          path: [],
+          extra: map
+        }
 end

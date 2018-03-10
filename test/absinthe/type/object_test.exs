@@ -19,14 +19,14 @@ defmodule Absinthe.Type.ObjectTest do
         arg :height, :integer
       end
     end
-
   end
 
   describe "object types" do
-
     test "can be defined" do
-      assert %Absinthe.Type.Object{name: "Person", description: "A person"} = Schema.__absinthe_type__(:person)
-      assert %{person: "Person"} = Schema.__absinthe_types__
+      assert %Absinthe.Type.Object{name: "Person", description: "A person"} =
+               Schema.__absinthe_type__(:person)
+
+      assert %{person: "Person"} = Schema.__absinthe_types__()
     end
 
     test "can define fields" do
@@ -39,7 +39,5 @@ defmodule Absinthe.Type.ObjectTest do
       assert %Absinthe.Type.Argument{name: "width", type: :integer} = field.args.width
       assert %Absinthe.Type.Argument{name: "height", type: :integer} = field.args.height
     end
-
   end
-
 end

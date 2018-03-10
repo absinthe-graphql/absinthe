@@ -1,5 +1,4 @@
 defmodule Absinthe.Type do
-
   @moduledoc false
 
   alias __MODULE__
@@ -8,10 +7,26 @@ defmodule Absinthe.Type do
 
   # ALL TYPES
 
-  @type_modules [Type.Scalar, Type.Object, Type.Interface, Type.Union, Type.Enum, Type.InputObject, Type.List, Type.NonNull]
+  @type_modules [
+    Type.Scalar,
+    Type.Object,
+    Type.Interface,
+    Type.Union,
+    Type.Enum,
+    Type.InputObject,
+    Type.List,
+    Type.NonNull
+  ]
 
   @typedoc "The types that can be custom-built in a schema"
-  @type custom_t :: Type.Scalar.t | Type.Object.t | Type.Field.t | Type.Interface.t | Type.Union.t | Type.Enum.t | Type.InputObject.t
+  @type custom_t ::
+          Type.Scalar.t()
+          | Type.Object.t()
+          | Type.Field.t()
+          | Type.Interface.t()
+          | Type.Union.t()
+          | Type.Enum.t()
+          | Type.InputObject.t()
 
   @typedoc "All the possible types"
   @type t :: custom_t | wrapping_t
@@ -25,6 +40,7 @@ defmodule Absinthe.Type do
   def identifier(%{__reference__: %{identifier: ident}}) do
     ident
   end
+
   def identifier(_) do
     nil
   end
@@ -48,7 +64,7 @@ defmodule Absinthe.Type do
   def type?(_), do: false
 
   @doc "Determine whether a field/argument is deprecated"
-  @spec deprecated?(Type.Field.t | Type.Argument.t) :: boolean
+  @spec deprecated?(Type.Field.t() | Type.Argument.t()) :: boolean
   def deprecated?(%{deprecation: nil}), do: false
   def deprecated?(%{deprecation: _}), do: true
 
@@ -57,9 +73,9 @@ defmodule Absinthe.Type do
 
   def built_in?(type) do
     type.__reference__.module
-    |> Module.split
+    |> Module.split()
     |> Enum.take(3)
-    |> Module.safe_concat == Absinthe.Type.BuiltIns
+    |> Module.safe_concat() == Absinthe.Type.BuiltIns
   end
 
   # INPUT TYPES
@@ -67,7 +83,12 @@ defmodule Absinthe.Type do
   @input_type_modules [Type.Scalar, Type.Enum, Type.InputObject, Type.List, Type.NonNull]
 
   @typedoc "These types may be used as input types for arguments and directives."
-  @type input_t :: Type.Scalar.t | Type.Enum.t | Type.InputObject.t | Type.List.t | Type.NonNull.t
+  @type input_t ::
+          Type.Scalar.t()
+          | Type.Enum.t()
+          | Type.InputObject.t()
+          | Type.List.t()
+          | Type.NonNull.t()
 
   @doc "Determine if a term is an input type"
   @spec input_type?(any) :: boolean
@@ -104,7 +125,8 @@ defmodule Absinthe.Type do
   @output_type_modules [Type.Scalar, Type.Object, Type.Interface, Type.Union, Type.Enum]
 
   @typedoc "These types may be used as output types as the result of fields."
-  @type output_t :: Type.Scalar.t | Type.Object.t | Type.Interface.t | Type.Union.t | Type.Enum.t
+  @type output_t ::
+          Type.Scalar.t() | Type.Object.t() | Type.Interface.t() | Type.Union.t() | Type.Enum.t()
 
   @doc "Determine if a term is an output type"
   @spec output_type?(any) :: boolean
@@ -122,7 +144,7 @@ defmodule Absinthe.Type do
   @leaf_type_modules [Type.Scalar, Type.Enum]
 
   @typedoc "These types may describe types which may be leaf values."
-  @type leaf_t :: Type.Scalar.t | Type.Enum.t
+  @type leaf_t :: Type.Scalar.t() | Type.Enum.t()
 
   @doc "Determine if a term is a leaf type"
   @spec leaf_type?(any) :: boolean
@@ -140,7 +162,7 @@ defmodule Absinthe.Type do
   @composite_type_modules [Type.Object, Type.Interface, Type.Union]
 
   @typedoc "These types may describe the parent context of a selection set."
-  @type composite_t :: Type.Object.t | Type.Interface.t | Type.Union.t
+  @type composite_t :: Type.Object.t() | Type.Interface.t() | Type.Union.t()
 
   @doc "Determine if a term is a composite type"
   @spec composite_type?(any) :: boolean
@@ -152,7 +174,7 @@ defmodule Absinthe.Type do
   @abstract_type_modules [Type.Interface, Type.Union]
 
   @typedoc "These types may describe the parent context of a selection set."
-  @type abstract_t :: Type.Interface.t | Type.Union.t
+  @type abstract_t :: Type.Interface.t() | Type.Union.t()
 
   @doc "Determine if a term is an abstract type"
   @spec abstract?(any) :: boolean
@@ -164,10 +186,18 @@ defmodule Absinthe.Type do
   # @nullable_type_modules [Type.Scalar, Type.Object, Type.Interface, Type.Union, Type.Enum, Type.InputObject, Type.List]
 
   @typedoc "These types can all accept null as a value."
-  @type nullable_t :: Type.Scalar.t | Type.Object.t | Type.Interface.t | Type.Union.t | Type.Enum.t | Type.InputObject.t | Type.List.t
+  @type nullable_t ::
+          Type.Scalar.t()
+          | Type.Object.t()
+          | Type.Interface.t()
+          | Type.Union.t()
+          | Type.Enum.t()
+          | Type.InputObject.t()
+          | Type.List.t()
 
   @doc "Unwrap the underlying nullable type or return unmodified"
-  @spec nullable(any) :: nullable_t | t # nullable_t is a subset of t, but broken out for clarity
+  # nullable_t is a subset of t, but broken out for clarity
+  @spec nullable(any) :: nullable_t | t
   def nullable(%Type.NonNull{of_type: nullable}), do: nullable
   def nullable(term), do: term
 
@@ -178,19 +208,32 @@ defmodule Absinthe.Type do
 
   # NAMED TYPES
 
-  @named_type_modules [Type.Scalar, Type.Object, Type.Interface, Type.Union, Type.Enum, Type.InputObject]
+  @named_type_modules [
+    Type.Scalar,
+    Type.Object,
+    Type.Interface,
+    Type.Union,
+    Type.Enum,
+    Type.InputObject
+  ]
 
   @typedoc "These named types do not include modifiers like Absinthe.Type.List or Absinthe.Type.NonNull."
-  @type named_t :: Type.Scalar.t | Type.Object.t | Type.Interface.t | Type.Union.t | Type.Enum.t | Type.InputObject.t
+  @type named_t ::
+          Type.Scalar.t()
+          | Type.Object.t()
+          | Type.Interface.t()
+          | Type.Union.t()
+          | Type.Enum.t()
+          | Type.InputObject.t()
 
   @doc "Determine the underlying named type, if any"
   @spec named_type(any) :: nil | named_t
   def named_type(%{__struct__: mod, of_type: unmodified}) when mod in [Type.List, Type.NonNull] do
     named_type(unmodified)
   end
+
   def named_type(%{__struct__: mod} = term) when mod in @named_type_modules, do: term
   def named_type(_), do: nil
-
 
   @doc "Determine if a type is named"
   @spec named?(t) :: boolean
@@ -202,7 +245,7 @@ defmodule Absinthe.Type do
   @wrapping_modules [Type.List, Type.NonNull]
 
   @typedoc "A type wrapped in a List on NonNull"
-  @type wrapping_t :: Type.List.t | Type.NonNull.t
+  @type wrapping_t :: Type.List.t() | Type.NonNull.t()
 
   @spec wrapped?(t) :: boolean
   def wrapped?(%{__struct__: mod}) when mod in @wrapping_modules, do: true
@@ -215,8 +258,8 @@ defmodule Absinthe.Type do
   def unwrap(type), do: type
 
   @doc "Unwrap a type from NonNull"
-  @spec unwrap_non_null(Type.NonNull.t) :: custom_t
-  @spec unwrap_non_null(type) :: type when type: custom_t | Type.List.t
+  @spec unwrap_non_null(Type.NonNull.t()) :: custom_t
+  @spec unwrap_non_null(type) :: type when type: custom_t | Type.List.t()
   def unwrap_non_null(%Type.NonNull{of_type: t}), do: unwrap_non_null(t)
   def unwrap_non_null(type), do: type
 
@@ -224,7 +267,7 @@ defmodule Absinthe.Type do
   Get the GraphQL name for a (possibly wrapped) type, expanding
   any references if necessary using the provided schema.
   """
-  @spec name(reference_t, Schema.t) :: String.t
+  @spec name(reference_t, Schema.t()) :: String.t()
   def name(ref, schema) do
     expanded = expand(ref, schema)
     name(expanded)
@@ -236,25 +279,29 @@ defmodule Absinthe.Type do
   Note: Use `name/2` if the provided type reference needs to
   be expanded to resolve any atom type references.
   """
-  @spec name(wrapping_t | t) :: String.t
+  @spec name(wrapping_t | t) :: String.t()
   def name(%Type.NonNull{of_type: contents}) do
     name(contents) <> "!"
   end
+
   def name(%Type.List{of_type: contents}) do
     "[" <> name(contents) <> "]"
   end
+
   def name(%{name: name}) do
     name
   end
 
   @doc "Expand any atom type references inside a List or NonNull"
-  @spec expand(reference_t, Schema.t) :: wrapping_t | t
+  @spec expand(reference_t, Schema.t()) :: wrapping_t | t
   def expand(ref, schema) when is_atom(ref) do
     schema.__absinthe_lookup__(ref)
   end
+
   def expand(%{of_type: contents} = ref, schema) do
     %{ref | of_type: expand(contents, schema)}
   end
+
   def expand(type, _) do
     type
   end
@@ -265,16 +312,18 @@ defmodule Absinthe.Type do
   def introspection?(%{name: "__" <> _}) do
     true
   end
+
   def introspection?(_) do
     false
   end
 
   # VALUE TYPE
 
-  @spec value_type(t, Schema.t) :: Type.t
+  @spec value_type(t, Schema.t()) :: Type.t()
   def value_type(%Type.Field{} = node, schema) do
     Type.expand(node.type, schema)
   end
+
   def value_type(type, schema) do
     Type.expand(type, schema)
   end
@@ -284,18 +333,22 @@ defmodule Absinthe.Type do
   def valid_input?(%Type.NonNull{}, nil) do
     false
   end
+
   def valid_input?(%Type.NonNull{of_type: internal_type}, value) do
     valid_input?(internal_type, value)
   end
+
   def valid_input?(_type, nil) do
     true
   end
+
   def valid_input?(%{parse: parse}, value) do
     case parse.(value) do
       {:ok, _} -> true
       :error -> false
     end
   end
+
   def valid_input?(_, _) do
     true
   end
@@ -303,57 +356,67 @@ defmodule Absinthe.Type do
   def field(_type, "__" <> meta_name) do
     Introspection.Field.meta(meta_name)
   end
+
   def field(%{fields: fields}, name) do
     fields
-    |> Map.get(name |> String.to_existing_atom)
+    |> Map.get(name |> String.to_existing_atom())
   rescue
     ArgumentError -> nil
   end
+
   def field(_, _name) do
     nil
   end
 
-  @spec referenced_types(t, Schema.t) :: [t]
+  @spec referenced_types(t, Schema.t()) :: [t]
   def referenced_types(type, schema) do
-    referenced_types(type, schema, MapSet.new)
+    referenced_types(type, schema, MapSet.new())
   end
 
   defp referenced_types(%Type.Argument{type: type}, schema, acc) do
     referenced_types(type, schema, acc)
   end
+
   defp referenced_types(%Type.Directive{} = type, schema, acc) do
     type.args
-    |> Map.values
+    |> Map.values()
     |> Enum.reduce(acc, &referenced_types(&1.type, schema, &2))
   end
+
   defp referenced_types(%Type.Enum{identifier: identifier}, _schema, acc) do
     MapSet.put(acc, identifier)
   end
+
   defp referenced_types(%Type.Field{} = field, schema, acc) do
     acc =
       field.args
-      |> Map.values
+      |> Map.values()
       |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
+
     referenced_types(field.type, schema, acc)
   end
+
   defp referenced_types(%Type.InputObject{identifier: identifier} = input_object, schema, acc) do
     if identifier in acc do
       acc
     else
       acc = MapSet.put(acc, identifier)
+
       input_object.fields
-      |> Map.values
+      |> Map.values()
       |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
     end
   end
+
   defp referenced_types(%Type.Interface{identifier: identifier} = interface, schema, acc) do
     if identifier in acc do
       acc
     else
       acc = MapSet.put(acc, identifier)
+
       acc =
         interface.fields
-        |> Map.values
+        |> Map.values()
         |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
 
       schema
@@ -361,43 +424,51 @@ defmodule Absinthe.Type do
       |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
     end
   end
+
   defp referenced_types(%Type.List{of_type: inner_type}, schema, acc) do
     referenced_types(inner_type, schema, acc)
   end
+
   defp referenced_types(%Type.NonNull{of_type: inner_type}, schema, acc) do
     referenced_types(inner_type, schema, acc)
   end
+
   defp referenced_types(%Type.Object{identifier: identifier} = object, schema, acc) do
     if identifier in acc do
       acc
     else
       acc = MapSet.put(acc, identifier)
+
       acc =
         object.fields
-        |> Map.values
+        |> Map.values()
         |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
 
       object.interfaces
       |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
     end
   end
+
   defp referenced_types(%Type.Reference{} = ref, schema, acc) do
     referenced_types(ref.identifier, schema, acc)
   end
+
   defp referenced_types(%Type.Scalar{identifier: identifier}, _schema, acc) do
     MapSet.put(acc, identifier)
   end
+
   defp referenced_types(%Type.Union{identifier: identifier} = union, schema, acc) do
     if identifier in acc do
       acc
     else
       acc = MapSet.put(acc, identifier)
+
       union.types
       |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
     end
   end
+
   defp referenced_types(type, schema, acc) when is_atom(type) and type != nil do
     referenced_types(Schema.lookup_type(schema, type), schema, acc)
   end
-
 end

@@ -1,5 +1,4 @@
 defmodule Absinthe.Blueprint.Input.List do
-
   @moduledoc false
 
   alias Absinthe.{Blueprint, Phase, Type}
@@ -11,22 +10,23 @@ defmodule Absinthe.Blueprint.Input.List do
     # Added by phases
     flags: %{},
     schema_node: nil,
-    errors: [],
+    errors: []
   ]
 
   @type t :: %__MODULE__{
-    items: [Blueprint.Input.Value.t],
-    flags: Blueprint.flags_t,
-    schema_node: nil | Absinthe.Type.t,
-    source_location: Blueprint.Document.SourceLocation.t,
-    errors: [Phase.Error.t],
-  }
+          items: [Blueprint.Input.Value.t()],
+          flags: Blueprint.flags_t(),
+          schema_node: nil | Absinthe.Type.t(),
+          source_location: Blueprint.Document.SourceLocation.t(),
+          errors: [Phase.Error.t()]
+        }
 
   @doc """
   Wrap another input node in a list.
   """
-  @spec wrap(Blueprint.Input.t, Absinthe.Type.List.t) :: t
+  @spec wrap(Blueprint.Input.t(), Absinthe.Type.List.t()) :: t
   def wrap(%__MODULE__{} = list, _), do: list
+
   def wrap(node, list_schema_node) do
     %__MODULE__{
       items: wrapped_items(node),
@@ -35,18 +35,18 @@ defmodule Absinthe.Blueprint.Input.List do
     }
   end
 
-  @spec wrapped_items(Blueprint.Input.t) :: [] | [Blueprint.Input.Value.t]
+  @spec wrapped_items(Blueprint.Input.t()) :: [] | [Blueprint.Input.Value.t()]
   defp wrapped_items(%Blueprint.Input.Null{}) do
     []
   end
+
   defp wrapped_items(node) do
     [
       %Blueprint.Input.Value{
         literal: node,
         normalized: node,
-        schema_node: Type.unwrap(node.schema_node),
+        schema_node: Type.unwrap(node.schema_node)
       }
     ]
   end
-
 end

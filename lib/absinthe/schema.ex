@@ -126,22 +126,25 @@ defmodule Absinthe.Schema do
         # mutation objects should run publication triggers
         middleware
         |> Absinthe.Schema.__ensure_middleware__(field, object)
-        |> Absinthe.Subscription.add_middleware
+        |> Absinthe.Subscription.add_middleware()
         |> __do_absinthe_middleware__(field, object)
       end
+
       def __absinthe_middleware__(middleware, field, object) do
         __do_absinthe_middleware__(middleware, field, object)
       end
 
       defp __do_absinthe_middleware__(middleware, field, object) do
+        # run field against user supplied function
         middleware
         |> Absinthe.Schema.__ensure_middleware__(field, object)
-        |> __MODULE__.middleware(field, object) # run field against user supplied function
+        |> __MODULE__.middleware(field, object)
         |> case do
           [] ->
             raise """
             Middleware callback must return a non empty list of middleware!
             """
+
           middleware ->
             middleware
         end
@@ -163,12 +166,14 @@ defmodule Absinthe.Schema do
         |> __absinthe_type__
         |> case do
           %Absinthe.Type.Object{} = object ->
-            fields = Map.new(object.fields, fn
-              {identifier, field} ->
-                {identifier, %{field | middleware: __absinthe_middleware__(field.middleware, field, object)}}
-            end)
+            fields =
+              Map.new(object.fields, fn {identifier, field} ->
+                {identifier,
+                 %{field | middleware: __absinthe_middleware__(field.middleware, field, object)}}
+              end)
 
             %{object | fields: fields}
+
           type ->
             type
         end
@@ -187,9 +192,11 @@ defmodule Absinthe.Schema do
   def __ensure_middleware__([], _field, %{identifier: :subscription}) do
     [Absinthe.Middleware.PassParent]
   end
+
   def __ensure_middleware__([], %{identifier: identifier}, _) do
     [{Absinthe.Middleware.MapGet, identifier}]
   end
+
   def __ensure_middleware__(middleware, _field, _object) do
     middleware
   end
@@ -199,11 +206,11 @@ defmodule Absinthe.Schema do
 
   Convenience function.
   """
-  @spec introspect(schema :: t, opts :: Absinthe.run_opts) :: Absinthe.run_result
+  @spec introspect(schema :: t, opts :: Absinthe.run_opts()) :: Absinthe.run_result()
   def introspect(schema, opts \\ []) do
     [:code.priv_dir(:absinthe), "graphql", "introspection.graphql"]
     |> Path.join()
-    |> File.read!
+    |> File.read!()
     |> Absinthe.run(schema, opts)
   end
 
@@ -225,7 +232,9 @@ defmodule Absinthe.Schema do
       case middleware do
         {Absinthe.Middleware.MapGet, ^identifer} ->
           new_middleware
-        middleware -> middleware
+
+        middleware ->
+          middleware
       end
     end)
   end
@@ -240,8 +249,11 @@ defmodule Absinthe.Schema do
   Plugins must be specified by the schema, so that Absinthe can make sure they are
   all given a chance to run prior to resolution.
   """
-  @callback plugins() :: [Absinthe.Plugin.t]
-  @callback middleware([Absinthe.Middleware.spec, ...], Type.Field.t, Type.Object.t) :: [Absinthe.Middleware.spec, ...]
+  @callback plugins() :: [Absinthe.Plugin.t()]
+  @callback middleware([Absinthe.Middleware.spec(), ...], Type.Field.t(), Type.Object.t()) :: [
+              Absinthe.Middleware.spec(),
+              ...
+            ]
   @callback context(map) :: map
 
   @doc false
@@ -250,10 +262,11 @@ defmodule Absinthe.Schema do
       env.module.__absinthe_errors__,
       Schema.Rule.check(env.module)
     ]
-    |> List.flatten
+    |> List.flatten()
     |> case do
       [] ->
         nil
+
       details ->
         raise Absinthe.Schema.Error, details
     end
@@ -263,7 +276,7 @@ defmodule Absinthe.Schema do
   @doc """
   Defines a root Query object
   """
-  defmacro query(raw_attrs \\ [name: @default_query_name], [do: block]) do
+  defmacro query(raw_attrs \\ [name: @default_query_name], do: block) do
     record_query(__CALLER__, raw_attrs, block)
   end
 
@@ -292,7 +305,7 @@ defmodule Absinthe.Schema do
   end
   ```
   """
-  defmacro mutation(raw_attrs \\ [name: @default_mutation_name], [do: block]) do
+  defmacro mutation(raw_attrs \\ [name: @default_mutation_name], do: block) do
     record_mutation(__CALLER__, raw_attrs, block)
   end
 
@@ -301,6 +314,7 @@ defmodule Absinthe.Schema do
       raw_attrs
       |> Keyword.put_new(:name, @default_mutation_name)
       |> Keyword.put(:identifier, :mutation)
+
     Absinthe.Schema.Notation.scope(env, :object, :mutation, attrs, block)
     Absinthe.Schema.Notation.desc_attribute_recorder(:query)
   end
@@ -394,7 +408,7 @@ defmodule Absinthe.Schema do
   need, in the event that different groups of mutations return different results
   that require different topic functions.
   """
-  defmacro subscription(raw_attrs \\ [name: @default_subscription_name], [do: block]) do
+  defmacro subscription(raw_attrs \\ [name: @default_subscription_name], do: block) do
     record_subscription(__CALLER__, raw_attrs, block)
   end
 
@@ -403,6 +417,7 @@ defmodule Absinthe.Schema do
       raw_attrs
       |> Keyword.put_new(:name, @default_subscription_name)
       |> Keyword.put(:identifier, :subscription)
+
     Absinthe.Schema.Notation.scope(env, :object, :subscription, attrs, block)
     Absinthe.Schema.Notation.desc_attribute_recorder(:query)
   end
@@ -411,7 +426,7 @@ defmodule Absinthe.Schema do
   @doc """
   Lookup a directive.
   """
-  @spec lookup_directive(t, atom | binary) :: Type.Directive.t | nil
+  @spec lookup_directive(t, atom | binary) :: Type.Directive.t() | nil
   def lookup_directive(schema, name) do
     schema.__absinthe_directive__(name)
   end
@@ -419,19 +434,23 @@ defmodule Absinthe.Schema do
   @doc """
   Lookup a type by name, identifier, or by unwrapping.
   """
-  @spec lookup_type(atom, Type.wrapping_t | Type.t | Type.identifier_t, Keyword.t) :: Type.t | nil
+  @spec lookup_type(atom, Type.wrapping_t() | Type.t() | Type.identifier_t(), Keyword.t()) ::
+          Type.t() | nil
   def lookup_type(schema, type, options \\ [unwrap: true]) do
     cond do
       is_atom(type) ->
         cached_lookup_type(schema, type)
+
       is_binary(type) ->
         cached_lookup_type(schema, type)
+
       Type.wrapped?(type) ->
         if Keyword.get(options, :unwrap) do
-          lookup_type(schema, type |> Type.unwrap)
+          lookup_type(schema, type |> Type.unwrap())
         else
           type
         end
+
       true ->
         type
     end
@@ -455,6 +474,7 @@ defmodule Absinthe.Schema do
         result = schema.__absinthe_lookup__(type)
         :erlang.put({schema, type}, result)
         result
+
       result ->
         result
     end
@@ -463,36 +483,39 @@ defmodule Absinthe.Schema do
   @doc """
   List all types on a schema
   """
-  @spec types(t) :: [Type.t]
+  @spec types(t) :: [Type.t()]
   def types(schema) do
     schema.__absinthe_types__
-    |> Map.keys
+    |> Map.keys()
     |> Enum.map(&lookup_type(schema, &1))
   end
 
   @doc """
   Get all introspection types
   """
-  @spec introspection_types(t) :: [Type.t]
+  @spec introspection_types(t) :: [Type.t()]
   def introspection_types(schema) do
     schema
-    |> Schema.types
+    |> Schema.types()
     |> Enum.filter(&Type.introspection?/1)
   end
 
   @doc """
   Get all concrete types for union, interface, or object
   """
-  @spec concrete_types(t, Type.t) :: [Type.t]
+  @spec concrete_types(t, Type.t()) :: [Type.t()]
   def concrete_types(schema, %Type.Union{} = type) do
     Enum.map(type.types, &lookup_type(schema, &1))
   end
+
   def concrete_types(schema, %Type.Interface{} = type) do
     implementors(schema, type)
   end
+
   def concrete_types(_, %Type.Object{} = type) do
     [type]
   end
+
   def concrete_types(_, type) do
     [type]
   end
@@ -500,60 +523,61 @@ defmodule Absinthe.Schema do
   @doc """
   Get all types that are used by an operation
   """
-  @spec used_types(t) :: [Type.t]
+  @spec used_types(t) :: [Type.t()]
   def used_types(schema) do
     [:query, :mutation, :subscription]
     |> Enum.map(&lookup_type(schema, &1))
     |> Enum.concat(directives(schema))
     |> Enum.filter(&(!is_nil(&1)))
     |> Enum.flat_map(&Type.referenced_types(&1, schema))
-    |> MapSet.new
+    |> MapSet.new()
     |> Enum.map(&Schema.lookup_type(schema, &1))
   end
 
   @doc """
   List all directives on a schema
   """
-  @spec directives(t) :: [Type.Directive.t]
+  @spec directives(t) :: [Type.Directive.t()]
   def directives(schema) do
     schema.__absinthe_directives__
-    |> Map.keys
+    |> Map.keys()
     |> Enum.map(&lookup_directive(schema, &1))
   end
 
   @doc """
   List all implementors of an interface on a schema
   """
-  @spec implementors(t, Type.identifier_t | Type.Interface.t) :: [Type.Object.t]
+  @spec implementors(t, Type.identifier_t() | Type.Interface.t()) :: [Type.Object.t()]
   def implementors(schema, ident) when is_atom(ident) do
     schema.__absinthe_interface_implementors__
     |> Map.get(ident, [])
     |> Enum.map(&lookup_type(schema, &1))
   end
+
   def implementors(schema, %Type.Interface{} = iface) do
     implementors(schema, iface.__reference__.identifier)
   end
 
   @doc false
-  @spec type_from_ast(t, Language.type_reference_t) :: Absinthe.Type.t | nil
+  @spec type_from_ast(t, Language.type_reference_t()) :: Absinthe.Type.t() | nil
   def type_from_ast(schema, %Language.NonNullType{type: inner_type}) do
     case type_from_ast(schema, inner_type) do
       nil -> nil
       type -> %Type.NonNull{of_type: type}
     end
   end
+
   def type_from_ast(schema, %Language.ListType{type: inner_type}) do
     case type_from_ast(schema, inner_type) do
       nil -> nil
       type -> %Type.List{of_type: type}
     end
   end
+
   def type_from_ast(schema, ast_type) do
     Schema.types(schema)
-    |> Enum.find(fn
-      %{name: name} ->
-        name == ast_type.name
+    |> Enum.find(fn %{name: name} ->
+      name == ast_type.name
     end)
   end
-
 end

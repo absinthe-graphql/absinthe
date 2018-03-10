@@ -16,21 +16,27 @@ defmodule Absinthe.Phase.ParseTest do
   """
   test "should wrap all lexer errors and return if not aborting to a phase" do
     assert {:error, bp} = Absinthe.Phase.Parse.run(@graphql, jump_phases: false)
-    assert [%Absinthe.Phase.Error{extra: %{},
-                                  locations: [%{column: 0, line: 2}], message: "illegal: -w",
-                                  phase: Absinthe.Phase.Parse}] == bp.execution.validation_errors
+
+    assert [
+             %Absinthe.Phase.Error{
+               extra: %{},
+               locations: [%{column: 0, line: 2}],
+               message: "illegal: -w",
+               phase: Absinthe.Phase.Parse
+             }
+           ] == bp.execution.validation_errors
   end
 
   @reserved ~w(query mutation subscription fragment on implements interface union scalar enum input extend)
   test "can parse queries with arguments and variables that are 'reserved words'" do
     @reserved
-    |> Enum.each(fn
-      name ->
-        assert {:ok, _} = run("""
-        mutation CreateThing($#{name}: Int!) {
-          createThing(#{name}: $#{name}) { clientThingId }
-        }
-        """)
+    |> Enum.each(fn name ->
+      assert {:ok, _} =
+               run("""
+               mutation CreateThing($#{name}: Int!) {
+                 createThing(#{name}: $#{name}) { clientThingId }
+               }
+               """)
     end)
   end
 
@@ -108,6 +114,7 @@ defmodule Absinthe.Phase.ParseTest do
   """
   test "can parse escaped strings as inputs" do
     assert {:ok, res} = run(@query)
+
     path = [
       Access.key!(:definitions),
       Access.at(0),
@@ -119,9 +126,9 @@ defmodule Absinthe.Phase.ParseTest do
       Access.key!(:value),
       Access.key!(:value)
     ]
+
     assert ~s({"foo": "bar"}) == get_in(res, path)
   end
-
 
   @query ~S"""
   mutation {
@@ -133,6 +140,7 @@ defmodule Absinthe.Phase.ParseTest do
   """
   test "can parse escaped characters in inputs" do
     assert {:ok, res} = run(@query)
+
     path = [
       Access.key!(:definitions),
       Access.at(0),
@@ -144,6 +152,7 @@ defmodule Absinthe.Phase.ParseTest do
       Access.key!(:value),
       Access.key!(:value)
     ]
+
     assert ~s(foo\nbar) == get_in(res, path)
   end
 
@@ -157,6 +166,7 @@ defmodule Absinthe.Phase.ParseTest do
   """
   test "can parse all types of characters escaped according to GraphQL spec as inputs" do
     assert {:ok, res} = run(@query)
+
     path = [
       Access.key!(:definitions),
       Access.at(0),
@@ -177,5 +187,4 @@ defmodule Absinthe.Phase.ParseTest do
       {:ok, input}
     end
   end
-
 end

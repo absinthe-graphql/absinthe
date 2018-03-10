@@ -17,7 +17,6 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
   end
 
   describe "Validate: No undefined variables" do
-
     test "all variables defined" do
       assert_passes_validation(
         """
@@ -60,7 +59,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
         }
         """,
         []
-        )
+      )
     end
 
     test "all variables in fragments deeply defined" do
@@ -346,11 +345,9 @@ defmodule Absinthe.Phase.Document.Validation.NoUndefinedVariablesTest do
           undefined_variable("c", 13, "Foo", 1),
           undefined_variable("b", 8, "Bar", 4),
           undefined_variable("b", 10, "Bar", 4),
-          undefined_variable("c", 13, "Bar", 4),
+          undefined_variable("c", 13, "Bar", 4)
         ]
       )
     end
-
   end
-
 end

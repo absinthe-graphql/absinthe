@@ -9,12 +9,10 @@ defmodule Absinthe.Fixtures.ContactSchema do
   @business %{name: "Someplace", employee_count: 11}
 
   query do
-
     field :person,
       type: :person,
-      resolve: fn
-        _, _ ->
-          {:ok, @bruce}
+      resolve: fn _, _ ->
+        {:ok, @bruce}
       end
 
     field :contact,
@@ -25,22 +23,21 @@ defmodule Absinthe.Fixtures.ContactSchema do
       resolve: fn
         %{business: false}, _ ->
           {:ok, %{entity: @bruce}}
+
         %{business: true}, _ ->
           {:ok, %{entity: @business}}
       end
 
     field :first_search_result,
       type: :search_result,
-      resolve: fn
-        _, _ ->
-          {:ok, @bruce}
+      resolve: fn _, _ ->
+        {:ok, @bruce}
       end
 
     field :search_results,
       type: non_null(list_of(non_null(:search_result))),
-      resolve: fn
-        _, _ ->
-          {:ok, [@bruce, @business]}
+      resolve: fn _, _ ->
+        {:ok, [@bruce, @business]}
       end
 
     field :profile,
@@ -49,25 +46,22 @@ defmodule Absinthe.Fixtures.ContactSchema do
       resolve: fn
         %{name: "Bruce"}, _ ->
           {:ok, @bruce}
+
         _, _ ->
           {:ok, nil}
       end
-
   end
 
   mutation do
-
     field :person,
       type: :person,
       args: [
         profile: [type: :profile_input]
       ],
-      resolve: fn
-        %{profile: profile} ->
-          # Return it like it's a person
-          {:ok, profile}
+      resolve: fn %{profile: profile} ->
+        # Return it like it's a person
+        {:ok, profile}
       end
-
   end
 
   subscription do
@@ -84,10 +78,12 @@ defmodule Absinthe.Fixtures.ContactSchema do
   interface :named_entity do
     description "A named entity"
 
-    field :name, [type: :string]
+    field :name, type: :string
+
     resolve_type fn
       %{age: _}, _ ->
         :person
+
       %{employee_count: _}, _ ->
         :business
     end
@@ -99,11 +95,11 @@ defmodule Absinthe.Fixtures.ContactSchema do
     field :name, :string
     field :age, :integer
     field :address, :string, deprecate: "change of privacy policy"
+
     field :others,
       type: list_of(:person),
-      resolve: fn
-        _, _ ->
-          {:ok, @others}
+      resolve: fn _, _ ->
+        {:ok, @others}
       end
 
     interface :named_entity
@@ -121,9 +117,11 @@ defmodule Absinthe.Fixtures.ContactSchema do
     description "A search result"
 
     types [:business, :person]
+
     resolve_type fn
       %{age: _}, _ ->
         :person
+
       %{employee_count: _}, _ ->
         :business
     end
@@ -141,9 +139,11 @@ defmodule Absinthe.Fixtures.ContactSchema do
 
   scalar :name do
     serialize &to_string/1
+
     parse fn
       %Absinthe.Blueprint.Input.String{} = string ->
         string.value
+
       _ ->
         :error
     end
@@ -152,5 +152,4 @@ defmodule Absinthe.Fixtures.ContactSchema do
   object :unused do
     field :an_unused_field, :string
   end
-
 end

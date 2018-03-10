@@ -6,5 +6,4 @@ defmodule Absinthe.Schema.Rule.TypeNamesAreValidTest do
       load_schema("bad_types_schema")
     end
   end
-
 end

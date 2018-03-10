@@ -4,22 +4,35 @@ defmodule Absinthe.Language.InputObjectTypeDefinitionTest do
   alias Absinthe.Blueprint
 
   describe "converting to Blueprint" do
-
     test "works, given a Blueprint Schema 'input' definition" do
-      assert %Blueprint.Schema.InputObjectTypeDefinition{name: "Profile"} = from_input("input Profile { name: String! }")
+      assert %Blueprint.Schema.InputObjectTypeDefinition{name: "Profile"} =
+               from_input("input Profile { name: String! }")
     end
 
     test "works, given a Blueprint Schema 'input' definition and a directive" do
-      rep = """
-      input Profile
-      @description(text: "A person's profile")
-      {
-        name: String!
-      }
-      """ |> from_input
-      assert %Blueprint.Schema.InputObjectTypeDefinition{name: "Profile", directives: [%{name: "description"}], fields: [%Blueprint.Schema.InputValueDefinition{name: "name", type: %Blueprint.TypeReference.NonNull{of_type: %Blueprint.TypeReference.Name{name: "String"}}}]} = rep
-    end
+      rep =
+        """
+        input Profile
+        @description(text: "A person's profile")
+        {
+          name: String!
+        }
+        """
+        |> from_input
 
+      assert %Blueprint.Schema.InputObjectTypeDefinition{
+               name: "Profile",
+               directives: [%{name: "description"}],
+               fields: [
+                 %Blueprint.Schema.InputValueDefinition{
+                   name: "name",
+                   type: %Blueprint.TypeReference.NonNull{
+                     of_type: %Blueprint.TypeReference.Name{name: "String"}
+                   }
+                 }
+               ]
+             } = rep
+    end
   end
 
   defp from_input(text) do
@@ -33,5 +46,4 @@ defmodule Absinthe.Language.InputObjectTypeDefinitionTest do
   defp extract_ast_node(%Absinthe.Language.Document{definitions: [node]}) do
     node
   end
-
 end

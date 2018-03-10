@@ -43,48 +43,47 @@ defmodule Absinthe.Phase.Document.Variables do
   use Absinthe.Phase
   alias Absinthe.Blueprint
 
-  @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
+  @spec run(Blueprint.t(), Keyword.t()) :: {:ok, Blueprint.t()}
   def run(input, options \\ []) do
     variables = options[:variables] || %{}
     {:ok, update_operations(input, variables)}
   end
 
   def update_operations(input, variables) do
-    operations = for op <- input.operations do
-      update_operation(op, variables)
-    end
+    operations =
+      for op <- input.operations do
+        update_operation(op, variables)
+      end
 
     %{input | operations: operations}
   end
 
   def update_operation(%{variable_definitions: variable_definitions} = operation, variables) do
-    {variable_definitions, provided_values} = Enum.map_reduce(variable_definitions, %{}, fn
-      node, acc ->
+    {variable_definitions, provided_values} =
+      Enum.map_reduce(variable_definitions, %{}, fn node, acc ->
         provided_value = calculate_value(node, variables)
+
         {
           %{node | provided_value: provided_value},
           Map.put(acc, node.name, provided_value)
         }
-    end)
+      end)
 
-    %{operation |
-      variable_definitions: variable_definitions,
-      provided_values: provided_values
-    }
+    %{operation | variable_definitions: variable_definitions, provided_values: provided_values}
   end
 
   defp calculate_value(node, variables) do
     case Map.fetch(variables, node.name) do
       :error ->
         node.default_value
+
       {:ok, value} ->
         value
         |> preparse_nil
-        |> Blueprint.Input.parse
+        |> Blueprint.Input.parse()
     end
   end
 
   defp preparse_nil(nil), do: %Blueprint.Input.Null{}
   defp preparse_nil(other), do: other
-
 end

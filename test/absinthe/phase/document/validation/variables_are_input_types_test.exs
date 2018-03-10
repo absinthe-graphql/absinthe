@@ -17,16 +17,15 @@ defmodule Absinthe.Phase.Document.Validation.VariablesAreInputTypesTest do
   end
 
   describe "Validate: Variables are input types" do
-
     test "input types are valid" do
       assert_passes_validation(
-      """
-        query Foo($a: String, $b: [Boolean!]!, $c: ComplexInput) {
-          field(a: $a, b: $b, c: $c)
-        }
-      """,
-      []
-    )
+        """
+          query Foo($a: String, $b: [Boolean!]!, $c: ComplexInput) {
+            field(a: $a, b: $b, c: $c)
+          }
+        """,
+        []
+      )
     end
 
     test "output types are invalid" do
@@ -44,7 +43,5 @@ defmodule Absinthe.Phase.Document.Validation.VariablesAreInputTypesTest do
         ]
       )
     end
-
   end
-
 end

@@ -1,13 +1,9 @@
 defmodule Absinthe.Blueprint.Schema.Deprecation do
-
   @moduledoc false
 
-  defstruct [
-    reason: nil
-  ]
+  defstruct reason: nil
 
   @type t :: %__MODULE__{
-    reason: nil | String.t
-  }
-
+          reason: nil | String.t()
+        }
 end

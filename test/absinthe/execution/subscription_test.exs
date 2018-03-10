@@ -19,7 +19,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
       message = %{
         topic: topic,
         event: "subscription:data",
-        result: data,
+        result: data
       }
 
       Registry.dispatch(__MODULE__, topic, fn entries ->
@@ -37,12 +37,13 @@ defmodule Absinthe.Execution.SubscriptionTest do
     use Absinthe.Schema
 
     query do
-      #Query type must exist
+      # Query type must exist
     end
 
     object :user do
       field :id, :id
       field :name, :string
+
       field :group, :group do
         resolve fn user, _, %{context: %{test_pid: pid}} ->
           batch({__MODULE__, :batch_get_group, pid}, nil, fn _results ->
@@ -68,6 +69,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
         config fn _, _ ->
           {:ok, topic: "*"}
         end
+
         resolve fn _, _, _ ->
           raise "boom"
         end
@@ -75,6 +77,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
 
       field :user, :user do
         arg :id, :id
+
         config fn args, _ ->
           {:ok, topic: args[:id] || "*"}
         end
@@ -86,16 +89,15 @@ defmodule Absinthe.Execution.SubscriptionTest do
         config fn
           _args, %{context: %{authorized: false}} ->
             {:error, "unauthorized"}
+
           args, _ ->
             {
               :ok,
-              topic: args.client_id,
+              topic: args.client_id
             }
         end
-
       end
     end
-
   end
 
   setup_all do
@@ -111,17 +113,24 @@ defmodule Absinthe.Execution.SubscriptionTest do
   """
   test "can subscribe the current process" do
     client_id = "abc"
-    assert {:ok, %{"subscribed" => topic}} = run(@query, Schema, variables: %{"clientId" => client_id}, context: %{pubsub: PubSub})
+
+    assert {:ok, %{"subscribed" => topic}} =
+             run(
+               @query,
+               Schema,
+               variables: %{"clientId" => client_id},
+               context: %{pubsub: PubSub}
+             )
 
     Absinthe.Subscription.publish(PubSub, "foo", thing: client_id)
 
     assert_receive({:broadcast, msg})
 
     assert %{
-      event: "subscription:data",
-      result: %{data: %{"thing" => "foo"}},
-      topic: topic
-    } == msg
+             event: "subscription:data",
+             result: %{data: %{"thing" => "foo"}},
+             topic: topic
+           } == msg
   end
 
   @query """
@@ -131,10 +140,17 @@ defmodule Absinthe.Execution.SubscriptionTest do
   """
   test "can return errors properly" do
     assert {
-      :ok,
-      %{errors: [%{locations: [%{column: 0, line: 2}],
-        message: "Unknown argument \"extra\" on field \"thing\" of type \"RootSubscriptionType\"."}]}
-    } == run(@query, Schema, variables: %{"clientId" => "abc"}, context: %{pubsub: PubSub})
+             :ok,
+             %{
+               errors: [
+                 %{
+                   locations: [%{column: 0, line: 2}],
+                   message:
+                     "Unknown argument \"extra\" on field \"thing\" of type \"RootSubscriptionType\"."
+                 }
+               ]
+             }
+           } == run(@query, Schema, variables: %{"clientId" => "abc"}, context: %{pubsub: PubSub})
   end
 
   @query """
@@ -143,8 +159,13 @@ defmodule Absinthe.Execution.SubscriptionTest do
   }
   """
   test "can return an error tuple from the topic function" do
-    assert {:ok, %{errors: [%{locations: [%{column: 0, line: 2}], message: "unauthorized"}]}}
-      == run(@query, Schema, variables: %{"clientId" => "abc"}, context: %{pubsub: PubSub, authorized: false})
+    assert {:ok, %{errors: [%{locations: [%{column: 0, line: 2}], message: "unauthorized"}]}} ==
+             run(
+               @query,
+               Schema,
+               variables: %{"clientId" => "abc"},
+               context: %{pubsub: PubSub, authorized: false}
+             )
   end
 
   @query """
@@ -153,44 +174,49 @@ defmodule Absinthe.Execution.SubscriptionTest do
   }
   """
   test "stringifies topics" do
-    assert {:ok, %{"subscribed" => topic}} = run(@query, Schema, variables: %{"clientId" => "1"}, context: %{pubsub: PubSub})
+    assert {:ok, %{"subscribed" => topic}} =
+             run(@query, Schema, variables: %{"clientId" => "1"}, context: %{pubsub: PubSub})
 
     Absinthe.Subscription.publish(PubSub, "foo", thing: 1)
 
     assert_receive({:broadcast, msg})
 
     assert %{
-      event: "subscription:data",
-      result: %{data: %{"thing" => "foo"}},
-      topic: topic
-    } == msg
+             event: "subscription:data",
+             result: %{data: %{"thing" => "foo"}},
+             topic: topic
+           } == msg
   end
-
 
   test "isn't tripped up if one of the subscription docs raises" do
     assert {:ok, %{"subscribed" => _}} = run("subscription { raises }", Schema)
     assert {:ok, %{"subscribed" => topic}} = run("subscription { thing(clientId: \"*\")}", Schema)
 
-    error_log = capture_log(fn ->
-      Absinthe.Subscription.publish(PubSub, "foo", raises: "*", thing: "*")
+    error_log =
+      capture_log(fn ->
+        Absinthe.Subscription.publish(PubSub, "foo", raises: "*", thing: "*")
 
-      assert_receive({:broadcast, msg})
+        assert_receive({:broadcast, msg})
 
-      assert %{
-        event: "subscription:data",
-        result: %{data: %{"thing" => "foo"}},
-        topic: topic
-      } == msg
-    end)
+        assert %{
+                 event: "subscription:data",
+                 result: %{data: %{"thing" => "foo"}},
+                 topic: topic
+               } == msg
+      end)
 
     assert String.contains?(error_log, "boom")
   end
 
   test "different subscription docs are batched together" do
     opts = [context: %{test_pid: self()}]
-    assert {:ok, %{"subscribed" => doc1}} = run("subscription { user { group { name } id} }", Schema, opts)
+
+    assert {:ok, %{"subscribed" => doc1}} =
+             run("subscription { user { group { name } id} }", Schema, opts)
+
     # different docs required for test, otherwise they get deduplicated from the start
-    assert {:ok, %{"subscribed" => doc2}} = run("subscription { user { group { name } id name} }", Schema, opts)
+    assert {:ok, %{"subscribed" => doc2}} =
+             run("subscription { user { group { name } id name} }", Schema, opts)
 
     user = %{id: "1", name: "Alicia", group: %{name: "Elixir Users"}}
 
@@ -208,11 +234,14 @@ defmodule Absinthe.Execution.SubscriptionTest do
 
   defp run(query, schema, opts \\ []) do
     opts = Keyword.update(opts, :context, %{pubsub: PubSub}, &Map.put(&1, :pubsub, PubSub))
+
     case Absinthe.run(query, schema, opts) do
       {:ok, %{"subscribed" => topic}} = val ->
         PubSub.subscribe(topic)
         val
-      val -> val
+
+      val ->
+        val
     end
   end
 end

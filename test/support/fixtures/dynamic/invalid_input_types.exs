@@ -5,7 +5,6 @@ defmodule Absinthe.Fixtures.InvalidInputTypesSchema do
   end
 
   input_object :input do
-
   end
 
   object :bad_object do
@@ -17,5 +16,4 @@ defmodule Absinthe.Fixtures.InvalidInputTypesSchema do
       arg :invalid_arg, :user
     end
   end
-
 end

@@ -13,6 +13,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceEnumsTest do
       field :foo_enum, :foo do
         arg :input, :type
       end
+
       field :foo_non_null_enum, :foo do
         arg :input, non_null(:type)
       end
@@ -25,7 +26,6 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceEnumsTest do
     enum :type do
       value :baz
     end
-
   end
 
   describe "when using an Enum type input argument" do
@@ -40,7 +40,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceEnumsTest do
 
       {:ok, result, _} = run_phase(doc, operation_name: "Enum", variables: %{})
       op = result.operations |> Enum.find(&(&1.name == "Enum"))
-      field = op.selections |> List.first
+      field = op.selections |> List.first()
       input_argument = field.arguments |> Enum.find(&(&1.name == "input"))
       assert %Blueprint.Input.Enum{value: "BAZ"} = input_argument.input_value.normalized
     end
@@ -56,7 +56,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceEnumsTest do
 
       {:ok, result, _} = run_phase(doc, operation_name: "EnumVar", variables: %{"input" => "BAZ"})
       op = result.operations |> Enum.find(&(&1.name == "EnumVar"))
-      field = op.selections |> List.first
+      field = op.selections |> List.first()
       input_argument = field.arguments |> Enum.find(&(&1.name == "input"))
       assert %Blueprint.Input.Enum{value: "BAZ"} = input_argument.input_value.normalized
     end
@@ -74,7 +74,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceEnumsTest do
 
       {:ok, result, _} = run_phase(doc, operation_name: "Enum", variables: %{})
       op = result.operations |> Enum.find(&(&1.name == "Enum"))
-      field = op.selections |> List.first
+      field = op.selections |> List.first()
       input_argument = field.arguments |> Enum.find(&(&1.name == "input"))
       assert %Blueprint.Input.Enum{value: "BAZ"} = input_argument.input_value.normalized
     end
@@ -90,7 +90,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceEnumsTest do
 
       {:ok, result, _} = run_phase(doc, operation_name: "EnumVar", variables: %{"input" => "BAZ"})
       op = result.operations |> Enum.find(&(&1.name == "EnumVar"))
-      field = op.selections |> List.first
+      field = op.selections |> List.first()
       input_argument = field.arguments |> Enum.find(&(&1.name == "input"))
       assert %Blueprint.Input.Enum{value: "BAZ"} = input_argument.input_value.normalized
     end

@@ -16,17 +16,14 @@ defmodule Absinthe.Fixtures.ColorSchema do
   }
 
   query do
-
     field :info,
       type: :channel_info,
       args: [
-        channel: [type: non_null(:channel), default_value: :r],
+        channel: [type: non_null(:channel), default_value: :r]
       ],
-      resolve: fn
-        %{channel: channel}, _ ->
-          {:ok, %{name: @names[channel], value: @values[channel]}}
+      resolve: fn %{channel: channel}, _ ->
+        {:ok, %{name: @names[channel], value: @values[channel]}}
       end
-
   end
 
   @desc "A color channel"
@@ -41,7 +38,6 @@ defmodule Absinthe.Fixtures.ColorSchema do
     value :puce, description: "The color puce", as: :p, deprecate: "it's ugly"
   end
 
-
   object :channel_info do
     description """
     Info about a channel
@@ -54,5 +50,4 @@ defmodule Absinthe.Fixtures.ColorSchema do
   input_object :channel_input do
     field :channel, :channel, default_value: :r
   end
-
 end

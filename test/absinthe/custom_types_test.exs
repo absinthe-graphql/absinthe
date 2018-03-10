@@ -10,10 +10,11 @@ defmodule Absinthe.CustomTypesTest do
         }
       }
       """
+
       result = run(request, Absinthe.Fixtures.CustomTypesSchema)
-      assert_result {:ok, %{data: %{"custom_types_mutation" =>
-        %{"message" => "ok"}}}}, result
+      assert_result({:ok, %{data: %{"custom_types_mutation" => %{"message" => "ok"}}}}, result)
     end
+
     test "returns an error when datetime value cannot be parsed" do
       request = """
       mutation {
@@ -22,16 +23,22 @@ defmodule Absinthe.CustomTypesTest do
         }
       }
       """
+
       assert {:ok, %{errors: _errors}} = run(request, Absinthe.Fixtures.CustomTypesSchema)
     end
   end
 
   describe "custom naive datetime type" do
     test "can use naive datetime type in queries" do
-      result = "{ custom_types_query { naive_datetime } }" |> run(Absinthe.Fixtures.CustomTypesSchema)
-      assert_result {:ok, %{data: %{"custom_types_query" =>
-        %{"naive_datetime" => "2017-01-27T20:31:55"}}}}, result
+      result =
+        "{ custom_types_query { naive_datetime } }" |> run(Absinthe.Fixtures.CustomTypesSchema)
+
+      assert_result(
+        {:ok, %{data: %{"custom_types_query" => %{"naive_datetime" => "2017-01-27T20:31:55"}}}},
+        result
+      )
     end
+
     test "can use naive datetime type in input_object" do
       request = """
       mutation {
@@ -40,10 +47,11 @@ defmodule Absinthe.CustomTypesTest do
         }
       }
       """
+
       result = run(request, Absinthe.Fixtures.CustomTypesSchema)
-      assert_result {:ok, %{data: %{"custom_types_mutation" =>
-        %{"message" => "ok"}}}}, result
+      assert_result({:ok, %{data: %{"custom_types_mutation" => %{"message" => "ok"}}}}, result)
     end
+
     test "can use null in input_object" do
       request = """
       mutation {
@@ -52,10 +60,11 @@ defmodule Absinthe.CustomTypesTest do
         }
       }
       """
+
       result = run(request, Absinthe.Fixtures.CustomTypesSchema)
-      assert_result {:ok, %{data: %{"custom_types_mutation" =>
-        %{"message" => "ok"}}}}, result
+      assert_result({:ok, %{data: %{"custom_types_mutation" => %{"message" => "ok"}}}}, result)
     end
+
     test "returns an error when naive datetime value cannot be parsed" do
       request = """
       mutation {
@@ -64,6 +73,7 @@ defmodule Absinthe.CustomTypesTest do
         }
       }
       """
+
       assert {:ok, %{errors: _errors}} = run(request, Absinthe.Fixtures.CustomTypesSchema)
     end
   end
@@ -71,9 +81,9 @@ defmodule Absinthe.CustomTypesTest do
   describe "custom date type" do
     test "can use date type in queries" do
       result = "{ custom_types_query { date } }" |> run(Absinthe.Fixtures.CustomTypesSchema)
-      assert_result {:ok, %{data: %{"custom_types_query" =>
-        %{"date" => "2017-01-27"}}}}, result
+      assert_result({:ok, %{data: %{"custom_types_query" => %{"date" => "2017-01-27"}}}}, result)
     end
+
     test "can use date type in input_object" do
       request = """
       mutation {
@@ -82,10 +92,11 @@ defmodule Absinthe.CustomTypesTest do
         }
       }
       """
+
       result = run(request, Absinthe.Fixtures.CustomTypesSchema)
-      assert_result {:ok, %{data: %{"custom_types_mutation" =>
-        %{"message" => "ok"}}}}, result
+      assert_result({:ok, %{data: %{"custom_types_mutation" => %{"message" => "ok"}}}}, result)
     end
+
     test "can use null in input_object" do
       request = """
       mutation {
@@ -94,10 +105,11 @@ defmodule Absinthe.CustomTypesTest do
         }
       }
       """
+
       result = run(request, Absinthe.Fixtures.CustomTypesSchema)
-      assert_result {:ok, %{data: %{"custom_types_mutation" =>
-        %{"message" => "ok"}}}}, result
+      assert_result({:ok, %{data: %{"custom_types_mutation" => %{"message" => "ok"}}}}, result)
     end
+
     test "returns an error when date value cannot be parsed" do
       request = """
       mutation {
@@ -106,6 +118,7 @@ defmodule Absinthe.CustomTypesTest do
         }
       }
       """
+
       assert {:ok, %{errors: _errors}} = run(request, Absinthe.Fixtures.CustomTypesSchema)
     end
   end
@@ -113,9 +126,9 @@ defmodule Absinthe.CustomTypesTest do
   describe "custom time type" do
     test "can use time type in queries" do
       result = "{ custom_types_query { time } }" |> run(Absinthe.Fixtures.CustomTypesSchema)
-      assert_result {:ok, %{data: %{"custom_types_query" =>
-      %{"time" => "20:31:55"}}}}, result
+      assert_result({:ok, %{data: %{"custom_types_query" => %{"time" => "20:31:55"}}}}, result)
     end
+
     test "can use time type in input_object" do
       request = """
       mutation {
@@ -124,10 +137,11 @@ defmodule Absinthe.CustomTypesTest do
         }
       }
       """
+
       result = run(request, Absinthe.Fixtures.CustomTypesSchema)
-      assert_result {:ok, %{data: %{"custom_types_mutation" =>
-        %{"message" => "ok"}}}}, result
+      assert_result({:ok, %{data: %{"custom_types_mutation" => %{"message" => "ok"}}}}, result)
     end
+
     test "can use null in input_object" do
       request = """
       mutation {
@@ -136,10 +150,11 @@ defmodule Absinthe.CustomTypesTest do
         }
       }
       """
+
       result = run(request, Absinthe.Fixtures.CustomTypesSchema)
-      assert_result {:ok, %{data: %{"custom_types_mutation" =>
-        %{"message" => "ok"}}}}, result
+      assert_result({:ok, %{data: %{"custom_types_mutation" => %{"message" => "ok"}}}}, result)
     end
+
     test "returns an error when time value cannot be parsed" do
       request = """
       mutation {
@@ -148,6 +163,7 @@ defmodule Absinthe.CustomTypesTest do
         }
       }
       """
+
       assert {:ok, %{errors: _errors}} = run(request, Absinthe.Fixtures.CustomTypesSchema)
     end
   end
@@ -155,9 +171,9 @@ defmodule Absinthe.CustomTypesTest do
   describe "custom decimal type" do
     test "can use decimal type in queries" do
       result = "{ custom_types_query { decimal } }" |> run(Absinthe.Fixtures.CustomTypesSchema)
-      assert_result {:ok, %{data: %{"custom_types_query" =>
-      %{"decimal" => "-3.49"}}}}, result
+      assert_result({:ok, %{data: %{"custom_types_query" => %{"decimal" => "-3.49"}}}}, result)
     end
+
     test "can use decimal type as string in input_object" do
       request = """
       mutation {
@@ -166,10 +182,11 @@ defmodule Absinthe.CustomTypesTest do
         }
       }
       """
+
       result = run(request, Absinthe.Fixtures.CustomTypesSchema)
-      assert_result {:ok, %{data: %{"custom_types_mutation" =>
-        %{"message" => "ok"}}}}, result
+      assert_result({:ok, %{data: %{"custom_types_mutation" => %{"message" => "ok"}}}}, result)
     end
+
     test "can use decimal type as integer in input_object" do
       request = """
       mutation {
@@ -178,10 +195,11 @@ defmodule Absinthe.CustomTypesTest do
         }
       }
       """
+
       result = run(request, Absinthe.Fixtures.CustomTypesSchema)
-      assert_result {:ok, %{data: %{"custom_types_mutation" =>
-        %{"message" => "ok"}}}}, result
+      assert_result({:ok, %{data: %{"custom_types_mutation" => %{"message" => "ok"}}}}, result)
     end
+
     test "can use decimal type as float in input_object" do
       request = """
       mutation {
@@ -190,10 +208,11 @@ defmodule Absinthe.CustomTypesTest do
         }
       }
       """
+
       result = run(request, Absinthe.Fixtures.CustomTypesSchema)
-      assert_result {:ok, %{data: %{"custom_types_mutation" =>
-        %{"message" => "ok"}}}}, result
+      assert_result({:ok, %{data: %{"custom_types_mutation" => %{"message" => "ok"}}}}, result)
     end
+
     test "can use null in input_object" do
       request = """
       mutation {
@@ -202,10 +221,11 @@ defmodule Absinthe.CustomTypesTest do
         }
       }
       """
+
       result = run(request, Absinthe.Fixtures.CustomTypesSchema)
-      assert_result {:ok, %{data: %{"custom_types_mutation" =>
-        %{"message" => "ok"}}}}, result
+      assert_result({:ok, %{data: %{"custom_types_mutation" => %{"message" => "ok"}}}}, result)
     end
+
     test "returns an error when decimal value cannot be parsed" do
       request = """
       mutation {
@@ -214,6 +234,7 @@ defmodule Absinthe.CustomTypesTest do
         }
       }
       """
+
       assert {:ok, %{errors: _errors}} = run(request, Absinthe.Fixtures.CustomTypesSchema)
     end
   end

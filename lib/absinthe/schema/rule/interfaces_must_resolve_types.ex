@@ -37,8 +37,8 @@ defmodule Absinthe.Schema.Rule.InterfacesMustResolveTypes do
       [report(type.__reference__.location, type.name)]
     end
   end
+
   defp check_type(_, _) do
     []
   end
-
 end

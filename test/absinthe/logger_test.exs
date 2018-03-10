@@ -8,23 +8,22 @@ defmodule Absinthe.LoggerTest do
 
     test "it filters the set values, with defaults" do
       assert %{
-        "token" => @filtered,
-        "password" => @filtered,
-        "alsoUnsafe" => @value
-      } = Absinthe.Logger.filter_variables(@variables)
+               "token" => @filtered,
+               "password" => @filtered,
+               "alsoUnsafe" => @value
+             } = Absinthe.Logger.filter_variables(@variables)
     end
 
     test "it filters given values" do
       assert %{
-        "token" => @filtered,
-        "password" => @value,
-        "alsoUnsafe" => @filtered
-      } = Absinthe.Logger.filter_variables(@variables, ~w(token alsoUnsafe))
+               "token" => @filtered,
+               "password" => @value,
+               "alsoUnsafe" => @filtered
+             } = Absinthe.Logger.filter_variables(@variables, ~w(token alsoUnsafe))
     end
   end
 
   describe "Absinthe.Logger.document/1" do
-
     @document nil
     test "given nil, is [EMPTY]" do
       assert "[EMPTY]" = Absinthe.Logger.document(@document)
@@ -54,7 +53,5 @@ defmodule Absinthe.LoggerTest do
     test "given something else, is inspected" do
       assert "%{}" == Absinthe.Logger.document(@document)
     end
-
   end
-
 end

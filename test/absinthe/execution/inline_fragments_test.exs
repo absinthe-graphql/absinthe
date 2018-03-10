@@ -13,7 +13,8 @@ defmodule Absinthe.Execution.InlineFragmentsTest do
   """
 
   test "adds fields in a simple case" do
-    assert {:ok, %{data: %{"person" => %{"name" => "Bruce", "age" => 35}}}} == Absinthe.run(@query, Absinthe.Fixtures.ContactSchema)
+    assert {:ok, %{data: %{"person" => %{"name" => "Bruce", "age" => 35}}}} ==
+             Absinthe.run(@query, Absinthe.Fixtures.ContactSchema)
   end
 
   @query """
@@ -33,10 +34,14 @@ defmodule Absinthe.Execution.InlineFragmentsTest do
   """
 
   test "adds fields in an interface query based on a type" do
-    assert {:ok, %{data: %{"contact" => %{"entity" => %{"name" => "Bruce", "age" => 35}}}}} == run(@query, Absinthe.Fixtures.ContactSchema, variables: %{"business" => false})
-  end
-  test "adds fields in an interface query based on another type" do
-    assert {:ok, %{data: %{"contact" => %{"entity" => %{"name" => "Someplace", "employeeCount" => 11}}}}} == run(@query, Absinthe.Fixtures.ContactSchema, variables: %{"business" => true})
+    assert {:ok, %{data: %{"contact" => %{"entity" => %{"name" => "Bruce", "age" => 35}}}}} ==
+             run(@query, Absinthe.Fixtures.ContactSchema, variables: %{"business" => false})
   end
 
+  test "adds fields in an interface query based on another type" do
+    assert {:ok,
+            %{
+              data: %{"contact" => %{"entity" => %{"name" => "Someplace", "employeeCount" => 11}}}
+            }} == run(@query, Absinthe.Fixtures.ContactSchema, variables: %{"business" => true})
+  end
 end

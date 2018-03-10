@@ -13,11 +13,15 @@ defmodule Absinthe.Language.InlineFragmentTest do
   """
 
   describe "converting to Blueprint" do
-
     test "builds a Document.Fragment.Inline.t" do
-      assert %Blueprint.Document.Fragment.Inline{type_condition: %Blueprint.TypeReference.Name{name: "RootQueryType"}, selections: [%Blueprint.Document.Field{name: "foo"}, %Blueprint.Document.Field{name: "bar"}]} = from_input(@query)
+      assert %Blueprint.Document.Fragment.Inline{
+               type_condition: %Blueprint.TypeReference.Name{name: "RootQueryType"},
+               selections: [
+                 %Blueprint.Document.Field{name: "foo"},
+                 %Blueprint.Document.Field{name: "bar"}
+               ]
+             } = from_input(@query)
     end
-
   end
 
   defp from_input(text) do
@@ -29,10 +33,11 @@ defmodule Absinthe.Language.InlineFragmentTest do
   end
 
   defp extract_ast_node(%Language.Document{definitions: nodes}) do
-    op = nodes
-    |> List.first
-    op.selection_set.selections
-    |> List.first
-   end
+    op =
+      nodes
+      |> List.first()
 
+    op.selection_set.selections
+    |> List.first()
+  end
 end

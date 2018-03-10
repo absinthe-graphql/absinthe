@@ -8,7 +8,6 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
   alias Absinthe.{Blueprint}
 
   describe "Valid" do
-
     test "single arg is known" do
       assert_passes_validation(
         """
@@ -83,11 +82,9 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
         []
       )
     end
-
   end
 
   describe "Invalid" do
-
     test "undirective args are invalid" do
       assert_fails_validation(
         """
@@ -97,7 +94,12 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
         """,
         [],
         [
-          bad_value(Blueprint.Input.Argument, @phase.directive_error_message("unless", "skip"), 2, name: "unless")
+          bad_value(
+            Blueprint.Input.Argument,
+            @phase.directive_error_message("unless", "skip"),
+            2,
+            name: "unless"
+          )
         ]
       )
     end
@@ -111,7 +113,12 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
         """,
         [],
         [
-          bad_value(Blueprint.Input.Argument, @phase.field_error_message("unknown", "doesKnowCommand", "Dog"), 2, name: "unknown")
+          bad_value(
+            Blueprint.Input.Argument,
+            @phase.field_error_message("unknown", "doesKnowCommand", "Dog"),
+            2,
+            name: "unknown"
+          )
         ]
       )
     end
@@ -125,8 +132,18 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
         """,
         [],
         [
-          bad_value(Blueprint.Input.Argument, @phase.field_error_message("unknown", "doesKnowCommand", "Dog"), 2, name: "unknown"),
-          bad_value(Blueprint.Input.Argument, @phase.field_error_message("whoknows", "doesKnowCommand", "Dog"), 2, name: "whoknows")
+          bad_value(
+            Blueprint.Input.Argument,
+            @phase.field_error_message("unknown", "doesKnowCommand", "Dog"),
+            2,
+            name: "unknown"
+          ),
+          bad_value(
+            Blueprint.Input.Argument,
+            @phase.field_error_message("whoknows", "doesKnowCommand", "Dog"),
+            2,
+            name: "whoknows"
+          )
         ]
       )
     end
@@ -149,12 +166,20 @@ defmodule Absinthe.Phase.Document.Validation.KnownArgumentNamesTest do
         """,
         [],
         [
-          bad_value(Blueprint.Input.Argument, @phase.field_error_message("unknown", "doesKnowCommand", "Dog"), 3, name: "unknown"),
-          bad_value(Blueprint.Input.Argument,@phase.field_error_message("unknown", "doesKnowCommand", "Dog"), 8, name: "unknown")
+          bad_value(
+            Blueprint.Input.Argument,
+            @phase.field_error_message("unknown", "doesKnowCommand", "Dog"),
+            3,
+            name: "unknown"
+          ),
+          bad_value(
+            Blueprint.Input.Argument,
+            @phase.field_error_message("unknown", "doesKnowCommand", "Dog"),
+            8,
+            name: "unknown"
+          )
         ]
       )
     end
-
   end
-
 end

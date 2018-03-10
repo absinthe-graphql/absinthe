@@ -15,6 +15,7 @@ defmodule Absinthe.Phase.Document.SchemaTest do
         arg :id, non_null(:id)
         arg :name, non_null(:string)
       end
+
       field :add_review, :review do
         arg :info, non_null(:input_review)
       end
@@ -32,7 +33,7 @@ defmodule Absinthe.Phase.Document.SchemaTest do
     end
 
     object :category do
-      field :name
+      field(:name)
     end
 
     object :review do
@@ -44,7 +45,6 @@ defmodule Absinthe.Phase.Document.SchemaTest do
       field :stars, non_null(:integer)
       field :text, :string
     end
-
   end
 
   @pre_pipeline Pipeline.for_document(Schema) |> Pipeline.before(Phase.Schema)
@@ -88,7 +88,6 @@ defmodule Absinthe.Phase.Document.SchemaTest do
   """
 
   describe ".run" do
-
     test "sets the root schema field" do
       {:ok, result} = input(@query)
       assert result.schema == Schema
@@ -96,10 +95,10 @@ defmodule Absinthe.Phase.Document.SchemaTest do
 
     test "sets the query operation schema node" do
       {:ok, result} = input(@query)
+
       ~w(Q BooksOnly)
-      |> Enum.each(fn
-        name ->
-          node = op(result, name)
+      |> Enum.each(fn name ->
+        node = op(result, name)
         assert %Type.Object{__reference__: %{identifier: :query}} = node.schema_node
       end)
     end
@@ -189,9 +188,11 @@ defmodule Absinthe.Phase.Document.SchemaTest do
       f = field(operation, "addReview")
       top_node = named(f, Blueprint.Input.Argument, "info")
       assert %Type.Argument{__reference__: %{identifier: :info}} = top_node.schema_node
-      node = top_node.input_value.normalized.fields |> List.first
+      node = top_node.input_value.normalized.fields |> List.first()
       assert %Type.Field{__reference__: %{identifier: :stars}} = node.schema_node
-      assert %Type.NonNull{of_type: %Type.Scalar{__reference__: %{identifier: :integer}}} = node.input_value.schema_node
+
+      assert %Type.NonNull{of_type: %Type.Scalar{__reference__: %{identifier: :integer}}} =
+               node.input_value.schema_node
     end
 
     test "sets directive argument schema nodes" do
@@ -200,13 +201,13 @@ defmodule Absinthe.Phase.Document.SchemaTest do
       node = named(directive, Blueprint.Input.Argument, "if")
       assert %Type.Argument{__reference__: %{identifier: :if}} = node.schema_node
     end
-
   end
 
   defp first_inline_frag(blueprint) do
     Blueprint.find(blueprint.operations, fn
       %Blueprint.Document.Fragment.Inline{} ->
         true
+
       _ ->
         false
     end)
@@ -216,6 +217,7 @@ defmodule Absinthe.Phase.Document.SchemaTest do
     Blueprint.find(blueprint.fragments, fn
       %Blueprint.Document.Fragment.Named{name: ^name} ->
         true
+
       _ ->
         false
     end)
@@ -225,6 +227,7 @@ defmodule Absinthe.Phase.Document.SchemaTest do
     Blueprint.find(blueprint.operations, fn
       %Blueprint.Document.Operation{name: ^name} ->
         true
+
       _ ->
         false
     end)
@@ -234,6 +237,7 @@ defmodule Absinthe.Phase.Document.SchemaTest do
     Blueprint.find(scope.selections, fn
       %Blueprint.Document.Field{name: ^name} ->
         true
+
       _ ->
         false
     end)
@@ -243,6 +247,7 @@ defmodule Absinthe.Phase.Document.SchemaTest do
     Blueprint.find(scope, fn
       %{__struct__: ^mod, name: ^name} ->
         true
+
       _ ->
         false
     end)
@@ -257,5 +262,4 @@ defmodule Absinthe.Phase.Document.SchemaTest do
     {:ok, blueprint, _} = Pipeline.run(query, @pre_pipeline)
     blueprint
   end
-
 end

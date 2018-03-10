@@ -1,4 +1,5 @@
-{[variables: %{"value" => [nil, 1]}], {
+{[variables: %{"value" => [nil, 1]}],
+ {
    :ok,
    %{
      data: %{
@@ -10,5 +11,4 @@
        }
      }
    }
- }
-}
+ }}

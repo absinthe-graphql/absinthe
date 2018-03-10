@@ -35,49 +35,60 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlaced do
   end
 
   defp check_type(schema, %Type.Object{} = type) do
-    field_errors = for {_, field} <- type.fields, type = get_type(field, schema), !output_type?(type) do
-      detail = %{
-        field: field.identifier,
-        type: type.__reference__.identifier,
-        struct: type.__struct__,
-        parent: Type.Object,
-      }
-      report(type.__reference__.location, detail)
-    end
+    field_errors =
+      for {_, field} <- type.fields, type = get_type(field, schema), !output_type?(type) do
+        detail = %{
+          field: field.identifier,
+          type: type.__reference__.identifier,
+          struct: type.__struct__,
+          parent: Type.Object
+        }
 
-    argument_errors = for {_, field} <- type.fields, {_, arg} <- field.args, type = get_type(arg, schema), !input_type?(type) do
-      detail = %{
-        argument: arg.__reference__.identifier,
-        type: type.__reference__.identifier,
-        struct: type.__struct__,
-      }
-      report(type.__reference__.location, detail)
-    end
+        report(type.__reference__.location, detail)
+      end
+
+    argument_errors =
+      for {_, field} <- type.fields,
+          {_, arg} <- field.args,
+          type = get_type(arg, schema),
+          !input_type?(type) do
+        detail = %{
+          argument: arg.__reference__.identifier,
+          type: type.__reference__.identifier,
+          struct: type.__struct__
+        }
+
+        report(type.__reference__.location, detail)
+      end
 
     field_errors ++ argument_errors
   end
+
   defp check_type(schema, %Type.InputObject{} = type) do
     for field <- type.fields, type = get_type(type, schema), !input_type?(type) do
       detail = %{
         field: field.identifier,
         type: type.__reference__.identifier,
         struct: type.__struct__,
-        parent: Type.InputObject,
+        parent: Type.InputObject
       }
+
       report(type.__reference__.location, detail)
     end
   end
+
   defp check_type(_, _) do
     []
   end
 
   defp get_type(%{type: type}, schema) do
     Type.expand(type, schema)
-    |> Type.unwrap
+    |> Type.unwrap()
   end
+
   defp get_type(type, schema) do
     Type.expand(type, schema)
-    |> Type.unwrap
+    |> Type.unwrap()
   end
 
   defp input_type?(%Type.Scalar{}), do: true

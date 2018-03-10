@@ -22,10 +22,14 @@ defmodule Absinthe.Phase.Document.VariablesTest do
     test "uses the default value" do
       result = input(@query, %{"name" => "Bruce"})
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
+
       assert op.provided_values == %{
-        "age" => %Blueprint.Input.Integer{value: 36, source_location: %Blueprint.Document.SourceLocation{column: nil, line: 6}},
-        "name" => %Blueprint.Input.String{value: "Bruce"},
-      }
+               "age" => %Blueprint.Input.Integer{
+                 value: 36,
+                 source_location: %Blueprint.Document.SourceLocation{column: nil, line: 6}
+               },
+               "name" => %Blueprint.Input.String{value: "Bruce"}
+             }
     end
   end
 
@@ -33,10 +37,11 @@ defmodule Absinthe.Phase.Document.VariablesTest do
     test "uses null" do
       result = input(@query, %{"name" => "Bruce", "age" => nil})
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
+
       assert op.provided_values == %{
-        "age" => %Blueprint.Input.Null{},
-        "name" => %Blueprint.Input.String{value: "Bruce"},
-      }
+               "age" => %Blueprint.Input.Null{},
+               "name" => %Blueprint.Input.String{value: "Bruce"}
+             }
     end
   end
 
@@ -44,10 +49,11 @@ defmodule Absinthe.Phase.Document.VariablesTest do
     test "uses the default value" do
       result = input(@query, %{"age" => 4, "name" => "Bruce"})
       op = result.operations |> Enum.find(&(&1.name == "Profile"))
+
       assert op.provided_values == %{
-        "age" => %Blueprint.Input.Integer{value: 4},
-        "name" => %Blueprint.Input.String{value: "Bruce"},
-      }
+               "age" => %Blueprint.Input.Integer{value: 4},
+               "name" => %Blueprint.Input.String{value: "Bruce"}
+             }
     end
   end
 
@@ -58,17 +64,26 @@ defmodule Absinthe.Phase.Document.VariablesTest do
     }
     """
 
-    expected = %{errors: [%{locations: [%{column: 0, line: 1}],
-         message: "Variable \"input\" cannot be non-input type \"Thing\"."},
-       %{locations: [%{column: 0, line: 1}, %{column: 0, line: 1}],
-         message: "Variable \"input\" is never used in operation \"Foo\"."}]}
+    expected = %{
+      errors: [
+        %{
+          locations: [%{column: 0, line: 1}],
+          message: "Variable \"input\" cannot be non-input type \"Thing\"."
+        },
+        %{
+          locations: [%{column: 0, line: 1}, %{column: 0, line: 1}],
+          message: "Variable \"input\" is never used in operation \"Foo\"."
+        }
+      ]
+    }
 
     assert {:ok, expected} == Absinthe.run(doc, Absinthe.Fixtures.ThingsSchema)
   end
 
   def input(query, values) do
-    {:ok, result} = blueprint(query)
-    |> Phase.Document.Variables.run(variables: values)
+    {:ok, result} =
+      blueprint(query)
+      |> Phase.Document.Variables.run(variables: values)
 
     result
   end
@@ -77,5 +92,4 @@ defmodule Absinthe.Phase.Document.VariablesTest do
     {:ok, blueprint, _} = Pipeline.run(query, @pre_pipeline)
     blueprint
   end
-
 end

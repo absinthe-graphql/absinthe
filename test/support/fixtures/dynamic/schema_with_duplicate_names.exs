@@ -2,7 +2,7 @@ defmodule Absinthe.Fixtures.SchemaWithDuplicateNames do
   use Absinthe.Schema
 
   query do
-    #Query type must exist
+    # Query type must exist
   end
 
   object :person do
@@ -14,5 +14,4 @@ defmodule Absinthe.Fixtures.SchemaWithDuplicateNames do
     description "A person"
     field :type, :string
   end
-
 end

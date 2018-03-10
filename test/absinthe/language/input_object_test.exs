@@ -12,11 +12,18 @@ defmodule Absinthe.Language.ObjectValueTest do
   """
 
   describe "converting to Blueprint" do
-
     test "builds an Input.Object.t" do
-      assert %Blueprint.Input.Object{fields: [%Blueprint.Input.Field{name: "foo", input_value: %Blueprint.Input.Value{literal: %Blueprint.Input.Integer{value: 2}}}]} = from_input(@query)
+      assert %Blueprint.Input.Object{
+               fields: [
+                 %Blueprint.Input.Field{
+                   name: "foo",
+                   input_value: %Blueprint.Input.Value{
+                     literal: %Blueprint.Input.Integer{value: 2}
+                   }
+                 }
+               ]
+             } = from_input(@query)
     end
-
   end
 
   defp from_input(text) do
@@ -29,10 +36,9 @@ defmodule Absinthe.Language.ObjectValueTest do
 
   defp extract_ast_node(%Absinthe.Language.Document{definitions: [node]}) do
     node.selection_set.selections
-    |> List.first
+    |> List.first()
     |> Map.get(:arguments)
-    |> List.first
+    |> List.first()
     |> Map.get(:value)
   end
-
 end

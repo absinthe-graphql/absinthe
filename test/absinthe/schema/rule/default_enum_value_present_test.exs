@@ -3,39 +3,38 @@ defmodule Absinthe.Schema.Rule.DefaultEnumValuePresentTest do
 
   describe "rule" do
     test "is enforced when the defaultValue is not in the enum" do
-      schema =
-        """
-        defmodule BadColorSchema do
-          use Absinthe.Schema
+      schema = """
+      defmodule BadColorSchema do
+        use Absinthe.Schema
 
-          @names %{
-            r: "RED"
-          }
+        @names %{
+          r: "RED"
+        }
 
-          query do
+        query do
 
-            field :info,
-            type: :channel_info,
-            args: [
-              channel: [type: non_null(:channel), default_value: :OTHER],
-            ],
-            resolve: fn
-              %{channel: channel}, _ ->
-              {:ok, %{name: @names[channel]}}
-            end
-
+          field :info,
+          type: :channel_info,
+          args: [
+            channel: [type: non_null(:channel), default_value: :OTHER],
+          ],
+          resolve: fn
+            %{channel: channel}, _ ->
+            {:ok, %{name: @names[channel]}}
           end
 
-          enum :channel do
-            value :red, as: :r
-            value :green, as: :g
-          end
-
-          object :channel_info do
-            field :name, :string
-          end
         end
-        """
+
+        enum :channel do
+          value :red, as: :r
+          value :green, as: :g
+        end
+
+        object :channel_info do
+          field :name, :string
+        end
+      end
+      """
 
       error = ~r/The default_value for an enum must be present in the enum values/
 

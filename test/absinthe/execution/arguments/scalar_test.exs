@@ -9,8 +9,7 @@ defmodule Absinthe.Execution.Arguments.ScalarTest do
   }
   """
   test "works when specified as non null" do
-    assert_data %{"requiredThing" => "bob"},
-      run(@graphql, @schema)
+    assert_data(%{"requiredThing" => "bob"}, run(@graphql, @schema))
   end
 
   @graphql """
@@ -19,8 +18,6 @@ defmodule Absinthe.Execution.Arguments.ScalarTest do
   }
   """
   test "works when passed to resolution" do
-    assert_data %{"something" => "bob"},
-      run(@graphql, @schema)
+    assert_data(%{"something" => "bob"}, run(@graphql, @schema))
   end
-
 end

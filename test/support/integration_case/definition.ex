@@ -1,31 +1,30 @@
 defmodule Absinthe.IntegrationCase.Definition do
-
   @enforce_keys [:name, :schema, :graphql, :scenarios]
 
   defstruct [
     :name,
     :schema,
     :graphql,
-    scenarios: [],
+    scenarios: []
   ]
 
   @type expect_exception :: {:raise, module}
-  @type expectation :: Absinthe.run_result | expect_exception | :custom_assertion
-  @type scenario :: {Absinthe.run_opts, expectation}
+  @type expectation :: Absinthe.run_result() | expect_exception | :custom_assertion
+  @type scenario :: {Absinthe.run_opts(), expectation}
 
   @type t :: %__MODULE__{
-    name: String.t,
-    schema: Absinthe.Schema.t,
-    graphql: String.t,
-    scenarios: [scenario],
-  }
+          name: String.t(),
+          schema: Absinthe.Schema.t(),
+          graphql: String.t(),
+          scenarios: [scenario]
+        }
 
   def create(name, graphql, default_schema, scenarios) do
     %__MODULE__{
       name: name,
       graphql: graphql,
       schema: normalize_schema(default_schema, graphql),
-      scenarios: normalize_scenarios(scenarios),
+      scenarios: normalize_scenarios(scenarios)
     }
   end
 
@@ -33,6 +32,7 @@ defmodule Absinthe.IntegrationCase.Definition do
     case Regex.run(~r/^#\s*schema:\s*(\S+)/i, graphql) do
       nil ->
         default_schema
+
       [_, schema_name] ->
         Module.concat(Absinthe.Fixtures, String.to_atom(schema_name))
     end
@@ -45,5 +45,4 @@ defmodule Absinthe.IntegrationCase.Definition do
 
   defp normalize_scenario({_options, {_, _} = _result} = scenario), do: scenario
   defp normalize_scenario(result), do: {[], result}
-
 end

@@ -16,7 +16,6 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedAnOperationTest do
   end
 
   describe "Given an operation" do
-
     test "passes" do
       assert_passes_validation(
         """
@@ -27,11 +26,9 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedAnOperationTest do
         []
       )
     end
-
   end
 
   describe "When empty" do
-
     test "fails" do
       assert_fails_validation(
         "",
@@ -39,11 +36,9 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedAnOperationTest do
         no_operation()
       )
     end
-
   end
 
   describe "When given fragments" do
-
     test "fails" do
       assert_fails_validation(
         """
@@ -55,7 +50,5 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedAnOperationTest do
         no_operation()
       )
     end
-
   end
-
 end

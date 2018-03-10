@@ -17,7 +17,6 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedFragmentsTest do
   end
 
   describe "Validate: No unused fragments" do
-
     test "all fragment names are used" do
       assert_passes_validation(
         """
@@ -43,7 +42,6 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedFragmentsTest do
         []
       )
     end
-
 
     test "all fragment names are used by multiple operations" do
       assert_passes_validation(
@@ -106,7 +104,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedFragmentsTest do
         [],
         [
           unused_fragment("Unused1", 21),
-          unused_fragment("Unused2", 24),
+          unused_fragment("Unused2", 24)
         ]
       )
     end
@@ -146,7 +144,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedFragmentsTest do
         [],
         [
           unused_fragment("Unused1", 21),
-          unused_fragment("Unused2", 25),
+          unused_fragment("Unused2", 25)
         ]
       )
     end
@@ -165,11 +163,9 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedFragmentsTest do
         """,
         [],
         [
-          unused_fragment("foo", 6),
+          unused_fragment("foo", 6)
         ]
       )
     end
-
   end
-
 end

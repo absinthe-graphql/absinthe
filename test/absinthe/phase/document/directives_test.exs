@@ -18,7 +18,6 @@ defmodule Absinthe.Phase.Document.DirectivesTest do
     object :category do
       field :name, :string
     end
-
   end
 
   @query """
@@ -36,7 +35,6 @@ defmodule Absinthe.Phase.Document.DirectivesTest do
   """
 
   describe ".run with built-in @include" do
-
     test "returns a blueprint" do
       {:ok, result} = input(@query, %{"cats" => true})
       assert %Blueprint{} = result
@@ -53,12 +51,11 @@ defmodule Absinthe.Phase.Document.DirectivesTest do
       node = named(result, Blueprint.Document.Field, "categories")
       assert Blueprint.flagged?(node, :include)
     end
-
   end
 
   def input(query, values) do
     blueprint(query, values)
-    |> Phase.Document.Directives.run
+    |> Phase.Document.Directives.run()
   end
 
   defp blueprint(query, values) do
@@ -76,9 +73,9 @@ defmodule Absinthe.Phase.Document.DirectivesTest do
     Blueprint.find(scope, fn
       %{__struct__: ^mod, name: ^name} ->
         true
+
       _ ->
         false
     end)
   end
-
 end

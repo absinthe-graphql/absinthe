@@ -1,5 +1,4 @@
 defmodule Absinthe.Schema.Notation.Scope do
-
   @moduledoc false
 
   @stack :absinthe_notation_scopes
@@ -22,6 +21,7 @@ defmodule Absinthe.Schema.Notation.Scope do
     case on(mod) do
       [] ->
         {nil, []}
+
       [current | rest] ->
         {current, rest}
     end
@@ -36,6 +36,7 @@ defmodule Absinthe.Schema.Notation.Scope do
     update_current(mod, fn
       %{recordings: recs} = scope ->
         %{scope | recordings: [{kind, identifier} | recs]}
+
       nil ->
         # Outside any scopes, ignore
         nil
@@ -63,12 +64,14 @@ defmodule Absinthe.Schema.Notation.Scope do
   @spec recorded?(atom, atom, atom) :: boolean
   def recorded?(mod, kind, identifier) do
     scope = current(mod)
+
     case kind do
       :attr ->
         # Supports attributes passed directly to the macro that
         # created the scope, usually (?) short-circuits the need to
         # check the scope recordings.
         scope.attrs[identifier] || recording_marked?(scope, kind, identifier)
+
       _ ->
         recording_marked?(scope, kind, identifier)
     end
@@ -80,6 +83,7 @@ defmodule Absinthe.Schema.Notation.Scope do
     |> Enum.find(fn
       {^kind, ^identifier} ->
         true
+
       _ ->
         false
     end)
@@ -87,15 +91,13 @@ defmodule Absinthe.Schema.Notation.Scope do
 
   def put_attribute(mod, key, value, opts \\ [accumulate: false]) do
     if opts[:accumulate] do
-      update_current(mod, fn
-        scope ->
-          new_attrs = update_in(scope.attrs, [key], &[value | (&1 || [])])
-          %{scope | attrs: new_attrs}
+      update_current(mod, fn scope ->
+        new_attrs = update_in(scope.attrs, [key], &[value | &1 || []])
+        %{scope | attrs: new_attrs}
       end)
     else
-      update_current(mod, fn
-        scope ->
-          %{scope | attrs: Keyword.put(scope.attrs, key, value)}
+      update_current(mod, fn scope ->
+        %{scope | attrs: Keyword.put(scope.attrs, key, value)}
       end)
     end
   end
@@ -111,9 +113,9 @@ defmodule Absinthe.Schema.Notation.Scope do
       nil ->
         Module.put_attribute(mod, @stack, [])
         []
+
       value ->
         value
     end
   end
-
 end

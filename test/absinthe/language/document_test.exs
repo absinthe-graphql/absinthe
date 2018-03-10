@@ -25,7 +25,6 @@ defmodule Absinthe.Language.DocumentTest do
   """
 
   describe "get_operation/2" do
-
     test "given an existing operation name, returns the operation definition" do
       {:ok, %{input: doc}} = Absinthe.Phase.Parse.run(@input)
       result = Document.get_operation(doc, "MyQuery2")
@@ -37,11 +36,9 @@ defmodule Absinthe.Language.DocumentTest do
       result = Document.get_operation(doc, "DoesNotExist")
       assert nil == result
     end
-
   end
 
   describe "converting to Blueprint" do
-
     test "returns a Blueprint.t" do
       assert %Blueprint{} = ir("{ foo }")
       assert %Blueprint{} = ir("query { baz }")
@@ -57,18 +54,21 @@ defmodule Absinthe.Language.DocumentTest do
     end
 
     test "returns a Blueprint.t with the right number of types" do
-      rep = """
+      rep =
+        """
 
-        type Person
-        @description(text: "A person object")
-        {
-          name: String
-        }
+          type Person
+          @description(text: "A person object")
+          {
+            name: String
+          }
 
-        type Business { name: String}
-        union Entity = Person | Business
-        enum Purpose { BUSINESS PLEASURE }
-      """ |> ir
+          type Business { name: String}
+          union Entity = Person | Business
+          enum Purpose { BUSINESS PLEASURE }
+        """
+        |> ir
+
       assert length(rep.directives) == 0
       assert length(rep.operations) == 0
       assert length(rep.types) == 4
@@ -76,24 +76,27 @@ defmodule Absinthe.Language.DocumentTest do
     end
 
     test "returns a Blueprint.t with the right number of fragments" do
-      rep = """
-      query {
-        myItems {
-          ... ItemFields
-          ... NameField
+      rep =
+        """
+        query {
+          myItems {
+            ... ItemFields
+            ... NameField
+          }
+          otherItems {
+            ... ItemFields
+          }
         }
-        otherItems {
-          ... ItemFields
+        fragment ItemFields on Item {
+          count
         }
-      }
-      fragment ItemFields on Item {
-        count
-      }
-      fragment NameField on NamedThing {
-        name
-      }
+        fragment NameField on NamedThing {
+          name
+        }
 
-      """ |> ir
+        """
+        |> ir
+
       assert length(rep.directives) == 0
       assert length(rep.operations) == 1
       assert length(rep.types) == 0
@@ -107,11 +110,9 @@ defmodule Absinthe.Language.DocumentTest do
       assert length(rep.types) == 0
       assert length(rep.fragments) == 0
     end
-
   end
 
   describe "converting to Blueprint for Schema" do
-
     @idl """
     enum Episode { NEWHOPE, EMPIRE, JEDI }
 
@@ -166,12 +167,12 @@ defmodule Absinthe.Language.DocumentTest do
       rep = ir(@idl)
       assert length(rep.types) == 10
     end
-
   end
 
   def ir(input) do
-    {:ok, blueprint, _} = Absinthe.Pipeline.run(input, [Absinthe.Phase.Parse, Absinthe.Phase.Blueprint])
+    {:ok, blueprint, _} =
+      Absinthe.Pipeline.run(input, [Absinthe.Phase.Parse, Absinthe.Phase.Blueprint])
+
     blueprint
   end
-
 end

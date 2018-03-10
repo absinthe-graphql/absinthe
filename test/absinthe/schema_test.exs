@@ -5,46 +5,50 @@ defmodule Absinthe.SchemaTest do
   alias Absinthe.Type
 
   describe "built-in types" do
-
     def load_valid_schema do
       load_schema("valid_schema")
     end
 
     test "are loaded" do
       load_valid_schema()
-      assert map_size(Absinthe.Type.BuiltIns.__absinthe_types__) > 0
-      Absinthe.Type.BuiltIns.__absinthe_types__
-      |> Enum.each(fn
-        {ident, name} ->
-          assert Absinthe.Fixtures.ValidSchema.__absinthe_type__(ident) == Absinthe.Fixtures.ValidSchema.__absinthe_type__(name)
+      assert map_size(Absinthe.Type.BuiltIns.__absinthe_types__()) > 0
+
+      Absinthe.Type.BuiltIns.__absinthe_types__()
+      |> Enum.each(fn {ident, name} ->
+        assert Absinthe.Fixtures.ValidSchema.__absinthe_type__(ident) ==
+                 Absinthe.Fixtures.ValidSchema.__absinthe_type__(name)
       end)
+
       int = Absinthe.Fixtures.ValidSchema.__absinthe_type__(:integer)
       assert 1 == Type.Scalar.serialize(int, 1)
       assert {:ok, 1} == Type.Scalar.parse(int, 1, %{})
     end
-
   end
 
   describe "using the same identifier" do
-
     test "raises an exception" do
-      assert_schema_error("schema_with_duplicate_identifiers",
-                          [%{rule: Absinthe.Schema.Rule.TypeNamesAreUnique, data: %{artifact: "Absinthe type identifier", value: :person}}])
+      assert_schema_error("schema_with_duplicate_identifiers", [
+        %{
+          rule: Absinthe.Schema.Rule.TypeNamesAreUnique,
+          data: %{artifact: "Absinthe type identifier", value: :person}
+        }
+      ])
     end
-
   end
 
   describe "using the same name" do
-
     def load_duplicate_name_schema do
       load_schema("schema_with_duplicate_names")
     end
 
     test "raises an exception" do
-      assert_schema_error("schema_with_duplicate_names",
-                          [%{rule: Absinthe.Schema.Rule.TypeNamesAreUnique, data: %{artifact: "Type name", value: "Person"}}])
+      assert_schema_error("schema_with_duplicate_names", [
+        %{
+          rule: Absinthe.Schema.Rule.TypeNamesAreUnique,
+          data: %{artifact: "Type name", value: "Person"}
+        }
+      ])
     end
-
   end
 
   defmodule SourceSchema do
@@ -54,15 +58,12 @@ defmodule Absinthe.SchemaTest do
     query do
       field :foo,
         type: :foo,
-        resolve: fn
-          _, _ -> {:ok, %{name: "Fancy Foo!"}}
-        end
+        resolve: fn _, _ -> {:ok, %{name: "Fancy Foo!"}} end
     end
 
     object :foo do
       field :name, :string
     end
-
   end
 
   defmodule UserSchema do
@@ -73,22 +74,16 @@ defmodule Absinthe.SchemaTest do
     query do
       field :foo,
         type: :foo,
-        resolve: fn
-          _, _ -> {:ok, %{name: "A different fancy Foo!"}}
-        end
+        resolve: fn _, _ -> {:ok, %{name: "A different fancy Foo!"}} end
 
       field :bar,
         type: :bar,
-        resolve: fn
-          _, _ -> {:ok, %{name: "A plain old bar"}}
-        end
-
+        resolve: fn _, _ -> {:ok, %{name: "A plain old bar"}} end
     end
 
     object :bar do
       field :name, :string
     end
-
   end
 
   defmodule ThirdSchema do
@@ -113,7 +108,7 @@ defmodule Absinthe.SchemaTest do
     end
 
     enum :some_enum do
-      values [:a, :b]
+      values([:a, :b])
     end
 
     interface :loop do
@@ -151,34 +146,28 @@ defmodule Absinthe.SchemaTest do
     object :baz do
       field :name, :string
     end
-
   end
 
   test "can have a description on the root query" do
     assert "can describe query" == Absinthe.Schema.lookup_type(SourceSchema, :query).description
   end
 
-
   describe "using import_types" do
-
     test "adds the types from a parent" do
-      assert %{foo: "Foo", bar: "Bar"} = UserSchema.__absinthe_types__
+      assert %{foo: "Foo", bar: "Bar"} = UserSchema.__absinthe_types__()
       assert "Foo" == UserSchema.__absinthe_type__(:foo).name
     end
 
     test "adds the types from a grandparent" do
-      assert %{foo: "Foo", bar: "Bar", baz: "Baz"} = ThirdSchema.__absinthe_types__
+      assert %{foo: "Foo", bar: "Bar", baz: "Baz"} = ThirdSchema.__absinthe_types__()
       assert "Foo" == ThirdSchema.__absinthe_type__(:foo).name
     end
-
   end
 
   describe "lookup_type" do
-
     test "is supported" do
       assert "Foo" == Schema.lookup_type(ThirdSchema, :foo).name
     end
-
   end
 
   defmodule RootsSchema do
@@ -187,13 +176,11 @@ defmodule Absinthe.SchemaTest do
     import_types SourceSchema
 
     query do
-
       field :name,
         type: :string,
         args: [
           family_name: [type: :boolean]
         ]
-
     end
 
     mutation name: "MyRootMutation" do
@@ -203,22 +190,21 @@ defmodule Absinthe.SchemaTest do
     subscription name: "RootSubscriptionTypeThing" do
       field :name, :string
     end
-
   end
 
   describe "used_types" do
     test "does not contain introspection types" do
       assert !Enum.any?(
-        Schema.used_types(ThirdSchema),
-        &Type.introspection?/1
-      )
+               Schema.used_types(ThirdSchema),
+               &Type.introspection?/1
+             )
     end
 
     test "contains enums" do
       types =
         ThirdSchema
-        |> Absinthe.Schema.used_types
-        |> Enum.map(&(&1.identifier))
+        |> Absinthe.Schema.used_types()
+        |> Enum.map(& &1.identifier)
 
       assert :some_enum in types
       assert :dir_enum in types
@@ -227,8 +213,8 @@ defmodule Absinthe.SchemaTest do
     test "contains interfaces" do
       types =
         ThirdSchema
-        |> Absinthe.Schema.used_types
-        |> Enum.map(&(&1.identifier))
+        |> Absinthe.Schema.used_types()
+        |> Enum.map(& &1.identifier)
 
       assert :named in types
     end
@@ -236,8 +222,8 @@ defmodule Absinthe.SchemaTest do
     test "contains types only connected via interfaces" do
       types =
         ThirdSchema
-        |> Absinthe.Schema.used_types
-        |> Enum.map(&(&1.identifier))
+        |> Absinthe.Schema.used_types()
+        |> Enum.map(& &1.identifier)
 
       assert :person in types
     end
@@ -245,8 +231,8 @@ defmodule Absinthe.SchemaTest do
     test "contains types only connected via union" do
       types =
         ThirdSchema
-        |> Absinthe.Schema.used_types
-        |> Enum.map(&(&1.identifier))
+        |> Absinthe.Schema.used_types()
+        |> Enum.map(& &1.identifier)
 
       assert :dog in types
     end
@@ -256,16 +242,16 @@ defmodule Absinthe.SchemaTest do
     test "is not empty" do
       assert !Enum.empty?(Schema.introspection_types(ThirdSchema))
     end
+
     test "are introspection types" do
       assert Enum.all?(
-        Schema.introspection_types(ThirdSchema),
-        &Type.introspection?/1
-      )
+               Schema.introspection_types(ThirdSchema),
+               &Type.introspection?/1
+             )
     end
   end
 
   describe "root fields" do
-
     test "can have a default name" do
       assert "RootQueryType" == Schema.lookup_type(RootsSchema, :query).name
     end
@@ -277,28 +263,24 @@ defmodule Absinthe.SchemaTest do
     test "supports subscriptions" do
       assert "RootSubscriptionTypeThing" == Schema.lookup_type(RootsSchema, :subscription).name
     end
-
-
   end
 
   describe "fields" do
-
     test "have the correct structure in query" do
       assert %Type.Field{name: "name"} = Schema.lookup_type(RootsSchema, :query).fields.name
     end
 
     test "have the correct structure in subscription" do
-      assert %Type.Field{name: "name"} = Schema.lookup_type(RootsSchema, :subscription).fields.name
+      assert %Type.Field{name: "name"} =
+               Schema.lookup_type(RootsSchema, :subscription).fields.name
     end
-
   end
 
   describe "arguments" do
-
     test "have the correct structure" do
-      assert %Type.Argument{name: "family_name"} = Schema.lookup_type(RootsSchema, :query).fields.name.args.family_name
+      assert %Type.Argument{name: "family_name"} =
+               Schema.lookup_type(RootsSchema, :query).fields.name.args.family_name
     end
-
   end
 
   defmodule FragmentSpreadSchema do
@@ -316,33 +298,33 @@ defmodule Absinthe.SchemaTest do
       field :id, :id
       field :name, :string
     end
-
   end
 
   describe "multiple fragment spreads" do
-
     @query """
     query Viewer{viewer{id,...F1}}
     fragment F0 on Viewer{name,id}
     fragment F1 on Viewer{id,...F0}
     """
     test "builds the correct result" do
-      assert_result {:ok, %{data: %{"viewer" => %{"id" => "ABCD", "name" => "Bruce"}}}}, run(@query, FragmentSpreadSchema)
+      assert_result(
+        {:ok, %{data: %{"viewer" => %{"id" => "ABCD", "name" => "Bruce"}}}},
+        run(@query, FragmentSpreadSchema)
+      )
     end
-
   end
-
 
   defmodule MetadataSchema do
     use Absinthe.Schema
 
     query do
-      #Query type must exist
+      # Query type must exist
     end
 
     object :foo, meta: [foo: "bar"] do
       meta :sql_table, "foos"
-      meta [cache: false, eager: true]
+      meta cache: false, eager: true
+
       field :bar, :string do
         meta :nice, "yup"
       end
@@ -350,6 +332,7 @@ defmodule Absinthe.SchemaTest do
 
     input_object :input_foo do
       meta :is_input, true
+
       field :bar, :string do
         meta :nice, "nope"
       end
@@ -369,6 +352,7 @@ defmodule Absinthe.SchemaTest do
 
     interface :named do
       meta :is_interface, true
+
       field :name, :string do
         meta :is_name, true
       end
@@ -378,11 +362,9 @@ defmodule Absinthe.SchemaTest do
       types [:foo]
       meta :is_union, true
     end
-
   end
 
   describe "can add metadata to an object" do
-
     @tag :wip
     test "sets object metadata" do
       foo = Schema.lookup_type(MetadataSchema, :foo)
@@ -439,7 +421,5 @@ defmodule Absinthe.SchemaTest do
       assert %{__private__: [meta: [is_union: true]]} = result
       assert Type.meta(result, :is_union) == true
     end
-
   end
-
 end

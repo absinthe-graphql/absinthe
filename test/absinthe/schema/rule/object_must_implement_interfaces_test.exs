@@ -16,6 +16,7 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfacesTest do
 
     interface :named do
       field :name, :string
+
       resolve_type fn
         %{type: :dog} -> :dog
         %{type: :user} -> :dog
@@ -29,11 +30,10 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfacesTest do
     end
 
     query do
-
     end
   end
 
   test "interfaces are propogated across type imports" do
-    assert %{named: [:dog, :user]} == Schema.__absinthe_interface_implementors__
+    assert %{named: [:dog, :user]} == Schema.__absinthe_interface_implementors__()
   end
 end

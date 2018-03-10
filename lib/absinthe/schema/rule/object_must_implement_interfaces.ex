@@ -44,7 +44,7 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfaces do
 
   def check(schema) do
     schema
-    |> Schema.types
+    |> Schema.types()
     |> Enum.flat_map(&check_type(schema, &1))
   end
 
@@ -56,15 +56,19 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfaces do
         if Type.Interface.implements?(iface_type, type, schema) do
           acc
         else
-          [report(type.__reference__.location, %{object: type.name, interface: iface_type.name}) | acc]
+          [
+            report(type.__reference__.location, %{object: type.name, interface: iface_type.name})
+            | acc
+          ]
         end
+
       _, _ ->
         # Handles by a different rule
         []
     end)
   end
+
   defp check_type(_, _) do
     []
   end
-
 end

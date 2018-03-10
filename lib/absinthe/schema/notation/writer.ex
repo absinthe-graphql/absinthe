@@ -9,17 +9,17 @@ defmodule Absinthe.Schema.Notation.Writer do
     type_functions: [],
     directive_functions: [],
     exports: [],
-    implementors: %{},
+    implementors: %{}
   ]
 
   defmacro __before_compile__(env) do
     info = build_info(env)
 
-    errors        = Macro.escape info.errors
-    exports       = Macro.escape info.exports
-    type_map      = Macro.escape info.type_map
-    implementors  = Macro.escape info.implementors
-    directive_map = Macro.escape info.directive_map
+    errors = Macro.escape(info.errors)
+    exports = Macro.escape(info.exports)
+    type_map = Macro.escape(info.type_map)
+    implementors = Macro.escape(info.implementors)
+    directive_map = Macro.escape(info.directive_map)
 
     [
       quote do
@@ -40,16 +40,17 @@ defmodule Absinthe.Schema.Notation.Writer do
         def __absinthe_errors__, do: unquote(errors)
         def __absinthe_interface_implementors__, do: unquote(implementors)
         def __absinthe_exports__, do: unquote(exports)
-      end,
+      end
     ]
   end
 
   defp init_implementors(nil) do
     %{}
   end
+
   defp init_implementors(modules) do
     modules
-    |> Enum.map(&(&1.__absinthe_interface_implementors__))
+    |> Enum.map(& &1.__absinthe_interface_implementors__)
     |> Enum.reduce(%{}, fn implementors, acc ->
       Map.merge(implementors, acc, fn _k, v1, v2 ->
         v1 ++ v2
@@ -66,7 +67,7 @@ defmodule Absinthe.Schema.Notation.Writer do
     descriptions =
       env.module
       |> Module.get_attribute(:absinthe_descriptions)
-      |> Map.new
+      |> Map.new()
 
     definitions =
       env.module
@@ -75,8 +76,8 @@ defmodule Absinthe.Schema.Notation.Writer do
 
     {definitions, errors} =
       {definitions, []}
-      |> Absinthe.Schema.Rule.FieldImportsExist.check
-      |> Absinthe.Schema.Rule.NoCircularFieldImports.check
+      |> Absinthe.Schema.Rule.FieldImportsExist.check()
+      |> Absinthe.Schema.Rule.NoCircularFieldImports.check()
 
     info = %__MODULE__{
       env: env,
@@ -93,7 +94,7 @@ defmodule Absinthe.Schema.Notation.Writer do
     name = definition.attrs[:name]
 
     result = [
-      quote do: def __absinthe_type__(unquote(name)), do: __absinthe_type__(unquote(identifier))
+      quote(do: def(__absinthe_type__(unquote(name)), do: __absinthe_type__(unquote(identifier))))
     ]
 
     if definition.builder == Absinthe.Type.Object do
@@ -119,6 +120,7 @@ defmodule Absinthe.Schema.Notation.Writer do
     ast = build(:directive, definition)
     identifier = definition.identifier
     name = definition.attrs[:name]
+
     quote do
       def __absinthe_directive__(unquote(identifier)), do: unquote(ast)
       def __absinthe_directive__(unquote(name)), do: __absinthe_directive__(unquote(identifier))
@@ -131,12 +133,14 @@ defmodule Absinthe.Schema.Notation.Writer do
       source.__absinthe_type__(identifier)
     end
   end
+
   # Directive import reference
   defp build(:directive, %{source: source, builder: nil} = definition) do
     quote bind_quoted: [source: source, identifier: definition.identifier] do
       source.__absinthe_directive__(identifier)
     end
   end
+
   # Type/Directive definition
   defp build(_, %{source: nil, builder: builder} = definition) do
     builder.build(definition)
@@ -162,6 +166,7 @@ defmodule Absinthe.Schema.Notation.Writer do
     case Map.has_key?(state.directive_map, definition.identifier) do
       true ->
         [directive_name_error(definition)]
+
       false ->
         []
     end
@@ -174,7 +179,7 @@ defmodule Absinthe.Schema.Notation.Writer do
       end,
       if Enum.member?(Map.values(state.type_map), definition.attrs[:name]) do
         type_name_error("Type name", definition.attrs[:name], definition)
-      end,
+      end
     ]
     |> Enum.reject(&is_nil/1)
   end
@@ -198,6 +203,7 @@ defmodule Absinthe.Schema.Notation.Writer do
 
   defp do_build_info(%{category: :type} = definition, info) do
     errors = type_errors(definition, info)
+
     info
     |> update_type_map(definition)
     |> update_type_functions(definition, errors)
@@ -207,7 +213,11 @@ defmodule Absinthe.Schema.Notation.Writer do
   end
 
   defp update_directive_map(info, definition) do
-    Map.update!(info, :directive_map, &Map.put(&1, definition.identifier, definition.attrs[:name]))
+    Map.update!(
+      info,
+      :directive_map,
+      &Map.put(&1, definition.identifier, definition.attrs[:name])
+    )
   end
 
   defp update_directive_functions(info, definition, []) do
@@ -221,29 +231,32 @@ defmodule Absinthe.Schema.Notation.Writer do
   defp update_type_functions(info, definition, []) do
     Map.update!(info, :type_functions, &[type_functions(definition) | &1])
   end
+
   defp update_type_functions(info, _definition, _errors), do: info
 
   defp update_implementors(info, definition) do
-    implementors = definition.attrs[:interfaces]
-    |> List.wrap
-    |> Enum.reduce(info.implementors, fn
-      iface, implementors ->
+    implementors =
+      definition.attrs[:interfaces]
+      |> List.wrap()
+      |> Enum.reduce(info.implementors, fn iface, implementors ->
         Map.update(implementors, iface, [definition.identifier], &[definition.identifier | &1])
-    end)
+      end)
+
     %{info | implementors: implementors}
   end
 
   defp update_exports(info, definition) do
-    exports = (if Keyword.get(definition.opts, :export, definition.source != Absinthe.Type.BuiltIns) do
-      [definition.identifier | info.exports]
-    else
-      info.exports
-    end)
+    exports =
+      if Keyword.get(definition.opts, :export, definition.source != Absinthe.Type.BuiltIns) do
+        [definition.identifier | info.exports]
+      else
+        info.exports
+      end
+
     %{info | exports: exports}
   end
 
   defp update_errors(info, errors) do
     %{info | errors: errors ++ info.errors}
   end
-
 end
