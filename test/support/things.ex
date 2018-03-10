@@ -17,6 +17,7 @@ defmodule Things do
     value :with_code
     value :without_message
     value :multiple_with_code
+    value :status_tuple_with_exception
     value :multiple_without_message
   end
 
@@ -46,6 +47,8 @@ defmodule Things do
           {:error, message: "Custom Error", code: 42}
         %{type: :without_message}, _ ->
           {:error, code: 42}
+        %{type: :status_tuple_with_exception}, _ ->
+          {:error, %RuntimeError{message: "Message"}}
         %{type: :multiple_with_code}, _ ->
           {:error, [%{message: "Custom Error 1", code: 1}, %{message: "Custom Error 2", code: 2}]}
         %{type: :multiple_without_message}, _ ->
