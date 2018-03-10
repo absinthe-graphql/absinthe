@@ -9,7 +9,7 @@ defmodule Absinthe.Schema.ExperimentalTest do
     query do
       field :user, :user do
         resolve fn _, _ ->
-          {:ok, [first_name: "Bruce", last_name: "Williams"]}
+          {:ok, %{first_name: "Bruce", last_name: "Williams"}}
         end
       end
     end
@@ -31,5 +31,18 @@ defmodule Absinthe.Schema.ExperimentalTest do
                  |> Map.get(:types)
                )
     end
+  end
+
+  describe "type lookup" do
+    test "it works on objects" do
+      assert %Absinthe.Type.Object{} = type = Absinthe.Schema.lookup_type(Schema, :user)
+    end
+  end
+
+  test "simple" do
+    query = """
+    { user { fullName }}
+    """
+    assert :ok = Absinthe.run(query, Schema)
   end
 end
