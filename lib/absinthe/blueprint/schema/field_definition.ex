@@ -20,18 +20,17 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
   ]
 
   @type t :: %__MODULE__{
-    name: String.t,
-    identifier: atom,
-    deprecation: nil | Blueprint.Schema.Deprecation.t,
-    arguments: [Blueprint.Schema.InputValueDefinition.t],
-    type: Blueprint.TypeReference.t,
-    directives: [Blueprint.Directive.t],
-    # Added by DSL
-    description: nil | String.t,
-    middleware_ast: [any],
-    # Added by phases
-    flags: Blueprint.flags_t,
-    errors: [Absinthe.Phase.Error.t]
-  }
-
+          name: String.t(),
+          identifier: atom,
+          deprecation: nil | Blueprint.Schema.Deprecation.t(),
+          arguments: [Blueprint.Schema.InputValueDefinition.t()],
+          type: Blueprint.TypeReference.t(),
+          directives: [Blueprint.Directive.t()],
+          # Added by DSL
+          description: nil | String.t(),
+          middleware_ast: [any],
+          # Added by phases
+          flags: Blueprint.flags_t(),
+          errors: [Absinthe.Phase.Error.t()]
+        }
 end

@@ -14,19 +14,18 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
     # Added by phases
     flags: %{},
     imports: [],
-    errors: [],
+    errors: []
   ]
 
   @type t :: %__MODULE__{
-    name: String.t,
-    identifier: atom,
-    description: nil | String.t,
-    fields: [Blueprint.Schema.FieldDefinition.t],
-    interfaces: [String.t],
-    directives: [Blueprint.Directive.t],
-    # Added by phases
-    flags: Blueprint.flags_t,
-    errors: [Absinthe.Phase.Error.t],
-  }
-
+          name: String.t(),
+          identifier: atom,
+          description: nil | String.t(),
+          fields: [Blueprint.Schema.FieldDefinition.t()],
+          interfaces: [String.t()],
+          directives: [Blueprint.Directive.t()],
+          # Added by phases
+          flags: Blueprint.flags_t(),
+          errors: [Absinthe.Phase.Error.t()]
+        }
 end

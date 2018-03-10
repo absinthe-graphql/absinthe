@@ -9,7 +9,6 @@ defmodule Absinthe.Schema.Notation.Experimental.FieldTest do
 
     @desc "Object description"
     object :obj do
-
       field :plain, :string
 
       field :with_block, :string do
@@ -34,40 +33,48 @@ defmodule Absinthe.Schema.Notation.Experimental.FieldTest do
 
       @desc "Desc Five"
       field :with_desc_attr_mod, type: :string, description: @desc_five
-
     end
-
   end
 
   describe "field" do
     test "without a body and with a bare type" do
-      assert %{name: "plain", description: nil, type: :string, identifier: :plain} = lookup_field(Definition, :obj, :plain)
+      assert %{name: "plain", description: nil, type: :string, identifier: :plain} =
+               lookup_field(Definition, :obj, :plain)
     end
+
     test "with a body and with a bare type" do
-      assert %{name: "withBlock", type: :string, identifier: :with_block} = lookup_field(Definition, :obj, :with_block)
+      assert %{name: "withBlock", type: :string, identifier: :with_block} =
+               lookup_field(Definition, :obj, :with_block)
     end
+
     test "with attrs and without a body" do
-      assert %{name: "HasAttrs", type: :boolean, identifier: :with_attrs} = lookup_field(Definition, :obj, :with_attrs)
+      assert %{name: "HasAttrs", type: :boolean, identifier: :with_attrs} =
+               lookup_field(Definition, :obj, :with_attrs)
     end
+
     test "with attrs and with a body" do
-      assert %{name: "HasAttrsAndBody", type: :boolean, identifier: :with_attrs_and_body} = lookup_field(Definition, :obj, :with_attrs_and_body)
+      assert %{name: "HasAttrsAndBody", type: :boolean, identifier: :with_attrs_and_body} =
+               lookup_field(Definition, :obj, :with_attrs_and_body)
     end
+
     test "with @desc and without a block" do
       assert %{description: "Desc One"} = lookup_field(Definition, :obj, :with_desc)
     end
+
     test "with @desc and with a block" do
       assert %{description: "Desc Two"} = lookup_field(Definition, :obj, :with_desc_and_block)
     end
+
     test "with @desc and a description attr" do
       assert %{description: "Desc Three"} = lookup_field(Definition, :obj, :with_desc_attr)
     end
+
     test "with a description attribute as a literal" do
       assert %{description: "Desc Four"} = lookup_field(Definition, :obj, :with_desc_attr_literal)
     end
+
     test "with a description attribute from a module attribute" do
       assert %{description: "Desc Five"} = lookup_field(Definition, :obj, :with_desc_attr_mod)
     end
-
   end
-
 end

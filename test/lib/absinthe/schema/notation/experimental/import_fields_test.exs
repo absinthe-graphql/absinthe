@@ -10,12 +10,13 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportFieldsTest do
     object :source do
       field :one, :string do
       end
+
       field :two, :string do
       end
+
       field :three, :string do
       end
     end
-
   end
 
   defmodule WithoutOptions do
@@ -24,8 +25,10 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportFieldsTest do
     object :internal_source do
       field :one, :string do
       end
+
       field :two, :string do
       end
+
       field :three, :string do
       end
     end
@@ -37,7 +40,6 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportFieldsTest do
     object :external_target do
       import_fields {Source, :source}
     end
-
   end
 
   defmodule UsingOnlyOption do
@@ -46,8 +48,10 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportFieldsTest do
     object :internal_source do
       field :one, :string do
       end
+
       field :two, :string do
       end
+
       field :three, :string do
       end
     end
@@ -59,7 +63,6 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportFieldsTest do
     object :external_target do
       import_fields {Source, :source}, only: [:one, :two]
     end
-
   end
 
   defmodule UsingExceptOption do
@@ -68,8 +71,10 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportFieldsTest do
     object :internal_source do
       field :one, :string do
       end
+
       field :two, :string do
       end
+
       field :three, :string do
       end
     end
@@ -81,32 +86,39 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportFieldsTest do
     object :external_target do
       import_fields {Source, :source}, except: [:one, :two]
     end
-
   end
 
   describe "import_fields" do
     test "without options from an internal source" do
       assert [{:internal_source, []}] == imports(WithoutOptions, :internal_target)
     end
+
     test "without options from an external source" do
       assert [{{Source, :source}, []}] == imports(WithoutOptions, :external_target)
     end
+
     test "with :only from an internal source" do
-      assert [{:internal_source, only: [:one, :two]}] == imports(UsingOnlyOption, :internal_target)
+      assert [{:internal_source, only: [:one, :two]}] ==
+               imports(UsingOnlyOption, :internal_target)
     end
+
     test "with :only from external source" do
-      assert [{{Source, :source}, only: [:one, :two]}] == imports(UsingOnlyOption, :external_target)
+      assert [{{Source, :source}, only: [:one, :two]}] ==
+               imports(UsingOnlyOption, :external_target)
     end
+
     test "with :except from an internal source" do
-      assert [{:internal_source, [except: [:one, :two]]}] == imports(UsingExceptOption, :internal_target)
+      assert [{:internal_source, [except: [:one, :two]]}] ==
+               imports(UsingExceptOption, :internal_target)
     end
+
     test "with :except from external source" do
-      assert [{{Source, :source}, [except: [:one, :two]]}] == imports(UsingExceptOption, :external_target)
+      assert [{{Source, :source}, [except: [:one, :two]]}] ==
+               imports(UsingExceptOption, :external_target)
     end
   end
 
   defp imports(module, type) do
     lookup_type(module, type).imports
   end
-
 end

@@ -86,7 +86,7 @@ defmodule Absinthe.Blueprint.Transform do
     Blueprint.Schema.ObjectTypeDefinition => [:interfaces, :fields, :directives],
     Blueprint.Schema.ScalarTypeDefinition => [:directives],
     Blueprint.Schema.SchemaDefinition => [:directives, :types],
-    Blueprint.Schema.UnionTypeDefinition => [:directives, :types],
+    Blueprint.Schema.UnionTypeDefinition => [:directives, :types]
   }
 
   @spec walk(

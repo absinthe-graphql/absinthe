@@ -8,11 +8,12 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportTypesTest do
 
     object :one do
     end
+
     object :two do
     end
+
     object :three do
     end
-
   end
 
   defmodule WithoutOptions do
@@ -24,22 +25,24 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportTypesTest do
   defmodule UsingOnlyOption do
     use Absinthe.Schema.Notation.Experimental
 
-    import_types Source, only: [:one, :two]
+    import_types(Source, only: [:one, :two])
   end
 
   defmodule UsingExceptOption do
     use Absinthe.Schema.Notation.Experimental
 
-    import_types Source, except: [:one, :two]
+    import_types(Source, except: [:one, :two])
   end
 
   describe "import_types" do
     test "without options" do
       assert [{Source, []}] == imports(WithoutOptions)
     end
+
     test "with :only" do
       assert [{Source, only: [:one, :two]}] == imports(UsingOnlyOption)
     end
+
     test "with :except" do
       assert [{Source, except: [:one, :two]}] == imports(UsingExceptOption)
     end
@@ -49,5 +52,4 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportTypesTest do
     %{schema_definitions: [schema]} = module.__absinthe_blueprint__
     schema.imports
   end
-
 end

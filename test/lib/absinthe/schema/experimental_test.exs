@@ -8,28 +8,28 @@ defmodule Absinthe.Schema.ExperimentalTest do
 
     query do
       field :user, :user do
-        resolve fn
-          _, _ ->
-            {:ok, [first_name: "Bruce", last_name: "Williams"]}
+        resolve fn _, _ ->
+          {:ok, [first_name: "Bruce", last_name: "Williams"]}
         end
       end
     end
 
     object :user do
       field :full_name, :string do
-        resolve fn
-          user, _, _ ->
-            {:ok, "#{user.first_name} #{user.last_name}"}
+        resolve fn user, _, _ ->
+          {:ok, "#{user.first_name} #{user.last_name}"}
         end
       end
     end
-
   end
 
   describe "__absinthe_blueprint__/0" do
     test "returns the blueprint" do
-      assert 2 == length(Schema.__absinthe_blueprint__().schema_definitions |> List.first |> Map.get(:types))
+      assert 2 ==
+               length(
+                 Schema.__absinthe_blueprint__().schema_definitions |> List.first()
+                 |> Map.get(:types)
+               )
     end
   end
-
 end

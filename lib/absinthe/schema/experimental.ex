@@ -1,5 +1,4 @@
 defmodule Absinthe.Schema.Experimental do
-
   defmacro __using__(_opt) do
     quote do
       use Absinthe.Schema.Notation.Experimental
@@ -12,5 +11,4 @@ defmodule Absinthe.Schema.Experimental do
       # TODO: Run pipeline on @absinthe_blueprint
     end
   end
-
 end

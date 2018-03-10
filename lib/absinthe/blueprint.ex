@@ -8,36 +8,34 @@ defmodule Absinthe.Blueprint do
 
   alias __MODULE__
 
-  defstruct [
-    operations: [],
-    directives: [],
-    fragments: [],
-    name: nil,
-    schema_definitions: [],
-    schema: nil,
-    adapter: nil,
-    # Added by phases
-    flags: %{},
-    errors: [],
-    input: nil,
-    execution: %Blueprint.Execution{},
-    result: %{},
-  ]
+  defstruct operations: [],
+            directives: [],
+            fragments: [],
+            name: nil,
+            schema_definitions: [],
+            schema: nil,
+            adapter: nil,
+            # Added by phases
+            flags: %{},
+            errors: [],
+            input: nil,
+            execution: %Blueprint.Execution{},
+            result: %{}
 
   @type t :: %__MODULE__{
-    operations: [Blueprint.Document.Operation.t],
-    schema_definitions: [Blueprint.Schema.t],
-    directives: [Blueprint.Schema.DirectiveDefinition.t],
-    name: nil | String.t,
-    fragments: [Blueprint.Document.Fragment.Named.t],
-    schema: nil | Absinthe.Schema.t,
-    adapter: nil | Absinthe.Adapter.t,
-    # Added by phases
-    errors: [Absinthe.Phase.Error.t],
-    flags: flags_t,
-    execution: Blueprint.Execution.t,
-    result: result_t,
-  }
+          operations: [Blueprint.Document.Operation.t()],
+          schema_definitions: [Blueprint.Schema.t()],
+          directives: [Blueprint.Schema.DirectiveDefinition.t()],
+          name: nil | String.t(),
+          fragments: [Blueprint.Document.Fragment.Named.t()],
+          schema: nil | Absinthe.Schema.t(),
+          adapter: nil | Absinthe.Adapter.t(),
+          # Added by phases
+          errors: [Absinthe.Phase.Error.t()],
+          flags: flags_t,
+          execution: Blueprint.Execution.t(),
+          result: result_t
+        }
 
   @type result_t :: %{
           optional(:data) => term,
