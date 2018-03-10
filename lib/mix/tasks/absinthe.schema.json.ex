@@ -54,7 +54,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
 
     schema = find_schema(opts)
     json_codec = find_json(opts)
-    filename = args |> List.first || @default_filename
+    filename = args |> List.first() || @default_filename
 
     {:ok, query} = File.read(@introspection_graphql)
 
@@ -63,6 +63,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
         create_directory(Path.dirname(filename))
         content = json_codec.module.encode!(result, json_codec.opts)
         create_file(filename, content, force: true)
+
       {:error, error} ->
         raise error
     end
@@ -72,6 +73,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
     case Keyword.get(opts, :json_codec, Poison) do
       module when is_atom(module) ->
         %{module: module, opts: codec_opts(module, opts)}
+
       other ->
         other
     end
@@ -80,6 +82,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   defp codec_opts(Poison, opts) do
     [pretty: Keyword.get(opts, :pretty, false)]
   end
+
   defp codec_opts(_, _) do
     []
   end
@@ -88,9 +91,9 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
     case Keyword.get(opts, :schema, Application.get_env(:absinthe, :schema)) do
       nil ->
         raise "No --schema given or :schema configured for the :absinthe application"
+
       value ->
-        [value] |> Module.safe_concat
+        [value] |> Module.safe_concat()
     end
   end
-
 end

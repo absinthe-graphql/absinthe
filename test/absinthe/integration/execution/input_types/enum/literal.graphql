@@ -1,0 +1,19 @@
+# Schema: ColorSchema
+query {
+  red: info(channel: RED) {
+    name
+    value
+  }
+  green: info(channel: GREEN) {
+    name
+    value
+  }
+  blue: info(channel: BLUE) {
+    name
+    value
+  }
+  puce: info(channel: PUCE) {
+    name
+    value
+  }
+}

@@ -1,0 +1,10 @@
+query ThingFoo {
+  thing(id: "foo") {
+    name
+  }
+}
+query ThingBar {
+  thing(id: "bar") {
+    name
+  }
+}

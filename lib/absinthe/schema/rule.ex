@@ -1,5 +1,4 @@
 defmodule Absinthe.Schema.Rule do
-
   @moduledoc false
 
   alias __MODULE__
@@ -15,12 +14,11 @@ defmodule Absinthe.Schema.Rule do
           data: data
         }
       end
-
     end
   end
 
-  @callback check(Absinthe.Schema.t) :: [Absinthe.Schema.Error.detail_t]
-  @callback explanation(Absinthe.Schema.Error.detail_t) :: binary
+  @callback check(Absinthe.Schema.t()) :: [Absinthe.Schema.Error.detail_t()]
+  @callback explanation(Absinthe.Schema.Error.detail_t()) :: binary
 
   @type t :: module
 
@@ -32,12 +30,11 @@ defmodule Absinthe.Schema.Rule do
     Rule.ObjectMustImplementInterfaces,
     Rule.InterfacesMustResolveTypes,
     Rule.InputOuputTypesCorrectlyPlaced,
-    Rule.DefaultEnumValuePresent,
+    Rule.DefaultEnumValuePresent
   ]
 
-  @spec check(Absinthe.Schema.t) :: [Absinthe.Schema.Error.detail_t]
+  @spec check(Absinthe.Schema.t()) :: [Absinthe.Schema.Error.detail_t()]
   def check(schema) do
-    Enum.flat_map(@rules, &(&1.check(schema)))
+    Enum.flat_map(@rules, & &1.check(schema))
   end
-
 end

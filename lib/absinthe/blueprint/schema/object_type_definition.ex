@@ -1,5 +1,4 @@
 defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
-
   @moduledoc false
 
   alias Absinthe.Blueprint

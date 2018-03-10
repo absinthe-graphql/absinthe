@@ -3,17 +3,15 @@ defmodule Absinthe.Language.SchemaDefinition do
 
   alias Absinthe.{Blueprint, Language}
 
-  defstruct [
-    directives: [],
-    fields: [],
-    loc: %{start_line: nil}
-  ]
+  defstruct directives: [],
+            fields: [],
+            loc: %{start_line: nil}
 
   @type t :: %__MODULE__{
-    directives: [Language.Directive.t],
-    fields: [Language.FieldDefinition.t],
-    loc: Language.loc_t
-  }
+          directives: [Language.Directive.t()],
+          fields: [Language.FieldDefinition.t()],
+          loc: Language.loc_t()
+        }
 
   defimpl Blueprint.Draft do
     def convert(node, doc) do
@@ -23,5 +21,4 @@ defmodule Absinthe.Language.SchemaDefinition do
       }
     end
   end
-
 end

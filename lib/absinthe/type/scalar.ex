@@ -45,6 +45,7 @@ defmodule Absinthe.Type.Scalar do
     case parser do
       parser when is_function(parser, 1) ->
         parser.(value)
+
       parser when is_function(parser, 2) ->
         parser.(value, context)
     end
@@ -63,25 +64,22 @@ defmodule Absinthe.Type.Scalar do
   The `:__private__` and `:__reference__` keys are for internal use.
   """
   @type t :: %__MODULE__{
-    name: binary,
-    description: binary,
-    serialize: (value_t -> any),
-    parse: (any -> {:ok, value_t} | :error),
-    identifier: atom,
-    __private__: Keyword.t,
-    __reference__: Type.Reference.t,
-  }
+          name: binary,
+          description: binary,
+          serialize: (value_t -> any),
+          parse: (any -> {:ok, value_t} | :error),
+          identifier: atom,
+          __private__: Keyword.t(),
+          __reference__: Type.Reference.t()
+        }
 
-  defstruct [
-    name: nil,
-    description: nil,
-    serialize: nil,
-    parse: nil,
-    identifier: nil,
-    __private__: [],
-    __reference__: nil,
-  ]
-
+  defstruct name: nil,
+            description: nil,
+            serialize: nil,
+            parse: nil,
+            identifier: nil,
+            __private__: [],
+            __reference__: nil
 
   @typedoc "The internal, canonical representation of a scalar value"
   @type value_t :: any
@@ -93,5 +91,4 @@ defmodule Absinthe.Type.Scalar do
       end
     end
   end
-
 end

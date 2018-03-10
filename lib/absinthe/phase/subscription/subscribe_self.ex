@@ -6,7 +6,7 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
 
   alias Absinthe.Blueprint
 
-  @spec run(any, Keyword.t) :: {:ok, Blueprint.t}
+  @spec run(any, Keyword.t()) :: {:ok, Blueprint.t()}
   def run(blueprint, options) do
     with %{type: :subscription} = op <- Blueprint.current_operation(blueprint) do
       do_subscription(op, blueprint, options)
@@ -29,11 +29,10 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
       {:replace, blueprint, [{Phase.Subscription.Result, topic: doc_id}]}
     else
       {:error, error} ->
-
         blueprint = update_in(blueprint.execution.validation_errors, &[error | &1])
 
         error_pipeline = [
-          {Phase.Document.Result, options},
+          {Phase.Document.Result, options}
         ]
 
         {:replace, blueprint, error_pipeline}
@@ -43,45 +42,57 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
   defp get_field_key(%{schema_node: schema_node, argument_data: argument_data} = field, context) do
     name = schema_node.identifier
 
-    config = case schema_node.config do
-      fun when is_function(fun, 2) ->
-        apply(fun, [argument_data, %{context: context}])
-      fun when is_function(fun, 1) ->
-        IO.write(:stderr, "Warning: 1-arity topic functions are deprecated, upgrade to 2 arity before 1.4.0 release")
-        apply(fun, [argument_data])
-      nil ->
-        {:ok, topic: Atom.to_string(name)}
-    end
+    config =
+      case schema_node.config do
+        fun when is_function(fun, 2) ->
+          apply(fun, [argument_data, %{context: context}])
+
+        fun when is_function(fun, 1) ->
+          IO.write(
+            :stderr,
+            "Warning: 1-arity topic functions are deprecated, upgrade to 2 arity before 1.4.0 release"
+          )
+
+          apply(fun, [argument_data])
+
+        nil ->
+          {:ok, topic: Atom.to_string(name)}
+      end
 
     case config do
       {:ok, config} ->
         key = find_key!(config)
         {:ok, {name, key}}
+
       {:error, msg} ->
         error = %Phase.Error{
           phase: __MODULE__,
           message: msg,
-          locations: [field.source_location],
+          locations: [field.source_location]
         }
+
         {:error, error}
+
       val ->
         raise """
         Invalid return from config function!
 
         Config function must returne `{:ok, config}` or `{:error, msg}`. You returned:
 
-        #{inspect val}
+        #{inspect(val)}
         """
     end
   end
 
   defp find_key!(config) do
-    topic = config[:topic] || raise """
-    Subscription config must include a non null topic!
+    topic =
+      config[:topic] ||
+        raise """
+        Subscription config must include a non null topic!
 
-    #{inspect config}
-    """
-    
+        #{inspect(config)}
+        """
+
     to_string(topic)
   end
 
@@ -89,6 +100,7 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
     case Absinthe.Subscription.extract_pubsub(context) do
       {:ok, pubsub} ->
         pubsub
+
       _ ->
         raise """
         Pubsub not configured!
@@ -97,5 +109,4 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
         """
     end
   end
-
 end

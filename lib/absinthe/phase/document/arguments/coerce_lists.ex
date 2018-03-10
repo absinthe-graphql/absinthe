@@ -18,24 +18,27 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceLists do
   alias Absinthe.{Blueprint, Type}
   alias Absinthe.Blueprint.Input
 
-  @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
+  @spec run(Blueprint.t(), Keyword.t()) :: {:ok, Blueprint.t()}
   def run(input, _options \\ []) do
     node = Blueprint.prewalk(input, &coerce_node/1)
     {:ok, node}
   end
 
   defp coerce_node(%Input.Value{normalized: nil} = node), do: node
+
   defp coerce_node(%Input.Value{normalized: %Input.Null{}} = node) do
     node
   end
+
   defp coerce_node(%Input.Value{} = node) do
     case Type.unwrap_non_null(node.schema_node) do
       %Type.List{} ->
         %{node | normalized: Input.List.wrap(node.normalized, node.schema_node)}
+
       _ ->
         node
     end
   end
-  defp coerce_node(node), do: node
 
+  defp coerce_node(node), do: node
 end

@@ -38,7 +38,7 @@ defmodule Absinthe.Subscription do
   """
   defdelegate start_link(pubsub), to: Subscription.Supervisor
 
-  @type subscription_field_spec :: {atom, term | ((term) -> term)}
+  @type subscription_field_spec :: {atom, term | (term -> term)}
 
   @doc """
   Publish a mutation
@@ -62,11 +62,16 @@ defmodule Absinthe.Subscription do
   ])
   ```
   """
-  @spec publish(Absinthe.Subscription.Pubsub.t, term, Absinthe.Resolution.t | [subscription_field_spec]) :: :ok
+  @spec publish(
+          Absinthe.Subscription.Pubsub.t(),
+          term,
+          Absinthe.Resolution.t() | [subscription_field_spec]
+        ) :: :ok
   def publish(pubsub, mutation_result, %Absinthe.Resolution{} = info) do
     subscribed_fields = get_subscription_fields(info)
     publish(pubsub, mutation_result, subscribed_fields)
   end
+
   def publish(pubsub, mutation_result, subscribed_fields) do
     _ = publish_remote(pubsub, mutation_result, subscribed_fields)
     _ = Subscription.Local.publish_mutation(pubsub, mutation_result, subscribed_fields)
@@ -79,9 +84,9 @@ defmodule Absinthe.Subscription do
     subscription = Absinthe.Schema.lookup_type(schema, :subscription) || %{}
 
     for {sub_field_name, sub_field} <- Map.get(subscription, :fields, []),
-    {mutation_names, config} <- sub_field.triggers,
-    mut_field_name in mutation_names,
-    do: {sub_field_name, config}
+        {mutation_names, config} <- sub_field.triggers,
+        mut_field_name in mutation_names,
+        do: {sub_field_name, config}
   end
 
   @doc false
@@ -96,9 +101,11 @@ defmodule Absinthe.Subscription do
   def unsubscribe(pubsub, doc_id) do
     registry = pubsub |> registry_name
     self = self()
+
     for {^self, field_key} <- Registry.lookup(registry, {self, doc_id}) do
       Registry.unregister_match(registry, field_key, {doc_id, :_})
     end
+
     Registry.unregister(registry, {self, doc_id})
     :ok
   end
@@ -109,7 +116,7 @@ defmodule Absinthe.Subscription do
     |> registry_name
     |> Registry.lookup(key)
     |> Enum.map(&elem(&1, 1))
-    |> Map.new
+    |> Map.new()
   end
 
   @doc false
@@ -140,12 +147,13 @@ defmodule Absinthe.Subscription do
 
     res
   end
+
   def call(res, _), do: res
 
   @doc false
   def extract_pubsub(context) do
     with {:ok, pubsub} <- Map.fetch(context, :pubsub),
-    pid when is_pid(pid) <- Process.whereis(registry_name(pubsub)) do
+         pid when is_pid(pid) <- Process.whereis(registry_name(pubsub)) do
       {:ok, pubsub}
     else
       _ -> :error

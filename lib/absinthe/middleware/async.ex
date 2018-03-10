@@ -53,10 +53,11 @@ defmodule Absinthe.Middleware.Async do
   def call(%{state: :unresolved} = res, {fun, opts}) do
     task_data = {Task.async(fun), opts}
 
-    %{res |
-      state: :suspended,
-      acc: Map.put(res.acc, __MODULE__, true),
-      middleware: [{__MODULE__, task_data} | res.middleware]
+    %{
+      res
+      | state: :suspended,
+        acc: Map.put(res.acc, __MODULE__, true),
+        middleware: [{__MODULE__, task_data} | res.middleware]
     }
   end
 
@@ -83,6 +84,7 @@ defmodule Absinthe.Middleware.Async do
   def before_resolution(exec) do
     put_in(exec.acc[__MODULE__], false)
   end
+
   # Nothing to do after resolution for this plugin, so we no-op
   def after_resolution(exec), do: exec
 
@@ -92,6 +94,7 @@ defmodule Absinthe.Middleware.Async do
     case exec.acc do
       %{__MODULE__ => true} ->
         [Absinthe.Phase.Document.Execution.Resolution | pipeline]
+
       _ ->
         pipeline
     end

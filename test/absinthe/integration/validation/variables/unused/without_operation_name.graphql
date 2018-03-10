@@ -1,0 +1,5 @@
+query ($test: String) {
+  thing(id: "foo") {
+    name
+  }
+}

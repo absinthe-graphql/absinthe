@@ -1,0 +1,9 @@
+# Schema: NullListsSchema
+{
+  nullableListOfNonNullableType(input: [null, 1]) {
+    length
+    content
+    nonNullCount
+    nullCount
+  }
+}

@@ -1,5 +1,4 @@
 defmodule Absinthe.Blueprint.Schema.FieldDefinition do
-
   @moduledoc false
 
   alias Absinthe.Blueprint
@@ -17,7 +16,7 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
     middleware_ast: [],
     # Added by phases
     flags: %{},
-    errors: [],
+    errors: []
   ]
 
   @type t :: %__MODULE__{

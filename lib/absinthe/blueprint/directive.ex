@@ -1,5 +1,4 @@
 defmodule Absinthe.Blueprint.Directive do
-
   @moduledoc false
 
   alias Absinthe.{Blueprint, Phase}
@@ -13,26 +12,28 @@ defmodule Absinthe.Blueprint.Directive do
     # Added by phases
     schema_node: nil,
     flags: %{},
-    errors: [],
+    errors: []
   ]
 
   @type t :: %__MODULE__{
-    name: String.t,
-    arguments: [Blueprint.Input.Argument.t],
-    source_location: nil | Blueprint.Document.SourceLocation.t,
-    schema_node: nil | Absinthe.Type.Directive.t,
-    flags: Blueprint.flags_t,
-    errors: [Phase.Error.t],
-  }
+          name: String.t(),
+          arguments: [Blueprint.Input.Argument.t()],
+          source_location: nil | Blueprint.Document.SourceLocation.t(),
+          schema_node: nil | Absinthe.Type.Directive.t(),
+          flags: Blueprint.flags_t(),
+          errors: [Phase.Error.t()]
+        }
 
-  @spec expand(t, Blueprint.node_t) :: {t, map}
+  @spec expand(t, Blueprint.node_t()) :: {t, map}
   def expand(%__MODULE__{schema_node: %{expand: nil}}, node) do
     node
   end
+
   def expand(%__MODULE__{schema_node: %{expand: fun}} = directive, node) do
     args = Blueprint.Input.Argument.value_map(directive.arguments)
     fun.(args, node)
   end
+
   def expand(%__MODULE__{schema_node: nil}, node) do
     node
   end
@@ -40,7 +41,7 @@ defmodule Absinthe.Blueprint.Directive do
   @doc """
   Determine the placement name for a given Blueprint node
   """
-  @spec placement(Blueprint.node_t) :: nil | atom
+  @spec placement(Blueprint.node_t()) :: nil | atom
   def placement(%Blueprint.Document.Operation{type: type}), do: type
   def placement(%Blueprint.Document.Field{}), do: :field
   def placement(%Blueprint.Document.Fragment.Named{}), do: :fragment_definition

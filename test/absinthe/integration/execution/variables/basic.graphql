@@ -1,0 +1,5 @@
+query ($thingId: String!) {
+  thing(id: $thingId) {
+    name
+  }
+}

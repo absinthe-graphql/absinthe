@@ -16,8 +16,7 @@ Seeing the names of the types in the schema:
     }
   }
 }
-"""
-|> Absinthe.run(MyAppWeb.Schema)
+""" |> Absinthe.run(MyAppWeb.Schema)
 {:ok,
   %{data: %{
     "__schema" => %{
@@ -44,8 +43,7 @@ Getting the name of the queried type:
     __typename
   }
 }
-"""
-|> Absinthe.run(MyAppWeb.Schema)
+""" |> Absinthe.run(MyAppWeb.Schema)
 {:ok,
   %{data: %{
     "profile" => %{
@@ -71,8 +69,7 @@ Getting the name of the fields for a named type:
     }
   }
 }
-"""
-|> Absinthe.run(MyAppWeb.Schema)
+""" |> Absinthe.run(MyAppWeb.Schema)
 {:ok,
   %{data: %{
     "__type" => %{

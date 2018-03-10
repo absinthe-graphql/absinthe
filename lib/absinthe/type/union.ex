@@ -1,5 +1,4 @@
 defmodule Absinthe.Type.Union do
-
   @moduledoc """
   A unions is an abstract type made up of multiple possible concrete types.
 
@@ -40,65 +39,72 @@ defmodule Absinthe.Type.Union do
 
   """
   @type t :: %__MODULE__{
-    name: binary,
-    description: binary,
-    types: [Type.identifier_t],
-    resolve_type: ((any, Absinthe.Resolution.t) -> atom | nil),
-    identifier: atom,
-    __private__: Keyword.t,
-    __reference__: Type.Reference.t,
-  }
+          name: binary,
+          description: binary,
+          types: [Type.identifier_t()],
+          resolve_type: (any, Absinthe.Resolution.t() -> atom | nil),
+          identifier: atom,
+          __private__: Keyword.t(),
+          __reference__: Type.Reference.t()
+        }
 
-  defstruct [
-    name: nil,
-    description: nil,
-    resolve_type: nil,
-    identifier: nil,
-    types: [],
-    __private__: [],
-    __reference__: nil,
-  ]
+  defstruct name: nil,
+            description: nil,
+            resolve_type: nil,
+            identifier: nil,
+            types: [],
+            __private__: [],
+            __reference__: nil
 
   def build(%{attrs: attrs}) do
     quote do: %unquote(__MODULE__){unquote_splicing(attrs)}
   end
 
   @doc false
-  @spec member?(t, Type.t) :: boolean
+  @spec member?(t, Type.t()) :: boolean
   def member?(%{types: types}, %{__reference__: %{identifier: ident}}) do
     ident in types
   end
+
   def member?(_, _) do
     false
   end
 
   @doc false
-  @spec resolve_type(t, any, Absinthe.Resolution.t) :: Type.t | nil
+  @spec resolve_type(t, any, Absinthe.Resolution.t()) :: Type.t() | nil
   def resolve_type(type, object, env, opts \\ [lookup: true])
+
   def resolve_type(%{resolve_type: nil, types: types}, obj, %{schema: schema}, opts) do
-    type_name = Enum.find(types, fn
-      %{is_type_of: nil} ->
-        false
-      type ->
-        case Schema.lookup_type(schema, type) do
-          nil ->
-            false
-          %{is_type_of: nil} ->
-            false
-          %{is_type_of: check} ->
-            check.(obj)
-        end
-    end)
+    type_name =
+      Enum.find(types, fn
+        %{is_type_of: nil} ->
+          false
+
+        type ->
+          case Schema.lookup_type(schema, type) do
+            nil ->
+              false
+
+            %{is_type_of: nil} ->
+              false
+
+            %{is_type_of: check} ->
+              check.(obj)
+          end
+      end)
+
     if opts[:lookup] do
       Schema.lookup_type(schema, type_name)
     else
       type_name
     end
   end
+
   def resolve_type(%{resolve_type: resolver}, obj, %{schema: schema} = env, opts) do
     case resolver.(obj, env) do
       nil ->
         nil
+
       ident when is_atom(ident) ->
         if opts[:lookup] do
           Absinthe.Schema.lookup_type(schema, ident)
@@ -107,5 +113,4 @@ defmodule Absinthe.Type.Union do
         end
     end
   end
-
 end

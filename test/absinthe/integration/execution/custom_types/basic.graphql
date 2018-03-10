@@ -1,0 +1,4 @@
+# Schema: CustomTypesSchema
+query {
+  customTypesQuery { datetime }
+}

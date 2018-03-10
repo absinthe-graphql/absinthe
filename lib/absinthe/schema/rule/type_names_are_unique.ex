@@ -16,7 +16,7 @@ defmodule Absinthe.Schema.Rule.TypeNamesAreUnique do
 
   def explanation(%{data: %{artifact: artifact, value: name}}) do
     """
-    #{artifact} #{inspect name} is not unique.
+    #{artifact} #{inspect(name)} is not unique.
 
     #{@description}
     """
@@ -25,5 +25,4 @@ defmodule Absinthe.Schema.Rule.TypeNamesAreUnique do
   # This rule is only used for its explanation. Error details are added during
   # compilation.
   def check(_), do: []
-
 end

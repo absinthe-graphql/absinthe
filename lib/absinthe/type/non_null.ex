@@ -33,6 +33,6 @@ defmodule Absinthe.Type.NonNull do
   """
   defstruct of_type: nil
 
-  @type t :: %__MODULE__{of_type: Absinthe.Type.nullable_t}
+  @type t :: %__MODULE__{of_type: Absinthe.Type.nullable_t()}
   @type t(x) :: %__MODULE__{of_type: x}
 end

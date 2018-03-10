@@ -17,8 +17,8 @@ defmodule Absinthe.Resolution.Helpers do
 
   Forbidden in mutation fields. (TODO: actually enforce this)
   """
-  @spec async(( -> term)) :: {:middleware, Middleware.Async, term}
-  @spec async(( -> term), Keyword.t) :: {:middleware, Middleware.Async, term}
+  @spec async((() -> term)) :: {:middleware, Middleware.Async, term}
+  @spec async((() -> term), Keyword.t()) :: {:middleware, Middleware.Async, term}
   def async(fun, opts \\ []) do
     {:middleware, Middleware.Async, {fun, opts}}
   end
@@ -48,8 +48,14 @@ defmodule Absinthe.Resolution.Helpers do
   end
   ```
   """
-  @spec batch(Middleware.Batch.batch_fun, term, Middleware.Batch.post_batch_fun) :: {:plugin, Middleware.Batch, term}
-  @spec batch(Middleware.Batch.batch_fun, term, Middleware.Batch.post_batch_fun, opts :: Keyword.t):: {:plugin, Middleware.Batch, term}
+  @spec batch(Middleware.Batch.batch_fun(), term, Middleware.Batch.post_batch_fun()) ::
+          {:plugin, Middleware.Batch, term}
+  @spec batch(
+          Middleware.Batch.batch_fun(),
+          term,
+          Middleware.Batch.post_batch_fun(),
+          opts :: Keyword.t()
+        ) :: {:plugin, Middleware.Batch, term}
   def batch(batch_fun, batch_data, post_batch_fun, opts \\ []) do
     batch_config = {batch_fun, batch_data, post_batch_fun, opts}
     {:middleware, Middleware.Batch, batch_config}
@@ -95,7 +101,11 @@ defmodule Absinthe.Resolution.Helpers do
     end
 
     @type dataloader_tuple :: {:middleware, Absinthe.Middleware.Dataloader, term}
-    @type dataloader_key_fun :: (Absinthe.Resolution.source, Absinthe.Resolution.arguments, Absinthe.Resolution.t -> {any, map})
+    @type dataloader_key_fun ::
+            (Absinthe.Resolution.source(),
+             Absinthe.Resolution.arguments(),
+             Absinthe.Resolution.t() ->
+               {any, map})
     @type dataloader_opt :: {:args, map} | {:use_parent, true | false}
 
     @doc """
@@ -121,7 +131,7 @@ defmodule Absinthe.Resolution.Helpers do
     field :author, :user, resolve: dataloader(Blog, :author, [])
     ```
     """
-    @spec dataloader(Dataloader.source_name) :: dataloader_tuple
+    @spec dataloader(Dataloader.source_name()) :: dataloader_tuple
     def dataloader(source) do
       fn parent, args, %{context: %{loader: loader}} = res ->
         resource = res.definition.schema_node.identifier
@@ -209,13 +219,16 @@ defmodule Absinthe.Resolution.Helpers do
 
     """
     def dataloader(source, fun, opts \\ [])
-    @spec dataloader(Dataloader.source_name, dataloader_key_fun | any, [dataloader_opt]) :: dataloader_tuple
+
+    @spec dataloader(Dataloader.source_name(), dataloader_key_fun | any, [dataloader_opt]) ::
+            dataloader_tuple
     def dataloader(source, fun, opts) when is_function(fun, 3) do
       fn parent, args, %{context: %{loader: loader}} = res ->
         {resource, args} = fun.(parent, args, res)
         do_dataloader(loader, source, resource, args, parent, opts)
       end
     end
+
     def dataloader(source, resource, opts) do
       fn parent, args, %{context: %{loader: loader}} ->
         do_dataloader(loader, source, resource, args, parent, opts)
@@ -224,8 +237,8 @@ defmodule Absinthe.Resolution.Helpers do
 
     defp use_parent(loader, source, resource, parent, args, opts) do
       with true <- Keyword.get(opts, :use_parent, false),
-      {:ok, val} <- is_map(parent) && Map.fetch(parent, resource) do
-       Dataloader.put(loader, source, {resource, args}, parent, val)
+           {:ok, val} <- is_map(parent) && Map.fetch(parent, resource) do
+        Dataloader.put(loader, source, {resource, args}, parent, val)
       else
         _ -> loader
       end

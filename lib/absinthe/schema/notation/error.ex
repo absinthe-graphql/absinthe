@@ -7,5 +7,4 @@ defmodule Absinthe.Schema.Notation.Error do
   def exception(message) do
     %__MODULE__{message: message}
   end
-
 end

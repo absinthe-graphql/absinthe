@@ -1,5 +1,4 @@
 defmodule Absinthe.Type.Directive do
-
   @moduledoc """
   Used by the GraphQL runtime as a way of modifying execution
   behavior.
@@ -23,36 +22,36 @@ defmodule Absinthe.Type.Directive do
   The `:__reference__` key is for internal use.
   """
   @type t :: %{
-    name: binary,
-    description: binary,
-    identifier: atom,
-    args: map,
-    locations: [location],
-    expand: nil | ((Absinthe.Blueprint.node_t, map) -> {Absinthe.Blueprint.t, map}),
-    instruction: ((map) -> atom), __reference__: Type.Reference.t
-  }
+          name: binary,
+          description: binary,
+          identifier: atom,
+          args: map,
+          locations: [location],
+          expand: nil | (Absinthe.Blueprint.node_t(), map -> {Absinthe.Blueprint.t(), map}),
+          instruction: (map -> atom),
+          __reference__: Type.Reference.t()
+        }
 
-  @type location :: :query | :mutation | :field | :fragment_definition | :fragment_spread | :inline_fragment
+  @type location ::
+          :query | :mutation | :field | :fragment_definition | :fragment_spread | :inline_fragment
 
-  defstruct [
-    name: nil,
-    description: nil,
-    identifier: nil,
-    args: nil,
-    locations: [],
-    expand: nil,
-    instruction: nil,
-    __reference__: nil,
-  ]
+  defstruct name: nil,
+            description: nil,
+            identifier: nil,
+            args: nil,
+            locations: [],
+            expand: nil,
+            instruction: nil,
+            __reference__: nil
 
   def build(%{attrs: attrs}) do
-    args = attrs
-    |> Keyword.get(:args, [])
-    |> Enum.map(fn
-      {name, attrs} ->
+    args =
+      attrs
+      |> Keyword.get(:args, [])
+      |> Enum.map(fn {name, attrs} ->
         {name, ensure_reference(attrs, attrs[:__reference__])}
-    end)
-    |> Type.Argument.build
+      end)
+      |> Type.Argument.build()
 
     attrs = Keyword.put(attrs, :args, args)
 
@@ -63,6 +62,7 @@ defmodule Absinthe.Type.Directive do
     case Keyword.has_key?(arg_attrs, :__reference__) do
       true ->
         arg_attrs
+
       false ->
         Keyword.put(arg_attrs, :__reference__, default_reference)
     end
@@ -70,9 +70,9 @@ defmodule Absinthe.Type.Directive do
 
   # Whether the directive is active in `place`
   @doc false
-  @spec on?(t, Language.t) :: boolean
+  @spec on?(t, Language.t()) :: boolean
   def on?(%{locations: locations}, place) do
-    Enum.any?(locations, &(do_on?(&1, place)))
+    Enum.any?(locations, &do_on?(&1, place))
   end
 
   # Operations
@@ -86,7 +86,7 @@ defmodule Absinthe.Type.Directive do
 
   # Check a directive and return an instruction
   @doc false
-  @spec check(t, Language.t, map) :: atom
+  @spec check(t, Language.t(), map) :: atom
   def check(definition, place, args) do
     if on?(definition, place) && definition.instruction do
       definition.instruction.(args)
@@ -94,5 +94,4 @@ defmodule Absinthe.Type.Directive do
       :ok
     end
   end
-
 end

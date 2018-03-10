@@ -1,5 +1,4 @@
 defmodule Absinthe.Phase.Document.CurrentOperation do
-
   @moduledoc false
 
   # Selects the current operation.
@@ -13,29 +12,32 @@ defmodule Absinthe.Phase.Document.CurrentOperation do
   use Absinthe.Phase
   alias Absinthe.Blueprint
 
-  @spec run(Blueprint.t, Keyword.t) :: {:ok, Blueprint.t}
+  @spec run(Blueprint.t(), Keyword.t()) :: {:ok, Blueprint.t()}
   def run(input, options \\ []) do
     operations = process(input.operations, Map.new(options))
     result = %{input | operations: operations}
     {:ok, result}
   end
 
-  defp process([op],  %{operation_name: nil}) do
+  defp process([op], %{operation_name: nil}) do
     [%{op | current: true}]
   end
+
   defp process([%{name: name} = op], %{operation_name: name}) do
     [%{op | current: true}]
   end
+
   defp process(ops, %{operation_name: name}) do
     Enum.map(ops, fn
       %{name: ^name} = op ->
         %{op | current: true}
+
       op ->
         op
     end)
   end
+
   defp process(ops, _) do
     ops
   end
-
 end

@@ -11,7 +11,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedFragments do
   @doc """
   Run the validation.
   """
-  @spec run(Blueprint.t, Keyword.t) :: Phase.result_t
+  @spec run(Blueprint.t(), Keyword.t()) :: Phase.result_t()
   def run(input, _options \\ []) do
     result = Blueprint.prewalk(input, &handle_node(&1, input.operations))
     {:ok, result}
@@ -26,17 +26,19 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedFragments do
       |> put_error(error(node))
     end
   end
+
   def handle_node(node, _) do
     node
   end
 
-  @spec uses?(Blueprint.Document.Fragment.Named.t, [Blueprint.Document.Operation.t]) :: boolean
+  @spec uses?(Blueprint.Document.Fragment.Named.t(), [Blueprint.Document.Operation.t()]) ::
+          boolean
   defp uses?(node, operations) do
     Enum.any?(operations, &Blueprint.Document.Operation.uses?(&1, node))
   end
 
   # Generate the error for the node
-  @spec error(Blueprint.Document.Fragment.Named.t) :: Phase.Error.t
+  @spec error(Blueprint.Document.Fragment.Named.t()) :: Phase.Error.t()
   defp error(node) do
     %Phase.Error{
       phase: __MODULE__,
@@ -48,9 +50,8 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedFragments do
   @doc """
   Generate an error message for an unused fragment.
   """
-  @spec error_message(String.t) :: String.t
+  @spec error_message(String.t()) :: String.t()
   def error_message(name) do
     ~s(Fragment "#{name}" is never used.)
   end
-
 end

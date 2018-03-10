@@ -1,0 +1,10 @@
+# Schema: ColorSchema
+query {
+  __type(name: "ChannelInput") {
+    name
+    inputFields {
+      name
+      defaultValue
+    }
+  }
+}

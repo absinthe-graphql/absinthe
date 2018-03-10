@@ -1,0 +1,8 @@
+{
+  :ok,
+  %{
+    data: %{
+      "nullableListOfNonNullableType" => nil
+    }
+  }
+}

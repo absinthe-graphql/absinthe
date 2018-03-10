@@ -9,5 +9,4 @@ defmodule Absinthe.Adapter.Passthrough do
   def load_document(doc), do: doc
 
   def dump_results(results), do: results
-
 end

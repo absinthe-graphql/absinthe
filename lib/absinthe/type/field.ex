@@ -20,7 +20,7 @@ defmodule Absinthe.Type.Field do
 
   See the `Absinthe.Type.Field.t` explanation of `:resolve` for more information.
   """
-  @type resolver_t :: ((%{atom => any}, Absinthe.Resolution.t) -> result)
+  @type resolver_t :: (%{atom => any}, Absinthe.Resolution.t() -> result)
 
   @typedoc """
   The result of a resolver.
@@ -34,19 +34,19 @@ defmodule Absinthe.Type.Field do
   information.
   """
   @type complexity_t ::
-    ((%{atom => any}, non_neg_integer) -> non_neg_integer) |
-    ((%{atom => any}, non_neg_integer, Absinthe.Complexity.t) -> non_neg_integer) |
-    {module, atom} |
-    non_neg_integer
+          (%{atom => any}, non_neg_integer -> non_neg_integer)
+          | (%{atom => any}, non_neg_integer, Absinthe.Complexity.t() -> non_neg_integer)
+          | {module, atom}
+          | non_neg_integer
 
   @type ok_result :: {:ok, any}
   @type error_result :: {:error, error_value}
-  @type middleware_result :: {:middleware, Absinthe.Middleware.spec, term}
+  @type middleware_result :: {:middleware, Absinthe.Middleware.spec(), term}
 
   @typedoc """
   An error message is a human-readable string describing the error that occurred.
   """
-  @type error_message :: String.t
+  @type error_message :: String.t()
 
   @typedoc """
   Any serializable value.
@@ -58,12 +58,14 @@ defmodule Absinthe.Type.Field do
 
   Note that the values that make up a custom error must be serializable.
   """
-  @type custom_error :: %{required(:message) => error_message, optional(atom) => serializable} | Keyword.t
+  @type custom_error ::
+          %{required(:message) => error_message, optional(atom) => serializable} | Keyword.t()
 
   @typedoc """
   An error value is a simple error message, a custom error, or a list of either/both of them.
   """
-  @type error_value :: error_message | custom_error | [error_message | custom_error] | serializable
+  @type error_value ::
+          error_message | custom_error | [error_message | custom_error] | serializable
 
   @typedoc """
   The configuration for a field.
@@ -183,33 +185,34 @@ defmodule Absinthe.Type.Field do
 
   """
   @type t :: %__MODULE__{
-               identifier: atom,
-               name: binary,
-               description: binary | nil,
-               type: Type.identifier_t,
-               deprecation: Deprecation.t | nil,
-               default_value: any,
-               args: %{(binary | atom) => Absinthe.Type.Argument.t} | nil,
-               middleware: [],
-               complexity: complexity_t | nil,
-               __private__: Keyword.t,
-               __reference__: Type.Reference.t}
+          identifier: atom,
+          name: binary,
+          description: binary | nil,
+          type: Type.identifier_t(),
+          deprecation: Deprecation.t() | nil,
+          default_value: any,
+          args: %{(binary | atom) => Absinthe.Type.Argument.t()} | nil,
+          middleware: [],
+          complexity: complexity_t | nil,
+          __private__: Keyword.t(),
+          __reference__: Type.Reference.t()
+        }
 
-  defstruct [
-    identifier: nil,
-    name: nil,
-    description: nil,
-    type: nil,
-    deprecation: nil,
-    args: %{},
-    config: nil, # used by subscription fields
-    triggers: [], # used by mutatino fields
-    middleware: [],
-    complexity: nil,
-    default_value: nil,
-    __private__: [],
-    __reference__: nil,
-  ]
+  defstruct identifier: nil,
+            name: nil,
+            description: nil,
+            type: nil,
+            deprecation: nil,
+            args: %{},
+            # used by subscription fields
+            config: nil,
+            # used by mutatino fields
+            triggers: [],
+            middleware: [],
+            complexity: nil,
+            default_value: nil,
+            __private__: [],
+            __reference__: nil
 
   @doc """
   Build an AST of the field map for inclusion in other types
@@ -227,33 +230,47 @@ defmodule Absinthe.Type.Field do
       {:%{}, [], [name: "Bar", type: :integer]}]}]}
   ```
   """
-  @spec build(Keyword.t) :: tuple
+  @spec build(Keyword.t()) :: tuple
   def build(fields) when is_list(fields) do
     quoted_empty_map = quote do: %{}
-    ast = for {field_name, field_attrs} <- fields do
-      name = field_name |> Atom.to_string
-      default_ref = field_attrs[:__reference__]
 
-      field_attrs = case Keyword.pop(field_attrs, :resolve) do
-        {nil, field_attrs} ->
+    ast =
+      for {field_name, field_attrs} <- fields do
+        name = field_name |> Atom.to_string()
+        default_ref = field_attrs[:__reference__]
+
+        field_attrs =
+          case Keyword.pop(field_attrs, :resolve) do
+            {nil, field_attrs} ->
+              field_attrs
+
+            {resolution_function_ast, field_attrs} ->
+              Keyword.put(field_attrs, :middleware, [
+                {Absinthe.Resolution, resolution_function_ast}
+              ])
+          end
+
+        field_data =
           field_attrs
-        {resolution_function_ast, field_attrs} ->
-          Keyword.put(field_attrs, :middleware, [{Absinthe.Resolution, resolution_function_ast}])
+          |> Keyword.put_new(:name, name)
+          |> Keyword.put(:identifier, field_name)
+          |> Keyword.update(:middleware, [], &Enum.reverse/1)
+          |> Keyword.update(:args, quoted_empty_map, fn raw_args ->
+            args =
+              for {name, attrs} <- raw_args,
+                  do: {name, ensure_reference(attrs, name, default_ref)}
+
+            Type.Argument.build(args)
+          end)
+
+        field_ast =
+          quote do: %Absinthe.Type.Field{
+                  unquote_splicing(field_data |> Absinthe.Type.Deprecation.from_attribute())
+                }
+
+        {field_name, field_ast}
       end
 
-      field_data =
-        field_attrs
-        |> Keyword.put_new(:name, name)
-        |> Keyword.put(:identifier, field_name)
-        |> Keyword.update(:middleware, [], &Enum.reverse/1)
-        |> Keyword.update(:args, quoted_empty_map, fn
-          raw_args ->
-            args = for {name, attrs} <- raw_args, do: {name, ensure_reference(attrs, name, default_ref)}
-            Type.Argument.build(args)
-        end)
-      field_ast = quote do: %Absinthe.Type.Field{unquote_splicing(field_data |> Absinthe.Type.Deprecation.from_attribute)}
-      {field_name, field_ast}
-    end
     quote do: %{unquote_splicing(ast)}
   end
 
@@ -261,6 +278,7 @@ defmodule Absinthe.Type.Field do
     case Keyword.has_key?(arg_attrs, :__reference__) do
       true ->
         arg_attrs
+
       false ->
         # default_reference is map AST, hence the gymnastics to build it nicely.
         {a, b, args} = default_reference
@@ -272,13 +290,16 @@ defmodule Absinthe.Type.Field do
   defimpl Absinthe.Traversal.Node do
     def children(node, traversal) do
       found = Schema.lookup_type(traversal.context, node.type)
+
       if found do
-        [found | node.args |> Map.values]
+        [found | node.args |> Map.values()]
       else
-        type_names = traversal.context.types.by_identifier |> Map.keys |> Enum.join(", ")
-        raise "Unknown Absinthe type for field `#{node.name}': (#{node.type |> Type.unwrap} not in available types, #{type_names})"
+        type_names = traversal.context.types.by_identifier |> Map.keys() |> Enum.join(", ")
+
+        raise "Unknown Absinthe type for field `#{node.name}': (#{node.type |> Type.unwrap()} not in available types, #{
+                type_names
+              })"
       end
     end
   end
-
 end
