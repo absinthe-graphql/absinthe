@@ -39,6 +39,7 @@ defmodule Absinthe.Language.FieldDefinitionTest do
       field_def = fields |> Enum.at(2) |> Blueprint.Draft.convert(doc)
 
       assert %Blueprint.Schema.FieldDefinition{
+               identifier: :quuxes,
                name: "quuxes",
                type: %Blueprint.TypeReference.List{
                  of_type: %Blueprint.TypeReference.Name{name: "Quux"}

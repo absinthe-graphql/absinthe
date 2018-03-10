@@ -3,7 +3,7 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
 
   alias Absinthe.Blueprint
 
-  @enforce_keys [:name, :identifier, :type]
+  @enforce_keys [:name, :type]
   defstruct [
     :name,
     :identifier,
