@@ -181,10 +181,4 @@ defmodule Absinthe.Mixfile do
       ]
     ]
   end
-<<<<<<< HEAD
-
-
 end
-=======
-end
->>>>>>> 21a6de7012325be8fdc25bb1478410c773fa8fea

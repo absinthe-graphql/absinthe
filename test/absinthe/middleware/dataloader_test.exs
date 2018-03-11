@@ -223,9 +223,4 @@ defmodule Absinthe.Middleware.DataloaderTest do
 
     refute_receive(:loading)
   end
-<<<<<<< HEAD:test/lib/absinthe/middleware/dataloader_test.exs
-
 end
-=======
-end
->>>>>>> 21a6de7012325be8fdc25bb1478410c773fa8fea:test/absinthe/middleware/dataloader_test.exs
