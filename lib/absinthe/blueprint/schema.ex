@@ -59,7 +59,6 @@ defmodule Absinthe.Blueprint.Schema do
   end
 
   defp build_types([{:desc, desc} | rest], [item | stack]) do
-    item |> IO.inspect
     build_types(rest, [%{item | description: desc} | stack])
   end
 

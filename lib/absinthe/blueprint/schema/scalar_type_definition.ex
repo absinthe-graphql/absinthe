@@ -28,7 +28,7 @@ defmodule Absinthe.Blueprint.Schema.ScalarTypeDefinition do
   def build(type_def, _schema) do
     %Absinthe.Type.Scalar{
       identifier: type_def.identifier,
-      name: type_def.name,
+      name: type_def.name
     }
   end
 end
