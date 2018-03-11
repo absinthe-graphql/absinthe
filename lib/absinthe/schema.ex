@@ -1,5 +1,5 @@
-defmodule Absinthe.Schema do
-  import Absinthe.Schema.Notation
+defmodule Absinthe.Schema.Old do
+  import Absinthe.Schema.Notation.Old
 
   @moduledoc """
   Define a GraphQL schema.

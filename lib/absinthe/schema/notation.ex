@@ -1,4 +1,4 @@
-defmodule Absinthe.Schema.Notation do
+defmodule Absinthe.Schema.Notation.Old do
   @moduledoc """
   This module contains macros used to build GraphQL types.
 

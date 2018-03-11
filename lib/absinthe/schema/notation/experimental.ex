@@ -1,5 +1,5 @@
 # TODO: This will become Absinthe.Schema.Notatigon before release
-defmodule Absinthe.Schema.Notation.Experimental do
+defmodule Absinthe.Schema.Notation do
   alias Absinthe.Blueprint
   alias Absinthe.Blueprint.Schema
 
