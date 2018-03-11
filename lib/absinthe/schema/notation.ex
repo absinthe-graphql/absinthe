@@ -16,52 +16,115 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
-  defmacro query(do: body) do
-    object_definition(__CALLER__, :query, [name: "RootQueryType"], body)
+  defmacro query(attrs \\ [], do: body) when is_list(attrs) do
+    scoped_def(__CALLER__, Schema.ObjectTypeDefinition, :query, attrs, body)
   end
 
-  defmacro query(attrs, do: body) when is_list(attrs) do
-    object_definition(__CALLER__, :query, attrs, body)
+  defmacro mutation(attrs \\ [], do: body) when is_list(attrs) do
+    scoped_def(__CALLER__, Schema.ObjectTypeDefinition, :mutation, attrs, body)
   end
 
-  defmacro mutation(do: body) do
-    object_definition(__CALLER__, :mutation, [name: "RootMutationType"], body)
+  defmacro subscription(attrs \\ [], do: body) when is_list(attrs) do
+    scoped_def(__CALLER__, Schema.ObjectTypeDefinition, :subscription, attrs, body)
   end
 
-  defmacro mutation(attrs, do: body) when is_list(attrs) do
-    object_definition(__CALLER__, :mutation, attrs, body)
+  defmacro object(identifier, attrs \\ [], do: body) do
+    scoped_def(__CALLER__, Schema.ObjectTypeDefinition, identifier, attrs, body)
   end
 
-  defmacro subscription(do: body) do
-    object_definition(__CALLER__, :subscription, [name: "RootSubscriptionType"], body)
+  @spec field(atom, atom | Keyword.t()) :: Macro.t()
+  defmacro field(identifier, attrs) when is_list(attrs) do
+    scoped_def(__CALLER__, Schema.FieldDefinition, identifier, attrs, nil)
   end
 
-  defmacro subscription(attrs, do: body) when is_list(attrs) do
-    object_definition(__CALLER__, :subscription, attrs, body)
+  defmacro field(identifier, type) do
+    scoped_def(__CALLER__, Schema.FieldDefinition, identifier, [type: type], nil)
   end
 
-  defmacro object(identifier, do: body) do
-    object_definition(__CALLER__, identifier, [], body)
+  @spec field(atom, atom | Keyword.t(), do: Macro.t()) :: Macro.t()
+  defmacro field(identifier, attrs, do: body) when is_list(attrs) do
+    scoped_def(__CALLER__, Schema.FieldDefinition, identifier, attrs, body)
   end
 
-  defmacro object(identifier, attrs, do: body) do
-    object_definition(__CALLER__, identifier, attrs, body)
+  defmacro field(identifier, type, do: body) do
+    scoped_def(__CALLER__, Schema.FieldDefinition, identifier, [type: type], body)
   end
 
-  defp put_attr(module, thing) do
-    existing = Module.get_attribute(module, :absinthe_blueprint)
-    Module.put_attribute(module, :absinthe_blueprint, [thing | existing])
+  defmacro resolve(fun) do
+    quote do
+      middleware Absinthe.Resolution, unquote(fun)
+    end
   end
 
-  defmacro close_scope() do
-    put_attr(__CALLER__.module, :close)
-    []
+  defmacro middleware(module, opts) do
+    put_attr(__CALLER__.module, {:middleware, module, opts})
   end
 
-  defp default_object_name(identifier) do
-    identifier
-    |> Atom.to_string()
-    |> Absinthe.Utils.camelize()
+  defmacro description(str) do
+    put_attr(__CALLER__.module, {:desc, str})
+  end
+
+  defmacro scalar(identifier, attrs \\ [], do: body) do
+    scoped_def(__CALLER__, Schema.ScalarTypeDefinition, identifier, attrs, body)
+  end
+
+  defmacro serialize(fun_ast) do
+    put_attr(__CALLER__.module, {:serialize, fun_ast})
+  end
+
+  defmacro parse(fun_ast) do
+    put_attr(__CALLER__.module, {:parse, fun_ast})
+  end
+
+  defmacro enum(identifier, do: body) do
+    scoped_def(__CALLER__, Schema.EnumTypeDefinition, identifier, [], body)
+  end
+
+  defmacro enum(identifier, attrs) do
+    scoped_def(__CALLER__, Schema.EnumTypeDefinition, identifier, attrs, nil)
+  end
+
+  defmacro enum(identifier, attrs, do: body) do
+    scoped_def(__CALLER__, Schema.EnumTypeDefinition, identifier, attrs, body)
+  end
+
+  defmacro arg(identifier, type, attrs) do
+    record_arg(__CALLER__, identifier, Keyword.put(attrs, :type, type))
+  end
+
+  defmacro arg(identifier, attrs) when is_list(attrs) do
+    record_arg(__CALLER__, identifier, attrs)
+  end
+
+  defmacro arg(identifier, type) do
+    record_arg(__CALLER__, identifier, type: type)
+  end
+
+  defp record_arg(caller, identifier, attrs) do
+    attrs =
+      attrs
+      |> Keyword.put(:identifier, identifier)
+      |> Keyword.put_new(:name, default_name(:arg, identifier))
+
+    put_attr(caller.module, {:arg, attrs})
+  end
+
+  defmacro non_null(type) do
+    quote do
+      %Absinthe.Type.NonNull{of_type: unquote(type)}
+    end
+  end
+
+  defmacro directive(identifier, attrs \\ [], do: body) do
+  end
+
+  @spec import_fields(atom | {module, atom}, Keyword.t()) :: Macro.t()
+  defmacro import_fields(source_criteria, opts \\ []) do
+    source_criteria =
+      source_criteria
+      |> Macro.prewalk(&Macro.expand(&1, __CALLER__))
+
+    put_attr(__CALLER__.module, {:import_fields, {source_criteria, opts}})
   end
 
   defmacro import_types(type_module_ast, opts \\ []) do
@@ -70,6 +133,46 @@ defmodule Absinthe.Schema.Notation do
     type_module_ast
     |> Macro.expand(env)
     |> do_import_types(env, opts)
+  end
+
+  defmacro close_scope() do
+    put_attr(__CALLER__.module, :close)
+  end
+
+  defp scoped_def(caller, type, identifier, attrs, body) do
+    attrs =
+      attrs
+      |> Keyword.put(:identifier, identifier)
+      |> Keyword.put_new(:name, default_name(type, identifier))
+
+    scalar = struct(type, attrs)
+
+    put_attr(caller.module, scalar)
+
+    [
+      quote do
+        unquote(__MODULE__).put_desc(__MODULE__, unquote(type), unquote(identifier))
+      end,
+      body,
+      quote(do: unquote(__MODULE__).close_scope())
+    ]
+  end
+
+  defp put_attr(module, thing) do
+    existing = Module.get_attribute(module, :absinthe_blueprint)
+    Module.put_attribute(module, :absinthe_blueprint, [thing | existing])
+    []
+  end
+
+  defp default_name(Schema.FieldDefinition, identifier) do
+    identifier
+    |> Atom.to_string()
+  end
+
+  defp default_name(_, identifier) do
+    identifier
+    |> Atom.to_string()
+    |> Absinthe.Utils.camelize()
   end
 
   defp do_import_types({{:., _, [root_ast, :{}]}, _, modules_ast_list}, env, opts) do
@@ -97,53 +200,6 @@ defmodule Absinthe.Schema.Notation do
     []
   end
 
-  @spec import_fields(atom | {module, atom}, Keyword.t()) :: Macro.t()
-  defmacro import_fields(source_criteria, opts \\ []) do
-    source_criteria =
-      source_criteria
-      |> Macro.prewalk(&Macro.expand(&1, __CALLER__))
-
-    put_attr(__CALLER__.module, {:import_fields, {source_criteria, opts}})
-    []
-  end
-
-  @spec field(atom, atom | Keyword.t()) :: Macro.t()
-  defmacro field(identifier, attrs) when is_list(attrs) do
-    field_definition(__CALLER__, identifier, attrs, nil)
-  end
-
-  defmacro field(identifier, type) when is_atom(type) do
-    field_definition(__CALLER__, identifier, [type: type], nil)
-  end
-
-  @spec field(atom, atom | Keyword.t(), do: Macro.t()) :: Macro.t()
-  defmacro field(identifier, attrs, do: body) when is_list(attrs) do
-    field_definition(__CALLER__, identifier, attrs, body)
-  end
-
-  defmacro field(identifier, type, do: body) when is_atom(type) do
-    field_definition(__CALLER__, identifier, [type: type], body)
-  end
-
-  def field_definition(caller, identifier, attrs, body) do
-    attrs =
-      attrs
-      |> Keyword.put(:identifier, identifier)
-      |> Keyword.put_new(:name, default_field_name(identifier))
-
-    field = struct(Schema.FieldDefinition, attrs)
-
-    put_attr(caller.module, field)
-
-    [
-      quote do
-        unquote(__MODULE__).put_desc(__MODULE__, Schema.FieldDefinition, unquote(identifier))
-      end,
-      body,
-      quote(do: unquote(__MODULE__).close_scope())
-    ]
-  end
-
   def put_desc(module, type, identifier) do
     Module.put_attribute(
       module,
@@ -152,41 +208,6 @@ defmodule Absinthe.Schema.Notation do
     )
 
     Module.put_attribute(module, :desc, nil)
-  end
-
-  def object_definition(caller, identifier, attrs, body) do
-    attrs =
-      attrs
-      |> Keyword.put(:identifier, identifier)
-      |> Keyword.put_new(:name, default_object_name(identifier))
-
-    object = struct(Schema.ObjectTypeDefinition, attrs)
-
-    put_attr(caller.module, object)
-
-    [
-      quote do
-        unquote(__MODULE__).put_desc(__MODULE__, Schema.ObjectTypeDefinition, unquote(identifier))
-      end,
-      body,
-      quote(do: unquote(__MODULE__).close_scope())
-    ]
-  end
-
-  defp default_field_name(identifier) do
-    identifier
-    |> Atom.to_string()
-  end
-
-  defmacro resolve(fun) do
-    quote do
-      middleware Absinthe.Resolution, unquote(fun)
-    end
-  end
-
-  defmacro middleware(module, opts) do
-    put_attr(__CALLER__.module, {:middleware, module, opts})
-    []
   end
 
   def noop(_desc) do
@@ -208,7 +229,7 @@ defmodule Absinthe.Schema.Notation do
 
     imports = Enum.uniq(Module.get_attribute(env.module, :__absinthe_type_imports__) || [])
 
-    schema_def = %Blueprint.Schema.SchemaDefinition{
+    schema_def = %Schema.SchemaDefinition{
       imports: imports,
       module: env.module
     }
@@ -222,7 +243,7 @@ defmodule Absinthe.Schema.Notation do
     [schema] = blueprint.schema_definitions
 
     middleware =
-      for type <- schema.types,
+      for %Schema.ObjectTypeDefinition{} = type <- schema.types,
           field <- type.fields do
         quote do
           def __absinthe_middleware__(unquote(type.identifier), unquote(field.identifier)) do
@@ -267,12 +288,15 @@ defmodule Absinthe.Schema.Notation do
     build_types(rest, [schema | stack])
   end
 
-  defp build_types([%Schema.ObjectTypeDefinition{} = obj | rest], stack) do
-    build_types(rest, [obj | stack])
-  end
+  @simple_open [
+    Schema.ScalarTypeDefinition,
+    Schema.ObjectTypeDefinition,
+    Schema.FieldDefinition,
+    Schema.EnumTypeDefinition
+  ]
 
-  defp build_types([%Schema.FieldDefinition{} = field | rest], stack) do
-    build_types(rest, [field | stack])
+  defp build_types([%module{} = type | rest], stack) when module in @simple_open do
+    build_types(rest, [type | stack])
   end
 
   defp build_types([{:import_fields, criterion} | rest], [obj | stack]) do
@@ -289,6 +313,16 @@ defmodule Absinthe.Schema.Notation do
     build_types(rest, [field | stack])
   end
 
+  defp build_types([{:arg, attrs} | rest], [field | stack]) do
+    field = Map.update!(field, :arguments, &[attrs | &1])
+    build_types(rest, [field | stack])
+  end
+
+  defp build_types([{attr, value} | rest], [entity | stack]) do
+    entity = %{entity | attr => value}
+    build_types(rest, [entity | stack])
+  end
+
   defp build_types([:close | rest], [%Schema.FieldDefinition{} = field, obj | stack]) do
     field = Map.update!(field, :middleware_ast, &Enum.reverse/1)
     obj = Map.update!(obj, :fields, &[field | &1])
@@ -298,6 +332,17 @@ defmodule Absinthe.Schema.Notation do
   defp build_types([:close | rest], [%Schema.ObjectTypeDefinition{} = obj, schema | stack]) do
     obj = Map.update!(obj, :fields, &Enum.reverse/1)
     schema = Map.update!(schema, :types, &[obj | &1])
+    build_types(rest, [schema | stack])
+  end
+
+  @simple_close [
+    Schema.ScalarTypeDefinition,
+    Schema.EnumTypeDefinition
+  ]
+
+  defp build_types([:close | rest], [%module{} = type, schema | stack])
+       when module in @simple_close do
+    schema = Map.update!(schema, :types, &[type | &1])
     build_types(rest, [schema | stack])
   end
 

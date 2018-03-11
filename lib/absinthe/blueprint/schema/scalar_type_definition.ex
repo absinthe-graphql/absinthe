@@ -7,6 +7,8 @@ defmodule Absinthe.Blueprint.Schema.ScalarTypeDefinition do
   defstruct [
     :name,
     description: nil,
+    parse: nil,
+    serialize: nil,
     directives: [],
     # Added by phases
     flags: %{},
