@@ -4,45 +4,42 @@ defmodule Absinthe.Mixfile do
   @version "1.4.7"
 
   def project do
-    [
-      app: :absinthe,
-      version: @version,
-      elixir: "~> 1.4",
-      elixirc_paths: elixirc_paths(Mix.env()),
-      build_embedded: Mix.env() == :prod,
-      start_permanent: Mix.env() == :prod,
-      package: package(),
-      source_url: "https://github.com/absinthe-graphql/absinthe",
-      docs: [
-        source_ref: "v#{@version}",
-        main: "overview",
-        logo: "logo.png",
-        extra_section: "GUIDES",
-        assets: "guides/assets",
-        formatters: ["html", "epub"],
-        groups_for_modules: groups_for_modules(),
-        extras: extras(),
-        groups_for_extras: groups_for_extras()
-      ],
-      deps: deps()
+    [app: :absinthe,
+     version: @version,
+     elixir: "~> 1.4",
+     elixirc_paths: elixirc_paths(Mix.env),
+     build_embedded: Mix.env == :prod,
+     start_permanent: Mix.env == :prod,
+     package: package(),
+     source_url: "https://github.com/absinthe-graphql/absinthe",
+     docs: [
+       source_ref: "v#{@version}",
+       main: "overview",
+       logo: "logo.png",
+       extra_section: "GUIDES",
+       assets: "guides/assets",
+       formatters: ["html", "epub"],
+       groups_for_modules: groups_for_modules(),
+       extras: extras(),
+       groups_for_extras: groups_for_extras()
+     ],
+     deps: deps()
     ]
   end
 
   defp package do
-    [
-      description: "GraphQL for Elixir",
-      files: ["lib", "src", "priv", "mix.exs", "README.md", "CHANGELOG.md", ".formatter.exs"],
-      maintainers: [
-        "Bruce Williams",
-        "Ben Wilson"
-      ],
-      licenses: ["MIT"],
-      links: %{github: "https://github.com/absinthe-graphql/absinthe"}
-    ]
+    [description: "GraphQL for Elixir",
+     files: ["lib", "src", "priv", "mix.exs", "README.md", "CHANGELOG.md", ".formatter.exs"],
+     maintainers: [
+       "Bruce Williams",
+       "Ben Wilson",
+     ],
+     licenses: ["MIT"],
+     links: %{github: "https://github.com/absinthe-graphql/absinthe"}]
   end
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
-  defp elixirc_paths(_), do: ["lib"]
+  defp elixirc_paths(_),     do: ["lib"]
 
   def application do
     [applications: [:logger]]
@@ -50,15 +47,16 @@ defmodule Absinthe.Mixfile do
 
   defp deps do
     [
-      {:dataloader, github: "jfrolich/dataloader", branch: "callback-dataloader", optional: true},
+      {:dataloader, path: "../dataloader", optional: true},
       {:ex_doc, "~> 0.14", only: :dev},
       {:benchfella, "~> 0.3.0", only: :dev},
       {:dialyze, "~> 0.2", only: :dev},
-      {:decimal, "~> 1.0", optional: true},
+      {:decimal, "~> 1.0", optional: :true},
       {:phoenix_pubsub, ">= 0.0.0", only: :test},
       {:mix_test_watch, "~> 0.4.1", only: [:test, :dev]}
     ]
   end
+
 
   #
   # Documentation
@@ -70,12 +68,14 @@ defmodule Absinthe.Mixfile do
       "guides/introduction/installation.md",
       "guides/introduction/learning.md",
       "guides/introduction/community.md",
+
       "guides/tutorial/start.md",
       "guides/tutorial/our-first-query.md",
       "guides/tutorial/query-arguments.md",
       "guides/tutorial/mutations.md",
       "guides/tutorial/complex-arguments.md",
       "guides/tutorial/conclusion.md",
+
       "guides/schemas.md",
       "guides/plug-phoenix.md",
       "guides/ecto.md",
@@ -94,28 +94,32 @@ defmodule Absinthe.Mixfile do
       "guides/adapters.md",
       "guides/complexity-analysis.md",
       "guides/file-uploads.md",
+
       "guides/client/javascript.md",
       "guides/client/apollo.md",
       "guides/client/relay.md",
-      "guides/upgrading/v1.4.md"
+
+      "guides/upgrading/v1.4.md",
     ]
   end
 
   defp groups_for_extras do
     [
-      Introduction: ~r/guides\/introduction\/.*/,
-      Tutorial: ~r/guides\/tutorial\/.*/,
-      Topics: ~r/guides\/[^\/]+\.md/,
+      "Introduction": ~r/guides\/introduction\/.*/,
+      "Tutorial": ~r/guides\/tutorial\/.*/,
+      "Topics": ~r/guides\/[^\/]+\.md/,
       "Client Guides": ~r/guides\/client\/.*/,
-      "Upgrade Guides": ~r/guides\/upgrading\/.*/
+      "Upgrade Guides": ~r/guides\/upgrading\/.*/,
     ]
   end
 
   defp groups_for_modules do
+
     # Ungrouped:
     # - Absinthe
 
     [
+
       "Schema Definition and Types": [
         Absinthe.Schema,
         Absinthe.Schema.Notation,
@@ -135,8 +139,9 @@ defmodule Absinthe.Mixfile do
         Absinthe.Type.NonNull,
         Absinthe.Type.Object,
         Absinthe.Type.Scalar,
-        Absinthe.Type.Union
+        Absinthe.Type.Union,
       ],
+
       "Middleware and Plugins": [
         Absinthe.Middleware,
         Absinthe.Plugin,
@@ -146,39 +151,49 @@ defmodule Absinthe.Mixfile do
         Absinthe.Middleware.MapGet,
         Absinthe.Middleware.PassParent
       ],
-      Subscriptions: [
+
+      "Subscriptions": [
         Absinthe.Subscription,
-        Absinthe.Subscription.Pubsub
+        Absinthe.Subscription.Pubsub,
       ],
-      Extensibility: [
+
+      "Extensibility": [
         Absinthe.Pipeline,
         Absinthe.Phase,
         Absinthe.Phase.Validation.Helpers,
-        Absinthe.Pipeline.ErrorResult
+        Absinthe.Pipeline.ErrorResult,
       ],
+
       "Document Adapters": [
         Absinthe.Adapter,
         Absinthe.Adapter.LanguageConventions,
-        Absinthe.Adapter.Passthrough
+        Absinthe.Adapter.Passthrough,
       ],
-      Execution: [
+
+      "Execution": [
         Absinthe.Blueprint,
         Absinthe.Blueprint.Execution,
         Absinthe.Traversal,
         Absinthe.Resolution,
-        Absinthe.Complexity
+        Absinthe.Complexity,
       ],
-      Introspection: [
-        Absinthe.Introspection
+
+      "Introspection": [
+        Absinthe.Introspection,
       ],
-      Testing: [
-        Absinthe.Test
+
+      "Testing": [
+        Absinthe.Test,
       ],
-      Utilities: [
+
+      "Utilities": [
         Absinthe.Logger,
         Absinthe.Utils,
-        Absinthe.Utils.Suggestion
-      ]
+        Absinthe.Utils.Suggestion,
+      ],
+
     ]
   end
+
+
 end
