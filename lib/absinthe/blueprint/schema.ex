@@ -62,8 +62,8 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(rest, [%{item | description: desc} | stack])
   end
 
-  defp build_types([{:middleware, module, opts} | rest], [field | stack]) do
-    field = Map.update!(field, :middleware_ast, &[{module, opts} | &1])
+  defp build_types([{:middleware, middleware} | rest], [field | stack]) do
+    field = Map.update!(field, :middleware_ast, &[middleware | &1])
     build_types(rest, [field | stack])
   end
 

@@ -5,7 +5,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ObjectTest do
   @moduletag :experimental
 
   defmodule Definition do
-    use Absinthe.Schema.Notation.Experimental
+    use Absinthe.Schema.Notation
 
     object :no_attrs do
     end

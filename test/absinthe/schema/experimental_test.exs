@@ -4,7 +4,7 @@ defmodule Absinthe.Schema.ExperimentalTest do
   @moduletag :experimental
 
   defmodule Schema do
-    use Absinthe.Schema.Experimental
+    use Absinthe.Schema
 
     query do
       field :user, :user do

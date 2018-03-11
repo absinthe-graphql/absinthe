@@ -5,7 +5,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportFieldsTest do
   @moduletag :experimental
 
   defmodule Source do
-    use Absinthe.Schema.Notation.Experimental
+    use Absinthe.Schema.Notation
 
     object :source do
       field :one, :string do
@@ -20,7 +20,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportFieldsTest do
   end
 
   defmodule WithoutOptions do
-    use Absinthe.Schema.Notation.Experimental
+    use Absinthe.Schema.Notation
 
     object :internal_source do
       field :one, :string do
@@ -43,7 +43,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportFieldsTest do
   end
 
   defmodule UsingOnlyOption do
-    use Absinthe.Schema.Notation.Experimental
+    use Absinthe.Schema.Notation
 
     object :internal_source do
       field :one, :string do
@@ -66,7 +66,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportFieldsTest do
   end
 
   defmodule UsingExceptOption do
-    use Absinthe.Schema.Notation.Experimental
+    use Absinthe.Schema.Notation
 
     object :internal_source do
       field :one, :string do

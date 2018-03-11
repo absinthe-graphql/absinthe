@@ -4,7 +4,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportTypesTest do
   @moduletag :experimental
 
   defmodule Source do
-    use Absinthe.Schema.Notation.Experimental
+    use Absinthe.Schema.Notation
 
     object :one do
     end
@@ -17,19 +17,19 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportTypesTest do
   end
 
   defmodule WithoutOptions do
-    use Absinthe.Schema.Notation.Experimental
+    use Absinthe.Schema.Notation
 
     import_types Source
   end
 
   defmodule UsingOnlyOption do
-    use Absinthe.Schema.Notation.Experimental
+    use Absinthe.Schema.Notation
 
     import_types(Source, only: [:one, :two])
   end
 
   defmodule UsingExceptOption do
-    use Absinthe.Schema.Notation.Experimental
+    use Absinthe.Schema.Notation
 
     import_types(Source, except: [:one, :two])
   end

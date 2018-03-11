@@ -33,7 +33,7 @@ defmodule Absinthe.Phase.Document.SchemaTest do
     end
 
     object :category do
-      field(:name)
+      field(:name, :string)
     end
 
     object :review do

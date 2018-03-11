@@ -5,7 +5,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ResolveTest do
   @moduletag :experimental
 
   defmodule Definition do
-    use Absinthe.Schema.Notation.Experimental
+    use Absinthe.Schema.Notation
 
     object :obj do
       field :anon_literal, :boolean do
