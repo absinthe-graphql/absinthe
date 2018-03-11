@@ -1,5 +1,4 @@
 defmodule Absinthe.Blueprint.Schema.DirectiveDefinition do
-
   @moduledoc false
 
   alias Absinthe.Blueprint
@@ -11,15 +10,14 @@ defmodule Absinthe.Blueprint.Schema.DirectiveDefinition do
     directives: [],
     arguments: [],
     locations: [],
-    errors: [],
+    errors: []
   ]
 
   @type t :: %__MODULE__{
-    name: String.t,
-    description: nil,
-    arguments: [Blueprint.Schema.InputValueDefinition.t],
-    locations: [String.t],
-    errors: [Absinthe.Phase.Error.t],
-  }
-
+          name: String.t(),
+          description: nil,
+          arguments: [Blueprint.Schema.InputValueDefinition.t()],
+          locations: [String.t()],
+          errors: [Absinthe.Phase.Error.t()]
+        }
 end

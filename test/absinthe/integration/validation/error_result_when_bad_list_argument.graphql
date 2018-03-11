@@ -1,0 +1,5 @@
+query {
+  thing(id: ["foo"]) {
+    name
+  }
+}

@@ -1,5 +1,4 @@
 defmodule Absinthe.Phase do
-
   @moduledoc """
   Behaviour for Absinthe Phases.
 
@@ -11,11 +10,11 @@ defmodule Absinthe.Phase do
 
   @type t :: module
   @type result_t ::
-      {:ok, any}
-    | {:jump, any, t}
-    | {:insert, any, t | [t]}
-    | {:replace, any, t | [t]}
-    | {:error, String.t}
+          {:ok, any}
+          | {:jump, any, t}
+          | {:insert, any, t | [t]}
+          | {:replace, any, t | [t]}
+          | {:error, String.t()}
 
   alias __MODULE__
   alias Absinthe.Blueprint
@@ -25,12 +24,12 @@ defmodule Absinthe.Phase do
       @behaviour Phase
       import(unquote(__MODULE__))
 
-      @spec flag_invalid(Blueprint.node_t) :: Blueprint.node_t
+      @spec flag_invalid(Blueprint.node_t()) :: Blueprint.node_t()
       def flag_invalid(%{flags: _} = node) do
         Absinthe.Blueprint.put_flag(node, :invalid, __MODULE__)
       end
 
-      @spec flag_invalid(Blueprint.node_t, atom) :: Blueprint.node_t
+      @spec flag_invalid(Blueprint.node_t(), atom) :: Blueprint.node_t()
       def flag_invalid(%{flags: _} = node, flag) do
         flagging = %{:invalid => __MODULE__, flag => __MODULE__}
         update_in(node.flags, &Map.merge(&1, flagging))
@@ -44,15 +43,15 @@ defmodule Absinthe.Phase do
         case any_invalid?(children) do
           true ->
             flag_invalid(node, add_flag)
+
           false ->
             node
         end
       end
-
     end
   end
 
-  @spec put_error(Blueprint.node_t, Phase.Error.t) :: Blueprint.node_t
+  @spec put_error(Blueprint.node_t(), Phase.Error.t()) :: Blueprint.node_t()
   def put_error(%{errors: _} = node, error) do
     update_in(node.errors, &[error | &1])
   end
@@ -62,5 +61,4 @@ defmodule Absinthe.Phase do
   end
 
   @callback run(any, any) :: result_t
-
 end

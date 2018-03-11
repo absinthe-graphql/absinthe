@@ -1,5 +1,4 @@
 defmodule Absinthe.Blueprint.Schema.InputValueDefinition do
-
   @moduledoc false
 
   alias Absinthe.Blueprint
@@ -16,19 +15,18 @@ defmodule Absinthe.Blueprint.Schema.InputValueDefinition do
     directives: [],
     # Added by phases
     flags: %{},
-    errors: [],
+    errors: []
   ]
 
   @type t :: %__MODULE__{
-    name: String.t,
-    type: Blueprint.TypeReference.t,
-    default_value: Blueprint.Input.t,
-    directives: [Blueprint.Directive.t],
-    # The struct module of the parent
-    placement: :argument_definition | :input_field_definition,
-    # Added by phases
-    flags: Blueprint.flags_t,
-    errors: [Absinthe.Phase.Error.t],
-  }
-
+          name: String.t(),
+          type: Blueprint.TypeReference.t(),
+          default_value: Blueprint.Input.t(),
+          directives: [Blueprint.Directive.t()],
+          # The struct module of the parent
+          placement: :argument_definition | :input_field_definition,
+          # Added by phases
+          flags: Blueprint.flags_t(),
+          errors: [Absinthe.Phase.Error.t()]
+        }
 end

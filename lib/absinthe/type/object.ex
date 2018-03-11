@@ -1,5 +1,4 @@
 defmodule Absinthe.Type.Object do
-
   @moduledoc """
   Represents a non-leaf node in a GraphQL tree of information.
 
@@ -85,27 +84,25 @@ defmodule Absinthe.Type.Object do
   The `__private__` and `:__reference__` keys are for internal use.
   """
   @type t :: %__MODULE__{
-    identifier: atom,
-    name: binary,
-    description: binary,
-    fields: map,
-    interfaces: [Absinthe.Type.Interface.t],
-    is_type_of: ((any) -> boolean),
-    __private__: Keyword.t,
-    __reference__: Type.Reference.t,
-  }
+          identifier: atom,
+          name: binary,
+          description: binary,
+          fields: map,
+          interfaces: [Absinthe.Type.Interface.t()],
+          is_type_of: (any -> boolean),
+          __private__: Keyword.t(),
+          __reference__: Type.Reference.t()
+        }
 
-  defstruct [
-    identifier: nil,
-    name: nil,
-    description: nil,
-    fields: nil,
-    interfaces: [],
-    is_type_of: nil,
-    __private__: [],
-    __reference__: nil,
-    field_imports: [],
-  ]
+  defstruct identifier: nil,
+            name: nil,
+            description: nil,
+            fields: nil,
+            interfaces: [],
+            is_type_of: nil,
+            __private__: [],
+            __reference__: nil,
+            field_imports: []
 
   def build(%{attrs: attrs}) do
     fields =
@@ -117,7 +114,7 @@ defmodule Absinthe.Type.Object do
 
     quote do
       %unquote(__MODULE__){
-        unquote_splicing(attrs),
+        unquote_splicing(attrs)
       }
     end
   end
@@ -125,9 +122,14 @@ defmodule Absinthe.Type.Object do
   @doc false
   def handle_imports(fields, []), do: fields
   def handle_imports(fields, nil), do: fields
+
   def handle_imports(fields, imports) do
     quote do
-      Enum.reduce(unquote(imports), unquote(fields), &Absinthe.Type.Object.import_fields(__MODULE__, &1, &2))
+      Enum.reduce(
+        unquote(imports),
+        unquote(fields),
+        &Absinthe.Type.Object.import_fields(__MODULE__, &1, &2)
+      )
     end
   end
 
@@ -135,13 +137,14 @@ defmodule Absinthe.Type.Object do
     case schema.__absinthe_type__(type) do
       %{fields: new_fields} ->
         Map.merge(fields, new_fields)
+
       _ ->
         fields
     end
   end
 
   @doc false
-  @spec field(t, atom) :: Absinthe.Type.Field.t
+  @spec field(t, atom) :: Absinthe.Type.Field.t()
   def field(%{fields: fields}, identifier) do
     fields
     |> Map.get(identifier)
@@ -152,5 +155,4 @@ defmodule Absinthe.Type.Object do
       Map.values(node.fields) ++ node.interfaces
     end
   end
-
 end

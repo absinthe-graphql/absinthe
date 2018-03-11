@@ -1,0 +1,8 @@
+query {
+  thing1: thing(id: "foo") {
+    id
+  }
+  thing2: thing(id: "bar") {
+    name
+  }
+}

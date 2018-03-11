@@ -47,29 +47,27 @@ defmodule Absinthe.Type.InputObject do
   The `__private__` and `:__reference__` fields are for internal use.
   """
   @type t :: %__MODULE__{
-    name: binary,
-    description: binary,
-    fields: map | (() -> map),
-    identifier: atom,
-    __private__: Keyword.t,
-    __reference__: Type.Reference.t,
-  }
+          name: binary,
+          description: binary,
+          fields: map | (() -> map),
+          identifier: atom,
+          __private__: Keyword.t(),
+          __reference__: Type.Reference.t()
+        }
 
-  defstruct [
-    name: nil,
-    description: nil,
-    fields: %{},
-    identifier: nil,
-    __private__: [],
-    __reference__: nil,
-    field_imports: [],
-  ]
+  defstruct name: nil,
+            description: nil,
+            fields: %{},
+            identifier: nil,
+            __private__: [],
+            __reference__: nil,
+            field_imports: []
 
   def build(%{attrs: attrs}) do
     fields =
       attrs
       |> Keyword.get(:fields, [])
-      |> Type.Field.build
+      |> Type.Field.build()
       |> Type.Object.handle_imports(attrs[:field_imports])
 
     attrs = Keyword.put(attrs, :fields, fields)
@@ -82,5 +80,4 @@ defmodule Absinthe.Type.InputObject do
       Map.values(node.fields)
     end
   end
-
 end

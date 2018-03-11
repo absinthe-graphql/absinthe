@@ -3,21 +3,19 @@ defmodule Absinthe.Language.DirectiveDefinition do
 
   alias Absinthe.{Blueprint, Language}
 
-  defstruct [
-    name: nil,
-    arguments: [],
-    directives: [],
-    locations: [],
-    loc: %{start_line: nil}
-  ]
+  defstruct name: nil,
+            arguments: [],
+            directives: [],
+            locations: [],
+            loc: %{start_line: nil}
 
   @type t :: %__MODULE__{
-    name: String.t,
-    directives: [Language.Directive.t],
-    arguments: [Language.Argument.t],
-    locations: [String.t],
-    loc: Language.loc_t
-  }
+          name: String.t(),
+          directives: [Language.Directive.t()],
+          arguments: [Language.Argument.t()],
+          locations: [String.t()],
+          loc: Language.loc_t()
+        }
 
   defimpl Blueprint.Draft do
     def convert(node, doc) do
@@ -29,5 +27,4 @@ defmodule Absinthe.Language.DirectiveDefinition do
       }
     end
   end
-
 end

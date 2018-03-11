@@ -23,6 +23,7 @@ defmodule Absinthe.Subscription.Proxy do
   def handle_info(%{node: src_node}, state) when src_node == node() do
     {:noreply, state}
   end
+
   def handle_info(payload, state) do
     # There's no meaningful form of backpressure to have here, and we can't
     # bottleneck execution inside each proxy process
@@ -30,8 +31,13 @@ defmodule Absinthe.Subscription.Proxy do
     # TODO: This should maybe be supervised? I feel like the linking here isn't
     # what it should be.
     Task.start_link(fn ->
-      Subscription.Local.publish_mutation(state.pubsub, payload.mutation_result, payload.subscribed_fields)
+      Subscription.Local.publish_mutation(
+        state.pubsub,
+        payload.mutation_result,
+        payload.subscribed_fields
+      )
     end)
+
     {:noreply, state}
   end
 end

@@ -263,7 +263,11 @@ defmodule Absinthe.Middleware do
 
   @type function_name :: atom
 
-  @type spec :: module | {module, term} | {{module, function_name}, term} | ((Absinthe.Resolution.t, term) -> Absinthe.Resolution.t)
+  @type spec ::
+          module
+          | {module, term}
+          | {{module, function_name}, term}
+          | (Absinthe.Resolution.t(), term -> Absinthe.Resolution.t())
 
   @doc """
   This is the main middleware callback.
@@ -272,5 +276,5 @@ defmodule Absinthe.Middleware do
   `%Absinthe.Resolution{}` struct. The second argument will be whatever value
   was passed to the `middleware` call that setup the middleware.
   """
-  @callback call(Absinthe.Resolution.t, term) :: Absinthe.Resolution.t
+  @callback call(Absinthe.Resolution.t(), term) :: Absinthe.Resolution.t()
 end

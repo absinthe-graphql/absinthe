@@ -1,0 +1,9 @@
+# Schema: NullListsSchema
+query {
+  nonNullableList(input: null) {
+    length
+    content
+    nonNullCount
+    nullCount
+  }
+}

@@ -1,0 +1,6 @@
+query {
+  things {
+    id
+    name
+  }
+}

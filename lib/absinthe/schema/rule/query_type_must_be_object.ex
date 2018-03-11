@@ -39,9 +39,12 @@ defmodule Absinthe.Schema.Rule.QueryTypeMustBeObject do
 
   def check(schema) do
     case Schema.lookup_type(schema, :query) do
-      %Absinthe.Type.Object{} -> []
-      _ -> [report(%{file: schema, line: 0}, %{})] #Real error message
+      %Absinthe.Type.Object{} ->
+        []
+
+      # Real error message
+      _ ->
+        [report(%{file: schema, line: 0}, %{})]
     end
   end
-
 end

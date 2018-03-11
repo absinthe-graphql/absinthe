@@ -1,0 +1,10 @@
+# Schema: ContactSchema
+query Q {
+  person {
+    name
+    ...NamedBusiness
+  }
+}
+fragment NamedBusiness on Business {
+  employee_count
+}

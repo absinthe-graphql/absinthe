@@ -1,5 +1,4 @@
 defmodule Absinthe.Type.Enum do
-
   @moduledoc """
   Used to define an enum type, a special scalar that can only have a defined set
   of values.
@@ -69,25 +68,22 @@ defmodule Absinthe.Type.Enum do
   The `__private__` and `:__reference__` fields are for internal use.
   """
   @type t :: %__MODULE__{
-    name: binary,
-    description: binary,
-    values: %{binary => Type.Enum.Value.t},
-    identifier: atom,
-    __private__: Keyword.t,
-    __reference__: Type.Reference.t,
-  }
+          name: binary,
+          description: binary,
+          values: %{binary => Type.Enum.Value.t()},
+          identifier: atom,
+          __private__: Keyword.t(),
+          __reference__: Type.Reference.t()
+        }
 
-  defstruct [
-    name: nil,
-    description: nil,
-    identifier: nil,
-    values: %{},
-    values_by_internal_value: %{},
-    values_by_name: %{},
-    __private__: [],
-    __reference__: nil,
-  ]
-
+  defstruct name: nil,
+            description: nil,
+            identifier: nil,
+            values: %{},
+            values_by_internal_value: %{},
+            values_by_name: %{},
+            __private__: [],
+            __reference__: nil
 
   def build(%{attrs: attrs}) do
     raw_values = attrs[:values] || []
@@ -104,7 +100,7 @@ defmodule Absinthe.Type.Enum do
 
     quote do
       %unquote(__MODULE__){
-        unquote_splicing(attrs),
+        unquote_splicing(attrs)
       }
     end
   end
@@ -115,6 +111,7 @@ defmodule Absinthe.Type.Enum do
   def parse(enum, %Blueprint.Input.Enum{value: external_value}) do
     Map.fetch(enum.values_by_name, external_value)
   end
+
   def parse(_, _) do
     :error
   end

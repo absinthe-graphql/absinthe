@@ -1,5 +1,4 @@
 defmodule Absinthe.Blueprint.TypeReference.NonNull do
-
   @moduledoc false
 
   alias Absinthe.{Blueprint, Phase}
@@ -11,9 +10,7 @@ defmodule Absinthe.Blueprint.TypeReference.NonNull do
   ]
 
   @type t :: %__MODULE__{
-    of_type: Blueprint.TypeReference.t,
-    errors: [Phase.Error.t],
-  }
-
-
+          of_type: Blueprint.TypeReference.t(),
+          errors: [Phase.Error.t()]
+        }
 end

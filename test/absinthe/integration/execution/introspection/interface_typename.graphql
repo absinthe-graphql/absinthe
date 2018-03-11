@@ -1,0 +1,2 @@
+# Schema: ContactSchema
+query { contact { entity { __typename name } } }

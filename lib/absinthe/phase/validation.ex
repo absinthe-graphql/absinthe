@@ -1,5 +1,4 @@
 defmodule Absinthe.Phase.Validation do
-
   @moduledoc false
 
   alias Absinthe.Blueprint
@@ -11,17 +10,15 @@ defmodule Absinthe.Phase.Validation do
   end
 
   defmodule Helpers do
-
-    @spec any_invalid?([Blueprint.node_t]) :: boolean
+    @spec any_invalid?([Blueprint.node_t()]) :: boolean
     def any_invalid?(nodes) do
       Enum.any?(nodes, fn
         %{flags: %{invalid: _}} ->
           true
+
         _ ->
           false
       end)
     end
-
   end
-
 end

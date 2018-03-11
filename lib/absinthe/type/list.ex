@@ -28,6 +28,6 @@ defmodule Absinthe.Type.List do
 
   * `:of_type` - The underlying, wrapped type.
  "
-  @type t :: %__MODULE__{of_type: Absinthe.Type.t}
+  @type t :: %__MODULE__{of_type: Absinthe.Type.t()}
   defstruct of_type: nil
 end

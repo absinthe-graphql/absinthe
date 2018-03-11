@@ -13,14 +13,11 @@ defmodule Absinthe.Language.Source do
   #     {:ok, data} = File.read(@filename)
   #     %Absinthe.Language.Source{body: body, name: @filename}
   #     |> Absinthe.run(App.Schema)
-  defstruct [
-    body: "",
-    name: "GraphQL"
-  ]
+  defstruct body: "",
+            name: "GraphQL"
 
   @type t :: %__MODULE__{
-    body: String.t,
-    name: String.t
-  }
-
+          body: String.t(),
+          name: String.t()
+        }
 end

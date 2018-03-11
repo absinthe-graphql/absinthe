@@ -1,0 +1,5 @@
+query {
+  widget: thing(id: "foo") {
+    name
+  }
+}

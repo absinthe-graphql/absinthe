@@ -5,10 +5,10 @@ defmodule Absinthe.Schema.Error do
   defexception message: "Invalid schema", details: []
 
   @type detail_t :: %{
-    rule: Absinthe.Schema.Rule.t,
-    location: %{file: binary, line: integer},
-    data: any
-  }
+          rule: Absinthe.Schema.Rule.t(),
+          location: %{file: binary, line: integer},
+          data: any
+        }
 
   def exception(details) do
     detail = Enum.map(details, &format_detail/1) |> Enum.join("\n")
@@ -22,11 +22,10 @@ defmodule Absinthe.Schema.Error do
 
   defp indent(text) do
     text
-    |> String.trim
+    |> String.trim()
     |> String.split("\n")
     |> Enum.map(&"  #{&1}")
     |> Enum.join("\n")
-    |> String.trim_leading
+    |> String.trim_leading()
   end
-
 end

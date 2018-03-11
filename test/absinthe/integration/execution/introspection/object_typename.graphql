@@ -1,0 +1,7 @@
+# Schema: ContactSchema
+query {
+  person {
+    __typename
+    name
+  }
+}
