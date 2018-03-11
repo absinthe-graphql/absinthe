@@ -96,6 +96,14 @@ defmodule Absinthe.Resolution.Helpers do
     end
     ```
     """
+    def on_load(deferrable = %Lazyloader.Deferrable{}) do
+      {:middleware, Absinthe.Middleware.Dataloader, deferrable}
+    end
+
+    def on_load(deferrable = %Lazyloader.Deferrable{}, fun) do
+      {:middleware, Absinthe.Middleware.Dataloader, Lazyloader.Deferrable.then(deferrable, fun)}
+    end
+
     def on_load(loader, fun) do
       {:middleware, Absinthe.Middleware.Dataloader, {:dataloader, loader, fun}}
     end

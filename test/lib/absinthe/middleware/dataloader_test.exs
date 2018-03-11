@@ -3,6 +3,7 @@ defmodule Absinthe.Middleware.DataloaderTest do
 
   defmodule Schema do
     use Absinthe.Schema
+    import Defer
 
     import Absinthe.Resolution.Helpers
 
@@ -50,8 +51,21 @@ defmodule Absinthe.Middleware.DataloaderTest do
       [Absinthe.Middleware.Dataloader] ++ Absinthe.Plugin.defaults()
     end
 
-    def middleware(middleware, _field, _object) do
-      middleware ++ [Absinthe.Middleware.Dataloader]
+    defer def organization_deferrable(id, test_pid) do
+      loader =
+        await(
+          Lazyloader.load(:test, {:organization_id, %{pid: test_pid}}, %{organization_id: id})
+          |> Lazyloader.put(
+            :test,
+            {:organization_id, %{pid: self()}},
+            %{organization_id: 123},
+            %{}
+          )
+        )
+
+      Lazyloader.get(loader, :test, {:organization_id, %{pid: test_pid}}, %{
+        organization_id: id
+      })
     end
 
     object :organization do
@@ -98,6 +112,15 @@ defmodule Absinthe.Middleware.DataloaderTest do
                organization_id: id
              })}
           end)
+        end)
+      end
+
+      field :organization_lazy, :organization do
+        arg(:id, non_null(:integer))
+
+        resolve(fn _, %{id: id}, %{context: %{test_pid: test_pid}} ->
+          organization_deferrable(id, test_pid)
+          |> on_load(fn res -> {:ok, res} end)
         end)
       end
     end
@@ -150,6 +173,26 @@ defmodule Absinthe.Middleware.DataloaderTest do
         %{"organization" => %{"name" => "Organization: #3"}}
       ],
       "organization" => %{"id" => 1}
+    }
+
+    assert {:ok, %{data: data}} = Absinthe.run(doc, Schema)
+    assert expected_data == data
+    assert_receive(:loading)
+    refute_receive(:loading)
+  end
+
+  @tag :wip
+  test "lazy loading should work" do
+    doc = """
+    {
+      organizationLazy(id: 1) {
+        id
+      }
+    }
+    """
+
+    expected_data = %{
+      "organizationLazy" => %{"id" => 1}
     }
 
     assert {:ok, %{data: data}} = Absinthe.run(doc, Schema)

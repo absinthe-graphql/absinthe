@@ -31,35 +31,32 @@ if Code.ensure_loaded?(Dataloader) do
       get_result(resolution, callback)
     end
 
-    def call(
-          resolution = %{value: %Lazyloader.Deferrable{evaluated?: true, value: value}},
-          _key
-        ) do
-      Absinthe.Resolution.put_result(resolution, value)
-    end
-
-    def call(resolution = %{value: deferrable = %Lazyloader.Deferrable{}}, _key) do
-      case Lazyloader.Deferrable.run_callbacks(deferrable, resolution.context.dataloader, nil) do
+    def call(resolution, deferrable = %Lazyloader.Deferrable{}) do
+      # we manually run the dataloader at the start of the resolution, so just evaluate the
+      # deferrable as far as we can without running the dataloader
+      case Lazyloader.Deferrable.evaluate_once(
+             deferrable,
+             dataloader: resolution.context.loader,
+             run_dataloader: false
+           ) do
         %Lazyloader.Deferrable{evaluated?: true, value: value} ->
           Absinthe.Resolution.put_result(resolution, value)
 
-        %Lazyloader.Deferrable{} = result ->
+        %Lazyloader.Deferrable{dataloader: loader} = result ->
           %{
             resolution
             | context:
                 Map.put(
                   resolution.context,
                   :loader,
-                  Lazyloader.Deferrable.apply_operations(result.dataloader, result)
+                  loader
                 ),
               state: :suspended,
               value: result,
-              middleware: [__MODULE__ | resolution.middleware]
+              middleware: [{__MODULE__, result} | resolution.middleware]
           }
       end
     end
-
-    def call(res, _key), do: res
 
     defp get_result(resolution, callback) do
       value = callback.(resolution.context.loader)
