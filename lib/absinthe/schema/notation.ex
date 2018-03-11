@@ -11,6 +11,14 @@ defmodule Absinthe.Schema.Notation do
     Module.register_attribute(__CALLER__.module, :absinthe_desc, accumulate: true)
 
     quote do
+      import Absinthe.Resolution.Helpers,
+        only: [
+          async: 1,
+          async: 2,
+          batch: 3,
+          batch: 4
+        ]
+
       Module.register_attribute(__MODULE__, :__absinthe_type_import__, accumulate: true)
       @desc nil
       import unquote(__MODULE__), only: :macros
@@ -1031,6 +1039,11 @@ defmodule Absinthe.Schema.Notation do
     |> do_import_types(env, opts)
   end
 
+  defmacro values(values) do
+    __CALLER__
+    |> record_values!(values)
+  end
+
   ### Recorders ###
   #################
 
@@ -1039,7 +1052,7 @@ defmodule Absinthe.Schema.Notation do
     Schema.FieldDefinition,
     Schema.ScalarTypeDefinition,
     Schema.EnumTypeDefinition,
-    Schema.InputValueDefinition,
+    Schema.InputValueDefinition
   ]
 
   def record!(env, type, identifier, attrs, block) when type in @scoped_types do
@@ -1232,6 +1245,12 @@ defmodule Absinthe.Schema.Notation do
     # Scope.put_attribute(env.module, :values, {identifier, attrs}, accumulate: true)
     # Scope.recorded!(env.module, :attr, :value)
     # :ok
+  end
+
+  @doc false
+  # Record an enum value in the current scope
+  def record_values!(env, values) do
+    put_attr(env.module, {:values, values})
   end
 
   def record_config!(env, fun_ast) do
