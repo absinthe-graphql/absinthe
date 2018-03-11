@@ -4,6 +4,7 @@ defmodule Absinthe.Blueprint.Schema.SchemaDefinition do
   alias Absinthe.Blueprint
 
   defstruct description: nil,
+            module: nil,
             types: [],
             type_extensions: [],
             directives: [],

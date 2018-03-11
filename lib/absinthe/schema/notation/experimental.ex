@@ -176,7 +176,6 @@ defmodule Absinthe.Schema.Notation.Experimental do
   defp default_field_name(identifier) do
     identifier
     |> Atom.to_string()
-    |> Absinthe.Utils.camelize(lower: true)
   end
 
   defmacro resolve(fun) do
@@ -209,10 +208,28 @@ defmodule Absinthe.Schema.Notation.Experimental do
 
     imports = Enum.uniq(Module.get_attribute(env.module, :__absinthe_type_imports__) || [])
 
+    schema_def = %Blueprint.Schema.SchemaDefinition{
+      imports: imports,
+      module: env.module
+    }
+
     blueprint =
       attrs
-      |> List.insert_at(1, %Blueprint.Schema.SchemaDefinition{imports: imports})
+      |> List.insert_at(1, schema_def)
       |> build_blueprint()
+
+    # TODO: handle multiple schemas
+    [schema] = blueprint.schema_definitions
+
+    middleware =
+      for type <- schema.types,
+          field <- type.fields do
+        quote do
+          def __absinthe_middleware__(unquote(type.identifier), unquote(field.identifier)) do
+            unquote(field.middleware_ast)
+          end
+        end
+      end
 
     quote do
       unquote(__MODULE__).noop(@desc)
@@ -220,6 +237,8 @@ defmodule Absinthe.Schema.Notation.Experimental do
       def __absinthe_blueprint__ do
         unquote(Macro.escape(blueprint))
       end
+
+      unquote_splicing(middleware)
     end
   end
 
@@ -246,10 +265,6 @@ defmodule Absinthe.Schema.Notation.Experimental do
 
   defp build_types([%Schema.SchemaDefinition{} = schema | rest], stack) do
     build_types(rest, [schema | stack])
-  end
-
-  defp build_types([%Schema.ObjectTypeDefinition{} = obj | rest], stack) do
-    build_types(rest, [obj | stack])
   end
 
   defp build_types([%Schema.ObjectTypeDefinition{} = obj | rest], stack) do

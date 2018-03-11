@@ -43,7 +43,7 @@ defmodule Absinthe.Schema.Notation.Experimental.FieldTest do
     end
 
     test "with a body and with a bare type" do
-      assert %{name: "withBlock", type: :string, identifier: :with_block} =
+      assert %{name: "with_block", type: :string, identifier: :with_block} =
                lookup_field(Definition, :obj, :with_block)
     end
 

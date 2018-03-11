@@ -16,6 +16,11 @@ defmodule Absinthe.Schema.Experimental do
       end
 
       @doc false
+      def plugins do
+        Absinthe.Plugin.defaults()
+      end
+
+      @doc false
       def context(context) do
         context
       end
