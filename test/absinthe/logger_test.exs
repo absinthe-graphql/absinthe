@@ -1,6 +1,8 @@
 defmodule Absinthe.LoggerTest do
   use Absinthe.Case, async: true
 
+  import ExUnit.CaptureLog
+
   describe "Absinthe.Logger.filter_variables/1" do
     @value "abcd"
     @variables %{"token" => @value, "password" => @value, "alsoUnsafe" => @value}
@@ -52,6 +54,14 @@ defmodule Absinthe.LoggerTest do
     @document %{}
     test "given something else, is inspected" do
       assert "%{}" == Absinthe.Logger.document(@document)
+    end
+  end
+
+  describe "Absinthe.Logger.log_run/1" do
+    test "logs all expected information on multiple lines" do
+      assert capture_log(fn ->
+        Absinthe.Logger.log_run(:info, {"query ()", "foo", "bar", [foo: :bar]})
+      end) =~ "ABSINTHE schema=\"foo\" variables=%{}\n---\nquery ()\n---\n"
     end
   end
 end
