@@ -2,6 +2,7 @@ defmodule Absinthe.Logger do
   @default_log true
   @default_filter_variables ~w(token password)
   @default_pipeline false
+  @default_log_mode :multi_line
 
   @moduledoc """
   Handles logging of Absinthe-specific events.
@@ -36,12 +37,36 @@ defmodule Absinthe.Logger do
 
   ## Disabling
 
-  To display Absinthe logging, set the `:log` configuration option to `false`:
+  To disable Absinthe logging, set the `:log` configuration option to `false`:
 
       config :absinthe,
         log: false
 
   The default is `#{inspect(@default_log)}`.
+
+  ## Logging all output on a single line
+
+  By default,this will log the requested query in a human-readable format,
+  for example:
+
+      [debug] ABSINTHE schema=MyApp.Schema variables=%{"id" => "9"}
+      ---
+      query ($id: ID!) {
+        foo(id: $id) {
+          id
+          bar
+          baz {
+            id
+            __typename
+          }
+          ....
+
+  This is useful in many instances, but may not be useful for production
+  logging. Consequently, use the following configuration to pull this all onto
+  a single line:
+
+      config :absinthe, Absinthe.Logger,
+        log_mode: :single_line
 
   """
   require Logger
@@ -65,9 +90,9 @@ defmodule Absinthe.Logger do
           variables_body(opts),
           pipeline_section(pipeline),
           "---",
-          ?\n,
+          separator(),
           document(doc),
-          ?\n,
+          separator(),
           "---"
         ]
       end)
@@ -95,7 +120,16 @@ defmodule Absinthe.Logger do
   end
 
   def document(document) when is_binary(document) do
-    String.trim(document)
+    Application.get_env(:absinthe, __MODULE__, [])
+    |> Keyword.get(:log_mode, @default_log_mode)
+    |> case do
+      :single_line ->
+        String.trim(document)
+        |> String.replace("\n", "")
+
+      _multi_line ->
+        String.trim(document)
+    end
   end
 
   def document(other) do
@@ -149,7 +183,7 @@ defmodule Absinthe.Logger do
         do_pipeline_section(pipeline)
 
       false ->
-        ?\n
+        separator()
     end
   end
 
@@ -163,7 +197,20 @@ defmodule Absinthe.Logger do
         mod -> mod
       end)
       |> inspect,
-      ?\n
+      separator()
     ]
+  end
+
+  @spec separator() :: iolist
+  defp separator do
+    Application.get_env(:absinthe, __MODULE__, [])
+    |> Keyword.get(:log_mode, @default_log_mode)
+    |> case do
+      :single_line ->
+        " "
+
+      _multi_line ->
+        ?\n
+    end
   end
 end
