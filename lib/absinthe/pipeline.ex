@@ -121,6 +121,7 @@ defmodule Absinthe.Pipeline do
       Phase.Parse,
       Phase.Blueprint,
       {Phase.Schema, options},
+      Phase.Schema.Imports,
       Phase.Validation.KnownTypeNames,
       Phase.Validation.KnownDirectives
     ]

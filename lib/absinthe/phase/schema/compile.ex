@@ -7,15 +7,15 @@ defmodule Absinthe.Phase.Schema.Compile do
     body = [
       types,
       quote do
-        def __absinthe_type__(type) do
-          Absinthe.Type.BuiltIns.__absinthe_type__(type)
+        def __absinthe_type__(_type) do
+          nil
         end
       end
     ]
 
     Module.create(module_name, body, Macro.Env.location(__ENV__))
 
-    blueprint
+    {:ok, blueprint}
   end
 
   def build_types(%{schema_definitions: [schema]}) do
