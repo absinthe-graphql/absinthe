@@ -20,6 +20,8 @@ defmodule Absinthe.Case.Assertions.Schema do
         load_schema(schema_name)
       end
 
+    err |> IO.inspect()
+
     patterns
     |> Enum.filter(fn pattern ->
       assert Enum.find(err.details, fn detail ->
