@@ -47,8 +47,6 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
           |> Enum.reverse()
           |> Enum.map(&Map.fetch!(fragments, &1))
 
-        # fragments |> Enum.map(&(&1.name)) |> IO.inspect
-
         {fragments, 0}
       end
     after

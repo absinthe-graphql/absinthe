@@ -1,8 +1,6 @@
 defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlacedTest do
   use Absinthe.Case, async: true
 
-  alias Absinthe.Schema.Rule
-
   describe "rule" do
     test "is enforced with output types on arguments" do
       assert_schema_error("invalid_output_types", [
