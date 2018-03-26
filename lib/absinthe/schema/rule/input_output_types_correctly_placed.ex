@@ -14,16 +14,19 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlaced do
 
   def explanation(%{data: %{argument: argument, type: type, struct: struct}}) do
     """
-    "#{type}" is not a valid input type for argument "#{argument}" because
-    it is a #{struct} type. Arguments may only be input types.
+    #{inspect(type)} is not a valid input type for argument #{inspect(argument)} because
+    it is an #{Macro.to_string(struct)} type. Arguments may only be input types.
+
     #{@description}
     """
   end
 
   def explanation(%{data: %{field: field, type: type, struct: struct, parent: parent}}) do
     """
-    "#{type}" is not a valid type for field "#{field}" because
-    it is a #{struct} type, and the parent of this field is a #{parent} type.
+    #{inspect(type)} is not a valid type for field #{inspect(field)} because
+    it is an #{Macro.to_string(struct)} type, and the parent of this field is an #{
+      Macro.to_string(parent)
+    } type.
 
     #{@description}
     """
@@ -36,11 +39,13 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlaced do
 
   defp check_type(schema, %Type.Object{} = type) do
     field_errors =
-      for {_, field} <- type.fields, type = get_type(field, schema), !output_type?(type) do
+      for {_, field} <- type.fields,
+          field_type = get_type(field, schema),
+          !output_type?(field_type) do
         detail = %{
           field: field.identifier,
-          type: type.__reference__.identifier,
-          struct: type.__struct__,
+          type: field_type.__reference__.identifier,
+          struct: field_type.__struct__,
           parent: Type.Object
         }
 
@@ -65,11 +70,13 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlaced do
   end
 
   defp check_type(schema, %Type.InputObject{} = type) do
-    for field <- type.fields, type = get_type(type, schema), !input_type?(type) do
+    for {_, field} <- type.fields,
+        field_type = get_type(field, schema),
+        !input_type?(field_type) do
       detail = %{
         field: field.identifier,
-        type: type.__reference__.identifier,
-        struct: type.__struct__,
+        type: field_type.__reference__.identifier,
+        struct: field_type.__struct__,
         parent: Type.InputObject
       }
 
