@@ -152,6 +152,35 @@ defmodule Absinthe.Middleware.DataloaderTest do
     refute_receive(:loading)
   end
 
+  @tag :wip
+  test "regression of dataloader yielding results before running batches" do
+    doc = """
+    {
+      users {
+        organization: fooOrganization {
+          name
+        }
+        organizationBaz: fooOrganization {
+          name
+        }
+      }
+    }
+    """
+
+    expected_data = %{
+      "users" => [
+        %{"organization" => %{"name" => "Organization: #1"}, "organizationBaz" => %{"name" => "Organization: #1"}},
+        %{"organization" => %{"name" => "Organization: #2"}, "organizationBaz" => %{"name" => "Organization: #2"},},
+        %{"organization" => %{"name" => "Organization: #3"}, "organizationBaz" => %{"name" => "Organization: #3"}}
+      ],
+    }
+
+    assert {:ok, %{data: data}} = Absinthe.run(doc, Schema)
+    assert expected_data == data
+    assert_receive(:loading)
+    refute_receive(:loading)
+  end
+
   test "using a cached field doesn't explode" do
     doc = """
     {
