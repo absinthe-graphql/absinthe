@@ -72,7 +72,7 @@ end
 ```
 
 > For more information on the macros available to build a schema, see
-> definitions see [Absinthe.Schema](Absinthe.Schema.html) and
+> their definitions in [Absinthe.Schema](Absinthe.Schema.html) and
 > [Absinthe.Schema.Notation](Absinthe.Schema.Notation.html).
 
 This uses a resolver module we've created (again, to match the Phoenix context naming)

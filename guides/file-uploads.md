@@ -39,7 +39,7 @@ $ curl -X POST \\
 localhost:4000/graphql
 ```
 
-Note how there is a correspondance between the value of the `:users` argument
+Note how there is a correspondence between the value of the `:users` argument
 and the `-F` option indicating the associated file.
 
 By treating uploads as regular arguments we get all the usual GraphQL argument
