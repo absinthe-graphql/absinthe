@@ -1263,7 +1263,7 @@ defmodule Absinthe.Schema.Notation do
     for {_, _, leaf} <- modules_ast_list do
       type_module = Module.concat([root_module_with_alias | leaf])
 
-      if Code.ensure_loaded?(type_module) do
+      if Code.ensure_compiled?(type_module) do
         do_import_types(type_module, env)
       else
         raise ArgumentError, "module #{type_module} is not available"
