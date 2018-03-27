@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.9
+
+- Bug Fix: Proper GraphQL context handling in subscriptions
+
 ## v1.4.8
 
 - Doc Improvements
