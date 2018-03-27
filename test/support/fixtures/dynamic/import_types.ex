@@ -12,6 +12,7 @@ defmodule Absinthe.Fixtures.ImportTypes do
     object :employee do
       field :id, non_null(:id)
       field :name, :string
+      field :avatar, :avatar
       field :weekly_schedules, list_of(:weekly_schedule)
     end
   end
@@ -68,6 +69,16 @@ defmodule Absinthe.Fixtures.ImportTypes do
     end
   end
 
+  defmodule Shared.AvatarTypes do
+    use Absinthe.Schema.Notation
+
+    object :avatar do
+      field :height, non_null(:integer)
+      field :width, non_null(:integer)
+      field :url, non_null(:string)
+    end
+  end
+
   defmodule Schema do
     use Absinthe.Schema
 
@@ -76,7 +87,7 @@ defmodule Absinthe.Fixtures.ImportTypes do
 
     alias Absinthe.Fixtures.ImportTypes
     import_types ImportTypes.ScheduleTypes
-    import_types ImportTypes.{ProfileTypes, AuthTypes}
+    import_types ImportTypes.{ProfileTypes, AuthTypes, Shared.AvatarTypes}
 
     query do
       field :orders, list_of(:order)
