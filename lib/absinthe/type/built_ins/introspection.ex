@@ -285,8 +285,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
               {:ok, inspect(serializer.(value))}
 
             map when is_map(map) ->
-              externalized = to_external(value)
-              {:ok, inspect(externalized)}
+              {:ok, encode(value)}
 
             _ ->
               {:ok, to_string(value)}
@@ -297,14 +296,25 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       end
   end
 
-  def to_external(map) when is_map(map) do
-    Enum.into(map, %{}, fn {key, value} ->
-      {Absinthe.Adapter.LanguageConventions.to_external_name(to_string(key), :argument),
-       to_external(value)}
-    end)
+  def encode(true), do: "true"
+  def encode(false), do: "false"
+  def encode(num) when is_number(num), do: "#{num}"
+  def encode(bin) when is_binary(bin), do: ~s("#{bin}")
+
+  def encode(map) when is_map(map) do
+    encoded = map |> Enum.map(&encode/1) |> Enum.join(", ")
+    "{#{encoded}}"
   end
 
-  def to_external(value), do: value
+  def encode(list) when is_list(list) do
+    encoded = list |> Enum.map(&encode/1) |> Enum.join(", ")
+    "[#{encoded}]"
+  end
+
+  def encode({key, value}) do
+    encoded_key = Absinthe.Utils.camelize(to_string(key), lower: true)
+    "#{encoded_key}: #{encode(value)}"
+  end
 
   object :__enumvalue, name: "__EnumValue" do
     field :name, :string
