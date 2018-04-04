@@ -284,6 +284,10 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
             %{serialize: serializer} ->
               {:ok, inspect(serializer.(value))}
 
+            map when is_map(map) ->
+              externalized = to_external(value)
+              {:ok, inspect(externalized)}
+
             _ ->
               {:ok, to_string(value)}
           end
@@ -292,6 +296,15 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
           {:ok, nil}
       end
   end
+
+  def to_external(map) when is_map(map) do
+    Enum.into(map, %{}, fn {key, value} ->
+      {Absinthe.Adapter.LanguageConventions.to_external_name(to_string(key), :argument),
+       to_external(value)}
+    end)
+  end
+
+  def to_external(value), do: value
 
   object :__enumvalue, name: "__EnumValue" do
     field :name, :string
