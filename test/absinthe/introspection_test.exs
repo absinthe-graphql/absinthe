@@ -196,6 +196,58 @@ defmodule Absinthe.IntrospectionTest do
 
       assert !match?({:ok, %{data: %{"__type" => %{"fields" => _}}}}, result)
     end
+
+    defmodule ComplexDefaultSchema do
+      use Absinthe.Schema
+
+      query do
+        field :complex_default, :string do
+          arg :input, :complex_input, default_value: %{fancy_value: "qwerty"}
+        end
+      end
+
+      input_object :complex_input do
+        field :fancy_value, :string
+      end
+    end
+
+    test "can introspect complex default_vaule" do
+      result =
+        """
+        {
+          __schema {
+            queryType {
+              fields {
+                args {
+                  defaultValue
+                }
+              }
+            }
+          }
+        }
+        """
+        |> run(ComplexDefaultSchema)
+
+      assert_result(
+        {:ok,
+         %{
+           data: %{
+             "__schema" => %{
+               "queryType" => %{
+                 "fields" => [
+                   %{
+                     "args" => [
+                       %{"defaultValue" => "{fancyValue: \"qwerty\"}"}
+                     ]
+                   }
+                 ]
+               }
+             }
+           }
+         }},
+        result
+      )
+    end
   end
 
   describe "introspection of an object type" do
