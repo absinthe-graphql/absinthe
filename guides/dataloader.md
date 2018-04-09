@@ -104,12 +104,48 @@ Here is a simple example of a loader using the `KV` source in combination with a
 
 ```elixir
 defmodule MyProject.Loaders.Nhl do
+  @teams [%{
+    id: 1,
+    name: "New Jersey Devils",
+    abbreviation: "NJD"
+  },
+  %{
+    id: 2,
+    name: "New York Islanders",
+    abbreviation: "NYI"
+  }
+  # etc.
+  ]
+
   def data() do
     Dataloader.KV.new(&fetch/2)
   end
 
-  def fetch(batch, ids) do
+  def fetch(:teams, {}) do
+    %{
+      {} => @teams
+    }
+  end
+
+  def fetch(:team, ids) do
     # must return a map keyed by the ids
+    ids
+    |> Enum.reduce(%{}, fn(id, result) ->
+      Map.put(result, id, find_team(id))
+    end)
+  end
+
+  def fetch(batch, ids) do
+    ids |> Enum.reduce(%{}, fn(id, accum) -> Map.put(result, id, nil) end)
+  end
+
+  defp find_team(id) do
+    @teams |> Enum.find(fn(t) -> t |> Map.get(:id) == id end)
   end
 end
 ```
+
+`Dataloader.KV` requires a load function that accepts a batch and ids. It must return a map of values keyed by the ids.
+This is the purpose of the `fetch/2` function. The `dataloader` helper we imported above uses the field name as the batch.
+
+Pattern matching can be used to fetch differently depending on the batch. For example, when the :teams batch is requested, the ids will actually be `{}`.
