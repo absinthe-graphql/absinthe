@@ -121,7 +121,7 @@ defmodule MyProject.Loaders.Nhl do
     Dataloader.KV.new(&fetch/2)
   end
 
-  def fetch(:teams, {}) do
+  def fetch(:teams, %{}) do
     %{
       {} => @teams
     }
@@ -139,7 +139,7 @@ defmodule MyProject.Loaders.Nhl do
     end)
   end
 
-  def fetch(batch, args) do
+  def fetch(_batch, args) do
     args |> Enum.reduce(%{}, fn(arg, accum) -> Map.put(accum, arg, nil) end)
   end
 
@@ -152,4 +152,4 @@ end
 `Dataloader.KV` requires a load function that accepts a batch and args. It must return a map of values keyed by the args.
 This is the purpose of the `fetch/2` function. The `dataloader` helper we imported above uses the field name as the batch, and a map where the argument name is the key. For example: `fetch(:team, [%{ id: 1 }])`
 
-Pattern matching can be used to fetch differently depending on the batch. For example, when the :teams batch is requested, the args will actually be `{}`.
+Pattern matching can be used to fetch differently depending on the batch. For example, when the :teams batch is requested, the args will actually be an empty map (i.e. `%{}`).
