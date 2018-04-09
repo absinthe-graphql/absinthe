@@ -121,9 +121,9 @@ defmodule MyProject.Loaders.Nhl do
     Dataloader.KV.new(&fetch/2)
   end
 
-  def fetch(:teams, %{}) do
+  def fetch(:teams, [%{}]) do
     %{
-      {} => @teams
+      %{} => @teams
     }
   end
 
