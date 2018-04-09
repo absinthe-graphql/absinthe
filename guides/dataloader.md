@@ -140,7 +140,7 @@ defmodule MyProject.Loaders.Nhl do
   end
 
   def fetch(batch, args) do
-    args |> Enum.reduce(%{}, fn(arg, accum) -> Map.put(result, arg, nil) end)
+    args |> Enum.reduce(%{}, fn(arg, accum) -> Map.put(accum, arg, nil) end)
   end
 
   defp find_team(id) do
