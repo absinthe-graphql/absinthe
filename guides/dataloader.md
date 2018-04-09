@@ -127,16 +127,20 @@ defmodule MyProject.Loaders.Nhl do
     }
   end
 
-  def fetch(:team, ids) do
-    # must return a map keyed by the ids
-    ids
-    |> Enum.reduce(%{}, fn(id, result) ->
-      Map.put(result, id, find_team(id))
+  def fetch(:team, args) do
+   # must return a map keyed by the args
+   # args is a list of the args used to resolve your field
+   # for example, if you have arg(:foo, non_null(:string))
+   # args will look like: [%{foo: "value of foo here")}]
+
+    args
+    |> Enum.reduce(%{}, fn(%{id: id} = arg, result) ->
+      Map.put(result, arg, find_team(id))
     end)
   end
 
-  def fetch(batch, ids) do
-    ids |> Enum.reduce(%{}, fn(id, accum) -> Map.put(result, id, nil) end)
+  def fetch(batch, args) do
+    args |> Enum.reduce(%{}, fn(arg, accum) -> Map.put(result, arg, nil) end)
   end
 
   defp find_team(id) do
@@ -145,7 +149,7 @@ defmodule MyProject.Loaders.Nhl do
 end
 ```
 
-`Dataloader.KV` requires a load function that accepts a batch and ids. It must return a map of values keyed by the ids.
-This is the purpose of the `fetch/2` function. The `dataloader` helper we imported above uses the field name as the batch.
+`Dataloader.KV` requires a load function that accepts a batch and args. It must return a map of values keyed by the args.
+This is the purpose of the `fetch/2` function. The `dataloader` helper we imported above uses the field name as the batch, and a map where the argument name is the key. For example: `fetch(:team, [%{ id: 1 }])`
 
-Pattern matching can be used to fetch differently depending on the batch. For example, when the :teams batch is requested, the ids will actually be `{}`.
+Pattern matching can be used to fetch differently depending on the batch. For example, when the :teams batch is requested, the args will actually be `{}`.
