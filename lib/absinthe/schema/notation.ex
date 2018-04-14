@@ -1260,7 +1260,7 @@ defmodule Absinthe.Schema.Notation do
     for {_, _, leaves} <- modules_ast_list do
       type_module = Macro.expand({:__aliases__, meta, root ++ leaves}, env)
 
-      if Code.ensure_loaded?(type_module) do
+      if Code.ensure_compiled?(type_module) do
         do_import_types(type_module, env)
       else
         raise ArgumentError, "module #{type_module} is not available"
