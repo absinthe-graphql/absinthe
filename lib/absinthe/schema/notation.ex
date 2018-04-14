@@ -1241,7 +1241,7 @@ defmodule Absinthe.Schema.Notation do
   ```
   import_types MyApp.Schema.Types
 
-  import_types MyApp.Schema.Types.{TypesA, TypesB}
+  import_types MyApp.Schema.Types.{TypesA, TypesB, SubTypes.TypesC}
   ```
   """
   defmacro import_types(type_module_ast) do
@@ -1255,13 +1255,10 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp do_import_types({{:., _, [root_ast, :{}]}, _, modules_ast_list}, env) do
-    {:__aliases__, _, root} = root_ast
+    {:__aliases__, meta, root} = root_ast
 
-    root_module = Module.concat(root)
-    root_module_with_alias = Keyword.get(env.aliases, root_module, root_module)
-
-    for {_, _, leaf} <- modules_ast_list do
-      type_module = Module.concat([root_module_with_alias | leaf])
+    for {_, _, leaves} <- modules_ast_list do
+      type_module = Macro.expand({:__aliases__, meta, root ++ leaves}, env)
 
       if Code.ensure_loaded?(type_module) do
         do_import_types(type_module, env)
