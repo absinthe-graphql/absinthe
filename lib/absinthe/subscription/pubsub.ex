@@ -2,23 +2,48 @@ defmodule Absinthe.Subscription.Pubsub do
   @moduledoc """
   Pubsub behaviour expected by Absinthe to power subscriptions
 
-  Absinthe does not require any particular backend to support subscriptions, but
-  it does require that any candidate pubsub implement a couple of functions.
+  A subscription includes a GraphQL query document that resolves to a set of 
+  objects and fields. When the subscription is triggered, Absinthe will run the
+  document and publish the resolved objects to subscribers through a module that
+  implements the behaviour defined here.
 
-  In addition to the type signatures there are a couple of recommended implementation
-  suggestions associated with each function, be sure to read the docs for each.
-
-  Note: with the Absinthe.Phoenix package a Phoenix endpoint can be used for pubsub.
+  Each application is free to implement the PubSub behavior in its own way.  
+  For example, the absinthe_phoenix project implements the subscription pubsub
+  using Phoenix.PubSub by way of the application's Endpoint.  Regardless 
+  of the underlying mechanisms, the implementation should maintain the type 
+  signatures and expected behaviors of the callbacks below.
   """
 
   @type t :: module()
 
   @doc """
-  Subscribe the current process via a given topic
+  Subscribe the current process for messages about the given topic.
   """
   @callback subscribe(topic :: binary) :: term
 
   @doc """
+  An Absinthe.Subscription.Pubsub system may extend across multiple nodes in a 
+  cluster. Processes need only subscribe to the pubsub process that 
+  is running on their own node.
+
+  However, mutations can happen on any node in the custer and must to be 
+  broadcast to other nodes so that they can also reevaluate their GraphQL 
+  subscriptions and notify subscribers on that node.
+
+  When told of a mutation, Absinthe invokes the `publish_mutation` function 
+  on the node in which the mutation is processed first. The function should
+  publish a message to the given `proxy_topic`, with the identity of node 
+  on which the mutation occurred included in the broadcast message.
+
+  The message broadcast should be a map that contains, at least
+
+      %{
+          node: node_id,        # probably from Kernel.node/0
+          mutation_result: …,   # from arguments
+          subscribed_fields: …  # from arguments
+
+          # other fields as needed
+      }
 
   """
   @callback publish_mutation(
@@ -28,8 +53,13 @@ defmodule Absinthe.Subscription.Pubsub do
             ) :: term
 
   @doc """
-  Publish the results of a particular subscription document. This should be a local
-  node broadcast. If you can
+  After a mutation is published, and Absinthe has re-run the necessary GraphQL 
+  subscriptions to generate a new set of resolved data, it calls
+  `publish_subscription`.
+
+  Your pubsub implementation should publish a message to the given topic, with
+  the newly resolved data. The broadcast should be limited to the current node 
+  only.
   """
   @callback publish_subscription(topic :: binary, data :: map) :: term
 end
