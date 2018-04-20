@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.4.11
+
+- Bug Fix: `import_types Foo.{Bar, Baz}` syntax should avoid compilation order issues
+- Enhancement: Context and root value handling is broken out now to facilitate improvements in Absinthe Plug
+
 ## v1.4.10
 
 - Bug Fix: Proper GraphQL context handling in subscriptions
