@@ -36,7 +36,7 @@ defmodule Absinthe.Logger do
 
   ## Disabling
 
-  To display Absinthe logging, set the `:log` configuration option to `false`:
+  To disable Absinthe logging, set the `:log` configuration option to `false`:
 
       config :absinthe,
         log: false
