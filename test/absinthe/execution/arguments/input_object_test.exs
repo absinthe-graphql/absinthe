@@ -155,4 +155,18 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
       run(@graphql, @schema)
     )
   end
+
+  @graphql """
+  query {
+    user(contact: 123)
+  }
+  """
+  test "Shouldn't allow the wrong input type" do
+    assert_error_message_lines(
+      [
+        ~s(Argument "contact" has invalid value 123.)
+      ],
+      run(@graphql, @schema)
+    )
+  end
 end
