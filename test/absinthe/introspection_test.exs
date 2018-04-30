@@ -202,12 +202,18 @@ defmodule Absinthe.IntrospectionTest do
 
       query do
         field :complex_default, :string do
-          arg :input, :complex_input, default_value: %{fancy_value: "qwerty"}
+          arg :input, :complex_input, default_value: %{fancy_value: "qwerty", fancy_enum: :foo}
         end
+      end
+
+      enum :an_enum do
+        value :foo
+        value :bar
       end
 
       input_object :complex_input do
         field :fancy_value, :string
+        field :fancy_enum, :an_enum
       end
     end
 
@@ -237,7 +243,7 @@ defmodule Absinthe.IntrospectionTest do
                  "fields" => [
                    %{
                      "args" => [
-                       %{"defaultValue" => "{fancyValue: \"qwerty\"}"}
+                       %{"defaultValue" => "{fancyEnum: FOO, fancyValue: \"qwerty\"}"}
                      ]
                    }
                  ]

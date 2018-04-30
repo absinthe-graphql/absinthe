@@ -277,43 +277,36 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
           {:ok, nil}
 
         _, %{schema: schema, source: %{default_value: value, type: type}} ->
-          case Absinthe.Schema.lookup_type(schema, type, unwrap: true) do
-            %Absinthe.Type.Enum{values_by_internal_value: values} ->
-              {:ok, values[value].name}
-
-            %{serialize: serializer} ->
-              {:ok, inspect(serializer.(value))}
-
-            map when is_map(map) ->
-              {:ok, encode(value)}
-
-            _ ->
-              {:ok, to_string(value)}
-          end
+          {:ok, render_default_value(schema, type, value)}
 
         _, %{source: _} ->
           {:ok, nil}
       end
   end
 
-  def encode(true), do: "true"
-  def encode(false), do: "false"
-  def encode(num) when is_number(num), do: "#{num}"
-  def encode(bin) when is_binary(bin), do: ~s("#{bin}")
+  def render_default_value(schema, type, value) do
+    case Absinthe.Schema.lookup_type(schema, type, unwrap: true) do
+      %Absinthe.Type.Enum{values_by_internal_value: values} ->
+        values[value].name
 
-  def encode(map) when is_map(map) do
-    encoded = map |> Enum.map(&encode/1) |> Enum.join(", ")
-    "{#{encoded}}"
-  end
+      %{serialize: serializer} ->
+        inspect(serializer.(value))
 
-  def encode(list) when is_list(list) do
-    encoded = list |> Enum.map(&encode/1) |> Enum.join(", ")
-    "[#{encoded}]"
-  end
+      %Absinthe.Type.InputObject{fields: fields} ->
+        contents =
+          fields
+          |> Enum.map(fn {name, %{type: type}} ->
+            key = name |> to_string |> Absinthe.Utils.camelize(lower: true)
+            val = render_default_value(schema, type, value[name])
+            "#{key}: #{val}"
+          end)
+          |> Enum.join(", ")
 
-  def encode({key, value}) do
-    encoded_key = Absinthe.Utils.camelize(to_string(key), lower: true)
-    "#{encoded_key}: #{encode(value)}"
+        "{#{contents}}"
+
+      _ ->
+        to_string(value)
+    end
   end
 
   object :__enumvalue, name: "__EnumValue" do
