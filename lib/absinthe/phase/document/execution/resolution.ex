@@ -347,6 +347,13 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     end
   end
 
+  defp split_error_value(%{__exception__: true} = error_value) do
+    error_value
+    |> Map.from_struct()
+    |> Map.delete(:__exception__)
+    |> split_error_value()
+  end
+
   defp split_error_value(error_value) when is_list(error_value) or is_map(error_value) do
     Keyword.split(Enum.to_list(error_value), [:message])
   end
