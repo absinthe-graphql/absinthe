@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.4.12
+
+- Bug Fix: Fixes shard routing issue with subscription pubsub
+- Bug Fix: Ensure project is compiled when running absinthe mix tasks
+
 ## v1.4.11
 
 - Bug Fix: `import_types Foo.{Bar, Baz}` syntax should avoid compilation order issues
