@@ -186,4 +186,11 @@ If you want to publish to this subscription manually (not using triggers in the 
 Absinthe.Subscription.publish(MyAppWeb.Endpoint, comment, comment_added: "absinthe-graphql/absinthe")
 ```
 
+If you want to subscribe to mutations from within your application, you can do:
+
+```elixir
+{:ok, %{"subscribed" => topic}} = Absinthe.run(subscription_query, MyAppWeb.Schema, context: %{pubsub: MyAppWeb.Endpoint})
+MyAppWeb.Endpoint.subscribe(topic)
+```
+
 This guide is up to date, but incomplete. Stay tuned for more content!
