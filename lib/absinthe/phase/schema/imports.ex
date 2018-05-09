@@ -9,7 +9,7 @@ defmodule Absinthe.Phase.Schema.Imports do
   end
 
   @default_imports [
-    {Absinthe.Type.BuiltIns.Scalars, []},
+    {Absinthe.Type.BuiltIns.Scalars, []}
     # Absinthe.Type.BuiltIns.Directives,
     # Absinthe.Type.BuiltIns.Introspection
   ]
