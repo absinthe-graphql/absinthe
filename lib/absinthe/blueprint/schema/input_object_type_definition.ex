@@ -26,7 +26,7 @@ defmodule Absinthe.Blueprint.Schema.InputObjectTypeDefinition do
           errors: [Absinthe.Phase.Error.t()]
         }
 
-  def build(type_def, schema) do
+  def build(type_def, _schema) do
     %Absinthe.Type.InputObject{
       identifier: type_def.identifier,
       name: type_def.name,
