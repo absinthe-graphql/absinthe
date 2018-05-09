@@ -76,7 +76,7 @@ defmodule Absinthe.Blueprint.Transform do
     Blueprint.Input.Object => [:fields],
     Blueprint.Input.List => [:items],
     Blueprint.Input.Value => [:normalized, :literal],
-    Blueprint.Schema.DirectiveDefinition => [:directives, :types],
+    Blueprint.Schema.DirectiveDefinition => [:directives, :arguments],
     Blueprint.Schema.EnumTypeDefinition => [:directives, :values],
     Blueprint.Schema.EnumValueDefinition => [:directives],
     Blueprint.Schema.FieldDefinition => [:type, :arguments, :directives],

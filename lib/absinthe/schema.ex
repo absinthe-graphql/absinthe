@@ -187,6 +187,7 @@ defmodule Absinthe.Schema do
     alias Absinthe.Phase
 
     [
+      Phase.Schema.Imports,
       Phase.Validation.KnownTypeNames,
       Phase.Validation.KnownDirectives,
       {Phase.Schema.Compile, opts}

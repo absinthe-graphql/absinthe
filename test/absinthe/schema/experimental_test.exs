@@ -27,7 +27,8 @@ defmodule Absinthe.Schema.ExperimentalTest do
     test "returns the blueprint" do
       assert 2 ==
                length(
-                 Schema.__absinthe_blueprint__().schema_definitions |> List.first()
+                 Schema.__absinthe_blueprint__().schema_definitions
+                 |> List.first()
                  |> Map.get(:types)
                )
     end
@@ -46,6 +47,9 @@ defmodule Absinthe.Schema.ExperimentalTest do
     query = """
     { user { fullName }}
     """
+
+    assert %Absinthe.Type.Object{} = type = Absinthe.Schema.lookup_type(Schema, :query)
+    assert %{fields: %{user: field}} = type
 
     assert {:ok, %{data: %{"user" => %{"fullName" => "Bruce Williams"}}}} ==
              Absinthe.run(query, Schema)

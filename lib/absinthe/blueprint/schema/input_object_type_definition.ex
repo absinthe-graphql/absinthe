@@ -5,6 +5,7 @@ defmodule Absinthe.Blueprint.Schema.InputObjectTypeDefinition do
 
   @enforce_keys [:name]
   defstruct [
+    :identifier,
     :name,
     description: nil,
     interfaces: [],
@@ -24,4 +25,24 @@ defmodule Absinthe.Blueprint.Schema.InputObjectTypeDefinition do
           flags: Blueprint.flags_t(),
           errors: [Absinthe.Phase.Error.t()]
         }
+
+  def build(type_def, schema) do
+    %Absinthe.Type.InputObject{
+      identifier: type_def.identifier,
+      name: type_def.name,
+      fields: build_fields(type_def)
+    }
+  end
+
+  def build_fields(type_def) do
+    for field_def <- type_def.fields, into: %{} do
+      attrs =
+        field_def
+        |> Map.from_struct()
+
+      field = struct(Absinthe.Type.Field, attrs)
+
+      {field.identifier, field}
+    end
+  end
 end

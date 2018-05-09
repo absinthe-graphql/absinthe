@@ -46,7 +46,11 @@ defmodule Absinthe.Blueprint.Schema do
     Schema.ScalarTypeDefinition,
     Schema.ObjectTypeDefinition,
     Schema.FieldDefinition,
-    Schema.EnumTypeDefinition
+    Schema.EnumTypeDefinition,
+    Schema.DirectiveDefinition,
+    Schema.InputObjectTypeDefinition,
+    Schema.InterfaceTypeDefinition,
+    Schema.UnionTypeDefinition
   ]
 
   defp build_types([%module{} = type | rest], stack) when module in @simple_open do
@@ -54,8 +58,7 @@ defmodule Absinthe.Blueprint.Schema do
   end
 
   defp build_types([{:import_fields, criterion} | rest], [obj | stack]) do
-    obj = Map.update!(obj, :imports, &[criterion | &1])
-    build_types(rest, [obj | stack])
+    build_types(rest, [push(obj, :imports, criterion) | stack])
   end
 
   defp build_types([{:desc, desc} | rest], [item | stack]) do
@@ -67,9 +70,8 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(rest, [field | stack])
   end
 
-  defp build_types([{:arg, attrs} | rest], [field | stack]) do
-    field = Map.update!(field, :arguments, &[attrs | &1])
-    build_types(rest, [field | stack])
+  defp build_types([%Schema.InputValueDefinition{} = arg | rest], [field | stack]) do
+    build_types(rest, [push(field, :arguments, arg) | stack])
   end
 
   defp build_types([{attr, value} | rest], [entity | stack]) do
@@ -79,13 +81,30 @@ defmodule Absinthe.Blueprint.Schema do
 
   defp build_types([:close | rest], [%Schema.FieldDefinition{} = field, obj | stack]) do
     field = Map.update!(field, :middleware_ast, &Enum.reverse/1)
-    obj = Map.update!(obj, :fields, &[field | &1])
-    build_types(rest, [obj | stack])
+    build_types(rest, [push(obj, :fields, field) | stack])
   end
 
   defp build_types([:close | rest], [%Schema.ObjectTypeDefinition{} = obj, schema | stack]) do
     obj = Map.update!(obj, :fields, &Enum.reverse/1)
-    schema = Map.update!(schema, :types, &[obj | &1])
+    build_types(rest, [push(schema, :types, obj) | stack])
+  end
+
+  defp build_types([:close | rest], [%Schema.InputObjectTypeDefinition{} = obj, schema | stack]) do
+    obj = Map.update!(obj, :fields, &Enum.reverse/1)
+    build_types(rest, [push(schema, :types, obj) | stack])
+  end
+
+  defp build_types([:close | rest], [%Schema.InterfaceTypeDefinition{} = iface, schema | stack]) do
+    iface = Map.update!(iface, :fields, &Enum.reverse/1)
+    build_types(rest, [push(schema, :types, iface) | stack])
+  end
+
+  defp build_types([:close | rest], [%Schema.UnionTypeDefinition{} = union, schema | stack]) do
+    build_types(rest, [push(schema, :types, union) | stack])
+  end
+
+  defp build_types([:close | rest], [%Schema.DirectiveDefinition{} = _dir, schema | stack]) do
+    # ignore
     build_types(rest, [schema | stack])
   end
 
@@ -103,5 +122,9 @@ defmodule Absinthe.Blueprint.Schema do
   defp build_types([:close | rest], [%Schema.SchemaDefinition{} = schema, bp]) do
     bp = Map.update!(bp, :schema_definitions, &[schema | &1])
     build_types(rest, [bp])
+  end
+
+  defp push(entity, key, value) do
+    Map.update!(entity, key, &[value | &1])
   end
 end

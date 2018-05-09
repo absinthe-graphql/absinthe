@@ -16,6 +16,6 @@ defmodule Absinthe.Type.BuiltIns do
   use Absinthe.Schema.Notation
 
   import_types Absinthe.Type.BuiltIns.Scalars
-  import_types Absinthe.Type.BuiltIns.Directives
+  # import_types Absinthe.Type.BuiltIns.Directives
   # import_types Absinthe.Type.BuiltIns.Introspection
 end

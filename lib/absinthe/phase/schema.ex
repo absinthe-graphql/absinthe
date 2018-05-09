@@ -91,7 +91,8 @@ defmodule Absinthe.Phase.Schema do
   end
 
   defp set_schema_node(
-         %Blueprint.Document.Fragment.Named{type_condition: %{name: type_name} = condition} = node,
+         %Blueprint.Document.Fragment.Named{type_condition: %{name: type_name} = condition} =
+           node,
          _parent,
          schema,
          _adapter

@@ -3,7 +3,6 @@ defmodule Absinthe.Blueprint.Schema.InputValueDefinition do
 
   alias Absinthe.Blueprint
 
-  @enforce_keys [:name, :type]
   defstruct [
     :name,
     :identifier,

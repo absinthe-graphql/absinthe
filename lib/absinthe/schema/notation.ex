@@ -260,7 +260,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro interface(identifier, attrs \\ [], do: block) do
     __CALLER__
     |> recordable!(:interface, @placement[:interface])
-    |> record_interface!(identifier, attrs, block)
+    |> record!(Schema.InterfaceTypeDefinition, identifier, attrs, block)
   end
 
   @placement {:resolve_type, [under: [:interface, :union]]}
@@ -305,19 +305,19 @@ defmodule Absinthe.Schema.Notation do
   defmacro field(identifier, do: block) do
     __CALLER__
     |> recordable!(:field, @placement[:field])
-    |> record_field!(identifier, [], block)
+    |> record!(Schema.FieldDefinition, identifier, [], block)
   end
 
   defmacro field(identifier, attrs) when is_list(attrs) do
     __CALLER__
     |> recordable!(:field, @placement[:field])
-    |> record_field!(identifier, attrs, nil)
+    |> record!(Schema.FieldDefinition, identifier, attrs, [])
   end
 
   defmacro field(identifier, type) do
     __CALLER__
     |> recordable!(:field, @placement[:field])
-    |> record_field!(identifier, [type: type], nil)
+    |> record!(Schema.FieldDefinition, identifier, [type: type], [])
   end
 
   @doc """
@@ -328,19 +328,19 @@ defmodule Absinthe.Schema.Notation do
   defmacro field(identifier, attrs, do: block) when is_list(attrs) do
     __CALLER__
     |> recordable!(:field, @placement[:field])
-    |> record_field!(identifier, attrs, block)
+    |> record!(Schema.FieldDefinition, identifier, attrs, block)
   end
 
   defmacro field(identifier, type, do: block) do
     __CALLER__
     |> recordable!(:field, @placement[:field])
-    |> record_field!(identifier, [type: type], block)
+    |> record!(Schema.FieldDefinition, identifier, [type: type], block)
   end
 
   defmacro field(identifier, type, attrs) do
     __CALLER__
     |> recordable!(:field, @placement[:field])
-    |> record_field!(identifier, Keyword.put(attrs, :type, type), nil)
+    |> record!(Schema.FieldDefinition, identifier, Keyword.put(attrs, :type, type), [])
   end
 
   @doc """
@@ -498,7 +498,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro arg(identifier, type, attrs) do
     __CALLER__
     |> recordable!(:arg, @placement[:arg])
-    |> record!(Schema.InputValueDefinition, identifier, Keyword.put(attrs, :type, type), nil)
+    |> record_arg!(identifier, Keyword.put(attrs, :type, type))
   end
 
   @doc """
@@ -509,13 +509,13 @@ defmodule Absinthe.Schema.Notation do
   defmacro arg(identifier, attrs) when is_list(attrs) do
     __CALLER__
     |> recordable!(:arg, @placement[:arg])
-    |> record!(Schema.InputValueDefinition, identifier, attrs, nil)
+    |> record_arg!(identifier, attrs)
   end
 
   defmacro arg(identifier, type) do
     __CALLER__
     |> recordable!(:arg, @placement[:arg])
-    |> record!(Schema.InputValueDefinition, identifier, [type: type], nil)
+    |> record_arg!(identifier, type: type)
   end
 
   # SCALARS
@@ -772,7 +772,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro input_object(identifier, attrs \\ [], do: block) do
     __CALLER__
     |> recordable!(:input_object, @placement[:input_object])
-    |> record_input_object!(identifier, attrs, block)
+    |> record!(Schema.InputObjectTypeDefinition, identifier, attrs, block)
   end
 
   # UNIONS
@@ -803,7 +803,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro union(identifier, attrs \\ [], do: block) do
     __CALLER__
     |> recordable!(:union, @placement[:union])
-    |> record_union!(identifier, attrs, block)
+    |> record!(Schema.UnionTypeDefinition, identifier, attrs, block)
   end
 
   @placement {:types, [under: [:union]]}
@@ -1052,7 +1052,10 @@ defmodule Absinthe.Schema.Notation do
     Schema.FieldDefinition,
     Schema.ScalarTypeDefinition,
     Schema.EnumTypeDefinition,
-    Schema.InputValueDefinition
+    Schema.InputObjectTypeDefinition,
+    Schema.UnionTypeDefinition,
+    Schema.InterfaceTypeDefinition,
+    Schema.DirectiveDefinition
   ]
 
   def record!(env, type, identifier, attrs, block) when type in @scoped_types do
@@ -1060,19 +1063,25 @@ defmodule Absinthe.Schema.Notation do
     scoped_def(env, type, identifier, attrs, block)
   end
 
-  @doc false
-  # Record a union type
-  def record_union!(env, identifier, attrs, block) do
-    # attrs = Keyword.put(attrs, :identifier, identifier)
-    # scope(env, :union, identifier, attrs, block)
+  def record_arg!(env, identifier, attrs) do
+    attrs = Keyword.put(attrs, :identifier, identifier)
+    arg = struct!(Schema.InputValueDefinition, attrs)
+    put_attr(env.module, arg)
   end
 
   @doc false
-  # Record an input object type
-  def record_input_object!(env, identifier, attrs, block) do
-    # attrs = Keyword.put(attrs, :identifier, identifier)
-    # scope(env, :input_object, identifier, attrs, block)
-  end
+  # Record a union type
+  # def record_union!(env, identifier, attrs, block) do
+  #   attrs = Keyword.put(attrs, :identifier, identifier)
+  #   scoped_def(env, Schema., identifier, attrs, block)
+  # end
+  #
+  # @doc false
+  # # Record an input object type
+  # def record_input_object!(env, identifier, attrs, block) do
+  #   attrs = Keyword.put(attrs, :identifier, identifier)
+  #   scoped_def(env, :input_object, identifier, attrs, block)
+  # end
 
   @doc false
   # Record a directive expand function in the current scope
@@ -1112,8 +1121,8 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record a directive
   def record_directive!(env, identifier, attrs, block) do
-    # attrs = Keyword.put(attrs, :identifier, identifier)
-    # scope(env, :directive, identifier, attrs, block)
+    attrs = Keyword.put(attrs, :identifier, identifier)
+    scoped_def(env, Schema.DirectiveDefinition, identifier, attrs, block)
   end
 
   @doc false
@@ -1166,24 +1175,11 @@ defmodule Absinthe.Schema.Notation do
   end
 
   @doc false
-  # Record a field in the current scope
-  def record_field!(env, identifier, attrs, block) do
-    # scope(env, :field, identifier, attrs, block)
-  end
-
-  @doc false
   # Record a type resolver in the current scope
   def record_resolve_type!(env, func_ast) do
     # Scope.put_attribute(env.module, :resolve_type, func_ast)
     # Scope.recorded!(env.module, :attr, :resolve_type)
     # :ok
-  end
-
-  @doc false
-  # Record an interface type
-  def record_interface!(env, identifier, attrs, block) do
-    # attrs = Keyword.put(attrs, :identifier, identifier)
-    # scope(env, :interface, identifier, attrs, block)
   end
 
   @doc false
@@ -1219,9 +1215,9 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record an enum type
   def record_enum!(env, identifier, attrs, block) do
-    # attrs = expand(attrs, env)
-    # attrs = Keyword.put(attrs, :identifier, identifier)
-    # scope(env, :enum, identifier, attrs, block)
+    attrs = expand_ast(attrs, env)
+    attrs = Keyword.put(attrs, :identifier, identifier)
+    scoped_def(env, :enum, identifier, attrs, block)
   end
 
   defp reformat_description(text), do: String.trim(text)
@@ -1377,7 +1373,13 @@ defmodule Absinthe.Schema.Notation do
       |> Enum.reverse()
       |> intersperse_descriptions(module_attribute_descs)
 
-    imports = Enum.uniq(Module.get_attribute(env.module, :__absinthe_type_imports__) || [])
+    imports =
+      (Module.get_attribute(env.module, :__absinthe_type_imports__) || [])
+      |> Enum.uniq()
+      |> Enum.map(fn
+        module when is_atom(module) -> {module, []}
+        other -> other
+      end)
 
     schema_def = %Schema.SchemaDefinition{
       imports: imports,
