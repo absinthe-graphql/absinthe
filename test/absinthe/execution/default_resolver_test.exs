@@ -20,6 +20,21 @@ defmodule Absinthe.Execution.DefaultResolverTest do
     end
   end
 
+  describe "with integer value in field identifier" do
+    defmodule Schema do
+      use Absinthe.Schema
+
+      query do
+        field :field_1, :integer
+      end
+    end
+
+    test "should resolve" do
+      assert {:ok, %{data: %{"field1" => "test"}}} ==
+               Absinthe.run("{ field1 }", Schema, root_value: %{field_1: "test"})
+    end
+  end
+
   describe "with a custom default resolver defined" do
     defmodule CustomSchema do
       use Absinthe.Schema
