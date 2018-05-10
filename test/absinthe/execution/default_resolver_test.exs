@@ -26,12 +26,13 @@ defmodule Absinthe.Execution.DefaultResolverTest do
 
       query do
         field :field_1, :integer
+        field :field2, :integer
       end
     end
 
     test "should resolve" do
-      assert {:ok, %{data: %{"field1" => "test"}}} ==
-               Absinthe.run("{ field1 }", Schema, root_value: %{field_1: "test"})
+      assert {:ok, %{data: %{"field1" => "test", "field2" => "test"}}} ==
+               Absinthe.run("{ field1 field2 }", Schema, root_value: %{field_1: "test", field2: "test"})
     end
   end
 
