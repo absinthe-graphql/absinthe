@@ -216,7 +216,7 @@ defmodule Absinthe.Middleware do
   This made it very easy to accidently break your schema if you weren't
   particularly careful with your pattern matching. Now the defaults are applied
   FIRST by absinthe, and THEN passed to `middleware/3`. Consequently, the
-  middlware list argument should always have at least one value. This is also
+  middleware list argument should always have at least one value. This is also
   why there is now the `replace_default/4` function, because it handles telling
   the difference between a field with a resolver and a field with the default.
 
