@@ -38,6 +38,14 @@ defmodule Absinthe.Subscription do
   """
   defdelegate start_link(pubsub), to: Subscription.Supervisor
 
+  def child_spec(pubsub) do
+    %{
+      id: __MODULE__,
+      start: {Subscription.Supervisor, :start_link, [pubsub]},
+      type: :supervisor
+    }
+  end
+
   @type subscription_field_spec :: {atom, term | (term -> term)}
 
   @doc """
