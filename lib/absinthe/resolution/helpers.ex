@@ -254,9 +254,14 @@ defmodule Absinthe.Resolution.Helpers do
       |> use_parent(source, resource, parent, args, opts)
       |> Dataloader.load(source, {resource, args}, parent)
       |> on_load(fn loader ->
-        result = Dataloader.get(loader, source, {resource, args}, parent)
-        {:ok, result}
+        callback = Keyword.get(opts, :callback, &default_callback/3)
+
+        loader
+        |> Dataloader.get(source, {resource, args}, parent)
+        |> callback.(parent, args)
       end)
     end
+
+    defp default_callback(result, _parent, _args), do: {:ok, result}
   end
 end
