@@ -9,7 +9,8 @@ defmodule Absinthe.Blueprint.Result.List do
     :values,
     errors: [],
     flags: %{},
-    extensions: %{}
+    extensions: %{},
+    continuations: []
   ]
 
   @type t :: %__MODULE__{
@@ -17,6 +18,7 @@ defmodule Absinthe.Blueprint.Result.List do
           values: [Blueprint.Execution.node_t()],
           errors: [Phase.Error.t()],
           flags: Blueprint.flags_t(),
-          extensions: %{any => any}
+          extensions: %{any => any},
+          continuations: [Continuation.t()]
         }
 end

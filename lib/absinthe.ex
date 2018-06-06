@@ -44,9 +44,12 @@ defmodule Absinthe do
           %{message: String.t()}
           | %{message: String.t(), locations: [%{line: pos_integer, column: integer}]}
 
+  @type continuation_t :: nil | [Continuation.t()]
+
   @type result_t ::
-          %{data: nil | result_selection_t}
-          | %{data: nil | result_selection_t, errors: [result_error_t]}
+          %{required(:data) => nil | result_selection_t,
+            optional(:continuation) => continuation_t,
+            optional(:errors) => [result_error_t]}
           | %{errors: [result_error_t]}
 
   @type pipeline_modifier_fun :: (Absinthe.Pipeline.t(), Keyword.t() -> Absinthe.Pipeline.t())
@@ -98,7 +101,7 @@ defmodule Absinthe do
           pipeline_modifier: pipeline_modifier_fun()
         ]
 
-  @type run_result :: {:ok, result_t} | {:error, String.t()}
+  @type run_result :: {:ok, result_t} | {:more, result_t} | {:error, String.t()}
 
   @spec run(
           binary | Absinthe.Language.Source.t() | Absinthe.Language.Document.t(),
@@ -113,7 +116,23 @@ defmodule Absinthe do
       |> Absinthe.Pipeline.for_document(options)
       |> pipeline_modifier.(options)
 
-    case Absinthe.Pipeline.run(document, pipeline) do
+    document
+    |> Absinthe.Pipeline.run(pipeline)
+    |> build_result()
+  end
+
+  @spec continue([Continuation.t()]) :: run_result()
+  def continue(continuation) do
+    continuation
+    |> Absinthe.Pipeline.continue()
+    |> build_result()
+  end
+
+  defp build_result(output) do
+    case output do
+      {:ok, %{result: %{continuation: c} = result}, _phases} when c != [] ->
+        {:more, result}
+
       {:ok, %{result: result}, _phases} ->
         {:ok, result}
 
@@ -137,6 +156,7 @@ defmodule Absinthe do
   def run!(input, schema, options \\ []) do
     case run(input, schema, options) do
       {:ok, result} -> result
+      {:more, result} -> result
       {:error, err} -> raise ExecutionError, message: err
     end
   end

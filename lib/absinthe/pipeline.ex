@@ -12,21 +12,37 @@ defmodule Absinthe.Pipeline do
   * See `Absinthe.Schema` on adjusting the schema pipeline for schema manipulation.
   """
 
+  alias Absinthe.Blueprint.Continuation
   alias Absinthe.Phase
 
   @type data_t :: any
+
+  @type run_result_t :: {:ok, data_t, [Phase.t()]} | {:error, String.t() | {:http_method, String.t()}, [Phase.t()]}
 
   @type phase_config_t :: Phase.t() | {Phase.t(), Keyword.t()}
 
   @type t :: [phase_config_t | [phase_config_t]]
 
-  @spec run(data_t, t) ::
-          {:ok, data_t, [Phase.t()]}
-          | {:error, String.t() | {:http_method, String.t()}, [Phase.t()]}
+  @spec run(data_t, t) :: run_result_t
   def run(input, pipeline) do
     pipeline
     |> List.flatten()
     |> run_phase(input)
+  end
+
+  @spec continue([Continuation.t()]) :: run_result_t
+  def continue([continuation | rest]) do
+    result = run_phase(continuation.pipeline, continuation.phase_input)
+
+    case result do
+      {:ok, blueprint, phases} when rest == [] ->
+        {:ok, blueprint, phases}
+      {:ok, blueprint, phases} ->
+        bp_result = Map.put(blueprint.result, :continuation, rest)
+        blueprint = Map.put(blueprint, :result, bp_result)
+        {:ok, blueprint, phases}
+      error -> error
+    end
   end
 
   @defaults [
@@ -393,9 +409,7 @@ defmodule Absinthe.Pipeline do
     end)
   end
 
-  @spec run_phase(t, data_t, [Phase.t()]) ::
-          {:ok, data_t, [Phase.t()]}
-          | {:error, String.t() | {:http_method, String.t()}, [Phase.t()]}
+  @spec run_phase(t, data_t, [Phase.t()]) :: run_result_t
   def run_phase(pipeline, input, done \\ [])
 
   def run_phase([], input, done) do

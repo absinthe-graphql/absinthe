@@ -196,6 +196,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
         end
       end
 
+
       field :other_user, :user do
         arg :id, :id
 
@@ -224,6 +225,21 @@ defmodule Absinthe.Execution.SubscriptionTest do
       field :config_error_with_map, :string do
         config fn _, _ ->
           {:error, %{message: "failed", extensions: %{code: "FAILED"}}}
+        end
+      end
+
+      field :prime, :user do
+        arg :client_id, non_null(:id)
+        arg :prime_data, list_of(:string)
+
+        config fn args, _ ->
+          {
+            :ok,
+            topic: args.client_id,
+            prime: fn ->
+              {:ok, Enum.map(args.prime_data, &(%{id: "some_id", name: &1}))}
+            end
+          }
         end
       end
     end
@@ -900,6 +916,36 @@ defmodule Absinthe.Execution.SubscriptionTest do
            } == msg
   end
 
+  @query """
+  subscription ($clientId: ID!, $primeData: [String]) {
+    prime(clientId: $clientId, primeData: $primeData) {
+      name
+    }
+  }
+  """
+  test "subscription with priming" do
+    client_id = "xyz"
+    prime_data = ["name1", "name2"]
+
+    assert {:more, %{"subscribed" => _topic, continuation: continuation}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{
+                 "primeData" => prime_data,
+                 "clientId" => client_id
+               }
+             )
+
+    assert {:more, %{
+      data: %{"prime" => %{"name" => "name1"}},
+      continuation: continuation}}
+      = Absinthe.continue(continuation)
+
+    assert {:ok, %{data: %{"prime" => %{"name" => "name2"}}}}
+    = Absinthe.continue(continuation)
+  end
+
   def run_subscription(query, schema, opts \\ []) do
     opts =
       Keyword.update(
@@ -910,7 +956,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
       )
 
     case run(query, schema, opts) do
-      {:ok, %{"subscribed" => topic}} = val ->
+      {response, %{"subscribed" => topic}} = val when response == :ok or response == :more ->
         opts[:context][:pubsub].subscribe(topic)
         val
 
