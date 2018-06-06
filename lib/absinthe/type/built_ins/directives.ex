@@ -39,4 +39,20 @@ defmodule Absinthe.Type.BuiltIns.Directives do
         Blueprint.put_flag(node, :include, __MODULE__)
     end
   end
+
+  directive :defer do
+    description """
+    Directs the executor that it may defer evaluation of this field and send
+    the response later.
+    """
+
+    on [:field, :fragment_spread, :inline_fragment]
+
+    expand fn _, node -> add_defer(node) end
+  end
+
+  defp add_defer(node) do
+    node = Blueprint.put_flag(node, :defer, __MODULE__)
+    %{node | dynamic_middleware: [{Absinthe.Middleware.Defer, []} | node.dynamic_middleware]}
+  end
 end

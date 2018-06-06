@@ -23,6 +23,14 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.DirectivesTest do
                 "__schema" => %{
                   "directives" => [
                     %{
+                      "args" => [],
+                      "name" => "defer",
+                      "locations" => ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"],
+                      "onField" => true,
+                      "onFragment" => true,
+                      "onOperation" => false
+                    },
+                    %{
                       "args" => [
                         %{
                           "name" => "if",
