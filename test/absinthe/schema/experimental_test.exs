@@ -14,6 +14,7 @@ defmodule Absinthe.Schema.ExperimentalTest do
       """
 
       serialize &to_string/1
+
       parse fn input, _ ->
         {:ok, to_string(input.value)}
       end
