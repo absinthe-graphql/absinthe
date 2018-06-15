@@ -137,4 +137,4 @@ def create_post(_parent, args, %{context: %{current_user: user}}) do
 
 With this open a tag and run the query at the top of this page running your results should look something like below
 
-<img style="box-shadow: 0 0 6px #ccc;" src="assets/tutorial/graphiql_new_post.png" alt=""/>
+<img style="box-shadow: 0 0 6px #ccc;" src="assets/tutorial/graphiql_new_post_sub.png" alt=""/>
