@@ -95,6 +95,7 @@ end
 
 Now lets set up a subscription root object in our Schema to listen to an event. For this subscription we can set it up to listen every time a new post is created.
 
+
 In `blog_web/schema.ex` :
 
 ```elixir
@@ -110,10 +111,13 @@ subscription do
 end
 ```
 
-Here we add a root subscription object then to it we add a field `new_post` that listens to the GraphQL request we started our quest with
+The `new_post` field is a pretty regular field only new thing here is the `config` macro, this is
+here to help us know which clients have subscribed to which fields. Much like websockets subscriptions work by allowing t a client to subscribe to a topic.
+
+Topics are scoped to a field and for now we shall use `*` to indicate we care about all the posts, and that's it!
 
 
-If you ran the request at this moment you would get a nice messahge telling you that your subscriptions will appear once after they are published but you create a post and alas! no data what cut?
+If you ran the request at this moment you would get a nice message telling you that your subscriptions will appear once after they are published but you create a post and alas! no data what cut?
 
 Once a subscription is set up it waits for a target event to get published in order for us to collect this information we need to publish to this subscription
 
