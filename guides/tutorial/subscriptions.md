@@ -33,11 +33,14 @@ In `lib/blog/application.ex`:
 
 ```elixir
   children = [
-    <<other supervisors>>
-
-    supervisor(Absinthe.Subscription, [BlogWeb.Endpoint])
+    # other children ...
+    {supervisor(}MyAppWeb.Endpoint, []}, # this line should already exist
+    {supervisor(}Absinthe.Subscription, [MyAppWeb.Endpoint]}, # add this line
+    # other children ...
   ]
 ```
+
+
 
 The lets add a configuration to the phoenix endpoint so it can provide some callbacks Absinthe expects, please note while this guide uses phoenix Absinthes support for Subscriptions is good enough to be used without websockets even without a browser.
 
@@ -81,8 +84,7 @@ defmodule BlogWeb.Router do
     pipe_through :api
 
     forward "/graphiql", Absinthe.Plug.GraphiQL,
-      schema: BlogWeb.Schema,
-      socket: BlogWeb.UserSocket
+      schema: BlogWeb.Schema
 
     forward "/", Absinthe.Plug,
       schema: BlogWeb.Schema,
