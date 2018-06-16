@@ -34,8 +34,8 @@ In `lib/blog/application.ex`:
 ```elixir
   children = [
     # other children ...
-    {supervisor(}MyAppWeb.Endpoint, []}, # this line should already exist
-    {supervisor(}Absinthe.Subscription, [MyAppWeb.Endpoint]}, # add this line
+    {BlogWeb.Endpoint, []}, # this line should already exist
+    {Absinthe.Subscription, [BlogWeb.Endpoint]}, # add this line
     # other children ...
   ]
 ```
