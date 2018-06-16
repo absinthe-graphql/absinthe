@@ -84,11 +84,12 @@ defmodule BlogWeb.Router do
     pipe_through :api
 
     forward "/graphiql", Absinthe.Plug.GraphiQL,
-      schema: BlogWeb.Schema
-
-    forward "/", Absinthe.Plug,
       schema: BlogWeb.Schema,
       socket: BlogWeb.UserSocket
+
+
+    forward "/", Absinthe.Plug,
+      schema: BlogWeb.Schema
   end
 
 end
