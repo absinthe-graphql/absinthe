@@ -36,7 +36,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   Write to path `/path/to/schema.json` using the `MySchema` schema, using the
   default `#{@default_codec_name}` JSON codec, and pretty-printing:
 
-      $ mix absinthe.schema.json --schema MySchema --pretty /path/to/schema.json
+      $ mix absinthe.schema.json --schema MySchema --pretty true /path/to/schema.json
 
   Write to default path `#{@default_filename}` using the `MySchema` schema and
   a custom JSON codec, `MyCodec`:
