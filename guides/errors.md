@@ -8,6 +8,7 @@ One or more errors for a field can be returned in a single `{:error, error_value
 
 `error_value` can be:
 - A simple error message string.
+- An `Exception.t`.
 - A map containing `:message` key, plus any additional serializable metadata.
 - A keyword list containing a `:message` key, plus any additional serializable metadata.
 - A list containing multiple of any/all of these.
