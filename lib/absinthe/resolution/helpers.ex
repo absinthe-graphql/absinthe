@@ -212,7 +212,7 @@ defmodule Absinthe.Resolution.Helpers do
         loader
         |> Dataloader.load(source_name, {resource, args}, parent)
         |> on_load(fn loader ->
-          {:ok, Dataloader.get(loader, source_name, {resource, args}), parent}
+          {:ok, Dataloader.get(loader, source_name, {resource, args}, parent)}
         end)
       end
     ```
