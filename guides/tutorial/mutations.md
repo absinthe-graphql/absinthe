@@ -53,7 +53,7 @@ end
 ## Authorization
 
 This resolver adds a new concept: authorization. The resolution struct
-(that is, an [`Absinthe.Resolution.t`](Absinthe.Resolution.html)
+(that is, an [`Absinthe.Resolution`](Absinthe.Resolution.html))
 passed to the resolver as the third argument carries along with it the
 Absinthe context, a data structure that serves as the integration
 point with external mechanisms---like a Plug that authenticates the
