@@ -1373,6 +1373,9 @@ defmodule Absinthe.Schema.Notation do
       |> Enum.reverse()
       |> intersperse_descriptions(module_attribute_descs)
 
+
+
+
     imports =
       (Module.get_attribute(env.module, :__absinthe_type_imports__) || [])
       |> Enum.uniq()
@@ -1386,13 +1389,28 @@ defmodule Absinthe.Schema.Notation do
       module: env.module
     }
 
+
     blueprint =
       attrs
       |> List.insert_at(1, schema_def)
       |> Absinthe.Blueprint.Schema.build()
 
+
     # TODO: handle multiple schemas
     [schema] = blueprint.schema_definitions
+
+
+    # This goes through the schema adding a function to the module for each scalar
+    scalar_serialize =
+      for %Schema.ScalarTypeDefinition{} = type <- schema.types do
+        quote do
+          def __absinthe_serialize__(:scalar, unquote(type.identifier), :serialize) do
+            unquote(type.serialize)
+          end
+        end
+      end
+
+
 
     middleware =
       for %Schema.ObjectTypeDefinition{} = type <- schema.types,
