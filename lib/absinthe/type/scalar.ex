@@ -37,8 +37,11 @@ defmodule Absinthe.Type.Scalar do
     quote do: %unquote(__MODULE__){unquote_splicing(attrs)}
   end
 
-  def serialize(%{serialize: serializer}, value) do
-    serializer.(value)
+  def serialize(type, value) do
+    module = type.serialize
+
+    function = module.__absinthe_serialize__(:scalar, type.identifier, :serialize)
+    function.(value)
   end
 
   def parse(%{parse: parser}, value, context \\ %{}) do
