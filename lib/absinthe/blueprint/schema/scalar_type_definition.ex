@@ -7,6 +7,7 @@ defmodule Absinthe.Blueprint.Schema.ScalarTypeDefinition do
   defstruct [
     :name,
     :identifier,
+    :module,
     description: nil,
     parse: nil,
     serialize: nil,
@@ -25,10 +26,12 @@ defmodule Absinthe.Blueprint.Schema.ScalarTypeDefinition do
           errors: [Absinthe.Phase.Error.t()]
         }
 
-  def build(type_def, _schema) do
+  def build(type_def, schema) do
     %Absinthe.Type.Scalar{
       identifier: type_def.identifier,
-      name: type_def.name
+      name: type_def.name,
+      description: type_def.description,
+      serialize: type_def.module
     }
   end
 end

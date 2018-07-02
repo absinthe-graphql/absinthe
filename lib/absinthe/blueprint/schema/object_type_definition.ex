@@ -7,6 +7,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
   defstruct [
     :name,
     :identifier,
+    :module,
     description: nil,
     interfaces: [],
     fields: [],
@@ -14,7 +15,8 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
     # Added by phases
     flags: %{},
     imports: [],
-    errors: []
+    errors: [],
+    meta: %{}
   ]
 
   @type t :: %__MODULE__{

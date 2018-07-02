@@ -295,6 +295,32 @@ defmodule Absinthe.Schema.Notation do
     |> record_resolve_type!(func_ast)
   end
 
+  defp replace_key(attrs, k1, k2) do
+    case Keyword.fetch(attrs, k1) do
+      {:ok, value} ->
+        attrs
+        |> Keyword.delete(k1)
+        |> Keyword.put(k2, value)
+      _ ->
+        attrs
+    end
+  end
+
+  defp handle_field_attrs(attrs) do
+    attrs =
+      attrs
+      |> replace_key(:args, :arguments)
+      |> replace_key(:deprecate, :deprecation)
+
+    case Keyword.pop(attrs, :resolve) do
+      {nil, attrs} ->
+        attrs
+      {ast, attrs} ->
+        ast = {:{}, [], [{Absinthe.Resolution, ast}, []]}
+        Keyword.update(attrs, :middleware_ast, [ast], &[ast | &1])
+    end
+  end
+
   # FIELDS
   @placement {:field, [under: [:input_object, :interface, :object]]}
   @doc """
@@ -311,7 +337,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro field(identifier, attrs) when is_list(attrs) do
     __CALLER__
     |> recordable!(:field, @placement[:field])
-    |> record!(Schema.FieldDefinition, identifier, attrs, [])
+    |> record!(Schema.FieldDefinition, identifier, handle_field_attrs(attrs), [])
   end
 
   defmacro field(identifier, type) do
@@ -328,7 +354,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro field(identifier, attrs, do: block) when is_list(attrs) do
     __CALLER__
     |> recordable!(:field, @placement[:field])
-    |> record!(Schema.FieldDefinition, identifier, attrs, block)
+    |> record!(Schema.FieldDefinition, identifier, handle_field_attrs(attrs), block)
   end
 
   defmacro field(identifier, type, do: block) do
@@ -340,7 +366,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro field(identifier, type, attrs) do
     __CALLER__
     |> recordable!(:field, @placement[:field])
-    |> record!(Schema.FieldDefinition, identifier, Keyword.put(attrs, :type, type), [])
+    |> record!(Schema.FieldDefinition, identifier, handle_field_attrs(Keyword.put(attrs, :type, type)), [])
   end
 
   @doc """
@@ -1290,8 +1316,9 @@ defmodule Absinthe.Schema.Notation do
       attrs
       |> Keyword.put(:identifier, identifier)
       |> Keyword.put_new(:name, default_name(type, identifier))
+      |> Keyword.put(:module, caller.module)
 
-    scalar = struct(type, attrs)
+    scalar = struct!(type, attrs)
 
     put_attr(caller.module, scalar)
 
@@ -1410,8 +1437,6 @@ defmodule Absinthe.Schema.Notation do
         end
       end
 
-
-
     middleware =
       for %Schema.ObjectTypeDefinition{} = type <- schema.types,
           field <- type.fields do
@@ -1430,6 +1455,8 @@ defmodule Absinthe.Schema.Notation do
       end
 
       unquote_splicing(middleware)
+
+      unquote_splicing(scalar_serialize)
     end
   end
 

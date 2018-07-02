@@ -6,6 +6,8 @@ defmodule Absinthe.Blueprint.Schema.DirectiveDefinition do
   @enforce_keys [:name]
   defstruct [
     :name,
+    :module,
+    :identifier,
     description: nil,
     directives: [],
     arguments: [],

@@ -20,18 +20,16 @@ defmodule Absinthe.Phase.Schema.Compile do
 
   def build_types(%{schema_definitions: [schema]}) do
     for %module{} = type_def <- schema.types do
-      type =
-        type_def
-        |> module.build(schema)
-        |> Macro.escape()
+      type = module.build(type_def, schema)
+      ast = Macro.escape(type)
 
       quote do
         def __absinthe_type__(unquote(type_def.identifier)) do
-          unquote(type)
+          unquote(ast)
         end
 
         def __absinthe_type__(unquote(type_def.name)) do
-          unquote(type)
+          unquote(ast)
         end
       end
     end

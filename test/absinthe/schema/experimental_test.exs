@@ -3,8 +3,8 @@ defmodule Absinthe.Schema.ExperimentalTest do
 
   @moduletag :experimental
 
-  defmodule Schema do
-    use Absinthe.Schema
+  defmodule Foo do
+    use Absinthe.Schema.Notation
 
     scalar :string do
       description """
@@ -19,6 +19,11 @@ defmodule Absinthe.Schema.ExperimentalTest do
         {:ok, to_string(input.value)}
       end
     end
+  end
+
+  defmodule Schema do
+    use Absinthe.Schema
+    import_types Foo
 
     query do
       field :user, :user do
@@ -69,4 +74,14 @@ defmodule Absinthe.Schema.ExperimentalTest do
     assert {:ok, %{data: %{"user" => %{"fullName" => "Bruce Williams"}}}} ==
              Absinthe.run(query, Schema)
   end
+
+  # @tag :simple
+  # test "simple input" do
+  #   query = """
+  #   { hello(name: "bob") }
+  #   """
+  #
+  #   assert {:ok, %{data: %{"hello" => "hello bob"}}} ==
+  #            Absinthe.run(query, Schema)
+  # end
 end

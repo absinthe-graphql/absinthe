@@ -7,6 +7,7 @@ defmodule Absinthe.Blueprint.Schema.UnionTypeDefinition do
   defstruct [
     :identifier,
     :name,
+    :module,
     description: nil,
     directives: [],
     types: [],

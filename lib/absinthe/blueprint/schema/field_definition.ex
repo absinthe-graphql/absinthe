@@ -8,7 +8,9 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
     :name,
     :identifier,
     :type,
+    :module,
     deprecation: nil,
+    default_value: nil,
     arguments: [],
     directives: [],
     # Added by DSL

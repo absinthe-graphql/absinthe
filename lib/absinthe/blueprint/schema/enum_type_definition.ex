@@ -8,6 +8,7 @@ defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
     :name,
     :identifier,
     :description,
+    :module,
     values: [],
     directives: [],
     # Added by phases,
