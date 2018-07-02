@@ -301,6 +301,7 @@ defmodule Absinthe.Schema.Notation do
         attrs
         |> Keyword.delete(k1)
         |> Keyword.put(k2, value)
+
       _ ->
         attrs
     end
@@ -315,6 +316,7 @@ defmodule Absinthe.Schema.Notation do
     case Keyword.pop(attrs, :resolve) do
       {nil, attrs} ->
         attrs
+
       {ast, attrs} ->
         ast = {:{}, [], [{Absinthe.Resolution, ast}, []]}
         Keyword.update(attrs, :middleware_ast, [ast], &[ast | &1])
@@ -366,7 +368,12 @@ defmodule Absinthe.Schema.Notation do
   defmacro field(identifier, type, attrs) do
     __CALLER__
     |> recordable!(:field, @placement[:field])
-    |> record!(Schema.FieldDefinition, identifier, handle_field_attrs(Keyword.put(attrs, :type, type)), [])
+    |> record!(
+      Schema.FieldDefinition,
+      identifier,
+      handle_field_attrs(Keyword.put(attrs, :type, type)),
+      []
+    )
   end
 
   @doc """
@@ -1400,9 +1407,6 @@ defmodule Absinthe.Schema.Notation do
       |> Enum.reverse()
       |> intersperse_descriptions(module_attribute_descs)
 
-
-
-
     imports =
       (Module.get_attribute(env.module, :__absinthe_type_imports__) || [])
       |> Enum.uniq()
@@ -1416,16 +1420,13 @@ defmodule Absinthe.Schema.Notation do
       module: env.module
     }
 
-
     blueprint =
       attrs
       |> List.insert_at(1, schema_def)
       |> Absinthe.Blueprint.Schema.build()
 
-
     # TODO: handle multiple schemas
     [schema] = blueprint.schema_definitions
-
 
     # This goes through the schema adding a function to the module for each scalar
     scalar_serialize =
