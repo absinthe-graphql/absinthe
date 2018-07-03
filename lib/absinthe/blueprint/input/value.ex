@@ -5,11 +5,10 @@ defmodule Absinthe.Blueprint.Input.Value do
   #
   # Used by arguments, input object fields, and input lists.
 
-  @enforce_keys [:literal]
+  @enforce_keys [:value]
   defstruct [
     :schema_node,
-    :literal,
-    :normalized,
+    :value,
     :data
   ]
 
@@ -27,15 +26,14 @@ defmodule Absinthe.Blueprint.Input.Value do
           | variable
 
   @type t :: %__MODULE__{
-          literal: literals | variable,
-          normalized: literals,
+          value: literals | variable,
           data: term
         }
 
   @spec valid?(t) :: boolean
   @doc false
   # Whether a value is valid and useful in an argument
-  def valid?(%{normalized: %Absinthe.Blueprint.Input.Null{}}), do: true
-  def valid?(%{normalized: nil}), do: false
-  def valid?(%{normalized: _}), do: true
+  def valid?(%{value: %Absinthe.Blueprint.Input.Null{}}), do: true
+  def valid?(%{value: nil}), do: false
+  def valid?(%{value: _}), do: true
 end

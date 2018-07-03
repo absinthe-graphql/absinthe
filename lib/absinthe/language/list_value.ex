@@ -17,7 +17,7 @@ defmodule Absinthe.Language.ListValue do
         items:
           node.values
           |> Enum.map(fn value ->
-            %Blueprint.Input.Value{literal: Blueprint.Draft.convert(value, doc)}
+            %Blueprint.Input.Value{value: Blueprint.Draft.convert(value, doc)}
           end),
         source_location: source_location(node)
       }

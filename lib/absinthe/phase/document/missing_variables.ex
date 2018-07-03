@@ -20,14 +20,14 @@ defmodule Absinthe.Phase.Document.MissingVariables do
   end
 
   defp handle_node(
-         %Blueprint.Input.Argument{schema_node: schema_node, input_value: %{normalized: nil}} =
+         %Blueprint.Input.Argument{schema_node: schema_node, input_value: %{value: nil}} =
            node
        ) do
     handle_defaults(node, schema_node)
   end
 
   defp handle_node(
-         %Blueprint.Input.Field{schema_node: schema_node, input_value: %{normalized: nil}} = node
+         %Blueprint.Input.Field{schema_node: schema_node, input_value: %{value: nil}} = node
        ) do
     handle_defaults(node, schema_node)
   end
@@ -51,7 +51,7 @@ defmodule Absinthe.Phase.Document.MissingVariables do
   end
 
   defp fill_default(%{input_value: input} = node, val) do
-    input = %{input | data: val, normalized: %Blueprint.Input.Generated{by: __MODULE__}}
+    input = %{input | data: val, value: %Blueprint.Input.Generated{by: __MODULE__}}
     %{node | input_value: input}
   end
 end

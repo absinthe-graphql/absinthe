@@ -21,7 +21,7 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNamesTest do
 
   defp literal_value_check(name, value) do
     fn
-      %{name: ^name, input_value: %{literal: %{value: ^value}}} ->
+      %{name: ^name, input_value: %{value: %{value: ^value}}} ->
         true
 
       _ ->

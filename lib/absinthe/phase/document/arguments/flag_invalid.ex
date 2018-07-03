@@ -23,15 +23,15 @@ defmodule Absinthe.Phase.Document.Arguments.FlagInvalid do
   end
 
   defp handle_node(%Blueprint.Input.Argument{} = node) do
-    check_child(node, node.input_value.normalized, :bad_argument)
+    check_child(node, node.input_value.value, :bad_argument)
   end
 
   defp handle_node(%Blueprint.Input.Field{} = node) do
-    check_child(node, node.input_value.normalized, :bad_field)
+    check_child(node, node.input_value.value, :bad_field)
   end
 
   defp handle_node(%Blueprint.Input.List{} = node) do
-    check_children(node, node.items |> Enum.map(& &1.normalized), :bad_list)
+    check_children(node, node.items |> Enum.map(& &1.value), :bad_list)
   end
 
   defp handle_node(%Blueprint.Input.Object{} = node) do
