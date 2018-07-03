@@ -48,7 +48,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
       input_argument = field.arguments |> Enum.find(&(&1.name == "input"))
 
       assert %Blueprint.Input.List{
-               items: [%Blueprint.Input.RawValue{content: %Blueprint.Input.Integer{value: 42}}]
+               items: [%Blueprint.Input.Value{normalized: %Blueprint.Input.Integer{value: 42}}]
              } = input_argument.input_value.normalized
     end
 
@@ -67,7 +67,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
       input_argument = field.arguments |> Enum.find(&(&1.name == "input"))
 
       assert %Blueprint.Input.List{
-               items: [%Blueprint.Input.RawValue{content: %Blueprint.Input.Integer{value: 42}}]
+               items: [%Blueprint.Input.Value{normalized: %Blueprint.Input.Integer{value: 42}}]
              } = input_argument.input_value.normalized
     end
   end
@@ -88,7 +88,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
       input_argument = field.arguments |> Enum.find(&(&1.name == "input"))
 
       assert %Blueprint.Input.List{
-               items: [%Blueprint.Input.RawValue{content: %Blueprint.Input.Integer{value: 42}}]
+               items: [%Blueprint.Input.Value{normalized: %Blueprint.Input.Integer{value: 42}}]
              } = input_argument.input_value.normalized
     end
 
@@ -107,7 +107,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
       input_argument = field.arguments |> Enum.find(&(&1.name == "input"))
 
       assert %Blueprint.Input.List{
-               items: [%Blueprint.Input.RawValue{content: %Blueprint.Input.Integer{value: 42}}]
+               items: [%Blueprint.Input.Value{normalized: %Blueprint.Input.Integer{value: 42}}]
              } = input_argument.input_value.normalized
     end
   end
@@ -128,7 +128,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
       input_argument = field.arguments |> Enum.find(&(&1.name == "input"))
 
       assert %Blueprint.Input.List{
-               items: [%Blueprint.Input.RawValue{content: %Blueprint.Input.Enum{value: "BAZ"}}]
+               items: [%Blueprint.Input.Value{normalized: %Blueprint.Input.Enum{value: "BAZ"}}]
              } = input_argument.input_value.normalized
     end
 
@@ -147,7 +147,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
       input_argument = field.arguments |> Enum.find(&(&1.name == "input"))
 
       assert %Blueprint.Input.List{
-               items: [%Blueprint.Input.RawValue{content: %Blueprint.Input.Enum{value: "BAZ"}}]
+               items: [%Blueprint.Input.Value{normalized: %Blueprint.Input.Enum{value: "BAZ"}}]
              } = input_argument.input_value.normalized
     end
   end
