@@ -64,7 +64,7 @@ defmodule Absinthe.Blueprint.Input do
     %Input.List{
       items:
         Enum.map(value, fn item ->
-          %Input.Value{value: parse(item)}
+          %Input.Value{literal: parse(item)}
         end)
     }
   end
@@ -75,7 +75,7 @@ defmodule Absinthe.Blueprint.Input do
         Enum.map(value, fn {name, field_value} ->
           %Input.Field{
             name: name,
-            input_value: %Input.Value{value: parse(field_value)}
+            input_value: %Input.Value{literal: parse(field_value)}
           }
         end)
     }
@@ -109,7 +109,7 @@ defmodule Absinthe.Blueprint.Input do
   def inspect(%Input.Object{} = node) do
     contents =
       node.fields
-      |> Enum.filter(& &1.input_value.value)
+      |> Enum.filter(& &1.input_value.literal)
       |> Enum.map(&inspect/1)
       |> Enum.join(", ")
 
@@ -121,7 +121,7 @@ defmodule Absinthe.Blueprint.Input do
   end
 
   def inspect(%Input.Value{} = node) do
-    inspect(node.value)
+    inspect(node.literal)
   end
 
   def inspect(%Input.Variable{} = node) do

@@ -16,11 +16,11 @@ defmodule Absinthe.Phase.Document.Arguments.Parse do
     {:halt, node}
   end
 
-  defp handle_node(%Input.Value{value: nil} = node, _context) do
+  defp handle_node(%{normalized: nil} = node, _context) do
     node
   end
 
-  defp handle_node(%Input.Value{value: normalized} = node, context) do
+  defp handle_node(%Input.Value{normalized: normalized} = node, context) do
     case build_value(normalized, node.schema_node, context) do
       {:ok, value} ->
         %{node | data: value}
@@ -29,7 +29,7 @@ defmodule Absinthe.Phase.Document.Arguments.Parse do
         node
 
       {:error, flag} ->
-        %{node | value: normalized |> flag_invalid(flag)}
+        %{node | normalized: normalized |> flag_invalid(flag)}
     end
   end
 

@@ -19,10 +19,10 @@ defmodule Absinthe.Phase.Document.Validation.UniqueInputFieldNames do
 
   # Find input objects
   @spec handle_node(Blueprint.node_t()) :: Blueprint.node_t()
-  defp handle_node(%{value: %Blueprint.Input.Object{} = node} = parent) do
+  defp handle_node(%{normalized: %Blueprint.Input.Object{} = node} = parent) do
     fields = Enum.map(node.fields, &process(&1, node.fields))
     node = %{node | fields: fields}
-    %{parent | value: node}
+    %{parent | normalized: node}
   end
 
   defp handle_node(node) do

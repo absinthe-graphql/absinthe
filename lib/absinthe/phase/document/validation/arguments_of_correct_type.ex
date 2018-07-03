@@ -24,7 +24,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
   end
 
   # handled by Phase.Document.Validation.ProvidedNonNullArguments
-  defp handle_node(%Blueprint.Input.Argument{input_value: %{value: nil}} = node, _schema) do
+  defp handle_node(%Blueprint.Input.Argument{input_value: %{normalized: nil}} = node, _schema) do
     {:halt, node}
   end
 
@@ -34,7 +34,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
     message =
       error_message(
         node.name,
-        Blueprint.Input.inspect(node.input_value.value),
+        Blueprint.Input.inspect(node.input_value.literal),
         descendant_errors
       )
 
@@ -51,7 +51,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
 
   defp collect_child_errors(%Blueprint.Input.List{} = node, schema) do
     node.items
-    |> Enum.map(& &1.value)
+    |> Enum.map(& &1.normalized)
     |> Enum.with_index()
     |> Enum.flat_map(fn
       {%{schema_node: nil} = child, _} ->
@@ -93,7 +93,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
             _ -> collect_child_errors(child.input_value, schema)
           end
 
-        child_inspected_value = Blueprint.Input.inspect(child.input_value.value)
+        child_inspected_value = Blueprint.Input.inspect(child.input_value.literal)
 
         [
           value_error_message(child.name, child_type_name, child_inspected_value)
@@ -101,11 +101,11 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
         ]
 
       child ->
-        collect_child_errors(child.input_value.value, schema)
+        collect_child_errors(child.input_value.normalized, schema)
     end)
   end
 
-  defp collect_child_errors(%Blueprint.Input.Value{value: norm}, schema) do
+  defp collect_child_errors(%Blueprint.Input.Value{normalized: norm}, schema) do
     collect_child_errors(norm, schema)
   end
 

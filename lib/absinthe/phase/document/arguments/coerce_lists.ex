@@ -24,16 +24,16 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceLists do
     {:ok, node}
   end
 
-  defp coerce_node(%Input.Value{value: nil} = node), do: node
+  defp coerce_node(%Input.Value{normalized: nil} = node), do: node
 
-  defp coerce_node(%Input.Value{value: %Input.Null{}} = node) do
+  defp coerce_node(%Input.Value{normalized: %Input.Null{}} = node) do
     node
   end
 
   defp coerce_node(%Input.Value{} = node) do
     case Type.unwrap_non_null(node.schema_node) do
       %Type.List{} ->
-        %{node | value: Input.List.wrap(node.value, node.schema_node)}
+        %{node | normalized: Input.List.wrap(node.normalized, node.schema_node)}
 
       _ ->
         node

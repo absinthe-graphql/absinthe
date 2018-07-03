@@ -42,7 +42,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceEnumsTest do
       op = result.operations |> Enum.find(&(&1.name == "Enum"))
       field = op.selections |> List.first()
       input_argument = field.arguments |> Enum.find(&(&1.name == "input"))
-      assert %Blueprint.Input.Enum{value: "BAZ"} = input_argument.input_value.value
+      assert %Blueprint.Input.Enum{value: "BAZ"} = input_argument.input_value.normalized
     end
 
     test "coerces the type from String to Enum when supplying variables" do
@@ -58,7 +58,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceEnumsTest do
       op = result.operations |> Enum.find(&(&1.name == "EnumVar"))
       field = op.selections |> List.first()
       input_argument = field.arguments |> Enum.find(&(&1.name == "input"))
-      assert %Blueprint.Input.Enum{value: "BAZ"} = input_argument.input_value.value
+      assert %Blueprint.Input.Enum{value: "BAZ"} = input_argument.input_value.normalized
     end
   end
 
@@ -76,7 +76,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceEnumsTest do
       op = result.operations |> Enum.find(&(&1.name == "Enum"))
       field = op.selections |> List.first()
       input_argument = field.arguments |> Enum.find(&(&1.name == "input"))
-      assert %Blueprint.Input.Enum{value: "BAZ"} = input_argument.input_value.value
+      assert %Blueprint.Input.Enum{value: "BAZ"} = input_argument.input_value.normalized
     end
 
     test "coerces the type from String to Enum when supplying variables" do
@@ -92,7 +92,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceEnumsTest do
       op = result.operations |> Enum.find(&(&1.name == "EnumVar"))
       field = op.selections |> List.first()
       input_argument = field.arguments |> Enum.find(&(&1.name == "input"))
-      assert %Blueprint.Input.Enum{value: "BAZ"} = input_argument.input_value.value
+      assert %Blueprint.Input.Enum{value: "BAZ"} = input_argument.input_value.normalized
     end
   end
 end
