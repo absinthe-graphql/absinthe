@@ -34,7 +34,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
     message =
       error_message(
         node.name,
-        Blueprint.Input.inspect(node.input_value.literal),
+        Blueprint.Input.inspect(node.input_value),
         descendant_errors
       )
 
@@ -93,7 +93,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
             _ -> collect_child_errors(child.input_value, schema)
           end
 
-        child_inspected_value = Blueprint.Input.inspect(child.input_value.literal)
+        child_inspected_value = Blueprint.Input.inspect(child.input_value)
 
         [
           value_error_message(child.name, child_type_name, child_inspected_value)

@@ -27,12 +27,12 @@ defmodule Absinthe.Language.FieldTest do
                arguments: [
                  %Input.Argument{
                    name: "input",
-                   input_value: %Input.Value{
-                     literal: %Input.Object{
+                   input_value: %Input.RawValue{
+                     content: %Input.Object{
                        fields: [
                          %Input.Field{
                            name: "foo",
-                           input_value: %Input.Value{literal: %Input.Integer{value: 2}}
+                           input_value: %Input.RawValue{content: %Input.Integer{value: 2}}
                          }
                        ]
                      }
@@ -52,7 +52,7 @@ defmodule Absinthe.Language.FieldTest do
                    arguments: [
                      %Input.Argument{
                        name: "if",
-                       input_value: %Input.Value{literal: %Input.Variable{name: "showFoo"}}
+                       input_value: %Input.RawValue{content: %Input.Variable{name: "showFoo"}}
                      }
                    ],
                    source_location: %Blueprint.Document.SourceLocation{line: 2}
@@ -61,12 +61,12 @@ defmodule Absinthe.Language.FieldTest do
                arguments: [
                  %Input.Argument{
                    name: "input",
-                   input_value: %Input.Value{
-                     literal: %Input.Object{
+                   input_value: %Input.RawValue{
+                     content: %Input.Object{
                        fields: [
                          %Input.Field{
                            name: "foo",
-                           input_value: %Input.Value{literal: %Input.Integer{value: 2}}
+                           input_value: %Input.RawValue{content: %Input.Integer{value: 2}}
                          }
                        ]
                      }
