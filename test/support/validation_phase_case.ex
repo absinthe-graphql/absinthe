@@ -4,6 +4,20 @@ defmodule Absinthe.ValidationPhaseCase do
 
   @type error_checker_t :: ([{Blueprint.t(), Blueprint.Error.t()}] -> boolean)
 
+  def get_error_location(line) do
+    case List.wrap(line) do
+      [single] ->
+        "(from line ##{single})"
+
+      multiple when is_list(multiple) ->
+        numbers = multiple |> Enum.join(", #")
+        "(from lines ##{numbers})"
+
+      nil ->
+        "(at any line number)"
+    end
+  end
+
   defmacro __using__(opts) do
     phase = Keyword.fetch!(opts, :phase)
 
@@ -13,18 +27,7 @@ defmodule Absinthe.ValidationPhaseCase do
       import unquote(__MODULE__)
 
       def bad_value(node_kind, message, line, check \\ []) do
-        location =
-          case List.wrap(line) do
-            [single] ->
-              "(from line ##{single})"
-
-            multiple when is_list(multiple) ->
-              numbers = multiple |> Enum.join(", #")
-              "(from lines ##{numbers})"
-
-            nil ->
-              "(at any line number)"
-          end
+        location = unquote(__MODULE__).get_error_location(line)
 
         expectation_banner =
           "\nExpected #{node_kind} node with error #{location}:\n---\n#{message}\n---"
@@ -63,7 +66,7 @@ defmodule Absinthe.ValidationPhaseCase do
 
           formatted_errors =
             Enum.map(pairs, fn {_, error} ->
-              error.message
+              "#{error.message} (from line #{inspect(error.locations)})"
             end)
 
           assert matched,
@@ -168,19 +171,22 @@ defmodule Absinthe.ValidationPhaseCase do
   end
 
   defp run(schema, validations, document, options) do
-    pipeline = pre_validation_pipeline(schema, options)
-    Pipeline.run(document, pipeline ++ validations)
+    pipeline = pre_validation_pipeline(schema, validations, options)
+    Pipeline.run(document, pipeline)
   end
 
-  defp pre_validation_pipeline(schema, :schema) do
+  defp pre_validation_pipeline(schema, _validations, :schema) do
     Pipeline.for_schema(schema)
     |> Pipeline.upto(Phase.Schema)
   end
 
-  defp pre_validation_pipeline(schema, options) do
+  defp pre_validation_pipeline(schema, validations, options) do
     Pipeline.for_document(schema, options)
     |> Pipeline.upto(Phase.Document.Validation.Result)
-    |> Pipeline.reject(~r/Validation/)
+    |> Pipeline.reject(fn phase ->
+      Regex.match?(~r/Validation/, Atom.to_string(phase)) and
+        phase not in validations
+    end)
   end
 
   # Build a map of node => errors
