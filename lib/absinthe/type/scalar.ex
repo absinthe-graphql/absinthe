@@ -44,14 +44,11 @@ defmodule Absinthe.Type.Scalar do
     function.(value)
   end
 
-  def parse(%{parse: parser}, value, context \\ %{}) do
-    case parser do
-      parser when is_function(parser, 1) ->
-        parser.(value)
+  def parse(type, value, context \\ %{}) do
+    module = type.parse
 
-      parser when is_function(parser, 2) ->
-        parser.(value, context)
-    end
+    function = module.__absinthe_parse__(:scalar, type.identifier, :parse)
+    function.(value)
   end
 
   @typedoc """
