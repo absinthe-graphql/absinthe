@@ -1428,12 +1428,22 @@ defmodule Absinthe.Schema.Notation do
     # TODO: handle multiple schemas
     [schema] = blueprint.schema_definitions
 
-    # This goes through the schema adding a function to the module for each scalar
+    # This goes through the schema adding a serialization function to the module for each scalar
     scalar_serialize =
       for %Schema.ScalarTypeDefinition{} = type <- schema.types do
         quote do
           def __absinthe_serialize__(:scalar, unquote(type.identifier), :serialize) do
             unquote(type.serialize)
+          end
+        end
+      end
+
+    # This goes through the schema adding a parsing function to the module for each scalar
+    scalar_parse =
+      for %Schema.ScalarTypeDefinition{} = type <- schema.types do
+        quote do
+          def __absinthe_parse__(:scalar, unquote(type.identifier), :parse) do
+            unquote(type.parse)
           end
         end
       end
@@ -1458,6 +1468,8 @@ defmodule Absinthe.Schema.Notation do
       unquote_splicing(middleware)
 
       unquote_splicing(scalar_serialize)
+
+      unquote_splicing(scalar_parse)
     end
   end
 
