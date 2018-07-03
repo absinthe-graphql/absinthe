@@ -112,6 +112,7 @@ defmodule Absinthe.Blueprint.Input do
       |> Enum.filter(fn %{input_value: input} ->
         case input do
           %Input.RawValue{content: content} -> content
+          %Input.Value{raw: nil} -> false
           %Input.Value{raw: %{content: content}} -> content
         end
       end)
