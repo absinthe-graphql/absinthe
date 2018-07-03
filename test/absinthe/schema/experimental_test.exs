@@ -31,6 +31,16 @@ defmodule Absinthe.Schema.ExperimentalTest do
           {:ok, %{first_name: "Bruce", last_name: "Williams"}}
         end
       end
+
+      field :hello, :string do
+        arg :name, :string
+        resolve fn a, b ->
+          IO.puts "First input"
+          IO.inspect a
+          IO.puts "-------------------"
+          {:ok, "hello"}
+        end
+      end
     end
 
     object :user do
@@ -62,7 +72,6 @@ defmodule Absinthe.Schema.ExperimentalTest do
     end
   end
 
-  @tag :simple
   test "simple" do
     query = """
     { user { fullName }}
@@ -75,13 +84,13 @@ defmodule Absinthe.Schema.ExperimentalTest do
              Absinthe.run(query, Schema)
   end
 
-  # @tag :simple
-  # test "simple input" do
-  #   query = """
-  #   { hello(name: "bob") }
-  #   """
-  #
-  #   assert {:ok, %{data: %{"hello" => "hello bob"}}} ==
-  #            Absinthe.run(query, Schema)
-  # end
+  @tag :simple
+  test "simple input" doqu
+    query = """
+    { hello(name: "bob") }
+    """
+
+    assert {:ok, %{data: %{"hello" => "hello"}}} ==
+             Absinthe.run(query, Schema)
+  end
 end
