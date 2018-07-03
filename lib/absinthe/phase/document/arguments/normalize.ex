@@ -37,7 +37,7 @@ defmodule Absinthe.Phase.Document.Arguments.Normalize do
          acc
        ) do
     {
-      %{node | normalized: Map.get(acc.provided_values, variable_name)},
+      %{node | literal: nil, normalized: Map.get(acc.provided_values, variable_name)},
       acc
     }
   end
@@ -45,7 +45,7 @@ defmodule Absinthe.Phase.Document.Arguments.Normalize do
   # Argument not using a variable: Set provided value from the literal value
   defp handle_node(%Blueprint.Input.Value{} = node, acc) do
     {
-      %{node | normalized: node.literal},
+      %{node | literal: nil, normalized: node.literal},
       acc
     }
   end
