@@ -137,7 +137,9 @@ defmodule Absinthe.ValidationPhaseCase do
       end
 
     formatted_errors =
-      Enum.map(error_pairs(result), fn {_, error} ->
+      result
+      |> error_pairs
+      |> Enum.map(fn {_, error} ->
         error.message
       end)
 
@@ -164,6 +166,8 @@ defmodule Absinthe.ValidationPhaseCase do
           result
       end
 
+      # result |> IO.inspect
+
     pairs = error_pairs(result)
 
     List.wrap(error_checkers)
@@ -181,11 +185,13 @@ defmodule Absinthe.ValidationPhaseCase do
   end
 
   defp pre_validation_pipeline(schema, validations, options) do
+    options = Keyword.put(options, :jump_phases, false)
+
     Pipeline.for_document(schema, options)
     |> Pipeline.upto(Phase.Document.Validation.Result)
     |> Pipeline.reject(fn phase ->
       Regex.match?(~r/Validation/, Atom.to_string(phase)) and
-        phase not in validations
+        phase not in [Phase.Document.Validation.Result | validations]
     end)
   end
 
@@ -196,12 +202,17 @@ defmodule Absinthe.ValidationPhaseCase do
   end
 
   defp error_pairs(input) do
-    nodes_with_errors(input)
+    input
+    |> nodes_with_errors()
     |> Enum.flat_map(fn %{errors: errors} = node ->
       Enum.map(errors, &{node, &1})
     end)
   end
 
+  defp do_nodes_with_errors(%{raw: raw} = node, acc) do
+    {_, errors} = Blueprint.prewalk(raw, acc, &do_nodes_with_errors/2)
+    {node, errors}
+  end
   defp do_nodes_with_errors(%{errors: []} = node, acc) do
     {node, acc}
   end
