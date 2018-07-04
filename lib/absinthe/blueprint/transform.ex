@@ -60,36 +60,6 @@ defmodule Absinthe.Blueprint.Transform do
 
   defp pass(x, acc), do: {x, acc}
 
-  nodes_with_children = %{
-    Blueprint => [:fragments, :operations, :types, :directives],
-    Blueprint.Directive => [:arguments],
-    Blueprint.Document.Field => [:selections, :arguments, :directives],
-    Blueprint.Document.Operation => [:selections, :variable_definitions, :directives],
-    Blueprint.TypeReference.List => [:of_type],
-    Blueprint.TypeReference.NonNull => [:of_type],
-    Blueprint.Document.Fragment.Inline => [:selections, :directives],
-    Blueprint.Document.Fragment.Named => [:selections, :directives],
-    Blueprint.Document.Fragment.Spread => [:directives],
-    Blueprint.Document.VariableDefinition => [:type, :default_value],
-    Blueprint.Input.Argument => [:input_value],
-    Blueprint.Input.Field => [:input_value],
-    Blueprint.Input.Object => [:fields],
-    Blueprint.Input.List => [:items],
-    Blueprint.Input.RawValue => [:content],
-    Blueprint.Input.Value => [:normalized],
-    Blueprint.Schema.DirectiveDefinition => [:directives, :types],
-    Blueprint.Schema.EnumTypeDefinition => [:directives, :values],
-    Blueprint.Schema.EnumValueDefinition => [:directives],
-    Blueprint.Schema.FieldDefinition => [:type, :arguments, :directives],
-    Blueprint.Schema.InputObjectTypeDefinition => [:interfaces, :fields, :directives],
-    Blueprint.Schema.InputValueDefinition => [:type, :default_value, :directives],
-    Blueprint.Schema.InterfaceTypeDefinition => [:fields, :directives],
-    Blueprint.Schema.ObjectTypeDefinition => [:interfaces, :fields, :directives],
-    Blueprint.Schema.ScalarTypeDefinition => [:directives],
-    Blueprint.Schema.SchemaDefinition => [:directives, :fields],
-    Blueprint.Schema.UnionTypeDefinition => [:directives, :types]
-  }
-
   @spec walk(
           Blueprint.node_t(),
           acc,
@@ -111,42 +81,45 @@ defmodule Absinthe.Blueprint.Transform do
           {node, acc}
 
         {node, acc} ->
-          maybe_walk_children(node, acc, pre, post)
+          walk_children(node, acc, pre, post)
       end
 
     post.(node, acc)
   end
 
-  for {node_name, children} <- nodes_with_children do
-    if :selections in children do
-      def maybe_walk_children(%unquote(node_name){flags: %{flat: _}} = node, acc, pre, post) do
-        node_with_children(node, unquote(children -- [:selections]), acc, pre, post)
-      end
-    end
+  require __MODULE__.Builder
 
-    def maybe_walk_children(%unquote(node_name){} = node, acc, pre, post) do
-      node_with_children(node, unquote(children), acc, pre, post)
-    end
-  end
+  __MODULE__.Builder.build_walkers([
+    {Blueprint, [:fragments, :operations, :types, :directives]},
+    {Blueprint.Directive, [:arguments]},
+    {Blueprint.Document.Field, [:selections, :arguments, :directives]},
+    {Blueprint.Document.Fragment.Inline, [:selections, :directives]},
+    {Blueprint.Document.Fragment.Named, [:selections, :directives]},
+    {Blueprint.Document.Fragment.Spread, [:directives]},
+    {Blueprint.Document.Operation, [:selections, :variable_definitions, :directives]},
+    {Blueprint.Document.VariableDefinition, [:type, :default_value]},
+    {Blueprint.Input.Argument, [:input_value]},
+    {Blueprint.Input.Field, [:input_value]},
+    {Blueprint.Input.List, [:items]},
+    {Blueprint.Input.Object, [:fields]},
+    {Blueprint.Input.RawValue, [:content]},
+    {Blueprint.Input.Value, [:normalized]},
+    {Blueprint.Schema.DirectiveDefinition, [:directives]},
+    {Blueprint.Schema.EnumTypeDefinition, [:directives, :values]},
+    {Blueprint.Schema.EnumValueDefinition, [:directives]},
+    {Blueprint.Schema.FieldDefinition, [:type, :arguments, :directives]},
+    {Blueprint.Schema.InputObjectTypeDefinition, [:interfaces, :fields, :directives]},
+    {Blueprint.Schema.InputValueDefinition, [:type, :default_value, :directives]},
+    {Blueprint.Schema.InterfaceTypeDefinition, [:fields, :directives]},
+    {Blueprint.Schema.ObjectTypeDefinition, [:interfaces, :fields, :directives]},
+    {Blueprint.Schema.ScalarTypeDefinition, [:directives]},
+    {Blueprint.Schema.SchemaDefinition, [:directives, :fields]},
+    {Blueprint.Schema.UnionTypeDefinition, [:directives, :types]},
+    {Blueprint.TypeReference.List, [:of_type]},
+    {Blueprint.TypeReference.NonNull, [:of_type]}
+  ])
 
-  def maybe_walk_children(node, acc, _, _) do
+  def walk_children(node, acc, _, _) do
     {node, acc}
-  end
-
-  defp node_with_children(node, children, acc, pre, post) do
-    {node, acc} = walk_children(node, children, acc, pre, post)
-
-    post.(node, acc)
-  end
-
-  defp walk_children(node, children, acc, pre, post) do
-    Enum.reduce(children, {node, acc}, fn child_key, {node, acc} ->
-      {children, acc} =
-        node
-        |> Map.fetch!(child_key)
-        |> walk(acc, pre, post)
-
-      {Map.put(node, child_key, children), acc}
-    end)
   end
 end

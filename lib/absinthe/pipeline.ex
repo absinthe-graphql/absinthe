@@ -246,7 +246,7 @@ defmodule Absinthe.Pipeline do
     beginning ++ List.wrap(additional) ++ (pipeline -- beginning)
   end
 
-  @spec reject(t, Regex.t() | (Module.t -> boolean)) :: t
+  @spec reject(t, Regex.t() | (Module.t() -> boolean)) :: t
   def reject(pipeline, %Regex{} = pattern) do
     reject(pipeline, fn phase ->
       Regex.match?(pattern, Atom.to_string(phase))
