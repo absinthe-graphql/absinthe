@@ -60,6 +60,8 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Validation.KnownFragmentNames,
       Phase.Document.Validation.NoUndefinedVariables,
       Phase.Document.Validation.NoUnusedVariables,
+      # TODO: uncomment in 1.5
+      # Phase.Document.Validation.NoUnusedFragments
       Phase.Document.Validation.UniqueFragmentNames,
       Phase.Document.Validation.UniqueOperationNames,
       Phase.Document.Validation.UniqueVariableNames,
