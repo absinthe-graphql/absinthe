@@ -26,9 +26,13 @@ defmodule Absinthe.Phase.SchemaTest do
   end
 
   def run(query) do
-    with {:ok, value} <- Absinthe.Phase.Parse.run(query),
-         {:ok, value} <- Absinthe.Phase.Blueprint.run(value) do
-      Absinthe.Phase.Schema.run(value, schema: IntegerInputSchema)
+    pipeline =
+      IntegerInputSchema
+      |> Absinthe.Pipeline.for_document([])
+      |> Absinthe.Pipeline.before(Absinthe.Phase.Schema)
+
+    with {:ok, bp, _} <- Absinthe.Pipeline.run(query, pipeline) do
+      Absinthe.Phase.Schema.run(bp, schema: IntegerInputSchema)
     end
   end
 end

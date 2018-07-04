@@ -60,6 +60,8 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Validation.KnownFragmentNames,
       Phase.Document.Validation.NoUndefinedVariables,
       Phase.Document.Validation.NoUnusedVariables,
+      # TODO: uncomment in 1.5
+      # Phase.Document.Validation.NoUnusedFragments
       Phase.Document.Validation.UniqueFragmentNames,
       Phase.Document.Validation.UniqueOperationNames,
       Phase.Document.Validation.UniqueVariableNames,
@@ -244,14 +246,17 @@ defmodule Absinthe.Pipeline do
     beginning ++ List.wrap(additional) ++ (pipeline -- beginning)
   end
 
-  @spec reject(t, Regex.t()) :: t
-  def reject(pipeline, pattern) do
-    Enum.reject(pipeline, fn
-      {phase, _} ->
-        Regex.match?(pattern, Atom.to_string(phase))
+  @spec reject(t, Regex.t() | (Module.t -> boolean)) :: t
+  def reject(pipeline, %Regex{} = pattern) do
+    reject(pipeline, fn phase ->
+      Regex.match?(pattern, Atom.to_string(phase))
+    end)
+  end
 
-      phase ->
-        Regex.match?(pattern, Atom.to_string(phase))
+  def reject(pipeline, fun) do
+    Enum.reject(pipeline, fn
+      {phase, _} -> fun.(phase)
+      phase -> fun.(phase)
     end)
   end
 
