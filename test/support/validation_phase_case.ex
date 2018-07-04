@@ -166,8 +166,6 @@ defmodule Absinthe.ValidationPhaseCase do
           result
       end
 
-      # result |> IO.inspect
-
     pairs = error_pairs(result)
 
     List.wrap(error_checkers)
@@ -179,9 +177,10 @@ defmodule Absinthe.ValidationPhaseCase do
     Pipeline.run(document, pipeline)
   end
 
-  defp pre_validation_pipeline(schema, _validations, :schema) do
+  defp pre_validation_pipeline(schema, validations, :schema) do
     Pipeline.for_schema(schema)
     |> Pipeline.upto(Phase.Schema)
+    |> Kernel.++(validations)
   end
 
   defp pre_validation_pipeline(schema, validations, options) do
@@ -191,7 +190,7 @@ defmodule Absinthe.ValidationPhaseCase do
     |> Pipeline.upto(Phase.Document.Validation.Result)
     |> Pipeline.reject(fn phase ->
       Regex.match?(~r/Validation/, Atom.to_string(phase)) and
-        phase not in [Phase.Document.Validation.Result | validations]
+        (phase not in [Phase.Document.Validation.Result | validations])
     end)
   end
 
