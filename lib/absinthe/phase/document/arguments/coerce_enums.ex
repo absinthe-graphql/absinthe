@@ -20,7 +20,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceEnums do
     {:ok, node}
   end
 
-  defp coerce_node(%{literal: %Input.Variable{}} = node) do
+  defp coerce_node(%Input.Value{raw: %{content: %Input.Variable{}}} = node) do
     node =
       Blueprint.prewalk(node, fn
         %Input.String{} = input ->

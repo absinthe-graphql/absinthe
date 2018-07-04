@@ -1,5 +1,7 @@
 # Changelog
 
+- Bug Fix: Fixes performance issue where deeply nested inputs used exorbitant amounts of memory.
+
 ## v1.4.12
 
 - Bug Fix: Fixes shard routing issue with subscription pubsub

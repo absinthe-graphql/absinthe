@@ -5,10 +5,10 @@ defmodule Absinthe.Blueprint.Input.Value do
   #
   # Used by arguments, input object fields, and input lists.
 
-  @enforce_keys [:literal]
+  @enforce_keys [:raw, :normalized]
   defstruct [
     :schema_node,
-    :literal,
+    :raw,
     :normalized,
     :data
   ]
@@ -27,7 +27,7 @@ defmodule Absinthe.Blueprint.Input.Value do
           | variable
 
   @type t :: %__MODULE__{
-          literal: literals | variable,
+          raw: Input.RawValue.t(),
           normalized: literals,
           data: term
         }

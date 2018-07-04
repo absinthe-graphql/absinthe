@@ -17,8 +17,8 @@ defmodule Absinthe.Language.ObjectValueTest do
                fields: [
                  %Blueprint.Input.Field{
                    name: "foo",
-                   input_value: %Blueprint.Input.Value{
-                     literal: %Blueprint.Input.Integer{value: 2}
+                   input_value: %Blueprint.Input.RawValue{
+                     content: %Blueprint.Input.Integer{value: 2}
                    }
                  }
                ]
