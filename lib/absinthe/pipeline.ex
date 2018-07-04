@@ -271,10 +271,6 @@ defmodule Absinthe.Pipeline do
 
     case phase.run(input, options) do
       {:ok, result} ->
-        # IO.puts "-------------------------------"
-        # IO.inspect(phase)
-        # IO.inspect(result)
-        # IO.puts "-------------------------------"
         run_phase(todo, result, [phase | done])
 
       {:jump, result, destination_phase} when is_atom(destination_phase) ->
