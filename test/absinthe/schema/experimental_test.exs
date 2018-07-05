@@ -34,11 +34,8 @@ defmodule Absinthe.Schema.ExperimentalTest do
 
       field :hello, :string do
         arg :name, :string
-        resolve fn a, b ->
-          IO.puts "First input"
-          IO.inspect a
-          IO.puts "-------------------"
-          {:ok, "hello"}
+        resolve fn %{name: name}, _ ->
+          {:ok, "hello #{name}"}
         end
       end
     end
@@ -90,7 +87,7 @@ defmodule Absinthe.Schema.ExperimentalTest do
     { hello(name: "bob") }
     """
 
-    assert {:ok, %{data: %{"hello" => "hello"}}} ==
+    assert {:ok, %{data: %{"hello" => "hello bob"}}} ==
              Absinthe.run(query, Schema)
   end
 end
