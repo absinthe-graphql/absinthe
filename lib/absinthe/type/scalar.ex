@@ -1,4 +1,4 @@
-defmodule Absinthe.Type.Scalar do
+  defmodule Absinthe.Type.Scalar do
   @moduledoc """
   Represents a primitive value.
 
@@ -47,8 +47,15 @@ defmodule Absinthe.Type.Scalar do
   def parse(type, value, context \\ %{}) do
     module = type.parse
 
-    function = module.__absinthe_parse__(:scalar, type.identifier, :parse)
-    function.(value)
+    parser = module.__absinthe_parse__(:scalar, type.identifier, :parse)
+
+    case parser do
+      parser when is_function(parser, 1) ->
+        parser.(value)
+
+      parser when is_function(parser, 2) ->
+        parser.(value, context)
+    end
   end
 
   @typedoc """
