@@ -310,7 +310,8 @@ defmodule Absinthe.Schema.Notation do
   defp handle_field_attrs(attrs) do
     attrs =
       attrs
-      |> replace_key(:args, :arguments)
+      |> Keyword.delete(:args)
+      # |> replace_key(:args, :arguments)
       |> replace_key(:deprecate, :deprecation)
 
     case Keyword.pop(attrs, :resolve) do
@@ -345,7 +346,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro field(identifier, type) do
     __CALLER__
     |> recordable!(:field, @placement[:field])
-    |> record!(Schema.FieldDefinition, identifier, [type: type], [])
+    |> record!(Schema.FieldDefinition, identifier, handle_field_attrs([type: type]), [])
   end
 
   @doc """
@@ -1098,6 +1099,7 @@ defmodule Absinthe.Schema.Notation do
 
   def record_arg!(env, identifier, attrs) do
     attrs = Keyword.put(attrs, :identifier, identifier)
+    attrs = Keyword.put(attrs, :name, to_string(identifier))
     arg = struct!(Schema.InputValueDefinition, attrs)
     put_attr(env.module, arg)
   end

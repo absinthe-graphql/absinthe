@@ -47,15 +47,31 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
         {module, type_def.identifier, field_def.identifier}
       }
 
-      attrs =
-        field_def
-        |> Map.from_struct()
-        |> Map.put(:middleware, [middleware_shim])
-
-      field = struct(Absinthe.Type.Field, attrs)
+      field = %Absinthe.Type.Field{
+        identifier: field_def.identifier,
+        middleware: [middleware_shim],
+        deprecation: field_def.deprecation,
+        description: field_def.description,
+        name: field_def.name,
+        type: field_def.type,
+        args: build_args(field_def),
+      }
 
       {field.identifier, field}
     end
+  end
+
+  defp build_args(field_def) do
+    Map.new(field_def.arguments, fn arg_def ->
+      arg = %Absinthe.Type.Argument{
+        __reference__: %{
+          identifier: arg_def.identifier,
+        },
+        name: arg_def.name,
+        type: arg_def.type
+      }
+      {arg_def.identifier, arg}
+    end)
   end
 
   def shim(res, {module, obj, field}) do

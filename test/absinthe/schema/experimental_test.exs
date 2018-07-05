@@ -85,7 +85,7 @@ defmodule Absinthe.Schema.ExperimentalTest do
   end
 
   @tag :simple
-  test "simple input" doqu
+  test "simple input" do
     query = """
     { hello(name: "bob") }
     """
