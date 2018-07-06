@@ -43,7 +43,7 @@ defmodule Absinthe.Blueprint.Input.List do
   defp wrapped_items(node) do
     [
       %Blueprint.Input.Value{
-        literal: node,
+        raw: %Blueprint.Input.RawValue{content: node},
         normalized: node,
         schema_node: Type.unwrap(node.schema_node)
       }

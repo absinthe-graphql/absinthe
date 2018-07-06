@@ -1,9 +1,12 @@
 defmodule Absinthe.Phase.Document.Validation.NoUnusedFragmentsTest do
   @phase Absinthe.Phase.Document.Validation.NoUnusedFragments
 
+
   use Absinthe.ValidationPhaseCase,
     phase: @phase,
     async: true
+
+  @moduletag :pending
 
   alias Absinthe.Blueprint
 

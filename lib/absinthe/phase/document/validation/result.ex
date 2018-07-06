@@ -18,14 +18,15 @@ defmodule Absinthe.Phase.Document.Validation.Result do
   @spec do_run(Blueprint.t(), %{result_phase: Phase.t(), jump_phases: boolean}) ::
           Phase.result_t()
   def do_run(input, %{result_phase: abort_phase, jump_phases: jump}) do
-    {input, {errors, invalid}} = Blueprint.prewalk(input, {[], false}, &handle_node/2)
+    {input, errors} = Blueprint.prewalk(input, [], &handle_node/2)
+    errors = :lists.reverse(errors)
     result = put_in(input.execution.validation_errors, errors)
 
-    case {errors, invalid, jump} do
-      {[], false, _} ->
+    case {errors, jump} do
+      {[], _} ->
         {:ok, result}
 
-      {_, _, false} ->
+      {_, false} ->
         {:error, result}
 
       _ ->
@@ -36,13 +37,14 @@ defmodule Absinthe.Phase.Document.Validation.Result do
   # Collect the validation errors from nodes
   @spec handle_node(Blueprint.node_t(), [Phase.Error.t()]) ::
           {Blueprint.node_t(), [Phase.Error.t()]}
-  defp handle_node(node, acc) do
-    check_errors(node, acc)
+  defp handle_node(%{errors: errs} = node, errors) do
+    {node, :lists.reverse(errs) ++ errors}
   end
 
-  defp check_errors(%{errors: errs} = node, {errors, invalid}) do
-    {node, {errors ++ errs, invalid}}
+  defp handle_node(%{raw: raw} = node, errors) do
+    {_, errors} = Blueprint.prewalk(raw, errors, &handle_node/2)
+    {node, errors}
   end
 
-  defp check_errors(node, acc), do: {node, acc}
+  defp handle_node(node, acc), do: {node, acc}
 end

@@ -123,8 +123,9 @@ defmodule Absinthe.Phase.Document.MissingLiterals do
       name: schema_node_arg.name |> build_name(adapter, type),
       input_value: %Blueprint.Input.Value{
         data: default,
-        normalized: if(is_nil(default), do: nil, else: %Blueprint.Input.Generated{by: __MODULE__}),
-        literal: nil,
+        normalized:
+          if(is_nil(default), do: nil, else: %Blueprint.Input.Generated{by: __MODULE__}),
+        raw: nil,
         schema_node: Type.expand(schema_node_arg.type, schema)
       },
       schema_node: schema_node_arg,

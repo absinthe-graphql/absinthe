@@ -75,7 +75,8 @@ defmodule Absinthe.Blueprint.Transform do
     Blueprint.Input.Field => [:input_value],
     Blueprint.Input.Object => [:fields],
     Blueprint.Input.List => [:items],
-    Blueprint.Input.Value => [:normalized, :literal],
+    Blueprint.Input.RawValue => [:content],
+    Blueprint.Input.Value => [:normalized],
     Blueprint.Schema.DirectiveDefinition => [:directives, :types],
     Blueprint.Schema.EnumTypeDefinition => [:directives, :values],
     Blueprint.Schema.EnumValueDefinition => [:directives],
@@ -99,41 +100,41 @@ defmodule Absinthe.Blueprint.Transform do
         when acc: var
   def walk(blueprint, acc, pre, post)
 
-  for {node_name, children} <- nodes_with_children do
-    if :selections in children do
-      def walk(%unquote(node_name){flags: %{flat: _}} = node, acc, pre, post) do
-        node_with_children(node, unquote(children -- [:selections]), acc, pre, post)
-      end
-    end
-
-    def walk(%unquote(node_name){} = node, acc, pre, post) do
-      node_with_children(node, unquote(children), acc, pre, post)
-    end
-  end
-
   def walk(nodes, acc, pre, post) when is_list(nodes) do
     Enum.map_reduce(nodes, acc, &walk(&1, &2, pre, post))
   end
 
-  def walk(leaf_node, acc, pre, post) do
-    {leaf_node, acc} =
-      case pre.(leaf_node, acc) do
-        {:halt, leaf_node, acc} -> {leaf_node, acc}
-        val -> val
-      end
-
-    post.(leaf_node, acc)
-  end
-
-  defp node_with_children(node, children, acc, pre, post) do
+  def walk(node, acc, pre, post) do
     {node, acc} =
       case pre.(node, acc) do
         {:halt, node, acc} ->
           {node, acc}
 
         {node, acc} ->
-          walk_children(node, children, acc, pre, post)
+          maybe_walk_children(node, acc, pre, post)
       end
+
+    post.(node, acc)
+  end
+
+  for {node_name, children} <- nodes_with_children do
+    if :selections in children do
+      def maybe_walk_children(%unquote(node_name){flags: %{flat: _}} = node, acc, pre, post) do
+        node_with_children(node, unquote(children -- [:selections]), acc, pre, post)
+      end
+    end
+
+    def maybe_walk_children(%unquote(node_name){} = node, acc, pre, post) do
+      node_with_children(node, unquote(children), acc, pre, post)
+    end
+  end
+
+  def maybe_walk_children(node, acc, _, _) do
+    {node, acc}
+  end
+
+  defp node_with_children(node, children, acc, pre, post) do
+    {node, acc} = walk_children(node, children, acc, pre, post)
 
     post.(node, acc)
   end
