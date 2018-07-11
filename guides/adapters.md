@@ -13,6 +13,11 @@ Absinthe ships with two adapters:
   for incoming query documents and outgoing results. This is the default as of v0.3,
   and it is _highly_ recommended that it's the adapter you use, as introspection
   currently makes certain assumptions about how to return results.
+* `Absinthe.Adapter.Underscore`, which is similar to the `LanguageConventions`
+  adapter but converts all incoming identifiers to underscores and does not
+  modify outgoing identifiers (since those are already expected to be
+  underscores). Unlike `Absinthe.Adapter.Passthrough` this does not break
+  introspection.
 * `Absinthe.Adapter.Passthrough`, which is a no-op adapter and makes no
   modifications.
 
