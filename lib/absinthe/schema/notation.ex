@@ -346,7 +346,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro field(identifier, type) do
     __CALLER__
     |> recordable!(:field, @placement[:field])
-    |> record!(Schema.FieldDefinition, identifier, handle_field_attrs([type: type]), [])
+    |> record!(Schema.FieldDefinition, identifier, handle_field_attrs(type: type), [])
   end
 
   @doc """
@@ -1443,10 +1443,10 @@ defmodule Absinthe.Schema.Notation do
     # This goes through the schema adding a parsing function to the module for each scalar
     scalar_parse =
       for %Schema.ScalarTypeDefinition{} = type <- schema.types do
-          quote do
-            def __absinthe_parse__(:scalar, unquote(type.identifier), :parse) do
-              unquote(type.parse)
-            end
+        quote do
+          def __absinthe_parse__(:scalar, unquote(type.identifier), :parse) do
+            unquote(type.parse)
+          end
         end
       end
 

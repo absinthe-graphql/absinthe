@@ -1,4 +1,4 @@
-  defmodule Absinthe.Type.Scalar do
+defmodule Absinthe.Type.Scalar do
   @moduledoc """
   Represents a primitive value.
 
