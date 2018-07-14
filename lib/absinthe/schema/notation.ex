@@ -11,6 +11,8 @@ defmodule Absinthe.Schema.Notation do
 
   defmacro __using__(opts \\ []) do
     import_opts = opts |> Keyword.put(:only, :macros)
+    Module.register_attribute(__CALLER__.module, :absinthe_definitions, accumulate: true)
+    Module.register_attribute(__CALLER__.module, :absinthe_descriptions, accumulate: true)
 
     quote do
       import Absinthe.Resolution.Helpers,
@@ -22,8 +24,6 @@ defmodule Absinthe.Schema.Notation do
         ]
 
       import unquote(__MODULE__), unquote(import_opts)
-      Module.register_attribute(__MODULE__, :absinthe_definitions, accumulate: true)
-      Module.register_attribute(__MODULE__, :absinthe_descriptions, accumulate: true)
       @before_compile unquote(__MODULE__).Writer
       @desc nil
     end
@@ -1560,10 +1560,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp put_definition(module, definition) do
-    # Why is accumulate true not working here?
-    # does that only work with the @ form?
-    definitions = Module.get_attribute(module, :absinthe_definitions) || []
-    Module.put_attribute(module, :absinthe_definitions, [definition | definitions])
+    Module.put_attribute(module, :absinthe_definitions, definition)
   end
 
   defp close_scope_and_accumulate_attribute(attr_name, env, identifier) do
