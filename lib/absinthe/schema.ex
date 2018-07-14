@@ -13,6 +13,9 @@ defmodule Absinthe.Schema do
       @after_compile unquote(__MODULE__)
 
       defdelegate __absinthe_type__(name), to: __MODULE__.Compiled
+      defdelegate __absinthe_types__(), to: __MODULE__.Compiled
+
+      def __absinthe_directive__(_), do: nil
 
       def __absinthe_lookup__(name) do
         __absinthe_type__(name)

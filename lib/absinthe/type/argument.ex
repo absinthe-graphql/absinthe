@@ -27,7 +27,8 @@ defmodule Absinthe.Type.Argument do
           __reference__: Type.Reference.t()
         }
 
-  defstruct name: nil,
+  defstruct identifier: nil,
+            name: nil,
             description: nil,
             type: nil,
             deprecation: nil,

@@ -10,6 +10,10 @@ defmodule Absinthe.Phase.Schema.Compile do
         def __absinthe_type__(_type) do
           nil
         end
+
+        def __absinthe_types__ do
+          []
+        end
       end
     ]
 

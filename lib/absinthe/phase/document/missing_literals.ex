@@ -110,7 +110,7 @@ defmodule Absinthe.Phase.Document.MissingLiterals do
     nodes
     |> Enum.filter(& &1.schema_node)
     |> Enum.reduce(schema_nodes, fn
-      %{schema_node: %{__reference__: %{identifier: id}}}, acc ->
+      %{schema_node: %{identifier: id}}, acc ->
         Map.delete(acc, id)
 
       _, acc ->

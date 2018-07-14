@@ -190,7 +190,7 @@ defmodule Absinthe.ValidationPhaseCase do
     |> Pipeline.upto(Phase.Document.Validation.Result)
     |> Pipeline.reject(fn phase ->
       Regex.match?(~r/Validation/, Atom.to_string(phase)) and
-        not(phase in [Phase.Document.Validation.Result | validations])
+        not (phase in [Phase.Document.Validation.Result | validations])
     end)
   end
 
@@ -212,6 +212,7 @@ defmodule Absinthe.ValidationPhaseCase do
     {_, errors} = Blueprint.prewalk(raw, acc, &do_nodes_with_errors/2)
     {node, errors}
   end
+
   defp do_nodes_with_errors(%{errors: []} = node, acc) do
     {node, acc}
   end

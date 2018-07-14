@@ -80,6 +80,19 @@ defmodule Absinthe.Blueprint do
     found
   end
 
+  @doc false
+  # This is largely a debugging tool which replaces `schema_node` struct values
+  # with just the type identifier, rendering the blueprint tree much easier to read
+  def __compress__(blueprint) do
+    prewalk(blueprint, fn
+      %{schema_node: %{identifier: id}} = node ->
+        %{node | schema_node: id}
+
+      node ->
+        node
+    end)
+  end
+
   @spec fragment(t, String.t()) :: nil | Blueprint.Document.Fragment.Named.t()
   def fragment(blueprint, name) do
     Enum.find(blueprint.fragments, &(&1.name == name))

@@ -42,6 +42,6 @@ defmodule Absinthe.Blueprint.Input.Argument do
       arg ->
         arg
     end)
-    |> Map.new(&{&1.schema_node.__reference__.identifier, &1.value})
+    |> Map.new(&{&1.schema_node.identifier, &1.value})
   end
 end
