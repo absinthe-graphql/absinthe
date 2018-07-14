@@ -9,9 +9,9 @@ defmodule Absinthe.Phase.Schema.Imports do
   end
 
   @default_imports [
-    # {Absinthe.Type.BuiltIns.Scalars, []}
-    # Absinthe.Type.BuiltIns.Directives,
-    # Absinthe.Type.BuiltIns.Introspection
+    {Absinthe.Type.BuiltIns.Scalars, []},
+    {Absinthe.Type.BuiltIns.Directives, []},
+    {Absinthe.Type.BuiltIns.Introspection, []}
   ]
   def handle_imports(def) do
     other_types =

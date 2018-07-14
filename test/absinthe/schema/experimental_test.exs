@@ -3,27 +3,8 @@ defmodule Absinthe.Schema.ExperimentalTest do
 
   @moduletag :experimental
 
-  defmodule Foo do
-    use Absinthe.Schema.Notation
-
-    scalar :string do
-      description """
-      The `String` scalar type represents textual data, represented as UTF-8
-      character sequences. The String type is most often used by GraphQL to
-      represent free-form human-readable text.
-      """
-
-      serialize &to_string/1
-
-      parse fn input, _ ->
-        {:ok, to_string(input.value)}
-      end
-    end
-  end
-
   defmodule Schema do
     use Absinthe.Schema
-    import_types Foo
 
     query do
       field :user, :user do
@@ -34,6 +15,7 @@ defmodule Absinthe.Schema.ExperimentalTest do
 
       field :hello, :string do
         arg :name, :string
+
         resolve fn %{name: name}, _ ->
           {:ok, "hello #{name}"}
         end
@@ -87,7 +69,6 @@ defmodule Absinthe.Schema.ExperimentalTest do
     { hello(name: "bob") }
     """
 
-    assert {:ok, %{data: %{"hello" => "hello bob"}}} ==
-             Absinthe.run(query, Schema)
+    assert {:ok, %{data: %{"hello" => "hello bob"}}} == Absinthe.run(query, Schema)
   end
 end
