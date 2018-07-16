@@ -33,7 +33,7 @@ use the `multipart/form-data` content type. For example, using `cURL`:
 
 ```shell
 $ curl -X POST \\
--F query="{mutation uploadFile(users: \"users_csv\", metadata: \"metadata_json\")" \\
+-F query="mutation { uploadFile(users: \"users_csv\", metadata: \"metadata_json\")}" \\
 -F users_csv=@users.csv \\
 -F metadata_json=@metadata.json \\
 localhost:4000/graphql
