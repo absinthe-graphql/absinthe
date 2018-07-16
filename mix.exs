@@ -159,7 +159,8 @@ defmodule Absinthe.Mixfile do
       "Document Adapters": [
         Absinthe.Adapter,
         Absinthe.Adapter.LanguageConventions,
-        Absinthe.Adapter.Passthrough
+        Absinthe.Adapter.Passthrough,
+        Absinthe.Adapter.Underscore
       ],
       Execution: [
         Absinthe.Blueprint,
