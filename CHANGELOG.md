@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.4.13
+
+- Enhancement: Support for Elixir 1.7.0
 - Bug Fix: Fixes performance issue where deeply nested inputs used exorbitant amounts of memory.
 
 ## v1.4.12
