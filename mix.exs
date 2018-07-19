@@ -51,7 +51,7 @@ defmodule Absinthe.Mixfile do
   defp deps do
     [
       {:dataloader, "~> 1.0.0", optional: true},
-      {:ex_doc, "~> 0.14", only: :dev},
+      {:ex_doc, "0.19.0-rc", only: :dev},
       {:benchfella, "~> 0.3.0", only: :dev},
       {:dialyze, "~> 0.2", only: :dev},
       {:decimal, "~> 1.0", optional: true},
