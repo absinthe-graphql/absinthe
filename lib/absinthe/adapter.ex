@@ -22,14 +22,9 @@ defmodule Absinthe.Adapter do
     modifications. (Note at the current time this does not support introspection
     if you're using camelized conventions).
 
-  To set an adapter, you can set an application configuration value:
+  To set an adapter, you pass a configuration option at runtime:
 
-  ```
-  config :absinthe,
-    adapter: YourApp.Adapter.TheAdapterName
-  ```
-
-  Or, you can provide it as an option to `Absinthe.run/3`:
+  For `Absinthe.run/3`:
 
   ```
   Absinthe.run(
@@ -38,6 +33,24 @@ defmodule Absinthe.Adapter do
     adapter: YourApp.Adapter.TheAdapterName
   )
   ```
+
+  For `Absinthe.Plug`:
+
+  ```
+  forward "/api",
+    to: Absinthe.Plug,
+    init_opts: [schema: MyAppWeb.Schema, adapter: YourApp.Adapter.TheAdapterName]
+  ```
+
+  For GraphiQL:
+
+  ```
+  forward "/graphiql",
+    to: Absinthe.Plug.GraphiQL,
+    init_opts: [schema: MyAppWeb.Schema, adapter: YourApp.Adapter.TheAdapterName]
+  ```
+
+  Check `Absinthe.Plug` for full documentation on using the Plugs
 
   Notably, this means you're able to switch adapters on case-by-case basis.
   In a Phoenix application, this means you could even support using different
