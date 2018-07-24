@@ -5,7 +5,9 @@ defmodule Absinthe.Middleware.MapGet do
 
   @behaviour Absinthe.Middleware
 
-  def call(%{source: source} = res, key) do
+  def call(%{state: :unresolved, source: source} = res, key) do
     %{res | state: :resolved, value: Map.get(source, key)}
   end
+
+  def call(res, _key), do: res
 end
