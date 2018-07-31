@@ -1450,6 +1450,7 @@ defmodule Absinthe.Schema.Notation do
   def grab_functions(type, module, identifier, attrs) do
     for attr <- attrs do
       value = Map.fetch!(type, attr)
+
       quote do
         def __absinthe_function__(unquote(module), unquote(identifier), unquote(attr)) do
           unquote(value)
@@ -1461,17 +1462,24 @@ defmodule Absinthe.Schema.Notation do
   defp functions_for_type(%Schema.ScalarTypeDefinition{} = type) do
     grab_functions(type, Schema.ScalarTypeDefinition, type.identifier, [:serialize, :parse])
   end
+
   defp functions_for_type(%Schema.ObjectTypeDefinition{} = type) do
     functions = grab_functions(type, Schema.ObjectTypeDefinition, type.identifier, [:is_type_of])
 
-    field_functions = for field <- type.fields do
-      identifier = {type.identifier, field.identifier}
-      quote do
-        def __absinthe_function__(unquote(Schema.FieldDefinition), unquote(identifier), :middleware) do
-          unquote(field.middleware_ast)
+    field_functions =
+      for field <- type.fields do
+        identifier = {type.identifier, field.identifier}
+
+        quote do
+          def __absinthe_function__(
+                unquote(Schema.FieldDefinition),
+                unquote(identifier),
+                :middleware
+              ) do
+            unquote(field.middleware_ast)
+          end
         end
       end
-    end
 
     functions ++ field_functions
   end

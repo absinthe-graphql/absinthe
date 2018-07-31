@@ -75,7 +75,13 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
   end
 
   def shim(res, {module, obj, field}) do
-    middleware = apply(module, :__absinthe_function__, [Absinthe.Blueprint.Schema.FieldDefinition, {obj, field}, :middleware])
+    middleware =
+      apply(module, :__absinthe_function__, [
+        Absinthe.Blueprint.Schema.FieldDefinition,
+        {obj, field},
+        :middleware
+      ])
+
     %{res | middleware: middleware}
   end
 end

@@ -41,7 +41,9 @@ defmodule Absinthe.Type.Scalar do
   def serialize(type, value) do
     module = type.serialize
 
-    function = module.__absinthe_function__(Schema.ScalarTypeDefinition, type.identifier, :serialize)
+    function =
+      module.__absinthe_function__(Schema.ScalarTypeDefinition, type.identifier, :serialize)
+
     function.(value)
   end
 
