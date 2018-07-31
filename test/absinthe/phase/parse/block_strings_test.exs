@@ -27,6 +27,37 @@ defmodule Absinthe.Phase.Parse.BlockStringsTest do
     assert "slashes \\\\ \\/" == extract_body(result)
   end
 
+  test "parses attributes when there are escapes" do
+    assert {:ok, result}  = run(
+      ~s<{ post(title: "title", body: "body\\\\") { name } }>
+    )
+    assert "body\\" == extract_body(result)
+
+    assert {:ok, result}  = run(
+      ~s<{ post(title: "title\\\\", body: "body") { name } }>
+    )
+    assert "body" == extract_body(result)
+  end
+
+  test "paarse attributes where there are escapes on multiple lines" do
+    assert {:ok, result}  = run(
+      ~s<{ post(
+        title: "title",
+        body: "body\\\\"
+      ) { name } }>
+    )
+    assert "body\\" == extract_body(result)
+
+    assert {:ok, result}  = run(
+      ~s<{ post(
+        title: "title\\\\",
+        body: "body"
+      ) { name } }>
+    )
+    assert "body" == extract_body(result)
+  end
+
+
   @input [
     "",
     "    Hello,",
