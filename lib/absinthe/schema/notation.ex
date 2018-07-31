@@ -1430,35 +1430,7 @@ defmodule Absinthe.Schema.Notation do
     # TODO: handle multiple schemas
     [schema] = blueprint.schema_definitions
 
-    # This goes through the schema adding a serialization function to the module for each scalar
-    scalar_serialize =
-      for %Schema.ScalarTypeDefinition{} = type <- schema.types do
-        quote do
-          def __absinthe_serialize__(:scalar, unquote(type.identifier), :serialize) do
-            unquote(type.serialize)
-          end
-        end
-      end
-
-    # This goes through the schema adding a parsing function to the module for each scalar
-    scalar_parse =
-      for %Schema.ScalarTypeDefinition{} = type <- schema.types do
-        quote do
-          def __absinthe_parse__(:scalar, unquote(type.identifier), :parse) do
-            unquote(type.parse)
-          end
-        end
-      end
-
-    middleware =
-      for %Schema.ObjectTypeDefinition{} = type <- schema.types,
-          field <- type.fields do
-        quote do
-          def __absinthe_middleware__(unquote(type.identifier), unquote(field.identifier)) do
-            unquote(field.middleware_ast)
-          end
-        end
-      end
+    functions = build_functions(schema)
 
     quote do
       unquote(__MODULE__).noop(@desc)
@@ -1467,12 +1439,57 @@ defmodule Absinthe.Schema.Notation do
         unquote(Macro.escape(blueprint))
       end
 
-      unquote_splicing(middleware)
-
-      unquote_splicing(scalar_serialize)
-
-      unquote_splicing(scalar_parse)
+      unquote_splicing(functions)
     end
+  end
+
+  def build_functions(schema) do
+    Enum.flat_map(schema.types, &functions_for_type/1)
+  end
+
+  def grab_functions(type, module, identifier, attrs) do
+    for attr <- attrs do
+      value = Map.fetch!(type, attr)
+      quote do
+        def __absinthe_function__(unquote(module), unquote(identifier), unquote(attr)) do
+          unquote(value)
+        end
+      end
+    end
+  end
+
+  defp functions_for_type(%Schema.ScalarTypeDefinition{} = type) do
+    grab_functions(type, Schema.ScalarTypeDefinition, type.identifier, [:serialize, :parse])
+  end
+  defp functions_for_type(%Schema.ObjectTypeDefinition{} = type) do
+    functions = grab_functions(type, Schema.ObjectTypeDefinition, type.identifier, [:is_type_of])
+
+    field_functions = for field <- type.fields do
+      identifier = {type.identifier, field.identifier}
+      quote do
+        def __absinthe_function__(unquote(Schema.FieldDefinition), unquote(identifier), :middleware) do
+          unquote(field.middleware_ast)
+        end
+      end
+    end
+
+    functions ++ field_functions
+  end
+
+  defp functions_for_type(%Schema.InputObjectTypeDefinition{}) do
+    []
+  end
+
+  defp functions_for_type(%Schema.EnumTypeDefinition{}) do
+    []
+  end
+
+  defp functions_for_type(%Schema.UnionTypeDefinition{} = type) do
+    grab_functions(type, Schema.UnionTypeDefinition, type.identifier, [:resolve_type])
+  end
+
+  defp functions_for_type(%Schema.InterfaceTypeDefinition{} = type) do
+    grab_functions(type, Schema.InterfaceTypeDefinition, type.identifier, [:resolve_type])
   end
 
   defp intersperse_descriptions(attrs, descs) do

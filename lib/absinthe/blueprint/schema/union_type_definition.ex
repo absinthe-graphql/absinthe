@@ -9,6 +9,7 @@ defmodule Absinthe.Blueprint.Schema.UnionTypeDefinition do
     :name,
     :module,
     description: nil,
+    resolve_type: nil,
     directives: [],
     types: [],
     # Added by phases
