@@ -47,10 +47,7 @@ defmodule Absinthe.Introspection.Field do
         name: %Type.Argument{
           name: "name",
           type: non_null(:string),
-          description: "The name of the type to introspect",
-          __reference__: %{
-            identifier: :name
-          }
+          description: "The name of the type to introspect"
         }
       },
       middleware: [

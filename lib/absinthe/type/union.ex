@@ -42,18 +42,18 @@ defmodule Absinthe.Type.Union do
           name: binary,
           description: binary,
           types: [Type.identifier_t()],
-          resolve_type: (any, Absinthe.Resolution.t() -> atom | nil),
           identifier: atom,
           __private__: Keyword.t(),
+          definition: Module.t(),
           __reference__: Type.Reference.t()
         }
 
   defstruct name: nil,
             description: nil,
-            resolve_type: nil,
             identifier: nil,
             types: [],
             __private__: [],
+            definition: nil,
             __reference__: nil
 
   def build(%{attrs: attrs}) do

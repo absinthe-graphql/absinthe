@@ -18,7 +18,8 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
     middleware_ast: [],
     # Added by phases
     flags: %{},
-    errors: []
+    errors: [],
+    __reference__: nil
   ]
 
   @type t :: %__MODULE__{

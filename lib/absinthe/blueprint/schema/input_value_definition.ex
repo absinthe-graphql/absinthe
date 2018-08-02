@@ -15,7 +15,8 @@ defmodule Absinthe.Blueprint.Schema.InputValueDefinition do
     directives: [],
     # Added by phases
     flags: %{},
-    errors: []
+    errors: [],
+    __reference__: nil
   ]
 
   @type t :: %__MODULE__{

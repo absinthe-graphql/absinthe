@@ -24,6 +24,7 @@ defmodule Absinthe.Type.Argument do
           default_value: any,
           deprecation: Type.Deprecation.t() | nil,
           description: binary | nil,
+          definition: Module.t(),
           __reference__: Type.Reference.t()
         }
 
@@ -33,6 +34,7 @@ defmodule Absinthe.Type.Argument do
             type: nil,
             deprecation: nil,
             default_value: nil,
+            definition: nil,
             __reference__: nil
 
   @doc """

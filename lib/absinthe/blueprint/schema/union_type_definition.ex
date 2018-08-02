@@ -14,7 +14,8 @@ defmodule Absinthe.Blueprint.Schema.UnionTypeDefinition do
     types: [],
     # Added by phases
     flags: %{},
-    errors: []
+    errors: [],
+    __reference__: nil
   ]
 
   @type t :: %__MODULE__{
@@ -27,11 +28,10 @@ defmodule Absinthe.Blueprint.Schema.UnionTypeDefinition do
           errors: [Absinthe.Phase.Error.t()]
         }
 
-  def build(type_def, _schema) do
+  def build(type_def, schema) do
     %Absinthe.Type.Union{
       name: type_def.name,
       description: type_def.description,
-      resolve_type: nil,
       identifier: type_def.identifier,
       types: type_def.types
     }

@@ -14,7 +14,8 @@ defmodule Absinthe.Blueprint.Schema.ScalarTypeDefinition do
     directives: [],
     # Added by phases
     flags: %{},
-    errors: []
+    errors: [],
+    __reference__: nil
   ]
 
   @type t :: %__MODULE__{
@@ -30,9 +31,7 @@ defmodule Absinthe.Blueprint.Schema.ScalarTypeDefinition do
     %Absinthe.Type.Scalar{
       identifier: type_def.identifier,
       name: type_def.name,
-      description: type_def.description,
-      serialize: type_def.module,
-      parse: type_def.module
+      description: type_def.description
     }
   end
 end

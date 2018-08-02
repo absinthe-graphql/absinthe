@@ -120,7 +120,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
       %Type.Object{identifier: identifier} ->
         [identifier]
 
-      %Type.Interface{__reference__: %{identifier: identifier}} ->
+      %Type.Interface{identifier: identifier} ->
         schema.__absinthe_interface_implementors__
         |> Map.fetch!(identifier)
 

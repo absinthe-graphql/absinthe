@@ -14,7 +14,8 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
     # Added by phases
     flags: %{},
     errors: [],
-    resolve_type: nil
+    resolve_type: nil,
+    __reference__: nil
   ]
 
   @type t :: %__MODULE__{

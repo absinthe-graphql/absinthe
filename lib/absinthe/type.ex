@@ -37,12 +37,12 @@ defmodule Absinthe.Type do
   @typedoc "A type reference"
   @type reference_t :: identifier_t | t
 
-  def identifier(%{__reference__: %{identifier: ident}}) do
-    ident
+  def function(%type{definition: module, identifier: identifier}, key) do
+    module.__absinthe_function__(type, identifier, key)
   end
 
-  def identifier(_) do
-    nil
+  def function(%type{definition: module}, identifier, key) do
+    module.__absinthe_function__(type, identifier, key)
   end
 
   @doc "Lookup a custom metadata field on a type"
@@ -72,7 +72,7 @@ defmodule Absinthe.Type do
   def equal?(_, _), do: false
 
   def built_in?(type) do
-    type.__reference__.module
+    type.definition
     |> Module.split()
     |> Enum.take(3)
     |> Module.safe_concat() == Absinthe.Type.BuiltIns

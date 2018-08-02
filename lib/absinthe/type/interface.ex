@@ -63,8 +63,8 @@ defmodule Absinthe.Type.Interface do
           description: binary,
           fields: map,
           identifier: atom,
-          resolve_type: (any, Absinthe.Resolution.t() -> atom | nil),
           __private__: Keyword.t(),
+          definition: Module.t(),
           __reference__: Type.Reference.t()
         }
 
@@ -74,6 +74,7 @@ defmodule Absinthe.Type.Interface do
             identifier: nil,
             resolve_type: nil,
             __private__: [],
+            definition: nil,
             __reference__: nil
 
   def build(%{attrs: attrs}) do

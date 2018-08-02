@@ -195,6 +195,7 @@ defmodule Absinthe.Type.Field do
           middleware: [],
           complexity: complexity_t | nil,
           __private__: Keyword.t(),
+          definition: Module.t(),
           __reference__: Type.Reference.t()
         }
 
@@ -206,12 +207,13 @@ defmodule Absinthe.Type.Field do
             args: %{},
             # used by subscription fields
             config: nil,
-            # used by mutatino fields
+            # used by mutation fields
             triggers: [],
             middleware: [],
             complexity: nil,
             default_value: nil,
             __private__: [],
+            definition: nil,
             __reference__: nil
 
   @doc """

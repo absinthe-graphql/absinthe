@@ -73,6 +73,7 @@ defmodule Absinthe.Type.Enum do
           values: %{binary => Type.Enum.Value.t()},
           identifier: atom,
           __private__: Keyword.t(),
+          definition: Module.t(),
           __reference__: Type.Reference.t()
         }
 
@@ -83,6 +84,7 @@ defmodule Absinthe.Type.Enum do
             values_by_internal_value: %{},
             values_by_name: %{},
             __private__: [],
+            definition: nil,
             __reference__: nil
 
   def build(%{attrs: attrs}) do

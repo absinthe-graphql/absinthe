@@ -27,8 +27,8 @@ defmodule Absinthe.Type.Directive do
           identifier: atom,
           args: map,
           locations: [location],
-          expand: nil | (Absinthe.Blueprint.node_t(), map -> {Absinthe.Blueprint.t(), map}),
           instruction: (map -> atom),
+          definition: Module.t(),
           __reference__: Type.Reference.t()
         }
 
@@ -42,6 +42,7 @@ defmodule Absinthe.Type.Directive do
             locations: [],
             expand: nil,
             instruction: nil,
+            definition: nil,
             __reference__: nil
 
   def build(%{attrs: attrs}) do

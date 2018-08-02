@@ -1,6 +1,8 @@
 defmodule Absinthe.Schema.NotationTest do
   use Absinthe.Case, async: true
 
+  @moduletag :pending
+
   describe "import fields" do
     test "fields can be imported" do
       defmodule Foo do

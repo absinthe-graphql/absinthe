@@ -11,7 +11,8 @@ defmodule Absinthe.Blueprint.Schema.EnumValueDefinition do
     source_location: nil,
     # Added by phases
     flags: %{},
-    errors: []
+    errors: [],
+    __reference__: nil
   ]
 
   @type t :: %__MODULE__{

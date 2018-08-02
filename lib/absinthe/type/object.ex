@@ -89,8 +89,8 @@ defmodule Absinthe.Type.Object do
           description: binary,
           fields: map,
           interfaces: [Absinthe.Type.Interface.t()],
-          is_type_of: (any -> boolean),
           __private__: Keyword.t(),
+          definition: Module.t(),
           __reference__: Type.Reference.t()
         }
 
@@ -99,10 +99,9 @@ defmodule Absinthe.Type.Object do
             description: nil,
             fields: nil,
             interfaces: [],
-            is_type_of: nil,
             __private__: [],
-            __reference__: nil,
-            field_imports: []
+            definition: nil,
+            __reference__: nil
 
   def build(%{attrs: attrs}) do
     fields =

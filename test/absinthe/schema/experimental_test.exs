@@ -22,7 +22,9 @@ defmodule Absinthe.Schema.ExperimentalTest do
       end
     end
 
+    @desc "user"
     object :user do
+      @desc "their full name"
       field :full_name, :string do
         resolve fn user, _, _ ->
           {:ok, "#{user.first_name} #{user.last_name}"}

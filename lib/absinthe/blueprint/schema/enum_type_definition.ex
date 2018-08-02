@@ -13,7 +13,8 @@ defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
     directives: [],
     # Added by phases,
     flags: %{},
-    errors: []
+    errors: [],
+    __reference__: nil
   ]
 
   @type t :: %__MODULE__{

@@ -307,9 +307,10 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
-  defp handle_field_attrs(attrs) do
+  defp handle_field_attrs(attrs, caller) do
     attrs =
       attrs
+      |> expand_ast(caller)
       |> Keyword.delete(:args)
       # |> replace_key(:args, :arguments)
       |> replace_key(:deprecate, :deprecation)
@@ -338,15 +339,17 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defmacro field(identifier, attrs) when is_list(attrs) do
+    attrs = handle_field_attrs(attrs, __CALLER__)
     __CALLER__
     |> recordable!(:field, @placement[:field])
-    |> record!(Schema.FieldDefinition, identifier, handle_field_attrs(attrs), [])
+    |> record!(Schema.FieldDefinition, identifier, attrs, [])
   end
 
   defmacro field(identifier, type) do
+    attrs = handle_field_attrs([type: type], __CALLER__)
     __CALLER__
     |> recordable!(:field, @placement[:field])
-    |> record!(Schema.FieldDefinition, identifier, handle_field_attrs(type: type), [])
+    |> record!(Schema.FieldDefinition, identifier, attrs, [])
   end
 
   @doc """
@@ -355,26 +358,24 @@ defmodule Absinthe.Schema.Notation do
   See `field/4`
   """
   defmacro field(identifier, attrs, do: block) when is_list(attrs) do
+    attrs = handle_field_attrs(attrs, __CALLER__)
     __CALLER__
     |> recordable!(:field, @placement[:field])
-    |> record!(Schema.FieldDefinition, identifier, handle_field_attrs(attrs), block)
+    |> record!(Schema.FieldDefinition, identifier, attrs, block)
   end
 
   defmacro field(identifier, type, do: block) do
+    attrs = handle_field_attrs([type: type], __CALLER__)
     __CALLER__
     |> recordable!(:field, @placement[:field])
-    |> record!(Schema.FieldDefinition, identifier, [type: type], block)
+    |> record!(Schema.FieldDefinition, identifier, attrs, block)
   end
 
   defmacro field(identifier, type, attrs) do
+    attrs = handle_field_attrs(Keyword.put(attrs, :type, type), __CALLER__)
     __CALLER__
     |> recordable!(:field, @placement[:field])
-    |> record!(
-      Schema.FieldDefinition,
-      identifier,
-      handle_field_attrs(Keyword.put(attrs, :type, type)),
-      []
-    )
+    |> record!(Schema.FieldDefinition,identifier,attrs,[])
   end
 
   @doc """
@@ -987,9 +988,10 @@ defmodule Absinthe.Schema.Notation do
   See `field/3` for examples
   """
   defmacro list_of(type) do
-    quote do
-      %Absinthe.Type.List{of_type: unquote(type)}
-    end
+    # quote do
+    #   %Absinthe.Type.List{of_type: unquote(type)}
+    # end
+    %Absinthe.Type.List{of_type: type}
   end
 
   @placement {:import_fields, [under: [:input_object, :interface, :object]]}
@@ -1320,12 +1322,24 @@ defmodule Absinthe.Schema.Notation do
     put_attr(__CALLER__.module, :close)
   end
 
+  def put_reference(attrs, env, identifier) do
+    Keyword.put(attrs, :__reference__, %{
+      module: env.module,
+      identifier: identifier,
+      location: %{
+        file: env.file,
+        line: env.line
+      }
+    })
+  end
+
   defp scoped_def(caller, type, identifier, attrs, body) do
     attrs =
       attrs
       |> Keyword.put(:identifier, identifier)
       |> Keyword.put_new(:name, default_name(type, identifier))
       |> Keyword.put(:module, caller.module)
+      |> put_reference(caller, identifier)
 
     scalar = struct!(type, attrs)
 
@@ -1460,23 +1474,24 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp functions_for_type(%Schema.ScalarTypeDefinition{} = type) do
-    grab_functions(type, Schema.ScalarTypeDefinition, type.identifier, [:serialize, :parse])
+    grab_functions(type, Absinthe.Type.Scalar, type.identifier, [:serialize, :parse])
   end
 
   defp functions_for_type(%Schema.ObjectTypeDefinition{} = type) do
-    functions = grab_functions(type, Schema.ObjectTypeDefinition, type.identifier, [:is_type_of])
+    functions = grab_functions(type, Absinthe.Type.Object, type.identifier, [:is_type_of])
 
     field_functions =
       for field <- type.fields do
         identifier = {type.identifier, field.identifier}
+        middleware = __ensure_middleware__(field.middleware_ast, field.identifier, type.identifier)
 
         quote do
           def __absinthe_function__(
-                unquote(Schema.FieldDefinition),
+                unquote(Absinthe.Type.Field),
                 unquote(identifier),
                 :middleware
               ) do
-            unquote(field.middleware_ast)
+            unquote(middleware)
           end
         end
       end
@@ -1493,11 +1508,24 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp functions_for_type(%Schema.UnionTypeDefinition{} = type) do
-    grab_functions(type, Schema.UnionTypeDefinition, type.identifier, [:resolve_type])
+    grab_functions(type, Absinthe.Type.Union, type.identifier, [:resolve_type])
   end
 
   defp functions_for_type(%Schema.InterfaceTypeDefinition{} = type) do
-    grab_functions(type, Schema.InterfaceTypeDefinition, type.identifier, [:resolve_type])
+    grab_functions(type, Absinthe.Type.Interface, type.identifier, [:resolve_type])
+  end
+
+  @doc false
+  def __ensure_middleware__([], _field, :subscription) do
+    [Absinthe.Middleware.PassParent]
+  end
+
+  def __ensure_middleware__([], identifier, _) do
+    [{Absinthe.Middleware.MapGet, identifier}]
+  end
+
+  def __ensure_middleware__(middleware, _field, _object) do
+    middleware
   end
 
   defp intersperse_descriptions(attrs, descs) do
