@@ -977,9 +977,7 @@ defmodule Absinthe.Schema.Notation do
   See `field/3` for examples
   """
   defmacro non_null(type) do
-    quote do
-      %Absinthe.Type.NonNull{of_type: unquote(type)}
-    end
+    %Absinthe.Type.NonNull{of_type: type}
   end
 
   @doc """
@@ -988,9 +986,6 @@ defmodule Absinthe.Schema.Notation do
   See `field/3` for examples
   """
   defmacro list_of(type) do
-    # quote do
-    #   %Absinthe.Type.List{of_type: unquote(type)}
-    # end
     %Absinthe.Type.List{of_type: type}
   end
 
