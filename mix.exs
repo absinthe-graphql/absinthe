@@ -37,7 +37,11 @@ defmodule Absinthe.Mixfile do
         "Ben Wilson"
       ],
       licenses: ["MIT"],
-      links: %{github: "https://github.com/absinthe-graphql/absinthe"}
+      links: %{
+        "Website": "https://absinthe-graphql.org",
+        "Changelog": "https://github.com/absinthe-graphql/absinthe/blob/v1.4/CHANGELOG.md", 
+        "GitHub": "https://github.com/absinthe-graphql/absinthe"
+      }
     ]
   end
 
