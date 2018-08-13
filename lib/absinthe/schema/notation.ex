@@ -1217,6 +1217,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record an implemented interface in the current scope
   def record_interface!(env, identifier) do
+    put_attr(env.module, {:interface, identifier})
     # Scope.put_attribute(env.module, :interfaces, identifier, accumulate: true)
     # Scope.recorded!(env.module, :attr, :interface)
     # :ok
@@ -1282,7 +1283,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def record_config!(env, fun_ast) do
-    []
+    put_attr(env.module, {:config, fun_ast})
   end
 
   def record_trigger!(env, mutations, attrs) do
@@ -1481,6 +1482,13 @@ defmodule Absinthe.Schema.Notation do
         middleware = __ensure_middleware__(field.middleware_ast, field.identifier, type.identifier)
 
         quote do
+          def __absinthe_function__(
+                unquote(Absinthe.Type.Field),
+                unquote(identifier),
+                :config
+              ) do
+            unquote(field.config_ast)
+          end
           def __absinthe_function__(
                 unquote(Absinthe.Type.Field),
                 unquote(identifier),

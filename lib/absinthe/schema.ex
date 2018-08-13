@@ -14,6 +14,8 @@ defmodule Absinthe.Schema do
 
       defdelegate __absinthe_type__(name), to: __MODULE__.Compiled
       defdelegate __absinthe_types__(), to: __MODULE__.Compiled
+      defdelegate __absinthe_directives__(), to: __MODULE__.Compiled
+      defdelegate __absinthe_interface_implementors__(), to: __MODULE__.Compiled
 
       def __absinthe_directive__(_), do: nil
 

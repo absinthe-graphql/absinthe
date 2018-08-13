@@ -1,4 +1,6 @@
 defmodule Absinthe.Phase.Schema.Compile do
+  alias Absinthe.Blueprint.Schema
+
   def run(blueprint, opts) do
     module_name = Module.concat(opts[:module], Compiled)
 
@@ -11,6 +13,8 @@ defmodule Absinthe.Phase.Schema.Compile do
 
     metadata = build_metadata(schema)
 
+    implementors = build_implementors(schema)
+
     body = [
       types,
       quote do
@@ -20,6 +24,14 @@ defmodule Absinthe.Phase.Schema.Compile do
 
         def __absinthe_types__ do
           unquote(Macro.escape(type_list))
+        end
+
+        def __absinthe_directives__() do
+          %{}
+        end
+
+        def __absinthe_interface_implementors__() do
+          unquote(Macro.escape(implementors))
         end
       end,
       metadata
@@ -56,5 +68,17 @@ defmodule Absinthe.Phase.Schema.Compile do
         end
       end
     end
+  end
+
+  defp build_implementors(schema) do
+    schema.types
+    |> Enum.filter(&match?(%Schema.InterfaceTypeDefinition{}, &1))
+    |> Map.new(fn iface ->
+      implementors = Enum.sort for %Schema.ObjectTypeDefinition{} = obj <- schema.types,
+        iface.identifier in obj.interfaces,
+        do: obj.identifier
+
+      {iface.identifier, implementors}
+    end)
   end
 end

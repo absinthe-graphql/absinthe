@@ -70,6 +70,16 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(rest, [field | stack])
   end
 
+  defp build_types([{:config, config} | rest], [field | stack]) do
+    field = %{field | config_ast: config}
+    build_types(rest, [field | stack])
+  end
+
+  defp build_types([{:interface, interface} | rest], [obj | stack]) do
+    obj = Map.update!(obj, :interfaces, &[interface | &1])
+    build_types(rest, [obj | stack])
+  end
+
   defp build_types([%Schema.InputValueDefinition{} = arg | rest], [field | stack]) do
     build_types(rest, [push(field, :arguments, arg) | stack])
   end

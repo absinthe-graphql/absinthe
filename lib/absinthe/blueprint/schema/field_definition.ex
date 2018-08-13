@@ -10,6 +10,7 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
     :type,
     :module,
     deprecation: nil,
+    config_ast: nil,
     default_value: nil,
     arguments: [],
     directives: [],
