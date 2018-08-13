@@ -533,7 +533,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro arg(identifier, type, attrs) do
     __CALLER__
     |> recordable!(:arg, @placement[:arg])
-    |> record_arg!(identifier, Keyword.put(attrs, :type, type))
+    |> record_arg!(identifier, expand_ast(Keyword.put(attrs, :type, type), __CALLER__))
   end
 
   @doc """
@@ -544,13 +544,13 @@ defmodule Absinthe.Schema.Notation do
   defmacro arg(identifier, attrs) when is_list(attrs) do
     __CALLER__
     |> recordable!(:arg, @placement[:arg])
-    |> record_arg!(identifier, attrs)
+    |> record_arg!(identifier, expand_ast(attrs, __CALLER__))
   end
 
   defmacro arg(identifier, type) do
     __CALLER__
     |> recordable!(:arg, @placement[:arg])
-    |> record_arg!(identifier, type: type)
+    |> record_arg!(identifier, expand_ast([type: type], __CALLER__))
   end
 
   # SCALARS
