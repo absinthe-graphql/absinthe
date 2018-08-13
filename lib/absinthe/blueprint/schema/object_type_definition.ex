@@ -55,9 +55,11 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
         middleware: [middleware_shim],
         deprecation: field_def.deprecation,
         description: field_def.description,
+        complexity: {type_def.identifier, field_def.identifier},
         name: field_def.name,
         type: field_def.type,
-        args: build_args(field_def)
+        args: build_args(field_def),
+        definition: module
       }
 
       {field.identifier, field}

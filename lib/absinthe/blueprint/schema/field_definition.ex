@@ -14,6 +14,7 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
     default_value: nil,
     arguments: [],
     directives: [],
+    complexity: nil,
     # Added by DSL
     description: nil,
     middleware_ast: [],

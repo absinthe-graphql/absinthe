@@ -1201,6 +1201,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record a complexity analyzer in the current scope
   def record_complexity!(env, func_ast) do
+    put_attr(env.module, {:complexity, func_ast})
     # Scope.put_attribute(env.module, :complexity, func_ast)
     # Scope.recorded!(env.module, :attr, :complexity)
     # :ok
@@ -1482,6 +1483,13 @@ defmodule Absinthe.Schema.Notation do
         middleware = __ensure_middleware__(field.middleware_ast, field.identifier, type.identifier)
 
         quote do
+          def __absinthe_function__(
+                unquote(Absinthe.Type.Field),
+                unquote(identifier),
+                :complexity
+              ) do
+            unquote(field.complexity)
+          end
           def __absinthe_function__(
                 unquote(Absinthe.Type.Field),
                 unquote(identifier),
