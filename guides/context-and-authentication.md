@@ -23,7 +23,7 @@ defmodule MyAppWeb.Schema do
 
   query do
     field :profile, :user do
-      resolve fn _, _ ->
+      resolve fn _, _, _ ->
         # How could we get a current user here?
       end
     end
@@ -68,7 +68,7 @@ To access this, we need to update our query's resolve function:
 ```elixir
 query do
   field :profile, :user do
-    resolve fn _, %{context: %{current_user: current_user}} ->
+    resolve fn _, _, %{context: %{current_user: current_user}} ->
       {:ok, Map.get(@fakedb, current_user.id)}
     end
   end
