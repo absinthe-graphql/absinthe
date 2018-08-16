@@ -6,12 +6,14 @@ defmodule Absinthe.Language.EnumValueDefinition do
   @enforce_keys [:value]
   defstruct [
     :value,
+    description: nil,
     directives: [],
     loc: %{start_line: nil}
   ]
 
   @type t :: %__MODULE__{
           value: String.t(),
+          description: nil | String.t(),
           directives: [Language.Directive.t()],
           loc: Language.loc_t()
         }
@@ -20,6 +22,7 @@ defmodule Absinthe.Language.EnumValueDefinition do
     def convert(node, doc) do
       %Blueprint.Schema.EnumValueDefinition{
         value: node.value,
+        description: node.value,
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
         source_location: source_location(node)
       }

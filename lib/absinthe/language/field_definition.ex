@@ -4,6 +4,7 @@ defmodule Absinthe.Language.FieldDefinition do
   alias Absinthe.{Blueprint, Language}
 
   defstruct name: nil,
+            description: nil,
             arguments: [],
             directives: [],
             type: nil,
@@ -11,6 +12,7 @@ defmodule Absinthe.Language.FieldDefinition do
 
   @type t :: %__MODULE__{
           name: String.t(),
+          description: nil | String.t(),
           arguments: [Language.Argument.t()],
           directives: [Language.Directive.t()],
           type: Language.type_reference_t(),
@@ -21,6 +23,7 @@ defmodule Absinthe.Language.FieldDefinition do
     def convert(node, doc) do
       %Blueprint.Schema.FieldDefinition{
         name: node.name,
+        description: node.description,
         identifier: node.name |> Macro.underscore() |> String.to_atom(),
         arguments: Absinthe.Blueprint.Draft.convert(node.arguments, doc),
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),

@@ -39,7 +39,7 @@ defmodule Absinthe.Phase.Parse do
   end
 
   @spec tokenize(binary) :: {:ok, [tuple]} | {:error, binary}
-  defp tokenize(input) do
+  def tokenize(input) do
     chars = :erlang.binary_to_list(input)
 
     case :absinthe_lexer.string(chars) do

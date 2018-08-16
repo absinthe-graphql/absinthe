@@ -1,6 +1,8 @@
 defmodule Absinthe.Phase.Parse.BlockStringsTest do
   use Absinthe.Case, async: true
 
+  @moduletag :parser
+
   test "parses a query with a block string literal and no newlines" do
     assert {:ok, result} = run(~S<{ post(title: "single", body: """text""") { name } }>)
     assert "text" == extract_body(result)

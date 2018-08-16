@@ -11,6 +11,15 @@ defmodule Absinthe.Schema.Notation.SDL do
         doc.input.definitions
         |> Enum.map(&Absinthe.Blueprint.Draft.convert(&1, doc))
       {:ok, definitions}
+    else
+      {:error, %Absinthe.Blueprint{execution: %{validation_errors: errors}} = bp} when length(errors) > 0 ->
+        error =
+          errors
+          |> Enum.map(&"#{&1.message} (#{inspect(&1.locations)})")
+          |> Enum.join("\n")
+        {:error, error}
+      other ->
+        other
     end
   end
   

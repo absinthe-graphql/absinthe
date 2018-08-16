@@ -8,7 +8,7 @@ Nonterminals
   EnumValueDefinitionList EnumValueDefinition
   DirectiveDefinition DirectiveDefinitionLocations
   SelectionSet Selections Selection
-  OperationType Name NameWithoutOn VariableDefinitions VariableDefinition Directives Directive
+  OperationType Name NameWithoutOn VariableDefinitions VariableDefinition DescriptionDefinition Directives Directive
   Field Alias Arguments ArgumentList Argument
   FragmentSpread FragmentName InlineFragment
   VariableDefinitionList Variable DefaultValue
@@ -149,7 +149,6 @@ Value -> EnumValue :     build_ast_node('EnumValue',    #{'value' => '$1'},  #{'
 Value -> ListValue :     build_ast_node('ListValue',    #{'values' => '$1'}, #{'start_line' => extract_child_line('$1')}).
 Value -> ObjectValue :   build_ast_node('ObjectValue',  #{'fields' => '$1'}, #{'start_line' => extract_child_line('$1')}).
 
-
 EnumValue -> Name : extract_binary('$1').
 
 ListValue -> '[' ']' : [].
@@ -163,6 +162,9 @@ ObjectFields -> ObjectField : ['$1'].
 ObjectFields -> ObjectField ObjectFields : ['$1'|'$2'].
 ObjectField -> Name ':' Value : build_ast_node('ObjectField', #{'name' => extract_binary('$1'), 'value' => '$3'}, #{'start_line' => extract_line('$1')}).
 
+DescriptionDefinition -> string_value : extract_quoted_string_token('$1').
+DescriptionDefinition -> block_string_value : extract_quoted_block_string_token('$1').
+
 TypeDefinition -> SchemaDefinition : '$1'.
 TypeDefinition -> ObjectTypeDefinition : '$1'.
 TypeDefinition -> InterfaceTypeDefinition : '$1'.
@@ -172,6 +174,15 @@ TypeDefinition -> EnumTypeDefinition : '$1'.
 TypeDefinition -> InputObjectTypeDefinition : '$1'.
 TypeDefinition -> TypeExtensionDefinition : '$1'.
 TypeDefinition -> DirectiveDefinition : '$1'.
+
+TypeDefinition -> DescriptionDefinition SchemaDefinition : put_description('$2', '$1').
+TypeDefinition -> DescriptionDefinition ObjectTypeDefinition : put_description('$2', '$1').
+TypeDefinition -> DescriptionDefinition InterfaceTypeDefinition : put_description('$2', '$1').
+TypeDefinition -> DescriptionDefinition UnionTypeDefinition : put_description('$2', '$1').
+TypeDefinition -> DescriptionDefinition ScalarTypeDefinition : put_description('$2', '$1').
+TypeDefinition -> DescriptionDefinition EnumTypeDefinition : put_description('$2', '$1').
+TypeDefinition -> DescriptionDefinition InputObjectTypeDefinition : put_description('$2', '$1').
+TypeDefinition -> DescriptionDefinition DirectiveDefinition : put_description('$2', '$1').
 
 DirectiveDefinition -> 'directive' '@' Name 'on' DirectiveDefinitionLocations :
   build_ast_node('DirectiveDefinition', #{'name' => extract_binary('$3'), 'locations' =>'$5'}, #{'start_line' => extract_line('$1')}).
@@ -202,6 +213,9 @@ NamedTypeList -> NamedType NamedTypeList : ['$1'|'$2'].
 
 FieldDefinitionList -> FieldDefinition : ['$1'].
 FieldDefinitionList -> FieldDefinition FieldDefinitionList : ['$1'|'$2'].
+FieldDefinitionList -> DescriptionDefinition FieldDefinition : [put_description('$2', '$1')].
+FieldDefinitionList -> DescriptionDefinition FieldDefinition FieldDefinitionList : [put_description('$2', '$1')|'$3'].
+
 FieldDefinition -> Name ':' Type : build_ast_node('FieldDefinition', #{'name' => extract_binary('$1'), 'type' => '$3'}, #{'start_line' => extract_line('$1')}).
 FieldDefinition -> Name ':' Type Directives : build_ast_node('FieldDefinition', #{'name' => extract_binary('$1'), 'type' => '$3', 'directives' => '$4'}, #{'start_line' => extract_line('$1')}).
 FieldDefinition -> Name ArgumentsDefinition ':' Type : build_ast_node('FieldDefinition', #{'name' => extract_binary('$1'), 'arguments' => '$2', 'type' => '$4'}, #{'start_line' => extract_line('$1')}).
@@ -212,6 +226,9 @@ ArgumentsDefinition -> '(' InputValueDefinitionList ')' : '$2'.
 
 InputValueDefinitionList -> InputValueDefinition : ['$1'].
 InputValueDefinitionList -> InputValueDefinition InputValueDefinitionList : ['$1'|'$2'].
+
+InputValueDefinitionList -> DescriptionDefinition InputValueDefinition : [put_description('$2', '$1')].
+InputValueDefinitionList -> DescriptionDefinition InputValueDefinition InputValueDefinitionList : [put_description('$2', '$1')|'$3'].
 
 InputValueDefinition -> Name ':' Type : build_ast_node('InputValueDefinition', #{'name' => extract_binary('$1'), 'type' => '$3'}, #{'start_line' => extract_line('$1')}).
 InputValueDefinition -> Name ':' Type Directives : build_ast_node('InputValueDefinition', #{'name' => extract_binary('$1'), 'type' => '$3', 'directives' => '$4'}, #{'start_line' => extract_line('$1')}).
@@ -241,6 +258,9 @@ EnumTypeDefinition -> 'enum' Name Directives '{' EnumValueDefinitionList '}':
 
 EnumValueDefinitionList -> EnumValueDefinition : ['$1'].
 EnumValueDefinitionList -> EnumValueDefinition EnumValueDefinitionList : ['$1'|'$2'].
+
+EnumValueDefinitionList -> DescriptionDefinition EnumValueDefinition : [put_description('$2', '$1')].
+EnumValueDefinitionList -> DescriptionDefinition EnumValueDefinition EnumValueDefinitionList : [put_description('$2', '$1')|'$3'].
 
 DirectiveDefinitionLocations -> Name : [extract_binary('$1')].
 DirectiveDefinitionLocations -> Name '|' DirectiveDefinitionLocations : [extract_binary('$1')|'$3'].
@@ -300,6 +320,10 @@ build_ast_node(Type, Node, #{'start_line' := nil}) ->
 build_ast_node(Type, Node, Loc) ->
   'Elixir.Kernel':struct(list_to_atom("Elixir.Absinthe.Language." ++ atom_to_list(Type)), Node#{loc => Loc}).
 
+% Descriptions
+
+put_description(Node, Description) ->
+  maps:put(description, Description, Node).
 
 % String
 

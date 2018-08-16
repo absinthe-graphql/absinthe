@@ -9,6 +9,7 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
     :identifier,
     :type,
     :module,
+    description: nil,
     deprecation: nil,
     config_ast: nil,
     default_value: nil,
@@ -27,6 +28,7 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
   @type t :: %__MODULE__{
           name: String.t(),
           identifier: atom,
+          description: nil | String.t(),
           deprecation: nil | Blueprint.Schema.Deprecation.t(),
           arguments: [Blueprint.Schema.InputValueDefinition.t()],
           type: Blueprint.TypeReference.t(),

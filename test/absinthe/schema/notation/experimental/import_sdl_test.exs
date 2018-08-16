@@ -10,12 +10,18 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
     import_sdl """
     type Query {
+      "A list of posts"
       posts: [Post]
     }
 
+    "A submitted post"
     type Post {
       title: String!
       body: String!
+      \"""
+      The post author
+      (is a user)
+      \"""
       author: User!
     }
     """
@@ -35,7 +41,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     end
 
     test "defines fields" do
-      assert %{name: "posts"} = lookup_field(Definition, :query, :posts)            
+      assert %{name: "posts"} = lookup_field(Definition, :query, :posts)
     end
 
   end
@@ -47,8 +53,24 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     end
 
     test "defines fields" do
-      assert %{name: "title"} = lookup_field(Definition, :post, :title)            
-      assert %{name: "body"} = lookup_field(Definition, :post, :body)            
+      assert %{name: "title"} = lookup_field(Definition, :post, :title)
+      assert %{name: "body"} = lookup_field(Definition, :post, :body)
+    end
+
+  end
+
+  describe "descriptions" do
+
+    test "work on objects" do
+      assert %{description: "A submitted post"} = lookup_type(Definition, :post)
+    end
+
+    test "work on fields" do
+      assert %{description: "A list of posts"} = lookup_field(Definition, :query, :posts)
+    end
+
+    test "can be multiline" do
+      assert %{description: "The post author\n(is a user)"} = lookup_field(Definition, :post, :author)
     end
 
   end

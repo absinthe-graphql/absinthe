@@ -1449,9 +1449,9 @@ defmodule Absinthe.Schema.Notation do
         definitions ++ (Module.get_attribute(env.module, :__absinthe_sdl_definitions__) || [])
       )
       []
-    else
-      {:error, err} ->
-        raise Absinthe.Schema.Notation.Error, "`import_sdl` could not parse SDL:\n#{err}"
+    else    
+      {:error, error} ->
+        raise Absinthe.Schema.Notation.Error, "`import_sdl` could not parse SDL:\n#{error}"
     end    
   end
 

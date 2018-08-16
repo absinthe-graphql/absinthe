@@ -1,6 +1,8 @@
 defmodule Absinthe.Phase.ParseTest do
   use Absinthe.Case, async: true
 
+  @moduletag :parser
+
   test "parses a simple query" do
     assert {:ok, _} = run("{ user(id: 2) { name } }")
   end
