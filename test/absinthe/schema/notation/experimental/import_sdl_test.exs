@@ -53,7 +53,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
   end
 
-  describe "multiple definitions" do
+  describe "multiple invocations" do
     test "can add definitions" do
       assert %{name: "User", identifier: :user} = lookup_type(Definition, :user)
     end
