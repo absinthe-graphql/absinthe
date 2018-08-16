@@ -84,6 +84,11 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(rest, [push(field, :arguments, arg) | stack])
   end
 
+  defp build_types([{:sdl, sdl_definitions} | rest], [schema | stack]) do
+    # TODO: Handle directives, etc
+    build_types(rest, [concat(schema, :types, sdl_definitions) | stack])
+  end
+
   defp build_types([{attr, value} | rest], [entity | stack]) do
     entity = %{entity | attr => value}
     build_types(rest, [entity | stack])
@@ -137,4 +142,9 @@ defmodule Absinthe.Blueprint.Schema do
   defp push(entity, key, value) do
     Map.update!(entity, key, &[value | &1])
   end
+
+  defp concat(entity, key, value) do
+    Map.update!(entity, key, &(&1 ++ value))
+  end  
+
 end
