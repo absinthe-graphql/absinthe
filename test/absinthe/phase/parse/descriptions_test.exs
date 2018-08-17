@@ -2,6 +2,7 @@ defmodule Absinthe.Phase.Parse.DescriptionsTest do
   use Absinthe.Case, async: true
 
   @moduletag :parser
+  @moduletag :sdl
 
   @sdl """
   \"""
@@ -39,17 +40,42 @@ defmodule Absinthe.Phase.Parse.DescriptionsTest do
   """
 
   test "parses descriptions" do
-    \"""
-    Foo
-    \"""
-    type Mine {
-      \"""
-      Another
-      \"""
-      foos: [Foo!]
-    }
-    """))
-    assert {:ok, result} = run(@sdl)
+    assert {:ok, %{definitions: [
+        %Absinthe.Language.ObjectTypeDefinition{
+          description: "A simple GraphQL schema which is well described.",
+          fields: [
+            %Absinthe.Language.FieldDefinition{
+              arguments: [
+                %Absinthe.Language.InputValueDefinition{
+                  description: "The original language that `text` is provided in.",
+                },
+                %Absinthe.Language.InputValueDefinition{
+                  description: "The translated language to be returned.",
+                },
+                %Absinthe.Language.InputValueDefinition{
+                  description: "The text to be translated.",
+                }
+              ],
+              description: "Translates a string from a given language into a different language.",
+            }
+          ]
+        },
+        %Absinthe.Language.EnumTypeDefinition{
+          description: "The set of languages supported by `translate`.",
+          values: [
+            %Absinthe.Language.EnumValueDefinition{
+              description: "English",
+            },
+            %Absinthe.Language.EnumValueDefinition{
+              description: "French",
+            },
+            %Absinthe.Language.EnumValueDefinition{
+              description: "Chinese",
+            }
+          ]
+        }
+      ]      
+    }} = run(@sdl)
   end
 
   def run(input) do

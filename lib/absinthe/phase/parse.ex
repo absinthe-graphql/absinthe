@@ -40,14 +40,11 @@ defmodule Absinthe.Phase.Parse do
 
   @spec tokenize(binary) :: {:ok, [tuple]} | {:error, binary}
   def tokenize(input) do
-    chars = :erlang.binary_to_list(input)
-
-    case :absinthe_lexer.string(chars) do
-      {:ok, tokens, _line_count} ->
-        {:ok, tokens}
-
-      {:error, raw_error, _} ->
-        {:error, format_raw_parse_error(raw_error)}
+    case Absinthe.Lexer.tokenize(input) do
+      {:error, rest, line} ->
+        {:error, format_raw_parse_error({:lexer, rest, line})}
+      other ->
+        other
     end
   end
 
@@ -87,9 +84,10 @@ defmodule Absinthe.Phase.Parse do
     %Phase.Error{message: message, locations: [%{line: line, column: 0}], phase: __MODULE__}
   end
 
-  @spec format_raw_parse_error({integer, :absinthe_lexer, {atom, charlist}}) :: Phase.Error.t()
-  defp format_raw_parse_error({line, :absinthe_lexer, {problem, field}}) do
-    message = "#{problem}: #{field}"
+  @spec format_raw_parse_error({:lexer, String.t(), integer}) :: Phase.Error.t()
+  defp format_raw_parse_error({:lexer, rest, line}) do
+    <<sample::binary-size(10), _::binary>> = rest
+    message = "Parsing failed at `#{sample}`"
     %Phase.Error{message: message, locations: [%{line: line, column: 0}], phase: __MODULE__}
   end
 

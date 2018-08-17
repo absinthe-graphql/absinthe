@@ -328,7 +328,7 @@ put_description(Node, Description) ->
 % String
 
 extract_quoted_string_token({_Token, _Line, Value}) ->
-  iolist_to_binary(process_string(lists:sublist(Value, 2, length(Value) - 2))).
+  unicode:characters_to_binary(process_string(lists:sublist(Value, 2, length(Value) - 2))).
 
 process_string(Escaped) ->
   process_string(Escaped, []).
