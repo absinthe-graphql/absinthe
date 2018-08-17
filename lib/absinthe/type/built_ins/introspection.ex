@@ -284,31 +284,6 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       end
   end
 
-  def render_default_value(schema, type, value) do
-    case Absinthe.Schema.lookup_type(schema, type, unwrap: true) do
-      %Absinthe.Type.Enum{values_by_internal_value: values} ->
-        values[value].name
-
-      %{serialize: serializer} ->
-        inspect(serializer.(value))
-
-      %Absinthe.Type.InputObject{fields: fields} ->
-        contents =
-          fields
-          |> Enum.map(fn {name, %{type: type}} ->
-            key = name |> to_string |> Absinthe.Utils.camelize(lower: true)
-            val = render_default_value(schema, type, value[name])
-            "#{key}: #{val}"
-          end)
-          |> Enum.join(", ")
-
-        "{#{contents}}"
-
-      _ ->
-        to_string(value)
-    end
-  end
-
   object :__enumvalue, name: "__EnumValue" do
     field :name, :string
 
@@ -333,5 +308,28 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         _, %{source: %{deprecation: dep}} ->
           {:ok, dep.reason}
       end
+  end
+
+  def render_default_value(schema, type, value) do
+    case Absinthe.Schema.lookup_type(schema, type) do
+      %Absinthe.Type.InputObject{fields: fields} ->
+        object_values =
+          Map.values(fields)
+          |> Enum.map(&render_default_value(schema, &1, value))
+          |> Enum.join(", ")
+
+        "{#{object_values}}"
+
+      %Absinthe.Type.Field{type: type, name: name, identifier: identifier} ->
+        key = Absinthe.Utils.camelize(name, lower: true)
+        val = render_default_value(schema, type, value[identifier])
+        "#{key}: #{val}"
+
+      %Absinthe.Type.Enum{values_by_internal_value: values} ->
+        values[value].name
+
+      %Absinthe.Type.Scalar{serialize: serializer} ->
+        inspect(serializer.(value))
+    end
   end
 end
