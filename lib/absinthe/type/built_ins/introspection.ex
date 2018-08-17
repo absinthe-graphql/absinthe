@@ -311,7 +311,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
   end
 
   def render_default_value(schema, adapter, type, value) do
-    case Absinthe.Schema.lookup_type(schema, type) do
+    case Absinthe.Schema.lookup_type(schema, type, unwrap: false) do
       %Absinthe.Type.InputObject{fields: fields} ->
         object_values =
           Map.values(fields)
@@ -319,6 +319,13 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
           |> Enum.join(", ")
 
         "{#{object_values}}"
+
+      %Absinthe.Type.List{of_type: type} ->
+        list_values =
+          Enum.map(value, &render_default_value(schema, adapter, type, &1))
+          |> Enum.join(", ")
+
+        "[#{list_values}]"
 
       %Absinthe.Type.Field{type: type, name: name, identifier: identifier} ->
         key = adapter.to_external_name(name, :field)
@@ -328,7 +335,10 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       %Absinthe.Type.Enum{values_by_internal_value: values} ->
         values[value].name
 
-      %Absinthe.Type.Scalar{serialize: serializer} ->
+      %Absinthe.Type.NonNull{of_type: type} ->
+        render_default_value(schema, adapter, type, value)
+
+      %Absinthe.Type.Scalar{serialize: serializer} = sc ->
         inspect(serializer.(value))
     end
   end
