@@ -276,8 +276,8 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         _, %{source: %{default_value: nil}} ->
           {:ok, nil}
 
-        _, %{schema: schema, source: %{default_value: value, type: type}} ->
-          {:ok, render_default_value(schema, type, value)}
+        _, %{schema: schema, source: %{default_value: value, type: type}, adapter: adapter} ->
+          {:ok, render_default_value(schema, adapter, type, value)}
 
         _, %{source: _} ->
           {:ok, nil}
@@ -310,19 +310,19 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       end
   end
 
-  def render_default_value(schema, type, value) do
+  def render_default_value(schema, adapter, type, value) do
     case Absinthe.Schema.lookup_type(schema, type) do
       %Absinthe.Type.InputObject{fields: fields} ->
         object_values =
           Map.values(fields)
-          |> Enum.map(&render_default_value(schema, &1, value))
+          |> Enum.map(&render_default_value(schema, adapter, &1, value))
           |> Enum.join(", ")
 
         "{#{object_values}}"
 
       %Absinthe.Type.Field{type: type, name: name, identifier: identifier} ->
-        key = Absinthe.Utils.camelize(name, lower: true)
-        val = render_default_value(schema, type, value[identifier])
+        key = adapter.to_external_name(name, :field)
+        val = render_default_value(schema, adapter, type, value[identifier])
         "#{key}: #{val}"
 
       %Absinthe.Type.Enum{values_by_internal_value: values} ->
