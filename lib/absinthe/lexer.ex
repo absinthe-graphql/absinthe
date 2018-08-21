@@ -270,30 +270,32 @@ defmodule Absinthe.Lexer do
 
   defp fill_mantissa(_rest, raw, context, _, _), do: {'0.' ++ raw, context}
 
-  defp unescape_unicode(_rest, content, context, _line, _offset) do
+  defp unescape_unicode(_rest, content, context, _loc, _) do
     code = content |> Enum.reverse()
     value = :httpd_util.hexlist_to_integer(code)
     binary = :unicode.characters_to_binary([value])
     {[binary], context}
   end  
 
-  defp labeled_token(_rest, chars, context, {line, _}, _, token_name) do
-    {[{token_name, line, chars |> Enum.reverse()}], context}
+  defp labeled_token(_rest, chars, context, loc, byte_offset, token_name) do
+    value = chars |> Enum.reverse()
+    {[{token_name, line_and_column(loc, byte_offset, {0, length(value)}), value}], context}
   end
 
-  defp block_string_value_token(_rest, chars, context, {line, _}, _) do
+  defp block_string_value_token(_rest, chars, context, loc, byte_offset) do
     value = '"""' ++ (chars |> Enum.reverse()) ++ '"""'
-    {[{:block_string_value, line, value}], context}
+    {[{:block_string_value, line_and_column(loc, byte_offset, {0, length(value)}), value}], context}
   end
 
-  defp atom_token(_rest, chars, context, {line, _}, _) do
-    {[{chars |> token_string |> String.to_atom(), line}], context}
+  defp atom_token(_rest, chars, context, loc, byte_offset) do
+    value = chars |> Enum.reverse()
+    token_string = value |> List.to_string()
+    {[{token_string |> String.to_atom(), line_and_column(loc, byte_offset, {0, length(value)})}], context}
   end
 
-  defp token_string(chars) do
-    chars
-    |> Enum.reverse()
-    |> List.to_string()  
+  def line_and_column({line, line_offset}, byte_offset, {line_correction, column_correction}) do
+    column = byte_offset - line_offset - column_correction + 1
+    {line, column}
   end
 
   defp not_line_terminator(<<?\n, _::binary>>, context, _, _), do: {:halt, context}
