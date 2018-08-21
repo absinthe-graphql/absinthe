@@ -217,7 +217,7 @@ defmodule Absinthe.Lexer do
     |> traverse({:labeled_token, [:string_value]})
 
   block_string_value =
-    ignore(string(~S(""")))
+    ignore(string(~S(""")) |> traverse({:mark_block_string_start, []}))
     |> repeat_while(block_string_character, {:not_end_of_block_quote, []})
     |> ignore(string(~S(""")))
     |> traverse({:block_string_value_token, []})
@@ -279,21 +279,25 @@ defmodule Absinthe.Lexer do
 
   defp labeled_token(_rest, chars, context, loc, byte_offset, token_name) do
     value = chars |> Enum.reverse()
-    {[{token_name, line_and_column(loc, byte_offset, {0, length(value)}), value}], context}
+    {[{token_name, line_and_column(loc, byte_offset, length(value)), value}], context}
+  end
+
+  defp mark_block_string_start(_rest, chars, context, loc, byte_offset) do
+    {[chars], Map.put(context, :token_location, line_and_column(loc, byte_offset, 3))}
   end
 
   defp block_string_value_token(_rest, chars, context, loc, byte_offset) do
     value = '"""' ++ (chars |> Enum.reverse()) ++ '"""'
-    {[{:block_string_value, line_and_column(loc, byte_offset, {0, length(value)}), value}], context}
+    {[{:block_string_value, context.token_location, value}], Map.delete(context, :token_location)}
   end
 
   defp atom_token(_rest, chars, context, loc, byte_offset) do
     value = chars |> Enum.reverse()
     token_string = value |> List.to_string()
-    {[{token_string |> String.to_atom(), line_and_column(loc, byte_offset, {0, length(value)})}], context}
+    {[{token_string |> String.to_atom(), line_and_column(loc, byte_offset, length(value))}], context}
   end
 
-  def line_and_column({line, line_offset}, byte_offset, {line_correction, column_correction}) do
+  def line_and_column({line, line_offset}, byte_offset, column_correction) do
     column = byte_offset - line_offset - column_correction + 1
     {line, column}
   end
