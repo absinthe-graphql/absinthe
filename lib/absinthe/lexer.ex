@@ -80,7 +80,7 @@ defmodule Absinthe.Lexer do
       ascii_char([
         ?!, ?$, ?(, ?), ?:, ?=, ?@, ?[, ?], ?{, ?|, ?}
       ]),
-      string("...")
+      times(ascii_char([?.]), 3)
     ])
     |> traverse({:atom_token, []})
 
@@ -226,7 +226,7 @@ defmodule Absinthe.Lexer do
     case do_tokenize(input) do
       {:ok, tokens, "", _, _, _} ->
         {:ok, tokens}
-      {:ok, _, rest, _, {line, _}, offset} ->
+      {:ok, _, rest, _, {line, _}, _offset} ->
         {:error, rest, line}
       other ->
         other
@@ -301,7 +301,7 @@ defmodule Absinthe.Lexer do
     {[chars], Map.put(context, :token_location, line_and_column(loc, byte_offset, 3))}
   end
 
-  defp block_string_value_token(_rest, chars, context, loc, byte_offset) do
+  defp block_string_value_token(_rest, chars, context, _loc, _byte_offset) do
     value = '"""' ++ (chars |> Enum.reverse()) ++ '"""'
     {[{:block_string_value, context.token_location, value}], Map.delete(context, :token_location)}
   end
