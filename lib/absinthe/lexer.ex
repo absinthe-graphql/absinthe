@@ -226,8 +226,9 @@ defmodule Absinthe.Lexer do
     case do_tokenize(input) do
       {:ok, tokens, "", _, _, _} ->
         {:ok, tokens}
-      {:ok, _, rest, _, {line, _}, _offset} ->
-        {:error, rest, line}
+      {:ok, _, rest, _, {line, line_offset}, byte_offset} ->
+        column = byte_offset - line_offset + 1
+        {:error, rest, {line, column}}
       other ->
         other
     end

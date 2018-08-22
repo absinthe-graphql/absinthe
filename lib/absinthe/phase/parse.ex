@@ -41,8 +41,8 @@ defmodule Absinthe.Phase.Parse do
   @spec tokenize(binary) :: {:ok, [tuple]} | {:error, binary}
   def tokenize(input) do
     case Absinthe.Lexer.tokenize(input) do
-      {:error, rest, line} ->
-        {:error, format_raw_parse_error({:lexer, rest, line})}
+      {:error, rest, loc} ->
+        {:error, format_raw_parse_error({:lexer, rest, loc})}
       other ->
         other
     end
@@ -81,14 +81,15 @@ defmodule Absinthe.Phase.Parse do
   @spec format_raw_parse_error({integer, :absinthe_parser, [charlist]}) :: Phase.Error.t()
   defp format_raw_parse_error({line, :absinthe_parser, msgs}) do
     message = msgs |> Enum.map(&to_string/1) |> Enum.join("")
+    # Parser doesn't report column numbers
     %Phase.Error{message: message, locations: [%{line: line, column: 0}], phase: __MODULE__}
   end
 
-  @spec format_raw_parse_error({:lexer, String.t(), integer}) :: Phase.Error.t()
-  defp format_raw_parse_error({:lexer, rest, line}) do
+  @spec format_raw_parse_error({:lexer, String.t(), {line :: pos_integer, column :: pos_integer}}) :: Phase.Error.t()
+  defp format_raw_parse_error({:lexer, rest, {line, column}}) do
     <<sample::binary-size(10), _::binary>> = rest
     message = "Parsing failed at `#{sample}`"
-    %Phase.Error{message: message, locations: [%{line: line, column: 0}], phase: __MODULE__}
+    %Phase.Error{message: message, locations: [%{line: line, column: column}], phase: __MODULE__}
   end
 
   @unknown_error_msg "An unknown error occurred during parsing"

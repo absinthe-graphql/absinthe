@@ -159,7 +159,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
   }
   """
   test "can return an error tuple from the topic function" do
-    assert {:ok, %{errors: [%{locations: [%{column: 0, line: 2}], message: "unauthorized"}]}} ==
+    assert {:ok, %{errors: [%{locations: [%{column: 3, line: 2}], message: "unauthorized"}]}} ==
              run(
                @query,
                Schema,

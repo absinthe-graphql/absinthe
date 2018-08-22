@@ -212,7 +212,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
 
       errors = [
         %{
-          locations: [%{column: 0, line: 2}],
+          locations: [%{column: 27, line: 2}],
           message: "Cannot return null for non-nullable field",
           path: ["nullableListOfNonNull", 0, "nonNull"]
         }
