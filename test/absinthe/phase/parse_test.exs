@@ -65,7 +65,6 @@ defmodule Absinthe.Phase.ParseTest do
     }
   }
   """
-  @tag :nope
   test "can parse UTF-8" do
     assert {:ok, _} = run(@query)
   end

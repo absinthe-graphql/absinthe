@@ -144,7 +144,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
              %{
                errors: [
                  %{
-                   locations: [%{column: 0, line: 2}],
+                   locations: [%{column: 30, line: 2}],
                    message:
                      "Unknown argument \"extra\" on field \"thing\" of type \"RootSubscriptionType\"."
                  }
