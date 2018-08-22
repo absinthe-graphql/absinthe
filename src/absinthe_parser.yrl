@@ -478,4 +478,7 @@ extract_float({_Token, _Loc, Value}) ->
 extract_boolean({_Token, _Loc, "true"}) ->
   true;
 extract_boolean({_Token, _Loc, "false"}) ->
-  false.
+  false;
+extract_boolean(Other) ->
+  io:format("~p~n", [Other]).
+

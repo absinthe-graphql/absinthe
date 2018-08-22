@@ -84,32 +84,10 @@ defmodule Absinthe.Lexer do
     ])
     |> traverse({:atom_token, []})
 
-  name =
+  name_or_reserved_word =
     ascii_char([?_, ?A..?Z, ?a..?z])
     |> repeat(ascii_char([?_, ?0..?9, ?A..?Z, ?a..?z]))
-    |> traverse({:labeled_token, [:name]})
-
-  reserved_word =
-    choice([
-      string("query"),
-      string("mutation"),
-      string("subscription"),
-      string("fragment"),
-      string("on"),
-      string("implements"),
-      string("interface"),
-      string("union"),
-      string("scalar"),
-      string("enum"),
-      string("input"),
-      string("extend"),
-      string("type"),
-      string("directive"),
-      string("ON"),
-      string("null"),
-      string("schema")
-    ])
-    |> traverse({:atom_token, []})
+    |> traverse({:name_or_reserved_word_token, []})
 
   # NegativeSign :: -
   negative_sign = ascii_char([?-])
@@ -228,7 +206,7 @@ defmodule Absinthe.Lexer do
       string("true"),
       string("false")
     ])    
-    |> traverse({:labeled_token, [:boolean_value]})
+    |> traverse({:boolean_value_token, []})
 
   defp not_end_of_quote(<<?", _::binary>>, context, _, _) do
     {:halt, context}
@@ -259,13 +237,12 @@ defmodule Absinthe.Lexer do
     ignore(ignored),
     comment,
     punctuator,
-    reserved_word,
     block_string_value,    
     string_value,
     float_value,
     int_value,
     boolean_value,
-    name,    
+    name_or_reserved_word,    
   ]))
 
   defp fill_mantissa(_rest, raw, context, _, _), do: {'0.' ++ raw, context}
@@ -275,7 +252,45 @@ defmodule Absinthe.Lexer do
     value = :httpd_util.hexlist_to_integer(code)
     binary = :unicode.characters_to_binary([value])
     {[binary], context}
-  end  
+  end
+
+  @reserved_words ~w(
+    directive
+    enum
+    extend
+    fragment
+    implements
+    input
+    interface
+    mutation
+    null
+    on
+    ON
+    query
+    scalar
+    schema
+    subscription
+    type
+    union
+  ) |> Enum.map(&String.to_charlist/1)
+
+  defp name_or_reserved_word_token(rest, chars, context, loc, byte_offset) do
+    value = chars |> Enum.reverse()
+    do_name_or_reserved_word_token(rest, value, context, loc, byte_offset)
+  end
+
+  defp do_name_or_reserved_word_token(_rest, value, context, loc, byte_offset) when value in @reserved_words do
+    token_name = value |> List.to_atom()
+    {[{token_name, line_and_column(loc, byte_offset, length(value))}], context}    
+  end
+  defp do_name_or_reserved_word_token(_rest, value, context, loc, byte_offset) do
+    {[{:name, line_and_column(loc, byte_offset, length(value)), value}], context}
+  end
+
+  defp boolean_value_token(_rest, [token_string], context, loc, byte_offset) do
+    value = token_string |> String.to_charlist()
+    {[{:boolean_value, line_and_column(loc, byte_offset, length(value)), value}], context}
+  end
 
   defp labeled_token(_rest, chars, context, loc, byte_offset, token_name) do
     value = chars |> Enum.reverse()
@@ -293,8 +308,8 @@ defmodule Absinthe.Lexer do
 
   defp atom_token(_rest, chars, context, loc, byte_offset) do
     value = chars |> Enum.reverse()
-    token_string = value |> List.to_string()
-    {[{token_string |> String.to_atom(), line_and_column(loc, byte_offset, length(value))}], context}
+    token_atom = value |> List.to_atom()
+    {[{token_atom, line_and_column(loc, byte_offset, length(value))}], context}
   end
 
   def line_and_column({line, line_offset}, byte_offset, column_correction) do

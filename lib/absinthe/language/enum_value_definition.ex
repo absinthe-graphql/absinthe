@@ -8,7 +8,7 @@ defmodule Absinthe.Language.EnumValueDefinition do
     :value,
     description: nil,
     directives: [],
-    loc: %{start_line: nil}
+    loc: %{line: nil, column: nil}
   ]
 
   @type t :: %__MODULE__{
@@ -29,6 +29,6 @@ defmodule Absinthe.Language.EnumValueDefinition do
     end
 
     defp source_location(%{loc: nil}), do: nil
-    defp source_location(%{loc: loc}), do: Blueprint.Document.SourceLocation.at(loc.start_line)
+    defp source_location(%{loc: loc}), do: Blueprint.Document.SourceLocation.at(loc)
   end
 end

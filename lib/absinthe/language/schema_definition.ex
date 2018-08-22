@@ -6,7 +6,7 @@ defmodule Absinthe.Language.SchemaDefinition do
   defstruct description: nil,
             directives: [],
             fields: [],
-            loc: %{start_line: nil}
+            loc: %{line: nil}
 
   @type t :: %__MODULE__{
           description: nil | String.t(),

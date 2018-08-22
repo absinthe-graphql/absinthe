@@ -6,7 +6,7 @@ defmodule Absinthe.Language.Document do
   alias Absinthe.{Blueprint, Language}
 
   defstruct definitions: [],
-            loc: %{start_line: nil}
+            loc: %{line: nil}
 
   @typedoc false
   @type t :: %__MODULE__{

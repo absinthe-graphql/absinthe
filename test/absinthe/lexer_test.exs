@@ -8,6 +8,13 @@ defmodule Absinthe.LexerTest do
     assert {:ok, [{:"{", {1, 1}}, {:name, {1, 3}, 'foo'}, {:"}", {1, 7}}]} = Absinthe.Lexer.tokenize(@query)
   end
 
+  @query """
+  { nullName }
+  """
+  test "document with a name that starts with a keyword" do
+    assert {:ok, [{:"{", {1, 1}}, {:name, {1, 3}, 'nullName'}, {:"}", {1, 12}}]} = Absinthe.Lexer.tokenize(@query)
+  end
+
   @query ~S"""
   {
     foo

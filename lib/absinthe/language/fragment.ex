@@ -7,7 +7,7 @@ defmodule Absinthe.Language.Fragment do
             type_condition: nil,
             directives: [],
             selection_set: nil,
-            loc: %{start_line: nil}
+            loc: %{line: nil}
 
   @type t :: %__MODULE__{
           name: String.t(),
@@ -32,7 +32,7 @@ defmodule Absinthe.Language.Fragment do
       nil
     end
 
-    defp source_location(%{start_line: number}) do
+    defp source_location(%{line: number}) do
       Blueprint.Document.SourceLocation.at(number)
     end
   end

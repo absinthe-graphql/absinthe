@@ -8,7 +8,7 @@ defmodule Absinthe.Language.ObjectTypeDefinition do
             directives: [],
             interfaces: [],
             fields: [],
-            loc: %{start_line: nil}
+            loc: %{line: nil}
 
   @type t :: %__MODULE__{
           name: String.t(),

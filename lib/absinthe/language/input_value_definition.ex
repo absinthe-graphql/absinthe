@@ -10,7 +10,7 @@ defmodule Absinthe.Language.InputValueDefinition do
     description: nil,
     default_value: nil,
     directives: [],
-    loc: %{start_line: nil}
+    loc: %{line: nil}
   ]
 
   @type t :: %__MODULE__{

@@ -7,7 +7,7 @@ defmodule Absinthe.Language.EnumTypeDefinition do
             description: nil,
             values: [],
             directives: [],
-            loc: %{start_line: nil}
+            loc: %{line: nil}
 
   @type t :: %__MODULE__{
           name: String.t(),

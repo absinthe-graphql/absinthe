@@ -8,7 +8,7 @@ defmodule Absinthe.Language.DirectiveDefinition do
             arguments: [],
             directives: [],
             locations: [],
-            loc: %{start_line: nil}
+            loc: %{line: nil}
 
   @type t :: %__MODULE__{
           name: String.t(),

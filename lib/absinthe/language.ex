@@ -64,7 +64,7 @@ defmodule Absinthe.Language do
           | Language.InputObjectTypeDefinition.t()
           | Language.TypeExtensionDefinition.t()
 
-  @type loc_t :: %{start_line: nil | integer, end_line: nil | integer}
+  @type loc_t :: %{line: nil | integer, end_line: nil | integer}
 
   @type input_t ::
           Language.BooleanValue

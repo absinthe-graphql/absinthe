@@ -1,24 +1,29 @@
 defmodule Absinthe.Blueprint.Document.SourceLocation do
   @moduledoc false
 
-  @enforce_keys [:line]
-  defstruct line: nil,
-            column: nil
+  @enforce_keys [:line, :column]
+  defstruct [
+    :line,
+    :column
+  ]
 
   @type t :: %__MODULE__{
-          line: integer,
-          column: nil | integer
+          line: pos_integer,
+          column: pos_integer
         }
 
   @doc """
-  Easily generate a SourceLocation.t give a line and optional column.
+  Generate a `SourceLocation.t()` given a location
   """
-  @spec at(integer) :: t
-  def at(line) do
-    %__MODULE__{line: line}
+  @spec at(loc :: Absinthe.Language.loc_t()) :: t
+  def at(loc) do
+    %__MODULE__{line: loc.line, column: loc.column}
   end
 
-  @spec at(integer, integer) :: t
+  @doc """
+  Generate a `SourceLocation.t()` given line and column numbers
+  """
+  @spec at(line :: pos_integer, column :: pos_integer) :: t
   def at(line, column) do
     %__MODULE__{line: line, column: column}
   end

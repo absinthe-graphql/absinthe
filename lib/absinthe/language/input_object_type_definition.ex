@@ -7,7 +7,7 @@ defmodule Absinthe.Language.InputObjectTypeDefinition do
             description: nil,
             fields: [],
             directives: [],
-            loc: %{start_line: nil},
+            loc: %{line: nil},
             errors: []
 
   @type t :: %__MODULE__{

@@ -6,7 +6,7 @@ defmodule Absinthe.Language.ScalarTypeDefinition do
   defstruct name: nil,
             description: nil,
             directives: [],
-            loc: %{start_line: nil}
+            loc: %{line: nil}
 
   @type t :: %__MODULE__{
           name: String.t(),

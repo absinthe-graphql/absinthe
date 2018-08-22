@@ -7,7 +7,7 @@ defmodule Absinthe.Language.UnionTypeDefinition do
             description: nil,
             directives: [],
             types: [],
-            loc: %{start_line: nil}
+            loc: %{line: nil}
 
   @type t :: %__MODULE__{
           name: String.t(),

@@ -200,6 +200,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
     end
 
+    @tag :syntax
     test "list of non null things works when child has a null violation" do
       doc = """
       {
