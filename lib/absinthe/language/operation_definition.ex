@@ -8,7 +8,7 @@ defmodule Absinthe.Language.OperationDefinition do
             variable_definitions: [],
             directives: [],
             selection_set: nil,
-            loc: %{start_line: nil}
+            loc: %{line: nil}
 
   @type t :: %__MODULE__{
           operation: :query | :mutation | :subscription,
@@ -27,16 +27,16 @@ defmodule Absinthe.Language.OperationDefinition do
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
         variable_definitions: Blueprint.Draft.convert(node.variable_definitions, doc),
         selections: Blueprint.Draft.convert(node.selection_set.selections, doc),
-        source_location: source_location(node.loc)
+        source_location: source_location(node)
       }
     end
 
-    defp source_location(nil) do
+    defp source_location(%{loc: nil}) do
       nil
     end
 
-    defp source_location(%{start_line: number}) do
-      Blueprint.Document.SourceLocation.at(number)
+    defp source_location(%{loc: loc}) do
+      Blueprint.Document.SourceLocation.at(loc)
     end
   end
 

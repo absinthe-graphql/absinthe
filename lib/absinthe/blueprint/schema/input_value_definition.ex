@@ -11,6 +11,7 @@ defmodule Absinthe.Blueprint.Schema.InputValueDefinition do
     # they model an argument definition or a value of an input object type
     # definition
     placement: :argument_definition,
+    description: nil,
     default_value: nil,
     directives: [],
     # Added by phases
@@ -21,6 +22,7 @@ defmodule Absinthe.Blueprint.Schema.InputValueDefinition do
 
   @type t :: %__MODULE__{
           name: String.t(),
+          description: nil | String.t(),
           type: Blueprint.TypeReference.t(),
           default_value: Blueprint.Input.t(),
           directives: [Blueprint.Directive.t()],

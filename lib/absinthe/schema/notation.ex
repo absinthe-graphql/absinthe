@@ -1070,6 +1070,46 @@ defmodule Absinthe.Schema.Notation do
     |> do_import_types(env, opts)
   end
 
+  @placement {:import_sdl, [toplevel: true]}
+  @doc """
+  Import types defined using the Schema Definition Language (SDL).
+
+  TODO: Explain handlers
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+
+  ## Examples
+
+  Directly embedded SDL:
+
+  ```
+  import_sdl \"""
+  type Query {
+    posts: [Post]
+  }
+
+  type Post {
+    title: String!
+    body: String!
+  }
+  \"""
+  ```
+
+  Loaded from a file location (supporting recompilation on change):
+
+  ```
+  import_sdl path: "/path/to/sdl.graphql"
+  ```
+
+  TODO: Example for dynamic loading during init
+  """
+  defmacro import_sdl(embedded \\ nil, opts \\ []) do
+    __CALLER__
+    |> do_import_sdl(embedded, opts)
+  end
+
   defmacro values(values) do
     __CALLER__
     |> record_values!(values)
@@ -1338,9 +1378,9 @@ defmodule Absinthe.Schema.Notation do
       |> Keyword.put(:module, caller.module)
       |> put_reference(caller, identifier)
 
-    scalar = struct!(type, attrs)
+    definition = struct!(type, attrs)
 
-    put_attr(caller.module, scalar)
+    put_attr(caller.module, definition)
 
     [
       quote do
@@ -1393,6 +1433,28 @@ defmodule Absinthe.Schema.Notation do
     []
   end
 
+  defp do_import_sdl(env, nil, opts) do
+    with {:ok, path} <- Keyword.fetch(opts, :path),
+         sdl <- File.read!(path) do
+      Module.put_attribute(env.module, :external_resource, path)
+      do_import_types(env, sdl, Keyword.delete(opts, :path))
+    else
+      :error ->
+        raise Absinthe.Schema.Notation.Error, "Must provide `:path` option to `import_sdl` unless passing a raw SDL string as the first argument"
+    end
+  end
+  defp do_import_sdl(env, sdl, opts) when is_binary(sdl) do
+    with {:ok, definitions} <- __MODULE__.SDL.parse(sdl) do
+      Module.put_attribute(env.module, :__absinthe_sdl_definitions__,
+        definitions ++ (Module.get_attribute(env.module, :__absinthe_sdl_definitions__) || [])
+      )
+      []
+    else    
+      {:error, error} ->
+        raise Absinthe.Schema.Notation.Error, "`import_sdl` could not parse SDL:\n#{error}"
+    end    
+  end
+
   def put_desc(module, type, identifier) do
     Module.put_attribute(
       module,
@@ -1428,6 +1490,10 @@ defmodule Absinthe.Schema.Notation do
         other -> other
       end)
 
+    sdl_definitions =
+      (Module.get_attribute(env.module, :__absinthe_sdl_definitions__) || [])
+      |> List.flatten()
+
     schema_def = %Schema.SchemaDefinition{
       imports: imports,
       module: env.module
@@ -1436,6 +1502,7 @@ defmodule Absinthe.Schema.Notation do
     blueprint =
       attrs
       |> List.insert_at(1, schema_def)
+      |> List.insert_at(2, {:sdl, sdl_definitions})
       |> Absinthe.Blueprint.Schema.build()
 
     # TODO: handle multiple schemas

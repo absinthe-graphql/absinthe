@@ -4,12 +4,14 @@ defmodule Absinthe.Language.InterfaceTypeDefinition do
   alias Absinthe.{Blueprint, Language}
 
   defstruct name: nil,
+            description: nil,
             fields: [],
             directives: [],
-            loc: %{start_line: nil}
+            loc: %{line: nil}
 
   @type t :: %__MODULE__{
           name: String.t(),
+          description: nil | String.t(),
           fields: [Language.FieldDefinition.t()],
           directives: [Language.Directive.t()],
           loc: Language.loc_t()
@@ -19,6 +21,7 @@ defmodule Absinthe.Language.InterfaceTypeDefinition do
     def convert(node, doc) do
       %Blueprint.Schema.InterfaceTypeDefinition{
         name: node.name,
+        description: node.description,
         fields: Absinthe.Blueprint.Draft.convert(node.fields, doc),
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc)
       }

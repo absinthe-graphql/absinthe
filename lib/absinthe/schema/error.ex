@@ -6,7 +6,7 @@ defmodule Absinthe.Schema.Error do
 
   @type detail_t :: %{
           rule: Absinthe.Schema.Rule.t(),
-          location: %{file: binary, line: integer},
+          location: %{file: binary, line: pos_integer},
           data: any
         }
 

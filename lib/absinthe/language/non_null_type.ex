@@ -4,7 +4,7 @@ defmodule Absinthe.Language.NonNullType do
   alias Absinthe.{Blueprint, Language}
 
   defstruct type: nil,
-            loc: %{start_line: nil}
+            loc: %{line: nil}
 
   @type t :: %__MODULE__{
           type: Language.type_reference_t(),

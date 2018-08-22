@@ -9,6 +9,7 @@ defmodule Absinthe.Blueprint.Schema.EnumValueDefinition do
     deprecation: nil,
     directives: [],
     source_location: nil,
+    description: nil,
     # Added by phases
     flags: %{},
     errors: [],
@@ -17,6 +18,7 @@ defmodule Absinthe.Blueprint.Schema.EnumValueDefinition do
 
   @type t :: %__MODULE__{
           value: String.t(),
+          description: nil | String.t(),
           deprecation: nil | Blueprint.Schema.Deprecation.t(),
           directives: [Blueprint.Directive.t()],
           source_location: nil | Blueprint.Document.SourceLocation.t(),

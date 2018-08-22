@@ -116,7 +116,7 @@ defmodule Absinthe.MiddlewareTest do
 
     assert [
              %{
-               locations: [%{column: 0, line: 1}],
+               locations: [%{column: 2, line: 1}],
                message: "unauthorized",
                path: ["authenticated"]
              }
@@ -132,7 +132,7 @@ defmodule Absinthe.MiddlewareTest do
 
     assert [
              %{
-               locations: [%{column: 0, line: 1}],
+               locations: [%{column: 16, line: 1}],
                message: "unauthorized",
                path: ["public", "email"]
              }
@@ -159,7 +159,7 @@ defmodule Absinthe.MiddlewareTest do
 
     assert [
              %{
-               locations: [%{column: 0, line: 1}],
+               locations: [%{column: 25, line: 1}],
                message: "unauthorized",
                path: ["returnsPrivateObject", "key"]
              }
