@@ -1231,8 +1231,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record a type checker in the current scope
   def record_is_type_of!(env, func_ast) do
-    # Scope.put_attribute(env.module, :is_type_of, func_ast)
-    # Scope.recorded!(env.module, :attr, :is_type_of)
+    put_attr(env.module, {:is_type_of, func_ast})
     # :ok
   end
 
@@ -1240,16 +1239,13 @@ defmodule Absinthe.Schema.Notation do
   # Record a complexity analyzer in the current scope
   def record_complexity!(env, func_ast) do
     put_attr(env.module, {:complexity, func_ast})
-    # Scope.put_attribute(env.module, :complexity, func_ast)
-    # Scope.recorded!(env.module, :attr, :complexity)
     # :ok
   end
 
   @doc false
   # Record a type resolver in the current scope
   def record_resolve_type!(env, func_ast) do
-    # Scope.put_attribute(env.module, :resolve_type, func_ast)
-    # Scope.recorded!(env.module, :attr, :resolve_type)
+    put_attr(env.module, {:resolve_type, func_ast})
     # :ok
   end
 
@@ -1507,6 +1503,9 @@ defmodule Absinthe.Schema.Notation do
     [schema] = blueprint.schema_definitions
 
     functions = build_functions(schema)
+    if System.get_env("FUN") do
+      functions |> Macro.to_string |> Code.format_string! |> IO.puts
+    end
 
     quote do
       unquote(__MODULE__).noop(@desc)
