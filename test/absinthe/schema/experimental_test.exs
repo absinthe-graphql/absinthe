@@ -59,7 +59,7 @@ defmodule Absinthe.Schema.ExperimentalTest do
     """
 
     assert %Absinthe.Type.Object{} = type = Absinthe.Schema.lookup_type(Schema, :query)
-    assert %{fields: %{user: field}} = type
+    assert %{fields: %{user: _field}} = type
 
     assert {:ok, %{data: %{"user" => %{"fullName" => "Bruce Williams"}}}} ==
              Absinthe.run(query, Schema)

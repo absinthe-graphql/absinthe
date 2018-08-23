@@ -308,21 +308,28 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp handle_field_attrs(attrs, caller) do
+    block = for {identifier, arg_attrs} <- Keyword.get(attrs, :args, []) do
+      quote do
+        arg unquote(identifier), unquote(arg_attrs)
+      end
+    end
+
+    {func_ast, attrs} = Keyword.pop(attrs, :resolve)
+
+    block = if func_ast do
+      [quote do
+        resolve unquote(func_ast)
+      end]
+    else
+      []
+    end ++ block
+
     attrs =
       attrs
       |> expand_ast(caller)
       |> Keyword.delete(:args)
-      # |> replace_key(:args, :arguments)
       |> replace_key(:deprecate, :deprecation)
-
-    case Keyword.pop(attrs, :resolve) do
-      {nil, attrs} ->
-        attrs
-
-      {ast, attrs} ->
-        ast = {:{}, [], [{Absinthe.Resolution, ast}, []]}
-        Keyword.update(attrs, :middleware_ast, [ast], &[ast | &1])
-    end
+    {attrs, block}
   end
 
   # FIELDS
@@ -332,24 +339,19 @@ defmodule Absinthe.Schema.Notation do
 
   See `field/4`
   """
-  defmacro field(identifier, do: block) do
-    __CALLER__
-    |> recordable!(:field, @placement[:field])
-    |> record!(Schema.FieldDefinition, identifier, [], block)
-  end
 
   defmacro field(identifier, attrs) when is_list(attrs) do
-    attrs = handle_field_attrs(attrs, __CALLER__)
+    {attrs, block} = handle_field_attrs(attrs, __CALLER__)
     __CALLER__
     |> recordable!(:field, @placement[:field])
-    |> record!(Schema.FieldDefinition, identifier, attrs, [])
+    |> record!(Schema.FieldDefinition, identifier, attrs, block)
   end
 
   defmacro field(identifier, type) do
-    attrs = handle_field_attrs([type: type], __CALLER__)
+    {attrs, block} = handle_field_attrs([type: type], __CALLER__)
     __CALLER__
     |> recordable!(:field, @placement[:field])
-    |> record!(Schema.FieldDefinition, identifier, attrs, [])
+    |> record!(Schema.FieldDefinition, identifier, attrs, block)
   end
 
   @doc """
@@ -358,24 +360,25 @@ defmodule Absinthe.Schema.Notation do
   See `field/4`
   """
   defmacro field(identifier, attrs, do: block) when is_list(attrs) do
-    attrs = handle_field_attrs(attrs, __CALLER__)
+    {attrs, more_block} = handle_field_attrs(attrs, __CALLER__)
+    block = more_block ++ block
     __CALLER__
     |> recordable!(:field, @placement[:field])
     |> record!(Schema.FieldDefinition, identifier, attrs, block)
   end
 
   defmacro field(identifier, type, do: block) do
-    attrs = handle_field_attrs([type: type], __CALLER__)
+    {attrs, _} = handle_field_attrs([type: type], __CALLER__)
     __CALLER__
     |> recordable!(:field, @placement[:field])
     |> record!(Schema.FieldDefinition, identifier, attrs, block)
   end
 
   defmacro field(identifier, type, attrs) do
-    attrs = handle_field_attrs(Keyword.put(attrs, :type, type), __CALLER__)
+    {attrs, block} = handle_field_attrs(Keyword.put(attrs, :type, type), __CALLER__)
     __CALLER__
     |> recordable!(:field, @placement[:field])
-    |> record!(Schema.FieldDefinition,identifier,attrs,[])
+    |> record!(Schema.FieldDefinition, identifier, attrs, block)
   end
 
   @doc """
@@ -1134,10 +1137,18 @@ defmodule Absinthe.Schema.Notation do
     scoped_def(env, type, identifier, attrs, block)
   end
 
+  defp build_arg(env, identifier, attrs) do
+    attrs =
+      attrs
+      |> replace_key(:deprecate, :deprecation)
+      |> Keyword.put(:identifier, identifier)
+      |> Keyword.put(:name, to_string(identifier))
+
+    struct!(Schema.InputValueDefinition, attrs)
+  end
+
   def record_arg!(env, identifier, attrs) do
-    attrs = Keyword.put(attrs, :identifier, identifier)
-    attrs = Keyword.put(attrs, :name, to_string(identifier))
-    arg = struct!(Schema.InputValueDefinition, attrs)
+    arg = build_arg(env, identifier, attrs)
     put_attr(env.module, arg)
   end
 

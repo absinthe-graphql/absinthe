@@ -18,7 +18,8 @@ defmodule Absinthe.Blueprint.Schema.InputValueDefinition do
     flags: %{},
     errors: [],
     __reference__: nil,
-    __private__: []
+    __private__: [],
+    deprecation: nil
   ]
 
   @type t :: %__MODULE__{
