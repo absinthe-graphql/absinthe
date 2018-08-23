@@ -18,7 +18,7 @@ defmodule Absinthe.Schema.Rule.QueryTypeMustBeObject do
   end
 
   --------------------------------------
-  From the graqhql schema specifiation
+  From the graqhql schema specification
 
   A GraphQL schema includes types, indicating where query and mutation
   operations start. This provides the initial entry points into the type system.

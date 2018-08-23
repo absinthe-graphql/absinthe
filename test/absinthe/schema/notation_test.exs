@@ -48,6 +48,36 @@ defmodule Absinthe.Schema.NotationTest do
       assert [:email, :name] = fields |> Map.keys() |> Enum.sort()
     end
 
+    test "works for interfaces" do
+      defmodule InterfaceFoo do
+        use Absinthe.Schema
+
+        query do
+          # Query type must exist
+        end
+
+        object :cool_fields do
+          field :name, :string
+        end
+
+        interface :foo do
+          import_fields :cool_fields
+          resolve_type fn _, _ -> :real_foo end
+        end
+
+        object :real_foo do
+          interface :foo
+          import_fields :cool_fields
+        end
+      end
+
+      interface_fields = InterfaceFoo.__absinthe_type__(:foo).fields
+      assert [:name] = interface_fields |> Map.keys() |> Enum.sort()
+
+      object_fields = InterfaceFoo.__absinthe_type__(:real_foo).fields
+      assert [:name] = object_fields |> Map.keys() |> Enum.sort()
+    end
+
     test "can work transitively" do
       defmodule Bar do
         use Absinthe.Schema

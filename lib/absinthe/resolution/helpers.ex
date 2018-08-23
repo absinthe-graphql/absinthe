@@ -83,12 +83,12 @@ defmodule Absinthe.Resolution.Helpers do
       resolve fn shipment, _, %{context: %{loader: loader}} ->
         loader
         |> Dataloader.load(SourceName, :automatic_reports, shipment)
-        |> Dataloader.load(SourceName, :manaul_reports, shipment)
+        |> Dataloader.load(SourceName, :manual_reports, shipment)
         |> on_load(fn loader ->
           reports =
             loader
             |> Dataloader.get(SourceName, :automatic_reports, shipment)
-            |> Enum.concat(Dataloader.load(loader, SourceName, :manaul_reports, shipment))
+            |> Enum.concat(Dataloader.load(loader, SourceName, :manual_reports, shipment))
             |> Enum.sort_by(&reported_at/1)
           {:ok, reports}
         end)
@@ -212,7 +212,7 @@ defmodule Absinthe.Resolution.Helpers do
         loader
         |> Dataloader.load(source_name, {resource, args}, parent)
         |> on_load(fn loader ->
-          {:ok, Dataloader.get(loader, source_name, {resource, args}), parent}
+          {:ok, Dataloader.get(loader, source_name, {resource, args}, parent)}
         end)
       end
     ```

@@ -50,6 +50,9 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   def run(argv) do
     Application.ensure_all_started(:absinthe)
 
+    Mix.Task.run("loadpaths", argv)
+    Mix.Project.compile(argv)
+
     {opts, args, _} = OptionParser.parse(argv)
 
     schema = find_schema(opts)

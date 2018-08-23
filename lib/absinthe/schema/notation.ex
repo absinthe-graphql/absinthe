@@ -705,7 +705,7 @@ defmodule Absinthe.Schema.Notation do
   The specified `parse` function is used on incoming data to transform it into
   an elixir datastructure.
 
-  It should return `{:ok, value}` or `{:error, reason}`
+  It should return `{:ok, value}` or `:error`
 
   ## Placement
 

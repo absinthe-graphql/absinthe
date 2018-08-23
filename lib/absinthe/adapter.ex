@@ -13,18 +13,18 @@ defmodule Absinthe.Adapter do
   * `Absinthe.Adapter.LanguageConventions`, which expects schemas to be defined
     in `snake_case` (the standard Elixir convention), translating to/from `camelCase`
     for incoming query documents and outgoing results. (This is the default as of v0.3.)
+  * `Absinthe.Adapter.Underscore`, which is similar to the `LanguageConventions`
+    adapter but converts all incoming identifiers to underscores and does not
+    modify outgoing identifiers (since those are already expected to be
+    underscores). Unlike `Absinthe.Adapter.Passthrough` this does not break
+    introspection.
   * `Absinthe.Adapter.Passthrough`, which is a no-op adapter and makes no
     modifications. (Note at the current time this does not support introspection
     if you're using camelized conventions).
 
-  To set an adapter, you can set an application configuration value:
+  To set an adapter, you pass a configuration option at runtime:
 
-  ```
-  config :absinthe,
-    adapter: YourApp.Adapter.TheAdapterName
-  ```
-
-  Or, you can provide it as an option to `Absinthe.run/3`:
+  For `Absinthe.run/3`:
 
   ```
   Absinthe.run(
@@ -33,6 +33,24 @@ defmodule Absinthe.Adapter do
     adapter: YourApp.Adapter.TheAdapterName
   )
   ```
+
+  For `Absinthe.Plug`:
+
+  ```
+  forward "/api",
+    to: Absinthe.Plug,
+    init_opts: [schema: MyAppWeb.Schema, adapter: YourApp.Adapter.TheAdapterName]
+  ```
+
+  For GraphiQL:
+
+  ```
+  forward "/graphiql",
+    to: Absinthe.Plug.GraphiQL,
+    init_opts: [schema: MyAppWeb.Schema, adapter: YourApp.Adapter.TheAdapterName]
+  ```
+
+  Check `Absinthe.Plug` for full documentation on using the Plugs
 
   Notably, this means you're able to switch adapters on case-by-case basis.
   In a Phoenix application, this means you could even support using different

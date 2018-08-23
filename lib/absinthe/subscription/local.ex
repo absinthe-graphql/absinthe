@@ -15,30 +15,42 @@ defmodule Absinthe.Subscription.Local do
         {{topic, {field, key_strategy}}, put_in(doc.execution.root_value, mutation_result)}
       end
 
-    if Enum.any?(docs_and_topics) do
-      {topics, docs} = Enum.unzip(docs_and_topics)
-      docs = BatchResolver.run(docs, schema: hd(docs).schema, abort_on_error: false)
+    docs_by_context = group_by_context(docs_and_topics)
 
-      pipeline = [
-        Absinthe.Phase.Document.Result
-      ]
+    for docset <- docs_by_context do
+      run_docset(pubsub, docset)
+    end
+  end
 
-      for {doc, {topic, key_strategy}} <- Enum.zip(docs, topics), doc != :error do
-        try do
-          {:ok, %{result: data}, _} = Absinthe.Pipeline.run(doc, pipeline)
+  defp group_by_context(docs_and_topics) do
+    docs_and_topics
+    |> Enum.group_by(fn {_, doc} -> doc.execution.context end)
+    |> Map.values()
+  end
 
-          Logger.debug("""
-          Absinthe Subscription Publication
-          Field Topic: #{inspect(key_strategy)}
-          Subscription id: #{inspect(topic)}
-          Data: #{inspect(data)}
-          """)
+  defp run_docset(pubsub, docs_and_topics) do
+    {topics, docs} = Enum.unzip(docs_and_topics)
+    docs = BatchResolver.run(docs, schema: hd(docs).schema, abort_on_error: false)
 
-          :ok = pubsub.publish_subscription(topic, data)
-        rescue
-          e ->
-            BatchResolver.pipeline_error(e)
-        end
+    pipeline = [
+      Absinthe.Phase.Document.Result
+    ]
+
+    for {doc, {topic, key_strategy}} <- Enum.zip(docs, topics), doc != :error do
+      try do
+        {:ok, %{result: data}, _} = Absinthe.Pipeline.run(doc, pipeline)
+
+        Logger.debug("""
+        Absinthe Subscription Publication
+        Field Topic: #{inspect(key_strategy)}
+        Subscription id: #{inspect(topic)}
+        Data: #{inspect(data)}
+        """)
+
+        :ok = pubsub.publish_subscription(topic, data)
+      rescue
+        e ->
+          BatchResolver.pipeline_error(e)
       end
     end
   end

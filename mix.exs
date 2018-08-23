@@ -37,7 +37,11 @@ defmodule Absinthe.Mixfile do
         "Ben Wilson"
       ],
       licenses: ["MIT"],
-      links: %{github: "https://github.com/absinthe-graphql/absinthe"}
+      links: %{
+        Website: "https://absinthe-graphql.org",
+        Changelog: "https://github.com/absinthe-graphql/absinthe/blob/master/CHANGELOG.md",
+        GitHub: "https://github.com/absinthe-graphql/absinthe"
+      }
     ]
   end
 
@@ -160,7 +164,8 @@ defmodule Absinthe.Mixfile do
       "Document Adapters": [
         Absinthe.Adapter,
         Absinthe.Adapter.LanguageConventions,
-        Absinthe.Adapter.Passthrough
+        Absinthe.Adapter.Passthrough,
+        Absinthe.Adapter.Underscore
       ],
       Execution: [
         Absinthe.Blueprint,

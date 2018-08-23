@@ -232,6 +232,31 @@ defmodule Absinthe.Execution.SubscriptionTest do
     refute_receive(:batch_get_group)
   end
 
+  test "subscription docs with different contexts don't leak context" do
+    ctx1 = %{test_pid: self(), user: 1}
+
+    assert {:ok, %{"subscribed" => doc1}} =
+             run("subscription { user { group { name } id} }", Schema, context: ctx1)
+
+    ctx2 = %{test_pid: self(), user: 2}
+    # different docs required for test, otherwise they get deduplicated from the start
+    assert {:ok, %{"subscribed" => doc2}} =
+             run("subscription { user { group { name } id name} }", Schema, context: ctx2)
+
+    user = %{id: "1", name: "Alicia", group: %{name: "Elixir Users"}}
+
+    Absinthe.Subscription.publish(PubSub, user, user: ["*", user.id])
+
+    assert_receive({:broadcast, %{topic: ^doc1, result: %{data: _}}})
+    assert_receive({:broadcast, %{topic: ^doc2, result: %{data: %{"user" => user}}}})
+
+    assert user["group"]["name"] == "Elixir Users"
+
+    # we should get this twice since the different contexts prevent batching.
+    assert_receive(:batch_get_group)
+    assert_receive(:batch_get_group)
+  end
+
   defp run(query, schema, opts \\ []) do
     opts = Keyword.update(opts, :context, %{pubsub: PubSub}, &Map.put(&1, :pubsub, PubSub))
 

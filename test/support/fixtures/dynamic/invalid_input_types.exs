@@ -1,19 +1,16 @@
-defmodule Absinthe.Fixtures.InvalidInputTypesSchema do
+defmodule Absinthe.Fixtures.InvalidOutputTypesSchema do
   use Absinthe.Schema
 
   object :user do
   end
 
-  input_object :input do
-  end
-
-  object :bad_object do
-    field :blah, :input
+  input_object :foo do
+    field :blah, :user
   end
 
   query do
     field :foo, :user do
-      arg :invalid_arg, :user
+      arg :foo, :foo
     end
   end
 end

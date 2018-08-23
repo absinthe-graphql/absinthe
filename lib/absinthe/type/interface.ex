@@ -78,7 +78,11 @@ defmodule Absinthe.Type.Interface do
             __reference__: nil
 
   def build(%{attrs: attrs}) do
-    fields = Type.Field.build(attrs[:fields] || [])
+    fields =
+      (attrs[:fields] || [])
+      |> Type.Field.build()
+      |> Type.Object.handle_imports(attrs[:field_imports])
+
     attrs = Keyword.put(attrs, :fields, fields)
 
     quote do

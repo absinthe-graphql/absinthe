@@ -160,7 +160,7 @@ For more information, see the [documentation](https://hexdocs.pm/absinthe_relay/
 ### Converting node IDs to internal IDs for resolvers
 
 If you need to parse a node (global) ID for use in a resolver, there is a
-helful utility, `parsing_node_ids/2` that is automatically imported for you.
+helpful utility, `parsing_node_ids/2` that is automatically imported for you.
 Here's an example of how it works.
 
 Let's assume we have a field, `:employees`, that returns a list of `:person`
@@ -310,7 +310,7 @@ node IDs as they are opaque values and it's the more conventional practice.
 
 One of the more popular features of Relay is the rich pagination support provided by its
 connections. [This medium post](https://dev-blog.apollodata.com/explaining-graphql-connections-c48b7c3d6976)
-has a good explaination of the full feature set and nomenclature.
+has a good explanation of the full feature set and nomenclature.
 
 For example, you could define a connection for paginating `:location` objects with:
 

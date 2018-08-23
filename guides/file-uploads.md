@@ -33,13 +33,13 @@ use the `multipart/form-data` content type. For example, using `cURL`:
 
 ```shell
 $ curl -X POST \\
--F query="{mutation uploadFile(users: \"users_csv\", metadata: \"metadata_json\")" \\
+-F query="mutation { uploadFile(users: \"users_csv\", metadata: \"metadata_json\")}" \\
 -F users_csv=@users.csv \\
 -F metadata_json=@metadata.json \\
 localhost:4000/graphql
 ```
 
-Note how there is a correspondance between the value of the `:users` argument
+Note how there is a correspondence between the value of the `:users` argument
 and the `-F` option indicating the associated file.
 
 By treating uploads as regular arguments we get all the usual GraphQL argument

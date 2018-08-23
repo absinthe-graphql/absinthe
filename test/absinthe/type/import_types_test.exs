@@ -23,5 +23,9 @@ defmodule Absinthe.Type.ImportTypesTest do
       assert Absinthe.Schema.lookup_type(ImportTypes.Schema, :contact_method)
       assert Absinthe.Schema.lookup_type(ImportTypes.Schema, :contact_kind)
     end
+
+    test "works with an alias, {} and scoped reference" do
+      assert Absinthe.Schema.lookup_type(ImportTypes.Schema, :avatar)
+    end
   end
 end

@@ -66,6 +66,7 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Validation.UniqueOperationNames,
       Phase.Document.Validation.UniqueVariableNames,
       # Apply Input
+      {Phase.Document.Context, options},
       {Phase.Document.Variables, options},
       Phase.Document.Validation.ProvidedNonNullVariables,
       Phase.Document.Arguments.Normalize,
