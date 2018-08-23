@@ -13,7 +13,8 @@ defmodule Absinthe.Blueprint.Schema.DirectiveDefinition do
     arguments: [],
     locations: [],
     errors: [],
-    __reference__: nil
+    __reference__: nil,
+    __private__: []
   ]
 
   @type t :: %__MODULE__{

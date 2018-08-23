@@ -55,7 +55,11 @@ defmodule Absinthe.Phase.Schema.Compile do
   def build_types(%{schema_definitions: [schema]}) do
     for %module{} = type_def <- schema.types do
       type = module.build(type_def, schema)
-      type = %{type | definition: type_def.module, __reference__: type_def.__reference__}
+      type = %{type |
+        definition: type_def.module,
+        __reference__: type_def.__reference__,
+        __private__: type_def.__private__
+      }
       ast = Macro.escape(type)
 
       quote do

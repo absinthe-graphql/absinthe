@@ -18,7 +18,8 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
     imports: [],
     errors: [],
     meta: %{},
-    __reference__: nil
+    __reference__: nil,
+    __private__: []
   ]
 
   @type t :: %__MODULE__{
@@ -30,7 +31,8 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
           directives: [Blueprint.Directive.t()],
           # Added by phases
           flags: Blueprint.flags_t(),
-          errors: [Absinthe.Phase.Error.t()]
+          errors: [Absinthe.Phase.Error.t()],
+          __private__: Keyword.t
         }
 
   def build(type_def, schema) do

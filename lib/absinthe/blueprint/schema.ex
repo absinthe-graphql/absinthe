@@ -80,6 +80,18 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(rest, [obj | stack])
   end
 
+  defp build_types([{:__private__, private} | rest], [entity | stack]) do
+    entity = Map.update!(entity, :__private__, fn existing_private ->
+      Keyword.merge(existing_private, private, fn
+        :meta, v1, v2 ->
+          Keyword.merge(v1, v2)
+        _, _, v2 ->
+          v2
+      end)
+    end)
+    build_types(rest, [entity | stack])
+  end
+
   defp build_types([%Schema.InputValueDefinition{} = arg | rest], [field | stack]) do
     build_types(rest, [push(field, :arguments, arg) | stack])
   end
@@ -145,6 +157,6 @@ defmodule Absinthe.Blueprint.Schema do
 
   defp concat(entity, key, value) do
     Map.update!(entity, key, &(&1 ++ value))
-  end  
+  end
 
 end

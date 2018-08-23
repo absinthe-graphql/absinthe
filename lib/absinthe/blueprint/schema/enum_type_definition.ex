@@ -14,7 +14,8 @@ defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
     # Added by phases,
     flags: %{},
     errors: [],
-    __reference__: nil
+    __reference__: nil,
+    __private__: []
   ]
 
   @type t :: %__MODULE__{

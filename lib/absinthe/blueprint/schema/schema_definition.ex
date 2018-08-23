@@ -11,7 +11,8 @@ defmodule Absinthe.Blueprint.Schema.SchemaDefinition do
             # Added by phases
             flags: %{},
             imports: [],
-            errors: []
+            errors: [],
+            __private__: []
 
   @type t :: %__MODULE__{
           description: nil | String.t(),

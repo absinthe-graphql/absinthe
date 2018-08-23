@@ -1206,22 +1206,9 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record private values
   def record_private!(env, owner, keyword_list) when is_list(keyword_list) do
-    # owner = expand(owner, env)
-    # keyword_list = expand(keyword_list, env)
-    #
-    # keyword_list
-    # |> Enum.each(fn {k, v} -> do_record_private!(env, owner, k, v) end)
-  end
+    keyword_list = expand_ast(keyword_list, env)
 
-  defp do_record_private!(env, owner, key, value) do
-    # new_attrs =
-    #   Scope.current(env.module).attrs
-    #   |> Keyword.put_new(:__private__, [])
-    #   |> update_in([:__private__, owner], &List.wrap(&1))
-    #   |> put_in([:__private__, owner, key], value)
-    #
-    # Scope.put_attribute(env.module, :__private__, new_attrs[:__private__])
-    # :ok
+    put_attr(env.module, {:__private__, [{owner, keyword_list}]})
   end
 
   @doc false
@@ -1449,10 +1436,10 @@ defmodule Absinthe.Schema.Notation do
         definitions ++ (Module.get_attribute(env.module, :__absinthe_sdl_definitions__) || [])
       )
       []
-    else    
+    else
       {:error, error} ->
         raise Absinthe.Schema.Notation.Error, "`import_sdl` could not parse SDL:\n#{error}"
-    end    
+    end
   end
 
   def put_desc(module, type, identifier) do
