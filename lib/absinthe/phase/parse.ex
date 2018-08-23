@@ -43,6 +43,7 @@ defmodule Absinthe.Phase.Parse do
     case Absinthe.Lexer.tokenize(input) do
       {:error, rest, loc} ->
         {:error, format_raw_parse_error({:lexer, rest, loc})}
+
       other ->
         other
     end
@@ -85,7 +86,8 @@ defmodule Absinthe.Phase.Parse do
     %Phase.Error{message: message, locations: [%{line: line, column: 0}], phase: __MODULE__}
   end
 
-  @spec format_raw_parse_error({:lexer, String.t(), {line :: pos_integer, column :: pos_integer}}) :: Phase.Error.t()
+  @spec format_raw_parse_error({:lexer, String.t(), {line :: pos_integer, column :: pos_integer}}) ::
+          Phase.Error.t()
   defp format_raw_parse_error({:lexer, rest, {line, column}}) do
     <<sample::binary-size(10), _::binary>> = rest
     message = "Parsing failed at `#{sample}`"

@@ -308,27 +308,32 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp handle_field_attrs(attrs, caller) do
-    block = for {identifier, arg_attrs} <- Keyword.get(attrs, :args, []) do
-      quote do
-        arg unquote(identifier), unquote(arg_attrs)
+    block =
+      for {identifier, arg_attrs} <- Keyword.get(attrs, :args, []) do
+        quote do
+          arg unquote(identifier), unquote(arg_attrs)
+        end
       end
-    end
 
     {func_ast, attrs} = Keyword.pop(attrs, :resolve)
 
-    block = if func_ast do
-      [quote do
-        resolve unquote(func_ast)
-      end]
-    else
-      []
-    end ++ block
+    block =
+      if func_ast do
+        [
+          quote do
+            resolve unquote(func_ast)
+          end
+        ]
+      else
+        []
+      end ++ block
 
     attrs =
       attrs
       |> expand_ast(caller)
       |> Keyword.delete(:args)
       |> replace_key(:deprecate, :deprecation)
+
     {attrs, block}
   end
 
@@ -342,6 +347,7 @@ defmodule Absinthe.Schema.Notation do
 
   defmacro field(identifier, attrs) when is_list(attrs) do
     {attrs, block} = handle_field_attrs(attrs, __CALLER__)
+
     __CALLER__
     |> recordable!(:field, @placement[:field])
     |> record!(Schema.FieldDefinition, identifier, attrs, block)
@@ -349,6 +355,7 @@ defmodule Absinthe.Schema.Notation do
 
   defmacro field(identifier, type) do
     {attrs, block} = handle_field_attrs([type: type], __CALLER__)
+
     __CALLER__
     |> recordable!(:field, @placement[:field])
     |> record!(Schema.FieldDefinition, identifier, attrs, block)
@@ -362,6 +369,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro field(identifier, attrs, do: block) when is_list(attrs) do
     {attrs, more_block} = handle_field_attrs(attrs, __CALLER__)
     block = more_block ++ block
+
     __CALLER__
     |> recordable!(:field, @placement[:field])
     |> record!(Schema.FieldDefinition, identifier, attrs, block)
@@ -369,6 +377,7 @@ defmodule Absinthe.Schema.Notation do
 
   defmacro field(identifier, type, do: block) do
     {attrs, _} = handle_field_attrs([type: type], __CALLER__)
+
     __CALLER__
     |> recordable!(:field, @placement[:field])
     |> record!(Schema.FieldDefinition, identifier, attrs, block)
@@ -376,6 +385,7 @@ defmodule Absinthe.Schema.Notation do
 
   defmacro field(identifier, type, attrs) do
     {attrs, block} = handle_field_attrs(Keyword.put(attrs, :type, type), __CALLER__)
+
     __CALLER__
     |> recordable!(:field, @placement[:field])
     |> record!(Schema.FieldDefinition, identifier, attrs, block)
@@ -1434,14 +1444,19 @@ defmodule Absinthe.Schema.Notation do
       do_import_types(env, sdl, Keyword.delete(opts, :path))
     else
       :error ->
-        raise Absinthe.Schema.Notation.Error, "Must provide `:path` option to `import_sdl` unless passing a raw SDL string as the first argument"
+        raise Absinthe.Schema.Notation.Error,
+              "Must provide `:path` option to `import_sdl` unless passing a raw SDL string as the first argument"
     end
   end
+
   defp do_import_sdl(env, sdl, opts) when is_binary(sdl) do
     with {:ok, definitions} <- __MODULE__.SDL.parse(sdl) do
-      Module.put_attribute(env.module, :__absinthe_sdl_definitions__,
+      Module.put_attribute(
+        env.module,
+        :__absinthe_sdl_definitions__,
         definitions ++ (Module.get_attribute(env.module, :__absinthe_sdl_definitions__) || [])
       )
+
       []
     else
       {:error, error} ->
@@ -1503,8 +1518,9 @@ defmodule Absinthe.Schema.Notation do
     [schema] = blueprint.schema_definitions
 
     functions = build_functions(schema)
+
     if System.get_env("FUN") do
-      functions |> Macro.to_string |> Code.format_string! |> IO.puts
+      functions |> Macro.to_string() |> Code.format_string!() |> IO.puts()
     end
 
     quote do
@@ -1544,7 +1560,9 @@ defmodule Absinthe.Schema.Notation do
     field_functions =
       for field <- type.fields do
         identifier = {type.identifier, field.identifier}
-        middleware = __ensure_middleware__(field.middleware_ast, field.identifier, type.identifier)
+
+        middleware =
+          __ensure_middleware__(field.middleware_ast, field.identifier, type.identifier)
 
         quote do
           def __absinthe_function__(
@@ -1554,6 +1572,7 @@ defmodule Absinthe.Schema.Notation do
               ) do
             unquote(field.complexity)
           end
+
           def __absinthe_function__(
                 unquote(Absinthe.Type.Field),
                 unquote(identifier),
@@ -1561,6 +1580,7 @@ defmodule Absinthe.Schema.Notation do
               ) do
             unquote(field.config_ast)
           end
+
           def __absinthe_function__(
                 unquote(Absinthe.Type.Field),
                 unquote(identifier),

@@ -5,14 +5,16 @@ defmodule Absinthe.LexerTest do
   { foo }
   """
   test "basic document" do
-    assert {:ok, [{:"{", {1, 1}}, {:name, {1, 3}, 'foo'}, {:"}", {1, 7}}]} = Absinthe.Lexer.tokenize(@query)
+    assert {:ok, [{:"{", {1, 1}}, {:name, {1, 3}, 'foo'}, {:"}", {1, 7}}]} =
+             Absinthe.Lexer.tokenize(@query)
   end
 
   @query """
   { nullName }
   """
   test "document with a name that starts with a keyword" do
-    assert {:ok, [{:"{", {1, 1}}, {:name, {1, 3}, 'nullName'}, {:"}", {1, 12}}]} = Absinthe.Lexer.tokenize(@query)
+    assert {:ok, [{:"{", {1, 1}}, {:name, {1, 3}, 'nullName'}, {:"}", {1, 12}}]} =
+             Absinthe.Lexer.tokenize(@query)
   end
 
   @query ~S"""
@@ -21,9 +23,9 @@ defmodule Absinthe.LexerTest do
   }
   """
   test "basic document, multiple lines" do
-    assert {:ok, [{:"{", {1, 1}}, {:name, {2, 3}, 'foo'}, {:"}", {3, 1}}]} = Absinthe.Lexer.tokenize(@query)
+    assert {:ok, [{:"{", {1, 1}}, {:name, {2, 3}, 'foo'}, {:"}", {3, 1}}]} =
+             Absinthe.Lexer.tokenize(@query)
   end
-
 
   @query """
   {
@@ -33,17 +35,16 @@ defmodule Absinthe.LexerTest do
   }
   """
   test "basic document, multiple lines with block string" do
-    assert {:ok, [
-      {:"{", {1, 1}},
-      {:name, {2, 3}, 'foo'},
-      {:"(", {2, 6}},
-      {:name, {2, 7}, 'bar'},
-      {:":", {2, 10}},
-      {:block_string_value, {2, 12}, '"""\n  stuff\n  """'},
-      {:")", {4, 6}},
-      {:"}", {5, 1}}
-    ]} = Absinthe.Lexer.tokenize(@query)
+    assert {:ok,
+            [
+              {:"{", {1, 1}},
+              {:name, {2, 3}, 'foo'},
+              {:"(", {2, 6}},
+              {:name, {2, 7}, 'bar'},
+              {:":", {2, 10}},
+              {:block_string_value, {2, 12}, '"""\n  stuff\n  """'},
+              {:")", {4, 6}},
+              {:"}", {5, 1}}
+            ]} = Absinthe.Lexer.tokenize(@query)
   end
-
-
 end

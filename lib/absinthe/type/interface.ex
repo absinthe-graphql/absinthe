@@ -89,7 +89,7 @@ defmodule Absinthe.Type.Interface do
   @spec resolve_type(Type.Interface.t(), any, Absinthe.Resolution.t()) :: Type.t() | nil
   def resolve_type(type, obj, env, opts \\ [lookup: true])
 
-  def resolve_type(interface, obj, %{schema: schema} = env, opts ) do
+  def resolve_type(interface, obj, %{schema: schema} = env, opts) do
     implementors = Schema.implementors(schema, interface.identifier)
 
     if resolver = Type.function(interface, :resolve_type) do

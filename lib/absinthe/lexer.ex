@@ -8,7 +8,7 @@ defmodule Absinthe.Lexer do
   @space 0x0020
   @unicode_final 0xFFFF
   @unicode_bom 0xFEFF
-  
+
   # SourceCharacter :: /[\u0009\u000A\u000D\u0020-\uFFFF]/
   source_character =
     utf8_char([
@@ -16,12 +16,12 @@ defmodule Absinthe.Lexer do
       @newline,
       @carriage_return,
       @space..@unicode_final
-  ])
+    ])
 
   # ## Ignored Tokens
 
   # UnicodeBOM :: "Byte Order Mark (U+FEFF)"
-  unicode_bom = utf8_char([@unicode_bom])  
+  unicode_bom = utf8_char([@unicode_bom])
 
   # WhiteSpace ::
   #   - "Horizontal Tab (U+0009)"
@@ -78,7 +78,18 @@ defmodule Absinthe.Lexer do
   punctuator =
     choice([
       ascii_char([
-        ?!, ?$, ?(, ?), ?:, ?=, ?@, ?[, ?], ?{, ?|, ?}
+        ?!,
+        ?$,
+        ?(,
+        ?),
+        ?:,
+        ?=,
+        ?@,
+        ?[,
+        ?],
+        ?{,
+        ?|,
+        ?}
       ]),
       times(ascii_char([?.]), 3)
     ])
@@ -150,16 +161,16 @@ defmodule Absinthe.Lexer do
 
   # EscapedCharacter :: one of `"` \ `/` b f n r t
   escaped_character =
-  choice([
-    ascii_char([?"]),
-    ascii_char([?\\]),
-    ascii_char([?/]),
-    ascii_char([?b]) |> replace(?\b),
-    ascii_char([?f]) |> replace(?\f),
-    ascii_char([?n]) |> replace(?\n),
-    ascii_char([?r]) |> replace(?\r),
-    ascii_char([?t]) |> replace(?\t)
-  ])
+    choice([
+      ascii_char([?"]),
+      ascii_char([?\\]),
+      ascii_char([?/]),
+      ascii_char([?b]) |> replace(?\b),
+      ascii_char([?f]) |> replace(?\f),
+      ascii_char([?n]) |> replace(?\n),
+      ascii_char([?r]) |> replace(?\r),
+      ascii_char([?t]) |> replace(?\t)
+    ])
 
   # StringCharacter ::
   #   - SourceCharacter but not `"` or \ or LineTerminator
@@ -181,7 +192,7 @@ defmodule Absinthe.Lexer do
   block_string_character =
     choice([
       string(~S(\""")) |> replace(~s(""")),
-      source_character,
+      source_character
     ])
 
   # StringValue ::
@@ -205,12 +216,13 @@ defmodule Absinthe.Lexer do
     choice([
       string("true"),
       string("false")
-    ])    
+    ])
     |> traverse({:boolean_value_token, []})
 
   defp not_end_of_quote(<<?", _::binary>>, context, _, _) do
     {:halt, context}
   end
+
   defp not_end_of_quote(rest, context, current_line, current_offset) do
     not_line_terminator(rest, context, current_line, current_offset)
   end
@@ -218,33 +230,41 @@ defmodule Absinthe.Lexer do
   defp not_end_of_block_quote(<<?", ?", ?", _::binary>>, context, _, _) do
     {:halt, context}
   end
+
   defp not_end_of_block_quote(_, context, _, _) do
-    {:cont, context}  
+    {:cont, context}
   end
 
   def tokenize(input) do
     case do_tokenize(input) do
       {:ok, tokens, "", _, _, _} ->
         {:ok, tokens}
+
       {:ok, _, rest, _, {line, line_offset}, byte_offset} ->
         column = byte_offset - line_offset + 1
         {:error, rest, {line, column}}
+
       other ->
         other
     end
   end
 
-  defparsec :do_tokenize, repeat(choice([
-    ignore(ignored),
-    comment,
-    punctuator,
-    block_string_value,    
-    string_value,
-    float_value,
-    int_value,
-    boolean_value,
-    name_or_reserved_word,    
-  ]))
+  defparsec(
+    :do_tokenize,
+    repeat(
+      choice([
+        ignore(ignored),
+        comment,
+        punctuator,
+        block_string_value,
+        string_value,
+        float_value,
+        int_value,
+        boolean_value,
+        name_or_reserved_word
+      ])
+    )
+  )
 
   defp fill_mantissa(_rest, raw, context, _, _), do: {'0.' ++ raw, context}
 
@@ -280,10 +300,12 @@ defmodule Absinthe.Lexer do
     do_name_or_reserved_word_token(rest, value, context, loc, byte_offset)
   end
 
-  defp do_name_or_reserved_word_token(_rest, value, context, loc, byte_offset) when value in @reserved_words do
+  defp do_name_or_reserved_word_token(_rest, value, context, loc, byte_offset)
+       when value in @reserved_words do
     token_name = value |> List.to_atom()
-    {[{token_name, line_and_column(loc, byte_offset, length(value))}], context}    
+    {[{token_name, line_and_column(loc, byte_offset, length(value))}], context}
   end
+
   defp do_name_or_reserved_word_token(_rest, value, context, loc, byte_offset) do
     {[{:name, line_and_column(loc, byte_offset, length(value)), value}], context}
   end
@@ -320,6 +342,5 @@ defmodule Absinthe.Lexer do
 
   defp not_line_terminator(<<?\n, _::binary>>, context, _, _), do: {:halt, context}
   defp not_line_terminator(<<?\r, _::binary>>, context, _, _), do: {:halt, context}
-  defp not_line_terminator(_, context, _, _), do: {:cont, context}  
-
+  defp not_line_terminator(_, context, _, _), do: {:cont, context}
 end

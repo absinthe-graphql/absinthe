@@ -32,7 +32,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
           # Added by phases
           flags: Blueprint.flags_t(),
           errors: [Absinthe.Phase.Error.t()],
-          __private__: Keyword.t
+          __private__: Keyword.t()
         }
 
   def build(type_def, schema) do

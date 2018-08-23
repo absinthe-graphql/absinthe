@@ -17,6 +17,7 @@ defmodule Absinthe.Phase.Schema.Imports do
     other_types =
       Enum.flat_map(@default_imports ++ def.imports, fn {module, _} ->
         [other_def] = module.__absinthe_blueprint__.schema_definitions
+
         Enum.reject(other_def.types, fn type ->
           type.identifier in [:query, :mutation, :subscription]
         end)

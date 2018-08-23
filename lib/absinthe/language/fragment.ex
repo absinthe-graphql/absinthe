@@ -31,6 +31,7 @@ defmodule Absinthe.Language.Fragment do
     defp source_location(%{loc: nil}) do
       nil
     end
+
     defp source_location(%{loc: loc}) do
       Blueprint.Document.SourceLocation.at(loc)
     end

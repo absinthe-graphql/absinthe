@@ -156,9 +156,9 @@ defmodule Absinthe.Blueprint.Schema do
     Keyword.merge(existing_private, private, fn
       :meta, v1, v2 ->
         Keyword.merge(v1, v2)
+
       _, _, v2 ->
         v2
     end)
   end
-
 end

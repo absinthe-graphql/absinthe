@@ -7,9 +7,11 @@ defmodule Absinthe.Phase.Schema.Compile do
     %{schema_definitions: [schema]} = blueprint
 
     types = build_types(blueprint)
-    type_list = Map.new(schema.types, fn type_def ->
-      {type_def.identifier, type_def.name}
-    end)
+
+    type_list =
+      Map.new(schema.types, fn type_def ->
+        {type_def.identifier, type_def.name}
+      end)
 
     metadata = build_metadata(schema)
 
@@ -55,11 +57,14 @@ defmodule Absinthe.Phase.Schema.Compile do
   def build_types(%{schema_definitions: [schema]}) do
     for %module{} = type_def <- schema.types do
       type = module.build(type_def, schema)
-      type = %{type |
-        definition: type_def.module,
-        __reference__: type_def.__reference__,
-        __private__: type_def.__private__
+
+      type = %{
+        type
+        | definition: type_def.module,
+          __reference__: type_def.__reference__,
+          __private__: type_def.__private__
       }
+
       ast = Macro.escape(type)
 
       quote do
@@ -78,9 +83,12 @@ defmodule Absinthe.Phase.Schema.Compile do
     schema.types
     |> Enum.filter(&match?(%Schema.InterfaceTypeDefinition{}, &1))
     |> Map.new(fn iface ->
-      implementors = Enum.sort for %Schema.ObjectTypeDefinition{} = obj <- schema.types,
-        iface.identifier in obj.interfaces,
-        do: obj.identifier
+      implementors =
+        Enum.sort(
+          for %Schema.ObjectTypeDefinition{} = obj <- schema.types,
+              iface.identifier in obj.interfaces,
+              do: obj.identifier
+        )
 
       {iface.identifier, implementors}
     end)

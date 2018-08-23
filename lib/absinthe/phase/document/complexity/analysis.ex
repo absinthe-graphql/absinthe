@@ -74,7 +74,15 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
     # pretty unwieldy. For now, simple types it is.
     child_complexity = sum_complexity(fields)
 
-    schema_node = %{schema_node | complexity: schema_node.definition.__absinthe_function__(Absinthe.Type.Field, schema_node.complexity, :complexity)}
+    schema_node = %{
+      schema_node
+      | complexity:
+          schema_node.definition.__absinthe_function__(
+            Absinthe.Type.Field,
+            schema_node.complexity,
+            :complexity
+          )
+    }
 
     case field_complexity(schema_node, args, child_complexity, info, node) do
       complexity when is_integer(complexity) and complexity >= 0 ->

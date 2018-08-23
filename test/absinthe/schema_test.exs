@@ -26,6 +26,7 @@ defmodule Absinthe.SchemaTest do
   end
 
   describe "using the same identifier" do
+    @tag :pending_schema
     test "raises an exception" do
       assert_schema_error("schema_with_duplicate_identifiers", [
         %{
@@ -41,6 +42,7 @@ defmodule Absinthe.SchemaTest do
       load_schema("schema_with_duplicate_names")
     end
 
+    @tag :pending_schema
     test "raises an exception" do
       assert_schema_error("schema_with_duplicate_names", [
         %{
