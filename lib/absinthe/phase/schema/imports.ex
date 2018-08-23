@@ -15,16 +15,10 @@ defmodule Absinthe.Phase.Schema.Imports do
   ]
   def handle_imports(def) do
     types = do_imports(@default_imports ++ def.imports, def.types)
-
-    Enum.flat_map(@default_imports ++ def.imports, fn {module, _} ->
-      [other_def] = module.__absinthe_blueprint__.schema_definitions
-
-      Enum.reject(other_def.types, fn type ->
-        type.identifier in [:query, :mutation, :subscription]
-      end)
-    end)
-
-    %{def | types: types}
+    # special casing for the moment.
+    [other_def] = Absinthe.Type.BuiltIns.Directives.__absinthe_blueprint__().schema_definitions
+    directives = def.directives ++ other_def.directives
+    %{def | types: types, directives: directives}
   end
 
   defp do_imports([], types) do

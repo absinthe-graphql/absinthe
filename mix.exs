@@ -128,7 +128,6 @@ defmodule Absinthe.Mixfile do
         Absinthe.Type,
         Absinthe.Type.Custom,
         Absinthe.Type.Argument,
-        Absinthe.Type.BuiltIns,
         Absinthe.Type.Custom,
         Absinthe.Type.Directive,
         Absinthe.Type.Enum,

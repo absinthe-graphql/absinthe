@@ -29,6 +29,7 @@ defmodule Absinthe.Type.Directive do
           locations: [location],
           instruction: (map -> atom),
           definition: Module.t(),
+          __private__: Keyword.t(),
           __reference__: Type.Reference.t()
         }
 
@@ -43,6 +44,7 @@ defmodule Absinthe.Type.Directive do
             expand: nil,
             instruction: nil,
             definition: nil,
+            __private__: [],
             __reference__: nil
 
   def build(%{attrs: attrs}) do

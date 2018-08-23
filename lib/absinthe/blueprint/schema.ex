@@ -123,9 +123,8 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(rest, [push(schema, :types, union) | stack])
   end
 
-  defp build_types([:close | rest], [%Schema.DirectiveDefinition{} = _dir, schema | stack]) do
-    # ignore
-    build_types(rest, [schema | stack])
+  defp build_types([:close | rest], [%Schema.DirectiveDefinition{} = dir, schema | stack]) do
+    build_types(rest, [push(schema, :directives, dir) | stack])
   end
 
   @simple_close [

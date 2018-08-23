@@ -70,7 +70,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
     end
   end
 
-  defp build_args(field_def) do
+  def build_args(field_def) do
     Map.new(field_def.arguments, fn arg_def ->
       arg = %Absinthe.Type.Argument{
         identifier: arg_def.identifier,

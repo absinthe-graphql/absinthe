@@ -7,9 +7,15 @@ defmodule Absinthe.Phase.Schema.Compile do
     %{schema_definitions: [schema]} = blueprint
 
     types = build_types(blueprint)
+    directives = build_directives(blueprint)
 
     type_list =
       Map.new(schema.types, fn type_def ->
+        {type_def.identifier, type_def.name}
+      end)
+
+    directive_list =
+      Map.new(schema.directives, fn type_def ->
         {type_def.identifier, type_def.name}
       end)
 
@@ -19,17 +25,14 @@ defmodule Absinthe.Phase.Schema.Compile do
 
     body = [
       types,
+      directives,
       quote do
-        def __absinthe_type__(_type) do
-          nil
-        end
-
         def __absinthe_types__ do
           unquote(Macro.escape(type_list))
         end
 
         def __absinthe_directives__() do
-          %{}
+          unquote(Macro.escape(directive_list))
         end
 
         def __absinthe_interface_implementors__() do
@@ -77,6 +80,45 @@ defmodule Absinthe.Phase.Schema.Compile do
         end
       end
     end
+    |> Enum.concat([
+      quote do
+        def __absinthe_type__(_type) do
+          nil
+        end
+      end
+    ])
+  end
+
+  def build_directives(%{schema_definitions: [schema]}) do
+    for %module{} = type_def <- schema.directives do
+      type = module.build(type_def, schema)
+
+      type = %{
+        type
+        | definition: type_def.module,
+          __reference__: type_def.__reference__,
+          __private__: type_def.__private__
+      }
+
+      ast = Macro.escape(type)
+
+      quote do
+        def __absinthe_directive__(unquote(type_def.identifier)) do
+          unquote(ast)
+        end
+
+        def __absinthe_directive__(unquote(type_def.name)) do
+          unquote(ast)
+        end
+      end
+    end
+    |> Enum.concat([
+      quote do
+        def __absinthe_directive__(_type) do
+          nil
+        end
+      end
+    ])
   end
 
   defp build_implementors(schema) do

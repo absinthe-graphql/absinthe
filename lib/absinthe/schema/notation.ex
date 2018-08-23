@@ -134,16 +134,21 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defmacro object(identifier, attrs, do: block) do
-    {attrs, block} = case Keyword.pop(attrs, :meta) do
-      {nil, attrs} ->
-        {attrs, block}
-      {meta, attrs} ->
-        meta_ast = quote do
-          meta unquote(meta)
-        end
-        block = [meta_ast, block]
-        {attrs, block}
-    end
+    {attrs, block} =
+      case Keyword.pop(attrs, :meta) do
+        {nil, attrs} ->
+          {attrs, block}
+
+        {meta, attrs} ->
+          meta_ast =
+            quote do
+              meta unquote(meta)
+            end
+
+          block = [meta_ast, block]
+          {attrs, block}
+      end
+
     __CALLER__
     |> recordable!(:object, @placement[:object])
     |> record!(Schema.ObjectTypeDefinition, identifier, attrs, block)
@@ -1224,7 +1229,11 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record a directive
   def record_directive!(env, identifier, attrs, block) do
-    attrs = Keyword.put(attrs, :identifier, identifier)
+    attrs =
+      attrs
+      |> Keyword.put(:identifier, identifier)
+      |> Keyword.put_new(:name, to_string(identifier))
+
     scoped_def(env, Schema.DirectiveDefinition, identifier, attrs, block)
   end
 

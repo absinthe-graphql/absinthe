@@ -24,4 +24,13 @@ defmodule Absinthe.Blueprint.Schema.DirectiveDefinition do
           locations: [String.t()],
           errors: [Absinthe.Phase.Error.t()]
         }
+
+  def build(type_def, schema) do
+    %Absinthe.Type.Directive{
+      name: type_def.name,
+      identifier: type_def.identifier,
+      description: type_def.description,
+      args: Blueprint.Schema.ObjectTypeDefinition.build_args(type_def)
+    }
+  end
 end
