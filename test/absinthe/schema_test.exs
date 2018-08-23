@@ -370,7 +370,7 @@ defmodule Absinthe.SchemaTest do
     @tag :wip
     test "sets object metadata" do
       foo = Schema.lookup_type(MetadataSchema, :foo)
-      assert [eager: true, cache: false, sql_table: "foos", foo: "bar"] == foo.__private__[:meta]
+      assert Enum.sort([eager: true, cache: false, sql_table: "foos", foo: "bar"]) == Enum.sort(foo.__private__[:meta])
       assert Type.meta(foo, :sql_table) == "foos"
       assert Type.meta(foo, :cache) == false
       assert Type.meta(foo, :eager) == true

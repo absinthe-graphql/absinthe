@@ -134,6 +134,16 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defmacro object(identifier, attrs, do: block) do
+    {attrs, block} = case Keyword.pop(attrs, :meta) do
+      {nil, attrs} ->
+        {attrs, block}
+      {meta, attrs} ->
+        meta_ast = quote do
+          meta unquote(meta)
+        end
+        block = [meta_ast, block]
+        {attrs, block}
+    end
     __CALLER__
     |> recordable!(:object, @placement[:object])
     |> record!(Schema.ObjectTypeDefinition, identifier, attrs, block)

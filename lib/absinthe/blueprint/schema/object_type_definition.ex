@@ -17,7 +17,6 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
     flags: %{},
     imports: [],
     errors: [],
-    meta: %{},
     __reference__: nil,
     __private__: []
   ]
@@ -62,7 +61,9 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
         name: field_def.name,
         type: field_def.type,
         args: build_args(field_def),
-        definition: module
+        definition: module,
+        __reference__: field_def.__reference__,
+        __private__: field_def.__private__
       }
 
       {field.identifier, field}
