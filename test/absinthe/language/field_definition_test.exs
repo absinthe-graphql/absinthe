@@ -50,7 +50,7 @@ defmodule Absinthe.Language.FieldDefinitionTest do
                    type: %Blueprint.TypeReference.Name{name: "Int"},
                    default_value: %Blueprint.Input.Integer{
                      value: 4,
-                     source_location: %Blueprint.Document.SourceLocation{column: nil, line: 4}
+                     source_location: %Blueprint.Document.SourceLocation{column: 23, line: 4}
                    }
                  }
                ]
