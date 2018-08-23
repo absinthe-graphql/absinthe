@@ -980,7 +980,7 @@ defmodule Absinthe.Schema.Notation do
   See `field/3` for examples
   """
   defmacro non_null(type) do
-    %Absinthe.Type.NonNull{of_type: type}
+    %Absinthe.Type.NonNull{of_type: expand_ast(type, __CALLER__)}
   end
 
   @doc """
@@ -989,7 +989,7 @@ defmodule Absinthe.Schema.Notation do
   See `field/3` for examples
   """
   defmacro list_of(type) do
-    %Absinthe.Type.List{of_type: type}
+    %Absinthe.Type.List{of_type: expand_ast(type, __CALLER__)}
   end
 
   @placement {:import_fields, [under: [:input_object, :interface, :object]]}
