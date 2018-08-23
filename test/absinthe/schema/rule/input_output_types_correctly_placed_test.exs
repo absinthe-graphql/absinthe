@@ -12,7 +12,8 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlacedTest do
             type: :input
           },
           location: %{
-            file: "/Users/ben/src/absinthe/test/support/fixtures/dynamic/invalid_output_types.exs",
+            file:
+              "/Users/ben/src/absinthe/test/support/fixtures/dynamic/invalid_output_types.exs",
             line: 10
           },
           rule: Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlaced
@@ -20,7 +21,8 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlacedTest do
         %{
           data: %{argument: :invalid_arg, struct: Absinthe.Type.Object, type: :user},
           location: %{
-            file: "/Users/ben/src/absinthe/test/support/fixtures/dynamic/invalid_output_types.exs",
+            file:
+              "/Users/ben/src/absinthe/test/support/fixtures/dynamic/invalid_output_types.exs",
             line: 4
           },
           rule: Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlaced
