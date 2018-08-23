@@ -15,13 +15,14 @@ defmodule Absinthe.Phase.Schema.Imports do
   ]
   def handle_imports(def) do
     types = do_imports(@default_imports ++ def.imports, def.types)
-      Enum.flat_map(@default_imports ++ def.imports, fn {module, _} ->
-        [other_def] = module.__absinthe_blueprint__.schema_definitions
 
-        Enum.reject(other_def.types, fn type ->
-          type.identifier in [:query, :mutation, :subscription]
-        end)
+    Enum.flat_map(@default_imports ++ def.imports, fn {module, _} ->
+      [other_def] = module.__absinthe_blueprint__.schema_definitions
+
+      Enum.reject(other_def.types, fn type ->
+        type.identifier in [:query, :mutation, :subscription]
       end)
+    end)
 
     %{def | types: types}
   end
@@ -29,16 +30,18 @@ defmodule Absinthe.Phase.Schema.Imports do
   defp do_imports([], types) do
     types
   end
+
   defp do_imports([{module, opts} | rest], acc) do
     [other_def] = module.__absinthe_blueprint__.schema_definitions
 
     rejections = MapSet.new([:query, :mutation, :subscription] ++ Keyword.get(opts, :except, []))
 
-    types = Enum.reject(other_def.types, & &1.identifier in rejections)
+    types = Enum.reject(other_def.types, &(&1.identifier in rejections))
 
     case Keyword.fetch(opts, :only) do
       {:ok, selections} ->
-        Enum.filter(types, & &1.identifier in selections)
+        Enum.filter(types, &(&1.identifier in selections))
+
       _ ->
         types
     end

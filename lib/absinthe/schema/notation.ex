@@ -1278,8 +1278,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record a list of implemented interfaces in the current scope
   def record_interfaces!(env, ifaces) do
-    # Enum.each(ifaces, &record_interface!(env, &1))
-    # :ok
+    Enum.each(ifaces, &record_interface!(env, &1))
   end
 
   @doc false
@@ -1314,11 +1313,10 @@ defmodule Absinthe.Schema.Notation do
     #   raw_attrs
     #   |> Keyword.put(:value, Keyword.get(raw_attrs, :as, identifier))
     #   |> Keyword.delete(:as)
-    #   |> add_description(env)
     #
-    # Scope.put_attribute(env.module, :values, {identifier, attrs}, accumulate: true)
-    # Scope.recorded!(env.module, :attr, :value)
-    # :ok
+    # value = struct!(Absinthe.Blueprint.Schema.EnumValueDefinition, attrs)
+    #
+    # put_attr(env.module, {:value, value})
   end
 
   @doc false
