@@ -138,7 +138,7 @@ defmodule Absinthe.Type.Interface do
 
   @doc false
   @spec member?(t, Type.t()) :: boolean
-  def member?(%{__reference__: %{identifier: ident}}, %{interfaces: ifaces}) do
+  def member?(%{identifier: ident}, %{interfaces: ifaces}) do
     ident in ifaces
   end
 

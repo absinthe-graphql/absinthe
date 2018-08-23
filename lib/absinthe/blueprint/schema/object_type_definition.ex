@@ -40,7 +40,8 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
       identifier: type_def.identifier,
       name: type_def.name,
       description: type_def.description,
-      fields: build_fields(type_def, schema.module)
+      fields: build_fields(type_def, schema.module),
+      interfaces: type_def.interfaces
     }
   end
 
