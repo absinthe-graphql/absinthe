@@ -38,9 +38,9 @@ defmodule Absinthe.Mixfile do
       ],
       licenses: ["MIT"],
       links: %{
-        "Website": "https://absinthe-graphql.org",
-        "Changelog": "https://github.com/absinthe-graphql/absinthe/blob/master/CHANGELOG.md", 
-        "GitHub": "https://github.com/absinthe-graphql/absinthe"
+        Website: "https://absinthe-graphql.org",
+        Changelog: "https://github.com/absinthe-graphql/absinthe/blob/master/CHANGELOG.md",
+        GitHub: "https://github.com/absinthe-graphql/absinthe"
       }
     ]
   end
