@@ -75,7 +75,8 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
       arg = %Absinthe.Type.Argument{
         identifier: arg_def.identifier,
         name: arg_def.name,
-        type: arg_def.type
+        type: arg_def.type,
+        default_value: arg_def.default_value
       }
 
       {arg_def.identifier, arg}

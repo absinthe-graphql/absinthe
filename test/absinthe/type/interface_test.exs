@@ -63,7 +63,7 @@ defmodule Absinthe.Type.InterfaceTest do
     test "can be defined" do
       obj = Schema.__absinthe_type__(:named)
       assert %Absinthe.Type.Interface{name: "Named", description: "An interface"} = obj
-      assert obj.resolve_type
+      assert Absinthe.Type.function(obj, :resolve_type)
     end
 
     test "captures the relationships in the schema" do

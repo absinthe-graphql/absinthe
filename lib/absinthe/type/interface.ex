@@ -110,12 +110,8 @@ defmodule Absinthe.Type.Interface do
       end
     else
       type_name =
-        Enum.find(implementors, fn
-          %{is_type_of: nil} ->
-            false
-
-          type ->
-            Absinthe.Type.function(type, :is_type_of).(obj)
+        Enum.find(implementors, fn type ->
+          Absinthe.Type.function(type, :is_type_of).(obj)
         end)
 
       if opts[:lookup] do
