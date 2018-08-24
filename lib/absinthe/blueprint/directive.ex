@@ -25,17 +25,13 @@ defmodule Absinthe.Blueprint.Directive do
         }
 
   @spec expand(t, Blueprint.node_t()) :: {t, map}
-  def expand(%__MODULE__{schema_node: %{expand: nil}}, node) do
-    node
-  end
-
-  def expand(%__MODULE__{schema_node: %{expand: fun}} = directive, node) do
-    args = Blueprint.Input.Argument.value_map(directive.arguments)
-    fun.(args, node)
-  end
-
   def expand(%__MODULE__{schema_node: nil}, node) do
     node
+  end
+
+  def expand(%__MODULE__{schema_node: type} = directive, node) do
+    args = Blueprint.Input.Argument.value_map(directive.arguments)
+    Absinthe.Type.function(type, :expand).(args, node)
   end
 
   @doc """

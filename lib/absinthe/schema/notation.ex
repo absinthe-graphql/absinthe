@@ -1515,7 +1515,9 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def build_functions(schema) do
-    Enum.flat_map(schema.type_definitions, &functions_for_type/1)
+    schema.type_definitions
+    |> Enum.concat(schema.directive_definitions)
+    |> Enum.flat_map(&functions_for_type/1)
   end
 
   def grab_functions(type, module, identifier, attrs) do
@@ -1532,6 +1534,10 @@ defmodule Absinthe.Schema.Notation do
 
   defp functions_for_type(%Schema.ScalarTypeDefinition{} = type) do
     grab_functions(type, Absinthe.Type.Scalar, type.identifier, [:serialize, :parse])
+  end
+
+  defp functions_for_type(%Schema.DirectiveDefinition{} = type) do
+    grab_functions(type, Absinthe.Type.Directive, type.identifier, [:expand])
   end
 
   defp functions_for_type(%Schema.ObjectTypeDefinition{} = type) do

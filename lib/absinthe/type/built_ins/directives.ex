@@ -1,7 +1,8 @@
 defmodule Absinthe.Type.BuiltIns.Directives do
   @moduledoc false
-
   use Absinthe.Schema.Notation
+
+  alias Absinthe.Blueprint
 
   directive :include do
     description """
