@@ -1,7 +1,7 @@
 defmodule Absinthe.Blueprint.Schema.InputObjectTypeDefinition do
   @moduledoc false
 
-  alias Absinthe.Blueprint
+  alias Absinthe.{Blueprint, Type}
 
   @enforce_keys [:name]
   defstruct [
@@ -29,22 +29,28 @@ defmodule Absinthe.Blueprint.Schema.InputObjectTypeDefinition do
           errors: [Absinthe.Phase.Error.t()]
         }
 
-  def build(type_def, _schema) do
-    %Absinthe.Type.InputObject{
+  def build(type_def, schema) do
+    %Type.InputObject{
       identifier: type_def.identifier,
       name: type_def.name,
-      fields: build_fields(type_def),
+      fields: build_fields(type_def, schema.module),
       description: type_def.description
     }
   end
 
-  def build_fields(type_def) do
+  def build_fields(type_def, module) do
     for field_def <- type_def.fields, into: %{} do
-      attrs =
-        field_def
-        |> Map.from_struct()
-
-      field = struct(Absinthe.Type.Field, attrs)
+      field = %Type.Field{
+        identifier: field_def.identifier,
+        deprecation: Type.Deprecation.build(field_def.deprecation),
+        description: field_def.description,
+        name: field_def.name,
+        type: field_def.type,
+        definition: module,
+        __reference__: field_def.__reference__,
+        __private__: field_def.__private__,
+        default_value: field_def.default_value
+      }
 
       {field.identifier, field}
     end

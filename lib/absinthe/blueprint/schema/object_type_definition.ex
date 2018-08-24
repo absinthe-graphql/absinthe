@@ -1,7 +1,7 @@
 defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
   @moduledoc false
 
-  alias Absinthe.Blueprint
+  alias Absinthe.{Blueprint, Type}
 
   @enforce_keys [:name, :identifier]
   defstruct [
@@ -35,7 +35,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
         }
 
   def build(type_def, schema) do
-    %Absinthe.Type.Object{
+    %Type.Object{
       identifier: type_def.identifier,
       name: type_def.name,
       description: type_def.description,
@@ -52,10 +52,10 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
         {module, type_def.identifier, field_def.identifier}
       }
 
-      field = %Absinthe.Type.Field{
+      field = %Type.Field{
         identifier: field_def.identifier,
         middleware: [middleware_shim],
-        deprecation: field_def.deprecation,
+        deprecation: Type.Deprecation.build(field_def.deprecation),
         description: field_def.description,
         complexity: {type_def.identifier, field_def.identifier},
         config: {type_def.identifier, field_def.identifier},
@@ -73,11 +73,12 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
 
   def build_args(field_def) do
     Map.new(field_def.arguments, fn arg_def ->
-      arg = %Absinthe.Type.Argument{
+      arg = %Type.Argument{
         identifier: arg_def.identifier,
         name: arg_def.name,
         type: arg_def.type,
-        default_value: arg_def.default_value
+        default_value: arg_def.default_value,
+        deprecation: Type.Deprecation.build(arg_def.deprecation)
       }
 
       {arg_def.identifier, arg}
@@ -87,7 +88,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
   def shim(res, {module, obj, field}) do
     middleware =
       apply(module, :__absinthe_function__, [
-        Absinthe.Type.Field,
+        Type.Field,
         {obj, field},
         :middleware
       ])

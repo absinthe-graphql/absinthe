@@ -12,11 +12,11 @@ defmodule Absinthe.Type.Deprecation do
   def build(false), do: nil
 
   def build(true) do
-    quote do: %unquote(__MODULE__){}
+    %__MODULE__{}
   end
 
   def build(reason) when is_binary(reason) do
-    quote do: %unquote(__MODULE__){reason: unquote(reason)}
+    %__MODULE__{reason: reason}
   end
 
   @doc """

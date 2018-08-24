@@ -130,6 +130,7 @@ defmodule Absinthe.Type.InterfaceTest do
   end
 
   describe "when it doesn't define those fields" do
+    @tag :pending_schema
     test "reports schema errors" do
       assert_schema_error("bad_interface_schema", [
         %{rule: Rule.ObjectMustImplementInterfaces, data: %{object: "Foo", interface: "Aged"}},

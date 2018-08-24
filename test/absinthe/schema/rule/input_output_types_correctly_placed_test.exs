@@ -2,7 +2,7 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlacedTest do
   use Absinthe.Case, async: true
 
   describe "rule" do
-    @tag :schema_pending
+    @tag :pending_schema
     test "is enforced with output types on arguments" do
       assert_schema_error("invalid_output_types", [
         %{
@@ -31,6 +31,7 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlacedTest do
       ])
     end
 
+    @tag :pending_schema
     test "is enforced with input types on arguments" do
       assert_schema_error("invalid_input_types", [
         %{
