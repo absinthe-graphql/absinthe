@@ -94,6 +94,11 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(rest, [concat(schema, :types, sdl_definitions) | stack])
   end
 
+  defp build_types([{:value, value} | rest], [enum_type | stack]) do
+    enum_type = push(enum_type, :values, value)
+    build_types(rest, [enum_type | stack])
+  end
+
   defp build_types([{attr, value} | rest], [entity | stack]) do
     entity = %{entity | attr => value}
     build_types(rest, [entity | stack])
@@ -134,12 +139,12 @@ defmodule Absinthe.Blueprint.Schema do
 
   defp build_types([:close | rest], [%module{} = type, schema | stack])
        when module in @simple_close do
-    schema = Map.update!(schema, :types, &[type | &1])
+    schema = push(schema, :types, type)
     build_types(rest, [schema | stack])
   end
 
   defp build_types([:close | rest], [%Schema.SchemaDefinition{} = schema, bp]) do
-    bp = Map.update!(bp, :schema_definitions, &[schema | &1])
+    bp = push(bp, :schema_definitions, schema)
     build_types(rest, [bp])
   end
 

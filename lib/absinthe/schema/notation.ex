@@ -922,6 +922,7 @@ defmodule Absinthe.Schema.Notation do
 
   """
   defmacro enum(identifier, attrs, do: block) do
+    attrs = handle_enum_attrs(attrs, __CALLER__)
     __CALLER__
     |> recordable!(:enum, @placement[:enum])
     |> record!(Schema.EnumTypeDefinition, identifier, attrs, block)
@@ -939,9 +940,18 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defmacro enum(identifier, attrs) do
+    attrs = handle_enum_attrs(attrs, __CALLER__)
     __CALLER__
     |> recordable!(:enum, @placement[:enum])
-    |> record!(Schema.EnumTypeDefinition, identifier, attrs, nil)
+    |> record!(Schema.EnumTypeDefinition, identifier, attrs, [])
+  end
+
+  defp handle_enum_attrs(attrs, env) do
+    attrs
+    |> expand_ast(env)
+    |> Keyword.update(:values, [], fn values ->
+      Enum.map(values, &build_enum_value(&1, []))
+    end)
   end
 
   @placement {:value, [under: [:enum]]}
@@ -1269,23 +1279,32 @@ defmodule Absinthe.Schema.Notation do
     put_attr(env.module, {:desc, text})
   end
 
+  def build_enum_value(identifier, raw_attrs) do
+    attrs =
+      raw_attrs
+      |> expand_ast(raw_attrs)
+      |> Keyword.put(:identifier, identifier)
+      |> Keyword.put(:value, Keyword.get(raw_attrs, :as, identifier))
+      |> Keyword.put_new(:name, String.upcase(to_string(identifier)))
+      |> Keyword.delete(:as)
+      |> replace_key(:deprecate, :deprecation)
+
+    struct!(Absinthe.Blueprint.Schema.EnumValueDefinition, attrs)
+  end
+
   @doc false
   # Record an enum value in the current scope
   def record_value!(env, identifier, raw_attrs) do
-    # attrs =
-    #   raw_attrs
-    #   |> Keyword.put(:value, Keyword.get(raw_attrs, :as, identifier))
-    #   |> Keyword.delete(:as)
-    #
-    # value = struct!(Absinthe.Blueprint.Schema.EnumValueDefinition, attrs)
-    #
-    # put_attr(env.module, {:value, value})
+    value = build_enum_value(identifier, raw_attrs)
+    put_attr(env.module, {:value, value})
   end
 
   @doc false
   # Record an enum value in the current scope
   def record_values!(env, values) do
-    put_attr(env.module, {:values, values})
+    values
+    |> expand_ast(env)
+    |> Enum.each(&record_value!(env, &1, []))
   end
 
   def record_config!(env, fun_ast) do

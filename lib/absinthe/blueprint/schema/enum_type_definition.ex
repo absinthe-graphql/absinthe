@@ -29,7 +29,22 @@ defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
   def build(type_def, _schema) do
     %Absinthe.Type.Enum{
       identifier: type_def.identifier,
-      name: type_def.name
+      name: type_def.name,
+      values: values_by(type_def, :identifier),
+      values_by_internal_value: values_by(type_def, :value),
+      values_by_name: values_by(type_def, :name)
     }
+  end
+
+  def values_by(type_def, key) do
+    for value_def <- type_def.values, into: %{} do
+      value = %Absinthe.Type.Enum.Value{
+        name: value_def.name,
+        value: value_def.value,
+        __reference__: value_def.__reference__,
+        description: value_def.description
+      }
+      {Map.fetch!(value_def, key), value}
+    end
   end
 end

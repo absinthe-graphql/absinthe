@@ -6,6 +6,9 @@ defmodule Absinthe.Blueprint.Schema.EnumValueDefinition do
   @enforce_keys [:value]
   defstruct [
     :value,
+    :name,
+    :identifier,
+    deprecation: nil,
     deprecation: nil,
     directives: [],
     source_location: nil,
