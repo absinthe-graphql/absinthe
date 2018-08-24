@@ -11,12 +11,16 @@ defmodule Absinthe.SchemaTest do
 
     test "are loaded" do
       load_valid_schema()
-      assert map_size(Absinthe.Type.BuiltIns.__absinthe_types__()) > 0
+      builtin_types =
+        Absinthe.Fixtures.ValidSchema
+        |> Absinthe.Schema.types
+        |> Enum.filter(&Absinthe.Type.built_in?(&1))
 
-      Absinthe.Type.BuiltIns.__absinthe_types__()
-      |> Enum.each(fn {ident, name} ->
-        assert Absinthe.Fixtures.ValidSchema.__absinthe_type__(ident) ==
-                 Absinthe.Fixtures.ValidSchema.__absinthe_type__(name)
+      assert length(builtin_types) > 0
+
+      Enum.each(builtin_types, fn type ->
+        assert Absinthe.Fixtures.ValidSchema.__absinthe_type__(type.identifier) ==
+                 Absinthe.Fixtures.ValidSchema.__absinthe_type__(type.name)
       end)
 
       int = Absinthe.Fixtures.ValidSchema.__absinthe_type__(:integer)
