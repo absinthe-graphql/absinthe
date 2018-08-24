@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Schema.Imports do
+defmodule Absinthe.Phase.Schema.TypeImports do
   def run(blueprint, _opts) do
     blueprint =
       Map.update!(blueprint, :schema_definitions, fn defs ->

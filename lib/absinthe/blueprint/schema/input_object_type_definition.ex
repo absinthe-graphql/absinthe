@@ -11,6 +11,7 @@ defmodule Absinthe.Blueprint.Schema.InputObjectTypeDefinition do
     description: nil,
     interfaces: [],
     fields: [],
+    imports: [],
     directives: [],
     # Added by phases,
     flags: %{},

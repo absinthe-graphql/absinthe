@@ -1057,9 +1057,7 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro import_fields(source_criteria, opts \\ []) do
-    source_criteria =
-      source_criteria
-      |> Macro.prewalk(&Macro.expand(&1, __CALLER__))
+    source_criteria = expand_ast(source_criteria, __CALLER__)
 
     put_attr(__CALLER__.module, {:import_fields, {source_criteria, opts}})
   end
