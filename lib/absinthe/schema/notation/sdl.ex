@@ -14,7 +14,7 @@ defmodule Absinthe.Schema.Notation.SDL do
 
       {:ok, definitions}
     else
-      {:error, %Absinthe.Blueprint{execution: %{validation_errors: errors}} = bp}
+      {:error, %Absinthe.Blueprint{execution: %{validation_errors: errors}}}
       when length(errors) > 0 ->
         error =
           errors

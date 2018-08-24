@@ -12,6 +12,7 @@ defmodule Absinthe.Blueprint.Schema.DirectiveDefinition do
     directives: [],
     arguments: [],
     locations: [],
+    expand: nil,
     errors: [],
     __reference__: nil,
     __private__: []
@@ -25,7 +26,7 @@ defmodule Absinthe.Blueprint.Schema.DirectiveDefinition do
           errors: [Absinthe.Phase.Error.t()]
         }
 
-  def build(type_def, schema) do
+  def build(type_def, _schema) do
     %Absinthe.Type.Directive{
       name: type_def.name,
       identifier: type_def.identifier,

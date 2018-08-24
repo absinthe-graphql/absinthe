@@ -28,7 +28,7 @@ defmodule Absinthe.Blueprint.Schema.ScalarTypeDefinition do
           errors: [Absinthe.Phase.Error.t()]
         }
 
-  def build(type_def, schema) do
+  def build(type_def, _schema) do
     %Absinthe.Type.Scalar{
       identifier: type_def.identifier,
       name: type_def.name,

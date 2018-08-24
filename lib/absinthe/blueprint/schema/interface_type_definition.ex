@@ -29,7 +29,7 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
           errors: [Absinthe.Phase.Error.t()]
         }
 
-  def build(type_def, schema) do
+  def build(type_def, _schema) do
     %Absinthe.Type.Interface{
       name: type_def.name,
       description: type_def.description,

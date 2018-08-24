@@ -1,5 +1,4 @@
 defmodule Absinthe.Schema.Notation do
-  alias Absinthe.Blueprint
   alias Absinthe.Blueprint.Schema
   alias Absinthe.Utils
 
@@ -749,15 +748,13 @@ defmodule Absinthe.Schema.Notation do
 
     arg :if, non_null(:boolean), description: "Skipped when true."
 
-    on Language.FragmentSpread
-    on Language.Field
-    on Language.InlineFragment
+    on [:field, :fragment_spread, :inline_fragment]
 
-    instruction fn
-      %{if: true} ->
-        :skip
-      _ ->
-        :include
+    expand fn
+      %{if: true}, node ->
+        Blueprint.put_flag(node, :skip, __MODULE__)
+      _, node ->
+        node
     end
 
   end
@@ -783,20 +780,6 @@ defmodule Absinthe.Schema.Notation do
     __CALLER__
     |> recordable!(:on, @placement[:on])
     |> record_locations!(ast_node)
-  end
-
-  @placement {:instruction, [under: :directive]}
-  @doc """
-  Calculate the instruction for a directive
-
-  ## Placement
-
-  #{Utils.placement_docs(@placement)}
-  """
-  defmacro instruction(func_ast) do
-    __CALLER__
-    |> recordable!(:instruction, @placement[:instruction])
-    |> record_instruction!(func_ast)
   end
 
   @placement {:expand, [under: :directive]}
@@ -1162,7 +1145,7 @@ defmodule Absinthe.Schema.Notation do
     scoped_def(env, type, identifier, attrs, block)
   end
 
-  defp build_arg(env, identifier, attrs) do
+  defp build_arg(identifier, attrs) do
     attrs =
       attrs
       |> replace_key(:deprecate, :deprecation)
@@ -1173,57 +1156,21 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def record_arg!(env, identifier, attrs) do
-    arg = build_arg(env, identifier, attrs)
+    arg = build_arg(identifier, attrs)
     put_attr(env.module, arg)
   end
 
   @doc false
-  # Record a union type
-  # def record_union!(env, identifier, attrs, block) do
-  #   attrs = Keyword.put(attrs, :identifier, identifier)
-  #   scoped_def(env, Schema., identifier, attrs, block)
-  # end
-  #
-  # @doc false
-  # # Record an input object type
-  # def record_input_object!(env, identifier, attrs, block) do
-  #   attrs = Keyword.put(attrs, :identifier, identifier)
-  #   scoped_def(env, :input_object, identifier, attrs, block)
-  # end
-
-  @doc false
   # Record a directive expand function in the current scope
   def record_expand!(env, func_ast) do
-    # Scope.put_attribute(env.module, :expand, func_ast)
-    # Scope.recorded!(env.module, :attr, :expand)
-    # :ok
-  end
-
-  @doc false
-  # Record a directive instruction function in the current scope
-  def record_instruction!(env, func_ast) do
-    # Scope.put_attribute(env.module, :instruction, func_ast)
-    # Scope.recorded!(env.module, :attr, :instruction)
-    # :ok
+    put_attr(env.module, {:expand, func_ast})
   end
 
   @doc false
   # Record directive AST nodes in the current scope
-  def record_locations!(env, ast_node) do
-    # ast_node
-    # |> List.wrap()
-    # |> Enum.each(fn value ->
-    #   Scope.put_attribute(
-    #     env.module,
-    #     :locations,
-    #     value,
-    #     accumulate: true
-    #   )
-    #
-    #   Scope.recorded!(env.module, :attr, :locations)
-    # end)
-    #
-    # :ok
+  def record_locations!(env, locations) do
+    locations = expand_ast(locations, env)
+    put_attr(env.module, {:locations, locations})
   end
 
   @doc false
@@ -1290,8 +1237,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record a deprecation in the current scope
   def record_deprecate!(env, msg) do
-    # Scope.put_attribute(env.module, :deprecate, msg)
-    # :ok
+    put_attr(env.module, {:deprecation, msg})
   end
 
   @doc false
@@ -1303,9 +1249,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record a list of member types for a union in the current scope
   def record_types!(env, types) do
-    # Scope.put_attribute(env.module, :types, List.wrap(types))
-    # Scope.recorded!(env.module, :attr, :types)
-    # :ok
+    put_attr(env.module, {:types, types})
   end
 
   @doc false
@@ -1466,7 +1410,7 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
-  defp do_import_sdl(env, sdl, opts) when is_binary(sdl) do
+  defp do_import_sdl(env, sdl, _opts) when is_binary(sdl) do
     with {:ok, definitions} <- __MODULE__.SDL.parse(sdl) do
       Module.put_attribute(
         env.module,

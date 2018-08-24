@@ -1,6 +1,5 @@
 defmodule Absinthe.Schema do
   alias Absinthe.Type
-  alias Absinthe.Language
   alias __MODULE__
 
   @type t :: module

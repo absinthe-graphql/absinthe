@@ -32,24 +32,17 @@ defmodule Absinthe.Type.Scalar do
   use Absinthe.Introspection.Kind
 
   alias Absinthe.Type
-  alias Absinthe.Blueprint.Schema
 
   def build(%{attrs: attrs}) do
     quote do: %unquote(__MODULE__){unquote_splicing(attrs)}
   end
 
   def serialize(type, value) do
-    module = type.definition
-
-    function = Type.function(type, :serialize)
-
-    function.(value)
+    Type.function(type, :serialize).(value)
   end
 
   def parse(type, value, context \\ %{}) do
-    parser = Type.function(type, :parse)
-
-    case parser do
+    case Type.function(type, :parse) do
       parser when is_function(parser, 1) ->
         parser.(value)
 
