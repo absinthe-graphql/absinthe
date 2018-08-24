@@ -94,6 +94,7 @@ defmodule Absinthe.Type.Union do
             false
 
           type ->
+            type = Absinthe.Schema.lookup_type(schema, type)
             Absinthe.Type.function(type, :is_type_of).(obj)
         end)
 

@@ -33,7 +33,8 @@ defmodule Absinthe.Blueprint.Schema.InputObjectTypeDefinition do
     %Absinthe.Type.InputObject{
       identifier: type_def.identifier,
       name: type_def.name,
-      fields: build_fields(type_def)
+      fields: build_fields(type_def),
+      description: type_def.description
     }
   end
 
