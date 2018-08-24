@@ -32,7 +32,8 @@ defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
       name: type_def.name,
       values: values_by(type_def, :identifier),
       values_by_internal_value: values_by(type_def, :value),
-      values_by_name: values_by(type_def, :name)
+      values_by_name: values_by(type_def, :name),
+      definition: type_def.module
     }
   end
 

@@ -1428,7 +1428,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp do_import_sdl(env, sdl, _opts) when is_binary(sdl) do
-    with {:ok, definitions} <- __MODULE__.SDL.parse(sdl) do
+    with {:ok, definitions} <- __MODULE__.SDL.parse(sdl, env.module) do
       Module.put_attribute(
         env.module,
         :__absinthe_sdl_definitions__,

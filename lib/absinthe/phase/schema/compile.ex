@@ -62,11 +62,15 @@ defmodule Absinthe.Phase.Schema.Compile do
       type = module.build(type_def, schema)
 
       type = %{
-        type
-        | definition: type_def.module,
+        type |
           __reference__: type_def.__reference__,
           __private__: type_def.__private__
       }
+
+      if !type.definition, do: raise """
+      No definition set!
+      #{inspect type}
+      """
 
       ast = Macro.escape(type)
 

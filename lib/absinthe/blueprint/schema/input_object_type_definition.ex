@@ -30,16 +30,17 @@ defmodule Absinthe.Blueprint.Schema.InputObjectTypeDefinition do
           errors: [Absinthe.Phase.Error.t()]
         }
 
-  def build(type_def, schema) do
+  def build(type_def, _schema) do
     %Type.InputObject{
       identifier: type_def.identifier,
       name: type_def.name,
-      fields: build_fields(type_def, schema.module),
-      description: type_def.description
+      fields: build_fields(type_def),
+      description: type_def.description,
+      definition: type_def.module
     }
   end
 
-  def build_fields(type_def, module) do
+  def build_fields(type_def) do
     for field_def <- type_def.fields, into: %{} do
       field = %Type.Field{
         identifier: field_def.identifier,
@@ -47,7 +48,7 @@ defmodule Absinthe.Blueprint.Schema.InputObjectTypeDefinition do
         description: field_def.description,
         name: field_def.name,
         type: field_def.type,
-        definition: module,
+        definition: type_def.module,
         __reference__: field_def.__reference__,
         __private__: field_def.__private__,
         default_value: field_def.default_value

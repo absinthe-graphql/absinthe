@@ -3,7 +3,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
 
   alias Absinthe.{Blueprint, Type}
 
-  @enforce_keys [:name, :identifier]
+  @enforce_keys [:name]
   defstruct [
     :name,
     :identifier,
@@ -34,22 +34,23 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
           __private__: Keyword.t()
         }
 
-  def build(type_def, schema) do
+  def build(type_def, _schema) do
     %Type.Object{
       identifier: type_def.identifier,
       name: type_def.name,
       description: type_def.description,
-      fields: build_fields(type_def, schema.module),
-      interfaces: type_def.interfaces
+      fields: build_fields(type_def),
+      interfaces: type_def.interfaces,
+      definition: type_def.module
     }
   end
 
-  def build_fields(type_def, module) do
+  def build_fields(type_def) do
     for field_def <- type_def.fields, into: %{} do
       # TODO: remove and make middleware work generally
       middleware_shim = {
         {__MODULE__, :shim},
-        {module, type_def.identifier, field_def.identifier}
+        {field_def.module, type_def.identifier, field_def.identifier}
       }
 
       field = %Type.Field{
@@ -62,7 +63,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
         name: field_def.name,
         type: field_def.type,
         args: build_args(field_def),
-        definition: module,
+        definition: field_def.module,
         __reference__: field_def.__reference__,
         __private__: field_def.__private__
       }
