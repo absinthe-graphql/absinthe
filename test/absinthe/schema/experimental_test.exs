@@ -39,7 +39,7 @@ defmodule Absinthe.Schema.ExperimentalTest do
                length(
                  Schema.__absinthe_blueprint__().schema_definitions
                  |> List.first()
-                 |> Map.get(:types)
+                 |> Map.fetch!(:type_definitions)
                )
     end
   end
