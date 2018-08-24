@@ -5,7 +5,8 @@ defmodule Absinthe.Blueprint.Schema.SchemaDefinition do
 
   defstruct description: nil,
             module: nil,
-            types: [],
+            type_definitions: [],
+            directive_definitions: [],
             type_extensions: [],
             directives: [],
             # Added by phases

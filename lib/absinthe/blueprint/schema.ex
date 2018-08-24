@@ -20,7 +20,7 @@ defmodule Absinthe.Blueprint.Schema do
   def lookup_type(blueprint, identifier) do
     blueprint.schema_definitions
     |> List.first()
-    |> Map.get(:types)
+    |> Map.get(:type_definitions)
     |> Enum.find(fn
       %{identifier: ^identifier} ->
         true
@@ -91,7 +91,7 @@ defmodule Absinthe.Blueprint.Schema do
 
   defp build_types([{:sdl, sdl_definitions} | rest], [schema | stack]) do
     # TODO: Handle directives, etc
-    build_types(rest, [concat(schema, :types, sdl_definitions) | stack])
+    build_types(rest, [concat(schema, :type_definitions, sdl_definitions) | stack])
   end
 
   defp build_types([{:value, value} | rest], [enum_type | stack]) do
@@ -111,25 +111,25 @@ defmodule Absinthe.Blueprint.Schema do
 
   defp build_types([:close | rest], [%Schema.ObjectTypeDefinition{} = obj, schema | stack]) do
     obj = Map.update!(obj, :fields, &Enum.reverse/1)
-    build_types(rest, [push(schema, :types, obj) | stack])
+    build_types(rest, [push(schema, :type_definitions, obj) | stack])
   end
 
   defp build_types([:close | rest], [%Schema.InputObjectTypeDefinition{} = obj, schema | stack]) do
     obj = Map.update!(obj, :fields, &Enum.reverse/1)
-    build_types(rest, [push(schema, :types, obj) | stack])
+    build_types(rest, [push(schema, :type_definitions, obj) | stack])
   end
 
   defp build_types([:close | rest], [%Schema.InterfaceTypeDefinition{} = iface, schema | stack]) do
     iface = Map.update!(iface, :fields, &Enum.reverse/1)
-    build_types(rest, [push(schema, :types, iface) | stack])
+    build_types(rest, [push(schema, :type_definitions, iface) | stack])
   end
 
   defp build_types([:close | rest], [%Schema.UnionTypeDefinition{} = union, schema | stack]) do
-    build_types(rest, [push(schema, :types, union) | stack])
+    build_types(rest, [push(schema, :type_definitions, union) | stack])
   end
 
   defp build_types([:close | rest], [%Schema.DirectiveDefinition{} = dir, schema | stack]) do
-    build_types(rest, [push(schema, :directives, dir) | stack])
+    build_types(rest, [push(schema, :directive_definitions, dir) | stack])
   end
 
   @simple_close [
@@ -139,7 +139,7 @@ defmodule Absinthe.Blueprint.Schema do
 
   defp build_types([:close | rest], [%module{} = type, schema | stack])
        when module in @simple_close do
-    schema = push(schema, :types, type)
+    schema = push(schema, :type_definitions, type)
     build_types(rest, [schema | stack])
   end
 

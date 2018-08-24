@@ -1515,7 +1515,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def build_functions(schema) do
-    Enum.flat_map(schema.types, &functions_for_type/1)
+    Enum.flat_map(schema.type_definitions, &functions_for_type/1)
   end
 
   def grab_functions(type, module, identifier, attrs) do

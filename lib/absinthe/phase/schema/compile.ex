@@ -10,12 +10,12 @@ defmodule Absinthe.Phase.Schema.Compile do
     directives = build_directives(blueprint)
 
     type_list =
-      Map.new(schema.types, fn type_def ->
+      Map.new(schema.type_definitions, fn type_def ->
         {type_def.identifier, type_def.name}
       end)
 
     directive_list =
-      Map.new(schema.directives, fn type_def ->
+      Map.new(schema.directive_definitions, fn type_def ->
         {type_def.identifier, type_def.name}
       end)
 
@@ -48,7 +48,7 @@ defmodule Absinthe.Phase.Schema.Compile do
   end
 
   def build_metadata(schema) do
-    for type <- schema.types do
+    for type <- schema.type_definitions do
       quote do
         def __absinthe_reference__(unquote(type.identifier)) do
           unquote(Macro.escape(type.__reference__))
@@ -58,7 +58,7 @@ defmodule Absinthe.Phase.Schema.Compile do
   end
 
   def build_types(%{schema_definitions: [schema]}) do
-    for %module{} = type_def <- schema.types do
+    for %module{} = type_def <- schema.type_definitions do
       type = module.build(type_def, schema)
 
       type = %{
@@ -90,7 +90,7 @@ defmodule Absinthe.Phase.Schema.Compile do
   end
 
   def build_directives(%{schema_definitions: [schema]}) do
-    for %module{} = type_def <- schema.directives do
+    for %module{} = type_def <- schema.directive_definitions do
       type = module.build(type_def, schema)
 
       type = %{
@@ -122,11 +122,11 @@ defmodule Absinthe.Phase.Schema.Compile do
   end
 
   defp build_implementors(schema) do
-    schema.types
+    schema.type_definitions
     |> Enum.filter(&match?(%Schema.InterfaceTypeDefinition{}, &1))
     |> Map.new(fn iface ->
       implementors =
-        for %Schema.ObjectTypeDefinition{} = obj <- schema.types,
+        for %Schema.ObjectTypeDefinition{} = obj <- schema.type_definitions,
             iface.identifier in obj.interfaces,
             do: obj.identifier
 

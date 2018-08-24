@@ -14,11 +14,11 @@ defmodule Absinthe.Phase.Schema.Imports do
     {Absinthe.Type.BuiltIns.Introspection, []}
   ]
   def handle_imports(def) do
-    types = do_imports(@default_imports ++ def.imports, def.types)
+    types = do_imports(@default_imports ++ def.imports, def.type_definitions)
     # special casing for the moment.
     [other_def] = Absinthe.Type.BuiltIns.Directives.__absinthe_blueprint__().schema_definitions
-    directives = def.directives ++ other_def.directives
-    %{def | types: types, directives: directives}
+    directives = def.directive_definitions ++ other_def.directive_definitions
+    %{def | type_definitions: types, directive_definitions: directives}
   end
 
   defp do_imports([], types) do
@@ -30,7 +30,7 @@ defmodule Absinthe.Phase.Schema.Imports do
 
     rejections = MapSet.new([:query, :mutation, :subscription] ++ Keyword.get(opts, :except, []))
 
-    types = Enum.reject(other_def.types, &(&1.identifier in rejections))
+    types = Enum.reject(other_def.type_definitions, &(&1.identifier in rejections))
 
     case Keyword.fetch(opts, :only) do
       {:ok, selections} ->

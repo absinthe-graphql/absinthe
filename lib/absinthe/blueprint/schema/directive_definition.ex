@@ -31,7 +31,8 @@ defmodule Absinthe.Blueprint.Schema.DirectiveDefinition do
       name: type_def.name,
       identifier: type_def.identifier,
       description: type_def.description,
-      args: Blueprint.Schema.ObjectTypeDefinition.build_args(type_def)
+      args: Blueprint.Schema.ObjectTypeDefinition.build_args(type_def),
+      locations: type_def.locations
     }
   end
 end
