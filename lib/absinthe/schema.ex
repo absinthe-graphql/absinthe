@@ -327,26 +327,23 @@ defmodule Absinthe.Schema do
     implementors(schema, iface.__reference__.identifier)
   end
 
-  @doc false
-  @spec type_from_ast(t, Language.type_reference_t()) :: Absinthe.Type.t() | nil
-  def type_from_ast(schema, %Language.NonNullType{type: inner_type}) do
-    case type_from_ast(schema, inner_type) do
-      nil -> nil
-      type -> %Type.NonNull{of_type: type}
-    end
+  @doc """
+  List all types on a schema
+  """
+  @spec types(t) :: [Type.t()]
+  def types(schema) do
+    schema.__absinthe_types__
+    |> Map.keys()
+    |> Enum.map(&lookup_type(schema, &1))
   end
 
-  def type_from_ast(schema, %Language.ListType{type: inner_type}) do
-    case type_from_ast(schema, inner_type) do
-      nil -> nil
-      type -> %Type.List{of_type: type}
-    end
-  end
-
-  def type_from_ast(schema, ast_type) do
-    Schema.types(schema)
-    |> Enum.find(fn %{name: name} ->
-      name == ast_type.name
-    end)
+  @doc """
+  Get all introspection types
+  """
+  @spec introspection_types(t) :: [Type.t()]
+  def introspection_types(schema) do
+    schema
+    |> Schema.types()
+    |> Enum.filter(&Type.introspection?/1)
   end
 end
