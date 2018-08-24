@@ -58,6 +58,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
         deprecation: field_def.deprecation,
         description: field_def.description,
         complexity: {type_def.identifier, field_def.identifier},
+        config: {type_def.identifier, field_def.identifier},
         name: field_def.name,
         type: field_def.type,
         args: build_args(field_def),
