@@ -15,6 +15,7 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
     flags: %{},
     errors: [],
     resolve_type: nil,
+    imports: [],
     __reference__: nil,
     __private__: []
   ]

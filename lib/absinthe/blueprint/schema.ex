@@ -50,7 +50,8 @@ defmodule Absinthe.Blueprint.Schema do
     Schema.DirectiveDefinition,
     Schema.InputObjectTypeDefinition,
     Schema.InterfaceTypeDefinition,
-    Schema.UnionTypeDefinition
+    Schema.UnionTypeDefinition,
+    Schema.EnumValueDefinition
   ]
 
   defp build_types([%module{} = type | rest], stack) when module in @simple_open do
@@ -85,6 +86,11 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(rest, [entity | stack])
   end
 
+  defp build_types([{:values, values} | rest], [enum | stack]) do
+    enum = Map.update!(enum, :values, & values ++ &1)
+    build_types(rest, [enum | stack])
+  end
+
   defp build_types([%Schema.InputValueDefinition{} = arg | rest], [field | stack]) do
     build_types(rest, [push(field, :arguments, arg) | stack])
   end
@@ -94,14 +100,13 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(rest, [concat(schema, :type_definitions, sdl_definitions) | stack])
   end
 
-  defp build_types([{:value, value} | rest], [enum_type | stack]) do
-    enum_type = push(enum_type, :values, value)
-    build_types(rest, [enum_type | stack])
-  end
-
   defp build_types([{attr, value} | rest], [entity | stack]) do
     entity = %{entity | attr => value}
     build_types(rest, [entity | stack])
+  end
+
+  defp build_types([:close | rest], [%Schema.EnumValueDefinition{} = value, enum | stack]) do
+    build_types(rest, [push(enum, :values, value) | stack])
   end
 
   defp build_types([:close | rest], [%Schema.FieldDefinition{} = field, obj | stack]) do

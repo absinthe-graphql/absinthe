@@ -6,8 +6,8 @@ defmodule Absinthe.Schema.Notation do
 
   defmacro __using__(_opts) do
     Module.register_attribute(__CALLER__.module, :absinthe_blueprint, accumulate: true)
-    Module.put_attribute(__CALLER__.module, :absinthe_blueprint, %Absinthe.Blueprint{})
     Module.register_attribute(__CALLER__.module, :absinthe_desc, accumulate: true)
+    put_attr(__CALLER__.module, %Absinthe.Blueprint{})
 
     quote do
       import Absinthe.Resolution.Helpers,
@@ -950,7 +950,10 @@ defmodule Absinthe.Schema.Notation do
     attrs
     |> expand_ast(env)
     |> Keyword.update(:values, [], fn values ->
-      Enum.map(values, &build_enum_value(&1, []))
+      Enum.map(values, fn ident ->
+        value_attrs = handle_enum_value_attrs(ident, [])
+        struct!(Schema.EnumValueDefinition, value_attrs)
+      end)
     end)
   end
 
@@ -1142,6 +1145,7 @@ defmodule Absinthe.Schema.Notation do
     Schema.FieldDefinition,
     Schema.ScalarTypeDefinition,
     Schema.EnumTypeDefinition,
+    Schema.EnumValueDefinition,
     Schema.InputObjectTypeDefinition,
     Schema.UnionTypeDefinition,
     Schema.InterfaceTypeDefinition,
@@ -1277,32 +1281,34 @@ defmodule Absinthe.Schema.Notation do
     put_attr(env.module, {:desc, text})
   end
 
-  def build_enum_value(identifier, raw_attrs) do
-    attrs =
-      raw_attrs
-      |> expand_ast(raw_attrs)
-      |> Keyword.put(:identifier, identifier)
-      |> Keyword.put(:value, Keyword.get(raw_attrs, :as, identifier))
-      |> Keyword.put_new(:name, String.upcase(to_string(identifier)))
-      |> Keyword.delete(:as)
-      |> replace_key(:deprecate, :deprecation)
-
-    struct!(Absinthe.Blueprint.Schema.EnumValueDefinition, attrs)
+  def handle_enum_value_attrs(identifier, raw_attrs) do
+    raw_attrs
+    |> expand_ast(raw_attrs)
+    |> Keyword.put(:identifier, identifier)
+    |> Keyword.put(:value, Keyword.get(raw_attrs, :as, identifier))
+    |> Keyword.put_new(:name, String.upcase(to_string(identifier)))
+    |> Keyword.delete(:as)
+    |> replace_key(:deprecate, :deprecation)
   end
 
   @doc false
   # Record an enum value in the current scope
   def record_value!(env, identifier, raw_attrs) do
-    value = build_enum_value(identifier, raw_attrs)
-    put_attr(env.module, {:value, value})
+    attrs = handle_enum_value_attrs(identifier, raw_attrs)
+    record!(env, Schema.EnumValueDefinition, identifier, attrs, [])
   end
 
   @doc false
   # Record an enum value in the current scope
   def record_values!(env, values) do
-    values
-    |> expand_ast(env)
-    |> Enum.each(&record_value!(env, &1, []))
+    values =
+      values
+      |> expand_ast(env)
+      |> Enum.map(fn ident ->
+        value_attrs = handle_enum_value_attrs(ident, [])
+        struct!(Schema.EnumValueDefinition, value_attrs)
+      end)
+    put_attr(env.module, {:values, values})
   end
 
   def record_config!(env, fun_ast) do
@@ -1362,20 +1368,25 @@ defmodule Absinthe.Schema.Notation do
 
     definition = struct!(type, attrs)
 
-    put_attr(caller.module, definition)
+    ref = put_attr(caller.module, definition)
 
     [
-      quote do
-        unquote(__MODULE__).put_desc(__MODULE__, unquote(type), unquote(identifier))
-      end,
+      get_desc(ref),
       body,
       quote(do: unquote(__MODULE__).close_scope())
     ]
   end
 
+  defp get_desc(ref) do
+    quote do
+      unquote(__MODULE__).put_desc(__MODULE__, unquote(ref))
+    end
+  end
+
   defp put_attr(module, thing) do
-    Module.put_attribute(module, :absinthe_blueprint, thing)
-    []
+    ref = :erlang.unique_integer
+    Module.put_attribute(module, :absinthe_blueprint, {ref, thing})
+    ref
   end
 
   defp default_name(Schema.FieldDefinition, identifier) do
@@ -1441,13 +1452,8 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
-  def put_desc(module, type, identifier) do
-    Module.put_attribute(
-      module,
-      :absinthe_desc,
-      {{type, identifier}, Module.get_attribute(module, :desc)}
-    )
-
+  def put_desc(module, ref) do
+    Module.put_attribute(module, :absinthe_desc, {ref, Module.get_attribute(module, :desc)})
     Module.put_attribute(module, :desc, nil)
   end
 
@@ -1459,14 +1465,13 @@ defmodule Absinthe.Schema.Notation do
     module_attribute_descs =
       env.module
       |> Module.get_attribute(:absinthe_desc)
-      |> Map.new()
+      |> Map.new
 
     attrs =
       env.module
       |> Module.get_attribute(:absinthe_blueprint)
       |> List.insert_at(0, :close)
-      |> Enum.reverse()
-      |> intersperse_descriptions(module_attribute_descs)
+      |> reverse_with_descs(module_attribute_descs)
 
     imports =
       (Module.get_attribute(env.module, :__absinthe_type_imports__) || [])
@@ -1495,10 +1500,6 @@ defmodule Absinthe.Schema.Notation do
     [schema] = blueprint.schema_definitions
 
     functions = build_functions(schema)
-
-    if System.get_env("FUN") do
-      functions |> Macro.to_string() |> Code.format_string!() |> IO.puts()
-    end
 
     quote do
       unquote(__MODULE__).noop(@desc)
@@ -1606,17 +1607,18 @@ defmodule Absinthe.Schema.Notation do
     middleware
   end
 
-  defp intersperse_descriptions(attrs, descs) do
-    Enum.flat_map(attrs, fn
-      %struct{identifier: identifier} = val ->
-        case Map.get(descs, {struct, identifier}) do
-          nil -> [val]
-          desc -> [val, {:desc, desc}]
-        end
+  defp reverse_with_descs(attrs, descs, acc \\ [])
 
-      val ->
-        [val]
-    end)
+  defp reverse_with_descs([], _descs, acc), do: acc
+  defp reverse_with_descs([{ref, attr} | rest], descs, acc) do
+    if desc = Map.get(descs, ref) do
+      reverse_with_descs(rest, descs, [attr, {:desc, desc} | acc])
+    else
+      reverse_with_descs(rest, descs, [attr | acc])
+    end
+  end
+  defp reverse_with_descs([attr | rest], descs, acc) do
+    reverse_with_descs(rest, descs, [attr | acc])
   end
 
   defp expand_ast(ast, env) do

@@ -280,8 +280,8 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
             %Absinthe.Type.Enum{values_by_internal_value: values} ->
               {:ok, values[value].name}
 
-            %{serialize: serializer} ->
-              {:ok, inspect(serializer.(value))}
+            %Absinthe.Type.Scalar{} = type ->
+              {:ok, inspect(Absinthe.Type.function(type, :serialize).(value))}
 
             _ ->
               {:ok, to_string(value)}
