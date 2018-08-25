@@ -20,7 +20,7 @@ defmodule Absinthe.Language.SchemaDefinition do
       %Blueprint.Schema.SchemaDefinition{
         description: node.description,
         type_definitions: Absinthe.Blueprint.Draft.convert(node.fields, doc),
-        directive_definitions: Absinthe.Blueprint.Draft.convert(node.directives, doc)
+        directives: Absinthe.Blueprint.Draft.convert(node.directives, doc)
       }
     end
   end

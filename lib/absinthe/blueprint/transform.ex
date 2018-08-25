@@ -86,7 +86,7 @@ defmodule Absinthe.Blueprint.Transform do
     Blueprint.Schema.InterfaceTypeDefinition => [:fields, :directives],
     Blueprint.Schema.ObjectTypeDefinition => [:interfaces, :fields, :directives],
     Blueprint.Schema.ScalarTypeDefinition => [:directives],
-    Blueprint.Schema.SchemaDefinition => [:directive_definitions, :type_definitions],
+    Blueprint.Schema.SchemaDefinition => [:directive_definitions, :type_definitions, :directives],
     Blueprint.Schema.UnionTypeDefinition => [:directives, :types]
   }
 
