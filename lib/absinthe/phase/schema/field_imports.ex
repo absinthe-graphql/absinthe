@@ -11,6 +11,8 @@ defmodule Absinthe.Phase.Schema.FieldImports do
   end
 
   def handle_imports(%Schema.SchemaDefinition{} = schema) do
+    # Per Phase.Schema.ValidateTypeReferences, the types are already
+    # in the order they need to be in to accumulate imports properly.
     types = Enum.reduce(schema.type_definitions, %{}, fn type, types ->
       Map.put(types, type.identifier, import_fields(type, types))
     end)
