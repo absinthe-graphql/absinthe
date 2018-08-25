@@ -64,18 +64,6 @@ defmodule Absinthe.Type.InputObject do
             definition: nil,
             __reference__: nil
 
-  def build(%{attrs: attrs}) do
-    fields =
-      attrs
-      |> Keyword.get(:fields, [])
-      |> Type.Field.build()
-      |> Type.Object.handle_imports(attrs[:field_imports])
-
-    attrs = Keyword.put(attrs, :fields, fields)
-
-    quote do: %unquote(__MODULE__){unquote_splicing(attrs)}
-  end
-
   defimpl Absinthe.Traversal.Node do
     def children(node, _traversal) do
       Map.values(node.fields)

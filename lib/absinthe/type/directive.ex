@@ -47,30 +47,6 @@ defmodule Absinthe.Type.Directive do
             __private__: [],
             __reference__: nil
 
-  def build(%{attrs: attrs}) do
-    args =
-      attrs
-      |> Keyword.get(:args, [])
-      |> Enum.map(fn {name, attrs} ->
-        {name, ensure_reference(attrs, attrs[:__reference__])}
-      end)
-      |> Type.Argument.build()
-
-    attrs = Keyword.put(attrs, :args, args)
-
-    quote do: %unquote(__MODULE__){unquote_splicing(attrs)}
-  end
-
-  defp ensure_reference(arg_attrs, default_reference) do
-    case Keyword.has_key?(arg_attrs, :__reference__) do
-      true ->
-        arg_attrs
-
-      false ->
-        Keyword.put(arg_attrs, :__reference__, default_reference)
-    end
-  end
-
   # Whether the directive is active in `place`
   @doc false
   @spec on?(t, Language.t()) :: boolean

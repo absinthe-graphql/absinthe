@@ -87,26 +87,6 @@ defmodule Absinthe.Type.Enum do
             definition: nil,
             __reference__: nil
 
-  def build(%{attrs: attrs}) do
-    raw_values = attrs[:values] || []
-
-    values = Type.Enum.Value.build(raw_values)
-    internal_values = Type.Enum.Value.build(raw_values, :value)
-    values_by_name = Type.Enum.Value.build(raw_values, :name)
-
-    attrs =
-      attrs
-      |> Keyword.put(:values, values)
-      |> Keyword.put(:values_by_internal_value, internal_values)
-      |> Keyword.put(:values_by_name, values_by_name)
-
-    quote do
-      %unquote(__MODULE__){
-        unquote_splicing(attrs)
-      }
-    end
-  end
-
   # Get the internal representation of an enum value
   @doc false
   @spec parse(t, any) :: any

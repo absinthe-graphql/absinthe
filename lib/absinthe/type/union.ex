@@ -56,10 +56,6 @@ defmodule Absinthe.Type.Union do
             definition: nil,
             __reference__: nil
 
-  def build(%{attrs: attrs}) do
-    quote do: %unquote(__MODULE__){unquote_splicing(attrs)}
-  end
-
   @doc false
   @spec member?(t, Type.t()) :: boolean
   def member?(%{types: types}, %{__reference__: %{identifier: ident}}) do

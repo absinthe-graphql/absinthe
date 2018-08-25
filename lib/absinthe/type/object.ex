@@ -103,44 +103,6 @@ defmodule Absinthe.Type.Object do
             definition: nil,
             __reference__: nil
 
-  def build(%{attrs: attrs}) do
-    fields =
-      (attrs[:fields] || [])
-      |> Type.Field.build()
-      |> handle_imports(attrs[:field_imports])
-
-    attrs = Keyword.put(attrs, :fields, fields)
-
-    quote do
-      %unquote(__MODULE__){
-        unquote_splicing(attrs)
-      }
-    end
-  end
-
-  @doc false
-  def handle_imports(fields, []), do: fields
-  def handle_imports(fields, nil), do: fields
-
-  def handle_imports(fields, imports) do
-    quote do
-      Enum.reduce(
-        unquote(imports),
-        unquote(fields),
-        &Absinthe.Type.Object.import_fields(__MODULE__, &1, &2)
-      )
-    end
-  end
-
-  def import_fields(schema, {type, _opts}, fields) do
-    case schema.__absinthe_type__(type) do
-      %{fields: new_fields} ->
-        Map.merge(fields, new_fields)
-
-      _ ->
-        fields
-    end
-  end
 
   @doc false
   @spec field(t, atom) :: Absinthe.Type.Field.t()

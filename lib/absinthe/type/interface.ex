@@ -77,19 +77,6 @@ defmodule Absinthe.Type.Interface do
             definition: nil,
             __reference__: nil
 
-  def build(%{attrs: attrs}) do
-    fields =
-      (attrs[:fields] || [])
-      |> Type.Field.build()
-      |> Type.Object.handle_imports(attrs[:field_imports])
-
-    attrs = Keyword.put(attrs, :fields, fields)
-
-    quote do
-      %unquote(__MODULE__){unquote_splicing(attrs)}
-    end
-  end
-
   @spec resolve_type(Type.Interface.t(), any, Absinthe.Resolution.t()) :: Type.t() | nil
   def resolve_type(type, obj, env, opts \\ [lookup: true])
 
