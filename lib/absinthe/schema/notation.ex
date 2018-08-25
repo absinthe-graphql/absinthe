@@ -5,8 +5,8 @@ defmodule Absinthe.Schema.Notation do
   Module.register_attribute(__MODULE__, :placement, accumulate: true)
 
   defmacro __using__(_opts) do
-    Module.register_attribute(__CALLER__.module, :absinthe_blueprint, [])
-    Module.put_attribute(__CALLER__.module, :absinthe_blueprint, [%Absinthe.Blueprint{}])
+    Module.register_attribute(__CALLER__.module, :absinthe_blueprint, accumulate: true)
+    Module.put_attribute(__CALLER__.module, :absinthe_blueprint, %Absinthe.Blueprint{})
     Module.register_attribute(__CALLER__.module, :absinthe_desc, accumulate: true)
 
     quote do
@@ -1374,8 +1374,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp put_attr(module, thing) do
-    existing = Module.get_attribute(module, :absinthe_blueprint)
-    Module.put_attribute(module, :absinthe_blueprint, [thing | existing])
+    Module.put_attribute(module, :absinthe_blueprint, thing)
     []
   end
 
