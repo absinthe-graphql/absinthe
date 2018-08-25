@@ -191,7 +191,8 @@ defmodule Absinthe.Schema do
 
     [
       Phase.Schema.TypeImports,
-      # TODO: Phase.Schema.FieldImports,
+      Phase.Schema.ValidateTypeReferences,
+      Phase.Schema.FieldImports,
       Phase.Validation.KnownTypeNames,
       {Phase.Schema.Compile, opts}
     ]

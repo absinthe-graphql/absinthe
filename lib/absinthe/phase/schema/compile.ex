@@ -1,4 +1,6 @@
 defmodule Absinthe.Phase.Schema.Compile do
+  @moduledoc false
+
   alias Absinthe.Blueprint.Schema
 
   def run(blueprint, opts) do

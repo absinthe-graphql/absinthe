@@ -103,6 +103,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
                Bar.__absinthe_type__(:baz).fields |> Map.keys() |> Enum.sort()
     end
 
+    @tag :pending_schema
     test "raises errors nicely" do
       defmodule ErrorSchema do
         use Absinthe.Schema.Notation
@@ -126,6 +127,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
              } = error
     end
 
+    @tag :pending_schema
     test "handles circular errors" do
       defmodule Circles do
         use Absinthe.Schema.Notation
