@@ -59,7 +59,7 @@ defmodule Absinthe.Type.UnionTest do
       assert %Absinthe.Type.Union{
                name: "SearchResult",
                description: "A search result",
-               types: [:person, :business]
+               types: [:business, :person]
              } = obj
 
       assert Absinthe.Type.function(obj, :resolve_type)

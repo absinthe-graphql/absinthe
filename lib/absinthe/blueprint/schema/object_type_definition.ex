@@ -56,7 +56,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
       field = %Type.Field{
         identifier: field_def.identifier,
         middleware: [middleware_shim],
-        deprecation: Type.Deprecation.build(field_def.deprecation),
+        deprecation: field_def.deprecation,
         description: field_def.description,
         complexity: {type_def.identifier, field_def.identifier},
         config: {type_def.identifier, field_def.identifier},
@@ -79,7 +79,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
         name: arg_def.name,
         type: arg_def.type,
         default_value: arg_def.default_value,
-        deprecation: Type.Deprecation.build(arg_def.deprecation)
+        deprecation: arg_def.deprecation
       }
 
       {arg_def.identifier, arg}

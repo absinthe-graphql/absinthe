@@ -44,7 +44,7 @@ defmodule Absinthe.Blueprint.Schema.InputObjectTypeDefinition do
     for field_def <- type_def.fields, into: %{} do
       field = %Type.Field{
         identifier: field_def.identifier,
-        deprecation: Type.Deprecation.build(field_def.deprecation),
+        deprecation: field_def.deprecation,
         description: field_def.description,
         name: field_def.name,
         type: field_def.type,

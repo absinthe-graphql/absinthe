@@ -5,7 +5,7 @@
        "description" => "A named entity",
        "kind" => "INTERFACE",
        "name" => "NamedEntity",
-       "possibleTypes" => [%{"name" => "Person"}, %{"name" => "Business"}]
+       "possibleTypes" => [%{"name" => "Business"}, %{"name" => "Person"}]
      }
    }
  }}

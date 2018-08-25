@@ -309,18 +309,6 @@ defmodule Absinthe.Schema.Notation do
     |> record_resolve_type!(func_ast)
   end
 
-  defp replace_key(attrs, k1, k2) do
-    case Keyword.fetch(attrs, k1) do
-      {:ok, value} ->
-        attrs
-        |> Keyword.delete(k1)
-        |> Keyword.put(k2, value)
-
-      _ ->
-        attrs
-    end
-  end
-
   defp handle_field_attrs(attrs, caller) do
     block =
       for {identifier, arg_attrs} <- Keyword.get(attrs, :args, []) do
@@ -346,9 +334,24 @@ defmodule Absinthe.Schema.Notation do
       attrs
       |> expand_ast(caller)
       |> Keyword.delete(:args)
-      |> replace_key(:deprecate, :deprecation)
+      |> handle_deprecate
 
     {attrs, block}
+  end
+
+  defp handle_deprecate(attrs) do
+    deprecation = build_deprecation(attrs[:deprecate])
+    attrs
+    |> Keyword.delete(:deprecate)
+    |> Keyword.put(:deprecation, deprecation)
+  end
+
+  defp build_deprecation(msg) do
+    case msg do
+      true -> %Absinthe.Type.Deprecation{reason: nil}
+      reason when is_binary(reason) -> %Absinthe.Type.Deprecation{reason: reason}
+      _ -> nil
+    end
   end
 
   # FIELDS
@@ -1160,7 +1163,7 @@ defmodule Absinthe.Schema.Notation do
   defp build_arg(identifier, attrs) do
     attrs =
       attrs
-      |> replace_key(:deprecate, :deprecation)
+      |> handle_deprecate
       |> Keyword.put(:identifier, identifier)
       |> Keyword.put(:name, to_string(identifier))
 
@@ -1249,7 +1252,9 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record a deprecation in the current scope
   def record_deprecate!(env, msg) do
-    put_attr(env.module, {:deprecation, msg})
+    msg = expand_ast(msg, env)
+    deprecation = build_deprecation(msg)
+    put_attr(env.module, {:deprecation, deprecation})
   end
 
   @doc false
@@ -1288,7 +1293,7 @@ defmodule Absinthe.Schema.Notation do
     |> Keyword.put(:value, Keyword.get(raw_attrs, :as, identifier))
     |> Keyword.put_new(:name, String.upcase(to_string(identifier)))
     |> Keyword.delete(:as)
-    |> replace_key(:deprecate, :deprecation)
+    |> handle_deprecate
   end
 
   @doc false
