@@ -36,7 +36,7 @@ defmodule Absinthe.Schema do
         context
       end
 
-      defoverridable(context: 1, middleware: 3)
+      defoverridable(context: 1, middleware: 3, plugins: 0)
     end
   end
 

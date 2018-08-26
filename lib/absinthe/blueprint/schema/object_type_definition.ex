@@ -93,6 +93,10 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
         {obj, field},
         :middleware
       ])
+    schema = res.schema
+    object = Absinthe.Schema.lookup_type(schema, obj)
+    field = object.fields |> Map.fetch!(field)
+    middleware = schema.middleware(middleware, field, object)
 
     %{res | middleware: middleware}
   end
