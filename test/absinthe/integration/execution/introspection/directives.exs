@@ -14,7 +14,7 @@
              }
            ],
            "name" => "include",
-           "locations" => ["INLINE_FRAGMENT", "FRAGMENT_SPREAD", "FIELD"],
+           "locations" => ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"],
            "onField" => true,
            "onFragment" => true,
            "onOperation" => false
@@ -30,7 +30,7 @@
              }
            ],
            "name" => "skip",
-           "locations" => ["INLINE_FRAGMENT", "FRAGMENT_SPREAD", "FIELD"],
+           "locations" => ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"],
            "onField" => true,
            "onFragment" => true,
            "onOperation" => false

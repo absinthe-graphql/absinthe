@@ -3,7 +3,7 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
 
   # Analyses document complexity.
 
-  alias Absinthe.{Blueprint, Phase, Complexity}
+  alias Absinthe.{Blueprint, Phase, Complexity, Type}
 
   use Absinthe.Phase
 
@@ -73,15 +73,8 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
     # You would have to evaluate the complexity for every possible type which can get
     # pretty unwieldy. For now, simple types it is.
     child_complexity = sum_complexity(fields)
-
-    schema_node = %{
-      schema_node
-      | complexity:
-          schema_node.definition.__absinthe_function__(
-            Absinthe.Type.Field,
-            schema_node.complexity,
-            :complexity
-          )
+    schema_node = %{schema_node |
+      complexity: Type.function(schema_node, schema_node.complexity, :complexity)
     }
 
     case field_complexity(schema_node, args, child_complexity, info, node) do

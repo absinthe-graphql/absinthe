@@ -32,7 +32,7 @@ defmodule Absinthe.Blueprint.Schema.DirectiveDefinition do
       identifier: type_def.identifier,
       description: type_def.description,
       args: Blueprint.Schema.ObjectTypeDefinition.build_args(type_def),
-      locations: type_def.locations,
+      locations: type_def.locations |> Enum.sort,
       definition: type_def.module
     }
   end
