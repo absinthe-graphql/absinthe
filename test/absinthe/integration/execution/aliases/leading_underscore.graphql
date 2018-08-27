@@ -1,5 +1,0 @@
-query {
-  _thing123: thing(id: "foo") {
-    name
-  }
-}

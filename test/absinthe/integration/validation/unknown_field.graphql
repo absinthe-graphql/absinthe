@@ -1,6 +1,0 @@
-{
-  thing(id: "foo") {
-    name
-    bad
-  }
-}
