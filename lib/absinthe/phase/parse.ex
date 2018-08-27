@@ -80,10 +80,9 @@ defmodule Absinthe.Phase.Parse do
   end
 
   @spec format_raw_parse_error({integer, :absinthe_parser, [charlist]}) :: Phase.Error.t()
-  defp format_raw_parse_error({line, :absinthe_parser, msgs}) do
+  defp format_raw_parse_error({{line, column}, :absinthe_parser, msgs}) do
     message = msgs |> Enum.map(&to_string/1) |> Enum.join("")
-    # Parser doesn't report column numbers
-    %Phase.Error{message: message, locations: [%{line: line, column: 0}], phase: __MODULE__}
+    %Phase.Error{message: message, locations: [%{line: line, column: column}], phase: __MODULE__}
   end
 
   @spec format_raw_parse_error({:lexer, String.t(), {line :: pos_integer, column :: pos_integer}}) ::
