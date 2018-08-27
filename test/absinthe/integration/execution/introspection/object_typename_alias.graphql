@@ -1,7 +1,0 @@
-# Schema: ContactSchema
-query {
-  person {
-    kind: __typename
-    name
-  }
-}

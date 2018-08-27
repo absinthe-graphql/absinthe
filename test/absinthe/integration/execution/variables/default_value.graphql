@@ -1,4 +1,0 @@
-# Schema: TimesSchema
-query ($mult: Int = 6) {
-  times(base: 4, multiplier: $mult)
-}

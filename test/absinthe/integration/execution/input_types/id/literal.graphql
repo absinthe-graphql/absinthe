@@ -1,7 +1,0 @@
-# Schema: IdTestSchema
-{
-  item(id: "foo") {
-    id
-    name
-  }
-}
