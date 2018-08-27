@@ -2,7 +2,6 @@ defmodule Elixir.Absinthe.Integration.Validation.MissingOperationTest do
   use ExUnit.Case, async: true
 
   @query """
-  # Schema: OnlyQuerySchema
   mutation { foo }
   """
 

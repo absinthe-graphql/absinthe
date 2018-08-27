@@ -71,7 +71,7 @@ defmodule Absinthe.Phase.Document.VariablesTest do
           message: "Variable \"input\" cannot be non-input type \"Thing\"."
         },
         %{
-          locations: [%{column: 11, line: 1}, %{column: 7, line: 1}],
+          locations: [%{column: 11, line: 1}, %{column: 1, line: 1}],
           message: "Variable \"input\" is never used in operation \"Foo\"."
         }
       ]

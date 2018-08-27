@@ -32,18 +32,18 @@ Definition -> OperationDefinition : '$1'.
 Definition -> Fragment : '$1'.
 Definition -> TypeDefinition : '$1'.
 
-OperationType -> 'query' : extract_atom('$1').
-OperationType -> 'mutation' : extract_atom('$1').
-OperationType -> 'subscription' : extract_atom('$1').
+OperationType -> 'query' : '$1'.
+OperationType -> 'mutation' : '$1'.
+OperationType -> 'subscription' : '$1'.
 
 OperationDefinition -> SelectionSet : build_ast_node('OperationDefinition', #{'operation' => 'query', 'selection_set' => '$1'}, extract_child_location('$1')).
-OperationDefinition -> OperationType SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'selection_set' => '$2'}, extract_location('$2')).
-OperationDefinition -> OperationType VariableDefinitions SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'variable_definitions' => '$2', 'selection_set' => '$3'}, extract_child_location('$2')).
-OperationDefinition -> OperationType VariableDefinitions Directives SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'variable_definitions' => '$2', 'directives' => '$3', 'selection_set' => '$4'}, extract_child_location('$2')).
-OperationDefinition -> OperationType Name SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => extract_binary('$2'), 'selection_set' => '$3'}, extract_location('$2')).
-OperationDefinition -> OperationType Name VariableDefinitions SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => extract_binary('$2'), 'variable_definitions' => '$3', 'selection_set' => '$4'}, extract_location('$2')).
-OperationDefinition -> OperationType Name Directives SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => extract_binary('$2'), 'directives' => '$3', 'selection_set' => '$4'}, extract_location('$2')).
-OperationDefinition -> OperationType Name VariableDefinitions Directives SelectionSet : build_ast_node('OperationDefinition', #{'operation' => '$1', 'name' => extract_binary('$2'), 'variable_definitions' => '$3', 'directives' => '$4', 'selection_set' => '$5'}, extract_location('$2')).
+OperationDefinition -> OperationType SelectionSet : build_ast_node('OperationDefinition', #{'operation' => extract_atom('$1'), 'selection_set' => '$2'}, extract_location('$1')).
+OperationDefinition -> OperationType VariableDefinitions SelectionSet : build_ast_node('OperationDefinition', #{'operation' => extract_atom('$1'), 'variable_definitions' => '$2', 'selection_set' => '$3'}, extract_child_location('$1')).
+OperationDefinition -> OperationType VariableDefinitions Directives SelectionSet : build_ast_node('OperationDefinition', #{'operation' => extract_atom('$1'), 'variable_definitions' => '$2', 'directives' => '$3', 'selection_set' => '$4'}, extract_child_location('$1')).
+OperationDefinition -> OperationType Name SelectionSet : build_ast_node('OperationDefinition', #{'operation' => extract_atom('$1'), 'name' => extract_binary('$2'), 'selection_set' => '$3'}, extract_location('$1')).
+OperationDefinition -> OperationType Name VariableDefinitions SelectionSet : build_ast_node('OperationDefinition', #{'operation' => extract_atom('$1'), 'name' => extract_binary('$2'), 'variable_definitions' => '$3', 'selection_set' => '$4'}, extract_location('$1')).
+OperationDefinition -> OperationType Name Directives SelectionSet : build_ast_node('OperationDefinition', #{'operation' => extract_atom('$1'), 'name' => extract_binary('$2'), 'directives' => '$3', 'selection_set' => '$4'}, extract_location('$1')).
+OperationDefinition -> OperationType Name VariableDefinitions Directives SelectionSet : build_ast_node('OperationDefinition', #{'operation' => extract_atom('$1'), 'name' => extract_binary('$2'), 'variable_definitions' => '$3', 'directives' => '$4', 'selection_set' => '$5'}, extract_location('$1')).
 
 Fragment -> 'fragment' FragmentName 'on' TypeCondition SelectionSet : build_ast_node('Fragment', #{'name' => '$2', 'type_condition' => '$4', 'selection_set' => '$5'}, extract_location('$1')).
 Fragment -> 'fragment' FragmentName 'on' TypeCondition Directives SelectionSet : build_ast_node('Fragment', #{'name' => '$2', 'type_condition' => '$4', 'directives' => '$5', 'selection_set' => '$6'}, extract_location('$1')).
