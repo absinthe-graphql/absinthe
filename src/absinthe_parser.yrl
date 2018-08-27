@@ -120,20 +120,20 @@ Directive -> '@' 'on' : build_ast_node('Directive', #{name => extract_binary('$2
 Directive -> '@' 'on' Arguments : build_ast_node('Directive', #{name => extract_binary('$2'), 'arguments' => '$3'}, extract_location('$1')).
 
 NameWithoutOn -> 'name' : '$1'.
-NameWithoutOn -> 'query' : extract_binary('$1').
-NameWithoutOn -> 'mutation' : extract_binary('$1').
-NameWithoutOn -> 'subscription' : extract_binary('$1').
-NameWithoutOn -> 'fragment' : extract_binary('$1').
-NameWithoutOn -> 'type' : extract_binary('$1').
-NameWithoutOn -> 'implements' : extract_binary('$1').
-NameWithoutOn -> 'interface' : extract_binary('$1').
-NameWithoutOn -> 'union' : extract_binary('$1').
-NameWithoutOn -> 'scalar' : extract_binary('$1').
-NameWithoutOn -> 'schema' : extract_binary('$1').
-NameWithoutOn -> 'enum' : extract_binary('$1').
-NameWithoutOn -> 'input' : extract_binary('$1').
-NameWithoutOn -> 'extend' : extract_binary('$1').
-NameWithoutOn -> 'directive' : extract_binary('$1').
+NameWithoutOn -> 'query' : '$1'.
+NameWithoutOn -> 'mutation' : '$1'.
+NameWithoutOn -> 'subscription' : '$1'.
+NameWithoutOn -> 'fragment' : '$1'.
+NameWithoutOn -> 'type' : '$1'.
+NameWithoutOn -> 'implements' : '$1'.
+NameWithoutOn -> 'interface' : '$1'.
+NameWithoutOn -> 'union' : '$1'.
+NameWithoutOn -> 'scalar' : '$1'.
+NameWithoutOn -> 'schema' : '$1'.
+NameWithoutOn -> 'enum' : '$1'.
+NameWithoutOn -> 'input' : '$1'.
+NameWithoutOn -> 'extend' : '$1'.
+NameWithoutOn -> 'directive' : '$1'.
 
 Name -> NameWithoutOn : '$1'.
 Name -> 'on' : extract_binary('$1').
@@ -287,7 +287,7 @@ extract_location({_Token, {Line, Column}}) ->
   #{'line' => Line, 'column' => Column};
 extract_location({_Token, {Line, Column}, _Value}) ->
   #{'line' => Line, 'column' => Column};
-extract_location(_) ->
+extract_location(_Other) ->
   #{'line' => nil, 'column' => nil}.
 
 extract_child_location([Head|_]) ->
