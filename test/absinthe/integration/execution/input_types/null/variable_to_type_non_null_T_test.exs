@@ -6,7 +6,7 @@ defmodule Elixir.Absinthe.Integration.Execution.InputTypes.Null.VariableToTypeNo
   """
 
   test "scenario #1" do
-    assert {:ok, %{errors: [%{message: "Argument \"input\" has invalid value {base: $value}.\nIn field \"base\": Expected type \"Int!\", found $value."},
+    assert {:ok, %{errors: [%{message: "Argument \"input\" has invalid value {base: $value}.\nIn field \"base\": Expected type \"Int!\", found $value.", locations: [%{column: 40, line: 1}]},
                             %{message: "Variable \"value\": Expected non-null, found null.", locations: [%{column: 8, line: 1}]}]}} == Absinthe.run(@query, Absinthe.Fixtures.ObjectTimesSchema, [variables: %{"value" => nil}])
   end
   test "scenario #2" do

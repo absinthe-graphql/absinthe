@@ -2,7 +2,6 @@ defmodule Elixir.Absinthe.Integration.Execution.InputTypes.Null.LiteralToType_TO
   use ExUnit.Case, async: true
 
   @query """
-  # Schema: ObjectTimesSchema
   query {
     times: objTimes(input: {base: 4, multiplier: null})
   }

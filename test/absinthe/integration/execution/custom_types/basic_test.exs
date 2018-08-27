@@ -2,7 +2,6 @@ defmodule Elixir.Absinthe.Integration.Execution.CustomTypes.BasicTest do
   use ExUnit.Case, async: true
 
   @query """
-  # Schema: CustomTypesSchema
   query {
     customTypesQuery { datetime }
   }

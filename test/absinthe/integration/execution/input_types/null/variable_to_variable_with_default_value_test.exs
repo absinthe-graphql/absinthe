@@ -2,7 +2,6 @@ defmodule Elixir.Absinthe.Integration.Execution.InputTypes.Null.VariableToVariab
   use ExUnit.Case, async: true
 
   @query """
-  # Schema: TimesSchema
   query ($mult: Int = 6) {
     times(base: 4, multiplier: $mult)
   }

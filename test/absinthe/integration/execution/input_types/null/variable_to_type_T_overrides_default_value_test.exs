@@ -2,7 +2,6 @@ defmodule Elixir.Absinthe.Integration.Execution.InputTypes.Null.VariableToType_T
   use ExUnit.Case, async: true
 
   @query """
-  # Schema: ObjectTimesSchema
   query ($multiplier: Int) {
     times: objTimes(input: {base: 4, multiplier: $multiplier})
   }

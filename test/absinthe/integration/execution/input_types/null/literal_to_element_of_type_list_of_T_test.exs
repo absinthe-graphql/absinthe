@@ -2,7 +2,6 @@ defmodule Elixir.Absinthe.Integration.Execution.InputTypes.Null.LiteralToElement
   use ExUnit.Case, async: true
 
   @query """
-  # Schema: NullListsSchema
   query {
     nullableList(input: [null, 1]) {
       length

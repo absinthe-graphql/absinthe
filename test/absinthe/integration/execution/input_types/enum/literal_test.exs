@@ -2,7 +2,6 @@ defmodule Elixir.Absinthe.Integration.Execution.InputTypes.Enum.LiteralTest do
   use ExUnit.Case, async: true
 
   @query """
-  # Schema: ColorSchema
   query {
     red: info(channel: RED) {
       name

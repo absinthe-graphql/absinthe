@@ -2,7 +2,6 @@ defmodule Elixir.Absinthe.Integration.Execution.Fragments.BasicTest do
   use ExUnit.Case, async: true
 
   @query """
-  # Schema: ContactSchema
   query Q {
     person {
       ...NamedPerson

@@ -2,7 +2,6 @@ defmodule Elixir.Absinthe.Integration.Execution.CustomTypes.Datetime.InputObject
   use ExUnit.Case, async: true
 
   @query """
-  # Schema: CustomTypesSchema
   mutation {
     customTypesMutation(args: { datetime: "2017-01-27T20:31:55Z" }) {
       message

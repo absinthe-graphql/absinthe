@@ -2,7 +2,6 @@ defmodule Elixir.Absinthe.Integration.Execution.Fragments.IntrospectionTest do
   use ExUnit.Case, async: true
 
   @query """
-  # Schema: ContactSchema
   query Q {
     __type(name: "ProfileInput") {
       name

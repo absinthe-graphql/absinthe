@@ -2,7 +2,6 @@ defmodule Elixir.Absinthe.Integration.Execution.InputTypes.Id.LiteralTest do
   use ExUnit.Case, async: true
 
   @query """
-  # Schema: IdTestSchema
   {
     item(id: "foo") {
       id
