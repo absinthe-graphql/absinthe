@@ -29,8 +29,12 @@ defmodule Absinthe.Language.InputValueDefinition do
         description: node.description,
         type: Blueprint.Draft.convert(node.type, doc),
         default_value: Blueprint.Draft.convert(node.default_value, doc),
-        directives: Blueprint.Draft.convert(node.directives, doc)
+        directives: Blueprint.Draft.convert(node.directives, doc),
+        source_location: source_location(node)
       }
     end
+
+    defp source_location(%{loc: nil}), do: nil
+    defp source_location(%{loc: loc}), do: Blueprint.SourceLocation.at(loc)    
   end
 end

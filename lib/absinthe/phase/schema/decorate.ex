@@ -78,14 +78,4 @@ defmodule Absinthe.Phase.Schema.Decorate do
   #   }
   # end
 
-  # Generate the error for the node
-  @spec error(Blueprint.Schema.t(), String.t()) :: Phase.Error.t()
-  defp error(node, text) do
-    %Absinthe.Phase.Error{
-      phase: __MODULE__,
-      message: text,
-      locations: [node.source_location]
-    }
-  end  
-
 end

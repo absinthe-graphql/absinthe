@@ -27,8 +27,12 @@ defmodule Absinthe.Language.ObjectTypeDefinition do
         identifier: Macro.underscore(node.name) |> String.to_atom(),
         fields: Absinthe.Blueprint.Draft.convert(node.fields, doc),
         interfaces: Absinthe.Blueprint.Draft.convert(node.interfaces, doc),
-        directives: Absinthe.Blueprint.Draft.convert(node.directives, doc)
+        directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
+        source_location: source_location(node)
       }
     end
+
+    defp source_location(%{loc: nil}), do: nil
+    defp source_location(%{loc: loc}), do: Blueprint.SourceLocation.at(loc)    
   end
 end

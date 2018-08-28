@@ -9,6 +9,7 @@ defmodule Absinthe.Blueprint.Schema.SchemaDefinition do
             directive_definitions: [],
             type_extensions: [],
             directives: [],
+            source_location: nil,
             # Added by phases
             flags: %{},
             imports: [],
@@ -19,6 +20,7 @@ defmodule Absinthe.Blueprint.Schema.SchemaDefinition do
           description: nil | String.t(),
           # types: [Blueprint.Schema.FieldDefinition.t],
           directives: [Blueprint.Directive.t()],
+          source_location: nil | Blueprint.SourceLocation.t(),
           # Added by phases
           flags: Blueprint.flags_t(),
           errors: [Absinthe.Phase.Error.t()]

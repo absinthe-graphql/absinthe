@@ -13,6 +13,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
     fields: [],
     directives: [],
     is_type_of: nil,
+    source_location: nil,
     # Added by phases
     flags: %{},
     imports: [],
@@ -28,6 +29,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
           fields: [Blueprint.Schema.FieldDefinition.t()],
           interfaces: [String.t()],
           directives: [Blueprint.Directive.t()],
+          source_location: nil | Blueprint.SourceLocation.t(),
           # Added by phases
           flags: Blueprint.flags_t(),
           errors: [Absinthe.Phase.Error.t()],

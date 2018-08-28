@@ -13,6 +13,7 @@ defmodule Absinthe.Blueprint.Schema.EnumValueDefinition do
     directives: [],
     source_location: nil,
     description: nil,
+    source_location: nil,
     # Added by phases
     flags: %{},
     module: nil,

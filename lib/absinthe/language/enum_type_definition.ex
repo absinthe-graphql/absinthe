@@ -23,8 +23,12 @@ defmodule Absinthe.Language.EnumTypeDefinition do
         name: node.name,
         description: node.description,
         values: Absinthe.Blueprint.Draft.convert(node.values, doc),
-        directives: Absinthe.Blueprint.Draft.convert(node.directives, doc)
+        directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
+        source_location: source_location(node),
       }
     end
+
+    defp source_location(%{loc: nil}), do: nil
+    defp source_location(%{loc: loc}), do: Blueprint.SourceLocation.at(loc)
   end
 end

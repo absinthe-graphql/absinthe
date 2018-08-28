@@ -11,6 +11,7 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
     description: nil,
     fields: [],
     directives: [],
+    source_location: nil,
     # Added by phases
     flags: %{},
     errors: [],
@@ -25,6 +26,7 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
           description: nil | String.t(),
           fields: [Blueprint.Schema.FieldDefinition.t()],
           directives: [Blueprint.Directive.t()],
+          source_location: nil | Blueprint.SourceLocation.t(),
           # Added by phases
           flags: Blueprint.flags_t(),
           errors: [Absinthe.Phase.Error.t()]

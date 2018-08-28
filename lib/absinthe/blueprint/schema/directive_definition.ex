@@ -12,6 +12,7 @@ defmodule Absinthe.Blueprint.Schema.DirectiveDefinition do
     directives: [],
     arguments: [],
     locations: [],
+    source_location: nil,
     expand: nil,
     errors: [],
     __reference__: nil,
@@ -23,6 +24,7 @@ defmodule Absinthe.Blueprint.Schema.DirectiveDefinition do
           description: nil,
           arguments: [Blueprint.Schema.InputValueDefinition.t()],
           locations: [String.t()],
+          source_location: nil | Blueprint.SourceLocation.t(),        
           errors: [Absinthe.Phase.Error.t()]
         }
 

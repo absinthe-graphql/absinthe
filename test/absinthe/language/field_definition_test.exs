@@ -51,7 +51,8 @@ defmodule Absinthe.Language.FieldDefinitionTest do
                    default_value: %Blueprint.Input.Integer{
                      value: 4,
                      source_location: %Blueprint.SourceLocation{column: 23, line: 4}
-                   }
+                   },
+                   source_location: %Absinthe.Blueprint.SourceLocation{column: 10, line: 4}
                  }
                ],
                source_location: %Absinthe.Blueprint.SourceLocation{column: 3, line: 4}

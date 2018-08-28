@@ -11,6 +11,7 @@ defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
     :module,
     values: [],
     directives: [],
+    source_location: nil,
     # Added by phases,
     flags: %{},
     errors: [],
@@ -22,6 +23,7 @@ defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
           name: String.t(),
           values: [Blueprint.Schema.EnumValueDefinition.t()],
           directives: [Blueprint.Directive.t()],
+          source_location: nil | Blueprint.SourceLocation.t(),
           # Added by phases
           flags: Blueprint.flags_t(),
           errors: [Absinthe.Phase.Error.t()]
