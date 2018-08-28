@@ -32,6 +32,21 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       name: String!
     }
     """)
+
+    def get_posts(_, _, _) do
+      [
+        %{title: "Foo", body: "A body.", author: %{name: "Bruce"}},
+        %{title: "Bar", body: "A body.", author: %{name: "Ben"}}
+      ]
+    end
+
+    def decorations(%{identifier: :admin}, %{identifier: :query}) do
+      {:description, "The admin"}
+    end
+    def decorations(_node, _) do
+      []
+    end
+
   end
 
   describe "query root type" do
@@ -56,6 +71,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   end
 
   describe "descriptions" do
+
     test "work on objects" do
       assert %{description: "A submitted post"} = lookup_type(Definition, :post)
     end
@@ -67,6 +83,10 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     test "can be multiline" do
       assert %{description: "The post author\n(is a user)"} =
                lookup_field(Definition, :post, :author)
+    end
+
+    test "can be added by a decoration" do
+      assert %{description: "The admin"} = lookup_compiled_field(Definition, :query, :admin)
     end
   end
 
@@ -84,6 +104,19 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     test "works" do
       assert {:ok, %{data: %{"admin" => %{"name" => "Bruce"}}}} =
                Absinthe.run(@query, Definition, root_value: %{admin: %{name: "Bruce"}})
+    end
+  end
+
+  @query """
+  { posts { title } }
+  """
+
+  describe "execution with modify-defined resolvers" do
+
+    @tag :pending_schema
+    test "works" do
+      assert {:ok, %{data: %{"posts" => [%{"title" => "Foo"}, %{"title" => "Bar"}]}}} =
+              Absinthe.run(@query, Definition)
     end
   end
 end

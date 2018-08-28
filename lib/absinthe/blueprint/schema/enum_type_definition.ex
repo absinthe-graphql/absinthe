@@ -20,7 +20,7 @@ defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
 
   @type t :: %__MODULE__{
           name: String.t(),
-          values: [String.t()],
+          values: [Blueprint.Schema.EnumValueDefinition.t()],
           directives: [Blueprint.Directive.t()],
           # Added by phases
           flags: Blueprint.flags_t(),
