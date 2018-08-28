@@ -30,28 +30,28 @@ defmodule Absinthe.Phase.Schema.Decorate do
     # Apply field decorations
     node = update_in(node.fields, fn fields ->
       for field <- fields do
-        decorations = schema.decorations(field, node)
+        decorations = schema.decorations(field, [node, schema])
         apply_decorations(field, decorations, decorator)
       end
     end)
     # Apply object type decorations
-    decorations = schema.decorations(node)
+    decorations = schema.decorations(node, [schema])
     apply_decorations(node, decorations, decorator)
   end
   def handle_decorate(%node_module{} = node, schema, decorator) when node_module in @decorate_values do
     # Apply value decorations
     node = update_in(node.values, fn values ->
       for value <- values do
-        decorations = schema.decorations(value, node)
+        decorations = schema.decorations(value, [node, schema])
         apply_decorations(value, decorations, decorator)
       end
     end)
     # Apply type decorations
-    decorations = schema.decorations(node)
+    decorations = schema.decorations(node, [schema])
     apply_decorations(node, decorations, decorator)
   end  
   def handle_decorate(%node_module{} = node, schema, decorator) when node_module in @decorate_simple do
-    decorations = schema.decorations(node)
+    decorations = schema.decorations(node, [schema])
     apply_decorations(node, decorations, decorator)
   end
   def handle_decorate(node, _schema, _decorator) do

@@ -40,9 +40,12 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       ]
     end
 
-    def decorations(%{identifier: :admin}, %{identifier: :query}) do
+    def decorations(%{identifier: :admin}, [%{identifier: :query} | _]) do
       {:description, "The admin"}
     end
+    # def decorations(%{identifier: :posts}, [%{identifier: :query}] | _) do
+    #   {:resolve, &get_posts/3}
+    # end
     def decorations(_node, _) do
       []
     end

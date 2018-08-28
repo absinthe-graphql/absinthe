@@ -37,16 +37,11 @@ defmodule Absinthe.Schema do
       end
 
       @doc false
-      def decorations(node) do
+      def decorations(node, ancestors) do
         []
       end
 
-      @doc false
-      def decorations(node, parent) do
-        []
-      end      
-
-      defoverridable(context: 1, middleware: 3, plugins: 0, decorations: 1, decorations: 2)
+      defoverridable(context: 1, middleware: 3, plugins: 0, decorations: 2)
     end
   end
 
