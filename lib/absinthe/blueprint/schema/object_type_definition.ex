@@ -61,7 +61,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
         complexity: {type_def.identifier, field_def.identifier},
         config: {type_def.identifier, field_def.identifier},
         name: field_def.name,
-        type: field_def.type,
+        type: Blueprint.TypeReference.to_type(field_def.type),
         args: build_args(field_def),
         definition: field_def.module,
         __reference__: field_def.__reference__,
@@ -77,7 +77,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
       arg = %Type.Argument{
         identifier: arg_def.identifier,
         name: arg_def.name,
-        type: arg_def.type,
+        type: Blueprint.TypeReference.to_type(arg_def.type),
         default_value: arg_def.default_value,
         deprecation: arg_def.deprecation
       }
@@ -93,6 +93,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
         {obj, field},
         :middleware
       ])
+
     schema = res.schema
     object = Absinthe.Schema.lookup_type(schema, obj)
     field = object.fields |> Map.fetch!(field)

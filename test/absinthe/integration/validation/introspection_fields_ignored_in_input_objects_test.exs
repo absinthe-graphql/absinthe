@@ -11,7 +11,20 @@ defmodule Elixir.Absinthe.Integration.Validation.IntrospectionFieldsIgnoredInInp
   """
 
   test "scenario #1" do
-    assert {:ok, %{errors: [%{message: "Argument \"thing\" has invalid value $input.\nIn field \"__typename\": Unknown field.",
-                              locations: [%{column: 33, line: 2}]}]}} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [variables: %{"input" => %{"__typename" => "foo", "value" => 100}}])
+    assert {:ok,
+            %{
+              errors: [
+                %{
+                  message:
+                    "Argument \"thing\" has invalid value $input.\nIn field \"__typename\": Unknown field.",
+                  locations: [%{column: 33, line: 2}]
+                }
+              ]
+            }} ==
+             Absinthe.run(
+               @query,
+               Absinthe.Fixtures.ThingsSchema,
+               variables: %{"input" => %{"__typename" => "foo", "value" => 100}}
+             )
   end
 end

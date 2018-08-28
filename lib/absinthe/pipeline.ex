@@ -123,7 +123,7 @@ defmodule Absinthe.Pipeline do
       {Phase.Schema.Modify, [schema: schema]},
       Phase.Validation.KnownTypeNames,
       {Phase.Schema.Compile, [module: schema]}
-    ]  
+    ]
   end
 
   @doc """

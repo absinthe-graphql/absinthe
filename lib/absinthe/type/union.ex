@@ -100,6 +100,5 @@ defmodule Absinthe.Type.Union do
         type_name
       end
     end
-
   end
 end

@@ -138,7 +138,6 @@ defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
   end
 
   describe "within schema language" do
-
     @tag :pending_schema
     test "with well placed directives" do
       assert_passes_validation(

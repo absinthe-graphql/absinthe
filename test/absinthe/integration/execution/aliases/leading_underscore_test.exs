@@ -10,6 +10,7 @@ defmodule Elixir.Absinthe.Integration.Execution.Aliases.LeadingUnderscoreTest do
   """
 
   test "scenario #1" do
-    assert {:ok, %{data: %{"_thing123" => %{"name" => "Foo"}}}} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+    assert {:ok, %{data: %{"_thing123" => %{"name" => "Foo"}}}} ==
+             Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
   end
 end

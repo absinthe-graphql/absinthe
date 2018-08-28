@@ -194,6 +194,7 @@ defmodule Absinthe.Schema do
   def __after_compile__(env, _) do
     env.module.__absinthe_blueprint__
     |> Absinthe.Pipeline.run(Absinthe.Pipeline.for_schema(env.module))
+
     []
   end
 

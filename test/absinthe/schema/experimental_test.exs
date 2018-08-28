@@ -7,7 +7,7 @@ defmodule Absinthe.Schema.ExperimentalTest do
     use Absinthe.Schema
 
     query do
-      field :user, :user do
+      field :user, non_null(:user) do
         resolve fn _, _ ->
           {:ok, %{first_name: "Bruce", last_name: "Williams"}}
         end
@@ -58,7 +58,9 @@ defmodule Absinthe.Schema.ExperimentalTest do
     { user { fullName }}
     """
 
-    assert %Absinthe.Type.Object{} = type = Absinthe.Schema.lookup_type(Schema, :query)
+    assert %Absinthe.Type.Object{} =
+             type = Absinthe.Schema.lookup_type(Schema, :query) |> IO.inspect()
+
     assert %{fields: %{user: _field}} = type
 
     assert {:ok, %{data: %{"user" => %{"fullName" => "Bruce Williams"}}}} ==

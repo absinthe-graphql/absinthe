@@ -47,7 +47,7 @@ defmodule Absinthe.Blueprint.Schema.InputObjectTypeDefinition do
         deprecation: field_def.deprecation,
         description: field_def.description,
         name: field_def.name,
-        type: field_def.type,
+        type: Blueprint.TypeReference.to_type(field_def.type),
         definition: type_def.module,
         __reference__: field_def.__reference__,
         __private__: field_def.__private__,

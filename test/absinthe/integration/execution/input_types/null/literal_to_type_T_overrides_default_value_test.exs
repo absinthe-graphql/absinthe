@@ -8,6 +8,7 @@ defmodule Elixir.Absinthe.Integration.Execution.InputTypes.Null.LiteralToType_TO
   """
 
   test "scenario #1" do
-    assert {:ok, %{data: %{"times" => 4}}} == Absinthe.run(@query, Absinthe.Fixtures.ObjectTimesSchema, [])
+    assert {:ok, %{data: %{"times" => 4}}} ==
+             Absinthe.run(@query, Absinthe.Fixtures.ObjectTimesSchema, [])
   end
 end

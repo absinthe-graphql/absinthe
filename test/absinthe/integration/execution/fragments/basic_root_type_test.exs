@@ -5,7 +5,7 @@ defmodule Elixir.Absinthe.Integration.Execution.Fragments.BasicRootTypeTest do
   query {
     ... Fields
   }
-  
+
   fragment Fields on RootQueryType {
     thing(id: "foo") {
       name
@@ -14,6 +14,7 @@ defmodule Elixir.Absinthe.Integration.Execution.Fragments.BasicRootTypeTest do
   """
 
   test "scenario #1" do
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}}} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}}} ==
+             Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
   end
 end

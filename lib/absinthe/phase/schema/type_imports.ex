@@ -1,5 +1,4 @@
 defmodule Absinthe.Phase.Schema.TypeImports do
-
   @moduledoc false
 
   def run(blueprint, _opts) do

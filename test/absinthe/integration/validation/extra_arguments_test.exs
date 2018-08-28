@@ -10,6 +10,15 @@ defmodule Elixir.Absinthe.Integration.Validation.ExtraArgumentsTest do
   """
 
   test "scenario #1" do
-    assert {:ok, %{errors: [%{message: "Unknown argument \"extra\" on field \"thing\" of type \"RootQueryType\".", locations: [%{column: 20, line: 2}]}]}} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+    assert {:ok,
+            %{
+              errors: [
+                %{
+                  message:
+                    "Unknown argument \"extra\" on field \"thing\" of type \"RootQueryType\".",
+                  locations: [%{column: 20, line: 2}]
+                }
+              ]
+            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
   end
 end

@@ -28,5 +28,4 @@ defmodule Absinthe.Phase.Schema.Modify do
   end
 
   def handle_modify(node, _schema), do: node
-
 end

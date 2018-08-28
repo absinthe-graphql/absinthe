@@ -47,6 +47,7 @@ defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
         description: value_def.description,
         deprecation: value_def.deprecation
       }
+
       {Map.fetch!(value_def, key), value}
     end
   end
