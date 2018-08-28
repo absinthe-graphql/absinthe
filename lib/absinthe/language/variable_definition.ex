@@ -21,7 +21,7 @@ defmodule Absinthe.Language.VariableDefinition do
         name: node.variable.name,
         type: Blueprint.Draft.convert(node.type, doc),
         default_value: Blueprint.Draft.convert(node.default_value, doc),
-        source_location: Blueprint.Document.SourceLocation.at(node.loc)
+        source_location: Blueprint.SourceLocation.at(node.loc)
       }
     end
   end

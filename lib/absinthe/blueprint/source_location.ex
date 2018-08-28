@@ -1,4 +1,4 @@
-defmodule Absinthe.Blueprint.Document.SourceLocation do
+defmodule Absinthe.Blueprint.SourceLocation do
   @moduledoc false
 
   @enforce_keys [:line, :column]

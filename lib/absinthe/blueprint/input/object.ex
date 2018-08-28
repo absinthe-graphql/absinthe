@@ -20,7 +20,7 @@ defmodule Absinthe.Blueprint.Input.Object do
             nil
             | Absinthe.Type.InputObject.t()
             | Absinthe.Type.NonNull.t(Absinthe.Type.InputObject.t()),
-          source_location: Blueprint.Document.SourceLocation.t(),
+          source_location: Blueprint.SourceLocation.t(),
           errors: [Absinthe.Phase.Error.t()]
         }
 end

@@ -25,7 +25,7 @@ defmodule Absinthe.Blueprint.Schema.EnumValueDefinition do
           description: nil | String.t(),
           deprecation: nil | Blueprint.Schema.Deprecation.t(),
           directives: [Blueprint.Directive.t()],
-          source_location: nil | Blueprint.Document.SourceLocation.t(),
+          source_location: nil | Blueprint.SourceLocation.t(),
           # Added by phases
           flags: Blueprint.flags_t(),
           errors: [Absinthe.Phase.Error.t()]

@@ -39,7 +39,7 @@ defmodule Absinthe.Language.FieldTest do
                    }
                  }
                ],
-               source_location: %Blueprint.Document.SourceLocation{line: 2}
+               source_location: %Blueprint.SourceLocation{line: 2}
              } = from_input(@query)
     end
 
@@ -55,7 +55,7 @@ defmodule Absinthe.Language.FieldTest do
                        input_value: %Input.RawValue{content: %Input.Variable{name: "showFoo"}}
                      }
                    ],
-                   source_location: %Blueprint.Document.SourceLocation{line: 2}
+                   source_location: %Blueprint.SourceLocation{line: 2}
                  }
                ],
                arguments: [
@@ -73,7 +73,7 @@ defmodule Absinthe.Language.FieldTest do
                    }
                  }
                ],
-               source_location: %Blueprint.Document.SourceLocation{line: 2}
+               source_location: %Blueprint.SourceLocation{line: 2}
              } = from_input(@query_with_directive)
     end
   end

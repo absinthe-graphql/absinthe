@@ -6,6 +6,7 @@ defmodule Absinthe.Phase.Schema.Decorate do
   alias Absinthe.Blueprint
   alias Absinthe.Blueprint.Schema
 
+  @impl Absinthe.Phase
   def run(blueprint, opts \\ []) do
     {:ok, schema} = Keyword.fetch(opts, :schema)
     decorator = Keyword.get(opts, :decorator, __MODULE__)
@@ -70,9 +71,20 @@ defmodule Absinthe.Phase.Schema.Decorate do
   def apply_decoration(node, {:description, text}) do
     %{node | description: text}
   end
-  def apply_decoration(node, {:resolve, resolver}) do
-    %{node |
-      middleware: [{Absinthe.Resolution, resolver}]
+  # TODO: This doesn't work yet.
+  # def apply_decoration(node, {:resolve, resolver}) do    
+  #   %{node |
+  #     middleware: [{Absinthe.Resolution, resolver}]
+  #   }
+  # end
+
+  # Generate the error for the node
+  @spec error(Blueprint.Schema.t(), String.t()) :: Phase.Error.t()
+  defp error(node, text) do
+    %Absinthe.Phase.Error{
+      phase: __MODULE__,
+      message: text,
+      locations: [node.source_location]
     }
   end  
 

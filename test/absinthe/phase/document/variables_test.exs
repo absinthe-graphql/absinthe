@@ -26,7 +26,7 @@ defmodule Absinthe.Phase.Document.VariablesTest do
       assert op.provided_values == %{
                "age" => %Blueprint.Input.Integer{
                  value: 36,
-                 source_location: %Blueprint.Document.SourceLocation{column: 29, line: 6}
+                 source_location: %Blueprint.SourceLocation{column: 29, line: 6}
                },
                "name" => %Blueprint.Input.String{value: "Bruce"}
              }

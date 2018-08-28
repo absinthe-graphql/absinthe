@@ -36,7 +36,7 @@ defmodule Absinthe.Language.OperationDefinition do
     end
 
     defp source_location(%{loc: loc}) do
-      Blueprint.Document.SourceLocation.at(loc)
+      Blueprint.SourceLocation.at(loc)
     end
   end
 
