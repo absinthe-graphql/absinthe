@@ -40,12 +40,12 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       ]
     end
 
-    def decorations(%{identifier: :admin}, [%{identifier: :query} | _]) do
+    def decorations(%{identifier: :admin}, [%{identifier: :query}|_]) do
       {:description, "The admin"}
     end
-    # def decorations(%{identifier: :posts}, [%{identifier: :query}] | _) do
-    #   {:resolve, &get_posts/3}
-    # end
+    def decorations(%{identifier: :posts}, [%{identifier: :query}|_]) do
+      {:resolve, &get_posts/3}
+    end
     def decorations(_node, _) do
       []
     end
@@ -116,7 +116,6 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
   describe "execution with modify-defined resolvers" do
 
-    @tag :pending_schema
     test "works" do
       assert {:ok, %{data: %{"posts" => [%{"title" => "Foo"}, %{"title" => "Bar"}]}}} =
               Absinthe.run(@query, Definition)

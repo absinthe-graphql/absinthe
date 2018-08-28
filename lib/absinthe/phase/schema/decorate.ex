@@ -66,10 +66,14 @@ defmodule Absinthe.Phase.Schema.Decorate do
     end) 
   end
 
-  @impl __MODULE__.Decorator
-  # defp apply_decoration(%Blueprint.Schema.FieldDefinition{} = node, {:resolve, resolver}) do
+  @impl __MODULE__.Decorator  
   def apply_decoration(node, {:description, text}) do
     %{node | description: text}
   end
+  def apply_decoration(node, {:resolve, resolver}) do
+    %{node |
+      middleware: [{Absinthe.Resolution, resolver}]
+    }
+  end  
 
 end
