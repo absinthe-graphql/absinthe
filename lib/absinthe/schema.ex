@@ -4,6 +4,18 @@ defmodule Absinthe.Schema do
 
   @type t :: module
 
+  defmodule CompilationError do
+    defexception phase_errors: []
+
+    def message(error) do
+      details =
+        error.phase_errors
+        |> Enum.map(&("- #{&1.message}"))
+        |> Enum.join("\n")
+      "Compilation failed:\n" <> details
+    end
+  end
+
   defmacro __using__(_opt) do
     quote do
       use Absinthe.Schema.Notation
@@ -194,8 +206,12 @@ defmodule Absinthe.Schema do
   def __after_compile__(env, _) do
     env.module.__absinthe_blueprint__
     |> Absinthe.Pipeline.run(Absinthe.Pipeline.for_schema(env.module))
-
-    []
+    |> case do
+      {:ok, _, _} ->
+        []
+      {:error, errors, _} ->
+        raise CompilationError, phase_errors: List.wrap(errors)
+    end
   end
 
   ### Helpers
