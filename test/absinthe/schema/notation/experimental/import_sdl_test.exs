@@ -82,9 +82,6 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
   describe "execution with root_value" do
     test "works" do
-      Absinthe.Schema.lookup_type(Definition, :query) |> IO.inspect()
-      Absinthe.Schema.lookup_type(Definition, :user) |> IO.inspect()
-
       assert {:ok, %{data: %{"admin" => %{"name" => "Bruce"}}}} =
                Absinthe.run(@query, Definition, root_value: %{admin: %{name: "Bruce"}})
     end

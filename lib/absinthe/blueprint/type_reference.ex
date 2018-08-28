@@ -28,23 +28,23 @@ defmodule Absinthe.Blueprint.TypeReference do
     unwrap(inner)
   end
 
-  def to_type(%__MODULE__.NonNull{of_type: type}) do
-    %Absinthe.Type.NonNull{of_type: to_type(type)}
+  def to_type(%__MODULE__.NonNull{of_type: type}, schema) do
+    %Absinthe.Type.NonNull{of_type: to_type(type, schema)}
   end
 
-  def to_type(%__MODULE__.List{of_type: type}) do
-    %Absinthe.Type.List{of_type: to_type(type)}
+  def to_type(%__MODULE__.List{of_type: type}, schema) do
+    %Absinthe.Type.List{of_type: to_type(type, schema)}
   end
 
-  def to_type(%__MODULE__.Name{name: name}) do
-    name
+  def to_type(%__MODULE__.Name{name: name}, schema) do
+    Enum.find(schema.type_definitions, &(&1.name == name)).identifier
   end
 
-  def to_type(%__MODULE__.Identifier{id: id}) when is_atom(id) do
+  def to_type(%__MODULE__.Identifier{id: id}, _) when is_atom(id) do
     id
   end
 
-  def to_type(value) when is_atom(value) do
+  def to_type(value, _) when is_atom(value) do
     value
   end
 end

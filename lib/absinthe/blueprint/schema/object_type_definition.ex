@@ -34,23 +34,23 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
           __private__: Keyword.t()
         }
 
-  def build(type_def, _schema) do
+  def build(type_def, schema) do
     %Type.Object{
       identifier: type_def.identifier,
       name: type_def.name,
       description: type_def.description,
-      fields: build_fields(type_def),
+      fields: build_fields(type_def, schema),
       interfaces: type_def.interfaces,
       definition: type_def.module
     }
   end
 
-  def build_fields(type_def) do
+  def build_fields(type_def, schema) do
     for field_def <- type_def.fields, into: %{} do
       # TODO: remove and make middleware work generally
       middleware_shim = {
         {__MODULE__, :shim},
-        {field_def.module, type_def.identifier, field_def.identifier}
+        {field_def.module || type_def.module, type_def.identifier, field_def.identifier}
       }
 
       field = %Type.Field{
@@ -61,8 +61,8 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
         complexity: {type_def.identifier, field_def.identifier},
         config: {type_def.identifier, field_def.identifier},
         name: field_def.name,
-        type: Blueprint.TypeReference.to_type(field_def.type),
-        args: build_args(field_def),
+        type: Blueprint.TypeReference.to_type(field_def.type, schema),
+        args: build_args(field_def, schema),
         definition: field_def.module,
         __reference__: field_def.__reference__,
         __private__: field_def.__private__
@@ -72,12 +72,12 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
     end
   end
 
-  def build_args(field_def) do
+  def build_args(field_def, schema) do
     Map.new(field_def.arguments, fn arg_def ->
       arg = %Type.Argument{
         identifier: arg_def.identifier,
         name: arg_def.name,
-        type: Blueprint.TypeReference.to_type(arg_def.type),
+        type: Blueprint.TypeReference.to_type(arg_def.type, schema),
         default_value: arg_def.default_value,
         deprecation: arg_def.deprecation
       }

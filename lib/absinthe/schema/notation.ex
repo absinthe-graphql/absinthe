@@ -1493,6 +1493,7 @@ defmodule Absinthe.Schema.Notation do
     sdl_definitions =
       (Module.get_attribute(env.module, :__absinthe_sdl_definitions__) || [])
       |> List.flatten()
+      |> Enum.map(&%{&1 | module: env.module})
 
     schema_def = %Schema.SchemaDefinition{
       imports: imports,
