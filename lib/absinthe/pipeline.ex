@@ -109,10 +109,6 @@ defmodule Absinthe.Pipeline do
     ]
   end
 
-  @defaults [
-    adapter: Absinthe.Adapter.LanguageConventions
-  ]
-
   @spec for_schema(nil | Absinthe.Schema.t()) :: t
   @spec for_schema(nil | Absinthe.Schema.t(), Keyword.t()) :: t
   def for_schema(schema, _options \\ []) do
