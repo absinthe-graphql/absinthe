@@ -114,7 +114,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   { posts { title } }
   """
 
-  describe "execution with modify-defined resolvers" do
+  describe "execution with decoration-defined resolvers" do
 
     test "works" do
       assert {:ok, %{data: %{"posts" => [%{"title" => "Foo"}, %{"title" => "Bar"}]}}} =
