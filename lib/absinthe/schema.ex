@@ -36,7 +36,12 @@ defmodule Absinthe.Schema do
         context
       end
 
-      defoverridable(context: 1, middleware: 3, plugins: 0)
+      @doc false
+      def modify(node) do
+        node
+      end
+
+      defoverridable(context: 1, middleware: 3, plugins: 0, modify: 1)
     end
   end
 
@@ -186,23 +191,9 @@ defmodule Absinthe.Schema do
     Absinthe.Schema.Notation.record!(env, @object_type, :subscription, attrs, block)
   end
 
-  def pipeline(opts \\ []) do
-    alias Absinthe.Phase
-
-    [
-      Phase.Schema.TypeImports,
-      Phase.Schema.ValidateTypeReferences,
-      Phase.Schema.FieldImports,
-      Phase.Validation.KnownTypeNames,
-      {Phase.Schema.Compile, opts}
-    ]
-  end
-
   def __after_compile__(env, _) do
-    blueprint = env.module.__absinthe_blueprint__
-    pipeline = pipeline(module: env.module)
-
-    Absinthe.Pipeline.run(blueprint, pipeline)
+    env.module.__absinthe_blueprint__
+    |> Absinthe.Pipeline.run(Absinthe.Pipeline.for_schema(env.module))
     []
   end
 

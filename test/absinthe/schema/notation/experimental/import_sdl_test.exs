@@ -12,6 +12,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     type Query {
       "A list of posts"
       posts: [Post]
+      admin: User!
     }
 
     "A submitted post"
@@ -72,6 +73,16 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   describe "multiple invocations" do
     test "can add definitions" do
       assert %{name: "User", identifier: :user} = lookup_type(Definition, :user)
+    end
+  end
+
+  @query """
+  { admin { name } }
+  """
+
+  describe "execution with root_value" do
+    test "works" do
+      assert {:ok, %{data: %{"admin" => %{"name" => "Bruce"}}}} = Absinthe.run(@query, Definition, root_value: %{admin: %{name: "Bruce"}})
     end
   end
 end
