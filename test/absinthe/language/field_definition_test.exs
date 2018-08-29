@@ -47,6 +47,7 @@ defmodule Absinthe.Language.FieldDefinitionTest do
                arguments: [
                  %Blueprint.Schema.InputValueDefinition{
                    name: "limit",
+                   identifier: :limit,
                    type: %Blueprint.TypeReference.Name{name: "Int"},
                    default_value: %Blueprint.Input.Integer{
                      value: 4,
