@@ -957,7 +957,7 @@ defmodule Absinthe.Schema.Notation do
     |> expand_ast(env)
     |> Keyword.update(:values, [], fn values ->
       Enum.map(values, fn ident ->
-        value_attrs = handle_enum_value_attrs(ident, [])
+        value_attrs = handle_enum_value_attrs(ident, [module: env.module])
         struct!(Schema.EnumValueDefinition, value_attrs)
       end)
     end)
@@ -1174,7 +1174,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def record_arg!(env, identifier, attrs) do
-    arg = build_arg(identifier, attrs)
+    arg = build_arg(identifier, Keyword.put(attrs, :module, env.module))
     put_attr(env.module, arg)
   end
 
@@ -1313,7 +1313,7 @@ defmodule Absinthe.Schema.Notation do
       values
       |> expand_ast(env)
       |> Enum.map(fn ident ->
-        value_attrs = handle_enum_value_attrs(ident, [])
+        value_attrs = handle_enum_value_attrs(ident, [module: env.module])
         struct!(Schema.EnumValueDefinition, value_attrs)
       end)
 
@@ -1493,7 +1493,14 @@ defmodule Absinthe.Schema.Notation do
     sdl_definitions =
       (Module.get_attribute(env.module, :__absinthe_sdl_definitions__) || [])
       |> List.flatten()
-      |> Enum.map(&%{&1 | module: env.module})
+      |> Enum.map(fn type_definition ->
+        Absinthe.Blueprint.prewalk(type_definition, fn
+          %{module: _} = node ->
+            %{node | module: env.module}
+          node ->
+            node
+        end)
+      end)
 
     schema_def = %Schema.SchemaDefinition{
       imports: imports,
