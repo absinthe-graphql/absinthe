@@ -6,56 +6,65 @@ defmodule Absinthe.Phase.Schema.Decorate do
   alias Absinthe.Blueprint
   alias Absinthe.Blueprint.Schema
 
+  @decorate [
+    Blueprint.Schema.DirectiveDefinition,
+    Blueprint.Schema.EnumTypeDefinition,
+    Blueprint.Schema.EnumValueDefinition,
+    Blueprint.Schema.FieldDefinition,
+    Blueprint.Schema.InputObjectTypeDefinition,
+    Blueprint.Schema.InputValueDefinition,
+    Blueprint.Schema.InterfaceTypeDefinition,
+    Blueprint.Schema.ObjectTypeDefinition,
+    Blueprint.Schema.ScalarTypeDefinition,
+    Blueprint.Schema.SchemaDefinition,
+    Blueprint.Schema.UnionTypeDefinition
+  ]
+
+  @skip_modules [
+    Absinthe.Type.BuiltIns.Introspection
+  ]
+
   @impl Absinthe.Phase
   def run(blueprint, opts \\ []) do
     {:ok, schema} = Keyword.fetch(opts, :schema)
     decorator = Keyword.get(opts, :decorator, __MODULE__)
-    blueprint = Blueprint.prewalk(blueprint, &handle_decorate(&1, schema, decorator))
+    blueprint = Blueprint.prewalk(blueprint, &handle_node(&1, [], schema, decorator))
     {:ok, blueprint}
   end
 
-  @decorate_fields [
-    Schema.ObjectTypeDefinition,
-    Schema.InputObjectTypeDefinition
-  ]
-  @decorate_values [
-    Schema.EnumTypeDefinition
-  ]  
-  @decorate_simple [
-    Schema.DirectiveDefinition,
-    Schema.InterfaceTypeDefinition,
-    Schema.ScalarTypeDefinition,
-    Schema.UnionTypeDefinition
-  ]
-  def handle_decorate(%node_module{} = node, schema, decorator) when node_module in @decorate_fields do
-    # Apply field decorations
-    node = update_in(node.fields, fn fields ->
-      for field <- fields do
-        decorations = schema.decorations(field, [node, schema])
-        apply_decorations(field, decorations, decorator)
-      end
+  defp handle_node(%Blueprint{} = node, ancestors, schema, decorator) do
+    node
+    |> decorate_node(ancestors, schema, decorator)
+    |> set_children(ancestors, schema, decorator)  
+  end
+  defp handle_node(%node_module{} = node, ancestors, schema, decorator) when node_module in @decorate do
+    case Absinthe.Type.built_in_module?(node.module) do
+      true ->
+        {:halt, node}
+      false ->
+        node
+        |> decorate_node(ancestors, schema, decorator)
+        |> set_children(ancestors, schema, decorator)
+    end
+  end
+
+  defp handle_node(node, ancestors, schema, decorator) do
+    set_children(node, ancestors, schema, decorator)
+  end
+
+
+  defp set_children(parent, ancestors, schema, decorator) do
+    Blueprint.prewalk(parent, fn
+      ^parent -> parent
+      child -> {:halt, handle_node(child, [parent | ancestors], schema, decorator)}
     end)
-    # Apply object type decorations
-    decorations = schema.decorations(node, [schema])
+  end
+
+  defp decorate_node(%{} = node, ancestors, schema, decorator) do
+    decorations = schema.decorations(node, ancestors)
     apply_decorations(node, decorations, decorator)
   end
-  def handle_decorate(%node_module{} = node, schema, decorator) when node_module in @decorate_values do
-    # Apply value decorations
-    node = update_in(node.values, fn values ->
-      for value <- values do
-        decorations = schema.decorations(value, [node, schema])
-        apply_decorations(value, decorations, decorator)
-      end
-    end)
-    # Apply type decorations
-    decorations = schema.decorations(node, [schema])
-    apply_decorations(node, decorations, decorator)
-  end  
-  def handle_decorate(%node_module{} = node, schema, decorator) when node_module in @decorate_simple do
-    decorations = schema.decorations(node, [schema])
-    apply_decorations(node, decorations, decorator)
-  end
-  def handle_decorate(node, _schema, _decorator) do
+  defp decorate_node(node, _ancestors, _schema, _decorator) do
     node
   end
 

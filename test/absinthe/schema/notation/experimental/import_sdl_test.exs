@@ -11,8 +11,12 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     import_sdl("""
     type Query {
       "A list of posts"
-      posts: [Post]
+      posts(filter: PostFilter): [Post]
       admin: User!
+    }
+
+    type PostFilter {
+      name: String
     }
 
     "A submitted post"
@@ -43,11 +47,14 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     def decorations(%{identifier: :admin}, [%{identifier: :query}|_]) do
       {:description, "The admin"}
     end
-    # TODO: This doesn't work yeta
+    def decorations(%{identifier: :filter}, [%{identifier: :posts}|_]) do
+      {:description, "A filter argument"}
+    end    
+    # TODO: This doesn't work yet
     # def decorations(%{identifier: :posts}, [%{identifier: :query}|_]) do
     #   {:resolve, &get_posts/3}
     # end
-    def decorations(_node, _) do
+    def decorations(_node, _ancestors) do
       []
     end
 
@@ -89,9 +96,15 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
                lookup_field(Definition, :post, :author)
     end
 
-    test "can be added by a decoration" do
+    test "can be added by a decoration to a field" do
       assert %{description: "The admin"} = lookup_compiled_field(Definition, :query, :admin)
     end
+
+    test "can be added by a decoration to an argument" do
+      field = lookup_compiled_field(Definition, :query, :posts)
+      assert %{description: "A filter argument"} = field.args.filter
+    end
+
   end
 
   describe "multiple invocations" do
@@ -116,7 +129,6 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   """
 
   describe "execution with decoration-defined resolvers" do
-
     @tag :pending_schema
     test "works" do
       assert {:ok, %{data: %{"posts" => [%{"title" => "Foo"}, %{"title" => "Bar"}]}}} =
