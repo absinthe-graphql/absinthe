@@ -79,6 +79,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
       arg = %Type.Argument{
         identifier: arg_def.identifier,
         name: arg_def.name,
+        description: arg_def.description,
         type: Blueprint.TypeReference.to_type(arg_def.type, schema),
         default_value: arg_def.default_value,
         deprecation: arg_def.deprecation
