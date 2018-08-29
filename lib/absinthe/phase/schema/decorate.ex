@@ -20,10 +20,6 @@ defmodule Absinthe.Phase.Schema.Decorate do
     Blueprint.Schema.UnionTypeDefinition
   ]
 
-  @skip_modules [
-    Absinthe.Type.BuiltIns.Introspection
-  ]
-
   @impl Absinthe.Phase
   def run(blueprint, opts \\ []) do
     {:ok, schema} = Keyword.fetch(opts, :schema)
