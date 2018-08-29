@@ -28,6 +28,7 @@ defmodule Absinthe.Language.InputValueDefinition do
         name: node.name,
         description: node.description,
         type: Blueprint.Draft.convert(node.type, doc),
+        identifier: Macro.underscore(node.name) |> String.to_atom(),
         default_value: Blueprint.Draft.convert(node.default_value, doc),
         directives: Blueprint.Draft.convert(node.directives, doc),
         source_location: source_location(node)
