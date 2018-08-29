@@ -24,7 +24,7 @@ defmodule Absinthe.Language.EnumTypeDefinition do
         description: node.description,
         values: Absinthe.Blueprint.Draft.convert(node.values, doc),
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
-        source_location: source_location(node),
+        source_location: source_location(node)
       }
     end
 

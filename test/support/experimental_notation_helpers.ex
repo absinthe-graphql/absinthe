@@ -25,6 +25,7 @@ defmodule ExperimentalNotationHelpers do
     case Absinthe.Schema.lookup_type(mod, type_ident) do
       nil ->
         nil
+
       type ->
         type.fields[field_ident]
     end

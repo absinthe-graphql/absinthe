@@ -44,12 +44,14 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       ]
     end
 
-    def decorations(%{identifier: :admin}, [%{identifier: :query}|_]) do
+    def decorations(%{identifier: :admin}, [%{identifier: :query} | _]) do
       {:description, "The admin"}
     end
-    def decorations(%{identifier: :filter}, [%{identifier: :posts}|_]) do
+
+    def decorations(%{identifier: :filter}, [%{identifier: :posts} | _]) do
       {:description, "A filter argument"}
-    end    
+    end
+
     # TODO: This doesn't work yet
     # def decorations(%{identifier: :posts}, [%{identifier: :query}|_]) do
     #   {:resolve, &get_posts/3}
@@ -57,7 +59,6 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     def decorations(_node, _ancestors) do
       []
     end
-
   end
 
   describe "query root type" do
@@ -82,7 +83,6 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   end
 
   describe "descriptions" do
-
     test "work on objects" do
       assert %{description: "A submitted post"} = lookup_type(Definition, :post)
     end
@@ -104,7 +104,6 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       field = lookup_compiled_field(Definition, :query, :posts)
       assert %{description: "A filter argument"} = field.args.filter
     end
-
   end
 
   describe "multiple invocations" do
@@ -132,7 +131,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     @tag :pending_schema
     test "works" do
       assert {:ok, %{data: %{"posts" => [%{"title" => "Foo"}, %{"title" => "Bar"}]}}} =
-              Absinthe.run(@query, Definition)
+               Absinthe.run(@query, Definition)
     end
   end
 end

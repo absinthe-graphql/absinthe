@@ -957,7 +957,7 @@ defmodule Absinthe.Schema.Notation do
     |> expand_ast(env)
     |> Keyword.update(:values, [], fn values ->
       Enum.map(values, fn ident ->
-        value_attrs = handle_enum_value_attrs(ident, [module: env.module])
+        value_attrs = handle_enum_value_attrs(ident, module: env.module)
         struct!(Schema.EnumValueDefinition, value_attrs)
       end)
     end)
@@ -1313,7 +1313,7 @@ defmodule Absinthe.Schema.Notation do
       values
       |> expand_ast(env)
       |> Enum.map(fn ident ->
-        value_attrs = handle_enum_value_attrs(ident, [module: env.module])
+        value_attrs = handle_enum_value_attrs(ident, module: env.module)
         struct!(Schema.EnumValueDefinition, value_attrs)
       end)
 
@@ -1497,6 +1497,7 @@ defmodule Absinthe.Schema.Notation do
         Absinthe.Blueprint.prewalk(type_definition, fn
           %{module: _} = node ->
             %{node | module: env.module}
+
           node ->
             node
         end)

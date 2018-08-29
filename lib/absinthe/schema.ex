@@ -10,8 +10,9 @@ defmodule Absinthe.Schema do
     def message(error) do
       details =
         error.phase_errors
-        |> Enum.map(&("- #{&1.message}"))
+        |> Enum.map(&"- #{&1.message}")
         |> Enum.join("\n")
+
       "Compilation failed:\n" <> details
     end
   end
@@ -209,6 +210,7 @@ defmodule Absinthe.Schema do
     |> case do
       {:ok, _, _} ->
         []
+
       {:error, errors, _} ->
         raise CompilationError, phase_errors: List.wrap(errors)
     end

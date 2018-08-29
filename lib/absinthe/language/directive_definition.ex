@@ -26,11 +26,11 @@ defmodule Absinthe.Language.DirectiveDefinition do
         description: node.description,
         arguments: Absinthe.Blueprint.Draft.convert(node.arguments, doc),
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
-        locations: node.locations,        
+        locations: node.locations,
         source_location: source_location(node)
       }
     end
-    
+
     defp source_location(%{loc: nil}), do: nil
     defp source_location(%{loc: loc}), do: Blueprint.SourceLocation.at(loc)
   end

@@ -31,12 +31,15 @@ defmodule Absinthe.Phase.Schema.Decorate do
   defp handle_node(%Blueprint{} = node, ancestors, schema, decorator) do
     node
     |> decorate_node(ancestors, schema, decorator)
-    |> set_children(ancestors, schema, decorator)  
+    |> set_children(ancestors, schema, decorator)
   end
-  defp handle_node(%node_module{} = node, ancestors, schema, decorator) when node_module in @decorate do
+
+  defp handle_node(%node_module{} = node, ancestors, schema, decorator)
+       when node_module in @decorate do
     case Absinthe.Type.built_in_module?(node.module) do
       true ->
         {:halt, node}
+
       false ->
         node
         |> decorate_node(ancestors, schema, decorator)
@@ -47,7 +50,6 @@ defmodule Absinthe.Phase.Schema.Decorate do
   defp handle_node(node, ancestors, schema, decorator) do
     set_children(node, ancestors, schema, decorator)
   end
-
 
   defp set_children(parent, ancestors, schema, decorator) do
     Blueprint.prewalk(parent, fn
@@ -60,27 +62,28 @@ defmodule Absinthe.Phase.Schema.Decorate do
     decorations = schema.decorations(node, ancestors)
     apply_decorations(node, decorations, decorator)
   end
+
   defp decorate_node(node, _ancestors, _schema, _decorator) do
     node
   end
 
   defp apply_decorations(node, decorations, decorator) do
     decorations
-    |> List.wrap
+    |> List.wrap()
     |> Enum.reduce(node, fn decoration, node ->
       decorator.apply_decoration(node, decoration)
-    end) 
+    end)
   end
 
-  @impl __MODULE__.Decorator  
+  @impl __MODULE__.Decorator
   def apply_decoration(node, {:description, text}) do
     %{node | description: text}
   end
+
   # TODO: This doesn't work yet.
   # def apply_decoration(node, {:resolve, resolver}) do    
   #   %{node |
   #     middleware: [{Absinthe.Resolution, resolver}]
   #   }
   # end
-
 end
