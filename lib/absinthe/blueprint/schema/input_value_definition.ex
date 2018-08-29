@@ -7,6 +7,7 @@ defmodule Absinthe.Blueprint.Schema.InputValueDefinition do
     :name,
     :identifier,
     :type,
+    :module,
     # InputValueDefinitions can have different placements depending on Whether
     # they model an argument definition or a value of an input object type
     # definition
