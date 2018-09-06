@@ -68,7 +68,7 @@ defmodule Absinthe.Middleware.Async do
   # we handle the different tuple results.
   #
   # The `put_result` function handles setting the appropriate state.
-  # If the result is an `{:ok, value} | {:error, reasoon}` tuple it will set
+  # If the result is an `{:ok, value} | {:error, reason}` tuple it will set
   # the state to `:resolved`, and if it is another middleware tuple it will
   # set the state to unresolved.
   def call(%{state: :suspended} = res, {task, opts}) do
