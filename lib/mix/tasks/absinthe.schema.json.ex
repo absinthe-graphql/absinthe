@@ -73,22 +73,22 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   end
 
   defp find_json(opts) do
-    case Keyword.get(opts, :json_codec, Poison) do
-      module when is_atom(module) ->
-        %{module: module, opts: codec_opts(module, opts)}
+    json_codec_opt = Keyword.get(opts, :json_codec, @default_codec_name)
+    module = String.to_atom("Elixir." <> json_codec_opt)
 
-      other ->
-        other
-    end
+    %{module: module, opts: codec_opts(module, opts)}
   end
 
-  defp codec_opts(Poison, opts) do
-    [pretty: Keyword.get(opts, :pretty, false)]
+  defp codec_opts(codec, opts) when codec in [Poison, Jason] do
+    codec_pretty_opt(Keyword.get(opts, :pretty, "false"))
   end
 
   defp codec_opts(_, _) do
     []
   end
+
+  defp codec_pretty_opt("true"), do: [pretty: true]
+  defp codec_pretty_opt(_), do: []
 
   defp find_schema(opts) do
     case Keyword.get(opts, :schema, Application.get_env(:absinthe, :schema)) do
