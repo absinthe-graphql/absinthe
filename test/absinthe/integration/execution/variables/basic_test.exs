@@ -10,6 +10,7 @@ defmodule Elixir.Absinthe.Integration.Execution.Variables.BasicTest do
   """
 
   test "scenario #1" do
-    assert {:ok, %{data: %{"thing" => %{"name" => "Bar"}}}} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [variables: %{"thingId" => "bar"}])
+    assert {:ok, %{data: %{"thing" => %{"name" => "Bar"}}}} ==
+             Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, variables: %{"thingId" => "bar"})
   end
 end

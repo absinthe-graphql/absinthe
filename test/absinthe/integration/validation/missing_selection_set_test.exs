@@ -8,7 +8,15 @@ defmodule Elixir.Absinthe.Integration.Validation.MissingSelectionSetTest do
   """
 
   test "scenario #1" do
-    assert {:ok, %{errors: [%{message: "Field \"things\" of type \"[Thing]\" must have a selection of subfields. Did you mean \"things { ... }\"?",
-                              locations: [%{column: 3, line: 2}]}]}} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+    assert {:ok,
+            %{
+              errors: [
+                %{
+                  message:
+                    "Field \"things\" of type \"[Thing]\" must have a selection of subfields. Did you mean \"things { ... }\"?",
+                  locations: [%{column: 3, line: 2}]
+                }
+              ]
+            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
   end
 end

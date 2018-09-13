@@ -6,6 +6,7 @@ defmodule Elixir.Absinthe.Integration.Execution.SimpleQueryTest do
   """
 
   test "scenario #1" do
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}}} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}}} ==
+             Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
   end
 end

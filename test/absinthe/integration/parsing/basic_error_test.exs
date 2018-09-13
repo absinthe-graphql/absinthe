@@ -8,6 +8,11 @@ defmodule Elixir.Absinthe.Integration.Parsing.BasicErrorTest do
   """
 
   test "scenario #1" do
-    assert {:ok, %{errors: [%{message: "syntax error before: '}'", locations: [%{column: 21, line: 2}]}]}} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+    assert {:ok,
+            %{
+              errors: [
+                %{message: "syntax error before: '}'", locations: [%{column: 21, line: 2}]}
+              ]
+            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
   end
 end

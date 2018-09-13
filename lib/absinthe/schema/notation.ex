@@ -341,6 +341,7 @@ defmodule Absinthe.Schema.Notation do
 
   defp handle_deprecate(attrs) do
     deprecation = build_deprecation(attrs[:deprecate])
+
     attrs
     |> Keyword.delete(:deprecate)
     |> Keyword.put(:deprecation, deprecation)
@@ -926,6 +927,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro enum(identifier, attrs, do: block) do
     attrs = handle_enum_attrs(attrs, __CALLER__)
+
     __CALLER__
     |> recordable!(:enum, @placement[:enum])
     |> record!(Schema.EnumTypeDefinition, identifier, attrs, block)
@@ -944,6 +946,7 @@ defmodule Absinthe.Schema.Notation do
 
   defmacro enum(identifier, attrs) do
     attrs = handle_enum_attrs(attrs, __CALLER__)
+
     __CALLER__
     |> recordable!(:enum, @placement[:enum])
     |> record!(Schema.EnumTypeDefinition, identifier, attrs, [])
@@ -1313,6 +1316,7 @@ defmodule Absinthe.Schema.Notation do
         value_attrs = handle_enum_value_attrs(ident, [])
         struct!(Schema.EnumValueDefinition, value_attrs)
       end)
+
     put_attr(env.module, {:values, values})
   end
 
@@ -1389,7 +1393,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp put_attr(module, thing) do
-    ref = :erlang.unique_integer
+    ref = :erlang.unique_integer()
     Module.put_attribute(module, :absinthe_blueprint, {ref, thing})
     ref
   end
@@ -1470,7 +1474,7 @@ defmodule Absinthe.Schema.Notation do
     module_attribute_descs =
       env.module
       |> Module.get_attribute(:absinthe_desc)
-      |> Map.new
+      |> Map.new()
 
     attrs =
       env.module
@@ -1615,6 +1619,7 @@ defmodule Absinthe.Schema.Notation do
   defp reverse_with_descs(attrs, descs, acc \\ [])
 
   defp reverse_with_descs([], _descs, acc), do: acc
+
   defp reverse_with_descs([{ref, attr} | rest], descs, acc) do
     if desc = Map.get(descs, ref) do
       reverse_with_descs(rest, descs, [attr, {:desc, desc} | acc])
@@ -1622,6 +1627,7 @@ defmodule Absinthe.Schema.Notation do
       reverse_with_descs(rest, descs, [attr | acc])
     end
   end
+
   defp reverse_with_descs([attr | rest], descs, acc) do
     reverse_with_descs(rest, descs, [attr | acc])
   end

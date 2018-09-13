@@ -11,6 +11,7 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.ObjectTypenameTest
   """
 
   test "scenario #1" do
-    assert {:ok, %{data: %{"person" => %{"__typename" => "Person", "name" => "Bruce"}}}} == Absinthe.run(@query, Absinthe.Fixtures.ContactSchema, [])
+    assert {:ok, %{data: %{"person" => %{"__typename" => "Person", "name" => "Bruce"}}}} ==
+             Absinthe.run(@query, Absinthe.Fixtures.ContactSchema, [])
   end
 end

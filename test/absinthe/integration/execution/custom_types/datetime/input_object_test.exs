@@ -10,6 +10,7 @@ defmodule Elixir.Absinthe.Integration.Execution.CustomTypes.Datetime.InputObject
   """
 
   test "scenario #1" do
-    assert {:ok, %{data: %{"customTypesMutation" => %{"message" => "ok"}}}} == Absinthe.run(@query, Absinthe.Fixtures.CustomTypesSchema, [])
+    assert {:ok, %{data: %{"customTypesMutation" => %{"message" => "ok"}}}} ==
+             Absinthe.run(@query, Absinthe.Fixtures.CustomTypesSchema, [])
   end
 end

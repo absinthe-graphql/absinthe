@@ -11,6 +11,14 @@ defmodule Elixir.Absinthe.Integration.Validation.UnknownArgForListMemberFieldTes
   """
 
   test "scenario #1" do
-    assert {:ok, %{errors: [%{message: "Unknown argument \"x\" on field \"id\" of type \"Thing\".", locations: [%{column: 8, line: 3}]}]}} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+    assert {:ok,
+            %{
+              errors: [
+                %{
+                  message: "Unknown argument \"x\" on field \"id\" of type \"Thing\".",
+                  locations: [%{column: 8, line: 3}]
+                }
+              ]
+            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
   end
 end
