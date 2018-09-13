@@ -15,8 +15,7 @@ defmodule Absinthe.Schema.Notation.SDL do
 
       {:ok, definitions}
     else
-      {:error, %Absinthe.Blueprint{execution: %{validation_errors: errors}}}
-      when length(errors) > 0 ->
+      {:error, %Absinthe.Blueprint{execution: %{validation_errors: [_ | _] = errors}}} ->
         error =
           errors
           |> Enum.map(&"#{&1.message} (#{inspect(&1.locations)})")

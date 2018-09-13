@@ -3,8 +3,6 @@ defmodule Absinthe.Subscription.Supervisor do
 
   use Supervisor
 
-  alias Absinthe.Subscription.Registry
-
   def start_link(pubsub, pool_size \\ System.schedulers_online() * 2) do
     Supervisor.start_link(__MODULE__, {pubsub, pool_size})
   end
