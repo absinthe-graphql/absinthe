@@ -1347,7 +1347,7 @@ defmodule Absinthe.Schema.Notation do
           val
       end
 
-    put_attr(env.module, {:middleware, new_middleware})
+    put_attr(env.module, {:middleware, [new_middleware]})
   end
 
   # ------------------------------
@@ -1563,8 +1563,7 @@ defmodule Absinthe.Schema.Notation do
       for field <- type.fields do
         identifier = {type.identifier, field.identifier}
 
-        middleware =
-          __ensure_middleware__(field.middleware_ast, field.identifier, type.identifier)
+        middleware = __ensure_middleware__(field.middleware, field.identifier, type.identifier)
 
         quote do
           def __absinthe_function__(

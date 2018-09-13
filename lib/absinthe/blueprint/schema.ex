@@ -67,7 +67,7 @@ defmodule Absinthe.Blueprint.Schema do
   end
 
   defp build_types([{:middleware, middleware} | rest], [field | stack]) do
-    field = Map.update!(field, :middleware_ast, &[middleware | &1])
+    field = Map.update!(field, :middleware, &(middleware ++ &1))
     build_types(rest, [field | stack])
   end
 
@@ -110,7 +110,7 @@ defmodule Absinthe.Blueprint.Schema do
   end
 
   defp build_types([:close | rest], [%Schema.FieldDefinition{} = field, obj | stack]) do
-    field = Map.update!(field, :middleware_ast, &Enum.reverse/1)
+    field = Map.update!(field, :middleware, &Enum.reverse/1)
     build_types(rest, [push(obj, :fields, field) | stack])
   end
 

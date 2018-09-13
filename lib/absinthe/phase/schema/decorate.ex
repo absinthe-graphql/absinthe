@@ -80,10 +80,7 @@ defmodule Absinthe.Phase.Schema.Decorate do
     %{node | description: text}
   end
 
-  # TODO: This doesn't work yet.
-  # def apply_decoration(node, {:resolve, resolver}) do    
-  #   %{node |
-  #     middleware: [{Absinthe.Resolution, resolver}]
-  #   }
-  # end
+  def apply_decoration(node, {:resolve, resolver}) do
+    %{node | middleware: [{Absinthe.Resolution, resolver}]}
+  end
 end

@@ -19,7 +19,7 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
     source_location: nil,
     # Added by DSL
     description: nil,
-    middleware_ast: [],
+    middleware: [],
     # Added by phases
     flags: %{},
     errors: [],
@@ -38,7 +38,7 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
           source_location: nil | Blueprint.SourceLocation.t(),
           # Added by DSL
           description: nil | String.t(),
-          middleware_ast: [any],
+          middleware: [any],
           # Added by phases
           flags: Blueprint.flags_t(),
           errors: [Absinthe.Phase.Error.t()]

@@ -52,10 +52,10 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       {:description, "A filter argument"}
     end
 
-    # TODO: This doesn't work yet
-    # def decorations(%{identifier: :posts}, [%{identifier: :query}|_]) do
-    #   {:resolve, &get_posts/3}
-    # end
+    def decorations(%{identifier: :posts}, [%{identifier: :query} | _]) do
+      {:resolve, &get_posts/3}
+    end
+
     def decorations(_node, _ancestors) do
       []
     end
@@ -128,8 +128,9 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   """
 
   describe "execution with decoration-defined resolvers" do
-    @tag :pending_schema
     test "works" do
+      Absinthe.Schema.lookup_type(Definition, :query) |> IO.inspect()
+
       assert {:ok, %{data: %{"posts" => [%{"title" => "Foo"}, %{"title" => "Bar"}]}}} =
                Absinthe.run(@query, Definition)
     end
