@@ -5,6 +5,10 @@ defmodule ExperimentalNotationHelpers do
     Blueprint.Schema.lookup_type(mod.__absinthe_blueprint__(), type_ident)
   end
 
+  def lookup_compiled_type(mod, type_ident) do
+    Absinthe.Schema.lookup_type(mod, type_ident)
+  end
+
   def lookup_field(mod, type_ident, field_ident) do
     type = Blueprint.Schema.lookup_type(mod.__absinthe_blueprint__(), type_ident)
 
@@ -15,6 +19,16 @@ defmodule ExperimentalNotationHelpers do
       _ ->
         false
     end)
+  end
+
+  def lookup_compiled_field(mod, type_ident, field_ident) do
+    case Absinthe.Schema.lookup_type(mod, type_ident) do
+      nil ->
+        nil
+
+      type ->
+        type.fields[field_ident]
+    end
   end
 
   def type_count(mod) do

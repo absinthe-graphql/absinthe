@@ -8,12 +8,31 @@ defmodule Elixir.Absinthe.Integration.Execution.InputTypes.Null.VariableToVariab
   """
 
   test "scenario #1" do
-    assert {:ok, %{errors: [%{message: "Variable \"mult\": Expected non-null, found null.", locations: [%{column: 8, line: 1}]}]}} == Absinthe.run(@query, Absinthe.Fixtures.TimesSchema, [variables: %{"mult" => nil}])
+    assert {:ok,
+            %{
+              errors: [
+                %{
+                  message: "Variable \"mult\": Expected non-null, found null.",
+                  locations: [%{column: 8, line: 1}]
+                }
+              ]
+            }} == Absinthe.run(@query, Absinthe.Fixtures.TimesSchema, variables: %{"mult" => nil})
   end
+
   test "scenario #2" do
-    assert {:ok, %{errors: [%{message: "Variable \"mult\": Expected non-null, found null.", locations: [%{column: 8, line: 1}]}]}} == Absinthe.run(@query, Absinthe.Fixtures.TimesSchema, [])
+    assert {:ok,
+            %{
+              errors: [
+                %{
+                  message: "Variable \"mult\": Expected non-null, found null.",
+                  locations: [%{column: 8, line: 1}]
+                }
+              ]
+            }} == Absinthe.run(@query, Absinthe.Fixtures.TimesSchema, [])
   end
+
   test "scenario #3" do
-    assert {:ok, %{data: %{"times" => 8}}} == Absinthe.run(@query, Absinthe.Fixtures.TimesSchema, [variables: %{"mult" => 2}])
+    assert {:ok, %{data: %{"times" => 8}}} ==
+             Absinthe.run(@query, Absinthe.Fixtures.TimesSchema, variables: %{"mult" => 2})
   end
 end

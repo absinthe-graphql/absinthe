@@ -31,13 +31,8 @@ defmodule Absinthe.Language.OperationDefinition do
       }
     end
 
-    defp source_location(%{loc: nil}) do
-      nil
-    end
-
-    defp source_location(%{loc: loc}) do
-      Blueprint.Document.SourceLocation.at(loc)
-    end
+    defp source_location(%{loc: nil}), do: nil
+    defp source_location(%{loc: loc}), do: Blueprint.SourceLocation.at(loc)
   end
 
   defimpl Absinthe.Traversal.Node do

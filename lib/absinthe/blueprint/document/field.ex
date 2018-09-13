@@ -27,7 +27,7 @@ defmodule Absinthe.Blueprint.Document.Field do
           directives: [Blueprint.Directive.t()],
           flags: Blueprint.flags_t(),
           errors: [Phase.Error.t()],
-          source_location: nil | Blueprint.Document.SourceLocation.t(),
+          source_location: nil | Blueprint.SourceLocation.t(),
           type_conditions: [Blueprint.TypeReference.Name],
           schema_node: Type.t(),
           complexity: nil | non_neg_integer

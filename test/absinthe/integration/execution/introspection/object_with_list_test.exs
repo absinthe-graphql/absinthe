@@ -20,6 +20,34 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.ObjectWithListTest
   """
 
   test "scenario #1" do
-    assert {:ok, %{data: %{"__type" => %{"fields" => [%{"name" => "address", "type" => %{"kind" => "SCALAR", "name" => "String", "ofType" => nil}}, %{"name" => "age", "type" => %{"kind" => "SCALAR", "name" => "Int", "ofType" => nil}}, %{"name" => "name", "type" => %{"kind" => "SCALAR", "name" => "String", "ofType" => nil}}, %{"name" => "others", "type" => %{"kind" => "LIST", "name" => nil, "ofType" => %{"kind" => "OBJECT", "name" => "Person"}}}]}}}} == Absinthe.run(@query, Absinthe.Fixtures.ContactSchema, [])
+    assert {:ok,
+            %{
+              data: %{
+                "__type" => %{
+                  "fields" => [
+                    %{
+                      "name" => "address",
+                      "type" => %{"kind" => "SCALAR", "name" => "String", "ofType" => nil}
+                    },
+                    %{
+                      "name" => "age",
+                      "type" => %{"kind" => "SCALAR", "name" => "Int", "ofType" => nil}
+                    },
+                    %{
+                      "name" => "name",
+                      "type" => %{"kind" => "SCALAR", "name" => "String", "ofType" => nil}
+                    },
+                    %{
+                      "name" => "others",
+                      "type" => %{
+                        "kind" => "LIST",
+                        "name" => nil,
+                        "ofType" => %{"kind" => "OBJECT", "name" => "Person"}
+                      }
+                    }
+                  ]
+                }
+              }
+            }} == Absinthe.run(@query, Absinthe.Fixtures.ContactSchema, [])
   end
 end

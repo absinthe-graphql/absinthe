@@ -16,6 +16,7 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
     arguments: [],
     directives: [],
     complexity: nil,
+    source_location: nil,
     # Added by DSL
     description: nil,
     middleware_ast: [],
@@ -34,6 +35,7 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
           arguments: [Blueprint.Schema.InputValueDefinition.t()],
           type: Blueprint.TypeReference.t(),
           directives: [Blueprint.Directive.t()],
+          source_location: nil | Blueprint.SourceLocation.t(),
           # Added by DSL
           description: nil | String.t(),
           middleware_ast: [any],

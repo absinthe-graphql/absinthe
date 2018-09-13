@@ -4,6 +4,19 @@ defmodule Absinthe.Schema do
 
   @type t :: module
 
+  defmodule CompilationError do
+    defexception phase_errors: []
+
+    def message(error) do
+      details =
+        error.phase_errors
+        |> Enum.map(&"- #{&1.message}")
+        |> Enum.join("\n")
+
+      "Compilation failed:\n" <> details
+    end
+  end
+
   defmacro __using__(_opt) do
     quote do
       use Absinthe.Schema.Notation
@@ -36,7 +49,12 @@ defmodule Absinthe.Schema do
         context
       end
 
-      defoverridable(context: 1, middleware: 3, plugins: 0)
+      @doc false
+      def decorations(node, ancestors) do
+        []
+      end
+
+      defoverridable(context: 1, middleware: 3, plugins: 0, decorations: 2)
     end
   end
 
@@ -186,24 +204,16 @@ defmodule Absinthe.Schema do
     Absinthe.Schema.Notation.record!(env, @object_type, :subscription, attrs, block)
   end
 
-  def pipeline(opts \\ []) do
-    alias Absinthe.Phase
-
-    [
-      Phase.Schema.TypeImports,
-      Phase.Schema.ValidateTypeReferences,
-      Phase.Schema.FieldImports,
-      Phase.Validation.KnownTypeNames,
-      {Phase.Schema.Compile, opts}
-    ]
-  end
-
   def __after_compile__(env, _) do
-    blueprint = env.module.__absinthe_blueprint__
-    pipeline = pipeline(module: env.module)
+    env.module.__absinthe_blueprint__
+    |> Absinthe.Pipeline.run(Absinthe.Pipeline.for_schema(env.module))
+    |> case do
+      {:ok, _, _} ->
+        []
 
-    Absinthe.Pipeline.run(blueprint, pipeline)
-    []
+      {:error, errors, _} ->
+        raise CompilationError, phase_errors: List.wrap(errors)
+    end
   end
 
   ### Helpers

@@ -16,7 +16,7 @@ defmodule Absinthe.Blueprint.Input.Float do
   @type t :: %__MODULE__{
           value: float,
           flags: Blueprint.flags_t(),
-          source_location: Blueprint.Document.SourceLocation.t(),
+          source_location: Blueprint.SourceLocation.t(),
           schema_node: nil | Absinthe.Type.t(),
           errors: [Absinthe.Phase.Error.t()]
         }

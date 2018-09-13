@@ -341,6 +341,7 @@ defmodule Absinthe.Schema.Notation do
 
   defp handle_deprecate(attrs) do
     deprecation = build_deprecation(attrs[:deprecate])
+
     attrs
     |> Keyword.delete(:deprecate)
     |> Keyword.put(:deprecation, deprecation)
@@ -926,6 +927,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro enum(identifier, attrs, do: block) do
     attrs = handle_enum_attrs(attrs, __CALLER__)
+
     __CALLER__
     |> recordable!(:enum, @placement[:enum])
     |> record!(Schema.EnumTypeDefinition, identifier, attrs, block)
@@ -944,6 +946,7 @@ defmodule Absinthe.Schema.Notation do
 
   defmacro enum(identifier, attrs) do
     attrs = handle_enum_attrs(attrs, __CALLER__)
+
     __CALLER__
     |> recordable!(:enum, @placement[:enum])
     |> record!(Schema.EnumTypeDefinition, identifier, attrs, [])
@@ -954,7 +957,7 @@ defmodule Absinthe.Schema.Notation do
     |> expand_ast(env)
     |> Keyword.update(:values, [], fn values ->
       Enum.map(values, fn ident ->
-        value_attrs = handle_enum_value_attrs(ident, [])
+        value_attrs = handle_enum_value_attrs(ident, module: env.module)
         struct!(Schema.EnumValueDefinition, value_attrs)
       end)
     end)
@@ -1004,7 +1007,7 @@ defmodule Absinthe.Schema.Notation do
   See `field/3` for examples
   """
   defmacro non_null(type) do
-    %Absinthe.Type.NonNull{of_type: expand_ast(type, __CALLER__)}
+    %Absinthe.Blueprint.TypeReference.NonNull{of_type: expand_ast(type, __CALLER__)}
   end
 
   @doc """
@@ -1013,7 +1016,7 @@ defmodule Absinthe.Schema.Notation do
   See `field/3` for examples
   """
   defmacro list_of(type) do
-    %Absinthe.Type.List{of_type: expand_ast(type, __CALLER__)}
+    %Absinthe.Blueprint.TypeReference.List{of_type: expand_ast(type, __CALLER__)}
   end
 
   @placement {:import_fields, [under: [:input_object, :interface, :object]]}
@@ -1171,7 +1174,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def record_arg!(env, identifier, attrs) do
-    arg = build_arg(identifier, attrs)
+    arg = build_arg(identifier, Keyword.put(attrs, :module, env.module))
     put_attr(env.module, arg)
   end
 
@@ -1310,9 +1313,10 @@ defmodule Absinthe.Schema.Notation do
       values
       |> expand_ast(env)
       |> Enum.map(fn ident ->
-        value_attrs = handle_enum_value_attrs(ident, [])
+        value_attrs = handle_enum_value_attrs(ident, module: env.module)
         struct!(Schema.EnumValueDefinition, value_attrs)
       end)
+
     put_attr(env.module, {:values, values})
   end
 
@@ -1389,7 +1393,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp put_attr(module, thing) do
-    ref = :erlang.unique_integer
+    ref = :erlang.unique_integer()
     Module.put_attribute(module, :absinthe_blueprint, {ref, thing})
     ref
   end
@@ -1470,7 +1474,7 @@ defmodule Absinthe.Schema.Notation do
     module_attribute_descs =
       env.module
       |> Module.get_attribute(:absinthe_desc)
-      |> Map.new
+      |> Map.new()
 
     attrs =
       env.module
@@ -1489,6 +1493,15 @@ defmodule Absinthe.Schema.Notation do
     sdl_definitions =
       (Module.get_attribute(env.module, :__absinthe_sdl_definitions__) || [])
       |> List.flatten()
+      |> Enum.map(fn type_definition ->
+        Absinthe.Blueprint.prewalk(type_definition, fn
+          %{module: _} = node ->
+            %{node | module: env.module}
+
+          node ->
+            node
+        end)
+      end)
 
     schema_def = %Schema.SchemaDefinition{
       imports: imports,
@@ -1615,6 +1628,7 @@ defmodule Absinthe.Schema.Notation do
   defp reverse_with_descs(attrs, descs, acc \\ [])
 
   defp reverse_with_descs([], _descs, acc), do: acc
+
   defp reverse_with_descs([{ref, attr} | rest], descs, acc) do
     if desc = Map.get(descs, ref) do
       reverse_with_descs(rest, descs, [attr, {:desc, desc} | acc])
@@ -1622,6 +1636,7 @@ defmodule Absinthe.Schema.Notation do
       reverse_with_descs(rest, descs, [attr | acc])
     end
   end
+
   defp reverse_with_descs([attr | rest], descs, acc) do
     reverse_with_descs(rest, descs, [attr | acc])
   end

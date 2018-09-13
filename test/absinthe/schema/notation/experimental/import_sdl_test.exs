@@ -11,7 +11,12 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     import_sdl("""
     type Query {
       "A list of posts"
-      posts: [Post]
+      posts(filter: PostFilter): [Post]
+      admin: User!
+    }
+
+    type PostFilter {
+      name: String
     }
 
     "A submitted post"
@@ -31,6 +36,29 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       name: String!
     }
     """)
+
+    def get_posts(_, _, _) do
+      [
+        %{title: "Foo", body: "A body.", author: %{name: "Bruce"}},
+        %{title: "Bar", body: "A body.", author: %{name: "Ben"}}
+      ]
+    end
+
+    def decorations(%{identifier: :admin}, [%{identifier: :query} | _]) do
+      {:description, "The admin"}
+    end
+
+    def decorations(%{identifier: :filter}, [%{identifier: :posts} | _]) do
+      {:description, "A filter argument"}
+    end
+
+    # TODO: This doesn't work yet
+    # def decorations(%{identifier: :posts}, [%{identifier: :query}|_]) do
+    #   {:resolve, &get_posts/3}
+    # end
+    def decorations(_node, _ancestors) do
+      []
+    end
   end
 
   describe "query root type" do
@@ -67,11 +95,43 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       assert %{description: "The post author\n(is a user)"} =
                lookup_field(Definition, :post, :author)
     end
+
+    test "can be added by a decoration to a field" do
+      assert %{description: "The admin"} = lookup_compiled_field(Definition, :query, :admin)
+    end
+
+    test "can be added by a decoration to an argument" do
+      field = lookup_compiled_field(Definition, :query, :posts)
+      assert %{description: "A filter argument"} = field.args.filter
+    end
   end
 
   describe "multiple invocations" do
     test "can add definitions" do
       assert %{name: "User", identifier: :user} = lookup_type(Definition, :user)
+    end
+  end
+
+  @query """
+  { admin { name } }
+  """
+
+  describe "execution with root_value" do
+    test "works" do
+      assert {:ok, %{data: %{"admin" => %{"name" => "Bruce"}}}} =
+               Absinthe.run(@query, Definition, root_value: %{admin: %{name: "Bruce"}})
+    end
+  end
+
+  @query """
+  { posts { title } }
+  """
+
+  describe "execution with decoration-defined resolvers" do
+    @tag :pending_schema
+    test "works" do
+      assert {:ok, %{data: %{"posts" => [%{"title" => "Foo"}, %{"title" => "Bar"}]}}} =
+               Absinthe.run(@query, Definition)
     end
   end
 end

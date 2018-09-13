@@ -12,6 +12,7 @@ defmodule Absinthe.Blueprint.Schema.ScalarTypeDefinition do
     parse: nil,
     serialize: nil,
     directives: [],
+    source_location: nil,
     # Added by phases
     flags: %{},
     errors: [],
@@ -23,6 +24,7 @@ defmodule Absinthe.Blueprint.Schema.ScalarTypeDefinition do
           name: String.t(),
           description: nil | String.t(),
           directives: [Blueprint.Directive.t()],
+          source_location: nil | Blueprint.SourceLocation.t(),
           # Added by phases
           flags: Blueprint.flags_t(),
           errors: [Absinthe.Phase.Error.t()]

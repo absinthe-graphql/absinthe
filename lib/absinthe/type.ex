@@ -81,9 +81,14 @@ defmodule Absinthe.Type do
 
   def built_in?(type) do
     type.definition
+    |> built_in_module?()
+  end
+
+  def built_in_module?(module) do
+    module
     |> Module.split()
     |> Enum.take(3)
-    |> Module.safe_concat() == Absinthe.Type.BuiltIns
+    |> Module.concat() == Absinthe.Type.BuiltIns
   end
 
   # INPUT TYPES

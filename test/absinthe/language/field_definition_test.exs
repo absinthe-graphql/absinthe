@@ -47,13 +47,16 @@ defmodule Absinthe.Language.FieldDefinitionTest do
                arguments: [
                  %Blueprint.Schema.InputValueDefinition{
                    name: "limit",
+                   identifier: :limit,
                    type: %Blueprint.TypeReference.Name{name: "Int"},
                    default_value: %Blueprint.Input.Integer{
                      value: 4,
-                     source_location: %Blueprint.Document.SourceLocation{column: 23, line: 4}
-                   }
+                     source_location: %Blueprint.SourceLocation{column: 23, line: 4}
+                   },
+                   source_location: %Absinthe.Blueprint.SourceLocation{column: 10, line: 4}
                  }
-               ]
+               ],
+               source_location: %Absinthe.Blueprint.SourceLocation{column: 3, line: 4}
              } == field_def
     end
   end

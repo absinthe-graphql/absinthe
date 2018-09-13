@@ -14,7 +14,7 @@ defmodule Absinthe.Phase do
           | {:jump, any, t}
           | {:insert, any, t | [t]}
           | {:replace, any, t | [t]}
-          | {:error, String.t()}
+          | {:error, any}
 
   alias __MODULE__
   alias Absinthe.Blueprint
