@@ -14,15 +14,7 @@ defmodule Elixir.Absinthe.Integration.Validation.ObjectSpreadsInObjectScopeTest 
   """
 
   test "scenario #1" do
-    assert {:ok,
-            %{
-              errors: [
-                %{
-                  message:
-                    "Fragment spread has no type overlap with parent.\nParent possible types: [\"Person\"]\nSpread possible types: [\"Business\"]\n",
-                  locations: [%{column: 5, line: 4}]
-                }
-              ]
-            }} == Absinthe.run(@query, Absinthe.Fixtures.ContactSchema, [])
+    assert {:ok, %{errors: [%{message: "Fragment spread has no type overlap with parent.\nParent possible types: [\"Person\"]\nSpread possible types: [\"Business\"]\n",
+                              locations: [%{column: 5, line: 4}]}]}} == Absinthe.run(@query, Absinthe.Fixtures.ContactSchema, [])
   end
 end

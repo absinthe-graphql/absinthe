@@ -50,7 +50,7 @@ defmodule Absinthe.Subscription.Local do
         :ok = pubsub.publish_subscription(topic, data)
       rescue
         e ->
-          BatchResolver.pipeline_error(e, System.stacktrace())
+          BatchResolver.pipeline_error(e)
       end
     end
   end

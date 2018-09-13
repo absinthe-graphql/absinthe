@@ -13,7 +13,6 @@ defmodule Elixir.Absinthe.Integration.Execution.InputTypes.Null.LiteralToTypeLis
   """
 
   test "scenario #1" do
-    assert {:ok, %{data: %{"nullableList" => nil}}} ==
-             Absinthe.run(@query, Absinthe.Fixtures.NullListsSchema, [])
+    assert {:ok, %{data: %{"nullableList" => nil}}} == Absinthe.run(@query, Absinthe.Fixtures.NullListsSchema, [])
   end
 end

@@ -11,10 +11,9 @@ defmodule Absinthe.SchemaTest do
 
     test "are loaded" do
       load_valid_schema()
-
       builtin_types =
         Absinthe.Fixtures.ValidSchema
-        |> Absinthe.Schema.types()
+        |> Absinthe.Schema.types
         |> Enum.filter(&Absinthe.Type.built_in?(&1))
 
       assert length(builtin_types) > 0

@@ -11,7 +11,6 @@ defmodule Elixir.Absinthe.Integration.Execution.InputTypes.Id.LiteralTest do
   """
 
   test "scenario #1" do
-    assert {:ok, %{data: %{"item" => %{"id" => "foo", "name" => "Foo"}}}} ==
-             Absinthe.run(@query, Absinthe.Fixtures.IdTestSchema, [])
+    assert {:ok, %{data: %{"item" => %{"id" => "foo", "name" => "Foo"}}}} == Absinthe.run(@query, Absinthe.Fixtures.IdTestSchema, [])
   end
 end

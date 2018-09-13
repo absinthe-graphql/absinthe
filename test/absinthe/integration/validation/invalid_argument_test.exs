@@ -6,14 +6,7 @@ defmodule Elixir.Absinthe.Integration.Validation.InvalidArgumentTest do
   """
 
   test "scenario #1" do
-    assert {:ok,
-            %{
-              errors: [
-                %{
-                  message: "Argument \"val\" has invalid value \"AAA\".",
-                  locations: [%{column: 16, line: 1}]
-                }
-              ]
-            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+    assert {:ok, %{errors: [%{message: "Argument \"val\" has invalid value \"AAA\".",
+                              locations: [%{column: 16, line: 1}]}]}} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
   end
 end

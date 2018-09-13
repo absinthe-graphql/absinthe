@@ -12,7 +12,7 @@ defmodule Elixir.Absinthe.Integration.Execution.Fragments.IntrospectionTest do
       ...Inputs
     }
   }
-
+  
   fragment Inputs on __Type {
     inputFields { name }
   }
@@ -20,7 +20,6 @@ defmodule Elixir.Absinthe.Integration.Execution.Fragments.IntrospectionTest do
 
   test "scenario #1" do
     result = Absinthe.run(@query, Absinthe.Fixtures.ContactSchema, [])
-
     assert {:ok,
             %{
               data: %{

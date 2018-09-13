@@ -6,7 +6,6 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.InterfaceTypenameA
   """
 
   test "scenario #1" do
-    assert {:ok, %{data: %{"contact" => %{"entity" => %{"kind" => "Person", "name" => "Bruce"}}}}} ==
-             Absinthe.run(@query, Absinthe.Fixtures.ContactSchema, [])
+    assert {:ok, %{data: %{"contact" => %{"entity" => %{"kind" => "Person", "name" => "Bruce"}}}}} == Absinthe.run(@query, Absinthe.Fixtures.ContactSchema, [])
   end
 end

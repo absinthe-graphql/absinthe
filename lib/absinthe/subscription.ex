@@ -28,6 +28,8 @@ defmodule Absinthe.Subscription do
   - More user control over back pressure / async balance.
   """
 
+  alias Absinthe.Subscription.Registry
+
   require Logger
   alias __MODULE__
 

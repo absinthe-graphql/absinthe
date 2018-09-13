@@ -13,7 +13,6 @@ defmodule Elixir.Absinthe.Integration.Execution.NestedObjectsTest do
   """
 
   test "scenario #1" do
-    assert {:ok, %{data: %{"thing" => %{"name" => "Foo", "otherThing" => %{"name" => "Bar"}}}}} ==
-             Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+    assert {:ok, %{data: %{"thing" => %{"name" => "Foo", "otherThing" => %{"name" => "Bar"}}}}} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
   end
 end

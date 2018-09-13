@@ -6,14 +6,6 @@ defmodule Elixir.Absinthe.Integration.Validation.RequiredArgumentsTest do
   """
 
   test "scenario #1" do
-    assert {:ok,
-            %{
-              errors: [
-                %{
-                  message: "In argument \"id\": Expected type \"String!\", found null.",
-                  locations: [%{column: 9, line: 1}]
-                }
-              ]
-            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+    assert {:ok, %{errors: [%{message: "In argument \"id\": Expected type \"String!\", found null.", locations: [%{column: 9, line: 1}]}]}} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
   end
 end

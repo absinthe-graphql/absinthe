@@ -103,6 +103,7 @@ defmodule Absinthe.Type.Object do
             definition: nil,
             __reference__: nil
 
+
   @doc false
   @spec field(t, atom) :: Absinthe.Type.Field.t()
   def field(%{fields: fields}, identifier) do

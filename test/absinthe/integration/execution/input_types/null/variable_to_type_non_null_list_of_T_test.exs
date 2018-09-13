@@ -13,7 +13,6 @@ defmodule Elixir.Absinthe.Integration.Execution.InputTypes.Null.VariableToTypeNo
   """
 
   test "scenario #1" do
-    assert {:ok, %{data: %{"nullableListOfNonNullableType" => nil}}} ==
-             Absinthe.run(@query, Absinthe.Fixtures.NullListsSchema, variables: %{"value" => nil})
+    assert {:ok, %{data: %{"nullableListOfNonNullableType" => nil}}} == Absinthe.run(@query, Absinthe.Fixtures.NullListsSchema, [variables: %{"value" => nil}])
   end
 end

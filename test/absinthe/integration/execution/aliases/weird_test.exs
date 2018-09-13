@@ -10,7 +10,6 @@ defmodule Elixir.Absinthe.Integration.Execution.Aliases.WeirdTest do
   """
 
   test "scenario #1" do
-    assert {:ok, %{data: %{"thing" => %{"fOO_Bar_baz" => "Foo"}}}} ==
-             Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+    assert {:ok, %{data: %{"thing" => %{"fOO_Bar_baz" => "Foo"}}}} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
   end
 end

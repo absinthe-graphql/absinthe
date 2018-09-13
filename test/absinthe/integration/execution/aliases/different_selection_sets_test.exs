@@ -13,7 +13,6 @@ defmodule Elixir.Absinthe.Integration.Execution.Aliases.DifferentSelectionSetsTe
   """
 
   test "scenario #1" do
-    assert {:ok, %{data: %{"thing1" => %{"id" => "foo"}, "thing2" => %{"name" => "Bar"}}}} ==
-             Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+    assert {:ok, %{data: %{"thing1" => %{"id" => "foo"}, "thing2" => %{"name" => "Bar"}}}} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
   end
 end

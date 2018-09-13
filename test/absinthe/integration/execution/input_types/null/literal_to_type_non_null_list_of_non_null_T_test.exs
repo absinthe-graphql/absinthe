@@ -13,14 +13,7 @@ defmodule Elixir.Absinthe.Integration.Execution.InputTypes.Null.LiteralToTypeNon
   """
 
   test "scenario #1" do
-    assert {:ok,
-            %{
-              errors: [
-                %{
-                  message: "Argument \"input\" has invalid value null.",
-                  locations: [%{column: 36, line: 2}]
-                }
-              ]
-            }} == Absinthe.run(@query, Absinthe.Fixtures.NullListsSchema, [])
+    assert {:ok, %{errors: [%{message: "Argument \"input\" has invalid value null.",
+                              locations: [%{column: 36, line: 2}]}]}} == Absinthe.run(@query, Absinthe.Fixtures.NullListsSchema, [])
   end
 end

@@ -11,14 +11,6 @@ defmodule Elixir.Absinthe.Integration.Validation.UnknownFieldTest do
   """
 
   test "scenario #1" do
-    assert {:ok,
-            %{
-              errors: [
-                %{
-                  message: "Cannot query field \"bad\" on type \"Thing\".",
-                  locations: [%{column: 5, line: 4}]
-                }
-              ]
-            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+    assert {:ok, %{errors: [%{message: "Cannot query field \"bad\" on type \"Thing\".", locations: [%{column: 5, line: 4}]}]}} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
   end
 end

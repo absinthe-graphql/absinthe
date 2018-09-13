@@ -93,8 +93,7 @@ defmodule Absinthe.Pipeline.BatchResolver do
     {:ok, blueprint}
   rescue
     e ->
-      trace = System.stacktrace()
-      pipeline_error(e, trace)
+      pipeline_error(e)
       :error
   end
 
@@ -102,9 +101,9 @@ defmodule Absinthe.Pipeline.BatchResolver do
     %{bp | execution: %{execution | acc: acc, context: ctx}}
   end
 
-  def pipeline_error(exception, trace) do
+  def pipeline_error(exception) do
     message = Exception.message(exception)
-    stacktrace = trace |> Exception.format_stacktrace()
+    stacktrace = System.stacktrace() |> Exception.format_stacktrace()
 
     Logger.error("""
     #{message}

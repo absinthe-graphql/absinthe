@@ -6,23 +6,8 @@ defmodule Elixir.Absinthe.Integration.Execution.Resolution.MultipleErrorsWithExt
   """
 
   test "scenario #1" do
-    assert {:ok,
-            %{
-              data: %{"failingThing" => nil},
-              errors: [
-                %{
-                  code: 1,
-                  message: "Custom Error 1",
-                  path: ["failingThing"],
-                  locations: [%{column: 12, line: 1}]
-                },
-                %{
-                  code: 2,
-                  message: "Custom Error 2",
-                  path: ["failingThing"],
-                  locations: [%{column: 12, line: 1}]
-                }
-              ]
-            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+    assert {:ok, %{data: %{"failingThing" => nil},
+              errors: [%{code: 1, message: "Custom Error 1", path: ["failingThing"], locations: [%{column: 12, line: 1}]},
+                       %{code: 2, message: "Custom Error 2", path: ["failingThing"], locations: [%{column: 12, line: 1}]}]}} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
   end
 end

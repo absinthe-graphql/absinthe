@@ -13,18 +13,7 @@ defmodule Elixir.Absinthe.Integration.Execution.InputTypes.Null.VariableToTypeNo
   """
 
   test "scenario #1" do
-    assert {:ok,
-            %{
-              errors: [
-                %{
-                  message:
-                    "Argument \"input\" has invalid value $value.\nIn element #1: Expected type \"Int!\", found null.",
-                  locations: [%{column: 33, line: 2}]
-                }
-              ]
-            }} ==
-             Absinthe.run(@query, Absinthe.Fixtures.NullListsSchema,
-               variables: %{"value" => [nil, 1]}
-             )
+    assert {:ok, %{errors: [%{message: "Argument \"input\" has invalid value $value.\nIn element #1: Expected type \"Int!\", found null.",
+                              locations: [%{column: 33, line: 2}]}]}} == Absinthe.run(@query, Absinthe.Fixtures.NullListsSchema, [variables: %{"value" => [nil, 1]}])
   end
 end

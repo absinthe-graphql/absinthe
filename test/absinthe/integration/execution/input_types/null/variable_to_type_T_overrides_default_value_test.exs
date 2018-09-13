@@ -8,9 +8,6 @@ defmodule Elixir.Absinthe.Integration.Execution.InputTypes.Null.VariableToType_T
   """
 
   test "scenario #1" do
-    assert {:ok, %{data: %{"times" => 4}}} ==
-             Absinthe.run(@query, Absinthe.Fixtures.ObjectTimesSchema,
-               variables: %{"multiplier" => nil}
-             )
+    assert {:ok, %{data: %{"times" => 4}}} == Absinthe.run(@query, Absinthe.Fixtures.ObjectTimesSchema, [variables: %{"multiplier" => nil}])
   end
 end

@@ -13,11 +13,9 @@ defmodule Absinthe.Phase.Schema.FieldImports do
   def handle_imports(%Schema.SchemaDefinition{} = schema) do
     # Per Phase.Schema.ValidateTypeReferences, the types are already
     # in the order they need to be in to accumulate imports properly.
-    types =
-      Enum.reduce(schema.type_definitions, %{}, fn type, types ->
-        Map.put(types, type.identifier, import_fields(type, types))
-      end)
-
+    types = Enum.reduce(schema.type_definitions, %{}, fn type, types ->
+      Map.put(types, type.identifier, import_fields(type, types))
+    end)
     types = Enum.map(schema.type_definitions, &Map.fetch!(types, &1.identifier))
     {:halt, %{schema | type_definitions: types}}
   end
@@ -35,16 +33,14 @@ defmodule Absinthe.Phase.Schema.FieldImports do
 
       rejections = Keyword.get(opts, :except, [])
 
-      fields = source_type.fields |> Enum.reject(&(&1.identifier in rejections))
+      fields = source_type.fields |> Enum.reject(& &1.identifier in rejections)
+      fields = case Keyword.fetch(opts, :only) do
+        {:ok, selections} ->
+          Enum.filter(fields, &(&1.identifier in selections))
 
-      fields =
-        case Keyword.fetch(opts, :only) do
-          {:ok, selections} ->
-            Enum.filter(fields, &(&1.identifier in selections))
-
-          _ ->
-            fields
-        end
+        _ ->
+          fields
+      end
 
       %{type | fields: fields ++ type.fields}
     end)

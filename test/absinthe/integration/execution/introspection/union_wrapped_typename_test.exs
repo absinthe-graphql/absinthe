@@ -6,11 +6,6 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.UnionWrappedTypena
   """
 
   test "scenario #1" do
-    assert {:ok,
-            %{
-              data: %{
-                "searchResults" => [%{"__typename" => "Person"}, %{"__typename" => "Business"}]
-              }
-            }} == Absinthe.run(@query, Absinthe.Fixtures.ContactSchema, [])
+    assert {:ok, %{data: %{"searchResults" => [%{"__typename" => "Person"}, %{"__typename" => "Business"}]}}} == Absinthe.run(@query, Absinthe.Fixtures.ContactSchema, [])
   end
 end
