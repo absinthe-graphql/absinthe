@@ -4,7 +4,6 @@ defmodule Absinthe.Phase.Schema.Decorate do
 
   use Absinthe.Phase
   alias Absinthe.Blueprint
-  alias Absinthe.Blueprint.Schema
 
   @decorate [
     Blueprint.Schema.DirectiveDefinition,

@@ -59,9 +59,40 @@ defmodule Absinthe.Phase.Schema.Compile do
     end
   end
 
-  def build_types(%{schema_definitions: [schema]}) do
+  def inline_middleware(%Absinthe.Type.Object{} = type, schema) do
+    Map.update!(type, :fields, fn fields ->
+      Map.new(fields, fn
+        {field_ident, %{middleware_ref: nil} = field} ->
+          {field_ident, field}
+
+        {field_ident, %{definition: module} = field} ->
+          middleware_shim = {
+            {Absinthe.Middleware, :shim},
+            {module, field.middleware_ref}
+          }
+
+          middleware =
+            module.__absinthe_function__(Absinthe.Type.Field, field.middleware_ref, :middleware)
+
+          middleware = schema.middleware(middleware, field, type)
+
+          if Absinthe.Utils.escapable?(middleware) do
+            {field_ident, %{field | middleware: middleware}}
+          else
+            {field_ident, %{field | middleware: [middleware_shim]}}
+          end
+      end)
+    end)
+  end
+
+  def inline_middleware(type, _) do
+    type
+  end
+
+  def build_types(%{schema_definitions: [schema]} = bp) do
     for %module{} = type_def <- schema.type_definitions do
       type = module.build(type_def, schema)
+      type = inline_middleware(type, bp.schema)
 
       type = %{
         type

@@ -20,6 +20,7 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
     # Added by DSL
     description: nil,
     middleware: [],
+    middleware_ref: nil,
     # Added by phases
     flags: %{},
     errors: [],

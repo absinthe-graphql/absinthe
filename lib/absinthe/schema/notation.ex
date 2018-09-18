@@ -7,7 +7,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro __using__(_opts) do
     Module.register_attribute(__CALLER__.module, :absinthe_blueprint, accumulate: true)
     Module.register_attribute(__CALLER__.module, :absinthe_desc, accumulate: true)
-    put_attr(__CALLER__.module, %Absinthe.Blueprint{})
+    put_attr(__CALLER__.module, %Absinthe.Blueprint{schema: __CALLER__.module})
 
     quote do
       import Absinthe.Resolution.Helpers,

@@ -277,4 +277,21 @@ defmodule Absinthe.Middleware do
   was passed to the `middleware` call that setup the middleware.
   """
   @callback call(Absinthe.Resolution.t(), term) :: Absinthe.Resolution.t()
+
+  @doc false
+  def shim(res, {module, {object, field}}) do
+    middleware =
+      apply(module, :__absinthe_function__, [
+        Absinthe.Type.Field,
+        {object, field},
+        :middleware
+      ])
+
+    schema = res.schema
+    object = Absinthe.Schema.lookup_type(schema, object)
+    field = object.fields |> Map.fetch!(field)
+    middleware = schema.middleware(middleware, field, object)
+
+    %{res | middleware: middleware ++ res.middleware}
+  end
 end

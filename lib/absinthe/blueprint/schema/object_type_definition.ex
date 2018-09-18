@@ -49,15 +49,17 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
 
   def build_fields(type_def, schema) do
     for field_def <- type_def.fields, into: %{} do
-      # TODO: remove and make middleware work generally
-      middleware_shim = {
-        {__MODULE__, :shim},
-        {field_def.module || type_def.module, type_def.identifier, field_def.identifier}
-      }
+      middleware =
+        Absinthe.Schema.Notation.__ensure_middleware__(
+          field_def.middleware,
+          field_def.identifier,
+          type_def.identifier
+        )
 
       field = %Type.Field{
         identifier: field_def.identifier,
-        middleware: [middleware_shim],
+        middleware: middleware,
+        middleware_ref: field_def.middleware_ref,
         deprecation: field_def.deprecation,
         description: field_def.description,
         complexity: {type_def.identifier, field_def.identifier},
@@ -87,21 +89,5 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
 
       {arg_def.identifier, arg}
     end)
-  end
-
-  def shim(res, {module, obj, field}) do
-    middleware =
-      apply(module, :__absinthe_function__, [
-        Type.Field,
-        {obj, field},
-        :middleware
-      ])
-
-    schema = res.schema
-    object = Absinthe.Schema.lookup_type(schema, obj)
-    field = object.fields |> Map.fetch!(field)
-    middleware = schema.middleware(middleware, field, object)
-
-    %{res | middleware: middleware}
   end
 end

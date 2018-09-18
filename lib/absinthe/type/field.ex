@@ -214,7 +214,8 @@ defmodule Absinthe.Type.Field do
             default_value: nil,
             __private__: [],
             definition: nil,
-            __reference__: nil
+            __reference__: nil,
+            middleware_ref: nil
 
   defimpl Absinthe.Traversal.Node do
     def children(node, traversal) do

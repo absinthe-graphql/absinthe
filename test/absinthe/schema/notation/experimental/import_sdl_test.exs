@@ -38,10 +38,12 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     """)
 
     def get_posts(_, _, _) do
-      [
+      posts = [
         %{title: "Foo", body: "A body.", author: %{name: "Bruce"}},
         %{title: "Bar", body: "A body.", author: %{name: "Ben"}}
       ]
+
+      {:ok, posts}
     end
 
     def decorations(%{identifier: :admin}, [%{identifier: :query} | _]) do
@@ -53,7 +55,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     end
 
     def decorations(%{identifier: :posts}, [%{identifier: :query} | _]) do
-      {:resolve, &get_posts/3}
+      {:resolve, &__MODULE__.get_posts/3}
     end
 
     def decorations(_node, _ancestors) do
@@ -129,8 +131,6 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
   describe "execution with decoration-defined resolvers" do
     test "works" do
-      Absinthe.Schema.lookup_type(Definition, :query) |> IO.inspect()
-
       assert {:ok, %{data: %{"posts" => [%{"title" => "Foo"}, %{"title" => "Bar"}]}}} =
                Absinthe.run(@query, Definition)
     end

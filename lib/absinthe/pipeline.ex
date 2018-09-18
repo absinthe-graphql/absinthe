@@ -115,6 +115,7 @@ defmodule Absinthe.Pipeline do
     [
       Phase.Schema.TypeImports,
       Phase.Schema.ValidateTypeReferences,
+      # {Phase.Schema.InlineMiddleware, schema: schema},
       Phase.Schema.FieldImports,
       {Phase.Schema.Decorate, [schema: schema]},
       Phase.Validation.KnownTypeNames,
