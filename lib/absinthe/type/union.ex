@@ -58,6 +58,9 @@ defmodule Absinthe.Type.Union do
             __reference__: nil
 
   @doc false
+  defdelegate functions, to: Absinthe.Blueprint.Schema.UnionTypeDefinition
+
+  @doc false
   @spec member?(t, Type.t()) :: boolean
   def member?(%{types: types}, %{__reference__: %{identifier: ident}}) do
     ident in types

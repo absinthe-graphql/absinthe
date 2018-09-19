@@ -33,6 +33,9 @@ defmodule Absinthe.Type.Scalar do
 
   alias Absinthe.Type
 
+  @doc false
+  defdelegate functions(), to: Absinthe.Blueprint.Schema.ScalarTypeDefinition
+
   def serialize(type, value) do
     Type.function(type, :serialize).(value)
   end

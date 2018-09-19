@@ -8,11 +8,16 @@ defmodule Absinthe.Phase.Schema.InlineFunctionsTest do
       field :direct, :string, resolve: &__MODULE__.foo/3
       field :indirect, :string, resolve: indirection()
       field :via_callback, :string
-      field :not_inlined, :string, resolve: &foo/3
 
-      field :inlined_complexity, :string do
+      field :complexity_literal, :string do
         complexity 1
       end
+    end
+
+    object :not_inlined do
+      field :local_capture, :string, resolve: &foo/3
+
+      field :anon_function, :string, resolve: fn _, _, _ -> {:ok, "yo"} end
     end
 
     def foo(_, _, _), do: {:ok, "hey"}
@@ -47,6 +52,17 @@ defmodule Absinthe.Phase.Schema.InlineFunctionsTest do
       assert [
                {{Absinthe.Resolution, :call}, &Schema.foo/3}
              ] == get_field(bp, :inlined, :via_callback).middleware
+    end
+
+    test "aren't inlined if they're a local capture", %{bp: bp} do
+      assert [{{Absinthe.Middleware, :shim}, _}] =
+               get_field(bp, :not_inlined, :local_capture).middleware
+    end
+  end
+
+  describe "complexity" do
+    test "is inlined when it's a literal", %{bp: bp} do
+      assert 1 == get_field(bp, :inlined, :complexity_literal).complexity
     end
   end
 

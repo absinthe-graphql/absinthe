@@ -105,6 +105,9 @@ defmodule Absinthe.Type.Object do
             is_type_of: nil
 
   @doc false
+  defdelegate functions, to: Absinthe.Blueprint.Schema.ObjectTypeDefinition
+
+  @doc false
   @spec field(t, atom) :: Absinthe.Type.Field.t()
   def field(%{fields: fields}, identifier) do
     fields
