@@ -8,8 +8,8 @@ defmodule Absinthe.Phase.Schema.Compile do
 
     %{schema_definitions: [schema]} = blueprint
 
-    types = build_types(blueprint)
-    directives = build_directives(blueprint)
+    type_ast = build_types(schema.type_artifacts)
+    directive_ast = build_directives(schema.directive_artifacts)
 
     type_list =
       Map.new(schema.type_definitions, fn type_def ->
@@ -26,8 +26,8 @@ defmodule Absinthe.Phase.Schema.Compile do
     implementors = build_implementors(schema)
 
     body = [
-      types,
-      directives,
+      type_ast,
+      directive_ast,
       quote do
         def __absinthe_types__ do
           unquote(Macro.escape(type_list))
@@ -59,29 +59,23 @@ defmodule Absinthe.Phase.Schema.Compile do
     end
   end
 
-  def build_types(%{schema_definitions: [schema]}) do
-    for %module{} = type_def <- schema.type_definitions do
-      type = module.build(type_def, schema)
-
-      type = %{
-        type |
-          __reference__: type_def.__reference__,
-          __private__: type_def.__private__
-      }
-
-      if !type.definition, do: raise """
-      No definition set!
-      #{inspect type}
-      """
+  def build_types(types) do
+    for type <- types do
+      if !type.definition,
+        do:
+          raise("""
+          No definition set!
+          #{inspect(type)}
+          """)
 
       ast = Macro.escape(type)
 
       quote do
-        def __absinthe_type__(unquote(type_def.identifier)) do
+        def __absinthe_type__(unquote(type.identifier)) do
           unquote(ast)
         end
 
-        def __absinthe_type__(unquote(type_def.name)) do
+        def __absinthe_type__(unquote(type.name)) do
           unquote(ast)
         end
       end
@@ -95,25 +89,16 @@ defmodule Absinthe.Phase.Schema.Compile do
     ])
   end
 
-  def build_directives(%{schema_definitions: [schema]}) do
-    for %module{} = type_def <- schema.directive_definitions do
-      type = module.build(type_def, schema)
-
-      type = %{
-        type
-        | definition: type_def.module,
-          __reference__: type_def.__reference__,
-          __private__: type_def.__private__
-      }
-
+  def build_directives(directives) do
+    for type <- directives do
       ast = Macro.escape(type)
 
       quote do
-        def __absinthe_directive__(unquote(type_def.identifier)) do
+        def __absinthe_directive__(unquote(type.identifier)) do
           unquote(ast)
         end
 
-        def __absinthe_directive__(unquote(type_def.name)) do
+        def __absinthe_directive__(unquote(type.name)) do
           unquote(ast)
         end
       end

@@ -7,7 +7,7 @@ defmodule Absinthe.Schema.ExperimentalTest do
     use Absinthe.Schema
 
     query do
-      field :user, :user do
+      field :user, non_null(:user) do
         resolve fn _, _ ->
           {:ok, %{first_name: "Bruce", last_name: "Williams"}}
         end

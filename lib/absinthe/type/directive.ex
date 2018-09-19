@@ -47,6 +47,9 @@ defmodule Absinthe.Type.Directive do
             __private__: [],
             __reference__: nil
 
+  @doc false
+  defdelegate functions, to: Absinthe.Blueprint.Schema.DirectiveDefinition
+
   # Whether the directive is active in `place`
   @doc false
   @spec on?(t, Language.t()) :: boolean

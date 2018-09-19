@@ -20,7 +20,7 @@ defmodule Absinthe.Blueprint.Document.VariableDefinition do
           name: String.t(),
           type: Blueprint.TypeReference.t(),
           default_value: Blueprint.Input.t(),
-          source_location: nil | Blueprint.Document.SourceLocation.t(),
+          source_location: nil | Blueprint.SourceLocation.t(),
           provided_value: nil | Blueprint.Input.t(),
           errors: [Absinthe.Phase.Error.t()],
           flags: Blueprint.flags_t(),

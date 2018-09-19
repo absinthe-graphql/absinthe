@@ -10,6 +10,7 @@ defmodule Elixir.Absinthe.Integration.Execution.Aliases.AllCapsAliasTest do
   """
 
   test "scenario #1" do
-    assert {:ok, %{data: %{"thing" => %{"FOO" => "Foo"}}}} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+    assert {:ok, %{data: %{"thing" => %{"FOO" => "Foo"}}}} ==
+             Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
   end
 end

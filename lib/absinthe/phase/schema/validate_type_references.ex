@@ -1,5 +1,4 @@
 defmodule Absinthe.Phase.Schema.ValidateTypeReferences do
-
   @moduledoc false
 
   use Absinthe.Phase
@@ -26,9 +25,10 @@ defmodule Absinthe.Phase.Schema.ValidateTypeReferences do
 
     try do
       _ = check(types, graph)
+
       for type <- types do
         if cycle = :digraph.get_cycle(graph, type.identifier) do
-          raise "cycle! #{inspect cycle}"
+          raise "cycle! #{inspect(cycle)}"
         end
       end
 

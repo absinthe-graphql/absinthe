@@ -189,7 +189,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
     possible_interfaces
     |> Enum.map(& &1.name)
     |> Enum.concat(Enum.map(possible_types, & &1.name))
-    |> Enum.sort
+    |> Enum.sort()
   end
 
   defp suggested_field_names(external_field_name, %{fields: _} = type, blueprint) do
@@ -199,7 +199,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
     |> Enum.map(& &1.name)
     |> Absinthe.Utils.Suggestion.sort_list(internal_field_name)
     |> Enum.map(&blueprint.adapter.to_external_name(&1, :field))
-    |> Enum.sort
+    |> Enum.sort()
   end
 
   defp suggested_field_names(_, _, _) do

@@ -15,7 +15,7 @@ defmodule Absinthe.Language.VariableDefinitionTest do
                name: "showFoo",
                type: %Blueprint.TypeReference.Name{name: "Boolean"},
                default_value: %Blueprint.Input.Boolean{value: true},
-               source_location: %Blueprint.Document.SourceLocation{line: 1}
+               source_location: %Blueprint.SourceLocation{line: 1}
              } = from_input(@query)
     end
   end

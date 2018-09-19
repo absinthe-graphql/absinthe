@@ -51,10 +51,14 @@ defmodule Absinthe.Type.Union do
   defstruct name: nil,
             description: nil,
             identifier: nil,
+            resolve_type: nil,
             types: [],
             __private__: [],
             definition: nil,
             __reference__: nil
+
+  @doc false
+  defdelegate functions, to: Absinthe.Blueprint.Schema.UnionTypeDefinition
 
   @doc false
   @spec member?(t, Type.t()) :: boolean
@@ -100,6 +104,5 @@ defmodule Absinthe.Type.Union do
         type_name
       end
     end
-
   end
 end

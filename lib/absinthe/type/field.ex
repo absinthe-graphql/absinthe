@@ -216,6 +216,9 @@ defmodule Absinthe.Type.Field do
             definition: nil,
             __reference__: nil
 
+  @doc false
+  defdelegate functions, to: Absinthe.Blueprint.Schema.FieldDefinition
+
   defimpl Absinthe.Traversal.Node do
     def children(node, traversal) do
       found = Schema.lookup_type(traversal.context, node.type)

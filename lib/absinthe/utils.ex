@@ -53,6 +53,17 @@ defmodule Absinthe.Utils do
   end
 
   @doc false
+  @spec escapable?(any()) :: boolean()
+  def escapable?(value) do
+    # if this doesn't blow up, the value can be escaped
+    _ = Macro.escape(value)
+    true
+  rescue
+    _ ->
+      false
+  end
+
+  @doc false
   def placement_docs([{_, placement} | _]) do
     placement
     |> do_placement_docs

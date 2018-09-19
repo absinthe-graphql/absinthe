@@ -24,7 +24,7 @@ defmodule Absinthe.Blueprint.Document.Fragment.Named do
           name: String.t(),
           selections: [Blueprint.Document.selection_t()],
           schema_node: nil | Absinthe.Type.t(),
-          source_location: nil | Blueprint.Document.SourceLocation.t(),
+          source_location: nil | Blueprint.SourceLocation.t(),
           flags: Blueprint.flags_t(),
           type_condition: Blueprint.TypeReference.Name.t()
         }

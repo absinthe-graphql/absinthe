@@ -11,15 +11,16 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
     :module,
     description: nil,
     deprecation: nil,
-    config_ast: nil,
+    config: nil,
+    triggers: [],
     default_value: nil,
     arguments: [],
     directives: [],
     complexity: nil,
-    # Added by DSL
+    source_location: nil,
     description: nil,
-    middleware_ast: [],
-    # Added by phases
+    middleware: [],
+    function_ref: nil,
     flags: %{},
     errors: [],
     __reference__: nil,
@@ -34,11 +35,15 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
           arguments: [Blueprint.Schema.InputValueDefinition.t()],
           type: Blueprint.TypeReference.t(),
           directives: [Blueprint.Directive.t()],
+          source_location: nil | Blueprint.SourceLocation.t(),
           # Added by DSL
           description: nil | String.t(),
-          middleware_ast: [any],
+          middleware: [any],
           # Added by phases
           flags: Blueprint.flags_t(),
           errors: [Absinthe.Phase.Error.t()]
         }
+
+  @doc false
+  def functions(), do: [:config, :complexity, :middleware, :triggers]
 end

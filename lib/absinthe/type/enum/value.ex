@@ -31,5 +31,4 @@ defmodule Absinthe.Type.Enum.Value do
           __reference__: Type.Reference.t()
         }
   defstruct name: nil, description: nil, value: nil, deprecation: nil, __reference__: nil
-
 end

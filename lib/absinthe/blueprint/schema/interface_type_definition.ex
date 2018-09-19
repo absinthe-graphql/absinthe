@@ -11,6 +11,7 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
     description: nil,
     fields: [],
     directives: [],
+    source_location: nil,
     # Added by phases
     flags: %{},
     errors: [],
@@ -25,6 +26,7 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
           description: nil | String.t(),
           fields: [Blueprint.Schema.FieldDefinition.t()],
           directives: [Blueprint.Directive.t()],
+          source_location: nil | Blueprint.SourceLocation.t(),
           # Added by phases
           flags: Blueprint.flags_t(),
           errors: [Absinthe.Phase.Error.t()]
@@ -36,7 +38,7 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
       description: type_def.description,
       fields: build_fields(type_def),
       identifier: type_def.identifier,
-      resolve_type: nil,
+      resolve_type: type_def.resolve_type,
       definition: type_def.module
     }
   end
@@ -52,4 +54,7 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
       {field.identifier, field}
     end
   end
+
+  @doc false
+  def functions(), do: [:resolve_type]
 end
