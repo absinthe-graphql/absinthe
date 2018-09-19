@@ -52,6 +52,7 @@ defmodule BlogWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :blog
   use Absinthe.Phoenix.Endpoint
 
+  socket "/websocket", BlogWeb.UserSocket
   << rest of the file>>
 ```
 
