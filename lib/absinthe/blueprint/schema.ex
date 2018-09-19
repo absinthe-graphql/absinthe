@@ -72,7 +72,7 @@ defmodule Absinthe.Blueprint.Schema do
   end
 
   defp build_types([{:config, config} | rest], [field | stack]) do
-    field = %{field | config_ast: config}
+    field = %{field | config: config}
     build_types(rest, [field | stack])
   end
 

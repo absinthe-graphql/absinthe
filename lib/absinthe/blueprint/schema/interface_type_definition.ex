@@ -38,7 +38,7 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
       description: type_def.description,
       fields: build_fields(type_def),
       identifier: type_def.identifier,
-      resolve_type: nil,
+      resolve_type: type_def.resolve_type,
       definition: type_def.module
     }
   end

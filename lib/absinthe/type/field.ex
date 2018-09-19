@@ -210,7 +210,6 @@ defmodule Absinthe.Type.Field do
             # used by mutation fields
             triggers: [],
             middleware: [],
-            middleware_ref: nil,
             complexity: nil,
             default_value: nil,
             __private__: [],

@@ -76,7 +76,7 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
 
     schema_node = %{
       schema_node
-      | complexity: Type.function(schema_node, schema_node.complexity, :complexity)
+      | complexity: Type.function(schema_node, :complexity)
     }
 
     case field_complexity(schema_node, args, child_complexity, info, node) do

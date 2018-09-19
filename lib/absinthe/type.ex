@@ -37,20 +37,14 @@ defmodule Absinthe.Type do
   @typedoc "A type reference"
   @type reference_t :: identifier_t | t
 
-  def function(%{definition: nil}, _) do
-    nil
-  end
+  def function(%struct{} = type, key) do
+    case Map.fetch!(type, key) do
+      {:ref, module, identifier} ->
+        module.__absinthe_function__(struct, identifier, key)
 
-  def function(%type{definition: module, identifier: identifier}, key) do
-    module.__absinthe_function__(type, identifier, key)
-  end
-
-  def function(%{definition: nil}, _, _) do
-    nil
-  end
-
-  def function(%type{definition: module}, identifier, key) do
-    module.__absinthe_function__(type, identifier, key)
+      function ->
+        function
+    end
   end
 
   @doc "Lookup a custom metadata field on a type"

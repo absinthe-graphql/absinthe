@@ -287,9 +287,17 @@ defmodule Absinthe.Middleware do
         :middleware
       ])
 
+    middleware =
+      Absinthe.Schema.Notation.__ensure_middleware__(
+        middleware,
+        field,
+        object
+      )
+
     schema = res.schema
     object = Absinthe.Schema.lookup_type(schema, object)
-    field = object.fields |> Map.fetch!(field)
+    field = Map.fetch!(object.fields, field)
+
     middleware = schema.middleware(middleware, field, object)
 
     %{res | middleware: middleware ++ res.middleware}

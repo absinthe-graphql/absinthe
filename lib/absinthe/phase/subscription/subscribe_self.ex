@@ -43,7 +43,7 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
     name = schema_node.identifier
 
     config =
-      case Absinthe.Type.function(schema_node, schema_node.config, :config) do
+      case Absinthe.Type.function(schema_node, :config) do
         fun when is_function(fun, 2) ->
           apply(fun, [argument_data, %{context: context}])
 

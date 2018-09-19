@@ -35,7 +35,9 @@ defmodule Absinthe.Blueprint.Schema.ScalarTypeDefinition do
       identifier: type_def.identifier,
       name: type_def.name,
       description: type_def.description,
-      definition: type_def.module
+      definition: type_def.module,
+      serialize: type_def.serialize,
+      parse: type_def.parse
     }
   end
 end

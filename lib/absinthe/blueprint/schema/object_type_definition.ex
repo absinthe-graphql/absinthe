@@ -43,27 +43,20 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
       description: type_def.description,
       fields: build_fields(type_def, schema),
       interfaces: type_def.interfaces,
-      definition: type_def.module
+      definition: type_def.module,
+      is_type_of: type_def.is_type_of
     }
   end
 
   def build_fields(type_def, schema) do
     for field_def <- type_def.fields, into: %{} do
-      middleware =
-        Absinthe.Schema.Notation.__ensure_middleware__(
-          field_def.middleware,
-          field_def.identifier,
-          type_def.identifier
-        )
-
       field = %Type.Field{
         identifier: field_def.identifier,
-        middleware: middleware,
-        middleware_ref: field_def.middleware_ref,
+        middleware: field_def.middleware,
         deprecation: field_def.deprecation,
         description: field_def.description,
-        complexity: {type_def.identifier, field_def.identifier},
-        config: {type_def.identifier, field_def.identifier},
+        complexity: field_def.complexity,
+        config: field_def.complexity,
         name: field_def.name,
         type: Blueprint.TypeReference.to_type(field_def.type, schema),
         args: build_args(field_def, schema),

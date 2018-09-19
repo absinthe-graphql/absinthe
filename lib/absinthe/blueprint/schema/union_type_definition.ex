@@ -37,7 +37,8 @@ defmodule Absinthe.Blueprint.Schema.UnionTypeDefinition do
       description: type_def.description,
       identifier: type_def.identifier,
       types: type_def.types |> Enum.sort(),
-      definition: type_def.module
+      definition: type_def.module,
+      resolve_type: type_def.resolve_type
     }
   end
 end

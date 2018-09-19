@@ -1490,6 +1490,21 @@ defmodule Absinthe.Schema.Notation do
         other -> other
       end)
 
+    schema_def = %Schema.SchemaDefinition{
+      imports: imports,
+      module: env.module
+    }
+
+    blueprint =
+      attrs
+      |> List.insert_at(1, schema_def)
+      |> Absinthe.Blueprint.Schema.build()
+
+    # TODO: handle multiple schemas
+    [schema] = blueprint.schema_definitions
+
+    {schema, functions} = lift_functions(schema)
+
     sdl_definitions =
       (Module.get_attribute(env.module, :__absinthe_sdl_definitions__) || [])
       |> List.flatten()
@@ -1503,21 +1518,9 @@ defmodule Absinthe.Schema.Notation do
         end)
       end)
 
-    schema_def = %Schema.SchemaDefinition{
-      imports: imports,
-      module: env.module
-    }
+    schema = Map.update!(schema, :type_definitions, &(sdl_definitions ++ &1))
 
-    blueprint =
-      attrs
-      |> List.insert_at(1, schema_def)
-      |> List.insert_at(2, {:sdl, sdl_definitions})
-      |> Absinthe.Blueprint.Schema.build()
-
-    # TODO: handle multiple schemas
-    [schema] = blueprint.schema_definitions
-
-    functions = build_functions(schema)
+    blueprint = %{blueprint | schema_definitions: [schema]}
 
     quote do
       unquote(__MODULE__).noop(@desc)
@@ -1530,6 +1533,19 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
+  def lift_functions(schema) do
+    Absinthe.Blueprint.prewalk(schema, [], &lift_functions/2)
+  end
+
+  def lift_functions(%Schema.SchemaDefinition{} = node, acc) do
+    {node, acc}
+  end
+
+  def lift_functions(node, acc) do
+    {node, ast} = functions_for_type(node)
+    {node, ast ++ acc}
+  end
+
   def build_functions(schema) do
     schema.type_definitions
     |> Enum.concat(schema.directive_definitions)
@@ -1537,15 +1553,22 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def grab_functions(type, module, identifier, attrs) do
-    for attr <- attrs do
-      value = Map.fetch!(type, attr)
+    {ast, type} =
+      Enum.flat_map_reduce(attrs, type, fn attr, type ->
+        value = Map.fetch!(type, attr)
 
-      quote do
-        def __absinthe_function__(unquote(module), unquote(identifier), unquote(attr)) do
-          unquote(value)
-        end
-      end
-    end
+        ast =
+          quote do
+            def __absinthe_function__(unquote(module), unquote(identifier), unquote(attr)) do
+              unquote(value)
+            end
+          end
+
+        type = %{type | attr => {:ref, type.module, identifier}}
+        {[ast], type}
+      end)
+
+    {type, ast}
   end
 
   defp functions_for_type(%Schema.ScalarTypeDefinition{} = type) do
@@ -1557,11 +1580,11 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp functions_for_type(%Schema.ObjectTypeDefinition{} = type) do
-    functions = grab_functions(type, Absinthe.Type.Object, type.identifier, [:is_type_of])
+    {type, functions} = grab_functions(type, Absinthe.Type.Object, type.identifier, [:is_type_of])
 
     field_functions =
       for field <- type.fields, identifier = field.middleware_ref do
-        middleware = __ensure_middleware__(field.middleware, field.identifier, type.identifier)
+        middleware = field.middleware
 
         quote do
           def __absinthe_function__(
@@ -1577,7 +1600,7 @@ defmodule Absinthe.Schema.Notation do
                 unquote(identifier),
                 :config
               ) do
-            unquote(field.config_ast)
+            unquote(field.config)
           end
 
           def __absinthe_function__(
@@ -1590,15 +1613,19 @@ defmodule Absinthe.Schema.Notation do
         end
       end
 
-    functions ++ field_functions
-  end
+    type =
+      Map.update!(type, :fields, fn fields ->
+        for field <- fields do
+          %{
+            field
+            | middleware: {:ref, type.module, field.middleware_ref},
+              complexity: {:ref, type.module, field.middleware_ref},
+              config: {:ref, type.module, field.middleware_ref}
+          }
+        end
+      end)
 
-  defp functions_for_type(%Schema.InputObjectTypeDefinition{}) do
-    []
-  end
-
-  defp functions_for_type(%Schema.EnumTypeDefinition{}) do
-    []
+    {type, functions ++ field_functions}
   end
 
   defp functions_for_type(%Schema.UnionTypeDefinition{} = type) do
@@ -1607,6 +1634,10 @@ defmodule Absinthe.Schema.Notation do
 
   defp functions_for_type(%Schema.InterfaceTypeDefinition{} = type) do
     grab_functions(type, Absinthe.Type.Interface, type.identifier, [:resolve_type])
+  end
+
+  defp functions_for_type(type) do
+    {type, []}
   end
 
   @doc false
