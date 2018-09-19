@@ -1560,9 +1560,7 @@ defmodule Absinthe.Schema.Notation do
     functions = grab_functions(type, Absinthe.Type.Object, type.identifier, [:is_type_of])
 
     field_functions =
-      for field <- type.fields do
-        identifier = field.middleware_ref
-
+      for field <- type.fields, identifier = field.middleware_ref do
         middleware = __ensure_middleware__(field.middleware, field.identifier, type.identifier)
 
         quote do
