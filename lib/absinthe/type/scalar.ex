@@ -77,7 +77,9 @@ defmodule Absinthe.Type.Scalar do
             identifier: nil,
             __private__: [],
             definition: nil,
-            __reference__: nil
+            __reference__: nil,
+            parse: nil,
+            serialize: nil
 
   @typedoc "The internal, canonical representation of a scalar value"
   @type value_t :: any

@@ -51,6 +51,7 @@ defmodule Absinthe.Type.Union do
   defstruct name: nil,
             description: nil,
             identifier: nil,
+            resolve_type: nil,
             types: [],
             __private__: [],
             definition: nil,

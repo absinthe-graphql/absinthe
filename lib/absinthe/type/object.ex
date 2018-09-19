@@ -101,7 +101,8 @@ defmodule Absinthe.Type.Object do
             interfaces: [],
             __private__: [],
             definition: nil,
-            __reference__: nil
+            __reference__: nil,
+            is_type_of: nil
 
   @doc false
   @spec field(t, atom) :: Absinthe.Type.Field.t()

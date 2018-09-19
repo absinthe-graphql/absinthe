@@ -210,12 +210,12 @@ defmodule Absinthe.Type.Field do
             # used by mutation fields
             triggers: [],
             middleware: [],
+            middleware_ref: nil,
             complexity: nil,
             default_value: nil,
             __private__: [],
             definition: nil,
-            __reference__: nil,
-            middleware_ref: nil
+            __reference__: nil
 
   defimpl Absinthe.Traversal.Node do
     def children(node, traversal) do

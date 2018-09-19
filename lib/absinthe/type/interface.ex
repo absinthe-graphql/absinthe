@@ -75,7 +75,8 @@ defmodule Absinthe.Type.Interface do
             resolve_type: nil,
             __private__: [],
             definition: nil,
-            __reference__: nil
+            __reference__: nil,
+            resolve_type: nil
 
   @spec resolve_type(Type.Interface.t(), any, Absinthe.Resolution.t()) :: Type.t() | nil
   def resolve_type(type, obj, env, opts \\ [lookup: true])
