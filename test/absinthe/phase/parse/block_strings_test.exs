@@ -39,7 +39,7 @@ defmodule Absinthe.Phase.Parse.BlockStringsTest do
     assert "body" == extract_body(result)
   end
 
-  test "paarse attributes where there are escapes on multiple lines" do
+  test "parse attributes where there are escapes on multiple lines" do
     assert {:ok, result}  = run(
       ~s<{ post(
         title: "title",
