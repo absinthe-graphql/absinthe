@@ -10,6 +10,10 @@ defmodule Absinthe.Execution.SubscriptionTest do
       Registry.start_link(:unique, __MODULE__)
     end
 
+    def node_name() do
+      node()
+    end
+
     def subscribe(topic) do
       Registry.register(__MODULE__, topic, [])
       :ok

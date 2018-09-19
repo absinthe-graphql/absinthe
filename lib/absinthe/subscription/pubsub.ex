@@ -22,8 +22,19 @@ defmodule Absinthe.Subscription.Pubsub do
   @callback subscribe(topic :: binary) :: term
 
   @doc """
-  An Absinthe.Subscription.Pubsub system may extend across multiple nodes in a 
-  cluster. Processes need only subscribe to the pubsub process that 
+  An Absinthe.Subscription.Pubsub system may extend across multiple nodes
+  connected by some mechanism. Regardless of this mechanism, all nodes should
+  have unique names.
+
+  Absinthe invokes `node_name` function to get current node's name. If you
+  are running inside erlang cluster, you can use `Kernel.node/0` as a node
+  name.
+  """
+  @callback node_name() :: binary
+
+  @doc """
+  An Absinthe.Subscription.Pubsub system may extend across multiple nodes.
+  Processes need only subscribe to the pubsub process that
   is running on their own node.
 
   However, mutations can happen on any node in the custer and must to be 
@@ -38,7 +49,7 @@ defmodule Absinthe.Subscription.Pubsub do
   The message broadcast should be a map that contains, at least
 
       %{
-          node: node_id,        # probably from Kernel.node/0
+          node: node_name,      # should be equal to `node_name/0`
           mutation_result: …,   # from arguments
           subscribed_fields: …  # from arguments
 
