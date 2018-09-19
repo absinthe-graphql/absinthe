@@ -40,7 +40,7 @@ BlockStringValue        = """{BlockStringCharacter}*"""
 HexDigit            = [0-9A-Fa-f]
 EscapedUnicode      = u{HexDigit}{HexDigit}{HexDigit}{HexDigit}
 EscapedCharacter    = ["\\\/bfnrt]
-StringCharacter     = ([^\"{_LineTerminator}]|\\{EscapedUnicode}|\\{EscapedCharacter})
+StringCharacter     = ([^\\"{_LineTerminator}]|\\{EscapedUnicode}|\\{EscapedCharacter})
 StringValue         = "{StringCharacter}*"
 
 % Boolean Value
