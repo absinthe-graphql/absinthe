@@ -64,34 +64,21 @@ defmodule Absinthe.Phase.Schema.Compile do
       Map.new(fields, fn
         {field_ident, %{middleware: {:ref, module, identifier}} = field} ->
           middleware = Absinthe.Type.function(field, :middleware)
-
-          middleware =
-            Absinthe.Schema.Notation.__ensure_middleware__(
-              middleware,
-              field_ident,
-              type.identifier
-            )
-
-          middleware = schema.middleware(middleware, field, type)
+          middleware = Absinthe.Middleware.expand(schema, middleware, field, type)
 
           if Absinthe.Utils.escapable?(middleware) do
             {field_ident, %{field | middleware: middleware}}
           else
             middleware_shim = {
               {Absinthe.Middleware, :shim},
-              {module, identifier}
+              {:ref, module, identifier}
             }
 
             {field_ident, %{field | middleware: [middleware_shim]}}
           end
 
         {field_ident, field} ->
-          middleware =
-            Absinthe.Schema.Notation.__ensure_middleware__(
-              field.middleware,
-              field_ident,
-              type.identifier
-            )
+          middleware = Absinthe.Middleware.expand(schema, field.middleware, field, type)
 
           {field_ident, %{field | middleware: middleware}}
       end)

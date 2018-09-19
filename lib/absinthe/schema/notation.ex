@@ -1641,11 +1641,11 @@ defmodule Absinthe.Schema.Notation do
   end
 
   @doc false
-  def __ensure_middleware__([], _field, :subscription) do
+  def __ensure_middleware__([], _field, %{identifier: :subscription}) do
     [Absinthe.Middleware.PassParent]
   end
 
-  def __ensure_middleware__([], identifier, _) do
+  def __ensure_middleware__([], %{identifier: identifier}, _) do
     [{Absinthe.Middleware.MapGet, identifier}]
   end
 
