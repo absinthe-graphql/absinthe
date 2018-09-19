@@ -36,6 +36,9 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
           __private__: Keyword.t()
         }
 
+  @doc false
+  def functions(), do: [:is_type_of]
+
   def build(type_def, schema) do
     %Type.Object{
       identifier: type_def.identifier,

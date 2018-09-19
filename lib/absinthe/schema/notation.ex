@@ -1503,7 +1503,7 @@ defmodule Absinthe.Schema.Notation do
     # TODO: handle multiple schemas
     [schema] = blueprint.schema_definitions
 
-    {schema, functions} = lift_functions(schema)
+    {schema, functions} = lift_functions(schema, env.module)
 
     sdl_definitions =
       (Module.get_attribute(env.module, :__absinthe_sdl_definitions__) || [])
@@ -1533,110 +1533,48 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
-  def lift_functions(schema) do
-    Absinthe.Blueprint.prewalk(schema, [], &lift_functions/2)
+  def lift_functions(schema, origin) do
+    Absinthe.Blueprint.prewalk(schema, [], &lift_functions(&1, &2, origin))
   end
 
-  def lift_functions(%Schema.SchemaDefinition{} = node, acc) do
-    {node, acc}
-  end
-
-  def lift_functions(node, acc) do
-    {node, ast} = functions_for_type(node)
+  def lift_functions(node, acc, origin) do
+    {node, ast} = functions_for_type(node, origin)
     {node, ast ++ acc}
   end
 
-  def build_functions(schema) do
-    schema.type_definitions
-    |> Enum.concat(schema.directive_definitions)
-    |> Enum.flat_map(&functions_for_type/1)
-  end
-
-  def grab_functions(type, module, identifier, attrs) do
+  def grab_functions(origin, type, identifier, attrs) do
     {ast, type} =
       Enum.flat_map_reduce(attrs, type, fn attr, type ->
         value = Map.fetch!(type, attr)
 
         ast =
           quote do
-            def __absinthe_function__(unquote(module), unquote(identifier), unquote(attr)) do
+            def __absinthe_function__(unquote(identifier), unquote(attr)) do
               unquote(value)
             end
           end
 
-        type = %{type | attr => {:ref, type.module, identifier}}
+        type = %{type | attr => {:ref, origin, identifier}}
         {[ast], type}
       end)
 
     {type, ast}
   end
 
-  defp functions_for_type(%Schema.ScalarTypeDefinition{} = type) do
-    grab_functions(type, Absinthe.Type.Scalar, type.identifier, [:serialize, :parse])
+  defp functions_for_type(%Schema.FieldDefinition{} = type, origin) do
+    grab_functions(
+      origin,
+      type,
+      {Schema.FieldDefinition, type.function_ref},
+      Schema.functions(Schema.FieldDefinition)
+    )
   end
 
-  defp functions_for_type(%Schema.DirectiveDefinition{} = type) do
-    grab_functions(type, Absinthe.Type.Directive, type.identifier, [:expand])
+  defp functions_for_type(%module{identifier: identifier} = type, origin) do
+    grab_functions(origin, type, {module, identifier}, Schema.functions(module))
   end
 
-  defp functions_for_type(%Schema.ObjectTypeDefinition{} = type) do
-    {type, functions} = grab_functions(type, Absinthe.Type.Object, type.identifier, [:is_type_of])
-
-    field_functions =
-      for field <- type.fields, identifier = field.middleware_ref do
-        middleware = field.middleware
-
-        quote do
-          def __absinthe_function__(
-                unquote(Absinthe.Type.Field),
-                unquote(identifier),
-                :complexity
-              ) do
-            unquote(field.complexity)
-          end
-
-          def __absinthe_function__(
-                unquote(Absinthe.Type.Field),
-                unquote(identifier),
-                :config
-              ) do
-            unquote(field.config)
-          end
-
-          def __absinthe_function__(
-                unquote(Absinthe.Type.Field),
-                unquote(identifier),
-                :middleware
-              ) do
-            unquote(middleware)
-          end
-        end
-      end
-
-    type =
-      Map.update!(type, :fields, fn fields ->
-        for field <- fields do
-          %{
-            field
-            | middleware: {:ref, type.module, field.middleware_ref},
-              complexity: {:ref, type.module, field.middleware_ref},
-              config: {:ref, type.module, field.middleware_ref}
-          }
-        end
-      end)
-
-    {type, functions ++ field_functions}
-  end
-
-  defp functions_for_type(%Schema.UnionTypeDefinition{} = type) do
-    grab_functions(type, Absinthe.Type.Union, type.identifier, [:resolve_type])
-  end
-
-  defp functions_for_type(%Schema.InterfaceTypeDefinition{} = type) do
-    grab_functions(type, Absinthe.Type.Interface, type.identifier, [:resolve_type])
-  end
-
-  defp functions_for_type(type) do
+  defp functions_for_type(type, _) do
     {type, []}
   end
 

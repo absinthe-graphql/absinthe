@@ -40,4 +40,7 @@ defmodule Absinthe.Blueprint.Schema.ScalarTypeDefinition do
       parse: type_def.parse
     }
   end
+
+  @doc false
+  def functions(), do: [:serialize, :parse]
 end

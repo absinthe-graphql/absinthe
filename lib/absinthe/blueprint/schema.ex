@@ -30,6 +30,14 @@ defmodule Absinthe.Blueprint.Schema do
     end)
   end
 
+  def functions(module) do
+    if function_exported?(module, :functions, 0) do
+      module.functions
+    else
+      []
+    end
+  end
+
   def build([%Absinthe.Blueprint{} = bp | attrs]) do
     build_types(attrs, [bp])
   end
@@ -113,7 +121,7 @@ defmodule Absinthe.Blueprint.Schema do
     field =
       field
       |> Map.update!(:middleware, &Enum.reverse/1)
-      |> Map.put(:middleware_ref, {obj.identifier, field.identifier})
+      |> Map.put(:function_ref, {obj.identifier, field.identifier})
 
     build_types(rest, [push(obj, :fields, field) | stack])
   end

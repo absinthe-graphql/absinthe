@@ -59,7 +59,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ResolveTest do
              lookup_field(Definition, :obj, field_identifier)
 
     assert [{{Absinthe.Resolution, :call}, _}] =
-             module.__absinthe_function__(Absinthe.Type.Field, identifier, :middleware)
+             module.__absinthe_function__(identifier, :middleware)
   end
 
   describe "resolve" do

@@ -54,4 +54,7 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
       {field.identifier, field}
     end
   end
+
+  @doc false
+  def functions(), do: [:resolve_type]
 end

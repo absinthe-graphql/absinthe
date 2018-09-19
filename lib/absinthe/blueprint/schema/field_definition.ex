@@ -12,16 +12,15 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
     description: nil,
     deprecation: nil,
     config: nil,
+    triggers: [],
     default_value: nil,
     arguments: [],
     directives: [],
     complexity: nil,
     source_location: nil,
-    # Added by DSL
     description: nil,
     middleware: [],
-    middleware_ref: nil,
-    # Added by phases
+    function_ref: nil,
     flags: %{},
     errors: [],
     __reference__: nil,
@@ -44,4 +43,7 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
           flags: Blueprint.flags_t(),
           errors: [Absinthe.Phase.Error.t()]
         }
+
+  @doc false
+  def functions(), do: [:config, :complexity, :middleware, :triggers]
 end

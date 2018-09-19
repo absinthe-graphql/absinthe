@@ -39,4 +39,7 @@ defmodule Absinthe.Blueprint.Schema.DirectiveDefinition do
       expand: type_def.expand
     }
   end
+
+  @doc false
+  def functions(), do: [:expand]
 end

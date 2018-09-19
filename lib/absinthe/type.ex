@@ -5,6 +5,9 @@ defmodule Absinthe.Type do
 
   alias Absinthe.{Introspection, Schema}
 
+  @type function_identifier :: {module, any}
+  @type function_ref :: {:ref, module, function_identifier}
+
   # ALL TYPES
 
   @type_modules [
@@ -37,10 +40,10 @@ defmodule Absinthe.Type do
   @typedoc "A type reference"
   @type reference_t :: identifier_t | t
 
-  def function(%struct{} = type, key) do
+  def function(type, key) do
     case Map.fetch!(type, key) do
       {:ref, module, identifier} ->
-        module.__absinthe_function__(struct, identifier, key)
+        module.__absinthe_function__(identifier, key)
 
       function ->
         function

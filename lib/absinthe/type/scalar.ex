@@ -33,10 +33,6 @@ defmodule Absinthe.Type.Scalar do
 
   alias Absinthe.Type
 
-  def build(%{attrs: attrs}) do
-    quote do: %unquote(__MODULE__){unquote_splicing(attrs)}
-  end
-
   def serialize(type, value) do
     Type.function(type, :serialize).(value)
   end

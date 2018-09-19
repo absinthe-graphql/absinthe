@@ -41,4 +41,7 @@ defmodule Absinthe.Blueprint.Schema.UnionTypeDefinition do
       resolve_type: type_def.resolve_type
     }
   end
+
+  @doc false
+  def functions(), do: [:resolve_type]
 end
