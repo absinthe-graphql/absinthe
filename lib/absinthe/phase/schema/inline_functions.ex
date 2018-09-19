@@ -7,6 +7,7 @@ defmodule Absinthe.Phase.Schema.InlineFunctions do
 
   def run(blueprint, _opts) do
     blueprint = Blueprint.prewalk(blueprint, &inline_functions/1)
+
     {:ok, blueprint}
   end
 
@@ -17,6 +18,10 @@ defmodule Absinthe.Phase.Schema.InlineFunctions do
   end
 
   def inline_functions(node) do
+    node
+  end
+
+  defp inline_function(:middleware, node) do
     node
   end
 

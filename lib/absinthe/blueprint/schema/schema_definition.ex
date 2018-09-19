@@ -7,6 +7,8 @@ defmodule Absinthe.Blueprint.Schema.SchemaDefinition do
             module: nil,
             type_definitions: [],
             directive_definitions: [],
+            type_artifacts: [],
+            directive_artifacts: [],
             type_extensions: [],
             directives: [],
             source_location: nil,
