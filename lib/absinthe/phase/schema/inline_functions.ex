@@ -23,7 +23,7 @@ defmodule Absinthe.Phase.Schema.InlineFunctions do
     {:halt, schema_def}
   end
 
-  def inline_functions(%type{identifier: id} = node, schema) do
+  def inline_functions(%type{identifier: _} = node, schema) do
     type
     |> Schema.functions()
     # middleware gets handled specially
