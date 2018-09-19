@@ -1561,7 +1561,7 @@ defmodule Absinthe.Schema.Notation do
 
     field_functions =
       for field <- type.fields do
-        identifier = {type.identifier, field.identifier}
+        identifier = field.middleware_ref
 
         middleware = __ensure_middleware__(field.middleware, field.identifier, type.identifier)
 
