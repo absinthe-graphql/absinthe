@@ -117,7 +117,7 @@ defmodule Absinthe.Type.DirectiveTest do
          %{
            errors: [
              %{
-               locations: [%{column: 0, line: 2}],
+               locations: [%{column: 19, line: 2}],
                message: ~s(In argument "if": Expected type "Boolean!", found null.)
              }
            ]

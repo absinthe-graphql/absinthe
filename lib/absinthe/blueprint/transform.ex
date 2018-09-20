@@ -61,7 +61,7 @@ defmodule Absinthe.Blueprint.Transform do
   defp pass(x, acc), do: {x, acc}
 
   nodes_with_children = %{
-    Blueprint => [:fragments, :operations, :types, :directives],
+    Blueprint => [:fragments, :operations, :schema_definitions, :directives],
     Blueprint.Directive => [:arguments],
     Blueprint.Document.Field => [:selections, :arguments, :directives],
     Blueprint.Document.Operation => [:selections, :variable_definitions, :directives],
@@ -77,7 +77,7 @@ defmodule Absinthe.Blueprint.Transform do
     Blueprint.Input.List => [:items],
     Blueprint.Input.RawValue => [:content],
     Blueprint.Input.Value => [:normalized],
-    Blueprint.Schema.DirectiveDefinition => [:directives, :types],
+    Blueprint.Schema.DirectiveDefinition => [:directives, :arguments],
     Blueprint.Schema.EnumTypeDefinition => [:directives, :values],
     Blueprint.Schema.EnumValueDefinition => [:directives],
     Blueprint.Schema.FieldDefinition => [:type, :arguments, :directives],
@@ -86,7 +86,7 @@ defmodule Absinthe.Blueprint.Transform do
     Blueprint.Schema.InterfaceTypeDefinition => [:fields, :directives],
     Blueprint.Schema.ObjectTypeDefinition => [:interfaces, :fields, :directives],
     Blueprint.Schema.ScalarTypeDefinition => [:directives],
-    Blueprint.Schema.SchemaDefinition => [:directives, :fields],
+    Blueprint.Schema.SchemaDefinition => [:directive_definitions, :type_definitions, :directives],
     Blueprint.Schema.UnionTypeDefinition => [:directives, :types]
   }
 

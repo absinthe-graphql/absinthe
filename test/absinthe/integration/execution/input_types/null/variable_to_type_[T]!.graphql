@@ -1,9 +1,0 @@
-# Schema: NullListsSchema
-query ($value: [Int]!) {
-  nonNullableList(input: $value) {
-    length
-    content
-    nonNullCount
-    nullCount
-  }
-}

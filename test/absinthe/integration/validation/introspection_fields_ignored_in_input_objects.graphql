@@ -1,6 +1,0 @@
-mutation ($input: InputThing) {
-  thing: updateThing(id: "foo", thing: $input) {
-    name
-    value
-  }
-}

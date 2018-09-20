@@ -5,8 +5,4 @@ defmodule Absinthe.Blueprint.Input.RawValue do
   defstruct [
     :content
   ]
-
-  @type t :: %__MODULE__{
-          content: Absinthe.Blueprint.Input.t()
-        }
 end

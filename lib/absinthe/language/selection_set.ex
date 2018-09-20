@@ -4,7 +4,7 @@ defmodule Absinthe.Language.SelectionSet do
   alias Absinthe.Language
 
   defstruct selections: [],
-            loc: %{start_line: nil}
+            loc: %{line: nil}
 
   @type t :: %__MODULE__{
           selections: [

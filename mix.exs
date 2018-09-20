@@ -54,6 +54,7 @@ defmodule Absinthe.Mixfile do
 
   defp deps do
     [
+      {:nimble_parsec, "~> 0.4", override: true},
       {:dataloader, "~> 1.0.0", optional: true},
       {:ex_doc, "~> 0.14", only: :dev},
       {:benchfella, "~> 0.3.0", only: :dev},
@@ -127,7 +128,6 @@ defmodule Absinthe.Mixfile do
         Absinthe.Type,
         Absinthe.Type.Custom,
         Absinthe.Type.Argument,
-        Absinthe.Type.BuiltIns,
         Absinthe.Type.Custom,
         Absinthe.Type.Directive,
         Absinthe.Type.Enum,

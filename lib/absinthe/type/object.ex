@@ -89,8 +89,8 @@ defmodule Absinthe.Type.Object do
           description: binary,
           fields: map,
           interfaces: [Absinthe.Type.Interface.t()],
-          is_type_of: (any -> boolean),
           __private__: Keyword.t(),
+          definition: Module.t(),
           __reference__: Type.Reference.t()
         }
 
@@ -99,49 +99,13 @@ defmodule Absinthe.Type.Object do
             description: nil,
             fields: nil,
             interfaces: [],
-            is_type_of: nil,
             __private__: [],
+            definition: nil,
             __reference__: nil,
-            field_imports: []
-
-  def build(%{attrs: attrs}) do
-    fields =
-      (attrs[:fields] || [])
-      |> Type.Field.build()
-      |> handle_imports(attrs[:field_imports])
-
-    attrs = Keyword.put(attrs, :fields, fields)
-
-    quote do
-      %unquote(__MODULE__){
-        unquote_splicing(attrs)
-      }
-    end
-  end
+            is_type_of: nil
 
   @doc false
-  def handle_imports(fields, []), do: fields
-  def handle_imports(fields, nil), do: fields
-
-  def handle_imports(fields, imports) do
-    quote do
-      Enum.reduce(
-        unquote(imports),
-        unquote(fields),
-        &Absinthe.Type.Object.import_fields(__MODULE__, &1, &2)
-      )
-    end
-  end
-
-  def import_fields(schema, {type, _opts}, fields) do
-    case schema.__absinthe_type__(type) do
-      %{fields: new_fields} ->
-        Map.merge(fields, new_fields)
-
-      _ ->
-        fields
-    end
-  end
+  defdelegate functions, to: Absinthe.Blueprint.Schema.ObjectTypeDefinition
 
   @doc false
   @spec field(t, atom) :: Absinthe.Type.Field.t()

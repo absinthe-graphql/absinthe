@@ -6,19 +6,27 @@ defmodule Absinthe.Blueprint.Schema.EnumValueDefinition do
   @enforce_keys [:value]
   defstruct [
     :value,
+    :name,
+    :identifier,
+    deprecation: nil,
     deprecation: nil,
     directives: [],
     source_location: nil,
+    description: nil,
+    source_location: nil,
     # Added by phases
     flags: %{},
-    errors: []
+    module: nil,
+    errors: [],
+    __reference__: nil
   ]
 
   @type t :: %__MODULE__{
           value: String.t(),
+          description: nil | String.t(),
           deprecation: nil | Blueprint.Schema.Deprecation.t(),
           directives: [Blueprint.Directive.t()],
-          source_location: nil | Blueprint.Document.SourceLocation.t(),
+          source_location: nil | Blueprint.SourceLocation.t(),
           # Added by phases
           flags: Blueprint.flags_t(),
           errors: [Absinthe.Phase.Error.t()]

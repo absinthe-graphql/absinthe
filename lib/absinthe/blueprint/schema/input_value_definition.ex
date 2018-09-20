@@ -3,26 +3,34 @@ defmodule Absinthe.Blueprint.Schema.InputValueDefinition do
 
   alias Absinthe.Blueprint
 
-  @enforce_keys [:name, :type]
   defstruct [
     :name,
+    :identifier,
     :type,
+    :module,
     # InputValueDefinitions can have different placements depending on Whether
     # they model an argument definition or a value of an input object type
     # definition
     placement: :argument_definition,
+    description: nil,
     default_value: nil,
     directives: [],
+    source_location: nil,
     # Added by phases
     flags: %{},
-    errors: []
+    errors: [],
+    __reference__: nil,
+    __private__: [],
+    deprecation: nil
   ]
 
   @type t :: %__MODULE__{
           name: String.t(),
+          description: nil | String.t(),
           type: Blueprint.TypeReference.t(),
           default_value: Blueprint.Input.t(),
           directives: [Blueprint.Directive.t()],
+          source_location: nil | Blueprint.SourceLocation.t(),
           # The struct module of the parent
           placement: :argument_definition | :input_field_definition,
           # Added by phases

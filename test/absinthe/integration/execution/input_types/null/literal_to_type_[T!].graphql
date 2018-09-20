@@ -1,9 +1,0 @@
-# Schema: NullListsSchema
-query {
-  nullableListOfNonNullableType(input: null) {
-    length
-    content
-    nonNullCount
-    nullCount
-  }
-}

@@ -1,9 +1,0 @@
-# Schema: ContactSchema
-query Q {
-  person {
-    ...NamedPerson
-  }
-}
-fragment NamedPerson on Person {
-  name
-}

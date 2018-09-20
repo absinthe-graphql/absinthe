@@ -147,8 +147,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
           structs = types |> Enum.map(&Absinthe.Schema.lookup_type(schema, &1))
           {:ok, structs}
 
-        _,
-        %{schema: schema, source: %Absinthe.Type.Interface{__reference__: %{identifier: ident}}} ->
+        _, %{schema: schema, source: %Absinthe.Type.Interface{identifier: ident}} ->
           {:ok, Absinthe.Schema.implementors(schema, ident)}
 
         _, _ ->
@@ -281,8 +280,8 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
             %Absinthe.Type.Enum{values_by_internal_value: values} ->
               {:ok, values[value].name}
 
-            %{serialize: serializer} ->
-              {:ok, inspect(serializer.(value))}
+            %Absinthe.Type.Scalar{} = type ->
+              {:ok, inspect(Absinthe.Type.function(type, :serialize).(value))}
 
             _ ->
               {:ok, to_string(value)}

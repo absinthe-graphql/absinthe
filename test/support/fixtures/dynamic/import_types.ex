@@ -64,9 +64,7 @@ defmodule Absinthe.Fixtures.ImportTypes do
       field :value, non_null(:string)
     end
 
-    enum :contact_kind do
-      values([:email, :phone])
-    end
+    enum :contact_kind, values: [:email, :phone]
   end
 
   defmodule Shared.AvatarTypes do

@@ -1,6 +1,8 @@
 defmodule Absinthe.Phase.Parse.BlockStringsTest do
   use Absinthe.Case, async: true
 
+  @moduletag :parser
+
   test "parses a query with a block string literal and no newlines" do
     assert {:ok, result} = run(~S<{ post(title: "single", body: """text""") { name } }>)
     assert "text" == extract_body(result)
@@ -192,7 +194,7 @@ defmodule Absinthe.Phase.Parse.BlockStringsTest do
                ~s<{ post(title: "single", body: """trying to escape a \u0000 byte""") { name } }>
              )
 
-    assert "syntax error" <> _ = extract_error_message(err)
+    assert "Parsing failed at" <> _ = extract_error_message(err)
   end
 
   test "parses a query with a block string literal as a variable default" do

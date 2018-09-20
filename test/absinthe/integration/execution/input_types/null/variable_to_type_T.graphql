@@ -1,4 +1,0 @@
-# Schema: ObjectTimesSchema
-query ($value: Int) {
-  times: objTimes(input: {base: 4, multiplier: $value})
-}

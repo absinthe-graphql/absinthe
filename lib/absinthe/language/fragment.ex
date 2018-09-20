@@ -7,7 +7,7 @@ defmodule Absinthe.Language.Fragment do
             type_condition: nil,
             directives: [],
             selection_set: nil,
-            loc: %{start_line: nil}
+            loc: %{line: nil}
 
   @type t :: %__MODULE__{
           name: String.t(),
@@ -24,16 +24,16 @@ defmodule Absinthe.Language.Fragment do
         type_condition: Blueprint.Draft.convert(node.type_condition, doc),
         selections: Blueprint.Draft.convert(node.selection_set.selections, doc),
         directives: Blueprint.Draft.convert(node.directives, doc),
-        source_location: source_location(node.loc)
+        source_location: source_location(node)
       }
     end
 
-    defp source_location(nil) do
+    defp source_location(%{loc: nil}) do
       nil
     end
 
-    defp source_location(%{start_line: number}) do
-      Blueprint.Document.SourceLocation.at(number)
+    defp source_location(%{loc: loc}) do
+      Blueprint.SourceLocation.at(loc)
     end
   end
 

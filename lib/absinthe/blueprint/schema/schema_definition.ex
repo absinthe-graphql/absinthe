@@ -4,16 +4,25 @@ defmodule Absinthe.Blueprint.Schema.SchemaDefinition do
   alias Absinthe.Blueprint
 
   defstruct description: nil,
-            fields: [],
+            module: nil,
+            type_definitions: [],
+            directive_definitions: [],
+            type_artifacts: [],
+            directive_artifacts: [],
+            type_extensions: [],
             directives: [],
+            source_location: nil,
             # Added by phases
             flags: %{},
-            errors: []
+            imports: [],
+            errors: [],
+            __private__: []
 
   @type t :: %__MODULE__{
           description: nil | String.t(),
-          fields: [Blueprint.Schema.FieldDefinition.t()],
+          # types: [Blueprint.Schema.FieldDefinition.t],
           directives: [Blueprint.Directive.t()],
+          source_location: nil | Blueprint.SourceLocation.t(),
           # Added by phases
           flags: Blueprint.flags_t(),
           errors: [Absinthe.Phase.Error.t()]

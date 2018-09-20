@@ -59,10 +59,10 @@ defmodule Absinthe.Type.UnionTest do
       assert %Absinthe.Type.Union{
                name: "SearchResult",
                description: "A search result",
-               types: [:person, :business]
+               types: [:business, :person]
              } = obj
 
-      assert obj.resolve_type
+      assert Absinthe.Type.function(obj, :resolve_type)
     end
 
     test "can resolve the type of an object using resolve_type" do
