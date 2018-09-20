@@ -30,6 +30,7 @@ defmodule Absinthe.Phase.Schema.InlineFunctions do
     |> Enum.reject(&(&1 in [:middleware]))
     |> Enum.reduce(node, &inline_function/2)
     |> inline_middleware(schema)
+    |> Absinthe.Subscription.add_middleware()
   end
 
   def inline_functions(node, _) do

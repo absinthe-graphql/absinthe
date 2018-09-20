@@ -84,6 +84,11 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(rest, [field | stack])
   end
 
+  defp build_types([{:trigger, trigger} | rest], [field | stack]) do
+    field = Map.update!(field, :triggers, &[trigger | &1])
+    build_types(rest, [field | stack])
+  end
+
   defp build_types([{:interface, interface} | rest], [obj | stack]) do
     obj = Map.update!(obj, :interfaces, &[interface | &1])
     build_types(rest, [obj | stack])
@@ -121,6 +126,7 @@ defmodule Absinthe.Blueprint.Schema do
     field =
       field
       |> Map.update!(:middleware, &Enum.reverse/1)
+      |> Map.update!(:triggers, &{:%{}, [], &1})
       |> Map.put(:function_ref, {obj.identifier, field.identifier})
 
     build_types(rest, [push(obj, :fields, field) | stack])

@@ -1325,7 +1325,9 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def record_trigger!(env, mutations, attrs) do
-    put_attr(env.module, {:trigger, mutations, attrs})
+    for mutation <- mutations do
+      put_attr(env.module, {:trigger, {mutation, attrs}})
+    end
   end
 
   def record_middleware!(env, new_middleware, opts) do
