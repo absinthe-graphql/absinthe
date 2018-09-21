@@ -352,8 +352,8 @@ defmodule Absinthe.Schema do
     |> Enum.map(&lookup_type(schema, &1))
   end
 
-  def implementors(schema, %Type.Interface{} = iface) do
-    implementors(schema, iface.__reference__.identifier)
+  def implementors(schema, %Type.Interface{identifier: identifier}) do
+    implementors(schema, identifier)
   end
 
   @doc """

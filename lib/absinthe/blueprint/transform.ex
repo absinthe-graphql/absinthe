@@ -81,7 +81,7 @@ defmodule Absinthe.Blueprint.Transform do
     Blueprint.Schema.EnumTypeDefinition => [:directives, :values],
     Blueprint.Schema.EnumValueDefinition => [:directives],
     Blueprint.Schema.FieldDefinition => [:type, :arguments, :directives],
-    Blueprint.Schema.InputObjectTypeDefinition => [:interfaces, :fields, :directives],
+    Blueprint.Schema.InputObjectTypeDefinition => [:fields, :directives],
     Blueprint.Schema.InputValueDefinition => [:type, :default_value, :directives],
     Blueprint.Schema.InterfaceTypeDefinition => [:fields, :directives],
     Blueprint.Schema.ObjectTypeDefinition => [:interfaces, :fields, :directives],
@@ -134,9 +134,7 @@ defmodule Absinthe.Blueprint.Transform do
   end
 
   defp node_with_children(node, children, acc, pre, post) do
-    {node, acc} = walk_children(node, children, acc, pre, post)
-
-    post.(node, acc)
+    walk_children(node, children, acc, pre, post)
   end
 
   defp walk_children(node, children, acc, pre, post) do

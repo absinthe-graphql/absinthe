@@ -206,11 +206,8 @@ defmodule Absinthe.Blueprint.Schema do
 
   defp update_private(existing_private, private) do
     Keyword.merge(existing_private, private, fn
-      :meta, v1, v2 ->
-        Keyword.merge(v1, v2)
-
-      _, _, v2 ->
-        v2
+      _, v1, v2 ->
+        update_private(v1, v2)
     end)
   end
 end

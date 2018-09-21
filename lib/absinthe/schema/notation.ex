@@ -1373,15 +1373,18 @@ defmodule Absinthe.Schema.Notation do
     put_attr(__CALLER__.module, :close)
   end
 
-  def put_reference(attrs, env, identifier) do
-    Keyword.put(attrs, :__reference__, %{
+  def put_reference(attrs, env) do
+    Keyword.put(attrs, :__reference__, build_reference(env))
+  end
+
+  def build_reference(env) do
+    %{
       module: env.module,
-      identifier: identifier,
       location: %{
         file: env.file,
         line: env.line
       }
-    })
+    }
   end
 
   defp scoped_def(caller, type, identifier, attrs, body) do
@@ -1390,7 +1393,7 @@ defmodule Absinthe.Schema.Notation do
       |> Keyword.put(:identifier, identifier)
       |> Keyword.put_new(:name, default_name(type, identifier))
       |> Keyword.put(:module, caller.module)
-      |> put_reference(caller, identifier)
+      |> put_reference(caller)
 
     definition = struct!(type, attrs)
 

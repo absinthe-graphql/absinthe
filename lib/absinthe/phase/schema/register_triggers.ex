@@ -2,8 +2,6 @@ defmodule Absinthe.Phase.Schema.RegisterTriggers do
   @moduledoc false
 
   use Absinthe.Phase
-  alias Absinthe.Blueprint
-  alias Absinthe.Blueprint.Schema
 
   def run(blueprint, _opts) do
     %{schema_definitions: [schema]} = blueprint

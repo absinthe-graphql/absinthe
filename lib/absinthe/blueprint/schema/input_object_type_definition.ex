@@ -9,7 +9,6 @@ defmodule Absinthe.Blueprint.Schema.InputObjectTypeDefinition do
     :name,
     :module,
     description: nil,
-    interfaces: [],
     fields: [],
     imports: [],
     directives: [],

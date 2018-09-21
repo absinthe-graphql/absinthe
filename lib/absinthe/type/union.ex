@@ -62,7 +62,7 @@ defmodule Absinthe.Type.Union do
 
   @doc false
   @spec member?(t, Type.t()) :: boolean
-  def member?(%{types: types}, %{__reference__: %{identifier: ident}}) do
+  def member?(%{types: types}, %{identifier: ident}) do
     ident in types
   end
 
