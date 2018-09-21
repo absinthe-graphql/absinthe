@@ -30,7 +30,6 @@ defmodule Absinthe.Phase.Schema.InlineFunctions do
     |> Enum.reject(&(&1 in [:middleware]))
     |> Enum.reduce(node, &inline_function/2)
     |> inline_middleware(schema)
-    |> Absinthe.Subscription.add_middleware()
   end
 
   def inline_functions(node, _) do
@@ -55,16 +54,15 @@ defmodule Absinthe.Phase.Schema.InlineFunctions do
         end)
 
       Map.new(fields, fn
-        {field_ident, %{middleware: {:ref, module, identifier}} = field} ->
-          middleware = Type.function(field, :middleware)
-          middleware = Absinthe.Middleware.expand(schema, middleware, field, type)
+        {field_ident, %{middleware: middleware} = field} ->
+          expanded_middleware = Absinthe.Middleware.expand(schema, middleware, field, type)
 
-          if Absinthe.Utils.escapable?(middleware) do
-            {field_ident, %{field | middleware: middleware}}
+          if Absinthe.Utils.escapable?(expanded_middleware) do
+            {field_ident, %{field | middleware: expanded_middleware}}
           else
             middleware_shim = {
               {Absinthe.Middleware, :shim},
-              {:ref, module, identifier}
+              {type.identifier, field.identifier, middleware}
             }
 
             {field_ident, %{field | middleware: [middleware_shim]}}

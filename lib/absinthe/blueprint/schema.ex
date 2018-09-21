@@ -39,15 +39,32 @@ defmodule Absinthe.Blueprint.Schema do
   end
 
   def build([%Absinthe.Blueprint{} = bp | attrs]) do
-    build_types(attrs, [bp])
+    build_types(attrs, [bp], [])
   end
 
-  defp build_types([], [bp]) do
+  defp build_types([], [bp], buffer) do
+    if buffer != [] do
+      raise """
+      Unused buffer! #{inspect(buffer)}
+      """
+    end
+
     Map.update!(bp, :schema_definitions, &Enum.reverse/1)
   end
 
-  defp build_types([%Schema.SchemaDefinition{} = schema | rest], stack) do
-    build_types(rest, [schema | stack])
+  # this rather insane scheme lets interior macros get back out to exterior
+  # scopes so that they can define top level entities as necessary, and then
+  # return to the regularly scheduled programming.
+  defp build_types([:stash | rest], [head | tail], buff) do
+    build_types(rest, tail, [head | buff])
+  end
+
+  defp build_types([:pop | rest], remaining, [head | buff]) do
+    build_types(rest, [head | remaining], buff)
+  end
+
+  defp build_types([%Schema.SchemaDefinition{} = schema | rest], stack, buff) do
+    build_types(rest, [schema | stack], buff)
   end
 
   @simple_open [
@@ -62,97 +79,105 @@ defmodule Absinthe.Blueprint.Schema do
     Schema.EnumValueDefinition
   ]
 
-  defp build_types([%module{} = type | rest], stack) when module in @simple_open do
-    build_types(rest, [type | stack])
+  defp build_types([%module{} = type | rest], stack, buff) when module in @simple_open do
+    build_types(rest, [type | stack], buff)
   end
 
-  defp build_types([{:import_fields, criterion} | rest], [obj | stack]) do
-    build_types(rest, [push(obj, :imports, criterion) | stack])
+  defp build_types([{:import_fields, criterion} | rest], [obj | stack], buff) do
+    build_types(rest, [push(obj, :imports, criterion) | stack], buff)
   end
 
-  defp build_types([{:desc, desc} | rest], [item | stack]) do
-    build_types(rest, [%{item | description: desc} | stack])
+  defp build_types([{:desc, desc} | rest], [item | stack], buff) do
+    build_types(rest, [%{item | description: desc} | stack], buff)
   end
 
-  defp build_types([{:middleware, middleware} | rest], [field, obj | stack]) do
+  defp build_types([{:middleware, middleware} | rest], [field, obj | stack], buff) do
     field = Map.update!(field, :middleware, &(middleware ++ &1))
-    build_types(rest, [field, obj | stack])
+    build_types(rest, [field, obj | stack], buff)
   end
 
-  defp build_types([{:config, config} | rest], [field | stack]) do
+  defp build_types([{:config, config} | rest], [field | stack], buff) do
     field = %{field | config: config}
-    build_types(rest, [field | stack])
+    build_types(rest, [field | stack], buff)
   end
 
-  defp build_types([{:trigger, trigger} | rest], [field | stack]) do
+  defp build_types([{:trigger, trigger} | rest], [field | stack], buff) do
     field = Map.update!(field, :triggers, &[trigger | &1])
-    build_types(rest, [field | stack])
+    build_types(rest, [field | stack], buff)
   end
 
-  defp build_types([{:interface, interface} | rest], [obj | stack]) do
+  defp build_types([{:interface, interface} | rest], [obj | stack], buff) do
     obj = Map.update!(obj, :interfaces, &[interface | &1])
-    build_types(rest, [obj | stack])
+    build_types(rest, [obj | stack], buff)
   end
 
-  defp build_types([{:__private__, private} | rest], [entity | stack]) do
+  defp build_types([{:__private__, private} | rest], [entity | stack], buff) do
     entity = Map.update!(entity, :__private__, &update_private(&1, private))
-    build_types(rest, [entity | stack])
+    build_types(rest, [entity | stack], buff)
   end
 
-  defp build_types([{:values, values} | rest], [enum | stack]) do
+  defp build_types([{:values, values} | rest], [enum | stack], buff) do
     enum = Map.update!(enum, :values, &(values ++ &1))
-    build_types(rest, [enum | stack])
+    build_types(rest, [enum | stack], buff)
   end
 
-  defp build_types([%Schema.InputValueDefinition{} = arg | rest], [field | stack]) do
-    build_types(rest, [push(field, :arguments, arg) | stack])
+  defp build_types([%Schema.InputValueDefinition{} = arg | rest], [field | stack], buff) do
+    build_types(rest, [push(field, :arguments, arg) | stack], buff)
   end
 
-  defp build_types([{:sdl, sdl_definitions} | rest], [schema | stack]) do
+  defp build_types([{:sdl, sdl_definitions} | rest], [schema | stack], buff) do
     # TODO: Handle directives, etc
-    build_types(rest, [concat(schema, :type_definitions, sdl_definitions) | stack])
+    build_types(rest, [concat(schema, :type_definitions, sdl_definitions) | stack], buff)
   end
 
-  defp build_types([{attr, value} | rest], [entity | stack]) do
+  defp build_types([{attr, value} | rest], [entity | stack], buff) do
     entity = %{entity | attr => value}
-    build_types(rest, [entity | stack])
+    build_types(rest, [entity | stack], buff)
   end
 
-  defp build_types([:close | rest], [%Schema.EnumValueDefinition{} = value, enum | stack]) do
-    build_types(rest, [push(enum, :values, value) | stack])
+  defp build_types([:close | rest], [%Schema.EnumValueDefinition{} = value, enum | stack], buff) do
+    build_types(rest, [push(enum, :values, value) | stack], buff)
   end
 
-  defp build_types([:close | rest], [%Schema.FieldDefinition{} = field, obj | stack]) do
+  defp build_types([:close | rest], [%Schema.FieldDefinition{} = field, obj | stack], buff) do
     field =
       field
       |> Map.update!(:middleware, &Enum.reverse/1)
       |> Map.update!(:triggers, &{:%{}, [], &1})
       |> Map.put(:function_ref, {obj.identifier, field.identifier})
 
-    build_types(rest, [push(obj, :fields, field) | stack])
+    build_types(rest, [push(obj, :fields, field) | stack], buff)
   end
 
-  defp build_types([:close | rest], [%Schema.ObjectTypeDefinition{} = obj, schema | stack]) do
+  defp build_types([:close | rest], [%Schema.ObjectTypeDefinition{} = obj, schema | stack], buff) do
     obj = Map.update!(obj, :fields, &Enum.reverse/1)
-    build_types(rest, [push(schema, :type_definitions, obj) | stack])
+    build_types(rest, [push(schema, :type_definitions, obj) | stack], buff)
   end
 
-  defp build_types([:close | rest], [%Schema.InputObjectTypeDefinition{} = obj, schema | stack]) do
+  defp build_types(
+         [:close | rest],
+         [%Schema.InputObjectTypeDefinition{} = obj, schema | stack],
+         buff
+       ) do
     obj = Map.update!(obj, :fields, &Enum.reverse/1)
-    build_types(rest, [push(schema, :type_definitions, obj) | stack])
+    build_types(rest, [push(schema, :type_definitions, obj) | stack], buff)
   end
 
-  defp build_types([:close | rest], [%Schema.InterfaceTypeDefinition{} = iface, schema | stack]) do
+  defp build_types(
+         [:close | rest],
+         [%Schema.InterfaceTypeDefinition{} = iface, schema | stack],
+         buff
+       ) do
     iface = Map.update!(iface, :fields, &Enum.reverse/1)
-    build_types(rest, [push(schema, :type_definitions, iface) | stack])
+    build_types(rest, [push(schema, :type_definitions, iface) | stack], buff)
   end
 
-  defp build_types([:close | rest], [%Schema.UnionTypeDefinition{} = union, schema | stack]) do
-    build_types(rest, [push(schema, :type_definitions, union) | stack])
+  defp build_types([:close | rest], [%Schema.UnionTypeDefinition{} = union, schema | stack], buff) do
+    build_types(rest, [push(schema, :type_definitions, union) | stack], buff)
   end
 
-  defp build_types([:close | rest], [%Schema.DirectiveDefinition{} = dir, schema | stack]) do
-    build_types(rest, [push(schema, :directive_definitions, dir) | stack])
+  defp build_types([:close | rest], [%Schema.DirectiveDefinition{} = dir, schema | stack], buff) do
+    build_types(rest, [push(schema, :directive_definitions, dir) | stack], buff)
   end
 
   @simple_close [
@@ -160,15 +185,15 @@ defmodule Absinthe.Blueprint.Schema do
     Schema.EnumTypeDefinition
   ]
 
-  defp build_types([:close | rest], [%module{} = type, schema | stack])
+  defp build_types([:close | rest], [%module{} = type, schema | stack], buff)
        when module in @simple_close do
     schema = push(schema, :type_definitions, type)
-    build_types(rest, [schema | stack])
+    build_types(rest, [schema | stack], buff)
   end
 
-  defp build_types([:close | rest], [%Schema.SchemaDefinition{} = schema, bp]) do
+  defp build_types([:close | rest], [%Schema.SchemaDefinition{} = schema, bp], buff) do
     bp = push(bp, :schema_definitions, schema)
-    build_types(rest, [bp])
+    build_types(rest, [bp], buff)
   end
 
   defp push(entity, key, value) do

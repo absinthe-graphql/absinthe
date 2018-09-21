@@ -170,14 +170,7 @@ defmodule Absinthe.Subscription do
   end
 
   @doc false
-  def add_middleware(%{identifier: :mutation} = node) do
-    Map.update!(node, :fields, fn fields ->
-      for {ident, field} <- fields, into: %{} do
-        field = Map.update!(field, :middleware, &(&1 ++ [{__MODULE__, []}]))
-        {ident, field}
-      end
-    end)
+  def add_middleware(middleware) do
+    middleware ++ [{__MODULE__, []}]
   end
-
-  def add_middleware(type), do: type
 end

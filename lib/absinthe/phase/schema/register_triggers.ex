@@ -20,7 +20,9 @@ defmodule Absinthe.Phase.Schema.RegisterTriggers do
 
     mutation_object =
       if subscription_object && mutation_object do
-        register_triggers(mutation_object, subscription_object.fields)
+        mutation_object
+        |> register_triggers(subscription_object.fields)
+        |> setup_middleware
       else
         # TODO: return errors if there isn't a mutation field that is on the
         # triggers list
@@ -40,16 +42,26 @@ defmodule Absinthe.Phase.Schema.RegisterTriggers do
   end
 
   defp register_triggers(mutation_object, sub_fields) do
-    Map.update!(mutation_object, :fields, fn mut_fields ->
-      for mut_field <- mut_fields do
-        triggers =
-          for sub_field <- sub_fields,
-              sub_triggers = Absinthe.Type.function(sub_field, :triggers),
-              Map.has_key?(sub_triggers, mut_field.identifier),
-              do: sub_field.identifier
+    update_fields(mutation_object, fn mut_field ->
+      triggers =
+        for sub_field <- sub_fields,
+            sub_triggers = Absinthe.Type.function(sub_field, :triggers),
+            Map.has_key?(sub_triggers, mut_field.identifier),
+            do: sub_field.identifier
 
-        %{mut_field | triggers: triggers}
-      end
+      %{mut_field | triggers: triggers}
+    end)
+  end
+
+  defp setup_middleware(mutation_object) do
+    update_fields(mutation_object, fn field ->
+      Map.update!(field, :middleware, &Absinthe.Subscription.add_middleware/1)
+    end)
+  end
+
+  defp update_fields(mutation_object, fun) do
+    Map.update!(mutation_object, :fields, fn fields ->
+      Enum.map(fields, fun)
     end)
   end
 end

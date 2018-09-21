@@ -50,6 +50,19 @@ defmodule Absinthe.Type do
     end
   end
 
+  @doc false
+  # this is just for debugging
+  def expand(%module{} = type) do
+    module.functions
+    |> Enum.reduce(type, fn
+      :middleware, type ->
+        type
+
+      attr, type ->
+        Map.put(type, attr, Absinthe.Type.function(type, attr))
+    end)
+  end
+
   @doc "Lookup a custom metadata field on a type"
   @spec meta(custom_t, atom) :: nil | any
   def meta(%{__private__: store}, key) do

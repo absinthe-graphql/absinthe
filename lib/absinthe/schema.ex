@@ -18,6 +18,11 @@ defmodule Absinthe.Schema do
   end
 
   defmacro __using__(_opt) do
+    Module.register_attribute(__CALLER__.module, :pipeline_modifier,
+      accumulate: true,
+      persist: true
+    )
+
     quote do
       use Absinthe.Schema.Notation
       import unquote(__MODULE__), only: :macros
@@ -205,8 +210,21 @@ defmodule Absinthe.Schema do
   end
 
   def __after_compile__(env, _) do
+    pipeline = Absinthe.Pipeline.for_schema(env.module)
+
+    pipeline =
+      env.module
+      |> Module.get_attribute(:pipeline_modifier)
+      |> Enum.reduce(pipeline, fn
+        {module, function}, pipeline ->
+          apply(module, function, [pipeline])
+
+        module, pipeline ->
+          module.pipeline(pipeline)
+      end)
+
     env.module.__absinthe_blueprint__
-    |> Absinthe.Pipeline.run(Absinthe.Pipeline.for_schema(env.module))
+    |> Absinthe.Pipeline.run(pipeline)
     |> case do
       {:ok, _, _} ->
         []

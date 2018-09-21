@@ -279,27 +279,29 @@ defmodule Absinthe.Middleware do
   @callback call(Absinthe.Resolution.t(), term) :: Absinthe.Resolution.t()
 
   @doc false
-  def shim(res, {:ref, module, {_namespace, {object, field}} = ref}) do
+  def shim(res, {object, field, middleware}) do
     schema = res.schema
     object = Absinthe.Schema.lookup_type(schema, object)
     field = Map.fetch!(object.fields, field)
 
-    middleware = module.__absinthe_function__(ref, :middleware)
-
     middleware = expand(schema, middleware, field, object)
 
-    %{res | middleware: middleware ++ res.middleware}
+    %{res | middleware: middleware}
   end
 
   @doc false
   def expand(schema, middleware, field, object) do
-    middleware =
-      Absinthe.Schema.Notation.__ensure_middleware__(
-        middleware,
-        field,
-        object
-      )
+    middleware
+    |> Enum.flat_map(&get_functions/1)
+    |> Absinthe.Schema.Notation.__ensure_middleware__(field, object)
+    |> schema.middleware(field, object)
+  end
 
-    schema.middleware(middleware, field, object)
+  defp get_functions({:ref, module, identifier}) do
+    module.__absinthe_function__(identifier, :middleware)
+  end
+
+  defp get_functions(val) do
+    List.wrap(val)
   end
 end

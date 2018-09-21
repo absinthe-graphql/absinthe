@@ -386,7 +386,7 @@ defmodule Absinthe.Schema.Notation do
   """
   defmacro field(identifier, attrs, do: block) when is_list(attrs) do
     {attrs, more_block} = handle_field_attrs(attrs, __CALLER__)
-    block = more_block ++ block
+    block = more_block ++ List.wrap(block)
 
     __CALLER__
     |> recordable!(:field, @placement[:field])
@@ -431,9 +431,13 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro field(identifier, type, attrs, do: block) do
+    attrs = Keyword.put(attrs, :type, type)
+    {attrs, more_block} = handle_field_attrs(attrs, __CALLER__)
+    block = more_block ++ List.wrap(block)
+
     __CALLER__
     |> recordable!(:field, @placement[:field])
-    |> record!(Schema.FieldDefinition, identifier, Keyword.put(attrs, :type, type), block)
+    |> record!(Schema.FieldDefinition, identifier, attrs, block)
   end
 
   @placement {:resolve, [under: [:field]]}
@@ -1354,6 +1358,17 @@ defmodule Absinthe.Schema.Notation do
 
   # ------------------------------
 
+  @doc false
+  defmacro pop() do
+    put_attr(__CALLER__.module, :pop)
+  end
+
+  @doc false
+  defmacro stash() do
+    put_attr(__CALLER__.module, :stash)
+  end
+
+  @doc false
   defmacro close_scope() do
     put_attr(__CALLER__.module, :close)
   end
@@ -1394,7 +1409,7 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
-  defp put_attr(module, thing) do
+  def put_attr(module, thing) do
     ref = :erlang.unique_integer()
     Module.put_attribute(module, :absinthe_blueprint, {ref, thing})
     ref
@@ -1544,25 +1559,6 @@ defmodule Absinthe.Schema.Notation do
     {node, ast ++ acc}
   end
 
-  def grab_functions(origin, type, identifier, attrs) do
-    {ast, type} =
-      Enum.flat_map_reduce(attrs, type, fn attr, type ->
-        value = Map.fetch!(type, attr)
-
-        ast =
-          quote do
-            def __absinthe_function__(unquote(identifier), unquote(attr)) do
-              unquote(value)
-            end
-          end
-
-        type = %{type | attr => {:ref, origin, identifier}}
-        {[ast], type}
-      end)
-
-    {type, ast}
-  end
-
   defp functions_for_type(%Schema.FieldDefinition{} = type, origin) do
     grab_functions(
       origin,
@@ -1578,6 +1574,35 @@ defmodule Absinthe.Schema.Notation do
 
   defp functions_for_type(type, _) do
     {type, []}
+  end
+
+  def grab_functions(origin, type, identifier, attrs) do
+    {ast, type} =
+      Enum.flat_map_reduce(attrs, type, fn attr, type ->
+        value = Map.fetch!(type, attr)
+
+        ast =
+          quote do
+            def __absinthe_function__(unquote(identifier), unquote(attr)) do
+              unquote(value)
+            end
+          end
+
+        ref = {:ref, origin, identifier}
+
+        type =
+          Map.update!(type, attr, fn
+            value when is_list(value) ->
+              [ref]
+
+            _ ->
+              ref
+          end)
+
+        {[ast], type}
+      end)
+
+    {type, ast}
   end
 
   @doc false
