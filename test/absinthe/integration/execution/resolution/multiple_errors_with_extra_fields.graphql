@@ -1,1 +1,0 @@
-mutation { failingThing(type: MULTIPLE_WITH_CODE) { name } }

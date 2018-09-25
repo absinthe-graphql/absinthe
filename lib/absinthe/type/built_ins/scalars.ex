@@ -37,7 +37,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     represent free-form human-readable text.
     """
 
-    serialize &to_string/1
+    serialize &String.Chars.to_string/1
     parse parse_with([Absinthe.Blueprint.Input.String], &parse_string/1)
   end
 

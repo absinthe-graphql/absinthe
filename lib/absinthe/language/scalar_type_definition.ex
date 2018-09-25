@@ -4,11 +4,13 @@ defmodule Absinthe.Language.ScalarTypeDefinition do
   alias Absinthe.{Blueprint, Language}
 
   defstruct name: nil,
+            description: nil,
             directives: [],
-            loc: %{start_line: nil}
+            loc: %{line: nil}
 
   @type t :: %__MODULE__{
           name: String.t(),
+          description: nil | String.t(),
           directives: [Language.Directive.t()],
           loc: Language.t()
         }
@@ -17,8 +19,13 @@ defmodule Absinthe.Language.ScalarTypeDefinition do
     def convert(node, doc) do
       %Blueprint.Schema.ScalarTypeDefinition{
         name: node.name,
-        directives: Absinthe.Blueprint.Draft.convert(node.directives, doc)
+        description: node.description,
+        directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
+        source_location: source_location(node)
       }
     end
+
+    defp source_location(%{loc: nil}), do: nil
+    defp source_location(%{loc: loc}), do: Blueprint.SourceLocation.at(loc)
   end
 end

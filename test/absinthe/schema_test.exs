@@ -11,12 +11,17 @@ defmodule Absinthe.SchemaTest do
 
     test "are loaded" do
       load_valid_schema()
-      assert map_size(Absinthe.Type.BuiltIns.__absinthe_types__()) > 0
 
-      Absinthe.Type.BuiltIns.__absinthe_types__()
-      |> Enum.each(fn {ident, name} ->
-        assert Absinthe.Fixtures.ValidSchema.__absinthe_type__(ident) ==
-                 Absinthe.Fixtures.ValidSchema.__absinthe_type__(name)
+      builtin_types =
+        Absinthe.Fixtures.ValidSchema
+        |> Absinthe.Schema.types()
+        |> Enum.filter(&Absinthe.Type.built_in?(&1))
+
+      assert length(builtin_types) > 0
+
+      Enum.each(builtin_types, fn type ->
+        assert Absinthe.Fixtures.ValidSchema.__absinthe_type__(type.identifier) ==
+                 Absinthe.Fixtures.ValidSchema.__absinthe_type__(type.name)
       end)
 
       int = Absinthe.Fixtures.ValidSchema.__absinthe_type__(:integer)
@@ -26,6 +31,7 @@ defmodule Absinthe.SchemaTest do
   end
 
   describe "using the same identifier" do
+    @tag :pending_schema
     test "raises an exception" do
       assert_schema_error("schema_with_duplicate_identifiers", [
         %{
@@ -41,6 +47,7 @@ defmodule Absinthe.SchemaTest do
       load_schema("schema_with_duplicate_names")
     end
 
+    @tag :pending_schema
     test "raises an exception" do
       assert_schema_error("schema_with_duplicate_names", [
         %{
@@ -368,7 +375,10 @@ defmodule Absinthe.SchemaTest do
     @tag :wip
     test "sets object metadata" do
       foo = Schema.lookup_type(MetadataSchema, :foo)
-      assert [eager: true, cache: false, sql_table: "foos", foo: "bar"] == foo.__private__[:meta]
+
+      assert Enum.sort(eager: true, cache: false, sql_table: "foos", foo: "bar") ==
+               Enum.sort(foo.__private__[:meta])
+
       assert Type.meta(foo, :sql_table) == "foos"
       assert Type.meta(foo, :cache) == false
       assert Type.meta(foo, :eager) == true

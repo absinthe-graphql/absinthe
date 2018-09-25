@@ -26,7 +26,7 @@ defmodule Absinthe.Phase.Document.VariablesTest do
       assert op.provided_values == %{
                "age" => %Blueprint.Input.Integer{
                  value: 36,
-                 source_location: %Blueprint.Document.SourceLocation{column: nil, line: 6}
+                 source_location: %Blueprint.SourceLocation{column: 29, line: 6}
                },
                "name" => %Blueprint.Input.String{value: "Bruce"}
              }
@@ -67,11 +67,11 @@ defmodule Absinthe.Phase.Document.VariablesTest do
     expected = %{
       errors: [
         %{
-          locations: [%{column: 0, line: 1}],
+          locations: [%{column: 11, line: 1}],
           message: "Variable \"input\" cannot be non-input type \"Thing\"."
         },
         %{
-          locations: [%{column: 0, line: 1}, %{column: 0, line: 1}],
+          locations: [%{column: 11, line: 1}, %{column: 1, line: 1}],
           message: "Variable \"input\" is never used in operation \"Foo\"."
         }
       ]

@@ -19,7 +19,7 @@ defmodule Absinthe.Blueprint.Input.Field do
           input_value: Blueprint.Input.Value.t(),
           flags: Blueprint.flags_t(),
           schema_node: nil | Type.Field.t(),
-          source_location: Blueprint.Document.SourceLocation.t(),
+          source_location: Blueprint.SourceLocation.t(),
           errors: [Absinthe.Phase.Error.t()]
         }
 end

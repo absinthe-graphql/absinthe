@@ -8,7 +8,7 @@ defmodule Absinthe.Language.Field do
             arguments: [],
             directives: [],
             selection_set: nil,
-            loc: %{start_line: nil}
+            loc: %{line: nil}
 
   @type t :: %__MODULE__{
           alias: nil | String.t(),
@@ -32,7 +32,7 @@ defmodule Absinthe.Language.Field do
     end
 
     defp source_location(%{loc: nil}), do: nil
-    defp source_location(%{loc: loc}), do: Blueprint.Document.SourceLocation.at(loc.start_line)
+    defp source_location(%{loc: loc}), do: Blueprint.SourceLocation.at(loc)
 
     @spec selections(nil | Language.SelectionSet.t()) :: [
             Language.Field.t() | Language.InlineFragment.t() | Language.FragmentSpread.t()

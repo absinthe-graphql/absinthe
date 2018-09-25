@@ -7,13 +7,15 @@ defmodule Absinthe.Language.InputValueDefinition do
   defstruct [
     :name,
     :type,
+    description: nil,
     default_value: nil,
     directives: [],
-    loc: %{start_line: nil}
+    loc: %{line: nil}
   ]
 
   @type t :: %__MODULE__{
           name: String.t(),
+          description: nil | String.t(),
           type: Language.input_t(),
           default_value: Language.input_t(),
           directives: [Language.Directive.t()],
@@ -24,10 +26,16 @@ defmodule Absinthe.Language.InputValueDefinition do
     def convert(node, doc) do
       %Blueprint.Schema.InputValueDefinition{
         name: node.name,
+        description: node.description,
         type: Blueprint.Draft.convert(node.type, doc),
+        identifier: Macro.underscore(node.name) |> String.to_atom(),
         default_value: Blueprint.Draft.convert(node.default_value, doc),
-        directives: Blueprint.Draft.convert(node.directives, doc)
+        directives: Blueprint.Draft.convert(node.directives, doc),
+        source_location: source_location(node)
       }
     end
+
+    defp source_location(%{loc: nil}), do: nil
+    defp source_location(%{loc: loc}), do: Blueprint.SourceLocation.at(loc)
   end
 end

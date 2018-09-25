@@ -1,5 +1,0 @@
-query AnOperationName($test: String) {
-  thing(id: "foo") {
-    name
-  }
-}

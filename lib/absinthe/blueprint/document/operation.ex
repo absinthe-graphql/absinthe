@@ -31,7 +31,7 @@ defmodule Absinthe.Blueprint.Document.Operation do
           variable_definitions: [Blueprint.Document.VariableDefinition.t()],
           variable_uses: [Blueprint.Input.Variable.Use.t()],
           fragment_uses: [Blueprint.Document.Fragment.Named.Use.t()],
-          source_location: nil | Blueprint.Document.SourceLocation.t(),
+          source_location: nil | Blueprint.SourceLocation.t(),
           schema_node: nil | Absinthe.Type.Object.t(),
           complexity: nil | non_neg_integer,
           provided_values: %{String.t() => nil | Blueprint.Input.t()},

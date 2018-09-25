@@ -27,8 +27,9 @@ defmodule Absinthe.Type.Directive do
           identifier: atom,
           args: map,
           locations: [location],
-          expand: nil | (Absinthe.Blueprint.node_t(), map -> {Absinthe.Blueprint.t(), map}),
           instruction: (map -> atom),
+          definition: Module.t(),
+          __private__: Keyword.t(),
           __reference__: Type.Reference.t()
         }
 
@@ -42,31 +43,12 @@ defmodule Absinthe.Type.Directive do
             locations: [],
             expand: nil,
             instruction: nil,
+            definition: nil,
+            __private__: [],
             __reference__: nil
 
-  def build(%{attrs: attrs}) do
-    args =
-      attrs
-      |> Keyword.get(:args, [])
-      |> Enum.map(fn {name, attrs} ->
-        {name, ensure_reference(attrs, attrs[:__reference__])}
-      end)
-      |> Type.Argument.build()
-
-    attrs = Keyword.put(attrs, :args, args)
-
-    quote do: %unquote(__MODULE__){unquote_splicing(attrs)}
-  end
-
-  defp ensure_reference(arg_attrs, default_reference) do
-    case Keyword.has_key?(arg_attrs, :__reference__) do
-      true ->
-        arg_attrs
-
-      false ->
-        Keyword.put(arg_attrs, :__reference__, default_reference)
-    end
-  end
+  @doc false
+  defdelegate functions, to: Absinthe.Blueprint.Schema.DirectiveDefinition
 
   # Whether the directive is active in `place`
   @doc false

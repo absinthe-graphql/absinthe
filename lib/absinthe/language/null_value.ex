@@ -19,6 +19,6 @@ defmodule Absinthe.Language.NullValue do
     end
 
     defp source_location(%{loc: nil}), do: nil
-    defp source_location(%{loc: loc}), do: Blueprint.Document.SourceLocation.at(loc.start_line)
+    defp source_location(%{loc: loc}), do: Blueprint.SourceLocation.at(loc)
   end
 end

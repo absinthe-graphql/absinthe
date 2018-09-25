@@ -49,7 +49,7 @@ defmodule Absinthe.Language.DocumentTest do
       rep = ir("{ foo } mutation Bar { bar } subscription Baz { baz }")
       assert length(rep.directives) == 0
       assert length(rep.operations) == 3
-      assert length(rep.types) == 0
+      assert length(rep.schema_definitions) == 0
       assert length(rep.fragments) == 0
     end
 
@@ -71,7 +71,7 @@ defmodule Absinthe.Language.DocumentTest do
 
       assert length(rep.directives) == 0
       assert length(rep.operations) == 0
-      assert length(rep.types) == 4
+      assert length(rep.schema_definitions) == 4
       assert length(rep.fragments) == 0
     end
 
@@ -99,7 +99,7 @@ defmodule Absinthe.Language.DocumentTest do
 
       assert length(rep.directives) == 0
       assert length(rep.operations) == 1
-      assert length(rep.types) == 0
+      assert length(rep.schema_definitions) == 0
       assert length(rep.fragments) == 2
     end
 
@@ -107,7 +107,7 @@ defmodule Absinthe.Language.DocumentTest do
       rep = ir("directive @cs(if: Boolean!) on FIELD")
       assert length(rep.directives) == 1
       assert length(rep.operations) == 0
-      assert length(rep.types) == 0
+      assert length(rep.schema_definitions) == 0
       assert length(rep.fragments) == 0
     end
   end
@@ -165,7 +165,7 @@ defmodule Absinthe.Language.DocumentTest do
 
     test "creates the correct number of types" do
       rep = ir(@idl)
-      assert length(rep.types) == 10
+      assert length(rep.schema_definitions) == 10
     end
   end
 
