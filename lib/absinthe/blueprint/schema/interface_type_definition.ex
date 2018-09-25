@@ -32,27 +32,15 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
           errors: [Absinthe.Phase.Error.t()]
         }
 
-  def build(type_def, _schema) do
+  def build(type_def, schema) do
     %Absinthe.Type.Interface{
       name: type_def.name,
       description: type_def.description,
-      fields: build_fields(type_def),
+      fields: Blueprint.Schema.ObjectTypeDefinition.build_fields(type_def, schema),
       identifier: type_def.identifier,
       resolve_type: type_def.resolve_type,
       definition: type_def.module
     }
-  end
-
-  def build_fields(type_def) do
-    for field_def <- type_def.fields, into: %{} do
-      attrs =
-        field_def
-        |> Map.from_struct()
-
-      field = struct(Absinthe.Type.Field, attrs)
-
-      {field.identifier, field}
-    end
   end
 
   @doc false
