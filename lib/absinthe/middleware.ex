@@ -289,6 +289,13 @@ defmodule Absinthe.Middleware do
     %{res | middleware: middleware}
   end
 
+  @doc "For testing and inspection purposes"
+  def unshim([{{__MODULE__, :shim}, {object, field, middleware}}], schema) do
+    object = Absinthe.Schema.lookup_type(schema, object)
+    field = Map.fetch!(object.fields, field)
+    expand(schema, middleware, field, object)
+  end
+
   @doc false
   def expand(schema, middleware, field, object) do
     middleware
