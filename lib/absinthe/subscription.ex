@@ -89,7 +89,7 @@ defmodule Absinthe.Subscription do
     schema = resolution_info.schema
     subscription = Absinthe.Schema.lookup_type(schema, :subscription) || %{fields: []}
 
-    subscription_fields = Map.take(subscription.fields, mutation_field.triggers)
+    subscription_fields = fetch_fields(subscription.fields, mutation_field.triggers)
 
     for {sub_field_id, sub_field} <- subscription_fields do
       triggers = Absinthe.Type.function(sub_field, :triggers)
@@ -97,6 +97,13 @@ defmodule Absinthe.Subscription do
       {sub_field_id, config}
     end
   end
+
+  # TODO: normalize the `.fields` type.
+  defp fetch_fields(fields, triggers) when is_map(fields) do
+    Map.take(fields, triggers)
+  end
+
+  defp fetch_fields(_, _), do: []
 
   @doc false
   def subscribe(pubsub, field_key, doc_id, doc) do
