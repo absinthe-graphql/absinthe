@@ -122,6 +122,7 @@ defmodule Absinthe.Blueprint.Schema do
   end
 
   defp build_types([%Schema.InputValueDefinition{} = arg | rest], [field | stack], buff) do
+    arg = Map.update!(arg, :default_value, fn val -> {:unquote, [], [val]} end)
     build_types(rest, [push(field, :arguments, arg) | stack], buff)
   end
 

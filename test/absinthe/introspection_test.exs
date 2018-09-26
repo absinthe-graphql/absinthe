@@ -229,7 +229,7 @@ defmodule Absinthe.IntrospectionTest do
       end
     end
 
-    test "can introspect complex default_vaule" do
+    test "can introspect complex default_value" do
       result =
         """
         {

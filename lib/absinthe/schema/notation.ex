@@ -1546,7 +1546,7 @@ defmodule Absinthe.Schema.Notation do
       unquote(__MODULE__).noop(@desc)
 
       def __absinthe_blueprint__ do
-        unquote(Macro.escape(blueprint))
+        unquote(Macro.escape(blueprint, unquote: true))
       end
 
       unquote_splicing(functions)

@@ -337,8 +337,8 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       %Absinthe.Type.NonNull{of_type: type} ->
         render_default_value(schema, adapter, type, value)
 
-      %Absinthe.Type.Scalar{serialize: serializer} = sc ->
-        inspect(serializer.(value))
+      %Absinthe.Type.Scalar{} = sc ->
+        inspect(Absinthe.Type.Scalar.serialize(sc, value))
     end
   end
 end

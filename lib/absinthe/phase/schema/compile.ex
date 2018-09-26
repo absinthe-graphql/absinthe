@@ -68,7 +68,7 @@ defmodule Absinthe.Phase.Schema.Compile do
           #{inspect(type)}
           """)
 
-      ast = Macro.escape(type)
+      ast = Macro.escape(type, unquote: true)
 
       quote do
         def __absinthe_type__(unquote(type.identifier)) do
