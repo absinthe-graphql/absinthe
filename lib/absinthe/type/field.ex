@@ -195,6 +195,7 @@ defmodule Absinthe.Type.Field do
           middleware: [],
           complexity: complexity_t | nil,
           __private__: Keyword.t(),
+          definition: Module.t(),
           __reference__: Type.Reference.t()
         }
 
@@ -206,86 +207,17 @@ defmodule Absinthe.Type.Field do
             args: %{},
             # used by subscription fields
             config: nil,
-            # used by mutatino fields
+            # used by mutation fields
             triggers: [],
             middleware: [],
             complexity: nil,
             default_value: nil,
             __private__: [],
+            definition: nil,
             __reference__: nil
 
-  @doc """
-  Build an AST of the field map for inclusion in other types
-
-  ## Examples
-
-  ```
-  iex> build([foo: [type: :string], bar: [type: :integer]])
-  {:%{}, [],
-   [foo: {:%, [],
-     [{:__aliases__, [alias: false], [:Absinthe, :Type, :Field]},
-      {:%{}, [], [name: "Foo", type: :string]}]},
-    bar: {:%, [],
-     [{:__aliases__, [alias: false], [:Absinthe, :Type, :Field]},
-      {:%{}, [], [name: "Bar", type: :integer]}]}]}
-  ```
-  """
-  @spec build(Keyword.t()) :: tuple
-  def build(fields) when is_list(fields) do
-    quoted_empty_map = quote do: %{}
-
-    ast =
-      for {field_name, field_attrs} <- fields do
-        name = field_name |> Atom.to_string()
-        default_ref = field_attrs[:__reference__]
-
-        field_attrs =
-          case Keyword.pop(field_attrs, :resolve) do
-            {nil, field_attrs} ->
-              field_attrs
-
-            {resolution_function_ast, field_attrs} ->
-              Keyword.put(field_attrs, :middleware, [
-                {Absinthe.Resolution, resolution_function_ast}
-              ])
-          end
-
-        field_data =
-          field_attrs
-          |> Keyword.put_new(:name, name)
-          |> Keyword.put(:identifier, field_name)
-          |> Keyword.update(:middleware, [], &Enum.reverse/1)
-          |> Keyword.update(:args, quoted_empty_map, fn raw_args ->
-            args =
-              for {name, attrs} <- raw_args,
-                  do: {name, ensure_reference(attrs, name, default_ref)}
-
-            Type.Argument.build(args)
-          end)
-
-        field_ast =
-          quote do: %Absinthe.Type.Field{
-                  unquote_splicing(field_data |> Absinthe.Type.Deprecation.from_attribute())
-                }
-
-        {field_name, field_ast}
-      end
-
-    quote do: %{unquote_splicing(ast)}
-  end
-
-  defp ensure_reference(arg_attrs, name, default_reference) do
-    case Keyword.has_key?(arg_attrs, :__reference__) do
-      true ->
-        arg_attrs
-
-      false ->
-        # default_reference is map AST, hence the gymnastics to build it nicely.
-        {a, b, args} = default_reference
-
-        Keyword.put(arg_attrs, :__reference__, {a, b, Keyword.put(args, :identifier, name)})
-    end
-  end
+  @doc false
+  defdelegate functions, to: Absinthe.Blueprint.Schema.FieldDefinition
 
   defimpl Absinthe.Traversal.Node do
     def children(node, traversal) do

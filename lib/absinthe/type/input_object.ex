@@ -49,9 +49,10 @@ defmodule Absinthe.Type.InputObject do
   @type t :: %__MODULE__{
           name: binary,
           description: binary,
-          fields: map | (() -> map),
+          fields: map,
           identifier: atom,
           __private__: Keyword.t(),
+          definition: Module.t(),
           __reference__: Type.Reference.t()
         }
 
@@ -60,20 +61,8 @@ defmodule Absinthe.Type.InputObject do
             fields: %{},
             identifier: nil,
             __private__: [],
-            __reference__: nil,
-            field_imports: []
-
-  def build(%{attrs: attrs}) do
-    fields =
-      attrs
-      |> Keyword.get(:fields, [])
-      |> Type.Field.build()
-      |> Type.Object.handle_imports(attrs[:field_imports])
-
-    attrs = Keyword.put(attrs, :fields, fields)
-
-    quote do: %unquote(__MODULE__){unquote_splicing(attrs)}
-  end
+            definition: nil,
+            __reference__: nil
 
   defimpl Absinthe.Traversal.Node do
     def children(node, _traversal) do

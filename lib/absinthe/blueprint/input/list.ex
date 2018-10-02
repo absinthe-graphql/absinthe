@@ -17,7 +17,7 @@ defmodule Absinthe.Blueprint.Input.List do
           items: [Blueprint.Input.Value.t()],
           flags: Blueprint.flags_t(),
           schema_node: nil | Absinthe.Type.t(),
-          source_location: Blueprint.Document.SourceLocation.t(),
+          source_location: Blueprint.SourceLocation.t(),
           errors: [Phase.Error.t()]
         }
 

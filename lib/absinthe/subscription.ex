@@ -28,8 +28,6 @@ defmodule Absinthe.Subscription do
   - More user control over back pressure / async balance.
   """
 
-  alias Absinthe.Subscription.Registry
-
   require Logger
   alias __MODULE__
 
@@ -87,15 +85,25 @@ defmodule Absinthe.Subscription do
   end
 
   defp get_subscription_fields(resolution_info) do
-    mut_field_name = resolution_info.definition.schema_node.identifier
+    mutation_field = resolution_info.definition.schema_node
     schema = resolution_info.schema
-    subscription = Absinthe.Schema.lookup_type(schema, :subscription) || %{}
+    subscription = Absinthe.Schema.lookup_type(schema, :subscription) || %{fields: []}
 
-    for {sub_field_name, sub_field} <- Map.get(subscription, :fields, []),
-        {mutation_names, config} <- sub_field.triggers,
-        mut_field_name in mutation_names,
-        do: {sub_field_name, config}
+    subscription_fields = fetch_fields(subscription.fields, mutation_field.triggers)
+
+    for {sub_field_id, sub_field} <- subscription_fields do
+      triggers = Absinthe.Type.function(sub_field, :triggers)
+      config = Map.fetch!(triggers, mutation_field.identifier)
+      {sub_field_id, config}
+    end
   end
+
+  # TODO: normalize the `.fields` type.
+  defp fetch_fields(fields, triggers) when is_map(fields) do
+    Map.take(fields, triggers)
+  end
+
+  defp fetch_fields(_, _), do: []
 
   @doc false
   def subscribe(pubsub, field_key, doc_id, doc) do

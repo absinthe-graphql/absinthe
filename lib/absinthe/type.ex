@@ -5,6 +5,9 @@ defmodule Absinthe.Type do
 
   alias Absinthe.{Introspection, Schema}
 
+  @type function_identifier :: {module, any}
+  @type function_ref :: {:ref, module, function_identifier}
+
   # ALL TYPES
 
   @type_modules [
@@ -37,12 +40,27 @@ defmodule Absinthe.Type do
   @typedoc "A type reference"
   @type reference_t :: identifier_t | t
 
-  def identifier(%{__reference__: %{identifier: ident}}) do
-    ident
+  def function(type, key) do
+    case Map.fetch!(type, key) do
+      {:ref, module, identifier} ->
+        module.__absinthe_function__(identifier, key)
+
+      function ->
+        function
+    end
   end
 
-  def identifier(_) do
-    nil
+  @doc false
+  # this is just for debugging
+  def expand(%module{} = type) do
+    module.functions
+    |> Enum.reduce(type, fn
+      :middleware, type ->
+        type
+
+      attr, type ->
+        Map.put(type, attr, Absinthe.Type.function(type, attr))
+    end)
   end
 
   @doc "Lookup a custom metadata field on a type"
@@ -72,10 +90,15 @@ defmodule Absinthe.Type do
   def equal?(_, _), do: false
 
   def built_in?(type) do
-    type.__reference__.module
+    type.definition
+    |> built_in_module?()
+  end
+
+  def built_in_module?(module) do
+    module
     |> Module.split()
     |> Enum.take(3)
-    |> Module.safe_concat() == Absinthe.Type.BuiltIns
+    |> Module.concat() == Absinthe.Type.BuiltIns
   end
 
   # INPUT TYPES

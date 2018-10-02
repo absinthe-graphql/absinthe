@@ -49,7 +49,7 @@ defmodule Absinthe.Schema.Rule.DefaultEnumValuePresent do
     if not (default_value in values) do
       detail = %{
         value_list: value_list,
-        type: type.__reference__.identifier,
+        type: type.identifier,
         default_value: default_value
       }
 

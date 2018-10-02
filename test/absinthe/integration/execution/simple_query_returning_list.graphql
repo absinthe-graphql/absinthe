@@ -1,6 +1,0 @@
-query {
-  things {
-    id
-    name
-  }
-}

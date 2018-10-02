@@ -1,1 +1,0 @@
-mutation { foo: failingThing(type: WITH_CODE) { name } }

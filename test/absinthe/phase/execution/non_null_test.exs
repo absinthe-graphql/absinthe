@@ -98,7 +98,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
 
     errors = [
       %{
-        locations: [%{column: 0, line: 2}],
+        locations: [%{column: 25, line: 2}],
         message: "Cannot return null for non-nullable field",
         path: ["nullable", "nullable", "nonNull"]
       }
@@ -118,12 +118,12 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
 
     errors = [
       %{
-        locations: [%{column: 0, line: 2}],
+        locations: [%{column: 25, line: 2}],
         message: "Cannot return null for non-nullable field",
         path: ["nullable", "nullable", "nonNullErrorField"]
       },
       %{
-        locations: [%{column: 0, line: 2}],
+        locations: [%{column: 25, line: 2}],
         message: "boom",
         path: ["nullable", "nullable", "nonNullErrorField"]
       }
@@ -143,12 +143,12 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
 
     errors = [
       %{
-        locations: [%{column: 0, line: 2}],
+        locations: [%{column: 23, line: 2}],
         message: "Cannot return null for non-nullable field",
         path: ["nonNull", "nonNull", "nonNullErrorField"]
       },
       %{
-        locations: [%{column: 0, line: 2}],
+        locations: [%{column: 23, line: 2}],
         message: "boom",
         path: ["nonNull", "nonNull", "nonNullErrorField"]
       }
@@ -169,11 +169,11 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
 
     errors = [
       %{
-        locations: [%{column: 0, line: 2}],
+        locations: [%{column: 54, line: 2}],
         message: "Cannot return null for non-nullable field",
         path: path
       },
-      %{locations: [%{column: 0, line: 2}], message: "boom", path: path}
+      %{locations: [%{column: 54, line: 2}], message: "boom", path: path}
     ]
 
     assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
@@ -191,7 +191,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
 
       errors = [
         %{
-          locations: [%{column: 0, line: 2}],
+          locations: [%{column: 28, line: 2}],
           message: "Cannot return null for non-nullable field",
           path: ["nullableListOfNullable", 0, "nonNull"]
         }
@@ -200,6 +200,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
     end
 
+    @tag :syntax
     test "list of non null things works when child has a null violation" do
       doc = """
       {
@@ -211,7 +212,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
 
       errors = [
         %{
-          locations: [%{column: 0, line: 2}],
+          locations: [%{column: 27, line: 2}],
           message: "Cannot return null for non-nullable field",
           path: ["nullableListOfNonNull", 0, "nonNull"]
         }

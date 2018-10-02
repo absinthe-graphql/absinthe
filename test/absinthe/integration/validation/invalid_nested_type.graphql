@@ -1,6 +1,0 @@
-mutation UpdateThingValueBadly {
-  thing: updateThing(id: "foo", thing: {value: "BAD"}) {
-    name
-    value
-  }
-}

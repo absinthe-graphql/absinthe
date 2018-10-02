@@ -6,7 +6,7 @@ defmodule Absinthe.Language.VariableDefinition do
   defstruct variable: nil,
             type: nil,
             default_value: nil,
-            loc: %{start_line: nil}
+            loc: %{line: nil}
 
   @type t :: %__MODULE__{
           variable: Language.Variable.t(),
@@ -21,8 +21,11 @@ defmodule Absinthe.Language.VariableDefinition do
         name: node.variable.name,
         type: Blueprint.Draft.convert(node.type, doc),
         default_value: Blueprint.Draft.convert(node.default_value, doc),
-        source_location: Blueprint.Document.SourceLocation.at(node.loc.start_line)
+        source_location: source_location(node)
       }
     end
+
+    defp source_location(%{loc: nil}), do: nil
+    defp source_location(%{loc: loc}), do: Blueprint.SourceLocation.at(loc)
   end
 end

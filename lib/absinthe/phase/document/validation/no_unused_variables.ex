@@ -52,7 +52,7 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedVariables do
     %Phase.Error{
       phase: __MODULE__,
       message: error_message(node.name, operation.name),
-      locations: [node.source_location, operation.source_location]
+      locations: Enum.uniq([node.source_location, operation.source_location])
     }
   end
 

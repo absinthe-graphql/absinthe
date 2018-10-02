@@ -23,7 +23,7 @@ defmodule Absinthe.Middleware.Async do
     resolve fn _, _, _ ->
       task = Task.async(fn ->
         {:ok, long_time_consuming_function()}
-      end
+      end)
       {:middleware, #{__MODULE__}, task}
     end
   end

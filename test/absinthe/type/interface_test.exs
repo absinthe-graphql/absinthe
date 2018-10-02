@@ -63,7 +63,7 @@ defmodule Absinthe.Type.InterfaceTest do
     test "can be defined" do
       obj = Schema.__absinthe_type__(:named)
       assert %Absinthe.Type.Interface{name: "Named", description: "An interface"} = obj
-      assert obj.resolve_type
+      assert Absinthe.Type.function(obj, :resolve_type)
     end
 
     test "captures the relationships in the schema" do
@@ -130,6 +130,7 @@ defmodule Absinthe.Type.InterfaceTest do
   end
 
   describe "when it doesn't define those fields" do
+    @tag :pending_schema
     test "reports schema errors" do
       assert_schema_error("bad_interface_schema", [
         %{rule: Rule.ObjectMustImplementInterfaces, data: %{object: "Foo", interface: "Aged"}},

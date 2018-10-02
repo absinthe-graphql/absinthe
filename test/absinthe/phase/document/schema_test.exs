@@ -33,7 +33,7 @@ defmodule Absinthe.Phase.Document.SchemaTest do
     end
 
     object :category do
-      field(:name)
+      field(:name, :string)
     end
 
     object :review do
@@ -99,59 +99,59 @@ defmodule Absinthe.Phase.Document.SchemaTest do
       ~w(Q BooksOnly)
       |> Enum.each(fn name ->
         node = op(result, name)
-        assert %Type.Object{__reference__: %{identifier: :query}} = node.schema_node
+        assert %Type.Object{identifier: :query} = node.schema_node
       end)
     end
 
     test "sets the non-named query operation schema node" do
       {:ok, result} = input(@nameless_query)
       node = op(result, nil)
-      assert %Type.Object{__reference__: %{identifier: :query}} = node.schema_node
+      assert %Type.Object{identifier: :query} = node.schema_node
     end
 
     test "sets the mutation schema node" do
       {:ok, result} = input(@query)
       node = op(result, "ModifyBook")
-      assert %Type.Object{__reference__: %{identifier: :mutation}} = node.schema_node
+      assert %Type.Object{identifier: :mutation} = node.schema_node
     end
 
     test "sets the subscription schema node" do
       {:ok, result} = input(@query)
       node = op(result, "NewBooks")
-      assert %Type.Object{__reference__: %{identifier: :subscription}} = node.schema_node
+      assert %Type.Object{identifier: :subscription} = node.schema_node
     end
 
     test "sets the named fragment schema node" do
       {:ok, result} = input(@query)
       node = frag(result, "BookName")
-      assert %Type.Object{__reference__: %{identifier: :book}} = node.schema_node
+      assert %Type.Object{identifier: :book} = node.schema_node
     end
 
     test "sets the schema node for a named fragment field" do
       {:ok, result} = input(@query)
       fragment = frag(result, "BookName")
       node = field(fragment, "name")
-      assert %Type.Field{__reference__: %{identifier: :name}} = node.schema_node
+      assert %Type.Field{identifier: :name} = node.schema_node
     end
 
     test "sets the inline fragment schema node" do
       {:ok, result} = input(@query)
       node = first_inline_frag(result)
-      assert %Type.Object{__reference__: %{identifier: :book}} = node.schema_node
+      assert %Type.Object{identifier: :book} = node.schema_node
     end
 
     test "sets the schema node for an inline fragment" do
       {:ok, result} = input(@query)
       fragment = first_inline_frag(result)
       node = field(fragment, "id")
-      assert %Type.Field{__reference__: %{identifier: :id}} = node.schema_node
+      assert %Type.Field{identifier: :id} = node.schema_node
     end
 
     test "sets an operation field schema node" do
       {:ok, result} = input(@query)
       operation = op(result, "BooksOnly")
       node = field(operation, "books")
-      assert %Type.Field{__reference__: %{identifier: :books}} = node.schema_node
+      assert %Type.Field{identifier: :books} = node.schema_node
     end
 
     test "sets an field schema node inside another field" do
@@ -159,13 +159,13 @@ defmodule Absinthe.Phase.Document.SchemaTest do
       operation = op(result, "Q")
       books = field(operation, "books")
       node = field(books, "name")
-      assert %Type.Field{__reference__: %{identifier: :name}} = node.schema_node
+      assert %Type.Field{identifier: :name} = node.schema_node
     end
 
     test "sets an operation field schema node supporting an adapter" do
       {:ok, result} = input(@query)
       node = named(result, Blueprint.Document.Field, "changeName")
-      assert %Type.Field{__reference__: %{identifier: :change_name}} = node.schema_node
+      assert %Type.Field{identifier: :change_name} = node.schema_node
     end
 
     test "sets directive schema nodes" do
@@ -179,7 +179,7 @@ defmodule Absinthe.Phase.Document.SchemaTest do
       operation = op(result, "ModifyBook")
       f = field(operation, "changeName")
       node = named(f, Blueprint.Input.Argument, "id")
-      assert %Type.Argument{__reference__: %{identifier: :id}} = node.schema_node
+      assert %Type.Argument{identifier: :id} = node.schema_node
     end
 
     test "sets field argument schema nodes supporting input objects" do
@@ -187,11 +187,11 @@ defmodule Absinthe.Phase.Document.SchemaTest do
       operation = op(result, "ModifyBook")
       f = field(operation, "addReview")
       top_node = named(f, Blueprint.Input.Argument, "info")
-      assert %Type.Argument{__reference__: %{identifier: :info}} = top_node.schema_node
+      assert %Type.Argument{identifier: :info} = top_node.schema_node
       node = top_node.input_value.normalized.fields |> List.first()
-      assert %Type.Field{__reference__: %{identifier: :stars}} = node.schema_node
+      assert %Type.Field{identifier: :stars} = node.schema_node
 
-      assert %Type.NonNull{of_type: %Type.Scalar{__reference__: %{identifier: :integer}}} =
+      assert %Type.NonNull{of_type: %Type.Scalar{identifier: :integer}} =
                node.input_value.schema_node
     end
 
@@ -199,7 +199,7 @@ defmodule Absinthe.Phase.Document.SchemaTest do
       {:ok, result} = input(@query)
       directive = named(result, Blueprint.Directive, "include")
       node = named(directive, Blueprint.Input.Argument, "if")
-      assert %Type.Argument{__reference__: %{identifier: :if}} = node.schema_node
+      assert %Type.Argument{identifier: :if} = node.schema_node
     end
   end
 

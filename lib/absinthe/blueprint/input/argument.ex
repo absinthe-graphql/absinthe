@@ -19,7 +19,7 @@ defmodule Absinthe.Blueprint.Input.Argument do
   @type t :: %__MODULE__{
           name: String.t(),
           input_value: Blueprint.Input.Value.t(),
-          source_location: Blueprint.Document.SourceLocation.t(),
+          source_location: Blueprint.SourceLocation.t(),
           schema_node: nil | Absinthe.Type.Argument.t(),
           value: any,
           flags: Blueprint.flags_t(),
@@ -42,6 +42,6 @@ defmodule Absinthe.Blueprint.Input.Argument do
       arg ->
         arg
     end)
-    |> Map.new(&{&1.schema_node.__reference__.identifier, &1.value})
+    |> Map.new(&{&1.schema_node.identifier, &1.value})
   end
 end

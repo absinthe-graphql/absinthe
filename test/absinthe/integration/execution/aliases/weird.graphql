@@ -1,5 +1,0 @@
-query {
-  thing(id: "foo") {
-    fOO_Bar_baz: name
-  }
-}

@@ -33,16 +33,15 @@ defmodule Absinthe.Type.Scalar do
 
   alias Absinthe.Type
 
-  def build(%{attrs: attrs}) do
-    quote do: %unquote(__MODULE__){unquote_splicing(attrs)}
+  @doc false
+  defdelegate functions(), to: Absinthe.Blueprint.Schema.ScalarTypeDefinition
+
+  def serialize(type, value) do
+    Type.function(type, :serialize).(value)
   end
 
-  def serialize(%{serialize: serializer}, value) do
-    serializer.(value)
-  end
-
-  def parse(%{parse: parser}, value, context \\ %{}) do
-    case parser do
+  def parse(type, value, context \\ %{}) do
+    case Type.function(type, :parse) do
       parser when is_function(parser, 1) ->
         parser.(value)
 
@@ -66,20 +65,20 @@ defmodule Absinthe.Type.Scalar do
   @type t :: %__MODULE__{
           name: binary,
           description: binary,
-          serialize: (value_t -> any),
-          parse: (any -> {:ok, value_t} | :error),
           identifier: atom,
           __private__: Keyword.t(),
+          definition: Module.t(),
           __reference__: Type.Reference.t()
         }
 
   defstruct name: nil,
             description: nil,
-            serialize: nil,
-            parse: nil,
             identifier: nil,
             __private__: [],
-            __reference__: nil
+            definition: nil,
+            __reference__: nil,
+            parse: nil,
+            serialize: nil
 
   @typedoc "The internal, canonical representation of a scalar value"
   @type value_t :: any

@@ -6,7 +6,7 @@ defmodule Absinthe.Language.Document do
   alias Absinthe.{Blueprint, Language}
 
   defstruct definitions: [],
-            loc: %{start_line: nil}
+            loc: %{line: nil}
 
   @typedoc false
   @type t :: %__MODULE__{
@@ -74,7 +74,7 @@ defmodule Absinthe.Language.Document do
     end
 
     defp convert_definition(%struct{} = node, doc, blueprint) when struct in @types do
-      update_in(blueprint.types, &[Blueprint.Draft.convert(node, doc) | &1])
+      update_in(blueprint.schema_definitions, &[Blueprint.Draft.convert(node, doc) | &1])
     end
 
     defp convert_definition(%struct{} = node, doc, blueprint) when struct in @directives do

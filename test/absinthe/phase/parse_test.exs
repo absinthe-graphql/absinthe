@@ -1,6 +1,8 @@
 defmodule Absinthe.Phase.ParseTest do
   use Absinthe.Case, async: true
 
+  @moduletag :parser
+
   test "parses a simple query" do
     assert {:ok, _} = run("{ user(id: 2) { name } }")
   end
@@ -20,8 +22,8 @@ defmodule Absinthe.Phase.ParseTest do
     assert [
              %Absinthe.Phase.Error{
                extra: %{},
-               locations: [%{column: 0, line: 2}],
-               message: "illegal: -w",
+               locations: [%{column: 12, line: 2}],
+               message: "Parsing failed at `-won't-lex`",
                phase: Absinthe.Phase.Parse
              }
            ] == bp.execution.validation_errors

@@ -203,7 +203,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
         }
         """,
         [],
-        undefined_field("nickname", "Pet", ["Dog", "Cat"], ["name"], 2)
+        undefined_field("nickname", "Pet", ["Cat", "Dog"], ["name"], 2)
       )
     end
 
@@ -238,7 +238,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
         }
         """,
         [],
-        undefined_field("name", "CatOrDog", ["Being", "Pet", "Canine", "Dog", "Cat"], [], 2)
+        undefined_field("name", "CatOrDog", ["Being", "Canine", "Cat", "Dog", "Pet"], [], 2)
       )
     end
 
