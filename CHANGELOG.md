@@ -11,3 +11,4 @@ Alpha 0 note: 1.5.0 alpha is safe to use on existing schemas. However, there are
 - Feature: SDL support
 - Feature: Schema decorators
 - Breaking Change: `default_value: DateTime.utc_now()` will have its time set at compile time. IE: DON'T DO THIS. It only worked by accident before anyway, and now it no longer works, which is correct.
+- Breaking change: added `node_name/0` callback to `Absinthe.Subscription.PubSub` behaviour. To retain old behaviour, implement this callback to return `Kernel.node/0`.
