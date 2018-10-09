@@ -1,146 +1,118 @@
 # Dataloader
 
+Maybe you like good performance, or you realized that you are filling your objects with fields that need resolvers like 
 
-
-```graphql
-subscription{
-  newPost {
-    id
-    name
-  }
-}
+```elixir
+@desc "A user of the blog"
+  object :user do
+    field :id, :id
+    field :name, :string
+    field :contacts, list_of(:contact)
+    field :posts, list_of(:post) do
+      arg :date, :date
+      resolve &Resolvers.Content.list_posts/3
+    end
+  end
 ```
 
-Since we had already setup mutations to handle creation of posts we can use that as the event we want to subscribe to. In order to achieve this we have to do a little bit of set up
+This is going to get tedious and error prone very quickly what if we could support a query that supports associations like
+
+```elixir 
+@desc "A user of the blog"
+  object :user do
+    field :id, :id
+    field :name, :string
+    field :contacts, list_of(:contact)
+    field :posts, list_of(:post) do
+       arg :date, :date
+       resolve: dataloader(Content))
+   end 
+  end
+```
+
+These way associations are all handled in the context [business logic aware](https://github.com/absinthe-graphql/absinthe/issues/443#issuecomment-405929499) conditions, to support this is actually surprisingly simple
 
 
-Let's start by adding `absinthe_phoenix` as a dependency
+Since we had already setup users to load associated posts we can change that to use dataloader to illustrate how much simpler this gets 
+
+
+Let's start by adding `dataloader` as a dependency
 
 In `mix.exs`
 
 ```elixir
 defp deps do
   [
-    {:absinthe_phoenix, "~> 1.4.0"}
+    {:dataloader, "~> 1.0.4"}
     << other deps >>
   ]
 ```
 
-Then we need to add a supervisor to run some processes for the to handle result broadcasts
+Then we need to set up dataloader in our context to enable use to load associations using rules
 
-In `lib/blog/application.ex`:
+In `lib/blog/content.ex`:
 
 ```elixir
-  children = [
-    # other children ...
-    {BlogWeb.Endpoint, []}, # this line should already exist
-    {Absinthe.Subscription, [BlogWeb.Endpoint]}, # add this line
-    # other children ...
-  ]
+  def data(), do: Dataloader.Ecto.new(Repo, query: &query/2)
+  
+  def query(queryable, params) do
+    
+    queryable
+  end 
 ```
 
+This set's up  a loader that can use pattern matching to load different rules for different queryables, also note this function is passed in the context as the second parameter and that can be used for further filtering
 
 
-The lets add a configuration to the phoenix endpoint so it can provide some callbacks Absinthe expects, please note while this guide uses phoenix Absinthes support for Subscriptions is good enough to be used without websockets even without a browser.
 
-In `lib/blog_web/endpoint.ex`:
+The lets add a configuration to our schema so that we can enable Absinthe to use Dataloder 
+
+
+In `lib/blog_web/schema.ex`:
 
 
 ```elixir
-defmodule BlogWeb.Endpoint do
-  use Phoenix.Endpoint, otp_app: :blog
-  use Absinthe.Phoenix.Endpoint
+defmodule BlogWeb.Schema do
+  use Absinthe.Schema
+  
+  def context(ctx) do
+     loader =
+       Dataloader.new()
+       |> Dataloader.add_source(Content, Content.data())
+
+    Map.put(ctx, :loader, loader)
+  end
+
+  def plugins do
+    [Absinthe.Middleware.Dataloader | Absinthe.Plugin.defaults()]
+  end
 
   << rest of the file>>
 ```
 
-The pubsub stuff is now set up lets configure our sockets
 
-In `lib/blog_web/channels/user_socket.ex`
+The loader is all set up  lets now modify the resolver to use Dataloader
 
-``` elixir
-defmodule BlogWeb.UserSocket do
-  use Phoenix.Socket
-  use Absinthe.Phoenix.Socket, schema: BlogWeb.Schema
+In `lib/blog_web/schema/account_types.ex`
 
-  << rest of file>>
-```
-
-Lets not configure GraphQL to use this socket.
-
-In `lib/blog_web/router.ex` :
+modify the user object to look as follows
 
 ```elixir
-defmodule BlogWeb.Router do
-  use BlogWeb, :router
-
-  pipeline :api do
-    plug :accepts, ["json"]
-    plug BlogWeb.Context
-  end
-
-  scope "/api" do
-    pipe_through :api
-
-    forward "/graphiql", Absinthe.Plug.GraphiQL,
-      schema: BlogWeb.Schema,
-      socket: BlogWeb.UserSocket
-
-
-    forward "/", Absinthe.Plug,
-      schema: BlogWeb.Schema
-  end
-
-end
-```
-
-
-Now lets set up a subscription root object in our Schema to listen to an event. For this subscription we can set it up to listen every time a new post is created.
-
-
-In `blog_web/schema.ex` :
-
-```elixir
-
-subscription do
-
-  field :new_post, :post do
-    config fn _args, _info ->
-      {:ok, topic: "*"}
-    end
-  end
-
-end
-```
-
-The `new_post` field is a pretty regular field only new thing here is the `config` macro, this is
-here to help us know which clients have subscribed to which fields. Much like websockets subscriptions work by allowing t a client to subscribe to a topic.
-
-Topics are scoped to a field and for now we shall use `*` to indicate we care about all the posts, and that's it!
-
-
-If you ran the request at this moment you would get a nice message telling you that your subscriptions will appear once after they are published but you create a post and alas! no data what cut?
-
-Once a subscription is set up it waits for a target event to get published in order for us to collect this information we need to publish to this subscription
-
-In `blog_web/resolvers/content.ex`:
-
-```elixir
-def create_post(_parent, args, %{context: %{current_user: user}}) do
-    # Blog.Content.create_post(user, args)
-    case Blog.Content.create_post(user, args) do
-      {:ok, post} ->
-        Absinthe.Subscription.publish(BlogWeb.Endpoint, post,
-        new_post: "*"
-        )
-
-        {:ok, post}
-      {:error, changeset} ->
-        {:ok, "error"}
-      end
+@desc "A user of the blog"
+  object :user do
+    field :id, :id
+    field :name, :string
+    field :contacts, list_of(:contact)
+    field :posts, list_of(:post) do
+       arg :date, :date
+       resolve: dataloader(Content))
+   end 
   end
 ```
 
-With this open a tab and run the query at the top of this section, then open another tab and run a mutation to add a post you should see a result in the other tab have fun.
 
-<img style="box-shadow: 0 0 6px #ccc;" src="assets/tutorial/graphiql_new_post_sub.png" alt=""/>
+And that's it! You are now loading associations using [Dataloader](https://github.com/absinthe-graphql/dataloader)
+
+Check out the [docs](https://hexdocs.pm/dataloader/) for more non trivial ways of using Dataloader 
+
+
