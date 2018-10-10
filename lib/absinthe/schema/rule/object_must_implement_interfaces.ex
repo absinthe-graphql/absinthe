@@ -34,9 +34,10 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfaces do
   Reference: https://github.com/facebook/graphql/blob/master/spec/Section%203%20--%20Type%20System.md#object-type-validation
   """
 
-  def explanation(%{data: %{object: obj, interface: interface}}) do
+  def explanation(%{data: %{object: obj, interface: interface, fields: fields}}) do
     """
-    Type "#{obj}" does not fully implement interface type "#{interface}"
+    Type "#{obj}" does not fully implement interface type "#{interface}" \
+    for fields #{inspect(fields)}
 
     #{@description}
     """
@@ -53,13 +54,18 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfaces do
     |> Enum.map(&Schema.lookup_type(schema, &1))
     |> Enum.reduce([], fn
       %Type.Interface{} = iface_type, acc ->
-        if Type.Interface.implements?(iface_type, type, schema) do
-          acc
-        else
-          [
-            report(type.__reference__.location, %{object: type.name, interface: iface_type.name})
-            | acc
-          ]
+        case Type.Interface.check_implements(iface_type, type, schema) do
+          :ok ->
+            acc
+
+          {:error, fields} ->
+            [
+              report(
+                type.__reference__.location,
+                %{object: type.name, interface: iface_type.name, fields: fields}
+              )
+              | acc
+            ]
         end
 
       _, _ ->

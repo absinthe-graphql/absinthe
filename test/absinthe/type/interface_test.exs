@@ -132,8 +132,8 @@ defmodule Absinthe.Type.InterfaceTest do
   describe "when it doesn't define those fields" do
     test "reports schema errors" do
       assert_schema_error("bad_interface_schema", [
-        %{rule: Rule.ObjectMustImplementInterfaces, data: %{object: "Foo", interface: "Aged"}},
-        %{rule: Rule.ObjectMustImplementInterfaces, data: %{object: "Foo", interface: "Named"}},
+        %{rule: Rule.ObjectMustImplementInterfaces, data: %{object: "Foo", interface: "Aged", fields: [:age]}},
+        %{rule: Rule.ObjectMustImplementInterfaces, data: %{object: "Foo", interface: "Named", fields: [:name]}},
         %{rule: Rule.ObjectInterfacesMustBeValid, data: %{object: "Quux", interface: "Foo"}},
         %{rule: Rule.InterfacesMustResolveTypes, data: "Named"}
       ])
