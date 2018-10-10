@@ -31,11 +31,12 @@ defmodule Absinthe.PipelineTest do
       name: String!
     }
     """
-
+    @tag :pending_schema
     test "can create a blueprint without a prototype schema" do
       assert {:ok, %Blueprint{}, _} = Pipeline.run(@query, Pipeline.for_schema(nil))
     end
 
+    @tag :pending_schema
     test "can create a blueprint with a prototype schema" do
       assert {:ok, %Blueprint{}, _} = Pipeline.run(@query, Pipeline.for_schema(Schema))
     end

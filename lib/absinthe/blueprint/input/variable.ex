@@ -15,7 +15,7 @@ defmodule Absinthe.Blueprint.Input.Variable do
 
   @type t :: %__MODULE__{
           name: String.t(),
-          source_location: nil | Blueprint.Document.SourceLocation.t(),
+          source_location: nil | Blueprint.SourceLocation.t(),
           # Added by phases
           flags: Blueprint.flags_t(),
           errors: [Phase.Error.t()]

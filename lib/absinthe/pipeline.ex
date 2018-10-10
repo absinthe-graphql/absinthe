@@ -109,23 +109,20 @@ defmodule Absinthe.Pipeline do
     ]
   end
 
-  @defaults [
-    adapter: Absinthe.Adapter.LanguageConventions
-  ]
-
   @spec for_schema(nil | Absinthe.Schema.t()) :: t
   @spec for_schema(nil | Absinthe.Schema.t(), Keyword.t()) :: t
-  def for_schema(prototype_schema, options \\ []) do
-    options =
-      @defaults
-      |> Keyword.merge(Keyword.put(options, :schema, prototype_schema))
-
+  def for_schema(schema, _options \\ []) do
     [
-      Phase.Parse,
-      Phase.Blueprint,
-      {Phase.Schema, options},
+      Phase.Schema.TypeImports,
+      Phase.Schema.ValidateTypeReferences,
+      Phase.Schema.FieldImports,
+      {Phase.Schema.Decorate, [schema: schema]},
       Phase.Validation.KnownTypeNames,
-      Phase.Validation.KnownDirectives
+      Phase.Schema.RegisterTriggers,
+      Phase.Schema.Validation.Result,
+      Phase.Schema.Build,
+      Phase.Schema.InlineFunctions,
+      {Phase.Schema.Compile, [module: schema]}
     ]
   end
 
@@ -246,7 +243,7 @@ defmodule Absinthe.Pipeline do
     beginning ++ List.wrap(additional) ++ (pipeline -- beginning)
   end
 
-  @spec reject(t, Regex.t() | (Module.t -> boolean)) :: t
+  @spec reject(t, Regex.t() | (Module.t() -> boolean)) :: t
   def reject(pipeline, %Regex{} = pattern) do
     reject(pipeline, fn phase ->
       Regex.match?(pattern, Atom.to_string(phase))

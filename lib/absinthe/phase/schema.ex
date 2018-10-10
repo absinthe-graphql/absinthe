@@ -68,7 +68,7 @@ defmodule Absinthe.Phase.Schema do
          schema,
          _adapter
        ) do
-    schema_node = Absinthe.Schema.cached_lookup_type(schema, type_name)
+    schema_node = Absinthe.Schema.lookup_type(schema, type_name)
     %{node | schema_node: schema_node, type_condition: %{condition | schema_node: schema_node}}
   end
 
@@ -87,7 +87,7 @@ defmodule Absinthe.Phase.Schema do
          schema,
          _adapter
        ) do
-    %{node | schema_node: Absinthe.Schema.cached_lookup_type(schema, op_type)}
+    %{node | schema_node: Absinthe.Schema.lookup_type(schema, op_type)}
   end
 
   defp set_schema_node(
@@ -97,7 +97,7 @@ defmodule Absinthe.Phase.Schema do
          schema,
          _adapter
        ) do
-    schema_node = Absinthe.Schema.cached_lookup_type(schema, type_name)
+    schema_node = Absinthe.Schema.lookup_type(schema, type_name)
     %{node | schema_node: schema_node, type_condition: %{condition | schema_node: schema_node}}
   end
 

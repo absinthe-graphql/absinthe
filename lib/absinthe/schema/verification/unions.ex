@@ -26,7 +26,7 @@ defmodule Absinthe.Schema.Verification.Unions do
   end
 
   defp check_resolvers(
-         %{resolve_type: nil, __reference__: %{identifier: ident}} = union,
+         %{resolve_type: nil, identifier: ident} = union,
          [concrete_type_ident | rest],
          schema
        ) do

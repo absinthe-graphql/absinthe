@@ -29,7 +29,8 @@ defmodule Absinthe.Phase.Validation.KnownDirectives do
   end
 
   defp handle_node(%{directives: _} = node) do
-    check_directives(node)
+    node
+    |> check_directives
     |> inherit_invalid(node.directives, :bad_directive)
   end
 

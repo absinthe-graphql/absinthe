@@ -36,7 +36,7 @@ Absinthe integrates with a number of other important projects, both on the backe
 
 * Elixir
   * Support for HTTP APIs using [Plug and Phoenix](plug-phoenix.html) via the [absinthe_plug](https://hex.pm/packages/absinthe_plug) and [absinthe_phoenix](https://hex.pm/packages/absinthe_phoenix) packages
-  * Support for [Ecto](ecto.html) via the [absinthe_ecto](https://hex.pm/packages/absinthe_ecto) package
+  * Support for [Ecto](ecto.html) via the [dataloader](https://github.com/absinthe-graphql/dataloader) package
 * JavaScript (client-side)
   * Support for [Relay](relay.html) and [Apollo Client](apollo.html)
   * Support for Absinthe's channel-based subscriptions. See [absinthe-socket](https://github.com/absinthe-graphql/absinthe-socket).

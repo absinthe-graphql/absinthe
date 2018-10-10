@@ -2,6 +2,7 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlacedTest do
   use Absinthe.Case, async: true
 
   describe "rule" do
+    @tag :pending_schema
     test "is enforced with output types on arguments" do
       assert_schema_error("invalid_output_types", [
         %{
@@ -12,7 +13,8 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlacedTest do
             type: :input
           },
           location: %{
-            file: "/Users/ben/src/absinthe/test/support/fixtures/dynamic/invalid_output_types.exs",
+            file:
+              "/Users/ben/src/absinthe/test/support/fixtures/dynamic/invalid_output_types.exs",
             line: 10
           },
           rule: Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlaced
@@ -20,7 +22,8 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlacedTest do
         %{
           data: %{argument: :invalid_arg, struct: Absinthe.Type.Object, type: :user},
           location: %{
-            file: "/Users/ben/src/absinthe/test/support/fixtures/dynamic/invalid_output_types.exs",
+            file:
+              "/Users/ben/src/absinthe/test/support/fixtures/dynamic/invalid_output_types.exs",
             line: 4
           },
           rule: Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlaced
@@ -28,6 +31,7 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlacedTest do
       ])
     end
 
+    @tag :pending_schema
     test "is enforced with input types on arguments" do
       assert_schema_error("invalid_input_types", [
         %{

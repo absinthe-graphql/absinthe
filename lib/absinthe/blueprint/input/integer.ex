@@ -16,7 +16,7 @@ defmodule Absinthe.Blueprint.Input.Integer do
   @type t :: %__MODULE__{
           value: integer,
           flags: Blueprint.flags_t(),
-          source_location: Blueprint.Document.SourceLocation.t(),
+          source_location: Blueprint.SourceLocation.t(),
           schema_node: nil | Absinthe.Type.t(),
           errors: [Phase.Error.t()]
         }

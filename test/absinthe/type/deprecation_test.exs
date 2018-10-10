@@ -10,7 +10,7 @@ defmodule Absinthe.Type.DeprecationTest do
       # Query type must exist
     end
 
-    input_object :profile do
+    object :profile do
       description "A profile"
 
       field :name, :string

@@ -4,7 +4,7 @@ defmodule Absinthe.Language.NamedType do
   alias Absinthe.{Blueprint, Language}
 
   defstruct name: nil,
-            loc: %{start_line: nil}
+            loc: %{line: nil}
 
   @type t :: %__MODULE__{
           name: String.t(),

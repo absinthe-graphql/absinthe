@@ -147,8 +147,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
           structs = types |> Enum.map(&Absinthe.Schema.lookup_type(schema, &1))
           {:ok, structs}
 
-        _,
-        %{schema: schema, source: %Absinthe.Type.Interface{__reference__: %{identifier: ident}}} ->
+        _, %{schema: schema, source: %Absinthe.Type.Interface{identifier: ident}} ->
           {:ok, Absinthe.Schema.implementors(schema, ident)}
 
         _, _ ->
@@ -276,17 +275,8 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         _, %{source: %{default_value: nil}} ->
           {:ok, nil}
 
-        _, %{schema: schema, source: %{default_value: value, type: type}} ->
-          case Absinthe.Schema.lookup_type(schema, type, unwrap: true) do
-            %Absinthe.Type.Enum{values_by_internal_value: values} ->
-              {:ok, values[value].name}
-
-            %{serialize: serializer} ->
-              {:ok, inspect(serializer.(value))}
-
-            _ ->
-              {:ok, to_string(value)}
-          end
+        _, %{schema: schema, source: %{default_value: value, type: type}, adapter: adapter} ->
+          {:ok, render_default_value(schema, adapter, type, value)}
 
         _, %{source: _} ->
           {:ok, nil}
@@ -317,5 +307,38 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         _, %{source: %{deprecation: dep}} ->
           {:ok, dep.reason}
       end
+  end
+
+  def render_default_value(schema, adapter, type, value) do
+    case Absinthe.Schema.lookup_type(schema, type, unwrap: false) do
+      %Absinthe.Type.InputObject{fields: fields} ->
+        object_values =
+          Map.values(fields)
+          |> Enum.map(&render_default_value(schema, adapter, &1, value))
+          |> Enum.join(", ")
+
+        "{#{object_values}}"
+
+      %Absinthe.Type.List{of_type: type} ->
+        list_values =
+          Enum.map(value, &render_default_value(schema, adapter, type, &1))
+          |> Enum.join(", ")
+
+        "[#{list_values}]"
+
+      %Absinthe.Type.Field{type: type, name: name, identifier: identifier} ->
+        key = adapter.to_external_name(name, :field)
+        val = render_default_value(schema, adapter, type, value[identifier])
+        "#{key}: #{val}"
+
+      %Absinthe.Type.Enum{values_by_internal_value: values} ->
+        values[value].name
+
+      %Absinthe.Type.NonNull{of_type: type} ->
+        render_default_value(schema, adapter, type, value)
+
+      %Absinthe.Type.Scalar{} = sc ->
+        inspect(Absinthe.Type.Scalar.serialize(sc, value))
+    end
   end
 end

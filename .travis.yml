@@ -1,12 +1,12 @@
 language: elixir
 elixir:
-  - 1.4.5
-  - 1.5.1
+  - 1.6.6
+  - 1.7.3
 notifications:
   recipients:
     - bruce.williams@cargosense.com
     - ben.wilson@cargosense.com
 otp_release:
-  - 19.2
   - 20.0
+  - 21.0
 script: "MIX_ENV=test mix local.hex --force && MIX_ENV=test mix do deps.get, test"

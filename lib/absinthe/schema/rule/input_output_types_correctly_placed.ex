@@ -44,7 +44,7 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlaced do
           !output_type?(field_type) do
         detail = %{
           field: field.identifier,
-          type: field_type.__reference__.identifier,
+          type: field_type.identifier,
           struct: field_type.__struct__,
           parent: Type.Object
         }
@@ -58,8 +58,8 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlaced do
           type = get_type(arg, schema),
           !input_type?(type) do
         detail = %{
-          argument: arg.__reference__.identifier,
-          type: type.__reference__.identifier,
+          argument: arg.identifier,
+          type: type.identifier,
           struct: type.__struct__
         }
 
@@ -75,7 +75,7 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlaced do
         !input_type?(field_type) do
       detail = %{
         field: field.identifier,
-        type: field_type.__reference__.identifier,
+        type: field_type.identifier,
         struct: field_type.__struct__,
         parent: Type.InputObject
       }

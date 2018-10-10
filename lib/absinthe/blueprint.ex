@@ -9,10 +9,10 @@ defmodule Absinthe.Blueprint do
   alias __MODULE__
 
   defstruct operations: [],
-            types: [],
             directives: [],
             fragments: [],
             name: nil,
+            schema_definitions: [],
             schema: nil,
             adapter: nil,
             # Added by phases
@@ -24,7 +24,7 @@ defmodule Absinthe.Blueprint do
 
   @type t :: %__MODULE__{
           operations: [Blueprint.Document.Operation.t()],
-          types: [Blueprint.Schema.t()],
+          schema_definitions: [Blueprint.Schema.t()],
           directives: [Blueprint.Schema.DirectiveDefinition.t()],
           name: nil | String.t(),
           fragments: [Blueprint.Document.Fragment.Named.t()],
@@ -78,6 +78,19 @@ defmodule Absinthe.Blueprint do
       end)
 
     found
+  end
+
+  @doc false
+  # This is largely a debugging tool which replaces `schema_node` struct values
+  # with just the type identifier, rendering the blueprint tree much easier to read
+  def __compress__(blueprint) do
+    prewalk(blueprint, fn
+      %{schema_node: %{identifier: id}} = node ->
+        %{node | schema_node: id}
+
+      node ->
+        node
+    end)
   end
 
   @spec fragment(t, String.t()) :: nil | Blueprint.Document.Fragment.Named.t()

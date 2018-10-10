@@ -61,7 +61,7 @@ defmodule Absinthe.Blueprint.Transform do
   defp pass(x, acc), do: {x, acc}
 
   nodes_with_children = %{
-    Blueprint => [:fragments, :operations, :types, :directives],
+    Blueprint => [:fragments, :operations, :schema_definitions, :directives],
     Blueprint.Directive => [:arguments],
     Blueprint.Document.Field => [:selections, :arguments, :directives],
     Blueprint.Document.Operation => [:selections, :variable_definitions, :directives],
@@ -77,16 +77,16 @@ defmodule Absinthe.Blueprint.Transform do
     Blueprint.Input.List => [:items],
     Blueprint.Input.RawValue => [:content],
     Blueprint.Input.Value => [:normalized],
-    Blueprint.Schema.DirectiveDefinition => [:directives, :types],
+    Blueprint.Schema.DirectiveDefinition => [:directives, :arguments],
     Blueprint.Schema.EnumTypeDefinition => [:directives, :values],
     Blueprint.Schema.EnumValueDefinition => [:directives],
     Blueprint.Schema.FieldDefinition => [:type, :arguments, :directives],
-    Blueprint.Schema.InputObjectTypeDefinition => [:interfaces, :fields, :directives],
+    Blueprint.Schema.InputObjectTypeDefinition => [:fields, :directives],
     Blueprint.Schema.InputValueDefinition => [:type, :default_value, :directives],
     Blueprint.Schema.InterfaceTypeDefinition => [:fields, :directives],
     Blueprint.Schema.ObjectTypeDefinition => [:interfaces, :fields, :directives],
     Blueprint.Schema.ScalarTypeDefinition => [:directives],
-    Blueprint.Schema.SchemaDefinition => [:directives, :fields],
+    Blueprint.Schema.SchemaDefinition => [:directive_definitions, :type_definitions, :directives],
     Blueprint.Schema.UnionTypeDefinition => [:directives, :types]
   }
 
@@ -134,9 +134,7 @@ defmodule Absinthe.Blueprint.Transform do
   end
 
   defp node_with_children(node, children, acc, pre, post) do
-    {node, acc} = walk_children(node, children, acc, pre, post)
-
-    post.(node, acc)
+    walk_children(node, children, acc, pre, post)
   end
 
   defp walk_children(node, children, acc, pre, post) do

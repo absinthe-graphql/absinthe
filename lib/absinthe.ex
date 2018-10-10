@@ -34,7 +34,7 @@ defmodule Absinthe do
 
   @type result_error_t ::
           %{message: String.t()}
-          | %{message: String.t(), locations: [%{line: integer, column: integer}]}
+          | %{message: String.t(), locations: [%{line: pos_integer, column: integer}]}
 
   @type result_t ::
           %{data: nil | result_selection_t}

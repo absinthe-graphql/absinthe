@@ -120,7 +120,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
       %Type.Object{identifier: identifier} ->
         [identifier]
 
-      %Type.Interface{__reference__: %{identifier: identifier}} ->
+      %Type.Interface{identifier: identifier} ->
         schema.__absinthe_interface_implementors__
         |> Map.fetch!(identifier)
 
@@ -186,7 +186,10 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
     possible_interfaces =
       find_possible_interfaces(internal_field_name, possible_types, blueprint.schema)
 
-    Enum.map(possible_interfaces, & &1.name) ++ Enum.map(possible_types, & &1.name)
+    possible_interfaces
+    |> Enum.map(& &1.name)
+    |> Enum.concat(Enum.map(possible_types, & &1.name))
+    |> Enum.sort()
   end
 
   defp suggested_field_names(external_field_name, %{fields: _} = type, blueprint) do
@@ -196,6 +199,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
     |> Enum.map(& &1.name)
     |> Absinthe.Utils.Suggestion.sort_list(internal_field_name)
     |> Enum.map(&blueprint.adapter.to_external_name(&1, :field))
+    |> Enum.sort()
   end
 
   defp suggested_field_names(_, _, _) do

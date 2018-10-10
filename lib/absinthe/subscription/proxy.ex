@@ -4,7 +4,8 @@ defmodule Absinthe.Subscription.Proxy do
   use GenServer
 
   defstruct [
-    :pubsub
+    :pubsub,
+    :node
   ]
 
   alias Absinthe.Subscription
@@ -16,11 +17,12 @@ defmodule Absinthe.Subscription.Proxy do
   def topic(shard), do: "__absinthe__:proxy:#{shard}"
 
   def init({pubsub, shard}) do
+    node_name = pubsub.node_name()
     :ok = pubsub.subscribe(topic(shard))
-    {:ok, %__MODULE__{pubsub: pubsub}}
+    {:ok, %__MODULE__{pubsub: pubsub, node: node_name}}
   end
 
-  def handle_info(%{node: src_node}, state) when src_node == node() do
+  def handle_info(%{node: src_node}, %{node: node} = state) when src_node == node do
     {:noreply, state}
   end
 

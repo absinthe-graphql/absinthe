@@ -53,7 +53,7 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
   def handle_node(%Input.Value{normalized: %Input.Object{fields: fields}} = node) do
     data =
       for field <- fields, include_field?(field), into: %{} do
-        {field.schema_node.__reference__.identifier, field.input_value.data}
+        {field.schema_node.identifier, field.input_value.data}
       end
 
     %{node | data: data}

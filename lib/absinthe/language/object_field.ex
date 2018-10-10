@@ -5,7 +5,7 @@ defmodule Absinthe.Language.ObjectField do
 
   defstruct name: nil,
             value: nil,
-            loc: %{start_line: nil}
+            loc: %{line: nil}
 
   @type t :: %__MODULE__{
           name: String.t(),
@@ -23,6 +23,6 @@ defmodule Absinthe.Language.ObjectField do
     end
 
     defp source_location(%{loc: nil}), do: nil
-    defp source_location(%{loc: loc}), do: Blueprint.Document.SourceLocation.at(loc.start_line)
+    defp source_location(%{loc: loc}), do: Blueprint.SourceLocation.at(loc)
   end
 end
