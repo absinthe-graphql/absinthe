@@ -137,41 +137,59 @@ defmodule Absinthe.Type.Interface do
     false
   end
 
-  @spec implements?(Type.Interface.t(), Type.Object.t(), Type.Schema.t()) :: boolean
-  def implements?(interface, type, schema) do
-    covariant?(interface, type, schema)
+  @spec check_implements(Type.Interface.t(), Type.Object.t(), Type.Schema.t())
+        :: :ok | {:error, invalid_fields :: [atom()]}
+  def check_implements(interface, type, schema) do
+    check_covariant(interface, type, nil, schema)
   end
 
-  defp covariant?(%wrapper{of_type: inner_type1}, %wrapper{of_type: inner_type2}, schema) do
-    covariant?(inner_type1, inner_type2, schema)
-  end
-
-  defp covariant?(%{name: name}, %{name: name}, _schema) do
-    true
-  end
-
-  defp covariant?(%Type.Interface{fields: ifields}, %{fields: type_fields}, schema) do
-    Enum.all?(ifields, fn {field_ident, ifield} ->
+  defp check_covariant(%Type.Interface{fields: ifields}, %{fields: type_fields}, _field_ident, schema) do
+    Enum.reduce(ifields, [], fn {field_ident, ifield}, invalid_fields ->
       case Map.get(type_fields, field_ident) do
         nil ->
-          false
+          [field_ident | invalid_fields]
 
         field ->
-          covariant?(ifield.type, field.type, schema)
+          case check_covariant(ifield.type, field.type, field_ident, schema) do
+            :ok ->
+              invalid_fields
+
+            {:error, invalid_field} ->
+              [invalid_field | invalid_fields]
+          end
       end
     end)
+    |> case do
+      [] ->
+        :ok
+
+      invalid_fields ->
+        {:error, invalid_fields}
+    end
   end
 
-  defp covariant?(nil, _, _), do: false
-  defp covariant?(_, nil, _), do: false
+  defp check_covariant(%wrapper{of_type: inner_type1}, %wrapper{of_type: inner_type2}, field_ident, schema) do
+    check_covariant(inner_type1, inner_type2, field_ident, schema)
+  end
 
-  defp covariant?(itype, type, schema) when is_atom(itype) do
+  defp check_covariant(%{name: name}, %{name: name}, _field_ident, _schema) do
+    :ok
+  end
+
+  defp check_covariant(nil, _, field_ident, _), do: {:error, field_ident}
+  defp check_covariant(_, nil, field_ident, _), do: {:error, field_ident}
+
+  defp check_covariant(itype, type, field_ident, schema) when is_atom(itype) do
     itype = schema.__absinthe_type__(itype)
-    covariant?(itype, type, schema)
+    check_covariant(itype, type, field_ident, schema)
   end
 
-  defp covariant?(itype, type, schema) when is_atom(type) do
+  defp check_covariant(itype, type, field_ident, schema) when is_atom(type) do
     type = schema.__absinthe_type__(type)
-    covariant?(itype, type, schema)
+    check_covariant(itype, type, field_ident, schema)
+  end
+
+  defp check_covariant(_, _, field_ident, _schema) do
+    {:error, field_ident}
   end
 end

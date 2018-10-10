@@ -19,7 +19,7 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfacesTest do
 
       resolve_type fn
         %{type: :dog} -> :dog
-        %{type: :user} -> :dog
+        %{type: :user} -> :user
         _ -> nil
       end
     end
@@ -35,5 +35,22 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfacesTest do
 
   test "interfaces are propogated across type imports" do
     assert %{named: [:dog, :user]} == Schema.__absinthe_interface_implementors__()
+  end
+
+  test "is enforced" do
+    assert_schema_error("invalid_interface_types", [
+      %{
+        data: %{
+          fields: [:name],
+          object: "User",
+          interface: "Named",
+        },
+        location: %{
+          file: "/Users/ben/src/absinthe/test/support/fixtures/dynamic/invalid_interface_types.exs",
+          line: 10
+        },
+        rule: Absinthe.Schema.Rule.ObjectMustImplementInterfaces
+      }
+    ])
   end
 end
