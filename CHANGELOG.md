@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.14
+
+- Bug Fix: Add missing `Absinthe.Subscription.child_spec/1` function 
+
 ## v1.4.13
 
 - Enhancement: Support for Elixir 1.7.0
