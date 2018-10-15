@@ -42,32 +42,32 @@ In `lib/blog/application.ex`:
 
 
 
-The lets add a configuration to the phoenix endpoint so it can provide some callbacks Absinthe expects, please note while this guide uses phoenix Absinthes support for Subscriptions is good enough to be used without websockets even without a browser.
+The lets add a configuration to the phoenix endpoint so it can provide some callbacks Absinthe expects, please note while this guide uses phoenix. Absinthe's support for Subscriptions is good enough to be used without websockets even without a browser.
 
 In `lib/blog_web/endpoint.ex`:
 
 
 ```elixir
 defmodule BlogWeb.Endpoint do
-  use Phoenix.Endpoint, otp_app: :blog
-  use Absinthe.Phoenix.Endpoint
+  use Phoenix.Endpoint, otp_app: :blog # this line should already exist 
+  use Absinthe.Phoenix.Endpoint # add this line
 
   << rest of the file>>
 ```
 
-The pubsub stuff is now set up lets configure our sockets
+The `PubSub` stuff is now set up, let's configure our sockets
 
 In `lib/blog_web/channels/user_socket.ex`
 
 ``` elixir
 defmodule BlogWeb.UserSocket do
-  use Phoenix.Socket
-  use Absinthe.Phoenix.Socket, schema: BlogWeb.Schema
+  use Phoenix.Socket # this line should already exist
+  use Absinthe.Phoenix.Socket, schema: BlogWeb.Schema # add
 
   << rest of file>>
 ```
 
-Lets not configure GraphQL to use this socket.
+Lets now configure GraphQL to use this Socket.
 
 In `lib/blog_web/router.ex` :
 
@@ -85,7 +85,7 @@ defmodule BlogWeb.Router do
 
     forward "/graphiql", Absinthe.Plug.GraphiQL,
       schema: BlogWeb.Schema,
-      socket: BlogWeb.UserSocket
+      socket: BlogWeb.UserSocket # add this line
 
 
     forward "/", Absinthe.Plug,
@@ -96,7 +96,7 @@ end
 ```
 
 
-Now lets set up a subscription root object in our Schema to listen to an event. For this subscription we can set it up to listen every time a new post is created.
+Now let/s set up a subscription root object in our Schema to listen for an event. For this subscription we can set it up to listen every time a new post is created.
 
 
 In `blog_web/schema.ex` :
@@ -115,10 +115,9 @@ end
 ```
 
 The `new_post` field is a pretty regular field only new thing here is the `config` macro, this is
-here to help us know which clients have subscribed to which fields. Much like websockets subscriptions work by allowing t a client to subscribe to a topic.
+here to help us know which clients have subscribed to which fields. Much like WebSockets subscriptions work by allowing t a client to subscribe to a topic.
 
 Topics are scoped to a field and for now we shall use `*` to indicate we care about all the posts, and that's it!
-
 
 If you ran the request at this moment you would get a nice message telling you that your subscriptions will appear once after they are published but you create a post and alas! no data what cut?
 
@@ -131,6 +130,7 @@ def create_post(_parent, args, %{context: %{current_user: user}}) do
     # Blog.Content.create_post(user, args)
     case Blog.Content.create_post(user, args) do
       {:ok, post} ->
+        # add this line in
         Absinthe.Subscription.publish(BlogWeb.Endpoint, post,
         new_post: "*"
         )
@@ -142,6 +142,6 @@ def create_post(_parent, args, %{context: %{current_user: user}}) do
   end
 ```
 
-With this open a tab and run the query at the top of this section, then open another tab and run a mutation to add a post you should see a result in the other tab have fun.
+With this, open a tab and run the query at the top of this section. Then open another tab and run a mutation to add a post you should see a result in the other tab have fun.
 
 <img style="box-shadow: 0 0 6px #ccc;" src="assets/tutorial/graphiql_new_post_sub.png" alt=""/>
