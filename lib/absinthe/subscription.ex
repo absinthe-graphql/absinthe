@@ -46,14 +46,6 @@ defmodule Absinthe.Subscription do
 
   @type subscription_field_spec :: {atom, term | (term -> term)}
 
-  def child_spec([pubsub]) when is_atom(pubsub) do
-    %{
-      id: {__MODULE__, pubsub},
-      start: {Subscription.Supervisor, :start_link, [pubsub]},
-      type: :supervisor
-    }
-  end
-
   @doc """
   Publish a mutation
 

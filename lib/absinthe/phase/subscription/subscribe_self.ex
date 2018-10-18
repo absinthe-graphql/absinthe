@@ -19,7 +19,7 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
     context = blueprint.execution.context
     pubsub = ensure_pubsub!(context)
 
-    hash = :erlang.phash2(blueprint)
+    hash = :crypto.hash(:sha256, :erlang.term_to_binary(blueprint)) |> Base.encode16()
     doc_id = "__absinthe__:doc:#{hash}"
 
     %{selections: [field]} = op
