@@ -1,8 +1,12 @@
-defmodule Absinthe.Schema.Rule.DefaultEnumValuePresent do
+defmodule Absinthe.Phase.Schema.Validation.DefaultEnumValuePresent do
   use Absinthe.Schema.Rule
 
   alias Absinthe.{Schema, Type}
   require IEx
+
+  def run(bp, _) do
+    {:ok, bp}
+  end
 
   @moduledoc false
 

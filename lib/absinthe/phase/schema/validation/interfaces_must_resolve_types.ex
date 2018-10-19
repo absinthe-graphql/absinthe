@@ -1,8 +1,15 @@
-defmodule Absinthe.Schema.Rule.InterfacesMustResolveTypes do
+defmodule Absinthe.Phase.Schema.Validation.InterfacesMustResolveTypes do
   use Absinthe.Schema.Rule
 
   alias Absinthe.Schema
   alias Absinthe.Type
+
+  use Absinthe.Phase
+  alias Absinthe.Blueprint
+
+  def run(bp, _) do
+    {:ok, bp}
+  end
 
   @moduledoc false
 

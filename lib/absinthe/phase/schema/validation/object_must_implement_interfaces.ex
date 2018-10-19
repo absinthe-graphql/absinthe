@@ -1,5 +1,12 @@
-defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfaces do
+defmodule Absinthe.Phase.Schema.Validation.ObjectMustImplementInterfaces do
   use Absinthe.Schema.Rule
+
+  use Absinthe.Phase
+  alias Absinthe.Blueprint
+
+  def run(bp, _) do
+    {:ok, bp}
+  end
 
   alias Absinthe.Schema
   alias Absinthe.Type

@@ -1,5 +1,12 @@
-defmodule Absinthe.Schema.Rule.TypeNamesAreUnique do
+defmodule Absinthe.Phase.Schema.Validation.TypeNamesAreUnique do
   use Absinthe.Schema.Rule
+
+  use Absinthe.Phase
+  alias Absinthe.Blueprint
+
+  def run(bp, _) do
+    {:ok, bp}
+  end
 
   @moduledoc false
 

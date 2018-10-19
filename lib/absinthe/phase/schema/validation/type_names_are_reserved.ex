@@ -1,7 +1,14 @@
-defmodule Absinthe.Schema.Rule.TypeNamesAreReserved do
+defmodule Absinthe.Phase.Schema.Validation.TypeNamesAreReserved do
   use Absinthe.Schema.Rule
 
+  use Absinthe.Phase
+  alias Absinthe.Blueprint
+
   alias Absinthe.Schema
+
+  def run(bp, _) do
+    {:ok, bp}
+  end
 
   @moduledoc false
 
