@@ -52,19 +52,24 @@ defmodule Absinthe.Lexer do
   # Comma :: ,
   comma = ascii_char([?,])
 
+  # Ampersand :: &
+  ampersand = ascii_char([?&])
+
   # Ignored ::
   #   - UnicodeBOM
   #   - WhiteSpace
   #   - LineTerminator
   #   - Comment
   #   - Comma
+  #   - Ampersand
   ignored =
     choice([
       unicode_bom,
       whitespace,
       line_terminator,
       comment,
-      comma
+      comma,
+      ampersand
     ])
 
   # ## Lexical Tokens
@@ -95,10 +100,10 @@ defmodule Absinthe.Lexer do
     ])
     |> traverse({:atom_token, []})
 
-  name_or_reserved_word =
+  boolean_value_or_name_or_reserved_word =
     ascii_char([?_, ?A..?Z, ?a..?z])
     |> repeat(ascii_char([?_, ?0..?9, ?A..?Z, ?a..?z]))
-    |> traverse({:name_or_reserved_word_token, []})
+    |> traverse({:boolean_value_or_name_or_reserved_word, []})
 
   # NegativeSign :: -
   negative_sign = ascii_char([?-])
@@ -211,14 +216,6 @@ defmodule Absinthe.Lexer do
     |> ignore(string(~S(""")))
     |> traverse({:block_string_value_token, []})
 
-  # BooleanValue : one of `true` `false`
-  boolean_value =
-    choice([
-      string("true"),
-      string("false")
-    ])
-    |> traverse({:boolean_value_token, []})
-
   defp not_end_of_quote(<<?", _::binary>>, context, _, _) do
     {:halt, context}
   end
@@ -260,8 +257,7 @@ defmodule Absinthe.Lexer do
         string_value,
         float_value,
         int_value,
-        boolean_value,
-        name_or_reserved_word
+        boolean_value_or_name_or_reserved_word
       ])
     )
   )
@@ -274,6 +270,11 @@ defmodule Absinthe.Lexer do
     binary = :unicode.characters_to_binary([value])
     {[binary], context}
   end
+
+  @boolean_words ~w(
+    true
+    false
+  ) |> Enum.map(&String.to_charlist/1)
 
   @reserved_words ~w(
     directive
@@ -295,24 +296,24 @@ defmodule Absinthe.Lexer do
     union
   ) |> Enum.map(&String.to_charlist/1)
 
-  defp name_or_reserved_word_token(rest, chars, context, loc, byte_offset) do
+  defp boolean_value_or_name_or_reserved_word(rest, chars, context, loc, byte_offset) do
     value = chars |> Enum.reverse()
-    do_name_or_reserved_word_token(rest, value, context, loc, byte_offset)
+    do_boolean_value_or_name_or_reserved_word(rest, value, context, loc, byte_offset)
   end
 
-  defp do_name_or_reserved_word_token(_rest, value, context, loc, byte_offset)
+  defp do_boolean_value_or_name_or_reserved_word(_rest, value, context, loc, byte_offset)
+       when value in @boolean_words do
+    {[{:boolean_value, line_and_column(loc, byte_offset, length(value)), value}], context}
+  end
+
+  defp do_boolean_value_or_name_or_reserved_word(_rest, value, context, loc, byte_offset)
        when value in @reserved_words do
     token_name = value |> List.to_atom()
     {[{token_name, line_and_column(loc, byte_offset, length(value))}], context}
   end
 
-  defp do_name_or_reserved_word_token(_rest, value, context, loc, byte_offset) do
+  defp do_boolean_value_or_name_or_reserved_word(_rest, value, context, loc, byte_offset) do
     {[{:name, line_and_column(loc, byte_offset, length(value)), value}], context}
-  end
-
-  defp boolean_value_token(_rest, [token_string], context, loc, byte_offset) do
-    value = token_string |> String.to_charlist()
-    {[{:boolean_value, line_and_column(loc, byte_offset, length(value)), value}], context}
   end
 
   defp labeled_token(_rest, chars, context, loc, byte_offset, token_name) do
