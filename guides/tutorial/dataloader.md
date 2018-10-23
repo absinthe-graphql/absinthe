@@ -30,7 +30,7 @@ This is going to get tedious and error prone very quickly what if we could suppo
   end
 ```
 
-These way associations are all handled in the context [business logic aware](https://github.com/absinthe-graphql/absinthe/issues/443#issuecomment-405929499) conditions, to support this is actually surprisingly simple
+This way associations are all handled in the context [business logic aware](https://github.com/absinthe-graphql/absinthe/issues/443#issuecomment-405929499) conditions, to support this is actually surprisingly simple
 
 
 Since we had already setup users to load associated posts we can change that to use dataloader to illustrate how much simpler this gets 
@@ -61,11 +61,10 @@ In `lib/blog/content.ex`:
   end 
 ```
 
-This set's up  a loader that can use pattern matching to load different rules for different queryables, also note this function is passed in the context as the second parameter and that can be used for further filtering
+This sets up  a loader that can use pattern matching to load different rules for different queryables, also note this function is passed in the context as the second parameter and that can be used for further filtering
 
 
-
-The lets add a configuration to our schema so that we can enable Absinthe to use Dataloder 
+Then lets add a configuration to our schema so that we can enable Absinthe to use Dataloader 
 
 
 In `lib/blog_web/schema.ex`:
