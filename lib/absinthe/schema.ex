@@ -10,10 +10,15 @@ defmodule Absinthe.Schema do
     def message(error) do
       details =
         error.phase_errors
-        |> Enum.map(&"- #{&1.message}")
+        |> Enum.map(fn %{message: message, locations: [location]} ->
+          "#{location.file}:#{location.line} - #{message}"
+        end)
         |> Enum.join("\n")
 
-      "Compilation failed:\n" <> details
+      """
+      Compilation failed:
+      #{details}
+      """
     end
   end
 

@@ -1167,18 +1167,19 @@ defmodule Absinthe.Schema.Notation do
     scoped_def(env, type, identifier, attrs, block)
   end
 
-  defp build_arg(identifier, attrs) do
+  defp build_arg(identifier, attrs, env) do
     attrs =
       attrs
       |> handle_deprecate
       |> Keyword.put(:identifier, identifier)
       |> Keyword.put(:name, to_string(identifier))
+      |> put_reference(env)
 
     struct!(Schema.InputValueDefinition, attrs)
   end
 
   def record_arg!(env, identifier, attrs) do
-    arg = build_arg(identifier, Keyword.put(attrs, :module, env.module))
+    arg = build_arg(identifier, Keyword.put(attrs, :module, env.module), env)
     put_attr(env.module, arg)
   end
 
