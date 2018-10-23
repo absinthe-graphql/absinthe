@@ -113,6 +113,31 @@ modify the user object to look as follows
 
 And that's it! You are now loading associations using [Dataloader](https://github.com/absinthe-graphql/dataloader)
 
+## More Examples 
+While the above examples is simple and straight forward we can use other strategies with loading associations consider 
+
+```elixir
+object :user do
+  field :posts, list_of(:post), resolve: fn user, args, %{context: %{loader: loader}} ->
+    loader
+    |> Dataloader.load(Blog, :posts, user)
+    |> on_load(fn loader ->
+      {:ok, Dataloader.get(loader, Blog, :posts, user)}
+    end)
+  end
+```
+
+In this example we are passing some args go the query in the context wherre our source lives i.e this function now recieves `args` as `params` meaning we can do now do fun stuff like apply rules to our queries like 
+
+```elixir
+def query(query, %{has_admin_rights: true}), do: query
+
+def query(query, _), do: from(a in query, select_merge: %{street_number: nil})
+```
+
+This example is from the awesome [EmCasa Application](https://github.com/emcasa/backend/blob/master/apps/re/lib/addresses/addresses.ex) :) you can see how the [author](https://github.com/rhnonose) is only loading street numbers if a user has admin rights and the same used in a [resolver](https://github.com/emcasa/backend/blob/9a0f86c11499be6e1a07d0b0acf1785521eedf7f/apps/re_web/lib/graphql/resolvers/addresses.ex#L11)
+
+
 Check out the [docs](https://hexdocs.pm/dataloader/) for more non trivial ways of using Dataloader 
 
 
