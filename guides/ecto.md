@@ -159,7 +159,7 @@ Latest install instructions found here: https://github.com/absinthe-graphql/data
 
 Let's start with a data source. Dataloader data sources are just structs that encode
 a way of retrieving data in batches. In a Phoenix application you'll generally have one
-source per context, so that each context can control how its data is loaded.
+source per absinthe context, so that each context can control how its data is loaded.
 
 Here is a hypothetical `Blog` context and a dataloader ecto source:
 
