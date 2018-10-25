@@ -48,5 +48,6 @@ we were merely putting them in the context as in other implementations.
 
 ## Integration with Client-side GraphQL Frameworks
 
-* Apollo: [apollo-absinthe-upload-client](https://www.npmjs.com/package/apollo-absinthe-upload-client) (Note: does not support Relay Native as of v1.0.1)
+* Apollo: [apollo-absinthe-upload-link](https://www.npmjs.com/package/apollo-absinthe-upload-link)
+* Apollo (v1): [apollo-absinthe-upload-client](https://www.npmjs.com/package/apollo-absinthe-upload-client) (Note: does not support Relay Native as of v1.0.1)
 * Relay: _(None known. Please submit a pull request updating this information.)_
