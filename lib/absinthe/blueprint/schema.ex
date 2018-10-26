@@ -3,6 +3,8 @@ defmodule Absinthe.Blueprint.Schema do
 
   alias __MODULE__
 
+  alias Absinthe.Blueprint
+
   @type type_t ::
           Schema.EnumTypeDefinition.t()
           | Schema.InputObjectTypeDefinition.t()
