@@ -2,50 +2,59 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlacedTest do
   use Absinthe.Case, async: true
 
   describe "rule" do
-    @tag :pending_schema
     test "is enforced with output types on arguments" do
       assert_schema_error("invalid_output_types", [
         %{
-          data: %{
+          extra: %{
             field: :blah,
-            parent: Absinthe.Type.Object,
-            struct: Absinthe.Type.InputObject,
+            parent: Absinthe.Blueprint.Schema.ObjectTypeDefinition,
+            struct: Absinthe.Blueprint.Schema.InputObjectTypeDefinition,
             type: :input
           },
-          location: %{
-            file:
-              "/Users/ben/src/absinthe/test/support/fixtures/dynamic/invalid_output_types.exs",
-            line: 10
-          },
-          rule: Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlaced
+          locations: [
+            %{
+              file:
+                "/Users/ben/src/absinthe/test/support/fixtures/dynamic/invalid_output_types.exs",
+              line: 11
+            }
+          ],
+          phase: Absinthe.Phase.Schema.Validation.InputOuputTypesCorrectlyPlaced
         },
         %{
-          data: %{argument: :invalid_arg, struct: Absinthe.Type.Object, type: :user},
-          location: %{
-            file:
-              "/Users/ben/src/absinthe/test/support/fixtures/dynamic/invalid_output_types.exs",
-            line: 4
+          extra: %{
+            argument: :invalid_arg,
+            struct: Absinthe.Blueprint.Schema.ObjectTypeDefinition,
+            type: :user
           },
-          rule: Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlaced
+          locations: [
+            %{
+              file:
+                "/Users/ben/src/absinthe/test/support/fixtures/dynamic/invalid_output_types.exs",
+              line: 16
+            }
+          ],
+          phase: Absinthe.Phase.Schema.Validation.InputOuputTypesCorrectlyPlaced
         }
       ])
     end
 
-    @tag :pending_schema
     test "is enforced with input types on arguments" do
       assert_schema_error("invalid_input_types", [
         %{
-          data: %{
+          extra: %{
             field: :blah,
-            parent: Absinthe.Type.InputObject,
-            struct: Absinthe.Type.Object,
+            parent: Absinthe.Blueprint.Schema.InputObjectTypeDefinition,
+            struct: Absinthe.Blueprint.Schema.ObjectTypeDefinition,
             type: :user
           },
-          location: %{
-            file: "/Users/ben/src/absinthe/test/support/fixtures/dynamic/invalid_input_types.exs",
-            line: 7
-          },
-          rule: Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlaced
+          locations: [
+            %{
+              file:
+                "/Users/ben/src/absinthe/test/support/fixtures/dynamic/invalid_input_types.exs",
+              line: 8
+            }
+          ],
+          phase: Absinthe.Phase.Schema.Validation.InputOuputTypesCorrectlyPlaced
         }
       ])
     end

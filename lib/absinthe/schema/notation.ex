@@ -1651,8 +1651,8 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Ensure the provided operation can be recorded in the current environment,
   # in the current scope context
-  def recordable!(env, _usage) do
-    env
+  def recordable!(env, usage) do
+    recordable!(env, usage, Keyword.get(@placement, usage, []))
   end
 
   def recordable!(env, _usage, _kw_rules, _opts \\ []) do

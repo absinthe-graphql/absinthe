@@ -7,7 +7,6 @@ defmodule Absinthe.Phase.Schema.Validation.TypeReferencesExist do
 
   def run(blueprint, _opts) do
     blueprint = Blueprint.prewalk(blueprint, &validate_schema/1)
-    # |> IO.inspect(limit: :infinity)
 
     {:ok, blueprint}
   end
@@ -75,13 +74,9 @@ defmodule Absinthe.Phase.Schema.Validation.TypeReferencesExist do
     value
   end
 
-  defp unwrap(%Absinthe.Blueprint.TypeReference.Name{name: name}) do
-    unwrap(name)
-  end
-
   defp unwrap(type) do
     type
-    |> Absinthe.Type.unwrap()
+    |> Absinthe.Blueprint.TypeReference.unwrap()
     |> unwrap
   end
 
@@ -97,6 +92,5 @@ defmodule Absinthe.Phase.Schema.Validation.TypeReferencesExist do
       locations: [thing.__reference__.location],
       phase: __MODULE__
     }
-    |> IO.inspect()
   end
 end

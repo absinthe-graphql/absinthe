@@ -15,7 +15,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       admin: User!
     }
 
-    type PostFilter {
+    input PostFilter {
       name: String
     }
 

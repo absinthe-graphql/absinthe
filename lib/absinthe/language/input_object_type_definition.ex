@@ -21,6 +21,7 @@ defmodule Absinthe.Language.InputObjectTypeDefinition do
   defimpl Blueprint.Draft do
     def convert(node, doc) do
       %Blueprint.Schema.InputObjectTypeDefinition{
+        identifier: node.name |> Macro.underscore() |> String.to_atom(),
         name: node.name,
         description: node.description,
         fields:
