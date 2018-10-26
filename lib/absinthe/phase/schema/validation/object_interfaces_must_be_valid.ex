@@ -1,55 +1,66 @@
 defmodule Absinthe.Phase.Schema.Validation.ObjectInterfacesMustBeValid do
-  use Absinthe.Schema.Rule
-
   use Absinthe.Phase
   alias Absinthe.Blueprint
 
   def run(bp, _) do
+    bp = Blueprint.prewalk(bp, &handle_schemas/1)
     {:ok, bp}
   end
 
-  alias Absinthe.Schema
-  alias Absinthe.Type
+  defp handle_schemas(%Blueprint.Schema.SchemaDefinition{} = schema) do
+    ifaces =
+      schema.type_definitions
+      |> Enum.filter(&match?(%Blueprint.Schema.InterfaceTypeDefinition{}, &1))
+      |> Enum.map(& &1.identifier)
+      |> MapSet.new()
 
-  @moduledoc false
+    schema = Blueprint.prewalk(schema, &validate_objects(&1, ifaces))
+    {:halt, schema}
+  end
+
+  defp handle_schemas(obj) do
+    obj
+  end
+
+  defp validate_objects(%Blueprint.Schema.ObjectTypeDefinition{} = object, ifaces) do
+    Enum.reduce(object.interfaces, object, fn iface, object ->
+      if iface in ifaces do
+        object
+      else
+        detail = %{
+          object: object.identifer,
+          interface: iface
+        }
+
+        object |> put_error(error(object, detail))
+      end
+    end)
+  end
+
+  defp validate_objects(type, _) do
+    type
+  end
+
+  defp error(object, data) do
+    %Absinthe.Phase.Error{
+      message: explanation(data),
+      locations: [object.__reference__.location],
+      phase: __MODULE__,
+      extra: data
+    }
+  end
+
   @description """
   Only interfaces may be present in an Object's interface list.
 
   Reference: https://github.com/facebook/graphql/blob/master/spec/Section%203%20--%20Type%20System.md#interfaces
   """
 
-  def explanation(%{data: %{object: obj, interface: interface}}) do
+  def explanation(%{object: obj, interface: interface}) do
     """
     Type "#{obj}" cannot implement non-interface type "#{interface}"
 
     #{@description}
     """
-  end
-
-  def check(schema) do
-    Schema.types(schema)
-    |> Enum.flat_map(&check_type(schema, &1))
-  end
-
-  defp check_type(schema, %{interfaces: ifaces} = type) do
-    ifaces
-    |> Enum.map(&Schema.lookup_type(schema, &1))
-    |> Enum.reduce([], fn
-      nil, _ ->
-        raise "No type found in #{inspect(ifaces)}"
-
-      %Type.Interface{}, acc ->
-        acc
-
-      iface_type, acc ->
-        [
-          report(type.__reference__.location, %{object: type.name, interface: iface_type.name})
-          | acc
-        ]
-    end)
-  end
-
-  defp check_type(_, _) do
-    []
   end
 end

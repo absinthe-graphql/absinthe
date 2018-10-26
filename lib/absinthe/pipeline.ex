@@ -127,6 +127,7 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.Validation.TypeNamesAreReserved,
       Phase.Schema.Validation.TypeNamesAreUnique,
       Phase.Schema.Validation.TypeNamesAreValid,
+      Phase.Schema.Validation.ObjectInterfacesMustBeValid,
       {Phase.Schema.Decorate, [schema: schema]},
       Phase.Validation.KnownTypeNames,
       Phase.Schema.RegisterTriggers,
