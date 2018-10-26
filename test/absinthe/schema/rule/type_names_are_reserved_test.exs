@@ -4,7 +4,6 @@ defmodule Absinthe.Schema.Rule.TypeNamesAreReservedTest do
   alias Absinthe.Schema.Rule
 
   describe "rule" do
-    @tag :pending_schema
     test "is enforced" do
       assert_schema_error("prefix_schema", [
         %{rule: Rule.TypeNamesAreReserved, data: %{artifact: "type name", value: "__MyThing"}},
