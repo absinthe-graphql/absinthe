@@ -77,7 +77,7 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
         raise """
         Invalid return from config function!
 
-        Config function must returne `{:ok, config}` or `{:error, msg}`. You returned:
+        A config function must return `{:ok, config}` or `{:error, msg}`. You returned:
 
         #{inspect(val)}
         """
