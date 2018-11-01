@@ -119,6 +119,9 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.Validation.TypeNamesAreUnique,
       Phase.Schema.Validation.TypeReferencesExist,
       Phase.Schema.Validation.TypeNamesAreReserved,
+      # This phase is run once now because a lot of other
+      # validations aren't possible if type references are invalid.
+      Phase.Schema.Validation.Result,
       Phase.Schema.Validation.NoCircularFieldImports,
       Phase.Schema.FieldImports,
       Phase.Schema.Validation.DefaultEnumValuePresent,
@@ -128,6 +131,7 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.Validation.ObjectMustImplementInterfaces,
       Phase.Schema.Validation.QueryTypeMustBeObject,
       Phase.Schema.RegisterTriggers,
+      # This phase is run again now after additional validations
       Phase.Schema.Validation.Result,
       Phase.Schema.Build,
       Phase.Schema.InlineFunctions,

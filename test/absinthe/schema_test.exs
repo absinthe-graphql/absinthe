@@ -34,8 +34,8 @@ defmodule Absinthe.SchemaTest do
     test "raises an exception" do
       assert_schema_error("schema_with_duplicate_identifiers", [
         %{
-          rule: Absinthe.Schema.Rule.TypeNamesAreUnique,
-          data: %{artifact: "Absinthe type identifier", value: :person}
+          phase: Absinthe.Phase.Schema.Validation.TypeNamesAreUnique,
+          extra: %{artifact: "Absinthe type identifier", value: :person}
         }
       ])
     end

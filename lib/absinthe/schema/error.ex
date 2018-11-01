@@ -7,10 +7,24 @@ defmodule Absinthe.Schema.Error do
   def message(error) do
     details =
       error.phase_errors
-      |> Enum.map(fn %{message: message, locations: [location]} ->
-        "#{location.file}:#{location.line} - #{message}"
+      |> Enum.map(fn %{message: message, locations: locations} ->
+        locations =
+          locations
+          |> Enum.map(&"#{&1.file}:#{&1.line}")
+          |> Enum.sort()
+          |> Enum.join("\n")
+
+        message = String.trim(message)
+
+        """
+        ---------------------------------------
+        ## Locations
+        #{locations}
+
+        #{message}
+        """
       end)
-      |> Enum.join("\n")
+      |> Enum.join()
 
     """
     Compilation failed:
