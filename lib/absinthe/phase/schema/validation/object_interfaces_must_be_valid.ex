@@ -28,7 +28,7 @@ defmodule Absinthe.Phase.Schema.Validation.ObjectInterfacesMustBeValid do
         object
       else
         detail = %{
-          object: object.identifer,
+          object: object.identifier,
           interface: iface
         }
 

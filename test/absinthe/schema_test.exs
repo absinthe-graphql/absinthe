@@ -41,6 +41,7 @@ defmodule Absinthe.SchemaTest do
     end
   end
 
+  @tag :pending_schema
   describe "using the same name" do
     def load_duplicate_name_schema do
       load_schema("schema_with_duplicate_names")

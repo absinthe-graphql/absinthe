@@ -130,18 +130,23 @@ defmodule Absinthe.Type.InterfaceTest do
   end
 
   describe "when it doesn't define those fields" do
+    alias Absinthe.Phase.Schema.Validation
+
     test "reports schema errors" do
       assert_schema_error("bad_interface_schema", [
         %{
-          rule: Rule.ObjectMustImplementInterfaces,
-          data: %{object: "Foo", interface: "Aged", fields: [:age]}
+          phase: Validation.ObjectInterfacesMustBeValid,
+          extra: %{object: :foo, interface: :aged, fields: [:age]}
         },
         %{
-          rule: Rule.ObjectMustImplementInterfaces,
-          data: %{object: "Foo", interface: "Named", fields: [:name]}
+          phase: Validation.ObjectInterfacesMustBeValid,
+          extra: %{object: :foo, interface: :named, fields: [:name]}
         },
-        %{rule: Rule.ObjectInterfacesMustBeValid, data: %{object: "Quux", interface: "Foo"}},
-        %{rule: Rule.InterfacesMustResolveTypes, data: "Named"}
+        %{
+          phase: Validation.ObjectInterfacesMustBeValid,
+          extra: %{object: :quux, interface: :foo}
+        },
+        %{phase: Validation.InterfacesMustResolveTypes, extra: :named}
       ])
     end
   end
