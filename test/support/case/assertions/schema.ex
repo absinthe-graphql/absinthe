@@ -23,7 +23,8 @@ defmodule Absinthe.Case.Assertions.Schema do
     patterns
     |> Enum.filter(fn pattern ->
       assert Enum.find(err.phase_errors, fn error ->
-               Map.take(error, [:phase, :extra, :locations]) == pattern
+               keys = Map.keys(pattern)
+               Map.take(error, keys) == pattern
              end),
              "Could not find error detail pattern #{inspect(pattern)}\n\nin\n\n#{
                inspect(err.phase_errors)
