@@ -1,12 +1,19 @@
 defmodule Absinthe.Schema.Rule.QueryTypeMustBeObjectTest do
   use Absinthe.Case, async: true
 
-  alias Absinthe.Schema.Rule
-
   describe "rule" do
     test "is enforced" do
       assert_schema_error("empty_schema", [
-        %{rule: Rule.QueryTypeMustBeObject, data: %{}}
+        %{
+          phase: Absinthe.Phase.Schema.Validation.QueryTypeMustBeObject,
+          extra: %{},
+          locations: [
+            %{
+              file: "/Users/ben/src/absinthe/test/support/fixtures/dynamic/empty_schema.exs",
+              line: 0
+            }
+          ]
+        }
       ])
     end
   end

@@ -1513,7 +1513,10 @@ defmodule Absinthe.Schema.Notation do
 
     schema_def = %Schema.SchemaDefinition{
       imports: imports,
-      module: env.module
+      module: env.module,
+      __reference__: %{
+        location: %{file: env.file, line: 0}
+      }
     }
 
     blueprint =
