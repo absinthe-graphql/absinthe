@@ -2,7 +2,6 @@ defmodule Absinthe.Schema.Rule.DefaultEnumValuePresentTest do
   use Absinthe.Case, async: true
 
   describe "rule" do
-    @tag :pending_schema
     test "is enforced when the defaultValue is not in the enum" do
       schema = """
       defmodule BadColorSchema do

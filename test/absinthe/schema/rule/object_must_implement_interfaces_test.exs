@@ -40,16 +40,19 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfacesTest do
   test "is enforced" do
     assert_schema_error("invalid_interface_types", [
       %{
-        data: %{
+        extra: %{
           fields: [:name],
-          object: "User",
-          interface: "Named",
+          object: :user,
+          interface: :named
         },
-        location: %{
-          file: "/Users/ben/src/absinthe/test/support/fixtures/dynamic/invalid_interface_types.exs",
-          line: 10
-        },
-        rule: Absinthe.Schema.Rule.ObjectMustImplementInterfaces
+        locations: [
+          %{
+            file:
+              "/Users/ben/src/absinthe/test/support/fixtures/dynamic/invalid_interface_types.exs",
+            line: 4
+          }
+        ],
+        phase: Absinthe.Phase.Schema.Validation.ObjectMustImplementInterfaces
       }
     ])
   end

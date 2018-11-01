@@ -3,6 +3,8 @@ defmodule Absinthe.Blueprint.Schema do
 
   alias __MODULE__
 
+  alias Absinthe.Blueprint
+
   @type type_t ::
           Schema.EnumTypeDefinition.t()
           | Schema.InputObjectTypeDefinition.t()
@@ -129,6 +131,11 @@ defmodule Absinthe.Blueprint.Schema do
   defp build_types([{:sdl, sdl_definitions} | rest], [schema | stack], buff) do
     # TODO: Handle directives, etc
     build_types(rest, [concat(schema, :type_definitions, sdl_definitions) | stack], buff)
+  end
+
+  defp build_types([{:locations, locations} | rest], [directive | stack], buff) do
+    directive = Map.update!(directive, :locations, &(locations ++ &1))
+    build_types(rest, [directive | stack], buff)
   end
 
   defp build_types([{attr, value} | rest], [entity | stack], buff) do

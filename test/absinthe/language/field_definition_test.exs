@@ -46,6 +46,14 @@ defmodule Absinthe.Language.FieldDefinitionTest do
                },
                arguments: [
                  %Blueprint.Schema.InputValueDefinition{
+                   __reference__: %{
+                     location: %{
+                       __struct__: Absinthe.Blueprint.SourceLocation,
+                       column: 10,
+                       file: "TODO",
+                       line: 4
+                     }
+                   },
                    name: "limit",
                    identifier: :limit,
                    type: %Blueprint.TypeReference.Name{name: "Int"},

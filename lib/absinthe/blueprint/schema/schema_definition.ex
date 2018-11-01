@@ -16,7 +16,8 @@ defmodule Absinthe.Blueprint.Schema.SchemaDefinition do
             flags: %{},
             imports: [],
             errors: [],
-            __private__: []
+            __private__: [],
+            __reference__: nil
 
   @type t :: %__MODULE__{
           description: nil | String.t(),

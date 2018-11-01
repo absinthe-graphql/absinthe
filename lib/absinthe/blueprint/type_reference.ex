@@ -24,6 +24,8 @@ defmodule Absinthe.Blueprint.TypeReference do
     value
   end
 
+  def unwrap(value) when is_atom(value), do: value
+
   def unwrap(%struct{of_type: inner}) when struct in @wrappers do
     unwrap(inner)
   end

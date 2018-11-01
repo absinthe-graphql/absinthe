@@ -11,7 +11,7 @@ defmodule Absinthe.Phase.Schema.Validation.Result do
   @spec run(Blueprint.t(), Keyword.t()) :: Phase.result_t()
   def run(input, _opts) do
     {input, errors} = Blueprint.prewalk(input, [], &handle_node/2)
-    errors = :lists.reverse(errors)
+    errors = errors |> :lists.reverse() |> Enum.uniq()
 
     case errors do
       [] ->

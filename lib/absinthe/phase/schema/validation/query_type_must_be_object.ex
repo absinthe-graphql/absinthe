@@ -1,8 +1,34 @@
-defmodule Absinthe.Schema.Rule.QueryTypeMustBeObject do
-  use Absinthe.Schema.Rule
+defmodule Absinthe.Phase.Schema.Validation.QueryTypeMustBeObject do
+  use Absinthe.Phase
+  alias Absinthe.Blueprint
 
-  alias Absinthe.Schema
-  require IEx
+  def run(bp, _) do
+    bp = Blueprint.prewalk(bp, &validate_schemas/1)
+    {:ok, bp}
+  end
+
+  defp validate_schemas(%Blueprint.Schema.SchemaDefinition{} = schema) do
+    case Enum.find(
+           schema.type_definitions,
+           &match?(%Blueprint.Schema.ObjectTypeDefinition{identifier: :query}, &1)
+         ) do
+      nil ->
+        schema |> put_error(error(schema))
+
+      _ ->
+        schema
+    end
+  end
+
+  defp validate_schemas(node), do: node
+
+  defp error(schema) do
+    %Absinthe.Phase.Error{
+      message: explanation(nil),
+      locations: [schema.__reference__.location],
+      phase: __MODULE__
+    }
+  end
 
   @moduledoc false
 
@@ -35,16 +61,5 @@ defmodule Absinthe.Schema.Rule.QueryTypeMustBeObject do
 
     #{@description}
     """
-  end
-
-  def check(schema) do
-    case Schema.lookup_type(schema, :query) do
-      %Absinthe.Type.Object{} ->
-        []
-
-      # Real error message
-      _ ->
-        [report(%{file: schema, line: 0}, %{})]
-    end
   end
 end

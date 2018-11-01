@@ -1167,18 +1167,19 @@ defmodule Absinthe.Schema.Notation do
     scoped_def(env, type, identifier, attrs, block)
   end
 
-  defp build_arg(identifier, attrs) do
+  defp build_arg(identifier, attrs, env) do
     attrs =
       attrs
       |> handle_deprecate
       |> Keyword.put(:identifier, identifier)
       |> Keyword.put(:name, to_string(identifier))
+      |> put_reference(env)
 
     struct!(Schema.InputValueDefinition, attrs)
   end
 
   def record_arg!(env, identifier, attrs) do
-    arg = build_arg(identifier, Keyword.put(attrs, :module, env.module))
+    arg = build_arg(identifier, Keyword.put(attrs, :module, env.module), env)
     put_attr(env.module, arg)
   end
 
@@ -1192,7 +1193,7 @@ defmodule Absinthe.Schema.Notation do
   # Record directive AST nodes in the current scope
   def record_locations!(env, locations) do
     locations = expand_ast(locations, env)
-    put_attr(env.module, {:locations, locations})
+    put_attr(env.module, {:locations, List.wrap(locations)})
   end
 
   @doc false
@@ -1512,7 +1513,10 @@ defmodule Absinthe.Schema.Notation do
 
     schema_def = %Schema.SchemaDefinition{
       imports: imports,
-      module: env.module
+      module: env.module,
+      __reference__: %{
+        location: %{file: env.file, line: 0}
+      }
     }
 
     blueprint =
@@ -1650,8 +1654,8 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Ensure the provided operation can be recorded in the current environment,
   # in the current scope context
-  def recordable!(env, _usage) do
-    env
+  def recordable!(env, usage) do
+    recordable!(env, usage, Keyword.get(@placement, usage, []))
   end
 
   def recordable!(env, _usage, _kw_rules, _opts \\ []) do

@@ -2,30 +2,33 @@ defmodule Absinthe.Schema.Error do
   @moduledoc """
   Exception raised when a schema is invalid
   """
-  defexception message: "Invalid schema", details: []
+  defexception phase_errors: []
 
-  @type detail_t :: %{
-          rule: Absinthe.Schema.Rule.t(),
-          location: %{file: binary, line: pos_integer},
-          data: any
-        }
+  def message(error) do
+    details =
+      error.phase_errors
+      |> Enum.map(fn %{message: message, locations: locations} ->
+        locations =
+          locations
+          |> Enum.map(&"#{&1.file}:#{&1.line}")
+          |> Enum.sort()
+          |> Enum.join("\n")
 
-  def exception(details) do
-    detail = Enum.map(details, &format_detail/1) |> Enum.join("\n")
-    %__MODULE__{message: "Invalid schema:\n" <> detail <> "\n", details: details}
-  end
+        message = String.trim(message)
 
-  def format_detail(detail) do
-    explanation = indent(detail.rule.explanation(detail))
-    "#{detail.location.file}:#{detail.location.line}: #{explanation}\n"
-  end
+        """
+        ---------------------------------------
+        ## Locations
+        #{locations}
 
-  defp indent(text) do
-    text
-    |> String.trim()
-    |> String.split("\n")
-    |> Enum.map(&"  #{&1}")
-    |> Enum.join("\n")
-    |> String.trim_leading()
+        #{message}
+        """
+      end)
+      |> Enum.join()
+
+    """
+    Compilation failed:
+    #{details}
+    """
   end
 end

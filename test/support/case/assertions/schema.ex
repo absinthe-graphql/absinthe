@@ -11,7 +11,7 @@ defmodule Absinthe.Case.Assertions.Schema do
   ## Examples
 
   ```
-  iex> assert_schema_error("schema-name", [%{rule: Absinthe.Schema.Rule.TheRuleHere, data: :bar}])
+  iex> assert_schema_error("schema-name", [%{phase: Absinthe.Schema.Rule.TheRuleHere, extra: :bar}])
   ```
   """
   def assert_schema_error(schema_name, patterns) do
@@ -22,13 +22,16 @@ defmodule Absinthe.Case.Assertions.Schema do
 
     patterns
     |> Enum.filter(fn pattern ->
-      assert Enum.find(err.details, fn detail ->
-               pattern.rule == detail.rule && pattern.data == detail.data
+      assert Enum.find(err.phase_errors, fn error ->
+               keys = Map.keys(pattern)
+               Map.take(error, keys) == pattern
              end),
-             "Could not find error detail pattern #{inspect(pattern)} in #{inspect(err.details)}"
+             "Could not find error detail pattern #{inspect(pattern)}\n\nin\n\n#{
+               inspect(err.phase_errors)
+             }"
     end)
 
-    assert length(patterns) == length(err.details)
+    assert length(patterns) == length(err.phase_errors)
   end
 
   def assert_notation_error(name) do

@@ -113,12 +113,25 @@ defmodule Absinthe.Pipeline do
   @spec for_schema(nil | Absinthe.Schema.t(), Keyword.t()) :: t
   def for_schema(schema, _options \\ []) do
     [
-      Phase.Schema.TypeImports,
-      Phase.Schema.ValidateTypeReferences,
-      Phase.Schema.FieldImports,
+      Phase.Schema.NormalizeReferences,
       {Phase.Schema.Decorate, [schema: schema]},
-      Phase.Validation.KnownTypeNames,
+      Phase.Schema.TypeImports,
+      Phase.Schema.Validation.TypeNamesAreUnique,
+      Phase.Schema.Validation.TypeReferencesExist,
+      Phase.Schema.Validation.TypeNamesAreReserved,
+      # This phase is run once now because a lot of other
+      # validations aren't possible if type references are invalid.
+      Phase.Schema.Validation.Result,
+      Phase.Schema.Validation.NoCircularFieldImports,
+      Phase.Schema.FieldImports,
+      Phase.Schema.Validation.DefaultEnumValuePresent,
+      Phase.Schema.Validation.InputOuputTypesCorrectlyPlaced,
+      Phase.Schema.Validation.InterfacesMustResolveTypes,
+      Phase.Schema.Validation.ObjectInterfacesMustBeValid,
+      Phase.Schema.Validation.ObjectMustImplementInterfaces,
+      Phase.Schema.Validation.QueryTypeMustBeObject,
       Phase.Schema.RegisterTriggers,
+      # This phase is run again now after additional validations
       Phase.Schema.Validation.Result,
       Phase.Schema.Build,
       Phase.Schema.InlineFunctions,

@@ -77,7 +77,7 @@ defmodule Absinthe.Logger do
   end
 
   @doc false
-  @spec document(Absinthe.Pipeline.data_t()) :: iolist
+  @spec document(Absinthe.Pipeline.data_t()) :: binary
   def document(value) when value in ["", nil] do
     "[EMPTY]"
   end

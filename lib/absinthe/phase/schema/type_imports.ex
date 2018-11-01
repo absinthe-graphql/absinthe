@@ -1,12 +1,13 @@
 defmodule Absinthe.Phase.Schema.TypeImports do
   @moduledoc false
 
-  def run(blueprint, _opts) do
-    blueprint =
-      Map.update!(blueprint, :schema_definitions, fn schemas ->
-        for schema <- schemas, do: handle_imports(schema)
-      end)
+  use Absinthe.Phase
+  alias Absinthe.Blueprint
 
+  alias Absinthe.Blueprint.Schema
+
+  def run(blueprint, _opts) do
+    blueprint = Blueprint.prewalk(blueprint, &handle_imports/1)
     {:ok, blueprint}
   end
 
@@ -15,13 +16,15 @@ defmodule Absinthe.Phase.Schema.TypeImports do
     {Absinthe.Type.BuiltIns.Directives, []},
     {Absinthe.Type.BuiltIns.Introspection, []}
   ]
-  def handle_imports(schema) do
+  def handle_imports(%Schema.SchemaDefinition{} = schema) do
     types = do_imports(@default_imports ++ schema.imports, schema.type_definitions)
     # special casing the import of the built in directives
     [builtins] = Absinthe.Type.BuiltIns.Directives.__absinthe_blueprint__().schema_definitions
     directives = schema.directive_definitions ++ builtins.directive_definitions
-    %{schema | type_definitions: types, directive_definitions: directives}
+    {:halt, %{schema | type_definitions: types, directive_definitions: directives}}
   end
+
+  def handle_imports(node), do: node
 
   defp do_imports([], types) do
     types

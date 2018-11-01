@@ -1,5 +1,6 @@
 defmodule Absinthe.SchemaTest do
-  use Absinthe.Case, async: true
+  # can't async due to capture io
+  use Absinthe.Case
 
   alias Absinthe.Schema
   alias Absinthe.Type
@@ -31,23 +32,22 @@ defmodule Absinthe.SchemaTest do
   end
 
   describe "using the same identifier" do
-    @tag :pending_schema
     test "raises an exception" do
       assert_schema_error("schema_with_duplicate_identifiers", [
         %{
-          rule: Absinthe.Schema.Rule.TypeNamesAreUnique,
-          data: %{artifact: "Absinthe type identifier", value: :person}
+          phase: Absinthe.Phase.Schema.Validation.TypeNamesAreUnique,
+          extra: %{artifact: "Absinthe type identifier", value: :person}
         }
       ])
     end
   end
 
+  @tag :pending_schema
   describe "using the same name" do
     def load_duplicate_name_schema do
       load_schema("schema_with_duplicate_names")
     end
 
-    @tag :pending_schema
     test "raises an exception" do
       assert_schema_error("schema_with_duplicate_names", [
         %{

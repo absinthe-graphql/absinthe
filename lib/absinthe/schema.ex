@@ -4,19 +4,6 @@ defmodule Absinthe.Schema do
 
   @type t :: module
 
-  defmodule CompilationError do
-    defexception phase_errors: []
-
-    def message(error) do
-      details =
-        error.phase_errors
-        |> Enum.map(&"- #{&1.message}")
-        |> Enum.join("\n")
-
-      "Compilation failed:\n" <> details
-    end
-  end
-
   defmacro __using__(_opt) do
     Module.register_attribute(__CALLER__.module, :pipeline_modifier,
       accumulate: true,
@@ -230,7 +217,7 @@ defmodule Absinthe.Schema do
         []
 
       {:error, errors, _} ->
-        raise CompilationError, phase_errors: List.wrap(errors)
+        raise Absinthe.Schema.Error, phase_errors: List.wrap(errors)
     end
   end
 
