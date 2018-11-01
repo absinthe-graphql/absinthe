@@ -1,8 +1,6 @@
 defmodule Absinthe.Type.InterfaceTest do
   use Absinthe.Case, async: true
 
-  alias Absinthe.Schema.Rule
-
   defmodule Schema do
     use Absinthe.Schema
 
@@ -135,11 +133,11 @@ defmodule Absinthe.Type.InterfaceTest do
     test "reports schema errors" do
       assert_schema_error("bad_interface_schema", [
         %{
-          phase: Validation.ObjectInterfacesMustBeValid,
+          phase: Validation.ObjectMustImplementInterfaces,
           extra: %{object: :foo, interface: :aged, fields: [:age]}
         },
         %{
-          phase: Validation.ObjectInterfacesMustBeValid,
+          phase: Validation.ObjectMustImplementInterfaces,
           extra: %{object: :foo, interface: :named, fields: [:name]}
         },
         %{

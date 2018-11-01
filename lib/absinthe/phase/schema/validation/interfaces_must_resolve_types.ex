@@ -29,7 +29,9 @@ defmodule Absinthe.Phase.Schema.Validation.InterfacesMustResolveTypes do
   end
 
   defp validate_interface(%Blueprint.Schema.InterfaceTypeDefinition{} = iface, implementors) do
-    if(iface.resolve_type || all_objects_is_type_of?(iface, implementors)) do
+    resolve_type = Absinthe.Type.function(iface, :resolve_type)
+
+    if(resolve_type || all_objects_is_type_of?(iface, implementors)) do
       iface
     else
       iface |> put_error(error(iface))
@@ -42,8 +44,8 @@ defmodule Absinthe.Phase.Schema.Validation.InterfacesMustResolveTypes do
 
   defp all_objects_is_type_of?(iface, implementors) do
     implementors
-    |> Map.fetch!(iface.identifier)
-    |> Enum.all?(& &1.is_type_of)
+    |> Map.get(iface.identifier, [])
+    |> Enum.all?(&Absinthe.Type.function(&1, :is_type_of))
   end
 
   defp error(interface) do
