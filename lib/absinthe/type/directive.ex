@@ -17,7 +17,6 @@ defmodule Absinthe.Type.Directive do
   * `:description` - A nice description for introspection.
   * `:args` - A map of `Absinthe.Type.Argument` structs. See `Absinthe.Schema.Notation.arg/1`.
   * `:locations` - A list of places the directives can be used.
-  * `:instruction` - A function that, given an argument, returns an instruction for the correct action to take
 
   The `:__reference__` key is for internal use.
   """
@@ -27,7 +26,7 @@ defmodule Absinthe.Type.Directive do
           identifier: atom,
           args: map,
           locations: [location],
-          instruction: (map -> atom),
+          expand: (map, Absinthe.Blueprint.node_t() -> atom),
           definition: Module.t(),
           __private__: Keyword.t(),
           __reference__: Type.Reference.t()
@@ -42,7 +41,6 @@ defmodule Absinthe.Type.Directive do
             args: nil,
             locations: [],
             expand: nil,
-            instruction: nil,
             definition: nil,
             __private__: [],
             __reference__: nil
@@ -65,15 +63,4 @@ defmodule Absinthe.Type.Directive do
   defp do_on?(:inline_fragment, %Language.InlineFragment{}), do: true
   # TODO: Schema definitions to support Schema input
   defp do_on?(_, _), do: false
-
-  # Check a directive and return an instruction
-  @doc false
-  @spec check(t, Language.t(), map) :: atom
-  def check(definition, place, args) do
-    if on?(definition, place) && definition.instruction do
-      definition.instruction.(args)
-    else
-      :ok
-    end
-  end
 end

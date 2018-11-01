@@ -28,12 +28,12 @@ defmodule Absinthe.Fixtures.PrefixSchema do
     on Language.Field
     on Language.InlineFragment
 
-    instruction fn
-      %{if: true} ->
-        :skip
+    expand fn
+      %{if: true}, node ->
+        Blueprint.put_flag(node, :skip, __MODULE__)
 
-      _ ->
-        :include
+      _, node ->
+        Blueprint.put_flag(node, :include, __MODULE__)
     end
   end
 end

@@ -133,6 +133,11 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(rest, [concat(schema, :type_definitions, sdl_definitions) | stack], buff)
   end
 
+  defp build_types([{:locations, locations} | rest], [directive | stack], buff) do
+    directive = Map.update!(directive, :locations, &(locations ++ &1))
+    build_types(rest, [directive | stack], buff)
+  end
+
   defp build_types([{attr, value} | rest], [entity | stack], buff) do
     entity = %{entity | attr => value}
     build_types(rest, [entity | stack], buff)

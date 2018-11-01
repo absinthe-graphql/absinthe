@@ -19,7 +19,6 @@ locals_without_parens = [
   import_fields: 1,
   import_types: 1,
   input_object: 3,
-  instruction: 1,
   interface: 1,
   interface: 3,
   interfaces: 1,
@@ -42,13 +41,13 @@ locals_without_parens = [
   types: 1,
   union: 3,
   value: 1,
-  value: 2,
+  value: 2
 ]
 
 [
   inputs: ["mix.exs", "{config,lib,test}/**/*.{ex,exs}"],
   locals_without_parens: locals_without_parens,
   export: [
-    locals_without_parens: locals_without_parens,
+    locals_without_parens: locals_without_parens
   ]
 ]

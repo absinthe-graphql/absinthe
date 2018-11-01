@@ -1193,7 +1193,7 @@ defmodule Absinthe.Schema.Notation do
   # Record directive AST nodes in the current scope
   def record_locations!(env, locations) do
     locations = expand_ast(locations, env)
-    put_attr(env.module, {:locations, locations})
+    put_attr(env.module, {:locations, List.wrap(locations)})
   end
 
   @doc false

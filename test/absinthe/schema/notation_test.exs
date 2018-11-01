@@ -133,11 +133,11 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
-  describe "instruction" do
+  describe "expand" do
     test "can be under directive as an attribute" do
       assert_no_notation_error("InstructionValid", """
       directive :bar do
-        instruction fn -> :ok end
+        expand fn _, _ -> :ok end
       end
       """)
     end
@@ -146,7 +146,7 @@ defmodule Absinthe.Schema.NotationTest do
       assert_notation_error(
         "InstructionToplevelInvalid",
         """
-        instruction fn -> :ok end
+        expand fn _, _ -> :ok end
         """,
         "Invalid schema notation: `instruction` must only be used within `directive`"
       )
@@ -157,7 +157,7 @@ defmodule Absinthe.Schema.NotationTest do
         "InstructionObjectInvalid",
         """
         object :foo do
-          instruction fn -> :ok end
+          expand fn _, _ -> :ok end
         end
         """,
         "Invalid schema notation: `instruction` must only be used within `directive`"
