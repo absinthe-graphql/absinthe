@@ -5,7 +5,6 @@ defmodule Absinthe.Phase.Schema.NormalizeReferences do
 
   use Absinthe.Phase
   alias Absinthe.Blueprint
-  alias Absinthe.Blueprint.Schema
 
   def run(blueprint, _opts) do
     blueprint = Blueprint.prewalk(blueprint, &normalize_references/1)

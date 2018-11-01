@@ -1,15 +1,67 @@
 defmodule Absinthe.Phase.Schema.Validation.ObjectMustImplementInterfaces do
-  use Absinthe.Schema.Rule
-
   use Absinthe.Phase
   alias Absinthe.Blueprint
 
   def run(bp, _) do
+    bp = Blueprint.prewalk(bp, &handle_schemas/1)
     {:ok, bp}
   end
 
-  alias Absinthe.Schema
-  alias Absinthe.Type
+  defp handle_schemas(%Blueprint.Schema.SchemaDefinition{} = schema) do
+    ifaces =
+      schema.type_definitions
+      |> Enum.filter(&match?(%Blueprint.Schema.InterfaceTypeDefinition{}, &1))
+      |> Map.new(&{&1.identifier, &1})
+
+    types =
+      schema.type_definitions
+      |> Map.new(&{&1.identifier, &1})
+
+    schema = Blueprint.prewalk(schema, &validate_objects(&1, ifaces, types))
+    {:halt, schema}
+  end
+
+  defp handle_schemas(obj) do
+    obj
+  end
+
+  defp validate_objects(%Blueprint.Schema.ObjectTypeDefinition{} = object, ifaces, types) do
+    Enum.reduce(object.interfaces, object, fn ident, object ->
+      case Map.fetch(ifaces, ident) do
+        {:ok, iface} -> validate_object(object, iface, types)
+        _ -> object
+      end
+    end)
+  end
+
+  defp validate_objects(type, _, _) do
+    type
+  end
+
+  def validate_object(object, iface, types) do
+    case check_implements(iface, object, types) do
+      :ok ->
+        object
+
+      {:error, invalid_fields} ->
+        detail = %{
+          object: object.identifier,
+          interface: iface.identifier,
+          fields: invalid_fields
+        }
+
+        object |> put_error(error(object, detail))
+    end
+  end
+
+  defp error(object, data) do
+    %Absinthe.Phase.Error{
+      message: explanation(data),
+      locations: [object.__reference__.location],
+      phase: __MODULE__,
+      extra: data
+    }
+  end
 
   @moduledoc false
 
@@ -41,7 +93,7 @@ defmodule Absinthe.Phase.Schema.Validation.ObjectMustImplementInterfaces do
   Reference: https://github.com/facebook/graphql/blob/master/spec/Section%203%20--%20Type%20System.md#object-type-validation
   """
 
-  def explanation(%{data: %{object: obj, interface: interface, fields: fields}}) do
+  def explanation(%{object: obj, interface: interface, fields: fields}) do
     """
     Type "#{obj}" does not fully implement interface type "#{interface}" \
     for fields #{inspect(fields)}
@@ -50,38 +102,67 @@ defmodule Absinthe.Phase.Schema.Validation.ObjectMustImplementInterfaces do
     """
   end
 
-  def check(schema) do
-    schema
-    |> Schema.types()
-    |> Enum.flat_map(&check_type(schema, &1))
+  def check_implements(interface, type, types) do
+    check_covariant(interface, type, nil, types)
   end
 
-  defp check_type(schema, %{interfaces: ifaces} = type) do
-    ifaces
-    |> Enum.map(&Schema.lookup_type(schema, &1))
-    |> Enum.reduce([], fn
-      %Type.Interface{} = iface_type, acc ->
-        case Type.Interface.check_implements(iface_type, type, schema) do
-          :ok ->
-            acc
+  defp check_covariant(
+         %Blueprint.Schema.InterfaceTypeDefinition{fields: ifields},
+         %{fields: type_fields},
+         _field_ident,
+         types
+       ) do
+    Enum.reduce(ifields, [], fn %{identifier: ifield_ident} = ifield, invalid_fields ->
+      case Enum.find(type_fields, &(&1.identifier == ifield_ident)) do
+        nil ->
+          [ifield_ident | invalid_fields]
 
-          {:error, fields} ->
-            [
-              report(
-                type.__reference__.location,
-                %{object: type.name, interface: iface_type.name, fields: fields}
-              )
-              | acc
-            ]
-        end
+        field ->
+          case check_covariant(ifield.type, field.type, ifield_ident, types) do
+            :ok ->
+              invalid_fields
 
-      _, _ ->
-        # Handles by a different rule
-        []
+            {:error, invalid_field} ->
+              [invalid_field | invalid_fields]
+          end
+      end
     end)
+    |> case do
+      [] ->
+        :ok
+
+      invalid_fields ->
+        {:error, invalid_fields}
+    end
   end
 
-  defp check_type(_, _) do
-    []
+  defp check_covariant(
+         %wrapper{of_type: inner_type1},
+         %wrapper{of_type: inner_type2},
+         field_ident,
+         types
+       ) do
+    check_covariant(inner_type1, inner_type2, field_ident, types)
+  end
+
+  defp check_covariant(%{identifier: identifier}, %{identifier: identifier}, _field_ident, _types) do
+    :ok
+  end
+
+  defp check_covariant(nil, _, field_ident, _), do: {:error, field_ident}
+  defp check_covariant(_, nil, field_ident, _), do: {:error, field_ident}
+
+  defp check_covariant(itype, type, field_ident, types) when is_atom(itype) do
+    itype = Map.get(types, itype)
+    check_covariant(itype, type, field_ident, types)
+  end
+
+  defp check_covariant(itype, type, field_ident, types) when is_atom(type) do
+    type = Map.get(types, type)
+    check_covariant(itype, type, field_ident, types)
+  end
+
+  defp check_covariant(_, _, field_ident, _types) do
+    {:error, field_ident}
   end
 end
