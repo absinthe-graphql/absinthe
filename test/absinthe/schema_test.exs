@@ -1,5 +1,6 @@
 defmodule Absinthe.SchemaTest do
-  use Absinthe.Case, async: true
+  # can't async due to capture io
+  use Absinthe.Case
 
   alias Absinthe.Schema
   alias Absinthe.Type

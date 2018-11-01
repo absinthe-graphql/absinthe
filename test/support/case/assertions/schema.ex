@@ -11,7 +11,7 @@ defmodule Absinthe.Case.Assertions.Schema do
   ## Examples
 
   ```
-  iex> assert_schema_error("schema-name", [%{rule: Absinthe.Schema.Rule.TheRuleHere, data: :bar}])
+  iex> assert_schema_error("schema-name", [%{phase: Absinthe.Schema.Rule.TheRuleHere, extra: :bar}])
   ```
   """
   def assert_schema_error(schema_name, patterns) do
