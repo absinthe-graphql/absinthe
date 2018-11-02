@@ -120,8 +120,8 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.Validation.TypeNamesAreReserved,
       # This phase is run once now because a lot of other
       # validations aren't possible if type references are invalid.
-      Phase.Schema.Validation.Result,
       Phase.Schema.Validation.NoCircularFieldImports,
+      Phase.Schema.Validation.Result,
       Phase.Schema.FieldImports,
       Phase.Schema.Validation.DefaultEnumValuePresent,
       Phase.Schema.Validation.InputOuputTypesCorrectlyPlaced,

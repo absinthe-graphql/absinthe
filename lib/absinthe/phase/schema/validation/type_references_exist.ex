@@ -28,7 +28,11 @@ defmodule Absinthe.Phase.Schema.Validation.TypeReferencesExist do
   end
 
   def validate_types(%Blueprint.Schema.ObjectTypeDefinition{} = object, types) do
-    Enum.reduce(object.interfaces, object, &check_or_error(&2, &1, types))
+    object = Enum.reduce(object.interfaces, object, &check_or_error(&2, &1, types))
+
+    object.imports
+    |> Enum.map(fn {type, _} -> type end)
+    |> Enum.reduce(object, &check_or_error(&2, &1, types))
   end
 
   def validate_types(%Blueprint.Schema.InputValueDefinition{} = input, types) do
@@ -85,7 +89,7 @@ defmodule Absinthe.Phase.Schema.Validation.TypeReferencesExist do
 
     %Absinthe.Phase.Error{
       message: """
-      #{artifact_name} #{inspect(type)} is not defined in your schema.
+      In #{artifact_name}, #{inspect(type)} is not defined in your schema.
 
       Types must exist if referenced.
       """,
