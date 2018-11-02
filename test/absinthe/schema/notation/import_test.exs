@@ -105,7 +105,6 @@ defmodule Absinthe.Schema.Notation.ImportTest do
                Bar.__absinthe_type__(:baz).fields |> Map.keys() |> Enum.sort()
     end
 
-    @tag :pending_schema
     test "raises errors nicely" do
       defmodule ErrorSchema do
         use Absinthe.Schema
@@ -122,7 +121,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
               [
                 %Absinthe.Phase.Error{
                   extra: %{},
-                  locations: [%{line: 115}],
+                  locations: [_],
                   message:
                     "In Bar, :asdf is not defined in your schema.\n\nTypes must exist if referenced.\n",
                   path: [],
@@ -131,7 +130,6 @@ defmodule Absinthe.Schema.Notation.ImportTest do
               ]} = validate(ErrorSchema)
     end
 
-    @tag :pending_schema
     test "handles circular errors" do
       defmodule Circles do
         use Absinthe.Schema
@@ -155,7 +153,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
                   extra: :bar,
                   locations: [
                     %{
-                      line: 146
+                      line: _
                     }
                   ],
                   message:
@@ -167,7 +165,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
                   extra: :foo,
                   locations: [
                     %{
-                      line: 141
+                      line: _
                     }
                   ],
                   message:
