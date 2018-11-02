@@ -5,8 +5,6 @@ defmodule Absinthe.Phase.Document.Validation.NoUnusedFragmentsTest do
     phase: @phase,
     async: true
 
-  @moduletag :pending
-
   alias Absinthe.Blueprint
 
   defp unused_fragment(name, line) do

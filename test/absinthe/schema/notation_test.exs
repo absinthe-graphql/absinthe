@@ -1,7 +1,7 @@
 defmodule Absinthe.Schema.NotationTest do
   use Absinthe.Case, async: true
 
-  @moduletag :pending
+  @moduletag :pending_schema
 
   describe "arg" do
     test "can be under field as an attribute" do
