@@ -3,21 +3,25 @@ defmodule Absinthe.Phase.Schema.Validation.TypeNamesAreUnique do
   alias Absinthe.Blueprint
 
   def run(bp, _) do
-    bp = Blueprint.prewalk(bp, &handle_schemas/1)
+    bp =
+      bp
+      |> Blueprint.prewalk(&handle_schemas(&1, :identifier))
+      |> Blueprint.prewalk(&handle_schemas(&1, :name))
+
     {:ok, bp}
   end
 
-  defp handle_schemas(%Blueprint.Schema.SchemaDefinition{} = schema) do
-    types = Enum.group_by(schema.type_definitions, & &1.identifier)
-    directives = Enum.group_by(schema.directive_definitions, & &1.identifier)
+  defp handle_schemas(%Blueprint.Schema.SchemaDefinition{} = schema, key) do
+    types = Enum.group_by(schema.type_definitions, &Map.fetch!(&1, key))
+    directives = Enum.group_by(schema.directive_definitions, &Map.fetch!(&1, key))
 
     types = Map.merge(types, directives)
 
-    schema = Blueprint.prewalk(schema, &validate_types(&1, types))
+    schema = Blueprint.prewalk(schema, &validate_types(&1, types, key))
     {:halt, schema}
   end
 
-  defp handle_schemas(obj) do
+  defp handle_schemas(obj, _) do
     obj
   end
 
@@ -30,7 +34,9 @@ defmodule Absinthe.Phase.Schema.Validation.TypeNamesAreUnique do
     Blueprint.Schema.ScalarTypeDefinition,
     Blueprint.Schema.UnionTypeDefinition
   ]
-  defp validate_types(%type{identifier: ident} = object, types) when type in @types do
+  defp validate_types(%type{} = object, types, key) when type in @types do
+    ident = Map.fetch!(object, key)
+
     case Map.fetch!(types, ident) do
       [_] ->
         object
@@ -38,14 +44,18 @@ defmodule Absinthe.Phase.Schema.Validation.TypeNamesAreUnique do
       others ->
         detail = %{
           value: ident,
-          artifact: "Absinthe type identifier"
+          artifact:
+            case key do
+              :identifier -> "Absinthe type identifier"
+              :name -> "Type name"
+            end
         }
 
         object |> put_error(error(detail, others))
     end
   end
 
-  defp validate_types(type, _) do
+  defp validate_types(type, _, _) do
     type
   end
 

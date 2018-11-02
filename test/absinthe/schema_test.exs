@@ -51,8 +51,8 @@ defmodule Absinthe.SchemaTest do
     test "raises an exception" do
       assert_schema_error("schema_with_duplicate_names", [
         %{
-          rule: Absinthe.Schema.Rule.TypeNamesAreUnique,
-          data: %{artifact: "Type name", value: "Person"}
+          phase: Absinthe.Phase.Schema.Validation.TypeNamesAreUnique,
+          extra: %{artifact: "Type name", value: "Person"}
         }
       ])
     end
