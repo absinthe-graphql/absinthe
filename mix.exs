@@ -54,10 +54,10 @@ defmodule Absinthe.Mixfile do
 
   defp deps do
     [
+      {:benchee, ">= 0.0.0", only: :dev},
       {:nimble_parsec, "~> 0.4"},
       {:dataloader, "~> 1.0.0", optional: true},
       {:ex_doc, "~> 0.14", only: :dev},
-      {:benchfella, "~> 0.3.0", only: :dev},
       {:dialyze, "~> 0.2", only: :dev},
       {:decimal, "~> 1.0", optional: true},
       {:phoenix_pubsub, ">= 0.0.0", only: :test},
