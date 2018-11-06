@@ -8,15 +8,11 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   defmodule Definition do
     use Absinthe.Schema
 
-    import_sdl("""
+    import_sdl """
     type Query {
       "A list of posts"
       posts(filter: PostFilter): [Post]
       admin: User!
-    }
-
-    input PostFilter {
-      name: String
     }
 
     "A submitted post"
@@ -29,13 +25,15 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       \"""
       author: User!
     }
-    """)
+    """
 
-    import_sdl("""
+    import_sdl """
     type User {
       name: String!
     }
-    """)
+    """
+
+    import_sdl path: "test/support/fixtures/import_sdl_path_option.graphql"
 
     def get_posts(_, _, _) do
       posts = [

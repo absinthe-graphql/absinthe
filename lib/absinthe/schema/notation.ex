@@ -1137,9 +1137,14 @@ defmodule Absinthe.Schema.Notation do
 
   TODO: Example for dynamic loading during init
   """
-  defmacro import_sdl(embedded \\ nil, opts \\ []) do
+  defmacro import_sdl(opts) when is_list(opts) do
     __CALLER__
-    |> do_import_sdl(embedded, opts)
+    |> do_import_sdl(nil, opts)
+  end
+
+  defmacro import_sdl(sdl, opts \\ []) when is_binary(sdl) do
+    __CALLER__
+    |> do_import_sdl(sdl, opts)
   end
 
   defmacro values(values) do
@@ -1459,7 +1464,7 @@ defmodule Absinthe.Schema.Notation do
     with {:ok, path} <- Keyword.fetch(opts, :path),
          sdl <- File.read!(path) do
       Module.put_attribute(env.module, :external_resource, path)
-      do_import_types(env, sdl, Keyword.delete(opts, :path))
+      do_import_sdl(env, sdl, Keyword.delete(opts, :path))
     else
       :error ->
         raise Absinthe.Schema.Notation.Error,
