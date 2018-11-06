@@ -18,6 +18,8 @@ locals_without_parens = [
   import_fields: 2,
   import_fields: 1,
   import_types: 1,
+  import_sdl: 1,
+  import_sdl: 2,
   input_object: 3,
   interface: 1,
   interface: 3,
