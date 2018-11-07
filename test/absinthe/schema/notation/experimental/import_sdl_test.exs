@@ -8,34 +8,21 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   defmodule Definition do
     use Absinthe.Schema
 
-    import_sdl("""
+    # Embedded SDL
+    import_sdl """
     type Query {
       "A list of posts"
       posts(filter: PostFilter): [Post]
       admin: User!
     }
+    """
 
-    input PostFilter {
-      name: String
-    }
+    # Read SDL from file manually at compile-time
+    import_sdl File.read!("test/support/fixtures/import_sdl_binary_fn.graphql")
 
-    "A submitted post"
-    type Post {
-      title: String!
-      body: String!
-      \"""
-      The post author
-      (is a user)
-      \"""
-      author: User!
-    }
-    """)
-
-    import_sdl("""
-    type User {
-      name: String!
-    }
-    """)
+    # Read from file at compile time (with support for automatic recompilation)
+    import_sdl path: "test/support/fixtures/import_sdl_path_option.graphql"
+    import_sdl path: Path.join("test/support", "fixtures/import_sdl_path_option_fn.graphql")
 
     def get_posts(_, _, _) do
       posts = [
