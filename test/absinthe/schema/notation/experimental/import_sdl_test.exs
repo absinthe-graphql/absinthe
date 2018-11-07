@@ -24,7 +24,6 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     import_sdl path: "test/support/fixtures/import_sdl_path_option.graphql"
     import_sdl path: Path.join("test/support", "fixtures/import_sdl_path_option_fn.graphql")
 
-
     def get_posts(_, _, _) do
       posts = [
         %{title: "Foo", body: "A body.", author: %{name: "Bruce"}},
