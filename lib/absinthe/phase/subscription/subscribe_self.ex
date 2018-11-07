@@ -24,8 +24,9 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
 
     %{selections: [field]} = op
 
-    with {:ok, field_key} <- get_field_key(field, context) do
-      Absinthe.Subscription.subscribe(pubsub, field_key, doc_id, blueprint)
+    with {:ok, field_keys} <- get_field_keys(field, context) do
+      for field_key <- field_keys,
+        do: Absinthe.Subscription.subscribe(pubsub, field_key, doc_id, blueprint)
       {:replace, blueprint, [{Phase.Subscription.Result, topic: doc_id}]}
     else
       {:error, error} ->
@@ -39,7 +40,7 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
     end
   end
 
-  defp get_field_key(%{schema_node: schema_node, argument_data: argument_data} = field, context) do
+  defp get_field_keys(%{schema_node: schema_node, argument_data: argument_data} = field, context) do
     name = schema_node.identifier
 
     config =
@@ -61,8 +62,11 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
 
     case config do
       {:ok, config} ->
-        key = find_key!(config)
-        {:ok, {name, key}}
+        field_keys =
+          find_keys!(config)
+          |> Enum.map(fn key -> {name, key} end)
+
+        {:ok, field_keys}
 
       {:error, msg} ->
         error = %Phase.Error{
@@ -84,16 +88,26 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
     end
   end
 
-  defp find_key!(config) do
-    topic =
-      config[:topic] ||
+  defp find_keys!(config) do
+    case config[:topic] do
+      nil ->
         raise """
         Subscription config must include a non null topic!
 
         #{inspect(config)}
         """
 
-    to_string(topic)
+      [] ->
+        raise """
+        Subscription config must not provide an empty list of topics!
+
+        #{inspect(config)}
+        """
+
+      val ->
+        List.wrap(val)
+        |> Enum.map(&to_string/1)
+    end
   end
 
   defp ensure_pubsub!(context) do

@@ -106,6 +106,12 @@ defmodule Absinthe.Execution.SubscriptionTest do
             }
         end
       end
+
+      field :multiple_topics, :string do
+        config fn _, _ ->
+          {:ok, topic: ["topic_1", "topic_2", "topic_3"]}
+        end
+      end
     end
 
     mutation do
@@ -150,6 +156,93 @@ defmodule Absinthe.Execution.SubscriptionTest do
              result: %{data: %{"thing" => "foo"}},
              topic: topic
            } == msg
+  end
+
+  @query """
+  subscription ($clientId: ID!) {
+    thing(clientId: $clientId)
+  }
+  """
+  test "can unsubscribe the current process" do
+    client_id = "abc"
+
+    assert {:ok, %{"subscribed" => topic}} =
+             run(
+               @query,
+               Schema,
+               variables: %{"clientId" => client_id},
+               context: %{pubsub: PubSub}
+             )
+
+    Absinthe.Subscription.unsubscribe(PubSub, topic)
+
+    Absinthe.Subscription.publish(PubSub, "foo", thing: client_id)
+
+    refute_receive({:broadcast, _})
+  end
+
+  @query """
+  subscription {
+    multipleTopics
+  }
+  """
+  test "schema can provide multiple topics to subscribe to" do
+    assert {:ok, %{"subscribed" => topic}} =
+             run(
+               @query,
+               Schema,
+               variables: %{},
+               context: %{pubsub: PubSub}
+             )
+
+
+    msg = %{
+             event: "subscription:data",
+             result: %{data: %{"multipleTopics" => "foo"}},
+             topic: topic
+           }
+
+    Absinthe.Subscription.publish(PubSub, "foo", multiple_topics: "topic_1")
+
+    assert_receive({:broadcast, ^msg})
+
+    Absinthe.Subscription.publish(PubSub, "foo", multiple_topics: "topic_2")
+
+    assert_receive({:broadcast, ^msg})
+
+    Absinthe.Subscription.publish(PubSub, "foo", multiple_topics: "topic_3")
+
+    assert_receive({:broadcast, ^msg})
+  end
+
+
+  @query """
+  subscription {
+    multipleTopics
+  }
+  """
+  test "unsubscription works when multiple topics are provided" do
+    assert {:ok, %{"subscribed" => topic}} =
+             run(
+               @query,
+               Schema,
+               variables: %{},
+               context: %{pubsub: PubSub}
+             )
+
+    Absinthe.Subscription.unsubscribe(PubSub, topic)
+
+    Absinthe.Subscription.publish(PubSub, "foo", multiple_topics: "topic_1")
+
+    refute_receive({:broadcast, _})
+
+    Absinthe.Subscription.publish(PubSub, "foo", multiple_topics: "topic_2")
+
+    refute_receive({:broadcast, _})
+
+    Absinthe.Subscription.publish(PubSub, "foo", multiple_topics: "topic_3")
+
+    refute_receive({:broadcast, _})
   end
 
   @query """
