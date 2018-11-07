@@ -30,35 +30,26 @@ defmodule Absinthe.Phase.Parse.BlockStringsTest do
   end
 
   test "parses attributes when there are escapes" do
-    assert {:ok, result}  = run(
-      ~s<{ post(title: "title", body: "body\\\\") { name } }>
-    )
+    assert {:ok, result} = run(~s<{ post(title: "title", body: "body\\\\") { name } }>)
     assert "body\\" == extract_body(result)
 
-    assert {:ok, result}  = run(
-      ~s<{ post(title: "title\\\\", body: "body") { name } }>
-    )
+    assert {:ok, result} = run(~s<{ post(title: "title\\\\", body: "body") { name } }>)
     assert "body" == extract_body(result)
   end
 
   test "parse attributes where there are escapes on multiple lines" do
-    assert {:ok, result}  = run(
-      ~s<{ post(
+    assert {:ok, result} = run(~s<{ post(
         title: "title",
         body: "body\\\\"
-      ) { name } }>
-    )
+      ) { name } }>)
     assert "body\\" == extract_body(result)
 
-    assert {:ok, result}  = run(
-      ~s<{ post(
+    assert {:ok, result} = run(~s<{ post(
         title: "title\\\\",
         body: "body"
-      ) { name } }>
-    )
+      ) { name } }>)
     assert "body" == extract_body(result)
   end
-
 
   @input [
     "",

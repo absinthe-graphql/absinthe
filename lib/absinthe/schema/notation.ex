@@ -1103,6 +1103,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   @placement {:import_sdl, [toplevel: true]}
+  @type import_sdl_option :: {:path, String.t() | Macro.t()}
   @doc """
   Import types defined using the Schema Definition Language (SDL).
 
@@ -1137,14 +1138,14 @@ defmodule Absinthe.Schema.Notation do
 
   TODO: Example for dynamic loading during init
   """
+  @spec import_sdl([import_sdl_option(), ...]) :: Macro.t()
   defmacro import_sdl(opts) when is_list(opts) do
-    __CALLER__
-    |> do_import_sdl(nil, opts)
+    do_import_sdl(nil, opts)
   end
 
-  defmacro import_sdl(sdl, opts \\ []) when is_binary(sdl) do
-    __CALLER__
-    |> do_import_sdl(sdl, opts)
+  @spec import_sdl(String.t() | Macro.t(), [import_sdl_option()]) :: Macro.t()
+  defmacro import_sdl(sdl, opts \\ []) do
+    do_import_sdl(sdl, opts)
   end
 
   defmacro values(values) do
@@ -1460,30 +1461,32 @@ defmodule Absinthe.Schema.Notation do
     []
   end
 
-  defp do_import_sdl(env, nil, opts) do
-    with {:ok, path} <- Keyword.fetch(opts, :path),
-         sdl <- File.read!(path) do
-      Module.put_attribute(env.module, :external_resource, path)
-      do_import_sdl(env, sdl, Keyword.delete(opts, :path))
-    else
+  @spec do_import_sdl(nil, [import_sdl_option()]) :: Macro.t()
+  defp do_import_sdl(nil, opts) do
+    case Keyword.fetch(opts, :path) do
+      {:ok, path} ->
+        reader = quote do: File.read!(unquote(path))
+        do_import_sdl(reader, Keyword.delete(opts, :path))
+
       :error ->
         raise Absinthe.Schema.Notation.Error,
               "Must provide `:path` option to `import_sdl` unless passing a raw SDL string as the first argument"
     end
   end
 
-  defp do_import_sdl(env, sdl, _opts) when is_binary(sdl) do
-    with {:ok, definitions} <- __MODULE__.SDL.parse(sdl, env.module) do
-      Module.put_attribute(
-        env.module,
-        :__absinthe_sdl_definitions__,
-        definitions ++ (Module.get_attribute(env.module, :__absinthe_sdl_definitions__) || [])
-      )
-
-      []
-    else
-      {:error, error} ->
-        raise Absinthe.Schema.Notation.Error, "`import_sdl` could not parse SDL:\n#{error}"
+  @spec do_import_sdl(String.t() | Macro.t(), Keyword.t()) :: Macro.t()
+  defp do_import_sdl(sdl, _opts) do
+    quote do
+      with {:ok, definitions} <- unquote(__MODULE__).SDL.parse(unquote(sdl), __MODULE__) do
+        @__absinthe_sdl_definitions__ definitions ++
+                                        (Module.get_attribute(
+                                           __MODULE__,
+                                           :__absinthe_sdl_definitions__
+                                         ) || [])
+      else
+        {:error, error} ->
+          raise Absinthe.Schema.Notation.Error, "`import_sdl` could not parse SDL:\n#{error}"
+      end
     end
   end
 

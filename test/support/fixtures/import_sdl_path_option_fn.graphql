@@ -1,0 +1,10 @@
+"A submitted post"
+type Post {
+  title: String!
+  body: String!
+  """
+  The post author
+  (is a user)
+  """
+  author: User!
+}
