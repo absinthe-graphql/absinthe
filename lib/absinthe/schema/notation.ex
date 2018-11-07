@@ -1465,9 +1465,20 @@ defmodule Absinthe.Schema.Notation do
   defp do_import_sdl(nil, opts) do
     case Keyword.fetch(opts, :path) do
       {:ok, path} ->
-        reader = quote do: File.read!(unquote(path))
-        do_import_sdl(reader, Keyword.delete(opts, :path))
-
+        [
+          quote do
+            @__absinthe_import_sdl_path__ unquote(path)
+          end,
+          do_import_sdl(
+            quote do
+              File.read!(@__absinthe_import_sdl_path__)
+            end,
+            Keyword.delete(opts, :path)
+          ),
+          quote do
+            @external_resource @__absinthe_import_sdl_path__
+          end
+        ]
       :error ->
         raise Absinthe.Schema.Notation.Error,
               "Must provide `:path` option to `import_sdl` unless passing a raw SDL string as the first argument"
