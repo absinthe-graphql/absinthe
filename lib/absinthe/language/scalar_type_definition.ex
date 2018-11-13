@@ -20,6 +20,7 @@ defmodule Absinthe.Language.ScalarTypeDefinition do
       %Blueprint.Schema.ScalarTypeDefinition{
         name: node.name,
         description: node.description,
+        identifier: Macro.underscore(node.name) |> String.to_atom(),
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
         source_location: source_location(node)
       }

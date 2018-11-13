@@ -15,6 +15,36 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       posts(filter: PostFilter): [Post]
       admin: User!
     }
+
+    type Comment {
+      author: User!
+      subject: Post!
+    }
+
+    enum Category {
+      NEWS
+      OPINION
+    }
+
+    enum PostState {
+      SUBMITTED
+      ACCEPTED
+      REJECTED
+    }
+
+    interface Named {
+      name: String!
+    }
+
+    interface Titled {
+      title: String!
+    }
+
+    scalar A
+    scalar B
+
+    union SearchResult = Post | User
+    union Content = Post | Comment
     """
 
     # Read SDL from file manually at compile-time

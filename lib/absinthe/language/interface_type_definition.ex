@@ -22,6 +22,7 @@ defmodule Absinthe.Language.InterfaceTypeDefinition do
       %Blueprint.Schema.InterfaceTypeDefinition{
         name: node.name,
         description: node.description,
+        identifier: Macro.underscore(node.name) |> String.to_atom(),
         fields: Absinthe.Blueprint.Draft.convert(node.fields, doc),
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
         source_location: source_location(node)
