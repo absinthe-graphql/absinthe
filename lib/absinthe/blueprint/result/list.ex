@@ -7,6 +7,7 @@ defmodule Absinthe.Blueprint.Result.List do
   defstruct [
     :emitter,
     :values,
+    :ref,
     errors: [],
     flags: %{},
     extensions: %{}

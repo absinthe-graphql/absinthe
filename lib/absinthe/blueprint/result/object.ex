@@ -8,6 +8,7 @@ defmodule Absinthe.Blueprint.Result.Object do
     :root_value,
     :emitter,
     :fields,
+    :ref,
     errors: [],
     flags: %{},
     extensions: %{}
