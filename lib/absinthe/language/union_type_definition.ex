@@ -22,6 +22,7 @@ defmodule Absinthe.Language.UnionTypeDefinition do
       %Blueprint.Schema.UnionTypeDefinition{
         name: node.name,
         description: node.description,
+        identifier: Macro.underscore(node.name) |> String.to_atom(),
         types: Absinthe.Blueprint.Draft.convert(node.types, doc),
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
         source_location: source_location(node)
