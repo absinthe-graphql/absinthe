@@ -41,16 +41,27 @@ defmodule Absinthe.Phase.Document.Execution.Resolution2 do
   end
 
   defp perform_resolution(bp_root, operation, options) do
+    start = bp_root.execution.result
     exec = Execution.get(bp_root, operation)
 
     plugins = bp_root.schema.plugins()
     run_callbacks? = Keyword.get(options, :plugin_callbacks, true)
 
-    result = exec.result |> Map.put(:ref, cut_ref())
+    stack =
+      case start do
+        nil ->
+          result = %Result.Object{
+            root_value: exec.root_value,
+            ref: cut_ref(),
+            emitter: operation
+          }
 
-    stack = [{:result, :top, result}]
+          stack = [{:result, :top, result}]
+          push(stack, operation.selections, result)
 
-    stack = push(stack, result.emitter.selections, result)
+        stack ->
+          stack
+      end
 
     {result, exec} = resolve(stack, [], exec)
 
@@ -72,7 +83,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution2 do
   defp run_callbacks(_, _, acc, _), do: acc
 
   defp resolve([], result, exec) do
-    {result, exec}
+    {result |> :lists.reverse(), exec}
   end
 
   defp resolve([{:result, _, _} = result | rest], results, exec) do
@@ -80,8 +91,27 @@ defmodule Absinthe.Phase.Document.Execution.Resolution2 do
   end
 
   defp resolve([{:field, parent, field} | stack], results, exec) do
-    {stack, exec} = resolve_field(stack, exec, parent, [], field)
+    {stack, exec} = resolve_field2(stack, exec, parent, [], field)
     resolve(stack, results, exec)
+  end
+
+  def resolve_field2(stack, exec, parent, path, field) do
+    case field.schema_node.middleware do
+      [{Absinthe.Middleware.MapGet, key}] ->
+        value = Map.get(parent.root_value, key)
+
+        res = %{
+          value: value,
+          definition: field,
+          extensions: %{},
+          errors: []
+        }
+
+        build_result(stack, exec, parent, path, res)
+
+      _ ->
+        resolve_field(stack, exec, parent, path, field)
+    end
   end
 
   def resolve_field(stack, exec, parent, path, field) do
@@ -180,8 +210,34 @@ defmodule Absinthe.Phase.Document.Execution.Resolution2 do
 
     errors = maybe_add_non_null_error(errors, value, full_type)
 
-    result = to_result(value, bp_field, parent.ref, full_type, extensions)
-    next_work(stack, exec, result)
+    result = to_result(value, bp_field, full_type, extensions)
+    {next_work(stack, List.wrap(result), bp_field, parent.ref), exec}
+  end
+
+  defp next_work(stack, [], _, _) do
+    stack
+  end
+
+  defp next_work(stack, [%Result.Object{} = obj | rest], bp_field, parent_ref) do
+    [{:result, parent_ref, obj} | stack]
+    |> push(bp_field.selections, obj)
+    |> next_work(rest, bp_field, parent_ref)
+  end
+
+  defp next_work(stack, [%Result.List{} = list | rest], bp_field, parent_ref) do
+    next_work([{:result, parent_ref, list} | stack], rest, bp_field, list.ref)
+  end
+
+  defp next_work(stack, [%Result.Leaf{} = leaf | rest], bp_field, parent_ref) do
+    next_work([{:result, parent_ref, leaf} | stack], rest, bp_field, parent_ref)
+  end
+
+  defp add_list_values(stack, [], parent_ref) do
+    stack
+  end
+
+  defp add_list_values(stack, [value | rest], parent_ref) do
+    result = to_result(value, bp_field, full_type, extensions)
   end
 
   defp maybe_add_non_null_error(errors, nil, %Type.NonNull{}) do
@@ -285,117 +341,72 @@ defmodule Absinthe.Phase.Document.Execution.Resolution2 do
     {[message: to_string(error_value)], []}
   end
 
-  defp to_result(stack, nil, blueprint, parent_ref, _, extensions) do
-    [
-      {:result, parent_ref, %Result.Leaf{emitter: blueprint, value: nil, extensions: extensions}}
-      | stack
-    ]
+  defp to_result(nil, blueprint, _, extensions) do
+    %Result.Leaf{emitter: blueprint, value: nil, extensions: extensions}
   end
 
-  defp to_result(
-         stack,
-         root_value,
-         blueprint,
-         parent_ref,
-         %Type.NonNull{of_type: inner_type},
-         extensions
-       ) do
-    to_result(stack, root_value, blueprint, parent_ref, inner_type, extensions)
+  defp to_result(root_value, blueprint, %Type.NonNull{of_type: inner_type}, extensions) do
+    to_result(root_value, blueprint, inner_type, extensions)
   end
 
-  defp to_result(stack, root_value, blueprint, parent_ref, %Type.Object{}, extensions) do
-    result = %Result.Object{
+  defp to_result(root_value, blueprint, %Type.Object{}, extensions) do
+    %Result.Object{
       root_value: root_value,
       emitter: blueprint,
       extensions: extensions,
       ref: cut_ref()
     }
-
-    stack = [{:result, parent_ref, result} | stack]
-
-    push(stack, blueprint.selections, result)
   end
 
-  # defp to_result(root_value, blueprint, parent_ref, %Type.Interface{}, extensions) do
-  #   result = %Result.Object{
-  #     root_value: root_value,
-  #     emitter: blueprint,
-  #     extensions: extensions,
-  #     ref: cut_ref()
-  #   }
+  defp to_result(root_value, blueprint, %Type.Interface{}, extensions) do
+    %Result.Object{
+      root_value: root_value,
+      emitter: blueprint,
+      extensions: extensions,
+      ref: cut_ref()
+    }
+  end
 
-  #   fields = blueprint.selections |> queue(result)
+  defp to_result(root_value, blueprint, %Type.Union{}, extensions) do
+    %Result.Object{
+      root_value: root_value,
+      emitter: blueprint,
+      extensions: extensions,
+      ref: cut_ref()
+    }
+  end
 
-  #   [
-  #     {:result, parent_ref, result}
-  #     | fields
-  #   ]
-  # end
-
-  # defp to_result(root_value, blueprint, parent_ref, %Type.Union{}, extensions) do
-  #   result = %Result.Object{
-  #     root_value: root_value,
-  #     emitter: blueprint,
-  #     extensions: extensions,
-  #     ref: cut_ref()
-  #   }
-
-  #   fields = blueprint.selections |> queue(result)
-
-  #   [
-  #     {:result, parent_ref, result}
-  #     | fields
-  #   ]
-  # end
-
-  defp to_result(
-         stack,
-         root_value,
-         blueprint,
-         parent_ref,
-         %Type.List{of_type: inner_type},
-         extensions
-       ) do
-    list = %Result.List{values: nil, emitter: blueprint, extensions: extensions, ref: cut_ref()}
-
-    stack = [{:result, parent_ref, list} | stack]
-
-    to_result(stack, List.wrap(root_value), )
-
+  defp to_result(root_value, blueprint, %Type.List{of_type: inner_type}, extensions) do
     values =
-      root_value
-      |> List.wrap()
-      |> Enum.flat_map(&to_result(&1, blueprint, list.ref, inner_type, extensions))
+      for value <- List.wrap(root_value) do
+        to_result(value, blueprint, inner_type, extensions)
+      end
 
-    [{:result, parent_ref, list} | values] ++ stack
+    list = %Result.List{
+      root_value: root_value,
+      values: nil,
+      emitter: blueprint,
+      extensions: extensions,
+      ref: cut_ref()
+    }
+
+    [list | values]
   end
 
-  defp to_result(stack, root_value, blueprint, parent_ref, %Type.Scalar{}, extensions) do
-    [
-      {:result, parent_ref,
-       %Result.Leaf{
-         emitter: blueprint,
-         value: root_value,
-         extensions: extensions
-       }}
-      | stack
-    ]
+  defp to_result(root_value, blueprint, %Type.Scalar{}, extensions) do
+    %Result.Leaf{
+      emitter: blueprint,
+      value: root_value,
+      extensions: extensions
+    }
   end
 
-  defp to_result(stack, root_value, blueprint, parent_ref, %Type.Enum{}, extensions) do
-    [
-      {:result, parent_ref,
-       %Result.Leaf{
-         emitter: blueprint,
-         value: root_value,
-         extensions: extensions
-       }}
-      | stack
-    ]
-  end
-
-  defp list_result(stack, items, parent_ref, extensions) do
-
+  defp to_result(root_value, blueprint, %Type.Enum{}, extensions) do
+    %Result.Leaf{
+      emitter: blueprint,
+      value: root_value,
+      extensions: extensions
+    }
   end
 
   def error(node, message, path, extra) do
@@ -408,7 +419,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution2 do
     }
   end
 
-  defp cut_ref() do
-    :erlang.unique_integer([:positive, :monotonic])
+  def cut_ref() do
+    :erlang.unique_integer()
   end
 end

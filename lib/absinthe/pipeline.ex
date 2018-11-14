@@ -104,7 +104,7 @@ defmodule Absinthe.Pipeline do
       {Phase.Document.Complexity.Result, options},
       # Execution
       {Phase.Subscription.SubscribeSelf, options},
-      {Phase.Document.Execution.Resolution, options},
+      {Phase.Document.Execution.Resolution2, options},
       Phase.Document.Execution.Compact,
       # Format Result
       Phase.Document.Result,

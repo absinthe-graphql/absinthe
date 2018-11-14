@@ -18,12 +18,9 @@ defmodule Absinthe.Phase.Document.Execution.Compact do
   end
 
   defp compact(result) when is_list(result) do
+    result |> length |> IO.inspect(label: :nodes)
     # result |> view
     compact(result, %{})
-  end
-
-  defp compact(result) do
-    result |> IO.inspect()
   end
 
   defp compact([{:result, :top, %Result.Object{} = top}], buffers) do

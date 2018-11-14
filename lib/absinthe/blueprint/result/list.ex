@@ -8,6 +8,7 @@ defmodule Absinthe.Blueprint.Result.List do
     :emitter,
     :values,
     :ref,
+    root_value: nil,
     errors: [],
     flags: %{},
     extensions: %{}
