@@ -31,10 +31,7 @@ defmodule Absinthe.Language.InputValueDefinition do
         identifier: Macro.underscore(node.name) |> String.to_atom(),
         default_value: Blueprint.Draft.convert(node.default_value, doc),
         directives: Blueprint.Draft.convert(node.directives, doc),
-        source_location: source_location(node),
-        __reference__: %{
-          location: source_location(node) |> Map.put(:file, "TODO")
-        }
+        source_location: source_location(node)
       }
     end
 

@@ -1486,7 +1486,7 @@ defmodule Absinthe.Schema.Notation do
             quote do
               File.read!(@__absinthe_import_sdl_path__)
             end,
-            Keyword.delete(opts, :path)
+            opts
           ),
           quote do
             @external_resource @__absinthe_import_sdl_path__
@@ -1502,7 +1502,7 @@ defmodule Absinthe.Schema.Notation do
   defp do_import_sdl(env, sdl, opts) do
     ref = build_reference(env)
     quote do
-      with {:ok, definitions} <- unquote(__MODULE__).SDL.parse(unquote(sdl), __MODULE__, unquote(Macro.escape(ref))) do
+      with {:ok, definitions} <- unquote(__MODULE__).SDL.parse(unquote(sdl), __MODULE__, unquote(Macro.escape(ref)), unquote(Macro.escape(opts))) do
         @__absinthe_sdl_definitions__ definitions ++
                                         (Module.get_attribute(
                                            __MODULE__,
