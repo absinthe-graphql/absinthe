@@ -28,7 +28,13 @@ defmodule Absinthe.Phase.Schema.Validation.TypeReferencesExist do
   end
 
   def validate_types(%Blueprint.Schema.ObjectTypeDefinition{} = object, types) do
-    Enum.reduce(object.interfaces, object, &check_or_error(&2, &1, types))
+    object
+    |> check_types(:interfaces, &check_or_error(&2, &1, types))
+    |> check_types(:imports, fn {type, _}, obj -> check_or_error(obj, type, types) end)
+  end
+
+  def validate_types(%Blueprint.Schema.InputObjectTypeDefinition{} = object, types) do
+    check_types(object, :imports, fn {type, _}, obj -> check_or_error(obj, type, types) end)
   end
 
   def validate_types(%Blueprint.Schema.InputValueDefinition{} = input, types) do
@@ -36,14 +42,13 @@ defmodule Absinthe.Phase.Schema.Validation.TypeReferencesExist do
   end
 
   def validate_types(%Blueprint.Schema.UnionTypeDefinition{} = union, types) do
-    Enum.reduce(union.types, union, &check_or_error(&2, &1, types))
+    check_types(union, :types, &check_or_error(&2, &1, types))
   end
 
   @no_types [
     Blueprint.Schema.DirectiveDefinition,
     Blueprint.Schema.EnumTypeDefinition,
     Blueprint.Schema.EnumValueDefinition,
-    Blueprint.Schema.InputObjectTypeDefinition,
     Blueprint.Schema.InterfaceTypeDefinition,
     Blueprint.Schema.ObjectTypeDefinition,
     Blueprint.Schema.ScalarTypeDefinition,
@@ -58,6 +63,12 @@ defmodule Absinthe.Phase.Schema.Validation.TypeReferencesExist do
 
   def validate_types(type, _) do
     type
+  end
+
+  defp check_types(entity, key, fun) do
+    entity
+    |> Map.fetch!(key)
+    |> Enum.reduce(entity, fun)
   end
 
   defp check_or_error(thing, type, types) do
