@@ -1150,12 +1150,14 @@ defmodule Absinthe.Schema.Notation do
   """
   @spec import_sdl([import_sdl_option(), ...]) :: Macro.t()
   defmacro import_sdl(opts) when is_list(opts) do
-    do_import_sdl(nil, opts)
+    __CALLER__
+    |> do_import_sdl(nil, opts)
   end
 
   @spec import_sdl(String.t() | Macro.t(), [import_sdl_option()]) :: Macro.t()
   defmacro import_sdl(sdl, opts \\ []) do
-    do_import_sdl(sdl, opts)
+    __CALLER__
+    |> do_import_sdl(sdl, opts)
   end
 
   defmacro values(values) do
@@ -1471,8 +1473,8 @@ defmodule Absinthe.Schema.Notation do
     []
   end
 
-  @spec do_import_sdl(nil, [import_sdl_option()]) :: Macro.t()
-  defp do_import_sdl(nil, opts) do
+  @spec do_import_sdl(Macro.Env.t(), nil, [import_sdl_option()]) :: Macro.t()
+  defp do_import_sdl(env, nil, opts) do
     case Keyword.fetch(opts, :path) do
       {:ok, path} ->
         [
@@ -1480,10 +1482,11 @@ defmodule Absinthe.Schema.Notation do
             @__absinthe_import_sdl_path__ unquote(path)
           end,
           do_import_sdl(
+            env,
             quote do
               File.read!(@__absinthe_import_sdl_path__)
             end,
-            Keyword.delete(opts, :path)
+            opts
           ),
           quote do
             @external_resource @__absinthe_import_sdl_path__
@@ -1495,10 +1498,11 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
-  @spec do_import_sdl(String.t() | Macro.t(), Keyword.t()) :: Macro.t()
-  defp do_import_sdl(sdl, _opts) do
+  @spec do_import_sdl(Macro.Env.t(), String.t() | Macro.t(), Keyword.t()) :: Macro.t()
+  defp do_import_sdl(env, sdl, opts) do
+    ref = build_reference(env)
     quote do
-      with {:ok, definitions} <- unquote(__MODULE__).SDL.parse(unquote(sdl), __MODULE__) do
+      with {:ok, definitions} <- unquote(__MODULE__).SDL.parse(unquote(sdl), __MODULE__, unquote(Macro.escape(ref)), unquote(Macro.escape(opts))) do
         @__absinthe_sdl_definitions__ definitions ++
                                         (Module.get_attribute(
                                            __MODULE__,
