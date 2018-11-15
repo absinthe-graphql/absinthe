@@ -48,10 +48,26 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     exec = plugins |> run_callbacks(:before_resolution, exec, run_callbacks?)
 
-    {result, exec} =
+    common =
+      Map.take(exec, [:adapter, :context, :acc, :root_value, :schema, :fragments, :fields_cache])
+
+    res =
+      %Absinthe.Resolution{
+        path: nil,
+        source: nil,
+        parent_type: nil,
+        middleware: nil,
+        definition: nil,
+        arguments: nil
+      }
+      |> Map.merge(common)
+
+    {result, res} =
       exec.result
-      |> walk_result(operation, operation.schema_node, exec, [operation])
+      |> walk_result(operation, operation.schema_node, res, [operation])
       |> propagate_null_trimming
+
+    exec = update_persisted_fields(exec, res)
 
     exec = plugins |> run_callbacks(:after_resolution, exec, run_callbacks?)
 
@@ -90,7 +106,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   def walk_result(%Absinthe.Resolution{} = res, _bp_node, _schema_type, exec, _path) do
     res = update_persisted_fields(res, exec)
-    do_resolve_field(res, exec, res.source, res.path)
+    do_resolve_field(res, res.source, res.path)
   end
 
   # walk list results
@@ -159,21 +175,19 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   def resolve_field(field, exec, source, parent_type, path) do
     exec
     |> build_resolution_struct(field, source, parent_type, path)
-    |> do_resolve_field(exec, source, path)
+    |> do_resolve_field(source, path)
   end
 
   # bp_field needs to have a concrete schema node, AKA no unions or interfaces
-  defp do_resolve_field(res, exec, source, path) do
+  defp do_resolve_field(res, source, path) do
     res
     |> reduce_resolution
     |> case do
       %{state: :resolved} = res ->
-        exec = update_persisted_fields(exec, res)
-        build_result(res, exec, source, path)
+        build_result(res, source, path)
 
       %{state: :suspended} = res ->
-        exec = update_persisted_fields(exec, res)
-        {res, exec}
+        {res, res}
 
       final_res ->
         raise """
@@ -189,18 +203,18 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp build_resolution_struct(exec, bp_field, source, parent_type, path) do
-    common =
-      Map.take(exec, [:adapter, :context, :acc, :root_value, :schema, :fragments, :fields_cache])
-
-    %Absinthe.Resolution{
-      path: path,
-      source: source,
-      parent_type: parent_type,
-      middleware: bp_field.schema_node.middleware,
-      definition: bp_field,
-      arguments: bp_field.argument_data
+    %{
+      exec
+      | path: path,
+        state: :unresolved,
+        value: nil,
+        errors: [],
+        source: source,
+        parent_type: parent_type,
+        middleware: bp_field.schema_node.middleware,
+        definition: bp_field,
+        arguments: bp_field.argument_data
     }
-    |> Map.merge(common)
   end
 
   defp reduce_resolution(%{middleware: []} = res), do: res
@@ -231,14 +245,18 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     fun.(res, [])
   end
 
-  defp build_result(%{errors: errors} = res, exec, source, path) do
-    %{
-      value: value,
-      definition: bp_field,
-      extensions: extensions
-    } = res
-
-    full_type = Type.expand(bp_field.schema_node.type, exec.schema)
+  defp build_result(
+         %{
+           value: value,
+           definition: bp_field,
+           extensions: extensions,
+           schema: schema,
+           errors: errors
+         } = res,
+         source,
+         path
+       ) do
+    full_type = Type.expand(bp_field.schema_node.type, schema)
 
     bp_field = put_in(bp_field.schema_node.type, full_type)
 
@@ -254,7 +272,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     value
     |> to_result(bp_field, full_type, extensions)
     |> add_errors(Enum.reverse(errors), &put_result_error_value(&1, &2, bp_field, source, path))
-    |> walk_result(bp_field, full_type, exec, path)
+    |> walk_result(bp_field, full_type, res, path)
     |> propagate_null_trimming
   end
 
