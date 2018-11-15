@@ -19,6 +19,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     type Comment {
       author: User!
       subject: Post!
+      order: Int
     }
 
     enum Category {

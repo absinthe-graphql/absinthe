@@ -1492,6 +1492,7 @@ defmodule Absinthe.Schema.Notation do
             @external_resource @__absinthe_import_sdl_path__
           end
         ]
+
       :error ->
         raise Absinthe.Schema.Notation.Error,
               "Must provide `:path` option to `import_sdl` unless passing a raw SDL string as the first argument"
@@ -1501,8 +1502,15 @@ defmodule Absinthe.Schema.Notation do
   @spec do_import_sdl(Macro.Env.t(), String.t() | Macro.t(), Keyword.t()) :: Macro.t()
   defp do_import_sdl(env, sdl, opts) do
     ref = build_reference(env)
+
     quote do
-      with {:ok, definitions} <- unquote(__MODULE__).SDL.parse(unquote(sdl), __MODULE__, unquote(Macro.escape(ref)), unquote(Macro.escape(opts))) do
+      with {:ok, definitions} <-
+             unquote(__MODULE__).SDL.parse(
+               unquote(sdl),
+               __MODULE__,
+               unquote(Macro.escape(ref)),
+               unquote(Macro.escape(opts))
+             ) do
         @__absinthe_sdl_definitions__ definitions ++
                                         (Module.get_attribute(
                                            __MODULE__,
