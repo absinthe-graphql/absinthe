@@ -19,6 +19,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     type Comment {
       author: User!
       subject: Post!
+      order: Int
     }
 
     enum Category {
@@ -150,6 +151,12 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     test "works" do
       assert {:ok, %{data: %{"posts" => [%{"title" => "Foo"}, %{"title" => "Bar"}]}}} =
                Absinthe.run(@query, Definition)
+    end
+  end
+
+  describe "Absinthe.Schema.used_types/1" do
+    test "works" do
+      assert Absinthe.Schema.used_types(Definition)
     end
   end
 end

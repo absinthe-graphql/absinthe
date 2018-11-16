@@ -26,7 +26,8 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
 
     with {:ok, field_keys} <- get_field_keys(field, context) do
       for field_key <- field_keys,
-        do: Absinthe.Subscription.subscribe(pubsub, field_key, doc_id, blueprint)
+          do: Absinthe.Subscription.subscribe(pubsub, field_key, doc_id, blueprint)
+
       {:replace, blueprint, [{Phase.Subscription.Result, topic: doc_id}]}
     else
       {:error, error} ->

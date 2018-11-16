@@ -11,6 +11,10 @@ defmodule Absinthe.Phase.Schema.NormalizeReferences do
     {:ok, blueprint}
   end
 
+  def normalize_references(%Blueprint.TypeReference.Name{name: "Int"}) do
+    :integer
+  end
+
   def normalize_references(%Blueprint.TypeReference.Name{name: name}) do
     name |> Macro.underscore() |> String.to_atom()
   end

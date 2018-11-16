@@ -195,12 +195,11 @@ defmodule Absinthe.Execution.SubscriptionTest do
                context: %{pubsub: PubSub}
              )
 
-
     msg = %{
-             event: "subscription:data",
-             result: %{data: %{"multipleTopics" => "foo"}},
-             topic: topic
-           }
+      event: "subscription:data",
+      result: %{data: %{"multipleTopics" => "foo"}},
+      topic: topic
+    }
 
     Absinthe.Subscription.publish(PubSub, "foo", multiple_topics: "topic_1")
 
@@ -214,7 +213,6 @@ defmodule Absinthe.Execution.SubscriptionTest do
 
     assert_receive({:broadcast, ^msg})
   end
-
 
   @query """
   subscription {

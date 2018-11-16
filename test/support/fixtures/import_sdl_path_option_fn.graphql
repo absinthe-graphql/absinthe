@@ -7,4 +7,5 @@ type Post {
   (is a user)
   """
   author: User!
+  comments: [Comment]!
 }
