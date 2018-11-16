@@ -74,7 +74,6 @@ defmodule Absinthe.Phase.Schema.Validation.TypeReferencesExist do
   defp check_or_error(thing, type, types) do
     type =
       unwrap(type)
-      |> translate
 
     if type in types do
       thing
@@ -107,8 +106,4 @@ defmodule Absinthe.Phase.Schema.Validation.TypeReferencesExist do
     }
   end
 
-  # Convert from canonical GraphQL type names to internal Absinthe
-  # identifiers
-  defp translate(:int), do: :integer
-  defp translate(type), do: type
 end
