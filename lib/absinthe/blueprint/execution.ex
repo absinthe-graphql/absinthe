@@ -33,7 +33,6 @@ defmodule Absinthe.Blueprint.Execution do
 
   defstruct [
     :adapter,
-    :root_value,
     :schema,
     fragments: %{},
     fields_cache: %{},
