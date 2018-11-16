@@ -153,4 +153,10 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
                Absinthe.run(@query, Definition)
     end
   end
+
+  describe "Absinthe.Schema.used_types/1" do
+    test "works" do
+      assert Absinthe.Schema.used_types(Definition)
+    end
+  end
 end
