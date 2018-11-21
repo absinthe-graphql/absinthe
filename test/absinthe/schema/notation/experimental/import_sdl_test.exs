@@ -88,7 +88,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
           }
         },
         post: %{
-          upcased: [
+          upcased_title: [
             {:description, "The title, but upcased"},
             {:resolve, &__MODULE__.upcase_title/3}
           ]
@@ -144,7 +144,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     end
 
     test "work on fields, defined deeply" do
-      assert %{description: "The title, but upcased"} = lookup_compiled_field(Definition, :post, :upcased)
+      assert %{description: "The title, but upcased"} = lookup_compiled_field(Definition, :post, :upcased_title)
     end
 
     test "work on arguments, defined deeply" do
@@ -169,7 +169,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   describe "resolve" do
 
     test "work on fields, defined deeply" do
-      assert %{middleware: mw} = lookup_compiled_field(Definition, :post, :upcased)
+      assert %{middleware: mw} = lookup_compiled_field(Definition, :post, :upcased_title)
       assert length(mw) > 0
     end
 
@@ -204,11 +204,11 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   end
 
   @query """
-  { posts { upcased } }
+  { posts { upcasedTitle } }
   """
   describe "execution with deeply decoration-defined resolvers" do
     test "works" do
-      assert {:ok, %{data: %{"posts" => [%{"upcased" => "FOO"}, %{"upcased" => "BAR"}]}}} =
+      assert {:ok, %{data: %{"posts" => [%{"upcasedTitle" => "FOO"}, %{"upcasedTitle" => "BAR"}]}}} =
                Absinthe.run(@query, Definition)
     end
   end
