@@ -53,7 +53,7 @@ defmodule Absinthe.Schema.Notation.SDL do
           ref
 
         path ->
-          put_in(ref.location, %{file: path, line: node.source_location.line})
+          put_in(ref.location, %{file: {:unquote, [], [path]}, line: node.source_location.line})
       end
 
     %{node | __reference__: ref}

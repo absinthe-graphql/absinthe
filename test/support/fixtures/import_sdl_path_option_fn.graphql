@@ -1,6 +1,7 @@
 "A submitted post"
 type Post {
   title: String!
+  upcased: String!
   body: String!
   """
   The post author
