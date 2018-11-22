@@ -17,8 +17,7 @@ defmodule Absinthe.Type.Enum.Value do
     value that will be provided by query documents.
   * `:description` - A nice description for introspection.
   * `:value` - The raw, internal value that `:name` map to. This will be
-    provided as the argument value to resolve functions.
-    to `resolve` functions
+    provided as the argument value to `resolve` functions.
   * `:deprecation` - Deprecation information for a value, usually
     set-up using the `Absinthe.Schema.Notation.deprecate/2` convenience
     function.
