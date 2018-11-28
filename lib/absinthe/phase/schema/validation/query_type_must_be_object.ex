@@ -57,7 +57,7 @@ defmodule Absinthe.Phase.Schema.Validation.QueryTypeMustBeObject do
 
   def explanation(_value) do
     """
-    The root query type must be implemented and be a of type Object
+    The root query type must be implemented and be of type Object
 
     #{@description}
     """
