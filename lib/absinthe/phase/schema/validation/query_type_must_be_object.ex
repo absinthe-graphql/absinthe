@@ -34,12 +34,12 @@ defmodule Absinthe.Phase.Schema.Validation.QueryTypeMustBeObject do
 
   @description """
 
-  #Example
+  # Example
   defmodule MyApp.Schema do
     use Absinthe.Schema
 
     query do
-      #Fields go here
+      # Fields go here
     end
   end
 
