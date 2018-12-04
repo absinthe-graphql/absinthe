@@ -45,7 +45,8 @@ defmodule Absinthe.Phase.Document.Validation.NoFragmentCycles do
           graph
           |> :digraph_utils.topsort()
           |> Enum.reverse()
-          |> Enum.map(&Map.fetch!(fragments, &1))
+          |> Enum.map(&Map.get(fragments, &1))
+          |> Enum.reject(&is_nil/1)
 
         {fragments, 0}
       end
