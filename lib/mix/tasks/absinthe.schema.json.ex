@@ -53,7 +53,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
     Mix.Task.run("loadpaths", argv)
     Mix.Project.compile(argv)
 
-    {opts, args, _} = OptionParser.parse(argv)
+    {opts, args, _} = OptionParser.parse(argv, strict: [schema: :string, json_codec: :string, pretty: :boolean])
 
     schema = find_schema(opts)
     json_codec = find_json(opts)
@@ -80,14 +80,14 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   end
 
   defp codec_opts(codec, opts) when codec in [Poison, Jason] do
-    codec_pretty_opt(Keyword.get(opts, :pretty, "false"))
+    codec_pretty_opt(Keyword.get(opts, :pretty, false))
   end
 
   defp codec_opts(_, _) do
     []
   end
 
-  defp codec_pretty_opt("true"), do: [pretty: true]
+  defp codec_pretty_opt(true), do: [pretty: true]
   defp codec_pretty_opt(_), do: []
 
   defp find_schema(opts) do
