@@ -4,6 +4,94 @@ defmodule Absinthe.Schema do
 
   @type t :: module
 
+  @moduledoc """
+  Build GraphQL Schemas
+
+  ## Custom Schema Manipulation (in progress)
+  In Absinthe 1.5 schemas are built using the same process by which queries are
+  executed. All the fancy macros build up an intermediary tree of structs in the
+  `%Absinthe.Blueprint{}` namespace, which we generally call "Blueprint structs".
+
+  At the top you've got a `%Blueprint{}` struct which holds onto some schema
+  definitions that look a bit like this:
+
+  ```
+  %Blueprint.Schema.SchemaDefinition{
+    type_definitions: [
+      %Blueprint.Schema.ObjectTypeDefinition{identifier: :query, ...},
+      %Blueprint.Schema.ObjectTypeDefinition{identifier: :mutation, ...},
+      %Blueprint.Schema.ObjectTypeDefinition{identifier: :user, ...},
+      %Blueprint.Schema.EnumTypeDefinition{identifier: :sort_order, ...},
+    ]
+  }
+  ```
+
+  You can see what your schema's blueprint looks like by calling
+  `__absinthe_blueprint__` on any schema or type definition module.
+
+  ```
+  defmodule MyAppWeb.Schema do
+    use Absinthe.Schema
+
+    query do
+
+    end
+  end
+
+  > MyAppWeb.Schema.__absinthe_blueprint__
+  #=> %Absinthe.Blueprint{...}
+  ```
+
+  These blueprints are manipulated by phases, which validate and ultimately
+  construct a schema. This pipeline of phases you can hook into like you do for
+  queries.
+
+  ```
+  defmodule MyAppWeb.Schema do
+    use Absinthe.Schema
+
+    @pipeline_modifier MyAppWeb.CustomSchemaPhase
+
+    query do
+
+    end
+
+  end
+
+  defmodule MyAppWeb.CustomSchemaPhase do
+    alias Absinthe.{Phase, Pipeline, Blueprint}
+
+    # Add this module to the pipeline of phases
+    # to run on the schema
+    def pipeline(pipeline) do
+      Pipeline.insert_after(pipeline, Phase.Schema.TypeImports, __MODULE__)
+    end
+
+    # Here's the blueprint of the schema, let's do whatever we want with it.
+    def run(blueprint, _) do
+      {:ok, blueprint}
+    end
+  end
+  ```
+
+  The blueprint structs are pretty complex, but if you ever want to figure out
+  how to construct something in blueprints you can always just create the thing
+  in the normal AST and then look at the output. Let's see what interfaces look
+  like for example:
+
+  ```
+  defmodule Foo do
+    use Absinthe.Schema.Notation
+
+    interface :named do
+      field :name, :string
+    end
+  end
+
+  Foo.__absinthe_blueprint__ #=> ...
+  ```
+  """
+
   defmacro __using__(_opt) do
     Module.register_attribute(__CALLER__.module, :pipeline_modifier,
       accumulate: true,
