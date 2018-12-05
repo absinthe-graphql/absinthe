@@ -6,6 +6,19 @@ defmodule Absinthe.Introspection.Field do
   alias Absinthe.Schema
   alias Absinthe.Type
 
+  def find(schema, introspection_field) do
+    if :erlang.function_exported(schema, :introspection_field, 1) do
+      try do
+        schema.introspection_field(introspection_field)
+      rescue
+        FunctionClauseError ->
+          Absinthe.Introspection.Field.meta(introspection_field)
+      end
+    else
+      Absinthe.Introspection.Field.meta(introspection_field)
+    end
+  end
+
   def meta("typename") do
     %Type.Field{
       name: "__typename",
