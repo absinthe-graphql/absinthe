@@ -11,7 +11,10 @@ defmodule Absinthe.Phase.Schema.Validation.TypeNamesAreReserved do
   end
 
   defp validate_reserved(%struct{name: "__" <> _} = entity) do
-    if Absinthe.Type.built_in_module?(entity.__reference__.module) do
+    reserved_ok =
+      Absinthe.Type.built_in_module?(entity.__reference__.module) || entity.flags[:reserved_name]
+
+    if reserved_ok do
       entity
     else
       kind = struct_to_kind(struct)

@@ -217,9 +217,6 @@ defmodule Absinthe.Phase.Schema do
   # Given a schema type, lookup a child field definition
   @spec find_schema_field(nil | Type.t(), String.t(), Absinthe.Schema.t(), Absinthe.Adapter.t()) ::
           nil | Type.Field.t()
-  defp find_schema_field(_, "__" <> introspection_field, schema, _) do
-    Absinthe.Introspection.Field.find(schema, introspection_field)
-  end
 
   defp find_schema_field(%{of_type: type}, name, schema, adapter) do
     find_schema_field(type, name, schema, adapter)
