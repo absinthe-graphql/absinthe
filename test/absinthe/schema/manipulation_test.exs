@@ -2,8 +2,24 @@ defmodule Absinthe.Schema.ManipulationTest do
   use Absinthe.Case, async: true
   require IEx
 
+  defmodule ExtTypes do
+    use Absinthe.Schema.Notation
+
+    object :some_dyn_obj do
+      field :some_dyn_integer, :integer do
+        meta :some_string_meta, "some_dyn_integer meta"
+      end
+
+      field :some_dyn_string, :string do
+        meta :some_string_meta, "some_dyn_string meta"
+        resolve fn _, _ -> {:ok, "some_string_val"} end
+      end
+    end
+  end
+
   defmodule MyAppWeb.CustomSchemaPhase do
     alias Absinthe.{Phase, Pipeline, Blueprint}
+    alias Absinthe.Type
 
     # Add this module to the pipeline of phases
     # to run on the schema
@@ -13,7 +29,7 @@ defmodule Absinthe.Schema.ManipulationTest do
 
     # Here's the blueprint of the schema, let's do whatever we want with it.
     def run(blueprint = %Blueprint{}, _) do
-      {:ok, blueprint}
+      Blueprint.extend_fields(blueprint, ExtTypes)
     end
   end
 
@@ -62,6 +78,17 @@ defmodule Absinthe.Schema.ManipulationTest do
 
       field :some_string, :string do
         meta :some_string_meta, "some_string meta"
+        resolve fn _, _ -> {:ok, "some_string_val"} end
+      end
+    end
+
+    object :some_dyn_obj do
+      field :non_dyn_integer, :integer do
+        meta :some_string_meta, "non_dyn_integer meta"
+      end
+
+      field :non_dyn_string, :string do
+        meta :some_string_meta, "non_dyn_string meta"
         resolve fn _, _ -> {:ok, "some_string_val"} end
       end
     end
@@ -154,6 +181,55 @@ defmodule Absinthe.Schema.ManipulationTest do
               "name" => "someString",
               "type" => %{"name" => "String"},
               "__some_string_meta" => "some_string meta"
+            }
+          ]
+        }
+      }
+    }
+
+    actual = Absinthe.run!(q, MyAppWeb.Schema)
+
+    assert expected == actual
+  end
+
+  test "Extending Objects works" do
+    q = """
+    query {
+      __type(name: "SomeDynObj") {
+        fields {
+          name
+          type {
+            name
+          }
+          __some_string_meta
+        }
+      }
+    }
+    """
+
+    expected = %{
+      data: %{
+        "__type" => %{
+          "fields" => [
+            %{
+              "name" => "nonDynInteger",
+              "type" => %{"name" => "Int"},
+              "__some_string_meta" => "non_dyn_integer meta"
+            },
+            %{
+              "name" => "nonDynString",
+              "type" => %{"name" => "String"},
+              "__some_string_meta" => "non_dyn_string meta"
+            },
+            %{
+              "name" => "someDynInteger",
+              "type" => %{"name" => "Int"},
+              "__some_string_meta" => "some_dyn_integer meta"
+            },
+            %{
+              "name" => "someDynString",
+              "type" => %{"name" => "String"},
+              "__some_string_meta" => "some_dyn_string meta"
             }
           ]
         }
