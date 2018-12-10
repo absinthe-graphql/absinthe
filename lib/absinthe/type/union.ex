@@ -43,6 +43,7 @@ defmodule Absinthe.Type.Union do
           description: binary,
           types: [Type.identifier_t()],
           identifier: atom,
+          fields: map,
           __private__: Keyword.t(),
           definition: Module.t(),
           __reference__: Type.Reference.t()
@@ -53,6 +54,7 @@ defmodule Absinthe.Type.Union do
             identifier: nil,
             resolve_type: nil,
             types: [],
+            fields: nil,
             __private__: [],
             definition: nil,
             __reference__: nil

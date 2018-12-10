@@ -12,7 +12,7 @@ defmodule Absinthe.Phase.Schema.Validation.TypeNamesAreReserved do
 
   defp validate_reserved(%struct{name: "__" <> _} = entity) do
     reserved_ok =
-      Absinthe.Type.built_in_module?(entity.__reference__.module) || entity.flags[:reserved_name]
+      Absinthe.Type.built_in_module?(entity.__reference__.module) || reserved_name_ok_flag?(entity)
 
     if reserved_ok do
       entity
@@ -23,6 +23,14 @@ defmodule Absinthe.Phase.Schema.Validation.TypeNamesAreReserved do
 
       entity |> put_error(error(entity, detail))
     end
+  end
+
+  defp reserved_name_ok_flag?(%{flags: flags}) do
+    flags[:reserved_name]
+  end
+
+  defp reserved_name_ok_flag?(_) do
+    false
   end
 
   defp validate_reserved(entity) do

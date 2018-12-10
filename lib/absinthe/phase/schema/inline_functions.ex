@@ -46,7 +46,7 @@ defmodule Absinthe.Phase.Schema.InlineFunctions do
     end
   end
 
-  def inline_middleware(%Type.Object{} = type, schema) do
+  def inline_middleware(%type_name{} = type, schema) when type_name in [Type.Object, Type.Union, Type.Interface] do
     Map.update!(type, :fields, fn fields ->
       fields =
         Enum.map(fields, fn {field_ident, field} ->

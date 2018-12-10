@@ -12,12 +12,12 @@ defmodule Absinthe.Phase.Schema.Introspection do
   alias Absinthe.Blueprint.Schema.ObjectTypeDefinition
   alias Absinthe.Blueprint.Schema.ListTypeDefinition
   alias Absinthe.Blueprint.Schema.UnionTypeDefinition
+  alias Absinthe.Blueprint.Schema.InterfaceTypeDefinition
+
 
   def __absinthe_function__(identifier, :middleware) do
     [{{Absinthe.Resolution, :call}, resolve_fn(identifier)}]
   end
-
-
 
   def run(blueprint, _opts) do
     blueprint = attach_introspection_fields(blueprint)
@@ -40,13 +40,13 @@ defmodule Absinthe.Phase.Schema.Introspection do
   def update_type_defs(type_defs) do
     for type_def = %struct_type{} <- type_defs do
       cond do
-        type_def.identifier == "RootQueryType" ->
+        type_def.name == "RootQueryType" ->
           type_field = field_def(:type)
           schema_field = field_def(:schema)
           typename_field = field_def(:typename)
           %{type_def | fields: [type_field, schema_field, typename_field | type_def.fields]}
 
-        struct_type in [ObjectTypeDefinition, ListTypeDefinition] ->
+        struct_type in [ObjectTypeDefinition, ListTypeDefinition, UnionTypeDefinition, InterfaceTypeDefinition] ->
           typename_field = field_def(:typename)
           %{type_def | fields: [typename_field | type_def.fields]}
 
@@ -158,7 +158,7 @@ defmodule Absinthe.Phase.Schema.Introspection do
   end
 
   def filter_fields(fields) do
-    for {key, field = %{name: name}} <- fields, not String.starts_with?(name, "__") do
+    for {key, field = %{name: name}} <- fields, not String.starts_with?(name, "__"), into: %{} do
       {key, field}
     end
   end
