@@ -2,6 +2,8 @@ defmodule Absinthe.Schema.ManipulationTest do
   use Absinthe.Case, async: true
   require IEx
 
+  alias Absinthe.Phase.Schema.Validation.TypeNamesAreReserved
+
   defmodule ExtTypes do
     use Absinthe.Schema.Notation
 
@@ -13,6 +15,34 @@ defmodule Absinthe.Schema.ManipulationTest do
       field :some_dyn_string, :string do
         meta :some_string_meta, "some_dyn_string meta"
         resolve fn _, _ -> {:ok, "some_string_val"} end
+      end
+    end
+  end
+
+  defmodule CustomIntrospectionTypes do
+    use Absinthe.Schema.Notation
+
+    object :custom_introspection_helper do
+      description "Simple Helper Object used to define blueprint fields"
+
+      field :simple_string, :string do
+        description "customer introspection field"
+        resolve fn _, %{schema: schema} ->
+          {:ok, "This is a new introspection type on #{inspect(schema)}"}
+        end
+      end
+
+      field :some_string_meta, :string do
+        description "Expose some_string_meta"
+        resolve fn _,
+                %{
+                  source: source
+                } ->
+        private = source[:__private__] || []
+        meta_items = private[:meta] || []
+
+        {:ok, meta_items[:some_string_meta]}
+        end
       end
     end
   end
@@ -29,7 +59,25 @@ defmodule Absinthe.Schema.ManipulationTest do
 
     # Here's the blueprint of the schema, let's do whatever we want with it.
     def run(blueprint = %Blueprint{}, _) do
-      Blueprint.extend_fields(blueprint, ExtTypes)
+      custom_introspection_types = Blueprint.types_by_name(CustomIntrospectionTypes)
+      custom_introspection_fields = custom_introspection_types["CustomIntrospectionHelper"]
+
+      simple_string_field =
+        Blueprint.find_field(custom_introspection_fields, "simple_string")
+        |> TypeNamesAreReserved.make_reserved()
+
+      some_string_meta_field =
+        Blueprint.find_field(custom_introspection_fields, "some_string_meta")
+        |> TypeNamesAreReserved.make_reserved()
+
+      blueprint =
+        blueprint
+        |> Blueprint.extend_fields(ExtTypes)
+        |> Blueprint.add_field("__Type", simple_string_field)
+        |> Blueprint.add_field("__Field", simple_string_field)
+        |> Blueprint.add_field("__Field", some_string_meta_field)
+
+      {:ok, blueprint}
     end
   end
 
@@ -37,39 +85,7 @@ defmodule Absinthe.Schema.ManipulationTest do
     use Absinthe.Schema
     alias Absinthe.Type
 
-    #@pipeline_modifier MyAppWeb.CustomSchemaPhase
-
-    def introspection_field("simple_string") do
-      %Type.Field{
-        name: "__simple_string",
-        type: :string,
-        description: "customer introspection field",
-        middleware: [
-          Absinthe.Resolution.resolver_spec(fn _, %{schema: schema} ->
-            {:ok, "This is a new introspection type on #{inspect(schema)}"}
-          end)
-        ]
-      }
-    end
-
-    def introspection_field("some_string_meta") do
-      %Type.Field{
-        name: "__some_string_meta",
-        type: :string,
-        description: "Expose some_string_meta",
-        middleware: [
-          Absinthe.Resolution.resolver_spec(fn _,
-                                               %{
-                                                 source: source
-                                               } ->
-            private = source[:__private__] || []
-            meta_items = private[:meta] || []
-
-            {:ok, meta_items[:some_string_meta]}
-          end)
-        ]
-      }
-    end
+    @pipeline_modifier MyAppWeb.CustomSchemaPhase
 
     object :some_obj do
       field :some_integer, :integer do
@@ -150,124 +166,124 @@ defmodule Absinthe.Schema.ManipulationTest do
     assert expected == actual
   end
 
-  # test "Custom introspection works" do
-  #   q = """
-  #   query {
-  #     __type(name: "SomeObj") {
-  #       __simple_string
-  #       fields {
-  #         name
-  #         type {
-  #           name
-  #         }
-  #       }
-  #     }
-  #   }
-  #   """
+  test "Custom introspection works" do
+    q = """
+    query {
+      __type(name: "SomeObj") {
+        __simple_string
+        fields {
+          name
+          type {
+            name
+          }
+        }
+      }
+    }
+    """
 
-  #   expected = %{
-  #     data: %{
-  #       "__type" => %{
-  #         "__simple_string" =>
-  #           "This is a new introspection type on Absinthe.Schema.ManipulationTest.MyAppWeb.Schema",
-  #         "fields" => [
-  #           %{"name" => "someInteger", "type" => %{"name" => "Int"}},
-  #           %{"name" => "someString", "type" => %{"name" => "String"}}
-  #         ]
-  #       }
-  #     }
-  #   }
+    expected = %{
+      data: %{
+        "__type" => %{
+          "__simple_string" =>
+            "This is a new introspection type on Absinthe.Schema.ManipulationTest.MyAppWeb.Schema",
+          "fields" => [
+            %{"name" => "someInteger", "type" => %{"name" => "Int"}},
+            %{"name" => "someString", "type" => %{"name" => "String"}}
+          ]
+        }
+      }
+    }
 
-  #   actual = Absinthe.run!(q, MyAppWeb.Schema)
+    actual = Absinthe.run!(q, MyAppWeb.Schema)
 
-  #   assert expected == actual
-  # end
+    assert expected == actual
+  end
 
-  # test "Exposing meta data via introspection works" do
-  #   q = """
-  #   query {
-  #     __type(name: "SomeObj") {
-  #       fields {
-  #         name
-  #         type {
-  #           name
-  #         }
-  #         __some_string_meta
-  #       }
-  #     }
-  #   }
-  #   """
+  test "Exposing meta data via introspection works" do
+    q = """
+    query {
+      __type(name: "SomeObj") {
+        fields {
+          name
+          type {
+            name
+          }
+          __some_string_meta
+        }
+      }
+    }
+    """
 
-  #   expected = %{
-  #     data: %{
-  #       "__type" => %{
-  #         "fields" => [
-  #           %{
-  #             "name" => "someInteger",
-  #             "type" => %{"name" => "Int"},
-  #             "__some_string_meta" => "some_integer meta"
-  #           },
-  #           %{
-  #             "name" => "someString",
-  #             "type" => %{"name" => "String"},
-  #             "__some_string_meta" => "some_string meta"
-  #           }
-  #         ]
-  #       }
-  #     }
-  #   }
+    expected = %{
+      data: %{
+        "__type" => %{
+          "fields" => [
+            %{
+              "name" => "someInteger",
+              "type" => %{"name" => "Int"},
+              "__some_string_meta" => "some_integer meta"
+            },
+            %{
+              "name" => "someString",
+              "type" => %{"name" => "String"},
+              "__some_string_meta" => "some_string meta"
+            }
+          ]
+        }
+      }
+    }
 
-  #   actual = Absinthe.run!(q, MyAppWeb.Schema)
+    actual = Absinthe.run!(q, MyAppWeb.Schema)
 
-  #   assert expected == actual
-  # end
+    assert expected == actual
+  end
 
-  # test "Extending Objects works" do
-  #   q = """
-  #   query {
-  #     __type(name: "SomeDynObj") {
-  #       fields {
-  #         name
-  #         type {
-  #           name
-  #         }
-  #         __some_string_meta
-  #       }
-  #     }
-  #   }
-  #   """
+  test "Extending Objects works" do
+    q = """
+    query {
+      __type(name: "SomeDynObj") {
+        fields {
+          name
+          type {
+            name
+          }
+          __some_string_meta
+        }
+      }
+    }
+    """
 
-  #   expected = %{
-  #     data: %{
-  #       "__type" => %{
-  #         "fields" => [
-  #           %{
-  #             "name" => "nonDynInteger",
-  #             "type" => %{"name" => "Int"},
-  #             "__some_string_meta" => "non_dyn_integer meta"
-  #           },
-  #           %{
-  #             "name" => "nonDynString",
-  #             "type" => %{"name" => "String"},
-  #             "__some_string_meta" => "non_dyn_string meta"
-  #           },
-  #           %{
-  #             "name" => "someDynInteger",
-  #             "type" => %{"name" => "Int"},
-  #             "__some_string_meta" => "some_dyn_integer meta"
-  #           },
-  #           %{
-  #             "name" => "someDynString",
-  #             "type" => %{"name" => "String"},
-  #             "__some_string_meta" => "some_dyn_string meta"
-  #           }
-  #         ]
-  #       }
-  #     }
-  #   }
+    expected = %{
+      data: %{
+        "__type" => %{
+          "fields" => [
+            %{
+              "name" => "nonDynInteger",
+              "type" => %{"name" => "Int"},
+              "__some_string_meta" => "non_dyn_integer meta"
+            },
+            %{
+              "name" => "nonDynString",
+              "type" => %{"name" => "String"},
+              "__some_string_meta" => "non_dyn_string meta"
+            },
+            %{
+              "name" => "someDynInteger",
+              "type" => %{"name" => "Int"},
+              "__some_string_meta" => "some_dyn_integer meta"
+            },
+            %{
+              "name" => "someDynString",
+              "type" => %{"name" => "String"},
+              "__some_string_meta" => "some_dyn_string meta"
+            }
+          ]
+        }
+      }
+    }
 
-  #   actual = Absinthe.run!(q, MyAppWeb.Schema)
+    actual = Absinthe.run!(q, MyAppWeb.Schema)
 
-  #   assert expected == actual
-  # end
+    assert expected == actual
+  end
 end
