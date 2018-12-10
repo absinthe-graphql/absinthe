@@ -80,7 +80,6 @@ defmodule Absinthe.Schema.Notation.ImportTest do
         end
       end
 
-
       assert [:name] = field_list(InterfaceFoo, :foo)
 
       assert [:name] = field_list(InterfaceFoo, :real_foo)

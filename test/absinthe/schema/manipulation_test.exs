@@ -27,6 +27,7 @@ defmodule Absinthe.Schema.ManipulationTest do
 
       field :simple_string, :string do
         description "customer introspection field"
+
         resolve fn _, %{schema: schema} ->
           {:ok, "This is a new introspection type on #{inspect(schema)}"}
         end
@@ -34,14 +35,15 @@ defmodule Absinthe.Schema.ManipulationTest do
 
       field :some_string_meta, :string do
         description "Expose some_string_meta"
-        resolve fn _,
-                %{
-                  source: source
-                } ->
-        private = source[:__private__] || []
-        meta_items = private[:meta] || []
 
-        {:ok, meta_items[:some_string_meta]}
+        resolve fn _,
+                   %{
+                     source: source
+                   } ->
+          private = source[:__private__] || []
+          meta_items = private[:meta] || []
+
+          {:ok, meta_items[:some_string_meta]}
         end
       end
     end

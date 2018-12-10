@@ -188,7 +188,7 @@ defmodule Absinthe.Blueprint do
   end
 
   def find_field(%{fields: fields}, name) do
-    Enum.find(fields, fn(field = %{name: field_name}) -> field_name == name end)
+    Enum.find(fields, fn field = %{name: field_name} -> field_name == name end)
   end
 
   @doc """

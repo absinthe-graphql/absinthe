@@ -113,8 +113,10 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
               cond do
                 Absinthe.Type.introspection?(field) ->
                   []
+
                 !is_deprecated || (is_deprecated && show_deprecated) ->
                   [field]
+
                 true ->
                   []
               end

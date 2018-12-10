@@ -14,7 +14,6 @@ defmodule Absinthe.Phase.Schema.Introspection do
   alias Absinthe.Blueprint.Schema.UnionTypeDefinition
   alias Absinthe.Blueprint.Schema.InterfaceTypeDefinition
 
-
   def __absinthe_function__(identifier, :middleware) do
     [{{Absinthe.Resolution, :call}, resolve_fn(identifier)}]
   end
@@ -46,7 +45,12 @@ defmodule Absinthe.Phase.Schema.Introspection do
           typename_field = field_def(:typename)
           %{type_def | fields: [type_field, schema_field, typename_field | type_def.fields]}
 
-        struct_type in [ObjectTypeDefinition, ListTypeDefinition, UnionTypeDefinition, InterfaceTypeDefinition] ->
+        struct_type in [
+          ObjectTypeDefinition,
+          ListTypeDefinition,
+          UnionTypeDefinition,
+          InterfaceTypeDefinition
+        ] ->
           typename_field = field_def(:typename)
           %{type_def | fields: [typename_field | type_def.fields]}
 
@@ -91,9 +95,8 @@ defmodule Absinthe.Phase.Schema.Introspection do
       ],
       middleware: [
         {:ref, __MODULE__, :type}
-    ],
+      ],
       flags: %{reserved_name: true}
-
     }
   end
 
@@ -111,7 +114,6 @@ defmodule Absinthe.Phase.Schema.Introspection do
     }
   end
 
-
   def resolve_fn(:schema) do
     fn _, %{schema: schema} ->
       {:ok, schema}
@@ -124,6 +126,7 @@ defmodule Absinthe.Phase.Schema.Introspection do
         case Absinthe.Schema.lookup_type(schema, name) do
           type_def = %{fields: fields} ->
             %{type_def | fields: filter_fields(fields)}
+
           type_def ->
             type_def
         end
@@ -163,4 +166,3 @@ defmodule Absinthe.Phase.Schema.Introspection do
     end
   end
 end
-

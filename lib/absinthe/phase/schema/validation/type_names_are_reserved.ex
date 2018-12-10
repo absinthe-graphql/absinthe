@@ -33,6 +33,7 @@ defmodule Absinthe.Phase.Schema.Validation.TypeNamesAreReserved do
         identifier:
           identifier |> to_string() |> String.replace_prefix("", "__") |> String.to_atom()
     }
+
     allow_reserved(node)
   end
 
