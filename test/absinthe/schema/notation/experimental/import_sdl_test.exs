@@ -107,6 +107,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
         %{__reference__: %{location: %{file: file}}} = node, _ ->
           assert is_binary(file)
           {node, nil}
+
         node, _ ->
           {node, nil}
       end)
@@ -144,11 +145,13 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     end
 
     test "work on fields, defined deeply" do
-      assert %{description: "The title, but upcased"} = lookup_compiled_field(Definition, :post, :upcased_title)
+      assert %{description: "The title, but upcased"} =
+               lookup_compiled_field(Definition, :post, :upcased_title)
     end
 
     test "work on arguments, defined deeply" do
-      assert %{description: "Just reverse the list, if you want"} = lookup_compiled_argument(Definition, :query, :posts, :reverse)
+      assert %{description: "Just reverse the list, if you want"} =
+               lookup_compiled_argument(Definition, :query, :posts, :reverse)
     end
 
     test "can be multiline" do
@@ -167,12 +170,10 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   end
 
   describe "resolve" do
-
     test "work on fields, defined deeply" do
       assert %{middleware: mw} = lookup_compiled_field(Definition, :post, :upcased_title)
       assert length(mw) > 0
     end
-
   end
 
   describe "multiple invocations" do
@@ -208,11 +209,11 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   """
   describe "execution with deeply decoration-defined resolvers" do
     test "works" do
-      assert {:ok, %{data: %{"posts" => [%{"upcasedTitle" => "FOO"}, %{"upcasedTitle" => "BAR"}]}}} =
+      assert {:ok,
+              %{data: %{"posts" => [%{"upcasedTitle" => "FOO"}, %{"upcasedTitle" => "BAR"}]}}} =
                Absinthe.run(@query, Definition)
     end
   end
-
 
   describe "Absinthe.Schema.used_types/1" do
     test "works" do

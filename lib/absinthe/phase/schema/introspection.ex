@@ -38,7 +38,6 @@ defmodule Absinthe.Phase.Schema.Introspection do
 
   def update_type_defs(type_defs) do
     for type_def = %struct_type{} <- type_defs do
-
       cond do
         type_def.name in ["RootQueryType", "Query"] ->
           type_field = field_def(:type)

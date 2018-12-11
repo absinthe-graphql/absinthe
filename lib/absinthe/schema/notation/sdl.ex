@@ -68,6 +68,7 @@ defmodule Absinthe.Schema.Notation.SDL do
 
   defp do_put_ref(%node_type{__reference__: nil, name: name} = node, ref, opts) do
     adapter = Keyword.get(opts, :adapter, Absinthe.Adapter.LanguageConventions)
+
     ref =
       case opts[:path] do
         nil ->
@@ -81,9 +82,10 @@ defmodule Absinthe.Schema.Notation.SDL do
       cond do
         node_type in @field_types ->
           adapter.to_internal_name(name, :field)
+
         true ->
           name
-        end
+      end
 
     %{node | __reference__: ref, name: name}
   end
