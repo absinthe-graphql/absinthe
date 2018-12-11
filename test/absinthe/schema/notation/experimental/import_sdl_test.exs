@@ -5,6 +5,17 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   @moduletag :experimental
   @moduletag :sdl
 
+  defmodule ExtTypes do
+    use Absinthe.Schema.Notation
+
+    # Extend a Post Object
+    import_sdl """
+    type User {
+      upVotes: Int
+    }
+    """
+  end
+
   defmodule Definition do
     use Absinthe.Schema
 
@@ -94,6 +105,12 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
           ]
         }
       }
+    end
+
+    def decorations(%{identifier: :user}, _ancestors) do
+      user_ext = Absinthe.Blueprint.types_by_name(ExtTypes)["User"]
+
+      {:add_fields, user_ext.fields}
     end
 
     def decorations(_node, _ancestors) do
@@ -218,6 +235,34 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   describe "Absinthe.Schema.used_types/1" do
     test "works" do
       assert Absinthe.Schema.used_types(Definition)
+    end
+  end
+
+  @query """
+  query {
+    __type(name: "User") {
+      fields {
+        name
+        type {
+          name
+        }
+      }
+    }
+  }
+  """
+  describe "decorator can append fields" do
+    test "works" do
+      assert {:ok,
+              %{
+                data: %{
+                  "__type" => %{
+                    "fields" => [
+                      %{"name" => "name", "type" => %{"name" => nil}},
+                      %{"name" => "upVotes", "type" => %{"name" => "Int"}}
+                    ]
+                  }
+                }
+              }} = Absinthe.run(@query, Definition)
     end
   end
 end
