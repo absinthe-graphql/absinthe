@@ -4,6 +4,9 @@ defmodule Absinthe.Schema.Notation.SDL do
   @doc """
   Parse definitions from SDL source
   """
+
+  alias Absinthe.Blueprint
+
   @spec parse(sdl :: String.t(), Module.t(), map(), Keyword.t()) ::
           {:ok, [Absinthe.Blueprint.Schema.type_t()]} | {:error, String.t()}
   def parse(sdl, module, ref, opts) do
@@ -46,7 +49,25 @@ defmodule Absinthe.Schema.Notation.SDL do
 
   defp put_ref(node, ref, opts), do: do_put_ref(node, ref, opts)
 
-  defp do_put_ref(%{__reference__: nil} = node, ref, opts) do
+  @field_types [
+    Blueprint.Schema.FieldDefinition,
+    Blueprint.Schema.EnumValueDefinition,
+    Blueprint.Schema.InputValueDefinition
+  ]
+
+  # TODO:  Which else of these need the conversions?
+  # Blueprint.Schema.DirectiveDefinition,
+  # Blueprint.Schema.EnumTypeDefinition,
+  # Blueprint.Schema.InputObjectTypeDefinition,
+  # Blueprint.Schema.InterfaceTypeDefinition,
+  # Blueprint.Schema.ObjectTypeDefinition,
+  # Blueprint.Schema.ScalarTypeDefinition,
+  # Blueprint.Schema.UnionTypeDefinition
+  # Blueprint.Schema.EnumValueDefinition
+  # Blueprint.Schema.InputValueDefinition
+
+  defp do_put_ref(%node_type{__reference__: nil, name: name} = node, ref, opts) do
+    adapter = Keyword.get(opts, :adapter, Absinthe.Adapter.LanguageConventions)
     ref =
       case opts[:path] do
         nil ->
@@ -56,7 +77,15 @@ defmodule Absinthe.Schema.Notation.SDL do
           put_in(ref.location, %{file: {:unquote, [], [path]}, line: node.source_location.line})
       end
 
-    %{node | __reference__: ref}
+    name =
+      cond do
+        node_type in @field_types ->
+          adapter.to_internal_name(name, :field)
+        true ->
+          name
+        end
+
+    %{node | __reference__: ref, name: name}
   end
 
   defp do_put_ref(node, _ref, _opts), do: node

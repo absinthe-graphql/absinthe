@@ -51,7 +51,6 @@ defmodule Absinthe.Schema.ManipulationTest do
 
   defmodule MyAppWeb.CustomSchemaPhase do
     alias Absinthe.{Phase, Pipeline, Blueprint}
-    alias Absinthe.Type
 
     # Add this module to the pipeline of phases
     # to run on the schema
@@ -85,7 +84,6 @@ defmodule Absinthe.Schema.ManipulationTest do
 
   defmodule MyAppWeb.Schema do
     use Absinthe.Schema
-    alias Absinthe.Type
 
     @pipeline_modifier MyAppWeb.CustomSchemaPhase
 
