@@ -86,20 +86,11 @@ defmodule Absinthe.Phase.Schema.Decorate do
 
   def apply_decoration(
         node = %{fields: fields},
-        {:add_fields, new_field = %{name: new_field_name}}
-      ) do
-    filtered_fields =
-      fields
-      |> Enum.reject(fn %{name: field_name} -> field_name == new_field_name end)
-
-    %{node | fields: [new_field | filtered_fields]}
-  end
-
-  def apply_decoration(
-        node = %{fields: fields},
         {:add_fields, new_fields}
       )
       when is_list(new_fields) do
+    new_fields = new_fields |> List.wrap()
+
     new_field_names = Enum.map(new_fields, & &1.name)
 
     filtered_fields =

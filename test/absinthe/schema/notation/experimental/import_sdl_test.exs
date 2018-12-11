@@ -25,6 +25,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       "A list of posts"
       posts(filter: PostFilter, reverse: Boolean): [Post]
       admin: User!
+      droppedField: String
     }
 
     type Comment {
@@ -91,6 +92,16 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       {:resolve, &__MODULE__.get_posts/3}
     end
 
+    def decorations(%{identifier: :user}, _ancestors) do
+      user_ext = Absinthe.Blueprint.types_by_name(ExtTypes)["User"]
+
+      {:add_fields, user_ext.fields}
+    end
+
+    def decorations(%{identifier: :query}, _ancestors) do
+      {:del_fields, "dropped_field"}
+    end
+
     def decorations(%Absinthe.Blueprint{}, _) do
       %{
         query: %{
@@ -105,12 +116,6 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
           ]
         }
       }
-    end
-
-    def decorations(%{identifier: :user}, _ancestors) do
-      user_ext = Absinthe.Blueprint.types_by_name(ExtTypes)["User"]
-
-      {:add_fields, user_ext.fields}
     end
 
     def decorations(_node, _ancestors) do
@@ -239,30 +244,28 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   end
 
   @query """
-  query {
-    __type(name: "User") {
-      fields {
-        name
-        type {
-          name
-        }
-      }
-    }
-  }
+  { admin { upVotes } }
   """
   describe "decorator can append fields" do
     test "works" do
-      assert {:ok,
-              %{
-                data: %{
-                  "__type" => %{
-                    "fields" => [
-                      %{"name" => "name", "type" => %{"name" => nil}},
-                      %{"name" => "upVotes", "type" => %{"name" => "Int"}}
-                    ]
-                  }
-                }
-              }} = Absinthe.run(@query, Definition)
+      assert {:ok, %{data: %{"admin" => %{"upVotes" => 99}}}} =
+               Absinthe.run(@query, Definition, root_value: %{admin: %{up_votes: 99}})
     end
+  end
+
+  @query """
+  { droppedField }
+  """
+  test "decorator can remove fields" do
+    assert {:ok,
+            %{
+              errors: [
+                %{
+                  locations: [%{column: 3, line: 1}],
+                  message: "Cannot query field \"droppedField\" on type \"Query\"."
+                }
+              ]
+            }} =
+             Absinthe.run(@query, Definition, root_value: %{dropped_field: "Should be ignored"})
   end
 end
