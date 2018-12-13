@@ -175,7 +175,7 @@ defmodule Absinthe.Blueprint do
         type_defs =
           for type_def <- type_defs do
             if type_def.name == type_def_name do
-              %{type_def | fields: type_def.fields ++ [new_field]}
+              %{type_def | fields: type_def.fields ++ List.wrap(new_field)}
             else
               type_def
             end

@@ -82,11 +82,13 @@ defmodule Absinthe.Phase.Schema.Introspection do
       name: "__type",
       identifier: :__type,
       type: :__type,
+      module: __MODULE__,
       description: "Represents scalars, interfaces, object types, unions, enums in the system",
       triggers: %{},
       arguments: [
         %InputValueDefinition{
           __reference__: Absinthe.Schema.Notation.build_reference(__ENV__),
+          module: __MODULE__,
           identifier: :name,
           name: "name",
           type: %NonNull{of_type: :string},
@@ -103,7 +105,9 @@ defmodule Absinthe.Phase.Schema.Introspection do
   def field_def(:schema) do
     %FieldDefinition{
       name: "__schema",
+      identifier: :__schema,
       type: :__schema,
+      module: __MODULE__,
       description: "Represents the schema",
       triggers: %{},
       middleware: [
