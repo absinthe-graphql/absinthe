@@ -12,28 +12,7 @@ defmodule Absinthe.Introspection.Field do
       type: :string,
       description: "The name of the object type currently being queried.",
       middleware: [
-        Absinthe.Resolution.resolver_spec(fn
-          _, %{parent_type: %Type.Object{} = type} ->
-            {:ok, type.name}
-
-          _, %{source: source, parent_type: %Type.Interface{} = iface} = env ->
-            case Type.Interface.resolve_type(iface, source, env) do
-              nil ->
-                {:error, "Could not resolve type of concrete " <> iface.name}
-
-              type ->
-                {:ok, type.name}
-            end
-
-          _, %{source: source, parent_type: %Type.Union{} = union} = env ->
-            case Type.Union.resolve_type(union, source, env) do
-              nil ->
-                {:error, "Could not resolve type of concrete " <> union.name}
-
-              type ->
-                {:ok, type.name}
-            end
-        end)
+        Absinthe.Resolution.resolver_spec(&__MODULE__.typename_resolver/2)
       ]
     }
   end
@@ -70,5 +49,29 @@ defmodule Absinthe.Introspection.Field do
         end)
       ]
     }
+  end
+
+  def typename_resolver(_, %{parent_type: %Type.Object{} = type}) do
+    {:ok, type.name}
+  end
+
+  def typename_resolver(_, %{source: source, parent_type: %Type.Interface{} = iface} = env) do
+    case Type.Interface.resolve_type(iface, source, env) do
+      nil ->
+        {:error, "Could not resolve type of concrete " <> iface.name}
+
+      type ->
+        {:ok, type.name}
+    end
+  end
+
+  def typename_resolver(_, %{source: source, parent_type: %Type.Union{} = union} = env) do
+    case Type.Union.resolve_type(union, source, env) do
+      nil ->
+        {:error, "Could not resolve type of concrete " <> union.name}
+
+      type ->
+        {:ok, type.name}
+    end
   end
 end

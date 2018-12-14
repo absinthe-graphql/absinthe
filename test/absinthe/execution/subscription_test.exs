@@ -264,6 +264,36 @@ defmodule Absinthe.Execution.SubscriptionTest do
     assert String.contains?(error_log, "boom")
   end
 
+  @query """
+  subscription { user { group { name } id } }
+  """
+  test "identical subscription docs are deduplicated" do
+    opts = [context: %{test_pid: self()}]
+
+    assert {:ok, %{"subscribed" => doc1}} =
+             run(@query, Schema, opts)
+
+    assert {:ok, %{"subscribed" => doc2}} =
+             run(@query, Schema, opts)
+
+    assert doc1 == doc2
+  end
+
+  @query """
+  subscription { user { __typename group { name } id } }
+  """
+  test "identical subscription docs on different processes are deduplicated" do
+    opts = [context: %{test_pid: self()}]
+
+    task1 = Task.async(fn -> run(@query, Schema, opts) end)
+    task2 = Task.async(fn -> run(@query, Schema, opts) end)
+
+    assert {:ok, %{"subscribed" => doc1}} = Task.await(task1)
+    assert {:ok, %{"subscribed" => doc2}} = Task.await(task2)
+
+    assert doc1 == doc2
+  end
+
   test "different subscription docs are batched together" do
     opts = [context: %{test_pid: self()}]
 
