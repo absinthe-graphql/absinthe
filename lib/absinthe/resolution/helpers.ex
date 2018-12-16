@@ -28,6 +28,10 @@ defmodule Absinthe.Resolution.Helpers do
 
   Helper function for creating `Absinthe.Middleware.Batch`
 
+  ## Options
+    - `:timeout` default: `5_000`. The maximum timeout to wait for running 
+    a batch.
+    
   # Example
   Raw usage:
   ```elixir
@@ -54,7 +58,7 @@ defmodule Absinthe.Resolution.Helpers do
           Middleware.Batch.batch_fun(),
           term,
           Middleware.Batch.post_batch_fun(),
-          opts :: Keyword.t()
+          opts :: {:timeout, pos_integer}
         ) :: {:plugin, Middleware.Batch, term}
   def batch(batch_fun, batch_data, post_batch_fun, opts \\ []) do
     batch_config = {batch_fun, batch_data, post_batch_fun, opts}
