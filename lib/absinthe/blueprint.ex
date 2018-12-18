@@ -192,7 +192,7 @@ defmodule Absinthe.Blueprint do
   end
 
   @doc """
-  Index the types bye their name
+  Index the types by their name
   """
   def types_by_name(blueprint = %Blueprint{}) do
     for schema_def = %{type_definitions: type_defs} <- blueprint.schema_definitions,
