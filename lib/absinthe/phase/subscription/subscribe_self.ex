@@ -19,16 +19,15 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
     context = blueprint.execution.context
     pubsub = ensure_pubsub!(context)
 
-    hash = :crypto.hash(:sha256, :erlang.term_to_binary(blueprint)) |> Base.encode16()
-    doc_id = "__absinthe__:doc:#{hash}"
-
     %{selections: [field]} = op
 
-    with {:ok, field_keys} <- get_field_keys(field, context) do
-      for field_key <- field_keys,
-          do: Absinthe.Subscription.subscribe(pubsub, field_key, doc_id, blueprint)
+    with {:ok, config} <- get_config(field, context) do
+      field_keys = get_field_keys(field, config)
+      subscription_id = get_subscription_id(config, blueprint, options)
 
-      {:replace, blueprint, [{Phase.Subscription.Result, topic: doc_id}]}
+      for field_key <- field_keys,
+          do: Absinthe.Subscription.subscribe(pubsub, field_key, subscription_id, blueprint)
+      {:replace, blueprint, [{Phase.Subscription.Result, topic: subscription_id}]}
     else
       {:error, error} ->
         blueprint = update_in(blueprint.execution.validation_errors, &[error | &1])
@@ -41,7 +40,7 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
     end
   end
 
-  defp get_field_keys(%{schema_node: schema_node, argument_data: argument_data} = field, context) do
+  defp get_config(%{schema_node: schema_node, argument_data: argument_data} = field, context) do
     name = schema_node.identifier
 
     config =
@@ -63,11 +62,7 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
 
     case config do
       {:ok, config} ->
-        field_keys =
-          find_keys!(config)
-          |> Enum.map(fn key -> {name, key} end)
-
-        {:ok, field_keys}
+        {:ok, config}
 
       {:error, msg} ->
         error = %Phase.Error{
@@ -89,26 +84,10 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
     end
   end
 
-  defp find_keys!(config) do
-    case config[:topic] do
-      nil ->
-        raise """
-        Subscription config must include a non null topic!
-
-        #{inspect(config)}
-        """
-
-      [] ->
-        raise """
-        Subscription config must not provide an empty list of topics!
-
-        #{inspect(config)}
-        """
-
-      val ->
-        List.wrap(val)
-        |> Enum.map(&to_string/1)
-    end
+  defp get_field_keys(%{schema_node: schema_node} = _field, config) do
+    name = schema_node.identifier
+    find_field_keys!(config)
+    |> Enum.map(fn key -> {name, key} end)
   end
 
   defp ensure_pubsub!(context) do
@@ -122,6 +101,56 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
 
         Subscriptions require a configured pubsub module.
         """
+    end
+  end
+
+  defp find_field_keys!(config) do
+    topic =
+      config[:topic] ||
+        raise """
+        Subscription config must include a non null topic!
+
+        #{inspect(config)}
+        """
+
+    case topic do
+      [] ->
+        raise """
+        Subscription config must not provide an empty list of topics!
+
+        #{inspect(config)}
+        """
+
+      val ->
+        List.wrap(val)
+        |> Enum.map(&to_string/1)
+    end
+  end
+
+  defp get_subscription_id(config, blueprint, options) do
+    context_id = get_context_id(config)
+    document_id = get_document_id(config, blueprint, options)
+
+    "__absinthe__:doc:#{context_id}:#{document_id}"
+  end
+
+  defp get_context_id(config) do
+    context_id = config[:context_id] || :erlang.unique_integer()
+    to_string(context_id)
+  end
+
+  defp get_document_id(config, blueprint, options) do
+    case config[:document_id] do
+      nil ->
+        binary =
+          {blueprint.input, options[:variables]}
+          |> :erlang.term_to_binary()
+
+        :crypto.hash(:sha256, binary)
+        |> Base.encode16
+
+      val ->
+        val
     end
   end
 end
