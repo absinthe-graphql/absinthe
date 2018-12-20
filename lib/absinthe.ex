@@ -80,6 +80,7 @@ defmodule Absinthe do
   @type run_opts :: [
           context: %{},
           adapter: Absinthe.Adapter.t(),
+          variables: %{},
           root_value: term,
           operation_name: String.t(),
           analyze_complexity: boolean,
