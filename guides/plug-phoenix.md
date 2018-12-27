@@ -1,14 +1,14 @@
 # Plug and Phoenix Setup
 
 First, install Absinthe.Plug and a JSON codec of your choice,
-eg, [Poison](https://hex.pm/packages/poison):
+eg, [Jason](https://hex.pm/packages/jason):
 
 ```elixir
 # filename: mix.exs
 def deps do
   [
     {:absinthe_plug, "~> 1.4"},
-    {:poison, "~> 2.1.0"},
+    {:jason, "~> 1.1.0"},
   ]
 end
 ```
@@ -28,7 +28,7 @@ you should plug Absinthe.Plug after Plug.Parsers.
 ```elixir
 plug Plug.Parsers,
   parsers: [:urlencoded, :multipart, :json, Absinthe.Plug.Parser],
-  json_decoder: Poison
+  json_decoder: Jason
 
 plug Absinthe.Plug,
   schema: MyAppWeb.Schema
@@ -51,7 +51,7 @@ defmodule MyApp.Endpoint do
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
-    json_decoder: Poison
+    json_decoder: Jason
 
   plug Absinthe.Plug,
     schema: MyAppWeb.Schema
@@ -173,7 +173,7 @@ configure `Plug.Parsers` (or equivalent) to parse the request body before `Absin
 plug Plug.Parsers,
   parsers: [:urlencoded, :multipart, :json],
   pass: ["*/*"],
-  json_decoder: Poison
+  json_decoder: Jason
 ```
 
 For `application/graphql`, the POST body will be parsed as GraphQL query string,
@@ -191,7 +191,7 @@ As a plug, `Absinthe.Plug` requires very little configuration. If you want to su
 plug Plug.Parsers,
   parsers: [:urlencoded, :multipart, :json],
   pass: ["*/*"],
-  json_decoder: Poison
+  json_decoder: Jason
 
 plug Absinthe.Plug,
   schema: MyApp.Linen.Schema
