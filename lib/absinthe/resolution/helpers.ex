@@ -16,9 +16,27 @@ defmodule Absinthe.Resolution.Helpers do
   This is a helper function for using the `Absinthe.Middleware.Async`.
 
   Forbidden in mutation fields. (TODO: actually enforce this)
+
+  ## Options
+     - `:timeout` default: `30_000`. The maximum timeout to wait for running
+     the task.
+
+  ## Example
+
+  Using the `Absinthe.Resolution.Helpers.async/1` helper function:
+  ```elixir
+  field :time_consuming, :thing do
+    resolve fn _, _, _ ->
+      async(fn ->
+        {:ok, long_time_consuming_function()}
+      end)
+    end
+  end
+  ```
   """
   @spec async((() -> term)) :: {:middleware, Middleware.Async, term}
-  @spec async((() -> term), Keyword.t()) :: {:middleware, Middleware.Async, term}
+  @spec async((() -> term), opts :: [{:timeout, pos_integer}]) ::
+          {:middleware, Middleware.Async, term}
   def async(fun, opts \\ []) do
     {:middleware, Middleware.Async, {fun, opts}}
   end
@@ -29,10 +47,11 @@ defmodule Absinthe.Resolution.Helpers do
   Helper function for creating `Absinthe.Middleware.Batch`
 
   ## Options
-    - `:timeout` default: `5_000`. The maximum timeout to wait for running 
+    - `:timeout` default: `5_000`. The maximum timeout to wait for running
     a batch.
-    
-  # Example
+
+  ## Example
+
   Raw usage:
   ```elixir
   object :post do
