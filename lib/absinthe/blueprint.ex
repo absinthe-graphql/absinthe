@@ -15,6 +15,7 @@ defmodule Absinthe.Blueprint do
             schema_definitions: [],
             schema: nil,
             adapter: nil,
+            telemetry: %{},
             # Added by phases
             flags: %{},
             errors: [],
@@ -30,6 +31,7 @@ defmodule Absinthe.Blueprint do
           fragments: [Blueprint.Document.Fragment.Named.t()],
           schema: nil | Absinthe.Schema.t(),
           adapter: nil | Absinthe.Adapter.t(),
+          telemetry: map(),
           # Added by phases
           errors: [Absinthe.Phase.Error.t()],
           flags: flags_t,

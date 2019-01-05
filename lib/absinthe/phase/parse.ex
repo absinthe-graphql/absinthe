@@ -23,7 +23,13 @@ defmodule Absinthe.Phase.Parse do
   end
 
   def run(input, options) do
-    run(%Absinthe.Blueprint{input: input}, options)
+    telemetry = %{
+      start_time: System.system_time(),
+      start_time_mono: System.monotonic_time(),
+      source: input
+    }
+
+    run(%Absinthe.Blueprint{input: input, telemetry: telemetry}, options)
   end
 
   defp add_validation_error(bp, error) do

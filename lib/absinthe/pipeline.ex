@@ -104,7 +104,8 @@ defmodule Absinthe.Pipeline do
       {Phase.Subscription.SubscribeSelf, options},
       {Phase.Document.Execution.Resolution, options},
       # Format Result
-      Phase.Document.Result
+      Phase.Document.Result,
+      Phase.Telemetry
     ]
   end
 
