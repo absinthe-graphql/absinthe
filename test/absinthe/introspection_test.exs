@@ -525,4 +525,15 @@ defmodule Absinthe.IntrospectionTest do
       )
     end
   end
+
+  test "Doesn't fail for unknown introspection fields" do
+    """
+    {
+      __foobar {
+        baz
+      }
+    }
+    """
+    |> run(Absinthe.Fixtures.ContactSchema)
+  end
 end
