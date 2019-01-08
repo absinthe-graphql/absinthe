@@ -71,4 +71,6 @@ defmodule Absinthe.Introspection.Field do
       ]
     }
   end
+
+  def meta(_), do: nil
 end
