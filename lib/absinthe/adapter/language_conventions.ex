@@ -59,6 +59,10 @@ defmodule Absinthe.Adapter.LanguageConventions do
     camelized_name
   end
 
+  def to_internal_name(<<c::utf8, rest::binary>>, _) when c in ?A..?Z do
+    <<c>> <> Macro.underscore(rest)
+  end
+
   def to_internal_name(camelized_name, _role) do
     camelized_name
     |> Macro.underscore()
