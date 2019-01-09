@@ -11,6 +11,10 @@ defmodule Absinthe.Adapter.LanguageConventionsTest do
     test "converts external camelcase variable names to underscore" do
       assert "foo_bar" = LanguageConventions.to_internal_name("fooBar", :variable)
     end
+
+    test "converts capitalized camelcase to capitalized underscore" do
+      assert "Foo_bar" = LanguageConventions.to_internal_name("FooBar", :field)
+    end
   end
 
   describe "to_external_name/2" do
