@@ -18,6 +18,8 @@ defmodule Absinthe.Lexer do
       @space..@unicode_final
     ])
 
+  any_unicode = utf8_char([])
+
   # ## Ignored Tokens
 
   # UnicodeBOM :: "Byte Order Mark (U+FEFF)"
@@ -25,7 +27,7 @@ defmodule Absinthe.Lexer do
 
   # WhiteSpace ::
   #   - "Horizontal Tab (U+0009)"
-  #   - "Space (U+0020)"  
+  #   - "Space (U+0020)"
   whitespace =
     ascii_char([
       @horizontal_tab,
@@ -35,7 +37,7 @@ defmodule Absinthe.Lexer do
   # LineTerminator ::
   #   - "New Line (U+000A)"
   #   - "Carriage Return (U+000D)" [ lookahead ! "New Line (U+000A)" ]
-  #   - "Carriage Return (U+000D)" "New Line (U+000A)"    
+  #   - "Carriage Return (U+000D)" "New Line (U+000A)"
   line_terminator =
     choice([
       ascii_char([@newline]),
@@ -47,7 +49,7 @@ defmodule Absinthe.Lexer do
   # CommentChar :: SourceCharacter but not LineTerminator
   comment =
     string("#")
-    |> repeat_while(source_character, {:not_line_terminator, []})
+    |> repeat_while(any_unicode, {:not_line_terminator, []})
 
   # Comma :: ,
   comma = ascii_char([?,])
@@ -78,7 +80,7 @@ defmodule Absinthe.Lexer do
   #   - Name
   #   - IntValue
   #   - FloatValue
-  #   - StringValue  
+  #   - StringValue
 
   punctuator =
     choice([
@@ -185,7 +187,7 @@ defmodule Absinthe.Lexer do
     choice([
       ignore(string(~S(\u))) |> concat(escaped_unicode),
       ignore(ascii_char([?\\])) |> concat(escaped_character),
-      source_character
+      any_unicode
     ])
 
   # BlockStringCharacter ::
@@ -197,7 +199,7 @@ defmodule Absinthe.Lexer do
   block_string_character =
     choice([
       string(~S(\""")) |> replace(~s(""")),
-      source_character
+      any_unicode
     ])
 
   # StringValue ::
@@ -233,17 +235,33 @@ defmodule Absinthe.Lexer do
   end
 
   def tokenize(input) do
+    lines = String.split(input, ~r/\r?\n/)
     case do_tokenize(input) do
       {:ok, tokens, "", _, _, _} ->
+        tokens = Enum.map(tokens, &convert_token_column(&1, lines))
         {:ok, tokens}
 
       {:ok, _, rest, _, {line, line_offset}, byte_offset} ->
-        column = byte_offset - line_offset + 1
-        {:error, rest, {line, column}}
+        byte_column = byte_offset - line_offset + 1
+        {:error, rest, byte_loc_to_char_loc({line, byte_column}, lines)}
 
       other ->
         other
     end
+  end
+
+  defp convert_token_column({ident, loc, data}, lines) do
+    {ident, byte_loc_to_char_loc(loc, lines), data}
+  end
+  defp convert_token_column({ident, loc}, lines) do
+    {ident, byte_loc_to_char_loc(loc, lines)}
+  end
+
+  defp byte_loc_to_char_loc({line, byte_col}, lines) do
+    current_line = Enum.at(lines, line - 1)
+    byte_prefix = binary_part(current_line, 0, byte_col)
+    char_col = String.length(byte_prefix)
+    {line, char_col}
   end
 
   defparsec(
@@ -325,7 +343,7 @@ defmodule Absinthe.Lexer do
     {[chars], Map.put(context, :token_location, line_and_column(loc, byte_offset, 3))}
   end
 
-  defp block_string_value_token(_rest, chars, context, _loc, _byte_offset) do
+  defp block_string_value_token(rest, chars, context, _loc, _byte_offset) do
     value = '"""' ++ (chars |> Enum.reverse()) ++ '"""'
     {[{:block_string_value, context.token_location, value}], Map.delete(context, :token_location)}
   end
