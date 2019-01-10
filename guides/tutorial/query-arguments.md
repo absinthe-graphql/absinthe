@@ -227,7 +227,7 @@ end
 ```
 
 For the resolver, we've added another function head to
-`Resolvers.Content.find_posts/3`. This illustrates how you can use the
+`Resolvers.Content.list_posts/3`. This illustrates how you can use the
 first argument to a resolver to match the parent object of a field. In
 this case, that parent object would be a `Blog.Accounts.User` Ecto
 schema:
@@ -244,13 +244,13 @@ end
 ```
 
 Here we pass on the user and arguments to the domain logic function,
-`Blog.Content.list_posts/2`, which will find the posts for the user
+`Blog.Content.list_posts/3`, which will find the posts for the user
 and date (if it's provided; the `:date` argument is optional). The
 resolver, just as when it's used for the top level query `:posts`,
 returns the posts in an `:ok` tuple.
 
 > Check out the full implementation of logic for
-> `Blog.Content.list_posts/2`--and some simple seed data--in
+> `Blog.Content.list_posts/3`--and some simple seed data--in
 > the
 > [absinthe_tutorial](https://github.com/absinthe-graphql/absinthe_tutorial) repository.
 
