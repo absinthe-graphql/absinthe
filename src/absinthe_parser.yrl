@@ -194,9 +194,15 @@ DirectiveDefinition -> 'directive' '@' Name 'on' DirectiveDefinitionLocations Di
 DirectiveDefinition -> 'directive' '@' Name ArgumentsDefinition 'on' DirectiveDefinitionLocations Directives :
   build_ast_node('DirectiveDefinition', #{'name' => extract_binary('$3'), 'arguments' => '$4', 'directives' => '$7', 'locations' =>'$6'}, extract_location('$1')).
 
+SchemaDefinition -> 'schema' : build_ast_node('SchemaDefinition', #{}, extract_location('$1')).
+SchemaDefinition -> 'schema' Directives : build_ast_node('SchemaDefinition', #{'directives' => '$2'}, extract_location('$1')).
 SchemaDefinition -> 'schema' '{' FieldDefinitionList '}' : build_ast_node('SchemaDefinition', #{'fields' => '$3'}, extract_location('$1')).
 SchemaDefinition -> 'schema' Directives '{' FieldDefinitionList '}' : build_ast_node('SchemaDefinition', #{'directives' => '$2', 'fields' => '$4'}, extract_location('$1')).
 
+ObjectTypeDefinition -> 'type' Name :
+  build_ast_node('ObjectTypeDefinition', #{'name' => extract_binary('$2')}, extract_location('$1')).
+ObjectTypeDefinition -> 'type' Name Directives :
+  build_ast_node('ObjectTypeDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3'}, extract_location('$1')).
 ObjectTypeDefinition -> 'type' Name '{' FieldDefinitionList '}' :
   build_ast_node('ObjectTypeDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, extract_location('$1')).
 ObjectTypeDefinition -> 'type' Name Directives '{' FieldDefinitionList '}' :
@@ -235,11 +241,19 @@ InputValueDefinition -> Name ':' Type Directives : build_ast_node('InputValueDef
 InputValueDefinition -> Name ':' Type DefaultValue : build_ast_node('InputValueDefinition', #{'name' => extract_binary('$1'), 'type' => '$3', 'default_value' => '$4'}, extract_location('$1')).
 InputValueDefinition -> Name ':' Type DefaultValue Directives : build_ast_node('InputValueDefinition', #{'name' => extract_binary('$1'), 'type' => '$3', 'default_value' => '$4', 'directives' => '$5'}, extract_location('$1')).
 
+InterfaceTypeDefinition -> 'interface' Name :
+  build_ast_node('InterfaceTypeDefinition', #{'name' => extract_binary('$2')}, extract_location('$1')).
+InterfaceTypeDefinition -> 'interface' Name Directives :
+  build_ast_node('InterfaceTypeDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3'}, extract_location('$1')).
 InterfaceTypeDefinition -> 'interface' Name '{' FieldDefinitionList '}' :
-  build_ast_node('InterfaceTypeDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'},extract_location('$1')).
+  build_ast_node('InterfaceTypeDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, extract_location('$1')).
 InterfaceTypeDefinition -> 'interface' Name Directives '{' FieldDefinitionList '}' :
   build_ast_node('InterfaceTypeDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3', 'fields' => '$5'}, extract_location('$1')).
 
+UnionTypeDefinition -> 'union' Name :
+  build_ast_node('UnionTypeDefinition', #{'name' => extract_binary('$2')}, extract_location('$1')).
+UnionTypeDefinition -> 'union' Name Directives :
+  build_ast_node('UnionTypeDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3'}, extract_location('$1')).
 UnionTypeDefinition -> 'union' Name '=' UnionMembers :
   build_ast_node('UnionTypeDefinition', #{'name' => extract_binary('$2'), 'types' => '$4'}, extract_location('$1')).
 UnionTypeDefinition -> 'union' Name Directives '=' UnionMembers :
@@ -247,10 +261,15 @@ UnionTypeDefinition -> 'union' Name Directives '=' UnionMembers :
 
 UnionMembers -> NamedType : ['$1'].
 UnionMembers -> NamedType '|' UnionMembers : ['$1'|'$3'].
+UnionMembers -> '|' NamedType '|' UnionMembers : ['$2'|'$4'].
 
 ScalarTypeDefinition -> 'scalar' Name : build_ast_node('ScalarTypeDefinition', #{'name' => extract_binary('$2')}, extract_location('$2')).
 ScalarTypeDefinition -> 'scalar' Name Directives : build_ast_node('ScalarTypeDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3'}, extract_location('$2')).
 
+EnumTypeDefinition -> 'enum' Name :
+  build_ast_node('EnumTypeDefinition', #{'name' => extract_binary('$2')}, extract_location('$2')).
+EnumTypeDefinition -> 'enum' Name Directives :
+  build_ast_node('EnumTypeDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3'}, extract_location('$2')).
 EnumTypeDefinition -> 'enum' Name '{' EnumValueDefinitionList '}':
   build_ast_node('EnumTypeDefinition', #{'name' => extract_binary('$2'), 'values' => '$4'}, extract_location('$2')).
 EnumTypeDefinition -> 'enum' Name Directives '{' EnumValueDefinitionList '}':
@@ -264,20 +283,36 @@ EnumValueDefinitionList -> DescriptionDefinition EnumValueDefinition EnumValueDe
 
 DirectiveDefinitionLocations -> Name : [extract_binary('$1')].
 DirectiveDefinitionLocations -> Name '|' DirectiveDefinitionLocations : [extract_binary('$1')|'$3'].
+DirectiveDefinitionLocations -> '|' Name '|' DirectiveDefinitionLocations : [extract_binary('$2')|'$4'].
 
 EnumValueDefinition -> EnumValue : build_ast_node('EnumValueDefinition', #{'value' => extract_binary('$1')}, extract_location('$1')).
 EnumValueDefinition -> EnumValue Directives : build_ast_node('EnumValueDefinition', #{'value' => extract_binary('$1'), 'directives' => '$2'}, extract_location('$1')).
 
-
+InputObjectTypeDefinition -> 'input' Name :
+  build_ast_node('InputObjectTypeDefinition', #{'name' => extract_binary('$2')}, extract_location('$2')).
+InputObjectTypeDefinition -> 'input' Name Directives :
+  build_ast_node('InputObjectTypeDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3'}, extract_location('$2')).
 InputObjectTypeDefinition -> 'input' Name '{' InputValueDefinitionList '}' :
   build_ast_node('InputObjectTypeDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, extract_location('$2')).
 InputObjectTypeDefinition -> 'input' Name Directives '{' InputValueDefinitionList '}' :
   build_ast_node('InputObjectTypeDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3', 'fields' => '$5'}, extract_location('$2')).
 
-
+TypeExtensionDefinition -> 'extend' EnumTypeDefinition :
+  build_ast_node('TypeExtensionDefinition', #{'definition' => '$2'}, extract_location('$1')).
+TypeExtensionDefinition -> 'extend' InputObjectTypeDefinition :
+  build_ast_node('TypeExtensionDefinition', #{'definition' => '$2'}, extract_location('$1')).
+TypeExtensionDefinition -> 'extend' InterfaceTypeDefinition :
+  build_ast_node('TypeExtensionDefinition', #{'definition' => '$2'}, extract_location('$1')).
 TypeExtensionDefinition -> 'extend' ObjectTypeDefinition :
   build_ast_node('TypeExtensionDefinition', #{'definition' => '$2'}, extract_location('$1')).
+TypeExtensionDefinition -> 'extend' ScalarTypeDefinition :
+  build_ast_node('TypeExtensionDefinition', #{'definition' => '$2'}, extract_location('$1')).
+TypeExtensionDefinition -> 'extend' SchemaDefinition :
+  build_ast_node('TypeExtensionDefinition', #{'definition' => '$2'}, extract_location('$1')).
+TypeExtensionDefinition -> 'extend' UnionTypeDefinition :
+  build_ast_node('TypeExtensionDefinition', #{'definition' => '$2'}, extract_location('$1')).
 
+Expect 10.
 
 Erlang code.
 
@@ -297,7 +332,6 @@ extract_child_location(#{loc := #{'line' := Line, 'column' := Column}}) ->
 extract_child_location(_) ->
   #{'line' => nil, 'column' => nil}.
 
-
 % Value-level Utilities
 
 extract_atom({Value, _Loc}) ->
@@ -311,7 +345,6 @@ extract_binary({Token, _Loc}) ->
 
 extract_binary({_Token, _Loc, Value}) ->
   list_to_binary(Value).
-
 
 % AST Generation
 
@@ -358,7 +391,6 @@ process_string([H | T], Acc) ->
 
 hexlist_to_utf8_binary(HexList) ->
   unicode:characters_to_binary([httpd_util:hexlist_to_integer(HexList)]).
-
 
 % Block String
 
@@ -460,18 +492,15 @@ leading_whitespace([_H | _T], N) ->
 is_blank(BlockStringValue) ->
     leading_whitespace(BlockStringValue) == length(BlockStringValue).
 
-
 % Integer
 
 extract_integer({_Token, _Loc, Value}) ->
   {Int, []} = string:to_integer(Value), Int.
 
-
 % Float
 
 extract_float({_Token, _Loc, Value}) ->
   {Float, []} = string:to_float(Value), Float.
-
 
 % Boolean
 
@@ -479,4 +508,3 @@ extract_boolean({_Token, _Loc, "true"}) ->
   true;
 extract_boolean({_Token, _Loc, "false"}) ->
   false.
-
