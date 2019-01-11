@@ -395,7 +395,7 @@ hexlist_to_utf8_binary(HexList) ->
 % Block String
 
 extract_quoted_block_string_token({_Token, _Loc, Value}) ->
-  iolist_to_binary(process_block_string(lists:sublist(Value, 4, length(Value) - 6))).
+  unicode:characters_to_binary(process_block_string(lists:sublist(Value, 4, length(Value) - 6))).
 
 -spec process_block_string(string()) -> string().
 process_block_string(Escaped) ->
@@ -410,7 +410,7 @@ process_block_string([H | T], Acc) -> process_block_string(T, [H | Acc]).
 
 -spec block_string_value(string()) -> string().
 block_string_value(Value) ->
-  [FirstLine | Rest] = re:split(Value, "\n", [{return,list}]),
+  [FirstLine | Rest] = string:split(Value, "\n", all),
   Prefix = indentation_prefix(common_indent(Rest)),
   UnindentedLines = unindent(Rest, Prefix),
   Lines = trim_blank_lines([FirstLine | UnindentedLines]),

@@ -196,15 +196,6 @@ defmodule Absinthe.Phase.Parse.BlockStringsTest do
              ])
   end
 
-  defp extract_error_message(err) do
-    get_in(err, [
-      Access.key(:execution, %{}),
-      Access.key(:validation_errors, []),
-      Access.at(0),
-      Access.key(:message, nil)
-    ])
-  end
-
   defp extract_body(value) do
     get_in(value, [
       Access.key(:definitions),

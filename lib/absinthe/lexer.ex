@@ -6,17 +6,9 @@ defmodule Absinthe.Lexer do
   @newline 0x000A
   @carriage_return 0x000D
   @space 0x0020
-  @unicode_final 0xFFFF
   @unicode_bom 0xFEFF
 
   # SourceCharacter :: /[\u0009\u000A\u000D\u0020-\uFFFF]/
-  source_character =
-    utf8_char([
-      @horizontal_tab,
-      @newline,
-      @carriage_return,
-      @space..@unicode_final
-    ])
 
   any_unicode = utf8_char([])
 
@@ -198,22 +190,23 @@ defmodule Absinthe.Lexer do
   # lines and uniform indentation with {BlockStringValue()}.
   block_string_character =
     choice([
-      string(~S(\""")) |> replace(~s(""")),
+      ignore(ascii_char([?\\])) |> concat(times(ascii_char([?"]), 3)),
       any_unicode
     ])
 
   # StringValue ::
   #   - `"` StringCharacter* `"`
   #   - `"""` BlockStringCharacter* `"""`
-  # TODO: Use block_string_character
   string_value =
-    ascii_char([?"])
+    ignore(ascii_char([?"]))
+    |> traverse({:mark_string_start, []})
     |> repeat_while(string_character, {:not_end_of_quote, []})
-    |> ascii_char([?"])
-    |> traverse({:labeled_token, [:string_value]})
+    |> ignore(ascii_char([?"]))
+    |> traverse({:string_value_token, []})
 
   block_string_value =
-    ignore(string(~S(""")) |> traverse({:mark_block_string_start, []}))
+    ignore(string(~S("""))
+    |> traverse({:mark_block_string_start, []}))
     |> repeat_while(block_string_character, {:not_end_of_block_quote, []})
     |> ignore(string(~S(""")))
     |> traverse({:block_string_value_token, []})
@@ -339,13 +332,22 @@ defmodule Absinthe.Lexer do
     {[{token_name, line_and_column(loc, byte_offset, length(value)), value}], context}
   end
 
+  defp mark_string_start(_rest, chars, context, loc, byte_offset) do
+    {[chars], Map.put(context, :token_location, line_and_column(loc, byte_offset, 1))}
+  end
+
   defp mark_block_string_start(_rest, chars, context, loc, byte_offset) do
     {[chars], Map.put(context, :token_location, line_and_column(loc, byte_offset, 3))}
   end
 
-  defp block_string_value_token(rest, chars, context, _loc, _byte_offset) do
+  defp block_string_value_token(_rest, chars, context, _loc, _byte_offset) do
     value = '"""' ++ (chars |> Enum.reverse()) ++ '"""'
     {[{:block_string_value, context.token_location, value}], Map.delete(context, :token_location)}
+  end
+
+  defp string_value_token(_rest, chars, context, _loc, _byte_offset) do
+    value = '"' ++ tl(chars |> Enum.reverse()) ++ '"'
+    {[{:string_value, context.token_location, value}], Map.delete(context, :token_location)}
   end
 
   defp atom_token(_rest, chars, context, loc, byte_offset) do
