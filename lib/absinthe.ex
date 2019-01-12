@@ -83,7 +83,7 @@ defmodule Absinthe do
           root_value: term,
           operation_name: String.t(),
           analyze_complexity: boolean,
-          variables: %{optional(String.t) => any()},
+          variables: %{optional(String.t()) => any()},
           max_complexity: non_neg_integer | :infinity
         ]
 

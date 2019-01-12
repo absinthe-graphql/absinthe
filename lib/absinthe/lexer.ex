@@ -205,8 +205,10 @@ defmodule Absinthe.Lexer do
     |> traverse({:string_value_token, []})
 
   block_string_value =
-    ignore(string(~S("""))
-    |> traverse({:mark_block_string_start, []}))
+    ignore(
+      string(~S("""))
+      |> traverse({:mark_block_string_start, []})
+    )
     |> repeat_while(block_string_character, {:not_end_of_block_quote, []})
     |> ignore(string(~S(""")))
     |> traverse({:block_string_value_token, []})
@@ -229,6 +231,7 @@ defmodule Absinthe.Lexer do
 
   def tokenize(input) do
     lines = String.split(input, ~r/\r?\n/)
+
     case do_tokenize(input) do
       {:ok, tokens, "", _, _, _} ->
         tokens = Enum.map(tokens, &convert_token_column(&1, lines))
@@ -246,6 +249,7 @@ defmodule Absinthe.Lexer do
   defp convert_token_column({ident, loc, data}, lines) do
     {ident, byte_loc_to_char_loc(loc, lines), data}
   end
+
   defp convert_token_column({ident, loc}, lines) do
     {ident, byte_loc_to_char_loc(loc, lines)}
   end

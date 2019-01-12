@@ -18,8 +18,7 @@ defmodule Absinthe.Phase.Parse.LanguageTest do
   end
 
   test "parses schema-with-emojis.graphql" do
-    filename =
-      Path.join(__DIR__, "../../../support/fixtures/language/schema-with-emojis.graphql")
+    filename = Path.join(__DIR__, "../../../support/fixtures/language/schema-with-emojis.graphql")
 
     input = File.read!(filename)
     assert {:ok, _} = run(input)

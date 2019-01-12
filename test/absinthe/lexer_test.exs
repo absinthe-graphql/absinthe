@@ -59,19 +59,17 @@ defmodule Absinthe.LexerTest do
   """
   test "document with emojis" do
     assert {:ok,
-    [
-      {:block_string_value, {2, 1},
-       '"""\nA block quote with a 👍 emoji.\n"""'},
-      {:"{", {5, 1}},
-      {:name, {6, 3}, 'foo'},
-      {:"(", {6, 6}},
-      {:name, {6, 7}, 'bar'},
-      {:":", {6, 10}},
-      {:string_value, {6, 12}, '"A string with a 🎉 emoji."'},
-      {:")", {6, 38}},
-      {:name, {6, 40}, 'anotherOnSameLine'},
-      {:"}", {7, 1}}
-    ]} == Absinthe.Lexer.tokenize(@query)
+            [
+              {:block_string_value, {2, 1}, '"""\nA block quote with a 👍 emoji.\n"""'},
+              {:"{", {5, 1}},
+              {:name, {6, 3}, 'foo'},
+              {:"(", {6, 6}},
+              {:name, {6, 7}, 'bar'},
+              {:":", {6, 10}},
+              {:string_value, {6, 12}, '"A string with a 🎉 emoji."'},
+              {:")", {6, 38}},
+              {:name, {6, 40}, 'anotherOnSameLine'},
+              {:"}", {7, 1}}
+            ]} == Absinthe.Lexer.tokenize(@query)
   end
-
 end

@@ -53,7 +53,8 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
     Mix.Task.run("loadpaths", argv)
     Mix.Project.compile(argv)
 
-    {opts, args, _} = OptionParser.parse(argv, strict: [schema: :string, json_codec: :string, pretty: :boolean])
+    {opts, args, _} =
+      OptionParser.parse(argv, strict: [schema: :string, json_codec: :string, pretty: :boolean])
 
     schema = find_schema(opts)
     json_codec = find_json(opts)
