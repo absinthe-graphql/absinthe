@@ -10,6 +10,9 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
     # Embedded SDL
     import_sdl """
+    directive @feature(name: String!) on SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | INTERFACE | UNION | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+    directive @another(name: String!) on SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | INTERFACE | UNION | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+
     type Query {
       "A list of posts"
       posts(filter: PostFilter): [Post]
@@ -37,11 +40,10 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       name: String!
     }
 
-    interface Titled {
+    interface Titled @feature(name: "bar") {
       title: String!
     }
 
-    scalar A
     scalar B
 
     union SearchResult = Post | User

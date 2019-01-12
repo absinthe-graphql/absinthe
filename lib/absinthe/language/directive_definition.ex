@@ -20,9 +20,21 @@ defmodule Absinthe.Language.DirectiveDefinition do
         }
 
   defimpl Blueprint.Draft do
+    @spec convert(
+            %{
+              arguments: any(),
+              description: any(),
+              directives: any(),
+              loc: nil | %{column: pos_integer(), line: pos_integer()},
+              locations: any(),
+              name: atom() | binary()
+            },
+            any()
+          ) :: Absinthe.Blueprint.Schema.DirectiveDefinition.t()
     def convert(node, doc) do
       %Blueprint.Schema.DirectiveDefinition{
         name: node.name,
+        identifier: Macro.underscore(node.name) |> String.to_atom(),
         description: node.description,
         arguments: Absinthe.Blueprint.Draft.convert(node.arguments, doc),
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
