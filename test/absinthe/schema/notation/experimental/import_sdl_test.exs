@@ -10,8 +10,8 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
     # Embedded SDL
     import_sdl """
-    directive @feature(name: String!) on SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | INTERFACE | UNION | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
-    directive @another(name: String!) on SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | INTERFACE | UNION | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+    directive @foo(name: String!) on SCALAR | OBJECT
+    directive @bar(name: String!) on SCALAR | OBJECT
 
     type Query {
       "A list of posts"
@@ -80,6 +80,13 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
     def decorations(_node, _ancestors) do
       []
+    end
+  end
+
+  describe "directives" do
+    test "can be defined" do
+      assert %{name: "foo", identifier: :foo, locations: [:object, :scalar]} = lookup_compiled_directive(Definition, :foo)
+      assert %{name: "bar", identifier: :bar, locations: [:object, :scalar]} = lookup_compiled_directive(Definition, :bar)
     end
   end
 
