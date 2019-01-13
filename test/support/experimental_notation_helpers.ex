@@ -13,6 +13,10 @@ defmodule ExperimentalNotationHelpers do
     Absinthe.Schema.lookup_type(mod, type_ident)
   end
 
+  def lookup_compiled_directive(mod, directive_ident) do
+    Absinthe.Schema.lookup_directive(mod, directive_ident)
+  end
+
   def lookup_field(mod, type_ident, field_ident) do
     type = Blueprint.Schema.lookup_type(mod.__absinthe_blueprint__(), type_ident)
 
