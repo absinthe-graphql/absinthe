@@ -47,49 +47,65 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
 
   @introspection_graphql Path.join([:code.priv_dir(:absinthe), "graphql", "introspection.graphql"])
 
+  defmodule Options do
+    defstruct filename: nil, schema: nil, json_codec: nil, pretty: false
+
+    @type t() :: %__MODULE__{
+            filename: String.t(),
+            schema: module(),
+            json_codec: module(),
+            pretty: boolean()
+          }
+  end
+
   def run(argv) do
     Application.ensure_all_started(:absinthe)
 
     Mix.Task.run("loadpaths", argv)
     Mix.Project.compile(argv)
 
-    {opts, args, _} =
-      OptionParser.parse(argv, strict: [schema: :string, json_codec: :string, pretty: :boolean])
+    opts = parse_options(argv)
 
-    schema = find_schema(opts)
-    json_codec = find_json(opts)
-    filename = args |> List.first() || @default_filename
-
-    {:ok, query} = File.read(@introspection_graphql)
-
-    case Absinthe.run(query, schema) do
-      {:ok, result} ->
-        create_directory(Path.dirname(filename))
-        content = json_codec.module.encode!(result, json_codec.opts)
-        create_file(filename, content, force: true)
-
-      {:error, error} ->
-        raise error
+    case generate_schema(opts) do
+      {:ok, content} -> write_schema(content, opts.filename)
+      {:error, error} -> raise error
     end
   end
 
-  defp find_json(opts) do
-    json_codec_opt = Keyword.get(opts, :json_codec, @default_codec_name)
-    module = String.to_atom("Elixir." <> json_codec_opt)
-
-    %{module: module, opts: codec_opts(module, opts)}
+  @spec generate_schema(Options.t()) :: String.t()
+  def generate_schema(%Options{
+        pretty: pretty,
+        schema: schema,
+        json_codec: json_codec
+      }) do
+    with {:ok, query} <- File.read(@introspection_graphql),
+         {:ok, result} <- Absinthe.run(query, schema),
+         {:ok, _} <- check_function_available(json_codec, :encode),
+         {:ok, content} <- json_codec.encode(result, pretty: pretty) do
+      {:ok, content}
+    else
+      {:error, reason} -> {:error, reason}
+      error -> {:error, error}
+    end
   end
 
-  defp codec_opts(codec, opts) when codec in [Poison, Jason] do
-    codec_pretty_opt(Keyword.get(opts, :pretty, false))
+  @spec parse_options([String.t()]) :: Options.t()
+  def parse_options(argv) do
+    parse_options = [strict: [schema: :string, json_codec: :string, pretty: :boolean]]
+    {opts, args, _} = OptionParser.parse(argv, parse_options)
+
+    %Options{
+      filename: args |> List.first() || @default_filename,
+      schema: find_schema(opts),
+      json_codec: json_codec_as_atom(opts),
+      pretty: Keyword.get(opts, :pretty, false)
+    }
   end
 
-  defp codec_opts(_, _) do
-    []
+  defp json_codec_as_atom(opts) do
+    codec_name = Keyword.get(opts, :json_codec, @default_codec_name)
+    String.to_atom("Elixir." <> codec_name)
   end
-
-  defp codec_pretty_opt(true), do: [pretty: true]
-  defp codec_pretty_opt(_), do: []
 
   defp find_schema(opts) do
     case Keyword.get(opts, :schema, Application.get_env(:absinthe, :schema)) do
@@ -98,6 +114,22 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
 
       value ->
         [value] |> Module.safe_concat()
+    end
+  end
+
+  defp write_schema(content, filename) do
+    create_directory(Path.dirname(filename))
+    create_file(filename, content, force: true)
+  end
+
+  defp check_function_available(module, func) do
+    available =
+      Code.ensure_compiled?(module) and Keyword.has_key?(module.__info__(:functions), func)
+
+    if available do
+      {:ok, module}
+    else
+      {:error, "Module '#{module}' has not been loaded or does not provide '#{func}'."}
     end
   end
 end
