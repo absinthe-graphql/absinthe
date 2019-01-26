@@ -59,7 +59,7 @@ defmodule Mix.Tasks.Absinthe.Schema.JsonTest do
     test "fails if codec hasn't been loaded" do
       argv = ["--schema", @test_schema, "--json-codec", "UnloadedCodec"]
       opts = Task.parse_options(argv)
-      assert {:error, _} = Task.generate_schema(opts)
+      catch_error(Task.generate_schema(opts))
     end
 
     test "can use a custom codec" do

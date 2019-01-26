@@ -80,9 +80,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
         schema: schema,
         json_codec: json_codec
       }) do
-    with {:ok, query} <- File.read(@introspection_graphql),
-         {:ok, result} <- Absinthe.run(query, schema),
-         {:ok, _} <- check_function_available(json_codec, :encode!),
+    with {:ok, result} <- Absinthe.Schema.introspect(schema),
          content <- json_codec.encode!(result, pretty: pretty) do
       {:ok, content}
     else
@@ -106,8 +104,12 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   end
 
   defp json_codec_as_atom(opts) do
-    codec_name = Keyword.get(opts, :json_codec, @default_codec_name)
-    String.to_atom("Elixir." <> codec_name)
+    opts
+    |> Keyword.fetch(:json_codec)
+    |> case do
+      {:ok, codec} -> Module.concat([codec])
+      _ -> Jason
+    end
   end
 
   defp find_schema(opts) do
@@ -123,16 +125,5 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   defp write_schema(content, filename) do
     create_directory(Path.dirname(filename))
     create_file(filename, content, force: true)
-  end
-
-  defp check_function_available(module, func) do
-    available =
-      Code.ensure_compiled?(module) and Keyword.has_key?(module.__info__(:functions), func)
-
-    if available do
-      {:ok, module}
-    else
-      {:error, "Module '#{module}' has not been loaded or does not provide '#{func}'."}
-    end
   end
 end
