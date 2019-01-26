@@ -82,8 +82,8 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
       }) do
     with {:ok, query} <- File.read(@introspection_graphql),
          {:ok, result} <- Absinthe.run(query, schema),
-         {:ok, _} <- check_function_available(json_codec, :encode),
-         {:ok, content} <- json_codec.encode(result, pretty: pretty) do
+         {:ok, _} <- check_function_available(json_codec, :encode!),
+         content <- json_codec.encode!(result, pretty: pretty) do
       {:ok, content}
     else
       {:error, reason} -> {:error, reason}

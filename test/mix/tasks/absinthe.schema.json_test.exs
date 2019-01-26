@@ -18,10 +18,10 @@ defmodule Mix.Tasks.Absinthe.Schema.JsonTest do
   end
 
   defmodule TestEncoder do
-    def encode(_map, opts) do
+    def encode!(_map, opts) do
       pretty_flag = Keyword.get(opts, :pretty, false)
       pretty_string = if pretty_flag, do: "pretty", else: "ugly"
-      {:ok, "test-encoder-#{pretty_string}"}
+      "test-encoder-#{pretty_string}"
     end
   end
 
