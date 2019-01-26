@@ -14,12 +14,17 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
 
       absinthe.schema.json [FILENAME] [OPTIONS]
 
+    The JSON codec to be used needs to be included in your `mix.exs` dependencies. If using the default codec,
+    see the Jason [installation instructions](https://hexdocs.pm/jason).
 
   ## Options
 
-  * `--schema` - The name of the `Absinthe.Schema` module defining the schema to be generated. Default: As [configured](https://hexdocs.pm/mix/Mix.Config.html) for `:absinthe` `:schema`
-  * `--json-codec` - Codec to use to generate the JSON file (see [Custom Codecs](#module-custom-codecs)). Default: [`Jason`](https://hexdocs.pm/jason/)
-  * `--pretty` - Whether to pretty-print. Default: `false`
+  * `--schema` - The name of the `Absinthe.Schema` module defining the schema to be generated.
+     Default: As [configured](https://hexdocs.pm/mix/Mix.Config.html) for `:absinthe` `:schema`
+  * `--json-codec` - Codec to use to generate the JSON file (see [Custom Codecs](#module-custom-codecs)).
+     Default: [`Jason`](https://hexdocs.pm/jason/)
+  * `--pretty` - Whether to pretty-print.
+     Default: `false`
 
 
   ## Examples
