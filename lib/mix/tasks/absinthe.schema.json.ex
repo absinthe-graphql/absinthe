@@ -6,7 +6,6 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   @shortdoc "Generate a schema.json file for an Absinthe schema"
 
   @default_filename "./schema.json"
-  @default_codec_name "Jason"
 
   @moduledoc """
   Generate a schema.json file
@@ -15,39 +14,49 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
 
       absinthe.schema.json [FILENAME] [OPTIONS]
 
+
   ## Options
 
-      --schema The schema. Default: As configured for `:absinthe` `:schema`
-      --json-codec Sets JSON Codec. Default: #{@default_codec_name}
-      --pretty Whether to pretty-print. Default: false
+  * `--schema` - The name of the `Absinthe.Schema` module defining the schema to be generated. Default: As [configured](https://hexdocs.pm/mix/Mix.Config.html) for `:absinthe` `:schema`
+  * `--json-codec` - Codec to use to generate the JSON file (see [Custom Codecs](#module-custom-codecs)). Default: [`Jason`](https://hexdocs.pm/jason/)
+  * `--pretty` - Whether to pretty-print. Default: `false`
+
 
   ## Examples
 
-  Write to default path `#{@default_filename}` using the `:schema` configured for
-  the `:absinthe` application and the default `#{@default_codec_name}` JSON codec:
+  Write to default path `#{@default_filename}` using the `:schema` configured for the `:absinthe` application:
 
       $ mix absinthe.schema.json
 
-  Write to default path `#{@default_filename}` using the `MySchema` schema and
-  the default `#{@default_codec_name}` JSON codec.
+  Write to default path `#{@default_filename}` using the `MySchema` schema:
 
       $ mix absinthe.schema.json --schema MySchema
 
-  Write to path `/path/to/schema.json` using the `MySchema` schema, using the
-  default `#{@default_codec_name}` JSON codec, and pretty-printing:
+  Write to path `/path/to/schema.json` using the `MySchema` schema, with pretty-printing:
 
       $ mix absinthe.schema.json --schema MySchema --pretty /path/to/schema.json
 
-  Write to default path `#{@default_filename}` using the `MySchema` schema and
-  a custom JSON codec, `MyCodec`:
+  Write to default path `#{@default_filename}` using the `MySchema` schema and a custom JSON codec, `MyCodec`:
 
       $ mix absinthe.schema.json --schema MySchema --json-codec MyCodec
 
+
+  ## Custom Codecs
+
+  Any module that provides `encode!/2` can be used as a custom codec:
+
+      encode!(value, options)
+
+  * `value` will be provided as a Map containing the generated schema.
+  * `options` will be a keyword list with a `:pretty` boolean, indicating whether the user requested pretty-printing.
+
+  The function should return a string to be written to the output file.
+
   """
 
-  @introspection_graphql Path.join([:code.priv_dir(:absinthe), "graphql", "introspection.graphql"])
-
   defmodule Options do
+    @moduledoc false
+
     defstruct filename: nil, schema: nil, json_codec: nil, pretty: false
 
     @type t() :: %__MODULE__{
@@ -58,7 +67,8 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
           }
   end
 
-  @doc "Main entry point to mix task"
+  @doc "Callback implementation for `Mix.Task.run/1`, which receives a list of command-line args."
+  @spec run(argv :: [binary()]) :: any()
   def run(argv) do
     Application.ensure_all_started(:absinthe)
 
@@ -73,7 +83,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
     end
   end
 
-  @doc "Encode the Absinthe schema to a string, using the specified codec"
+  @doc false
   @spec generate_schema(Options.t()) :: String.t()
   def generate_schema(%Options{
         pretty: pretty,
@@ -89,7 +99,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
     end
   end
 
-  @doc "Convert CLI arguments into an Options struct"
+  @doc false
   @spec parse_options([String.t()]) :: Options.t()
   def parse_options(argv) do
     parse_options = [strict: [schema: :string, json_codec: :string, pretty: :boolean]]
