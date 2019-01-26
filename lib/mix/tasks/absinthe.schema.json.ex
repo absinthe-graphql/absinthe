@@ -58,6 +58,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
           }
   end
 
+  @doc "Main entry point to mix task"
   def run(argv) do
     Application.ensure_all_started(:absinthe)
 
@@ -72,6 +73,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
     end
   end
 
+  @doc "Encode the Absinthe schema to a string, using the specified codec"
   @spec generate_schema(Options.t()) :: String.t()
   def generate_schema(%Options{
         pretty: pretty,
@@ -89,6 +91,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
     end
   end
 
+  @doc "Convert CLI arguments into an Options struct"
   @spec parse_options([String.t()]) :: Options.t()
   def parse_options(argv) do
     parse_options = [strict: [schema: :string, json_codec: :string, pretty: :boolean]]
