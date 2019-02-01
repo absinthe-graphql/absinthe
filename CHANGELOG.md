@@ -3,6 +3,7 @@
 ## v1.4.14
 
 - Bug Fix: Add missing `Absinthe.Subscription.child_spec/1` function 
+- Bug Fix: Pass options along when exporting schema json.
 
 ## v1.4.13
 
