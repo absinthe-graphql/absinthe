@@ -6,7 +6,7 @@ defmodule Absinthe.Type.BuiltIns.Directives do
 
   directive :include do
     description """
-    Directs the executor to include this field or fragment only when the `if` argument is true."
+    Directs the executor to include this field or fragment only when the `if` argument is true.
     """
 
     arg :if, non_null(:boolean), description: "Included when true."
