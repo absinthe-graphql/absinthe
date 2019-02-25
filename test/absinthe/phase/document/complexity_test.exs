@@ -77,6 +77,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
         unionComplexity {
            ... on Foo {
              bar
+             heavy
           }
         }
       }
@@ -84,7 +85,7 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
 
       assert {:ok, result, _} = run_phase(doc, operation_name: "UnionComplexity", variables: %{})
       op = result.operations |> Enum.find(&(&1.name == "UnionComplexity"))
-      assert op.complexity == 2
+      assert op.complexity == 102
       errors = result.execution.validation_errors |> Enum.map(& &1.message)
       assert errors == []
     end
