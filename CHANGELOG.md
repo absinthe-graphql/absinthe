@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.15
+
+- Bug Fix: Correctly compute complexity for documents with inline fragments.
+
 ## v1.4.14
 
 - Bug Fix: Add missing `Absinthe.Subscription.child_spec/1` function 
