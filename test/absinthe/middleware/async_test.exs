@@ -26,6 +26,24 @@ defmodule Absinthe.Middleware.AsyncTest do
                   {:ok, nil}
                 end)
       end
+
+      field :async_bare_thing_with_opts, :string do
+        resolve fn _, _, _ ->
+          task = Task.async(fn ->
+            {:ok, "bare task"}
+          end)
+          {:middleware, Elixir.Absinthe.Middleware.Async, {task, []}}
+        end
+      end
+
+      field :async_bare_thing, :string do
+        resolve fn _, _, _ ->
+          task = Task.async(fn ->
+            {:ok, "bare task"}
+          end)
+          {:middleware, Elixir.Absinthe.Middleware.Async, task}
+        end
+      end
     end
 
     def cool_async(fun) do
@@ -37,7 +55,24 @@ defmodule Absinthe.Middleware.AsyncTest do
     end
   end
 
-  test "can resolve a field using the normal async helper" do
+  test "can resolve a field using the bare api with opts" do
+    doc = """
+    {asyncBareThingWithOpts}
+    """
+
+    assert {:ok, %{data: %{"asyncBareThingWithOpts" => "bare task"}}} == Absinthe.run(doc, Schema)
+  end
+
+  test "can resolve a field using the bare api" do
+    doc = """
+    {asyncBareThing}
+    """
+
+    assert {:ok, %{data: %{"asyncBareThing" => "bare task"}}} == Absinthe.run(doc, Schema)
+  end
+
+
+  test "can resolve a field using the normal test helper" do
     doc = """
     {asyncThing}
     """
