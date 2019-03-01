@@ -1,7 +1,7 @@
 defmodule Absinthe.Mixfile do
   use Mix.Project
 
-  @version "1.4.15"
+  @version "1.4.16"
 
   def project do
     [
@@ -37,10 +37,13 @@ defmodule Absinthe.Mixfile do
         "Ben Wilson"
       ],
       licenses: ["MIT"],
+      exclude_patterns: [
+        "src/*.erl"
+      ],
       links: %{
-        "Website": "https://absinthe-graphql.org",
-        "Changelog": "https://github.com/absinthe-graphql/absinthe/blob/v1.4/CHANGELOG.md",
-        "GitHub": "https://github.com/absinthe-graphql/absinthe"
+        Website: "https://absinthe-graphql.org",
+        Changelog: "https://github.com/absinthe-graphql/absinthe/blob/v1.4/CHANGELOG.md",
+        GitHub: "https://github.com/absinthe-graphql/absinthe"
       }
     ]
   end

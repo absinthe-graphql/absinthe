@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.16
+
+- Bug Fix: Remove build artifact from hex release.
+
 ## v1.4.15
 
 - Bug Fix: Correctly compute complexity for documents with inline fragments.
