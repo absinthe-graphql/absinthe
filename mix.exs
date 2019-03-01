@@ -31,15 +31,21 @@ defmodule Absinthe.Mixfile do
   defp package do
     [
       description: "GraphQL for Elixir",
-      files: ["lib", "src", "priv", "mix.exs", "README.md", "CHANGELOG.md", ".formatter.exs"],
+      files: [
+        "lib",
+        "src/absinthe_lexer.xrl",
+        "src/absinthe_parser.yrl",
+        "priv",
+        "mix.exs",
+        "README.md",
+        "CHANGELOG.md",
+        ".formatter.exs"
+      ],
       maintainers: [
         "Bruce Williams",
         "Ben Wilson"
       ],
       licenses: ["MIT"],
-      exclude_patterns: [
-        "src/*.erl"
-      ],
       links: %{
         Website: "https://absinthe-graphql.org",
         Changelog: "https://github.com/absinthe-graphql/absinthe/blob/v1.4/CHANGELOG.md",
