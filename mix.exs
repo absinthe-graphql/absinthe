@@ -1,13 +1,13 @@
 defmodule Absinthe.Mixfile do
   use Mix.Project
 
-  @version "1.5.0-alpha.3"
+  @version "1.5.0-alpha.4"
 
   def project do
     [
       app: :absinthe,
       version: @version,
-      elixir: "~> 1.4",
+      elixir: "~> 1.8",
       elixirc_paths: elixirc_paths(Mix.env()),
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
@@ -31,7 +31,15 @@ defmodule Absinthe.Mixfile do
   defp package do
     [
       description: "GraphQL for Elixir",
-      files: ["lib", "src", "priv", "mix.exs", "README.md", "CHANGELOG.md", ".formatter.exs"],
+      files: [
+        "lib",
+        "src/absinthe_parser.yrl",
+        "priv",
+        "mix.exs",
+        "README.md",
+        "CHANGELOG.md",
+        ".formatter.exs"
+      ],
       maintainers: [
         "Bruce Williams",
         "Ben Wilson"
