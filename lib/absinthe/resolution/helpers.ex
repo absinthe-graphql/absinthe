@@ -111,7 +111,7 @@ defmodule Absinthe.Resolution.Helpers do
           reports =
             loader
             |> Dataloader.get(SourceName, :automatic_reports, shipment)
-            |> Enum.concat(Dataloader.load(loader, SourceName, :manual_reports, shipment))
+            |> Enum.concat(Dataloader.get(loader, SourceName, :manual_reports, shipment))
             |> Enum.sort_by(&reported_at/1)
           {:ok, reports}
         end)
