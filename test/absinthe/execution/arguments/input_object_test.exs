@@ -207,4 +207,20 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
       )
     )
   end
+
+  test "list of input unions" do
+    assert_data(
+      %{"eitherOr" => "THIS&THAT"},
+      run(
+        """
+        query {
+          eitherOr(
+            listUnion: [{this: "THIS"}, {that: "THAT"}]
+          )
+        }
+        """,
+        @schema
+      )
+    )
+  end
 end

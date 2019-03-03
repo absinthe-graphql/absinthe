@@ -80,7 +80,7 @@ Absinthe.Blueprint
 
 QUESTION:
 
-* [ ] Do we need to get a `Blueprint.Input.Union`?
+* [-] Do we need to get a `Blueprint.Input.Union`?
 * [ ] How do we use __typename & not get introspection logic
-* [ ] Make sure non_null is handled
+* [x] Make sure non_null, list are handled
 

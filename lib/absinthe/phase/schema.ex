@@ -187,6 +187,22 @@ defmodule Absinthe.Phase.Schema do
       %Absinthe.Type.Field{type: type} ->
         %{node | schema_node: type |> Type.expand(schema)}
 
+      %Absinthe.Type.InputUnion{resolve_type: resolve_type} ->
+        case node do
+          %{normalized: %{fields: fields}} ->
+            concrete_type =
+              fields
+              |> Enum.into(%{}, fn
+                %{name: name, input_value: %{normalized: %{value: value}}} -> {name, value}
+              end)
+              |> resolve_type.()
+
+            %{node | schema_node: concrete_type |> Type.expand(schema)}
+
+          _ ->
+            node
+        end
+
       type ->
         %{node | schema_node: type |> Type.expand(schema)}
     end
@@ -274,18 +290,25 @@ defmodule Absinthe.Phase.Schema do
   end
 
   defp determine_concrete_type(%{type: type} = result, node, schema) do
-    case Absinthe.Schema.cached_lookup_type(schema, type) do
+    unwraped = Type.unwrap(type)
+
+    Absinthe.Schema.cached_lookup_type(schema, unwraped)
+    |> case do
       %Absinthe.Type.InputUnion{resolve_type: resolve_type} ->
-        %{input_value: %{normalized: %{fields: fields}}} = node
+        case node do
+          %{input_value: %{normalized: %{fields: fields}}} ->
+            concrete_type =
+              fields
+              |> Enum.into(%{}, fn
+                %{name: name, input_value: %{normalized: %{value: value}}} -> {name, value}
+              end)
+              |> resolve_type.()
 
-        concrete_type =
-          fields
-          |> Enum.into(%{}, fn
-            %{name: name, input_value: %{normalized: %{value: value}}} -> {name, value}
-          end)
-          |> resolve_type.()
+            %{result | type: concrete_type}
 
-        %{result | type: concrete_type}
+          _ ->
+            result
+        end
 
       _ ->
         result

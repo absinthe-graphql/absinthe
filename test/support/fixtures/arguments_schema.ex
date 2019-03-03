@@ -62,7 +62,7 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
   end
 
   input_object :nested_input do
-    field :nested_union_arg, :this_or_that
+    field :nested_union_arg, non_null(:this_or_that)
   end
 
   input_union :this_or_that do
@@ -169,6 +169,7 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
       arg :object_arg, :standard
       arg :union_arg, :this_or_that
       arg :nested, :nested_input
+      arg :list_union, list_of(:this_or_that)
 
       resolve fn
         %{union_arg: %{this: thing}}, _ ->
@@ -183,8 +184,10 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
         %{nested: %{nested_union_arg: %{that: thing}}}, _ ->
           {:ok, "NESTED THAT #{thing}"}
 
-        args, _ ->
-          IO.inspect(args)
+        %{list_union: lists}, _ ->
+          {:ok, lists |> Enum.flat_map(&Map.values/1) |> Enum.join("&")}
+
+        _, _ ->
           {:error, "NOTHIN"}
       end
     end
