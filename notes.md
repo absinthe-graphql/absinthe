@@ -1,6 +1,10 @@
 
 ## Input Union!
 
+* [x] Can define `input_union`
+* [x] Generate absinthe type in schema definion
+* [ ] Can extract Input Union from query
+* [ ] Can resolve a query with an Input Union
 
 #### Defining the schema
 
