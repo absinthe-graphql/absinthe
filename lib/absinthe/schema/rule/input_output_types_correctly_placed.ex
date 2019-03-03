@@ -94,6 +94,7 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlaced do
   defp input_type?(%Type.Scalar{}), do: true
   defp input_type?(%Type.Enum{}), do: true
   defp input_type?(%Type.InputObject{}), do: true
+  defp input_type?(%Type.InputUnion{}), do: true
   defp input_type?(_), do: false
 
   defp output_type?(%Type.InputObject{}), do: false

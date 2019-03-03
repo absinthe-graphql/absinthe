@@ -43,3 +43,44 @@ This will probably be similar to `Input.Object`
   - defined `absinthe/lib/absinthe/blueprint/input/object.ex`
   - tested `absinthe/test/absinthe/language/input_object_test.exs`
   - referenced `absinthe/lib/absinthe/blueprint/input.ex`
+
+
+##### Walking the blueprint
+
+
+Absinthe.Blueprint.Input.Argument
+  name: unionArg
+  input_value.schema_node: %Absinthe.Type.InputUnion{}
+  schema_node.type: %Absinthe.Type.Argument{type: this_or_that}
+
+Absinthe.Blueprint.Document.Field
+  name: eitherOr
+  schema_node: %Absinthe.Blueprint.Document.Field{
+                  arguments: []
+                  schema_node: %Absinthe.Type.Field{
+                    args: %{union_arg: %Absinthe.Type.Argument{type: :this_or_that}}
+                  }
+                }
+
+------
+
+Absinthe.Blueprint
+  input: Absinthe.Language.Document
+    = raw parsed query document
+    > no changes needed
+  operations: list of operations extracted from input
+    * schema_node:
+        RootQueryType (Absinthe.Type.Object)
+    * selections:
+        [Absinthe.Blueprint.Document.Field]
+        blueprint of items queried in the given operation
+
+
+
+
+QUESTION:
+
+* [ ] Do we need to get a `Blueprint.Input.Union`?
+* [ ] How do we use __typename & not get introspection logic
+* [ ] Make sure non_null is handled
+

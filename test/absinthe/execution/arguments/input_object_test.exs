@@ -155,4 +155,25 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
       run(@graphql, @schema)
     )
   end
+
+  test "input union" do
+    assert_data(
+      %{"eitherOr" => "THIS foo"},
+      run(
+        """
+        query {
+          eitherOr(
+            objectArg: {value: "Ignore me"}
+            unionArg: {this: "foo"}
+          )
+        }
+        """,
+        @schema
+      )
+      |> IO.inspect()
+    )
+  end
+
+  test "input union nested inside other input objects" do
+  end
 end

@@ -151,8 +151,8 @@ defmodule Absinthe.Phase.Schema do
     %{node | schema_node: find_schema_field(parent.schema_node, node.name, schema, adapter)}
   end
 
-  defp set_schema_node(%Blueprint.Input.Argument{name: name} = node, parent, _schema, adapter) do
-    %{node | schema_node: find_schema_argument(parent.schema_node, name, adapter)}
+  defp set_schema_node(%Blueprint.Input.Argument{name: name} = node, parent, schema, adapter) do
+    %{node | schema_node: find_schema_argument(parent.schema_node, name, schema, adapter)}
   end
 
   defp set_schema_node(%Blueprint.Document.Fragment.Spread{} = node, _, _, _) do
@@ -204,14 +204,25 @@ defmodule Absinthe.Phase.Schema do
   @spec find_schema_argument(
           nil | Type.Field.t() | Type.Argument.t(),
           String.t(),
+          Absinthe.Schema.t(),
           Absinthe.Adapter.t()
         ) :: nil | Type.Argument.t()
-  defp find_schema_argument(%{args: arguments}, name, adapter) do
+  defp find_schema_argument(%{args: arguments} = the_node, name, schema, adapter) do
     internal_name = adapter.to_internal_name(name, :argument)
 
-    arguments
-    |> Map.values()
-    |> Enum.find(&match?(%{name: ^internal_name}, &1))
+    result =
+      arguments
+      |> Map.values()
+      |> Enum.find(&match?(%{name: ^internal_name}, &1))
+
+    # lookup type, if it's an input union, do resolve_type and use that
+
+    # We need the info from the arguments here to properly determine the correct thing
+
+    case Absinthe.Schema.cached_lookup_type(schema, result.type) do
+      %Absinthe.Type.InputUnion{} -> %{result | type: :this_one}
+      _ -> result
+    end
   end
 
   # Given a schema type, lookup a child field definition
