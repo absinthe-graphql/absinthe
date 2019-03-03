@@ -152,7 +152,7 @@ defmodule Absinthe.Phase.Schema do
   end
 
   defp set_schema_node(%Blueprint.Input.Argument{name: name} = node, parent, schema, adapter) do
-    %{node | schema_node: find_schema_argument(parent.schema_node, name, schema, adapter)}
+    %{node | schema_node: find_schema_argument(parent.schema_node, name, node, schema, adapter)}
   end
 
   defp set_schema_node(%Blueprint.Document.Fragment.Spread{} = node, _, _, _) do
@@ -204,10 +204,11 @@ defmodule Absinthe.Phase.Schema do
   @spec find_schema_argument(
           nil | Type.Field.t() | Type.Argument.t(),
           String.t(),
+          Absinthe.Blueprint.Input.Argument.t(),
           Absinthe.Schema.t(),
           Absinthe.Adapter.t()
         ) :: nil | Type.Argument.t()
-  defp find_schema_argument(%{args: arguments} = the_node, name, schema, adapter) do
+  defp find_schema_argument(%{args: arguments} = the_node, name, node, schema, adapter) do
     internal_name = adapter.to_internal_name(name, :argument)
 
     result =
@@ -215,13 +216,23 @@ defmodule Absinthe.Phase.Schema do
       |> Map.values()
       |> Enum.find(&match?(%{name: ^internal_name}, &1))
 
-    # lookup type, if it's an input union, do resolve_type and use that
-
-    # We need the info from the arguments here to properly determine the correct thing
+    # Transform an InputUnion to the concrete InputObject
 
     case Absinthe.Schema.cached_lookup_type(schema, result.type) do
-      %Absinthe.Type.InputUnion{} -> %{result | type: :this_one}
-      _ -> result
+      %Absinthe.Type.InputUnion{resolve_type: resolve_type} ->
+        %{input_value: %{normalized: %{fields: fields}}} = node
+
+        concrete_type =
+          fields
+          |> Enum.into(%{}, fn
+            %{name: name, input_value: %{normalized: %{value: value}}} -> {name, value}
+          end)
+          |> resolve_type.()
+
+        %{result | type: concrete_type}
+
+      _ ->
+        result
     end
   end
 

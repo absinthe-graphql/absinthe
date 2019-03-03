@@ -172,6 +172,22 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
       )
       |> IO.inspect()
     )
+
+    assert_data(
+      %{"eitherOr" => "THAT bar"},
+      run(
+        """
+        query {
+          eitherOr(
+            objectArg: {value: "Ignore me"}
+            unionArg: {that: "bar"}
+          )
+        }
+        """,
+        @schema
+      )
+      |> IO.inspect()
+    )
   end
 
   test "input union nested inside other input objects" do
