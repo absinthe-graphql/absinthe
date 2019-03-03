@@ -34,6 +34,11 @@ TRY:
 
 This will probably be similar to `Input.Object`
 
+> query gets parsed in `Absinthe.Phase.Parse`, get AST
+  -> `Absinthe.Language.ObjectValue`
+> run Blueprint.Draft.convert, get AST
+  -> `Absinthe.Blueprint.Input.Object`
+
 * query parsing generates `Blueprint.Input.Object`
   - defined `absinthe/lib/absinthe/blueprint/input/object.ex`
   - tested `absinthe/test/absinthe/language/input_object_test.exs`

@@ -1,11 +1,11 @@
-defmodule Absinthe.Language.ObjectValueTest do
+defmodule Absinthe.Language.InputUnionValueTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.Blueprint
 
   @query """
   {
-    foo(input: {foo: 2}) {
+    foo(input: {__typename: "ConcreteType", foo: 2}) {
       baz
     }
   }
@@ -15,6 +15,12 @@ defmodule Absinthe.Language.ObjectValueTest do
     test "builds an Input.Object.t" do
       assert %Blueprint.Input.Object{
                fields: [
+                 %Blueprint.Input.Field{
+                   name: "__typename",
+                   input_value: %Blueprint.Input.RawValue{
+                     content: %Blueprint.Input.String{value: "ConcreteType"}
+                   }
+                 },
                  %Blueprint.Input.Field{
                    name: "foo",
                    input_value: %Blueprint.Input.RawValue{
