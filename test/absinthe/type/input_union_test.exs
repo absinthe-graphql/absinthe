@@ -1,4 +1,4 @@
-defmodule Absinthe.Type.UnionTest do
+defmodule Absinthe.Type.InputUnionTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.Type
@@ -10,22 +10,22 @@ defmodule Absinthe.Type.UnionTest do
       # Query type must exist
     end
 
-    object :person do
+    input_object :person do
       description "A person"
 
       field :name, :string
       field :age, :integer
     end
 
-    object :business do
+    input_object :business do
       description "A business"
 
       field :name, :string
       field :employee_count, :integer
     end
 
-    union :search_result do
-      description "A search result"
+    input_union :search_query do
+      description "A search query"
 
       types [:person, :business]
 
@@ -38,7 +38,7 @@ defmodule Absinthe.Type.UnionTest do
       end
     end
 
-    object :foo do
+    input_object :foo do
       field :name, :string
 
       is_type_of fn
@@ -47,18 +47,18 @@ defmodule Absinthe.Type.UnionTest do
       end
     end
 
-    union :other_result do
+    input_union :other_query do
       types [:foo]
     end
   end
 
   describe "union" do
     test "can be defined" do
-      obj = TestSchema.__absinthe_type__(:search_result)
+      obj = TestSchema.__absinthe_type__(:search_query)
 
-      assert %Absinthe.Type.Union{
-               name: "SearchResult",
-               description: "A search result",
+      assert %Absinthe.Type.InputUnion{
+               name: "SearchQuery",
+               description: "A search query",
                types: [:person, :business]
              } = obj
 
@@ -66,20 +66,20 @@ defmodule Absinthe.Type.UnionTest do
     end
 
     test "can resolve the type of an object using resolve_type" do
-      obj = TestSchema.__absinthe_type__(:search_result)
+      obj = TestSchema.__absinthe_type__(:search_query)
 
-      assert %Type.Object{name: "Person"} =
-               Type.Union.resolve_type(obj, %{age: 12}, %{schema: TestSchema})
+      assert %Type.InputObject{name: "Person"} =
+               Type.InputUnion.resolve_type(obj, %{age: 12}, %{schema: TestSchema})
 
-      assert %Type.Object{name: "Business"} =
-               Type.Union.resolve_type(obj, %{employee_count: 12}, %{schema: TestSchema})
+      assert %Type.InputObject{name: "Business"} =
+               Type.InputUnion.resolve_type(obj, %{employee_count: 12}, %{schema: TestSchema})
     end
 
     test "can resolve the type of an object using is_type_of" do
-      obj = TestSchema.__absinthe_type__(:other_result)
+      obj = TestSchema.__absinthe_type__(:other_query)
 
-      assert %Type.Object{name: "Foo"} =
-               Type.Union.resolve_type(obj, %{name: "asdf"}, %{schema: TestSchema})
+      assert %Type.InputObject{name: "Foo"} =
+               Type.InputUnion.resolve_type(obj, %{name: "asdf"}, %{schema: TestSchema})
     end
   end
 end

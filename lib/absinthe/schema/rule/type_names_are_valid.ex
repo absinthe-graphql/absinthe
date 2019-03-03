@@ -117,4 +117,9 @@ defmodule Absinthe.Schema.Rule.TypeNamesAreValid do
     union.types
     |> Enum.reduce(acc, &check_type(&1, union, &2, schema))
   end
+
+  defp check_type(%Type.InputUnion{} = input_union, _, acc, schema) do
+    input_union.types
+    |> Enum.reduce(acc, &check_type(&1, input_union, &2, schema))
+  end
 end

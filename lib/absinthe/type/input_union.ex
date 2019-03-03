@@ -1,18 +1,18 @@
-defmodule Absinthe.Type.Union do
+defmodule Absinthe.Type.InputUnion do
   @moduledoc """
-  A unions is an abstract type made up of multiple possible concrete types.
+  An InputUnion is an abstract type made up of multiple possible concrete types.
 
-  No common fields are declared in a union. Compare to `Absinthe.Type.Interface`.
+  No common fields are declared in an input union. Compare to `Absinthe.Type.Interface`.
 
-  Because it's necessary for the union to determine the concrete type of a
-  resolved object, you must either:
+  Because it's necessary for the input union to determine the concrete type of a
+  resolved input object, you must either:
 
-  * Provide a `:resolve_type` function on the union
+  * Provide a `:resolve_type` function on the input union
   * Provide a `:is_type_of` function on each possible concrete type
 
   ```
-  union :search_result do
-    description "A search result"
+  input_union :search_query do
+    description "A search query"
 
     types [:person, :business]
     resolve_type fn
@@ -28,7 +28,7 @@ defmodule Absinthe.Type.Union do
   alias Absinthe.{Schema, Type}
 
   @typedoc """
-  * `:name` - The name of the union type. Should be a TitleCased `binary`. Set automatically.
+  * `:name` - The name of the input union type. Should be a TitleCased `binary`. Set automatically.
   * `:description` - A nice description for introspection.
   * `:types` - The list of possible types.
   * `:resolve_type` - A function used to determine the concrete type of a resolved object. See also `Absinthe.Type.Object`'s `:is_type_of`. Either `resolve_type` is specified in the union type, or every object type in the union must specify `is_type_of`
