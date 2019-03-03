@@ -3,8 +3,11 @@
 
 * [x] Can define `input_union`
 * [x] Generate absinthe type in schema definion
-* [ ] Can extract Input Union from query
-* [ ] Can resolve a query with an Input Union
+* [x] Can extract Input Union from query
+* [x] Can resolve a query with an Input Union
+* [ ] Use __typename for automatic resolve_type
+* [ ] >> drop need for resolve_type / is_type_of
+
 
 #### Defining the schema
 
