@@ -190,13 +190,7 @@ defmodule Absinthe.Phase.Schema do
       %Absinthe.Type.InputUnion{resolve_type: resolve_type} ->
         case node do
           %{normalized: %{fields: fields}} ->
-            concrete_type =
-              fields
-              |> Enum.into(%{}, fn
-                %{name: name, input_value: %{normalized: %{value: value}}} -> {name, value}
-              end)
-              |> resolve_type.()
-
+            concrete_type = evaluate_resolve_type(fields, resolve_type)
             %{node | schema_node: concrete_type |> Type.expand(schema)}
 
           _ ->
@@ -289,31 +283,23 @@ defmodule Absinthe.Phase.Schema do
     end
   end
 
-  defp determine_concrete_type(%{type: type} = result, node, schema) do
-    unwraped = Type.unwrap(type)
-
-    Absinthe.Schema.cached_lookup_type(schema, unwraped)
-    |> case do
-      %Absinthe.Type.InputUnion{resolve_type: resolve_type} ->
-        case node do
-          %{input_value: %{normalized: %{fields: fields}}} ->
-            concrete_type =
-              fields
-              |> Enum.into(%{}, fn
-                %{name: name, input_value: %{normalized: %{value: value}}} -> {name, value}
-              end)
-              |> resolve_type.()
-
-            %{result | type: concrete_type}
-
-          _ ->
-            result
-        end
-
-      _ ->
-        result
+  defp determine_concrete_type(result, node, schema) do
+    with %{type: type} <- result,
+         %{input_value: %{normalized: %{fields: fields}}} <- node,
+         %Absinthe.Type.InputUnion{resolve_type: resolve_type} <-
+           Absinthe.Schema.cached_lookup_type(schema, Type.unwrap(type)) do
+      concrete_type = evaluate_resolve_type(fields, resolve_type)
+      %{result | type: concrete_type}
+    else
+      _ -> result
     end
   end
 
-  defp determine_concrete_type(result, _node, _schema), do: result
+  defp evaluate_resolve_type(fields, resolve_type) do
+    fields
+    |> Enum.into(%{}, fn
+      %{name: name, input_value: %{normalized: %{value: value}}} -> {name, value}
+    end)
+    |> resolve_type.()
+  end
 end
