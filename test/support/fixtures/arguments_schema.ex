@@ -61,6 +61,10 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
     field :that, :string
   end
 
+  input_object :nested_input do
+    field :nested_union_arg, :this_or_that
+  end
+
   input_union :this_or_that do
     types [:this_one, :that_one]
 
@@ -164,6 +168,7 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
     field :either_or, :string do
       arg :object_arg, :standard
       arg :union_arg, :this_or_that
+      arg :nested, :nested_input
 
       resolve fn
         %{union_arg: %{this: thing}}, _ ->
@@ -171,6 +176,12 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
 
         %{union_arg: %{that: thing}}, _ ->
           {:ok, "THAT #{thing}"}
+
+        %{nested: %{nested_union_arg: %{this: thing}}}, _ ->
+          {:ok, "NESTED THIS #{thing}"}
+
+        %{nested: %{nested_union_arg: %{that: thing}}}, _ ->
+          {:ok, "NESTED THAT #{thing}"}
 
         args, _ ->
           IO.inspect(args)

@@ -148,7 +148,7 @@ defmodule Absinthe.Phase.Schema do
   end
 
   defp set_schema_node(%Blueprint.Document.Field{} = node, parent, schema, adapter) do
-    %{node | schema_node: find_schema_field(parent.schema_node, node.name, schema, adapter)}
+    %{node | schema_node: find_schema_field(parent.schema_node, node.name, node, schema, adapter)}
   end
 
   defp set_schema_node(%Blueprint.Input.Argument{name: name} = node, parent, schema, adapter) do
@@ -165,7 +165,7 @@ defmodule Absinthe.Phase.Schema do
         %{node | schema_node: nil}
 
       name ->
-        %{node | schema_node: find_schema_field(parent.schema_node, name, schema, adapter)}
+        %{node | schema_node: find_schema_field(parent.schema_node, name, node, schema, adapter)}
     end
   end
 
@@ -208,7 +208,7 @@ defmodule Absinthe.Phase.Schema do
           Absinthe.Schema.t(),
           Absinthe.Adapter.t()
         ) :: nil | Type.Argument.t()
-  defp find_schema_argument(%{args: arguments} = the_node, name, node, schema, adapter) do
+  defp find_schema_argument(%{args: arguments}, name, node, schema, adapter) do
     internal_name = adapter.to_internal_name(name, :argument)
 
     result =
@@ -216,54 +216,45 @@ defmodule Absinthe.Phase.Schema do
       |> Map.values()
       |> Enum.find(&match?(%{name: ^internal_name}, &1))
 
-    # Transform an InputUnion to the concrete InputObject
-
-    case Absinthe.Schema.cached_lookup_type(schema, result.type) do
-      %Absinthe.Type.InputUnion{resolve_type: resolve_type} ->
-        %{input_value: %{normalized: %{fields: fields}}} = node
-
-        concrete_type =
-          fields
-          |> Enum.into(%{}, fn
-            %{name: name, input_value: %{normalized: %{value: value}}} -> {name, value}
-          end)
-          |> resolve_type.()
-
-        %{result | type: concrete_type}
-
-      _ ->
-        result
-    end
+    determine_concrete_type(result, node, schema)
   end
 
   # Given a schema type, lookup a child field definition
-  @spec find_schema_field(nil | Type.t(), String.t(), Absinthe.Schema.t(), Absinthe.Adapter.t()) ::
-          nil | Type.Field.t()
-  defp find_schema_field(_, "__" <> introspection_field, _, _) do
+  @spec find_schema_field(
+          nil | Type.t(),
+          String.t(),
+          Absinthe.Blueprint.Input.Field.t() | Absinthe.Blueprint.Document.Field.t(),
+          Absinthe.Schema.t(),
+          Absinthe.Adapter.t()
+        ) :: nil | Type.Field.t()
+  defp find_schema_field(_, "__" <> introspection_field, _, _, _) do
     Absinthe.Introspection.Field.meta(introspection_field)
   end
 
-  defp find_schema_field(%{of_type: type}, name, schema, adapter) do
-    find_schema_field(type, name, schema, adapter)
+  defp find_schema_field(%{of_type: type}, name, node, schema, adapter) do
+    find_schema_field(type, name, node, schema, adapter)
   end
 
-  defp find_schema_field(%{fields: fields}, name, _schema, adapter) do
+  defp find_schema_field(%{fields: fields}, name, node, schema, adapter) do
     internal_name = adapter.to_internal_name(name, :field)
 
-    fields
-    |> Map.values()
-    |> Enum.find(&match?(%{name: ^internal_name}, &1))
+    result =
+      fields
+      |> Map.values()
+      |> Enum.find(&match?(%{name: ^internal_name}, &1))
+
+    determine_concrete_type(result, node, schema)
   end
 
-  defp find_schema_field(%Type.Field{type: maybe_wrapped_type}, name, schema, adapter) do
+  defp find_schema_field(%Type.Field{type: maybe_wrapped_type}, name, node, schema, adapter) do
     type =
       Type.unwrap(maybe_wrapped_type)
       |> schema.__absinthe_lookup__
 
-    find_schema_field(type, name, schema, adapter)
+    find_schema_field(type, name, node, schema, adapter)
   end
 
-  defp find_schema_field(_, _, _, _) do
+  defp find_schema_field(_, _, _, _, _) do
     nil
   end
 
@@ -281,4 +272,25 @@ defmodule Absinthe.Phase.Schema do
       %unquote(core_type){of_type: inner}
     end
   end
+
+  defp determine_concrete_type(%{type: type} = result, node, schema) do
+    case Absinthe.Schema.cached_lookup_type(schema, type) do
+      %Absinthe.Type.InputUnion{resolve_type: resolve_type} ->
+        %{input_value: %{normalized: %{fields: fields}}} = node
+
+        concrete_type =
+          fields
+          |> Enum.into(%{}, fn
+            %{name: name, input_value: %{normalized: %{value: value}}} -> {name, value}
+          end)
+          |> resolve_type.()
+
+        %{result | type: concrete_type}
+
+      _ ->
+        result
+    end
+  end
+
+  defp determine_concrete_type(result, _node, _schema), do: result
 end

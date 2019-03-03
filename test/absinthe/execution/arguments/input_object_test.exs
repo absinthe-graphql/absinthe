@@ -170,7 +170,6 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
         """,
         @schema
       )
-      |> IO.inspect()
     )
 
     assert_data(
@@ -186,10 +185,26 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
         """,
         @schema
       )
-      |> IO.inspect()
     )
   end
 
   test "input union nested inside other input objects" do
+    assert_data(
+      %{"eitherOr" => "NESTED THIS foobar"},
+      run(
+        """
+        query {
+          eitherOr(
+            nested: {
+              nestedUnionArg: {
+                this: "foobar"
+              }
+            }
+          )
+        }
+        """,
+        @schema
+      )
+    )
   end
 end
