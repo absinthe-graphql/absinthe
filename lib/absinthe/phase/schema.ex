@@ -187,10 +187,10 @@ defmodule Absinthe.Phase.Schema do
       %Absinthe.Type.Field{type: type} ->
         %{node | schema_node: type |> Type.expand(schema)}
 
-      %Absinthe.Type.InputUnion{resolve_type: resolve_type} ->
+      %Absinthe.Type.InputUnion{} ->
         case node do
           %{normalized: %{fields: fields}} ->
-            concrete_type = evaluate_resolve_type(fields, resolve_type)
+            concrete_type = extract_typename(fields)
             %{node | schema_node: concrete_type |> Type.expand(schema)}
 
           _ ->
@@ -286,20 +286,21 @@ defmodule Absinthe.Phase.Schema do
   defp determine_concrete_type(result, node, schema) do
     with %{type: type} <- result,
          %{input_value: %{normalized: %{fields: fields}}} <- node,
-         %Absinthe.Type.InputUnion{resolve_type: resolve_type} <-
+         %Absinthe.Type.InputUnion{} <-
            Absinthe.Schema.cached_lookup_type(schema, Type.unwrap(type)) do
-      concrete_type = evaluate_resolve_type(fields, resolve_type)
+      concrete_type = extract_typename(fields)
       %{result | type: concrete_type}
     else
       _ -> result
     end
   end
 
-  defp evaluate_resolve_type(fields, resolve_type) do
-    fields
-    |> Enum.into(%{}, fn
-      %{name: name, input_value: %{normalized: %{value: value}}} -> {name, value}
-    end)
-    |> resolve_type.()
+  defp extract_typename(fields) do
+    with %{input_value: %{normalized: %{value: value}}} <-
+           Enum.find(fields, fn field -> field.name == "typename" end) do
+      value
+      |> Macro.underscore()
+      |> String.to_atom()
+    end
   end
 end

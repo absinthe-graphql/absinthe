@@ -710,7 +710,7 @@ defmodule Absinthe.Schema.NotationTest do
       assert_notation_error(
         "TypesInvalid",
         "types [:foo]",
-        "Invalid schema notation: `types` must only be used within `union`"
+        "Invalid schema notation: `types` must only be used within `union`, `input_union`"
       )
     end
   end

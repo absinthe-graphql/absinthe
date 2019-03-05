@@ -320,7 +320,7 @@ defmodule Absinthe.Schema.Notation do
     scope(env, :interface, identifier, attrs, block)
   end
 
-  @placement {:resolve_type, [under: [:interface, :union, :input_union]]}
+  @placement {:resolve_type, [under: [:interface, :union]]}
   @doc """
   Define a type resolver for a union or interface.
 
@@ -577,7 +577,7 @@ defmodule Absinthe.Schema.Notation do
     nil
   end
 
-  @placement {:is_type_of, [under: [:object, :input_object]]}
+  @placement {:is_type_of, [under: [:object]]}
   @doc """
 
 
@@ -1088,10 +1088,6 @@ defmodule Absinthe.Schema.Notation do
     description "A search query"
 
     types [:person, :business]
-    resolve_type fn
-      %Person{}, _ -> :person
-      %Business{}, _ -> :business
-    end
   end
   ```
   """
