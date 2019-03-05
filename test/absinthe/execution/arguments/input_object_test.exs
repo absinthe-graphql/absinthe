@@ -164,7 +164,7 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
         query {
           eitherOr(
             objectArg: {value: "Ignore me"}
-            unionArg: {this: "foo"}
+            unionArg: {typename: "ThisOne", this: "foo"}
           )
         }
         """,
@@ -179,7 +179,7 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
         query {
           eitherOr(
             objectArg: {value: "Ignore me"}
-            unionArg: {that: "bar"}
+            unionArg: {typename: "ThatOne", that: "bar"}
           )
         }
         """,
@@ -197,6 +197,7 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
           eitherOr(
             nested: {
               nestedUnionArg: {
+                typename: "ThisOne",
                 this: "foobar"
               }
             }
@@ -215,7 +216,7 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
         """
         query {
           eitherOr(
-            listUnion: [{this: "THIS"}, {that: "THAT"}]
+            listUnion: [{typename: "ThisOne", this: "THIS"}, {typename: "ThatOne", that: "THAT"}]
           )
         }
         """,

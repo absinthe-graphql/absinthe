@@ -15,6 +15,7 @@ defmodule Absinthe.Type.InputUnionTest do
 
       field :name, :string
       field :age, :integer
+      field :typename, non_null(:string)
     end
 
     input_object :business do
@@ -22,29 +23,17 @@ defmodule Absinthe.Type.InputUnionTest do
 
       field :name, :string
       field :employee_count, :integer
+      field :typename, non_null(:string)
     end
 
     input_union :search_query do
       description "A search query"
 
       types [:person, :business]
-
-      resolve_type fn
-        %{age: _}, _ ->
-          :person
-
-        %{employee_count: _}, _ ->
-          :business
-      end
     end
 
     input_object :foo do
       field :name, :string
-
-      is_type_of fn
-        %{name: _} -> true
-        _ -> false
-      end
     end
 
     input_union :other_query do
@@ -61,25 +50,6 @@ defmodule Absinthe.Type.InputUnionTest do
                description: "A search query",
                types: [:person, :business]
              } = obj
-
-      assert obj.resolve_type
-    end
-
-    test "can resolve the type of an object using resolve_type" do
-      obj = TestSchema.__absinthe_type__(:search_query)
-
-      assert %Type.InputObject{name: "Person"} =
-               Type.InputUnion.resolve_type(obj, %{age: 12}, %{schema: TestSchema})
-
-      assert %Type.InputObject{name: "Business"} =
-               Type.InputUnion.resolve_type(obj, %{employee_count: 12}, %{schema: TestSchema})
-    end
-
-    test "can resolve the type of an object using is_type_of" do
-      obj = TestSchema.__absinthe_type__(:other_query)
-
-      assert %Type.InputObject{name: "Foo"} =
-               Type.InputUnion.resolve_type(obj, %{name: "asdf"}, %{schema: TestSchema})
     end
   end
 end

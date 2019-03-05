@@ -5,8 +5,10 @@
 * [x] Generate absinthe type in schema definion
 * [x] Can extract Input Union from query
 * [x] Can resolve a query with an Input Union
-* [ ] Use __typename for automatic resolve_type
-* [ ] >> drop need for resolve_type / is_type_of
+* [x] Use `typename` for automatic resolve_type
+* [ ] >> Mark `typename` as required if it is part of an `inputUnion`
+* [ ] >> Try using `__typename`
+* [x] >> drop need for resolve_type / is_type_of
 
 
 #### Defining the schema
@@ -86,4 +88,5 @@ QUESTION:
 * [-] Do we need to get a `Blueprint.Input.Union`?
 * [ ] How do we use __typename & not get introspection logic
 * [x] Make sure non_null, list are handled
+
 

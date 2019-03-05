@@ -55,10 +55,12 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
 
   input_object :this_one do
     field :this, :string
+    field :typename, non_null(:string)
   end
 
   input_object :that_one do
     field :that, :string
+    field :typename, non_null(:string)
   end
 
   input_object :nested_input do
@@ -67,11 +69,6 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
 
   input_union :this_or_that do
     types [:this_one, :that_one]
-
-    resolve_type fn
-      %{"this" => _} -> :this_one
-      %{"that" => _} -> :that_one
-    end
   end
 
   query do
@@ -185,7 +182,17 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
           {:ok, "NESTED THAT #{thing}"}
 
         %{list_union: lists}, _ ->
-          {:ok, lists |> Enum.flat_map(&Map.values/1) |> Enum.join("&")}
+          # TODO FIX THIS
+          {:ok,
+           lists
+           |> Enum.flat_map(fn map ->
+             Enum.map(map, fn
+               {:typename, _v} -> nil
+               {_k, v} -> v
+             end)
+           end)
+           |> Enum.reject(&is_nil/1)
+           |> Enum.join("&")}
 
         _, _ ->
           {:error, "NOTHIN"}
