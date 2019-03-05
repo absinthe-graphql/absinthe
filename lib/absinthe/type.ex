@@ -353,6 +353,13 @@ defmodule Absinthe.Type do
     true
   end
 
+  def field(%{fields: fields}, "__inputname" = name) do
+    fields
+    |> Map.get(name |> String.to_existing_atom())
+  rescue
+    ArgumentError -> nil
+  end
+
   def field(_type, "__" <> meta_name) do
     Introspection.Field.meta(meta_name)
   end

@@ -5,9 +5,9 @@
 * [x] Generate absinthe type in schema definion
 * [x] Can extract Input Union from query
 * [x] Can resolve a query with an Input Union
-* [x] Use `typename` for automatic resolve_type
-* [ ] >> Mark `typename` as required if it is part of an `inputUnion`
-* [ ] >> Try using `__typename`
+* [x] Use `__inputname` for automatic resolve_type
+* [ ] >> Mark `__inputname` as required if it is part of an `inputUnion` in verification step
+* [x] >> Try using `__typename` ---> Maybe possible, but messy. Going with `__inputname` for now
 * [x] >> drop need for resolve_type / is_type_of
 
 

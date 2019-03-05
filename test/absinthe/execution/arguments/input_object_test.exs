@@ -163,8 +163,7 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
         """
         query {
           eitherOr(
-            objectArg: {value: "Ignore me"}
-            unionArg: {typename: "ThisOne", this: "foo"}
+            unionArg: {__inputname: "ThisOne", this: "foo"}
           )
         }
         """,
@@ -179,7 +178,7 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
         query {
           eitherOr(
             objectArg: {value: "Ignore me"}
-            unionArg: {typename: "ThatOne", that: "bar"}
+            unionArg: {__inputname: "ThatOne", that: "bar"}
           )
         }
         """,
@@ -197,7 +196,7 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
           eitherOr(
             nested: {
               nestedUnionArg: {
-                typename: "ThisOne",
+                __inputname: "ThisOne",
                 this: "foobar"
               }
             }
@@ -211,12 +210,12 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
 
   test "list of input unions" do
     assert_data(
-      %{"eitherOr" => "THIS&ThisOne&THAT&ThatOne"},
+      %{"eitherOr" => "ThisOne&THIS&ThatOne&THAT"},
       run(
         """
         query {
           eitherOr(
-            listUnion: [{typename: "ThisOne", this: "THIS"}, {typename: "ThatOne", that: "THAT"}]
+            listUnion: [{__inputname: "ThisOne", this: "THIS"}, {__inputname: "ThatOne", that: "THAT"}]
           )
         }
         """,

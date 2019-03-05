@@ -53,6 +53,10 @@ defmodule Absinthe.Schema.Rule.TypeNamesAreReserved do
     check_named(schema, type, "argument", arg)
   end
 
+  defp check_named(_schema, _type, "field", %{name: "__inputname"}) do
+    []
+  end
+
   defp check_named(_schema, type, kind, %{name: "__" <> _} = entity) do
     if Absinthe.Type.built_in?(type) do
       []
