@@ -243,12 +243,9 @@ defmodule Absinthe.Phase.Schema do
   defp find_schema_field(%{fields: fields}, "__inputname" = name, node, schema, adapter) do
     internal_name = adapter.to_internal_name(name, :field)
 
-    result =
-      fields
-      |> Map.values()
-      |> Enum.find(&match?(%{name: ^internal_name}, &1))
-
-    determine_concrete_type(result, node, schema)
+    fields
+    |> Map.values()
+    |> Enum.find(&match?(%{name: ^internal_name}, &1))
   end
 
   defp find_schema_field(_, "__" <> introspection_field, _, _, _) do

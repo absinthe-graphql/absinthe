@@ -71,10 +71,6 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
     types [:this_one, :that_one]
   end
 
-  object :unused_object do
-    field :unused_field, :string
-  end
-
   query do
     field :stuff, :integer do
       arg :stuff, non_null(:input_stuff)

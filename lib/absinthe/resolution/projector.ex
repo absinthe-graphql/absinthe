@@ -123,15 +123,6 @@ defmodule Absinthe.Resolution.Projector do
   end
 
   # necessary when the field in question is on an abstract type.
-  defp update_schema_node(
-         %{name: "__inputname", schema_node: %{identifier: identifier}} = field,
-         %{
-           fields: concrete_fields
-         }
-       ) do
-    %{field | schema_node: :maps.get(identifier, concrete_fields)}
-  end
-
   defp update_schema_node(%{name: "__" <> _} = field, _) do
     field
   end
