@@ -182,17 +182,7 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
           {:ok, "NESTED THAT #{thing}"}
 
         %{list_union: lists}, _ ->
-          # TODO FIX THIS
-          {:ok,
-           lists
-           |> Enum.flat_map(fn map ->
-             Enum.map(map, fn
-               {:typename, _v} -> nil
-               {_k, v} -> v
-             end)
-           end)
-           |> Enum.reject(&is_nil/1)
-           |> Enum.join("&")}
+          {:ok, lists |> Enum.flat_map(&Map.values/1) |> Enum.join("&")}
 
         _, _ ->
           {:error, "NOTHIN"}

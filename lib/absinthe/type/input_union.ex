@@ -31,7 +31,6 @@ defmodule Absinthe.Type.InputUnion do
           name: binary,
           description: binary,
           types: [Type.identifier_t()],
-          resolve_type: nil,
           identifier: atom,
           __private__: Keyword.t(),
           __reference__: Type.Reference.t()
@@ -39,7 +38,6 @@ defmodule Absinthe.Type.InputUnion do
 
   defstruct name: nil,
             description: nil,
-            resolve_type: nil,
             identifier: nil,
             types: [],
             __private__: [],

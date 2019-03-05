@@ -296,12 +296,11 @@ defmodule Absinthe.Phase.Schema do
   end
 
   defp extract_typename(fields) do
-    input_fields =
-      fields
-      |> Enum.into(%{}, fn
-        %{name: name, input_value: %{normalized: %{value: value}}} -> {name, value}
-      end)
-
-    input_fields["typename"] |> Macro.underscore() |> String.to_atom()
+    with %{input_value: %{normalized: %{value: value}}} <-
+           Enum.find(fields, fn field -> field.name == "typename" end) do
+      value
+      |> Macro.underscore()
+      |> String.to_atom()
+    end
   end
 end

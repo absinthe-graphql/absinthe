@@ -211,7 +211,7 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
 
   test "list of input unions" do
     assert_data(
-      %{"eitherOr" => "THIS&THAT"},
+      %{"eitherOr" => "THIS&ThisOne&THAT&ThatOne"},
       run(
         """
         query {
