@@ -41,7 +41,7 @@ defmodule Absinthe.Type.InputUnionTest do
     end
   end
 
-  describe "union" do
+  describe "input union" do
     test "can be defined" do
       obj = TestSchema.__absinthe_type__(:search_query)
 

@@ -9,7 +9,7 @@
 * [ ] >> Mark `__inputname` as required if it is part of an `inputUnion` in verification step
 * [x] >> Try using `__typename` ---> Maybe possible, but messy. Going with `__inputname` for now
 * [x] >> drop need for resolve_type / is_type_of
-
+* [ ] >> make `__inputname` implicit
 
 #### Defining the schema
 
