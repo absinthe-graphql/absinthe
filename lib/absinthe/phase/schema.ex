@@ -161,7 +161,7 @@ defmodule Absinthe.Phase.Schema do
 
   defp set_schema_node(%Blueprint.Input.Field{} = node, parent, schema, adapter) do
     case node.name do
-      name = "__inputname" ->
+      "__inputname" ->
         %{node | schema_node: parent.schema_node.fields.__inputname}
 
       "__" <> _ ->
@@ -190,10 +190,10 @@ defmodule Absinthe.Phase.Schema do
       %Absinthe.Type.Field{type: type} ->
         %{node | schema_node: type |> Type.expand(schema)}
 
-      %Absinthe.Type.InputUnion{} ->
+      %Absinthe.Type.InputUnion{} = input_union ->
         case node do
           %{normalized: %{fields: fields}} ->
-            concrete_type = extract_typename(fields)
+            concrete_type = extract_typename(fields, input_union)
             %{node | schema_node: concrete_type |> Type.expand(schema)}
 
           _ ->
@@ -289,21 +289,23 @@ defmodule Absinthe.Phase.Schema do
   defp determine_concrete_type(result, node, schema) do
     with %{type: type} <- result,
          %{input_value: %{normalized: %{fields: fields}}} <- node,
-         %Absinthe.Type.InputUnion{} <-
+         %Absinthe.Type.InputUnion{} = input_union <-
            Absinthe.Schema.cached_lookup_type(schema, Type.unwrap(type)) do
-      concrete_type = extract_typename(fields)
+      concrete_type = extract_typename(fields, input_union)
       %{result | type: concrete_type}
     else
       _ -> result
     end
   end
 
-  defp extract_typename(fields) do
+  defp extract_typename(fields, input_union) do
     with %{input_value: %{normalized: %{value: value}}} <-
            Enum.find(fields, fn field -> field.name == "__inputname" end) do
       value
       |> Macro.underscore()
       |> String.to_atom()
+    else
+      _ -> input_union.default_type
     end
   end
 end

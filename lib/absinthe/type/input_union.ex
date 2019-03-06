@@ -17,7 +17,7 @@ defmodule Absinthe.Type.InputUnion do
 
   use Absinthe.Introspection.Kind
 
-  alias Absinthe.{Schema, Type}
+  alias Absinthe.Type
 
   @typedoc """
   * `:name` - The name of the input union type. Should be a TitleCased `binary`. Set automatically.
@@ -33,7 +33,8 @@ defmodule Absinthe.Type.InputUnion do
           types: [Type.identifier_t()],
           identifier: atom,
           __private__: Keyword.t(),
-          __reference__: Type.Reference.t()
+          __reference__: Type.Reference.t(),
+          default_type: Type.identifier_t()
         }
 
   defstruct name: nil,
@@ -41,9 +42,15 @@ defmodule Absinthe.Type.InputUnion do
             identifier: nil,
             types: [],
             __private__: [],
-            __reference__: nil
+            __reference__: nil,
+            default_type: nil
 
   def build(%{attrs: attrs}) do
+    default_type =
+      Keyword.fetch!(attrs, :types)
+      |> List.first()
+
+    attrs = attrs ++ [default_type: default_type]
     quote do: %unquote(__MODULE__){unquote_splicing(attrs)}
   end
 

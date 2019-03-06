@@ -163,8 +163,7 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
         """
         query {
           eitherOr(
-            objectArg: {value: "Ignore me"}
-            unionArg: {__inputname: "ThisOne", this: "foo"}
+            unionArg: {this: "foo"}
           )
         }
         """,
