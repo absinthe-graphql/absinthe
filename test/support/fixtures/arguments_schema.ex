@@ -55,12 +55,10 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
 
   input_object :this_one do
     field :this, :string
-    field :__inputname, non_null(:string)
   end
 
   input_object :that_one do
     field :that, :string
-    field :__inputname, non_null(:string)
   end
 
   input_object :nested_input do

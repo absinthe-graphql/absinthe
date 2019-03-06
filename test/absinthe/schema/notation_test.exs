@@ -43,7 +43,7 @@ defmodule Absinthe.Schema.NotationTest do
 
       fields = InputFoo.__absinthe_type__(:bar).fields
 
-      assert [:email, :name] = fields |> Map.keys() |> Enum.sort()
+      assert [:__inputname, :email, :name] = fields |> Map.keys() |> Enum.sort()
     end
 
     test "works for interfaces" do

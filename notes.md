@@ -6,10 +6,10 @@
 * [x] Can extract Input Union from query
 * [x] Can resolve a query with an Input Union
 * [x] Use `__inputname` for automatic resolve_type
-* [ ] >> Mark `__inputname` as required if it is part of an `inputUnion` in verification step
 * [x] >> Try using `__typename` ---> Maybe possible, but messy. Going with `__inputname` for now
 * [x] >> drop need for resolve_type / is_type_of
-* [ ] >> make `__inputname` implicit
+* [x] >> make `__inputname` implicit
+* [ ] There must be a default input_object for the case that `__inputname` is not specified
 
 #### Defining the schema
 

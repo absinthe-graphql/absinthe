@@ -15,7 +15,6 @@ defmodule Absinthe.Type.InputUnionTest do
 
       field :name, :string
       field :age, :integer
-      field :__inputname, non_null(:string)
     end
 
     input_object :business do
@@ -23,7 +22,6 @@ defmodule Absinthe.Type.InputUnionTest do
 
       field :name, :string
       field :employee_count, :integer
-      field :__inputname, non_null(:string)
     end
 
     input_union :search_query do
@@ -34,7 +32,6 @@ defmodule Absinthe.Type.InputUnionTest do
 
     input_object :foo do
       field :name, :string
-      field :__inputname, non_null(:string)
     end
 
     input_union :other_query do

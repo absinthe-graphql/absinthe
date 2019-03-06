@@ -3,7 +3,10 @@
    data: %{
      "__type" => %{
        "name" => "ChannelInput",
-       "inputFields" => [%{"name" => "channel", "defaultValue" => "RED"}]
+       "inputFields" => [
+         %{"defaultValue" => nil, "name" => "__inputname"},
+         %{"name" => "channel", "defaultValue" => "RED"}
+       ]
      }
    }
  }}
