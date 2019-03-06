@@ -162,7 +162,7 @@ defmodule Absinthe.Phase.Schema do
   defp set_schema_node(%Blueprint.Input.Field{} = node, parent, schema, adapter) do
     case node.name do
       name = "__inputname" ->
-        %{node | schema_node: find_schema_field(parent.schema_node, name, node, schema, adapter)}
+        %{node | schema_node: parent.schema_node.fields.__inputname}
 
       "__" <> _ ->
         %{node | schema_node: nil}
@@ -240,14 +240,6 @@ defmodule Absinthe.Phase.Schema do
           Absinthe.Schema.t(),
           Absinthe.Adapter.t()
         ) :: nil | Type.Field.t()
-  defp find_schema_field(%{fields: fields}, "__inputname" = name, node, schema, adapter) do
-    internal_name = adapter.to_internal_name(name, :field)
-
-    fields
-    |> Map.values()
-    |> Enum.find(&match?(%{name: ^internal_name}, &1))
-  end
-
   defp find_schema_field(_, "__" <> introspection_field, _, _, _) do
     Absinthe.Introspection.Field.meta(introspection_field)
   end

@@ -34,6 +34,7 @@ defmodule Absinthe.Type.InputUnionTest do
 
     input_object :foo do
       field :name, :string
+      field :__inputname, non_null(:string)
     end
 
     input_union :other_query do
