@@ -15,7 +15,6 @@ defmodule Absinthe.Type.InputUnionTest do
 
       field :name, :string
       field :age, :integer
-      field :typename, non_null(:string)
     end
 
     input_object :business do
@@ -23,7 +22,6 @@ defmodule Absinthe.Type.InputUnionTest do
 
       field :name, :string
       field :employee_count, :integer
-      field :typename, non_null(:string)
     end
 
     input_union :search_query do
@@ -41,7 +39,7 @@ defmodule Absinthe.Type.InputUnionTest do
     end
   end
 
-  describe "union" do
+  describe "input union" do
     test "can be defined" do
       obj = TestSchema.__absinthe_type__(:search_query)
 

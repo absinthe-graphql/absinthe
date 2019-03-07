@@ -164,6 +164,12 @@ defmodule Absinthe.IntrospectionTest do
                "description" => "The basic details for a person",
                "inputFields" => [
                  %{
+                   "defaultValue" => nil,
+                   "description" => nil,
+                   "name" => "__inputname",
+                   "type" => %{"kind" => "SCALAR", "name" => "String", "ofType" => nil}
+                 },
+                 %{
                    "defaultValue" => "43",
                    "description" => "The person's age",
                    "name" => "age",

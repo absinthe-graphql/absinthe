@@ -70,6 +70,7 @@ defmodule Absinthe.Type.InputObject do
     fields =
       attrs
       |> Keyword.get(:fields, [])
+      |> Kernel.++(__inputname: spliced_inputname())
       |> Type.Field.build()
       |> Type.Object.handle_imports(attrs[:field_imports])
 
@@ -82,5 +83,18 @@ defmodule Absinthe.Type.InputObject do
     def children(node, _traversal) do
       Map.values(node.fields)
     end
+  end
+
+  defp spliced_inputname() do
+    [
+      name: "__inputname",
+      __reference__:
+        quote do
+          %Absinthe.Type.Reference{
+            identifier: :__inputname
+          }
+        end,
+      type: :string
+    ]
   end
 end

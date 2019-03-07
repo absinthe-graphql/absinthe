@@ -1450,6 +1450,15 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
+  @doc """
+  Marks a type in an input union as default
+
+  See `field/3` for examples
+  """
+  defmacro default(type) do
+    type
+  end
+
   # NOTATION UTILITIES
 
   defp handle_meta(attrs) do
@@ -1607,7 +1616,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp close_scope_and_define_type(type_module, env, identifier, def_opts \\ []) do
-    attrs = close_scope_with_name(env.module, identifier, title: true)
+    attrs = define_attrs(type_module, env, identifier)
 
     definition = %Absinthe.Schema.Notation.Definition{
       category: :type,
@@ -1620,6 +1629,29 @@ defmodule Absinthe.Schema.Notation do
     }
 
     put_definition(env.module, definition)
+  end
+
+  def define_attrs(type_module, env, identifier) do
+    case type_module do
+      Type.InputUnion ->
+        close_scope_with_name(env.module, identifier, title: true)
+        |> set_default()
+
+      _ ->
+        close_scope_with_name(env.module, identifier, title: true)
+    end
+  end
+
+  defp set_default(attrs) do
+    Keyword.fetch!(attrs, :types)
+    |> Enum.find(fn type -> match?({:default, _, _}, type) end)
+    |> case do
+      nil ->
+        attrs
+
+      {:default, _location, [type]} ->
+        attrs ++ [default_type: type]
+    end
   end
 
   defp put_definition(module, definition) do

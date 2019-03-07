@@ -55,12 +55,10 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
 
   input_object :this_one do
     field :this, :string
-    field :typename, non_null(:string)
   end
 
   input_object :that_one do
     field :that, :string
-    field :typename, non_null(:string)
   end
 
   input_object :nested_input do
@@ -68,7 +66,7 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
   end
 
   input_union :this_or_that do
-    types [:this_one, :that_one]
+    types [default(:this_one), :that_one]
   end
 
   query do

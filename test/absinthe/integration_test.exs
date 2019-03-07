@@ -27,7 +27,13 @@ defmodule Absinthe.IntegrationTest do
               }
             }} = result
 
-    correct = [%{"name" => "code"}, %{"name" => "name"}, %{"name" => "age"}]
+    correct = [
+      %{"name" => "__inputname"},
+      %{"name" => "code"},
+      %{"name" => "name"},
+      %{"name" => "age"}
+    ]
+
     sort = & &1["name"]
     assert Enum.sort_by(input_fields, sort) == Enum.sort_by(correct, sort)
   end
