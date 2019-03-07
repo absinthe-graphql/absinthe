@@ -46,11 +46,6 @@ defmodule Absinthe.Type.InputUnion do
             default_type: nil
 
   def build(%{attrs: attrs}) do
-    default_type =
-      Keyword.fetch!(attrs, :types)
-      |> List.first()
-
-    attrs = attrs ++ [default_type: default_type]
     quote do: %unquote(__MODULE__){unquote_splicing(attrs)}
   end
 

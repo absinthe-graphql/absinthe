@@ -9,7 +9,11 @@
 * [x] >> Try using `__typename` ---> Maybe possible, but messy. Going with `__inputname` for now
 * [x] >> drop need for resolve_type / is_type_of
 * [x] >> make `__inputname` implicit
-* [ ] There must be a default input_object for the case that `__inputname` is not specified
+* [ ] >> Verify that `__inputname` doesn't show up in introspection 
+* [x] There must be a default input_object for the case that `__inputname` is not specified
+* [ ] >> Make `default` macro strict to a single `type` defined in an `input_union`
+* [ ] >> Make `default` required
+* [ ] >> Test `default` behavior -> what if document object doesn't match default?
 
 #### Defining the schema
 
