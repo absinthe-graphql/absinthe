@@ -468,6 +468,17 @@ defmodule Absinthe.Type do
     end
   end
 
+  defp referenced_types(%Type.InputUnion{identifier: identifier} = union, schema, acc) do
+    if identifier in acc do
+      acc
+    else
+      acc = MapSet.put(acc, identifier)
+
+      union.types
+      |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
+    end
+  end
+
   defp referenced_types(type, schema, acc) when is_atom(type) and type != nil do
     referenced_types(Schema.lookup_type(schema, type), schema, acc)
   end

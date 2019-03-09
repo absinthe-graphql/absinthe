@@ -66,6 +66,7 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
   end
 
   input_union :this_or_that do
+    description "A sample InputUnion"
     types [default(:this_one), :that_one]
   end
 

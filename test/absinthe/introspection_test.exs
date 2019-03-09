@@ -458,4 +458,38 @@ defmodule Absinthe.IntrospectionTest do
       )
     end
   end
+
+  describe "introspection of a input union type" do
+    test "can use __type and get possible types" do
+      result =
+        """
+        {
+          __type(name: "ThisOrThat") {
+            kind
+            name
+            description
+            possibleTypes {
+              name
+            }
+          }
+        }
+        """
+        |> run(Absinthe.Fixtures.ArgumentsSchema)
+
+      assert_result(
+        {:ok,
+         %{
+           data: %{
+             "__type" => %{
+               "description" => "A sample InputUnion",
+               "kind" => "INPUT_UNION",
+               "name" => "ThisOrThat",
+               "possibleTypes" => [%{"name" => "ThisOne"}, %{"name" => "ThatOne"}]
+             }
+           }
+         }},
+        result
+      )
+    end
+  end
 end
