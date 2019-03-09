@@ -270,7 +270,7 @@ defmodule Absinthe.Resolution.Helpers do
     end
 
     defp use_parent(loader, source, resource, parent, args, opts) do
-      with true <- Keyword.get(opts, :use_parent, false),
+      with true <- Keyword.get(opts, :use_parent, true),
            {:ok, val} <- is_map(parent) && Map.fetch(parent, resource) do
         Dataloader.put(loader, source, {resource, args}, parent, val)
       else
