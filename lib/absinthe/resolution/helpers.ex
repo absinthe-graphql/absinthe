@@ -230,7 +230,7 @@ defmodule Absinthe.Resolution.Helpers do
     of dataloader. It receives the result as the first argument, and the parent
     and args as second and third. Can be used to e.g. compute fields on the return
     value of the loader. Should return an ok or error tuple.
-    - `:use_parent` default: `true`. This option affects whether or not the `dataloader/2`
+    - `:use_parent` default: `false`. This option affects whether or not the `dataloader/3`
     helper will use any pre-existing value on the parent. IE if you return
     `%{author: %User{...}}` from a blog post the helper will by default simply use
     the pre-existing author. Set it to false if you always want it to load it fresh.
@@ -270,7 +270,7 @@ defmodule Absinthe.Resolution.Helpers do
     end
 
     defp use_parent(loader, source, resource, parent, args, opts) do
-      with true <- Keyword.get(opts, :use_parent, true),
+      with true <- Keyword.get(opts, :use_parent, false),
            {:ok, val} <- is_map(parent) && Map.fetch(parent, resource) do
         Dataloader.put(loader, source, {resource, args}, parent, val)
       else
