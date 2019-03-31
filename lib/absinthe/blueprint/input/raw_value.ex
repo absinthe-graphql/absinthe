@@ -1,7 +1,7 @@
 defmodule Absinthe.Blueprint.Input.RawValue do
   @moduledoc false
 
-  Absinthe.Blueprint.Input.Object
+  alias Absinthe.Blueprint.Input.Object
 
   @enforce_keys [:content]
   defstruct [

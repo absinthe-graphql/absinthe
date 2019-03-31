@@ -320,7 +320,7 @@ defmodule Absinthe.Pipeline do
       iex> Pipeline.reject([A, B, C], ~r/A|B/)
       [C]
   """
-  @spec reject(t, Regex.t() | (Module.t() -> boolean)) :: t
+  @spec reject(t, Regex.t() | (module -> boolean)) :: t
   def reject(pipeline, %Regex{} = pattern) do
     reject(pipeline, fn phase ->
       Regex.match?(pattern, Atom.to_string(phase))

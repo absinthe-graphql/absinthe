@@ -195,7 +195,7 @@ defmodule Absinthe.Type.Field do
           middleware: [],
           complexity: complexity_t | nil,
           __private__: Keyword.t(),
-          definition: Module.t(),
+          definition: module,
           __reference__: Type.Reference.t()
         }
 
