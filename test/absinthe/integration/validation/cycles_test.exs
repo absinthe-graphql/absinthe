@@ -21,11 +21,11 @@ defmodule Elixir.Absinthe.Integration.Validation.CyclesTest do
               errors: [
                 %{
                   message: "Cannot spread fragment \"Foo\" within itself via \"Bar\", \"Foo\".",
-                  locations: [%{column: 1, line: 4}]
+                  locations: [%{column: 0, line: 4}]
                 },
                 %{
                   message: "Cannot spread fragment \"Bar\" within itself via \"Foo\", \"Bar\".",
-                  locations: [%{column: 1, line: 8}]
+                  locations: [%{column: 0, line: 8}]
                 }
               ]
             }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
@@ -47,7 +47,7 @@ defmodule Elixir.Absinthe.Integration.Validation.CyclesTest do
               errors: [
                 %{
                   message: "Unknown fragment \"Foo\"",
-                  locations: [%{column: 3, line: 6}]
+                  locations: [%{column: 0, line: 6}]
                 }
               ]
             }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
