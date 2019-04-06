@@ -124,6 +124,13 @@ defmodule Absinthe.Execution.SubscriptionTest do
             {:ok, topic: args[:id] || "*", context_id: context_id}
         end
       end
+
+      field :relies_on_document, :string do
+        config fn _, %{document: %Absinthe.Blueprint{} = document} ->
+          %{type: :subscription, name: op_name} = Absinthe.Blueprint.current_operation(document)
+          {:ok, topic: "*", context_id: "*", document_id: op_name}
+        end
+      end
     end
 
     mutation do
@@ -325,6 +332,15 @@ defmodule Absinthe.Execution.SubscriptionTest do
                variables: %{"clientId" => "abc"},
                context: %{pubsub: PubSub, authorized: false}
              )
+  end
+
+  @query """
+  subscription Example {
+    reliesOnDocument
+  }
+  """
+  test "topic function receives a document" do
+    assert {:ok, %{"subscribed" => _topic}} = run(@query, Schema, context: %{pubsub: PubSub})
   end
 
   @query """

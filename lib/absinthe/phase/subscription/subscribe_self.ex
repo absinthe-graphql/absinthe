@@ -21,7 +21,7 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
 
     %{selections: [field]} = op
 
-    with {:ok, config} <- get_config(field, context) do
+    with {:ok, config} <- get_config(field, context, blueprint) do
       field_keys = get_field_keys(field, config)
       subscription_id = get_subscription_id(config, blueprint, options)
 
@@ -40,13 +40,13 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
     end
   end
 
-  defp get_config(%{schema_node: schema_node, argument_data: argument_data} = field, context) do
+  defp get_config(%{schema_node: schema_node, argument_data: argument_data} = field, context, blueprint) do
     name = schema_node.identifier
 
     config =
       case Absinthe.Type.function(schema_node, :config) do
         fun when is_function(fun, 2) ->
-          apply(fun, [argument_data, %{context: context}])
+          apply(fun, [argument_data, %{context: context, document: blueprint}])
 
         fun when is_function(fun, 1) ->
           IO.write(
