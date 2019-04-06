@@ -27,6 +27,7 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
 
       for field_key <- field_keys,
           do: Absinthe.Subscription.subscribe(pubsub, field_key, subscription_id, blueprint)
+
       {:replace, blueprint, [{Phase.Subscription.Result, topic: subscription_id}]}
     else
       {:error, error} ->
@@ -40,7 +41,11 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
     end
   end
 
-  defp get_config(%{schema_node: schema_node, argument_data: argument_data} = field, context, blueprint) do
+  defp get_config(
+         %{schema_node: schema_node, argument_data: argument_data} = field,
+         context,
+         blueprint
+       ) do
     name = schema_node.identifier
 
     config =
@@ -86,6 +91,7 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
 
   defp get_field_keys(%{schema_node: schema_node} = _field, config) do
     name = schema_node.identifier
+
     find_field_keys!(config)
     |> Enum.map(fn key -> {name, key} end)
   end
@@ -147,7 +153,7 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
           |> :erlang.term_to_binary()
 
         :crypto.hash(:sha256, binary)
-        |> Base.encode16
+        |> Base.encode16()
 
       val ->
         val
