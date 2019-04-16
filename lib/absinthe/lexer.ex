@@ -205,10 +205,8 @@ defmodule Absinthe.Lexer do
     |> post_traverse({:string_value_token, []})
 
   block_string_value =
-    ignore(
-      string(~S("""))
-      |> post_traverse({:mark_block_string_start, []})
-    )
+    ignore(string(~S(""")))
+    |> post_traverse({:mark_block_string_start, []})
     |> repeat_while(block_string_character, {:not_end_of_block_quote, []})
     |> ignore(string(~S(""")))
     |> post_traverse({:block_string_value_token, []})
@@ -340,8 +338,8 @@ defmodule Absinthe.Lexer do
     {[chars], Map.put(context, :token_location, line_and_column(loc, byte_offset, 1))}
   end
 
-  defp mark_block_string_start(_rest, chars, context, loc, byte_offset) do
-    {[chars], Map.put(context, :token_location, line_and_column(loc, byte_offset, 3))}
+  defp mark_block_string_start(_rest, _chars, context, loc, byte_offset) do
+    {[], Map.put(context, :token_location, line_and_column(loc, byte_offset, 3))}
   end
 
   defp block_string_value_token(_rest, chars, context, _loc, _byte_offset) do
