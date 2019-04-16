@@ -29,6 +29,7 @@ defmodule Absinthe do
             | boolean
             | binary
             | atom
+            | result_selection_t
             | [result_selection_t]
         }
 
