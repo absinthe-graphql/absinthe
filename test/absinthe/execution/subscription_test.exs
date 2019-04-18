@@ -112,6 +112,25 @@ defmodule Absinthe.Execution.SubscriptionTest do
           {:ok, topic: ["topic_1", "topic_2", "topic_3"]}
         end
       end
+
+      field :other_user, :user do
+        arg :id, :id
+
+        config fn
+          args, %{context: %{context_id: context_id, document_id: document_id}} ->
+            {:ok, topic: args[:id] || "*", context_id: context_id, document_id: document_id}
+
+          args, %{context: %{context_id: context_id}} ->
+            {:ok, topic: args[:id] || "*", context_id: context_id}
+        end
+      end
+
+      field :relies_on_document, :string do
+        config fn _, %{document: %Absinthe.Blueprint{} = document} ->
+          %{type: :subscription, name: op_name} = Absinthe.Blueprint.current_operation(document)
+          {:ok, topic: "*", context_id: "*", document_id: op_name}
+        end
+      end
     end
 
     mutation do
@@ -316,6 +335,15 @@ defmodule Absinthe.Execution.SubscriptionTest do
   end
 
   @query """
+  subscription Example {
+    reliesOnDocument
+  }
+  """
+  test "topic function receives a document" do
+    assert {:ok, %{"subscribed" => _topic}} = run(@query, Schema, context: %{pubsub: PubSub})
+  end
+
+  @query """
   subscription ($clientId: ID!) {
     thing(clientId: $clientId)
   }
@@ -402,6 +430,89 @@ defmodule Absinthe.Execution.SubscriptionTest do
     # we should get this twice since the different contexts prevent batching.
     assert_receive(:batch_get_group)
     assert_receive(:batch_get_group)
+  end
+
+  describe "subscription_ids" do
+
+    @query """
+    subscription {
+      otherUser { id }
+    }
+    """
+    test "subscriptions with the same context_id and same source document have the same subscription_id" do
+      assert {:ok, %{"subscribed" => doc1}} = run(@query, Schema, context: %{context_id: "logged-in"})
+      assert {:ok, %{"subscribed" => doc2}} = run(@query, Schema, context: %{context_id: "logged-in"})
+
+      assert doc1 == doc2
+    end
+
+    @query """
+    subscription {
+      otherUser { id }
+    }
+    """
+    test "subscriptions with different context_id but the same source document have different subscription_ids" do
+      assert {:ok, %{"subscribed" => doc1}} = run(@query, Schema, context: %{context_id: "logged-in"})
+      assert {:ok, %{"subscribed" => doc2}} = run(@query, Schema, context: %{context_id: "not-logged-in"})
+
+      assert doc1 != doc2
+    end
+
+    test "subscriptions with same context_id but different source document have different subscription_ids" do
+      assert {:ok, %{"subscribed" => doc1}} =
+              run("subscription { otherUser { id name } }", Schema, context: %{context_id: "logged-in"})
+
+      assert {:ok, %{"subscribed" => doc2}} =
+              run("subscription { otherUser { id } }", Schema, context: %{context_id: "logged-in"})
+
+      assert doc1 != doc2
+    end
+
+    test "subscriptions with different context_id and different source document have different subscription_ids" do
+      assert {:ok, %{"subscribed" => doc1}} =
+              run("subscription { otherUser { id name } }", Schema, context: %{context_id: "logged-in"})
+
+      assert {:ok, %{"subscribed" => doc2}} =
+              run("subscription { otherUser { id } }", Schema, context: %{context_id: "not-logged-in"})
+
+      assert doc1 != doc2
+    end
+
+    @query """
+    subscription($id: String!) { otherUser(id: $id) { id } }
+    """
+    test "subscriptions with the same variables & document have the same subscription_ids" do
+      assert {:ok, %{"subscribed" => doc1}} =
+              run(@query, Schema, variables: %{"id" => "123"}, context: %{context_id: "logged-in"})
+
+      assert {:ok, %{"subscribed" => doc2}} =
+              run(@query, Schema, variables: %{"id" => "123"}, context: %{context_id: "logged-in"})
+
+      assert doc1 == doc2
+    end
+
+    @query """
+    subscription($id: String!) { otherUser(id: $id) { id } }
+    """
+    test "subscriptions with different variables but same document have different subscription_ids" do
+      assert {:ok, %{"subscribed" => doc1}} =
+              run(@query, Schema, variables: %{"id" => "123"}, context: %{context_id: "logged-in"})
+
+      assert {:ok, %{"subscribed" => doc2}} =
+              run(@query, Schema, variables: %{"id" => "456"}, context: %{context_id: "logged-in"})
+
+      assert doc1 != doc2
+    end
+
+    test "document_id can be provided to override the default logic for deriving document_id" do
+      assert {:ok, %{"subscribed" => doc1}} =
+              run("subscription { otherUser { id name } }", Schema, context: %{context_id: "logged-in", document_id: "abcdef"})
+
+      assert {:ok, %{"subscribed" => doc2}} =
+              run("subscription { otherUser { name id } }", Schema, context: %{context_id: "logged-in", document_id: "abcdef"})
+
+      assert doc1 == doc2
+    end
   end
 
   defp run(query, schema, opts \\ []) do
