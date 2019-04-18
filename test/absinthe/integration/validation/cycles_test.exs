@@ -30,4 +30,26 @@ defmodule Elixir.Absinthe.Integration.Validation.CyclesTest do
               ]
             }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
   end
+
+  @query """
+  query Foo {
+    ...Bar
+  }
+  fragment Bar on RootQueryType {
+    version
+    ...Foo
+  }
+  """
+
+  test "does not choke on unknown fragments" do
+    assert {:ok,
+            %{
+              errors: [
+                %{
+                  message: "Unknown fragment \"Foo\"",
+                  locations: [%{column: 3, line: 6}]
+                }
+              ]
+            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+  end
 end

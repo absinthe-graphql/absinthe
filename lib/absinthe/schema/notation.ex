@@ -31,7 +31,9 @@ defmodule Absinthe.Schema.Notation do
   @doc """
   Configure a subscription field.
 
-  ## Example
+  The returned topic can be single topic, or a list of topics
+
+  ## Examples
 
   ```elixir
   config fn args, %{context: context} ->
@@ -40,6 +42,14 @@ defmodule Absinthe.Schema.Notation do
     else
       {:error, "unauthorized"}
     end
+  end
+  ```
+
+  Alternatively can provide a list of topics:
+
+  ```elixir
+  config fn _, _ ->
+    {:ok, topic: ["topic_one", "topic_two", "topic_three"]}
   end
   ```
 
@@ -1103,6 +1113,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   @placement {:import_sdl, [toplevel: true]}
+  @type import_sdl_option :: {:path, String.t() | Macro.t()}
   @doc """
   Import types defined using the Schema Definition Language (SDL).
 
@@ -1137,9 +1148,16 @@ defmodule Absinthe.Schema.Notation do
 
   TODO: Example for dynamic loading during init
   """
-  defmacro import_sdl(embedded \\ nil, opts \\ []) do
+  @spec import_sdl([import_sdl_option(), ...]) :: Macro.t()
+  defmacro import_sdl(opts) when is_list(opts) do
     __CALLER__
-    |> do_import_sdl(embedded, opts)
+    |> do_import_sdl(nil, opts)
+  end
+
+  @spec import_sdl(String.t() | Macro.t(), [import_sdl_option()]) :: Macro.t()
+  defmacro import_sdl(sdl, opts \\ []) do
+    __CALLER__
+    |> do_import_sdl(sdl, opts)
   end
 
   defmacro values(values) do
@@ -1455,30 +1473,53 @@ defmodule Absinthe.Schema.Notation do
     []
   end
 
+  @spec do_import_sdl(Macro.Env.t(), nil, [import_sdl_option()]) :: Macro.t()
   defp do_import_sdl(env, nil, opts) do
-    with {:ok, path} <- Keyword.fetch(opts, :path),
-         sdl <- File.read!(path) do
-      Module.put_attribute(env.module, :external_resource, path)
-      do_import_types(env, sdl, Keyword.delete(opts, :path))
-    else
+    case Keyword.fetch(opts, :path) do
+      {:ok, path} ->
+        [
+          quote do
+            @__absinthe_import_sdl_path__ unquote(path)
+          end,
+          do_import_sdl(
+            env,
+            quote do
+              File.read!(@__absinthe_import_sdl_path__)
+            end,
+            opts
+          ),
+          quote do
+            @external_resource @__absinthe_import_sdl_path__
+          end
+        ]
+
       :error ->
         raise Absinthe.Schema.Notation.Error,
               "Must provide `:path` option to `import_sdl` unless passing a raw SDL string as the first argument"
     end
   end
 
-  defp do_import_sdl(env, sdl, _opts) when is_binary(sdl) do
-    with {:ok, definitions} <- __MODULE__.SDL.parse(sdl, env.module) do
-      Module.put_attribute(
-        env.module,
-        :__absinthe_sdl_definitions__,
-        definitions ++ (Module.get_attribute(env.module, :__absinthe_sdl_definitions__) || [])
-      )
+  @spec do_import_sdl(Macro.Env.t(), String.t() | Macro.t(), Keyword.t()) :: Macro.t()
+  defp do_import_sdl(env, sdl, opts) do
+    ref = build_reference(env)
 
-      []
-    else
-      {:error, error} ->
-        raise Absinthe.Schema.Notation.Error, "`import_sdl` could not parse SDL:\n#{error}"
+    quote do
+      with {:ok, definitions} <-
+             unquote(__MODULE__).SDL.parse(
+               unquote(sdl),
+               __MODULE__,
+               unquote(Macro.escape(ref)),
+               unquote(Macro.escape(opts))
+             ) do
+        @__absinthe_sdl_definitions__ definitions ++
+                                        (Module.get_attribute(
+                                           __MODULE__,
+                                           :__absinthe_sdl_definitions__
+                                         ) || [])
+      else
+        {:error, error} ->
+          raise Absinthe.Schema.Notation.Error, "`import_sdl` could not parse SDL:\n#{error}"
+      end
     end
   end
 
@@ -1532,8 +1573,8 @@ defmodule Absinthe.Schema.Notation do
     sdl_definitions =
       (Module.get_attribute(env.module, :__absinthe_sdl_definitions__) || [])
       |> List.flatten()
-      |> Enum.map(fn type_definition ->
-        Absinthe.Blueprint.prewalk(type_definition, fn
+      |> Enum.map(fn definition ->
+        Absinthe.Blueprint.prewalk(definition, fn
           %{module: _} = node ->
             %{node | module: env.module}
 
@@ -1542,7 +1583,19 @@ defmodule Absinthe.Schema.Notation do
         end)
       end)
 
-    schema = Map.update!(schema, :type_definitions, &(sdl_definitions ++ &1))
+    {sdl_directive_definitions, sdl_type_definitions} =
+      Enum.split_with(sdl_definitions, fn
+        %Absinthe.Blueprint.Schema.DirectiveDefinition{} ->
+          true
+
+        _ ->
+          false
+      end)
+
+    schema =
+      schema
+      |> Map.update!(:type_definitions, &(sdl_type_definitions ++ &1))
+      |> Map.update!(:directive_definitions, &(sdl_directive_definitions ++ &1))
 
     blueprint = %{blueprint | schema_definitions: [schema]}
 

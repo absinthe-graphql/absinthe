@@ -25,11 +25,12 @@ defmodule Absinthe.Phase.Schema.Compile do
 
     implementors = build_implementors(schema)
 
-    body = [
-      type_ast,
-      directive_ast,
+    body =
       quote do
-        def __absinthe_types__ do
+        unquote_splicing(type_ast)
+        unquote_splicing(directive_ast)
+
+        def __absinthe_types__() do
           unquote(Macro.escape(type_list))
         end
 
@@ -40,9 +41,9 @@ defmodule Absinthe.Phase.Schema.Compile do
         def __absinthe_interface_implementors__() do
           unquote(Macro.escape(implementors))
         end
-      end,
-      metadata
-    ]
+
+        unquote_splicing(metadata)
+      end
 
     Module.create(module_name, body, Macro.Env.location(__ENV__))
 

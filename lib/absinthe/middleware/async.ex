@@ -50,8 +50,11 @@ defmodule Absinthe.Middleware.Async do
   # This function inserts additional middleware into the remaining middleware
   # stack for this field. On the next resolution pass, we need to `Task.await` the
   # task so we have actual data. Thus, we prepend this module to the middleware stack.
-  def call(%{state: :unresolved} = res, {fun, opts}) do
-    task_data = {Task.async(fun), opts}
+  def call(%{state: :unresolved} = res, {fun, opts}) when is_function(fun),
+    do: call(res, {Task.async(fun), opts})
+
+  def call(%{state: :unresolved} = res, {task, opts}) do
+    task_data = {task, opts}
 
     %{
       res
@@ -60,6 +63,8 @@ defmodule Absinthe.Middleware.Async do
         middleware: [{__MODULE__, task_data} | res.middleware]
     }
   end
+
+  def call(%{state: :unresolved} = res, %Task{} = task), do: call(res, {task, []})
 
   # This is the clause that gets called on the second pass. There's very little
   # to do here. We just need to await the task started in the previous pass.

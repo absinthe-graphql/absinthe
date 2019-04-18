@@ -9,7 +9,7 @@ defmodule Absinthe.Schema.Rule.QueryTypeMustBeObjectTest do
           extra: %{},
           locations: [
             %{
-              file: "/Users/ben/src/absinthe/test/support/fixtures/dynamic/empty_schema.exs",
+              file: "test/support/fixtures/dynamic/empty_schema.exs",
               line: 0
             }
           ]

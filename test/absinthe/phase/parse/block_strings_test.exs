@@ -30,35 +30,26 @@ defmodule Absinthe.Phase.Parse.BlockStringsTest do
   end
 
   test "parses attributes when there are escapes" do
-    assert {:ok, result}  = run(
-      ~s<{ post(title: "title", body: "body\\\\") { name } }>
-    )
+    assert {:ok, result} = run(~s<{ post(title: "title", body: "body\\\\") { name } }>)
     assert "body\\" == extract_body(result)
 
-    assert {:ok, result}  = run(
-      ~s<{ post(title: "title\\\\", body: "body") { name } }>
-    )
+    assert {:ok, result} = run(~s<{ post(title: "title\\\\", body: "body") { name } }>)
     assert "body" == extract_body(result)
   end
 
   test "parse attributes where there are escapes on multiple lines" do
-    assert {:ok, result}  = run(
-      ~s<{ post(
+    assert {:ok, result} = run(~s<{ post(
         title: "title",
         body: "body\\\\"
-      ) { name } }>
-    )
+      ) { name } }>)
     assert "body\\" == extract_body(result)
 
-    assert {:ok, result}  = run(
-      ~s<{ post(
+    assert {:ok, result} = run(~s<{ post(
         title: "title\\\\",
         body: "body"
-      ) { name } }>
-    )
+      ) { name } }>)
     assert "body" == extract_body(result)
   end
-
 
   @input [
     "",
@@ -188,15 +179,6 @@ defmodule Absinthe.Phase.Parse.BlockStringsTest do
     assert ~S<text""" > == extract_body(result)
   end
 
-  test "returns an error for a bad byte" do
-    assert {:error, err} =
-             run(
-               ~s<{ post(title: "single", body: """trying to escape a \u0000 byte""") { name } }>
-             )
-
-    assert "Parsing failed at" <> _ = extract_error_message(err)
-  end
-
   test "parses a query with a block string literal as a variable default" do
     assert {:ok, result} =
              run(
@@ -212,15 +194,6 @@ defmodule Absinthe.Phase.Parse.BlockStringsTest do
                Access.key(:default_value, %{}),
                Access.key(:value, nil)
              ])
-  end
-
-  defp extract_error_message(err) do
-    get_in(err, [
-      Access.key(:execution, %{}),
-      Access.key(:validation_errors, []),
-      Access.at(0),
-      Access.key(:message, nil)
-    ])
   end
 
   defp extract_body(value) do

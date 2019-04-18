@@ -22,6 +22,7 @@ defmodule Absinthe.Language.EnumTypeDefinition do
       %Blueprint.Schema.EnumTypeDefinition{
         name: node.name,
         description: node.description,
+        identifier: Macro.underscore(node.name) |> String.to_atom(),
         values: Absinthe.Blueprint.Draft.convert(node.values, doc),
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
         source_location: source_location(node)

@@ -126,6 +126,9 @@ subscription do
     # subscription {
     #   commentAdded(repoName: "elixir-lang/elixir") { content }
     # }
+    #
+    # If needed, you can also provide a list of topics:
+    #   {:ok, topic: ["absinthe-graphql/absinthe", "elixir-lang/elixir"]}
     config fn args, _ ->
       {:ok, topic: args.repo_name}
     end

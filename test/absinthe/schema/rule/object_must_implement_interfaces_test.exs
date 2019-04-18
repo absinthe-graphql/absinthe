@@ -47,8 +47,7 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfacesTest do
         },
         locations: [
           %{
-            file:
-              "/Users/ben/src/absinthe/test/support/fixtures/dynamic/invalid_interface_types.exs",
+            file: "test/support/fixtures/dynamic/invalid_interface_types.exs",
             line: 4
           }
         ],

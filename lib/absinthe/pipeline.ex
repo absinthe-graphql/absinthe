@@ -141,6 +141,11 @@ defmodule Absinthe.Pipeline do
 
   @doc """
   Return the part of a pipeline before a specific phase.
+
+  ## Examples
+
+      iex> Pipeline.before([A, B, C], B)
+      [A]
   """
   @spec before(t, atom) :: t
   def before(pipeline, phase) do
@@ -159,6 +164,11 @@ defmodule Absinthe.Pipeline do
 
   @doc """
   Return the part of a pipeline after (and including) a specific phase.
+
+  ## Examples
+
+      iex> Pipeline.from([A, B, C], B)
+      [B, C]
   """
   @spec from(t, atom) :: t
   def from(pipeline, phase) do
@@ -230,6 +240,11 @@ defmodule Absinthe.Pipeline do
 
   @doc """
   Return the part of a pipeline up to and including a specific phase.
+
+  ## Examples
+
+      iex> Pipeline.upto([A, B, C], B)
+      [A, B]
   """
   @spec upto(t, atom) :: t
   def upto(pipeline, phase) do
@@ -238,25 +253,75 @@ defmodule Absinthe.Pipeline do
     beginning ++ [item]
   end
 
+  @doc """
+  Return the pipeline with the supplied phase removed.
+
+  ## Examples
+
+      iex> Pipeline.without([A, B, C], B)
+      [A, C]
+  """
   @spec without(t, Phase.t()) :: t
   def without(pipeline, phase) do
     pipeline
     |> Enum.filter(&(not match_phase?(phase, &1)))
   end
 
+  @doc """
+  Return the pipeline with the phase/list of phases inserted before
+  the supplied phase.
+
+  ## Examples
+
+  Add one phase before another:
+
+      iex> Pipeline.insert_before([A, C, D], C, B)
+      [A, B, C, D]
+
+  Add list of phase before another:
+
+      iex> Pipeline.insert_before([A, D, E], D, [B, C])
+      [A, B, C, D, E]
+
+  """
   @spec insert_before(t, Phase.t(), phase_config_t | [phase_config_t]) :: t
   def insert_before(pipeline, phase, additional) do
     beginning = before(pipeline, phase)
     beginning ++ List.wrap(additional) ++ (pipeline -- beginning)
   end
 
+  @doc """
+  Return the pipeline with the phase/list of phases inserted after
+  the supplied phase.
+
+  ## Examples
+
+  Add one phase after another:
+
+      iex> Pipeline.insert_after([A, C, D], A, B)
+      [A, B, C, D]
+
+  Add list of phases after another:
+
+      iex> Pipeline.insert_after([A, D, E], A, [B, C])
+      [A, B, C, D, E]
+
+  """
   @spec insert_after(t, Phase.t(), phase_config_t | [phase_config_t]) :: t
   def insert_after(pipeline, phase, additional) do
     beginning = upto(pipeline, phase)
     beginning ++ List.wrap(additional) ++ (pipeline -- beginning)
   end
 
-  @spec reject(t, Regex.t() | (Module.t() -> boolean)) :: t
+  @doc """
+  Return the pipeline with the phases matching the regex removed.
+
+  ## Examples
+
+      iex> Pipeline.reject([A, B, C], ~r/A|B/)
+      [C]
+  """
+  @spec reject(t, Regex.t() | (module -> boolean)) :: t
   def reject(pipeline, %Regex{} = pattern) do
     reject(pipeline, fn phase ->
       Regex.match?(pattern, Atom.to_string(phase))

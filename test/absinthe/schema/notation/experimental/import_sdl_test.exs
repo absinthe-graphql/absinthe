@@ -8,34 +8,54 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   defmodule Definition do
     use Absinthe.Schema
 
-    import_sdl("""
+    # Embedded SDL
+    import_sdl """
+    directive @foo(name: String!) on SCALAR | OBJECT
+    directive @bar(name: String!) on SCALAR | OBJECT
+
     type Query {
       "A list of posts"
       posts(filter: PostFilter): [Post]
       admin: User!
     }
 
-    input PostFilter {
-      name: String
-    }
-
-    "A submitted post"
-    type Post {
-      title: String!
-      body: String!
-      \"""
-      The post author
-      (is a user)
-      \"""
+    type Comment {
       author: User!
+      subject: Post!
+      order: Int
     }
-    """)
 
-    import_sdl("""
-    type User {
+    enum Category {
+      NEWS
+      OPINION
+    }
+
+    enum PostState {
+      SUBMITTED
+      ACCEPTED
+      REJECTED
+    }
+
+    interface Named {
       name: String!
     }
-    """)
+
+    interface Titled @feature(name: "bar") {
+      title: String!
+    }
+
+    scalar B
+
+    union SearchResult = Post | User
+    union Content = Post | Comment
+    """
+
+    # Read SDL from file manually at compile-time
+    import_sdl File.read!("test/support/fixtures/import_sdl_binary_fn.graphql")
+
+    # Read from file at compile time (with support for automatic recompilation)
+    import_sdl path: "test/support/fixtures/import_sdl_path_option.graphql"
+    import_sdl path: Path.join("test/support", "fixtures/import_sdl_path_option_fn.graphql")
 
     def get_posts(_, _, _) do
       posts = [
@@ -60,6 +80,13 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
     def decorations(_node, _ancestors) do
       []
+    end
+  end
+
+  describe "directives" do
+    test "can be defined" do
+      assert %{name: "foo", identifier: :foo, locations: [:object, :scalar]} = lookup_compiled_directive(Definition, :foo)
+      assert %{name: "bar", identifier: :bar, locations: [:object, :scalar]} = lookup_compiled_directive(Definition, :bar)
     end
   end
 
@@ -133,6 +160,12 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     test "works" do
       assert {:ok, %{data: %{"posts" => [%{"title" => "Foo"}, %{"title" => "Bar"}]}}} =
                Absinthe.run(@query, Definition)
+    end
+  end
+
+  describe "Absinthe.Schema.used_types/1" do
+    test "works" do
+      assert Absinthe.Schema.used_types(Definition)
     end
   end
 end

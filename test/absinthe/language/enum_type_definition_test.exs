@@ -10,9 +10,9 @@ defmodule Absinthe.Language.EnumTypeDefinitionTest do
       assert %Blueprint.Schema.EnumTypeDefinition{
                name: "Episode",
                values: [
-                 %Blueprint.Schema.EnumValueDefinition{value: "NEWHOPE"},
-                 %Blueprint.Schema.EnumValueDefinition{value: "EMPIRE"},
-                 %Blueprint.Schema.EnumValueDefinition{value: "JEDI"}
+                 %Blueprint.Schema.EnumValueDefinition{name: "NEWHOPE", value: :newhope},
+                 %Blueprint.Schema.EnumValueDefinition{name: "EMPIRE", value: :empire},
+                 %Blueprint.Schema.EnumValueDefinition{name: "JEDI", value: :jedi}
                ]
              } = rep
     end
@@ -28,9 +28,9 @@ defmodule Absinthe.Language.EnumTypeDefinitionTest do
                name: "Episode",
                directives: [%Blueprint.Directive{name: "description"}],
                values: [
-                 %Blueprint.Schema.EnumValueDefinition{value: "NEWHOPE"},
-                 %Blueprint.Schema.EnumValueDefinition{value: "EMPIRE"},
-                 %Blueprint.Schema.EnumValueDefinition{value: "JEDI"}
+                 %Blueprint.Schema.EnumValueDefinition{name: "NEWHOPE", value: :newhope},
+                 %Blueprint.Schema.EnumValueDefinition{name: "EMPIRE", value: :empire},
+                 %Blueprint.Schema.EnumValueDefinition{name: "JEDI", value: :jedi}
                ]
              } = rep
     end

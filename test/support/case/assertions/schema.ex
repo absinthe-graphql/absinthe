@@ -24,7 +24,7 @@ defmodule Absinthe.Case.Assertions.Schema do
     |> Enum.filter(fn pattern ->
       assert Enum.find(err.phase_errors, fn error ->
                keys = Map.keys(pattern)
-               Map.take(error, keys) == pattern
+               Map.take(error, keys) |> handle_path == pattern |> handle_path
              end),
              "Could not find error detail pattern #{inspect(pattern)}\n\nin\n\n#{
                inspect(err.phase_errors)
@@ -33,6 +33,21 @@ defmodule Absinthe.Case.Assertions.Schema do
 
     assert length(patterns) == length(err.phase_errors)
   end
+
+  defp handle_path(%{locations: locations} = map) do
+    locations =
+      Enum.map(locations, fn
+        %{file: file} = location ->
+          %{location | file: file |> Path.split() |> List.last()}
+
+        location ->
+          location
+      end)
+
+    %{map | locations: locations}
+  end
+
+  defp handle_path(map), do: map
 
   def assert_notation_error(name) do
     assert_raise(Absinthe.Schema.Notation.Error, fn ->

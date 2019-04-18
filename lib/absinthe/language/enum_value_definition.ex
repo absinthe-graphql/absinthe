@@ -21,7 +21,9 @@ defmodule Absinthe.Language.EnumValueDefinition do
   defimpl Blueprint.Draft do
     def convert(node, doc) do
       %Blueprint.Schema.EnumValueDefinition{
-        value: node.value,
+        value: node.value |> Macro.underscore() |> String.to_atom(),
+        name: node.value,
+        identifier: node.value |> Macro.underscore() |> String.to_atom(),
         description: node.value,
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
         source_location: source_location(node)

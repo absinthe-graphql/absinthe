@@ -27,7 +27,7 @@ defmodule Absinthe.Type.Directive do
           args: map,
           locations: [location],
           expand: (map, Absinthe.Blueprint.node_t() -> atom),
-          definition: Module.t(),
+          definition: module,
           __private__: Keyword.t(),
           __reference__: Type.Reference.t()
         }

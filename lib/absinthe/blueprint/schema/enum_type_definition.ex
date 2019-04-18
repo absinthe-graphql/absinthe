@@ -23,6 +23,7 @@ defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
           name: String.t(),
           values: [Blueprint.Schema.EnumValueDefinition.t()],
           directives: [Blueprint.Directive.t()],
+          identifier: atom,
           source_location: nil | Blueprint.SourceLocation.t(),
           # Added by phases
           flags: Blueprint.flags_t(),

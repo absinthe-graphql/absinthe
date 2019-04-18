@@ -13,8 +13,7 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlacedTest do
           },
           locations: [
             %{
-              file:
-                "/Users/ben/src/absinthe/test/support/fixtures/dynamic/invalid_output_types.exs",
+              file: "test/support/fixtures/dynamic/invalid_output_types.exs",
               line: 11
             }
           ],
@@ -28,8 +27,7 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlacedTest do
           },
           locations: [
             %{
-              file:
-                "/Users/ben/src/absinthe/test/support/fixtures/dynamic/invalid_output_types.exs",
+              file: "test/support/fixtures/dynamic/invalid_output_types.exs",
               line: 16
             }
           ],
@@ -49,8 +47,7 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlacedTest do
           },
           locations: [
             %{
-              file:
-                "/Users/ben/src/absinthe/test/support/fixtures/dynamic/invalid_input_types.exs",
+              file: "test/support/fixtures/dynamic/invalid_input_types.exs",
               line: 8
             }
           ],

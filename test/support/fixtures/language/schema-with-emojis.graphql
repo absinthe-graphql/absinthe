@@ -1,0 +1,11 @@
+# Comment with a 😕 emoji.
+schema {
+  """
+  Description with a 🎉 emoji.
+  """
+  query: QueryType
+}
+
+type QueryType {
+  hello: String
+}
