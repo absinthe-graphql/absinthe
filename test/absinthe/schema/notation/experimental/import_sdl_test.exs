@@ -5,6 +5,17 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   @moduletag :experimental
   @moduletag :sdl
 
+  defmodule ExtTypes do
+    use Absinthe.Schema.Notation
+
+    # Extend a Post Object
+    import_sdl """
+    type User {
+      upVotes: Int
+    }
+    """
+  end
+
   defmodule Definition do
     use Absinthe.Schema
 
@@ -15,8 +26,9 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
     type Query {
       "A list of posts"
-      posts(filter: PostFilter): [Post]
+      posts(filter: PostFilter, reverse: Boolean): [Post]
       admin: User!
+      droppedField: String
     }
 
     type Comment {
@@ -66,6 +78,10 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       {:ok, posts}
     end
 
+    def upcase_title(post, _, _) do
+      {:ok, Map.get(post, :title) |> String.upcase()}
+    end
+
     def decorations(%{identifier: :admin}, [%{identifier: :query} | _]) do
       {:description, "The admin"}
     end
@@ -78,8 +94,47 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       {:resolve, &__MODULE__.get_posts/3}
     end
 
+    def decorations(%{identifier: :user}, _ancestors) do
+      user_ext = Absinthe.Blueprint.types_by_name(ExtTypes)["User"]
+
+      {:add_fields, user_ext.fields}
+    end
+
+    def decorations(%{identifier: :query}, _ancestors) do
+      {:del_fields, "dropped_field"}
+    end
+
+    def decorations(%Absinthe.Blueprint{}, _) do
+      %{
+        query: %{
+          posts: %{
+            reverse: {:description, "Just reverse the list, if you want"}
+          }
+        },
+        post: %{
+          upcased_title: [
+            {:description, "The title, but upcased"},
+            {:resolve, &__MODULE__.upcase_title/3}
+          ]
+        }
+      }
+    end
+
     def decorations(_node, _ancestors) do
       []
+    end
+  end
+
+  describe "locations" do
+    test "have evaluated file values" do
+      Absinthe.Blueprint.prewalk(Definition.__absinthe_blueprint__(), nil, fn
+        %{__reference__: %{location: %{file: file}}} = node, _ ->
+          assert is_binary(file)
+          {node, nil}
+
+        node, _ ->
+          {node, nil}
+      end)
     end
   end
 
@@ -120,6 +175,16 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       assert %{description: "A list of posts"} = lookup_field(Definition, :query, :posts)
     end
 
+    test "work on fields, defined deeply" do
+      assert %{description: "The title, but upcased"} =
+               lookup_compiled_field(Definition, :post, :upcased_title)
+    end
+
+    test "work on arguments, defined deeply" do
+      assert %{description: "Just reverse the list, if you want"} =
+               lookup_compiled_argument(Definition, :query, :posts, :reverse)
+    end
+
     test "can be multiline" do
       assert %{description: "The post author\n(is a user)"} =
                lookup_field(Definition, :post, :author)
@@ -132,6 +197,13 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     test "can be added by a decoration to an argument" do
       field = lookup_compiled_field(Definition, :query, :posts)
       assert %{description: "A filter argument"} = field.args.filter
+    end
+  end
+
+  describe "resolve" do
+    test "work on fields, defined deeply" do
+      assert %{middleware: mw} = lookup_compiled_field(Definition, :post, :upcased_title)
+      assert length(mw) > 0
     end
   end
 
@@ -163,9 +235,46 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     end
   end
 
+  @query """
+  { posts { upcasedTitle } }
+  """
+  describe "execution with deeply decoration-defined resolvers" do
+    test "works" do
+      assert {:ok,
+              %{data: %{"posts" => [%{"upcasedTitle" => "FOO"}, %{"upcasedTitle" => "BAR"}]}}} =
+               Absinthe.run(@query, Definition)
+    end
+  end
+
   describe "Absinthe.Schema.used_types/1" do
     test "works" do
       assert Absinthe.Schema.used_types(Definition)
     end
+  end
+
+  @query """
+  { admin { upVotes } }
+  """
+  describe "decorator can append fields" do
+    test "works" do
+      assert {:ok, %{data: %{"admin" => %{"upVotes" => 99}}}} =
+               Absinthe.run(@query, Definition, root_value: %{admin: %{up_votes: 99}})
+    end
+  end
+
+  @query """
+  { droppedField }
+  """
+  test "decorator can remove fields" do
+    assert {:ok,
+            %{
+              errors: [
+                %{
+                  locations: [%{column: 3, line: 1}],
+                  message: "Cannot query field \"droppedField\" on type \"Query\"."
+                }
+              ]
+            }} =
+             Absinthe.run(@query, Definition, root_value: %{dropped_field: "Should be ignored"})
   end
 end

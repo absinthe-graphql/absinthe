@@ -1,7 +1,19 @@
 defmodule Absinthe.Schema.Notation.ImportTest do
   use ExUnit.Case, async: true
 
+  defp field_list(module, name) do
+    module.__absinthe_type__(name).fields
+    |> Enum.filter(&(!introspection?(&1)))
+    |> Keyword.keys()
+    |> Enum.sort()
+  end
+
+  defp introspection?({_, field}) do
+    Absinthe.Type.introspection?(field)
+  end
+
   alias Absinthe.Phase
+
 
   describe "import fields" do
     test "fields can be imported" do
@@ -22,7 +34,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
         end
       end
 
-      assert [:email, :name] = Foo.__absinthe_type__(:bar).fields |> Map.keys() |> Enum.sort()
+      assert [:email, :name] = field_list(Foo, :bar)
     end
 
     test "works for input objects" do
@@ -71,11 +83,9 @@ defmodule Absinthe.Schema.Notation.ImportTest do
         end
       end
 
-      interface_fields = InterfaceFoo.__absinthe_type__(:foo).fields
-      assert [:name] = interface_fields |> Map.keys() |> Enum.sort()
+      assert [:name] = field_list(InterfaceFoo, :foo)
 
-      object_fields = InterfaceFoo.__absinthe_type__(:real_foo).fields
-      assert [:name] = object_fields |> Map.keys() |> Enum.sort()
+      assert [:name] = field_list(InterfaceFoo, :real_foo)
     end
 
     test "can work transitively" do
@@ -101,8 +111,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
         end
       end
 
-      assert [:age, :email, :name] ==
-               Bar.__absinthe_type__(:baz).fields |> Map.keys() |> Enum.sort()
+      assert [:age, :email, :name] == field_list(Bar, :baz)
     end
 
     test "raises errors nicely" do
@@ -195,8 +204,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
         end
       end
 
-      assert [:age, :email, :name] ==
-               Multiples.__absinthe_type__(:query).fields |> Map.keys() |> Enum.sort()
+      assert [:age, :email, :name] == field_list(Multiples, :query)
     end
 
     test "can import fields from imported types" do
@@ -240,7 +248,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
         end
       end
 
-      assert [:email, :name] = Dest.__absinthe_type__(:baz).fields |> Map.keys() |> Enum.sort()
+      assert [:email, :name] = field_list(Dest, :baz)
     end
   end
 
