@@ -15,7 +15,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
     type Query {
       "A list of posts"
-      posts(filter: PostFilter): [Post]
+      posts(filter: PostFilter, reverse: Boolean): [Post]
       admin: User!
     }
 
@@ -66,6 +66,10 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       {:ok, posts}
     end
 
+    def upcase_title(post, _, _) do
+      {:ok, Map.get(post, :title) |> String.upcase()}
+    end
+
     def decorations(%{identifier: :admin}, [%{identifier: :query} | _]) do
       {:description, "The admin"}
     end
@@ -78,15 +82,47 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       {:resolve, &__MODULE__.get_posts/3}
     end
 
+    def decorations(%Absinthe.Blueprint{}, _) do
+      %{
+        query: %{
+          posts: %{
+            reverse: {:description, "Just reverse the list, if you want"}
+          }
+        },
+        post: %{
+          upcased_title: [
+            {:description, "The title, but upcased"},
+            {:resolve, &__MODULE__.upcase_title/3}
+          ]
+        }
+      }
+    end
+
     def decorations(_node, _ancestors) do
       []
     end
   end
 
+  describe "locations" do
+    test "have evaluated file values" do
+      Absinthe.Blueprint.prewalk(Definition.__absinthe_blueprint__(), nil, fn
+        %{__reference__: %{location: %{file: file}}} = node, _ ->
+          assert is_binary(file)
+          {node, nil}
+
+        node, _ ->
+          {node, nil}
+      end)
+    end
+  end
+
   describe "directives" do
     test "can be defined" do
-      assert %{name: "foo", identifier: :foo, locations: [:object, :scalar]} = lookup_compiled_directive(Definition, :foo)
-      assert %{name: "bar", identifier: :bar, locations: [:object, :scalar]} = lookup_compiled_directive(Definition, :bar)
+      assert %{name: "foo", identifier: :foo, locations: [:object, :scalar]} =
+               lookup_compiled_directive(Definition, :foo)
+
+      assert %{name: "bar", identifier: :bar, locations: [:object, :scalar]} =
+               lookup_compiled_directive(Definition, :bar)
     end
   end
 
@@ -120,6 +156,16 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       assert %{description: "A list of posts"} = lookup_field(Definition, :query, :posts)
     end
 
+    test "work on fields, defined deeply" do
+      assert %{description: "The title, but upcased"} =
+               lookup_compiled_field(Definition, :post, :upcased_title)
+    end
+
+    test "work on arguments, defined deeply" do
+      assert %{description: "Just reverse the list, if you want"} =
+               lookup_compiled_argument(Definition, :query, :posts, :reverse)
+    end
+
     test "can be multiline" do
       assert %{description: "The post author\n(is a user)"} =
                lookup_field(Definition, :post, :author)
@@ -132,6 +178,13 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     test "can be added by a decoration to an argument" do
       field = lookup_compiled_field(Definition, :query, :posts)
       assert %{description: "A filter argument"} = field.args.filter
+    end
+  end
+
+  describe "resolve" do
+    test "work on fields, defined deeply" do
+      assert %{middleware: mw} = lookup_compiled_field(Definition, :post, :upcased_title)
+      assert length(mw) > 0
     end
   end
 
@@ -159,6 +212,18 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   describe "execution with decoration-defined resolvers" do
     test "works" do
       assert {:ok, %{data: %{"posts" => [%{"title" => "Foo"}, %{"title" => "Bar"}]}}} =
+               Absinthe.run(@query, Definition)
+    end
+  end
+
+  @tag :pending
+  @query """
+  { posts { upcasedTitle } }
+  """
+  describe "execution with deeply decoration-defined resolvers" do
+    test "works" do
+      assert {:ok,
+              %{data: %{"posts" => [%{"upcasedTitle" => "FOO"}, %{"upcasedTitle" => "BAR"}]}}} =
                Absinthe.run(@query, Definition)
     end
   end

@@ -29,6 +29,21 @@ defmodule ExperimentalNotationHelpers do
     end)
   end
 
+  def lookup_argument(mod, type_ident, field_ident, arg_ident) do
+    case lookup_field(mod, type_ident, field_ident) do
+      nil ->
+        nil
+      field ->
+        Enum.find(field.arguments, fn
+          %{identifier: ^arg_ident} ->
+            true
+
+          _ ->
+            false
+        end)
+    end
+  end
+
   def lookup_compiled_field(mod, type_ident, field_ident) do
     case Absinthe.Schema.lookup_type(mod, type_ident) do
       nil ->
@@ -36,6 +51,16 @@ defmodule ExperimentalNotationHelpers do
 
       type ->
         type.fields[field_ident]
+    end
+  end
+
+  def lookup_compiled_argument(mod, type_ident, field_ident, arg_ident) do
+    case lookup_compiled_field(mod, type_ident, field_ident) do
+      nil ->
+        nil
+
+      field ->
+        field.args[arg_ident]
     end
   end
 

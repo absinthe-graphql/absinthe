@@ -75,6 +75,8 @@ defmodule Absinthe.Phase.Schema.Decorate do
   end
 
   @impl __MODULE__.Decorator
+
+
   def apply_decoration(node, {:description, text}) do
     %{node | description: text}
   end
@@ -82,4 +84,69 @@ defmodule Absinthe.Phase.Schema.Decorate do
   def apply_decoration(node, {:resolve, resolver}) do
     %{node | middleware: [{Absinthe.Resolution, resolver}]}
   end
+
+  @decoration_level1 [
+    Blueprint.Schema.DirectiveDefinition,
+    Blueprint.Schema.EnumTypeDefinition,
+    Blueprint.Schema.InputObjectTypeDefinition,
+    Blueprint.Schema.InterfaceTypeDefinition,
+    Blueprint.Schema.ObjectTypeDefinition,
+    Blueprint.Schema.ScalarTypeDefinition,
+    Blueprint.Schema.UnionTypeDefinition
+  ]
+
+  @decoration_level2 [
+    Blueprint.Schema.FieldDefinition,
+    Blueprint.Schema.EnumValueDefinition
+  ]
+
+  @decoration_level3 [
+    Blueprint.Schema.InputValueDefinition
+  ]
+
+  def apply_decoration(%Absinthe.Blueprint{} = root, %{} = sub_decorations) do
+    {root, _} = Blueprint.prewalk(root, nil, fn
+      %module{identifier: ident} = node, nil when module in @decoration_level1 ->
+        case Map.fetch(sub_decorations, ident) do
+          :error ->
+            {node, nil}
+          {:ok, type_decorations} ->
+            {apply_decorations(node, type_decorations, __MODULE__), nil}
+        end
+      node, nil ->
+        {node, nil}
+    end)
+    root
+  end
+
+  def apply_decoration(%module{} = root, %{} = sub_decorations) when module in @decoration_level1 do
+    {root, _} = Blueprint.prewalk(root, nil, fn
+      %module{identifier: ident} = node, nil when module in @decoration_level2 ->
+        case Map.fetch(sub_decorations, ident) do
+          :error ->
+            {node, nil}
+          {:ok, type_decorations} ->
+            {apply_decorations(node, type_decorations, __MODULE__), nil}
+        end
+      node, nil ->
+        {node, nil}
+    end)
+    root
+  end
+
+  def apply_decoration(%module{} = root, %{} = sub_decorations) when module in @decoration_level2 do
+    {root, _} = Blueprint.prewalk(root, nil, fn
+      %module{identifier: ident} = node, nil when module in @decoration_level3 ->
+        case Map.fetch(sub_decorations, ident) do
+          :error ->
+            {node, nil}
+          {:ok, type_decorations} ->
+            {apply_decorations(node, type_decorations, __MODULE__), nil}
+        end
+      node, nil ->
+        {node, nil}
+    end)
+    root
+  end
+
 end
