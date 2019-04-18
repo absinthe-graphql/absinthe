@@ -123,7 +123,8 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.Validation.NoCircularFieldImports,
       Phase.Schema.Validation.Result,
       Phase.Schema.FieldImports,
-      {Phase.Schema, [schema: schema]},
+      # This will be needed eventually to support directives
+      # {Phase.Schema, [schema: schema]},
       Phase.Schema.Validation.DefaultEnumValuePresent,
       Phase.Schema.Validation.InputOuputTypesCorrectlyPlaced,
       Phase.Schema.Validation.InterfacesMustResolveTypes,
