@@ -94,16 +94,6 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       {:resolve, &__MODULE__.get_posts/3}
     end
 
-    def decorations(%{identifier: :user}, _ancestors) do
-      user_ext = Absinthe.Blueprint.types_by_name(ExtTypes)["User"]
-
-      {:add_fields, user_ext.fields}
-    end
-
-    def decorations(%{identifier: :query}, _ancestors) do
-      {:del_fields, "dropped_field"}
-    end
-
     def decorations(%Absinthe.Blueprint{}, _) do
       %{
         query: %{
@@ -140,8 +130,11 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
   describe "directives" do
     test "can be defined" do
-      assert %{name: "foo", identifier: :foo, locations: [:object, :scalar]} = lookup_compiled_directive(Definition, :foo)
-      assert %{name: "bar", identifier: :bar, locations: [:object, :scalar]} = lookup_compiled_directive(Definition, :bar)
+      assert %{name: "foo", identifier: :foo, locations: [:object, :scalar]} =
+               lookup_compiled_directive(Definition, :foo)
+
+      assert %{name: "bar", identifier: :bar, locations: [:object, :scalar]} =
+               lookup_compiled_directive(Definition, :bar)
     end
   end
 
@@ -235,6 +228,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     end
   end
 
+  @tag :pending
   @query """
   { posts { upcasedTitle } }
   """

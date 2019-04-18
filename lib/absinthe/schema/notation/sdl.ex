@@ -78,15 +78,6 @@ defmodule Absinthe.Schema.Notation.SDL do
           put_in(ref.location, %{file: {:unquote, [], [path]}, line: node.source_location.line})
       end
 
-    name =
-      cond do
-        node_type in @field_types ->
-          adapter.to_internal_name(name, :field)
-
-        true ->
-          name
-      end
-
     %{node | __reference__: ref, name: name}
   end
 

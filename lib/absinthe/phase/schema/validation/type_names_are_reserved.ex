@@ -53,16 +53,16 @@ defmodule Absinthe.Phase.Schema.Validation.TypeNamesAreReserved do
     end
   end
 
+  defp validate_reserved(entity) do
+    entity
+  end
+
   defp reserved_name_ok_flag?(%{flags: flags}) do
     flags[:reserved_name]
   end
 
   defp reserved_name_ok_flag?(_) do
     false
-  end
-
-  defp validate_reserved(entity) do
-    entity
   end
 
   defp error(object, data) do
