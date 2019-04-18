@@ -96,7 +96,7 @@ defmodule Absinthe.Phase.Schema.Validation.TypeReferencesExist do
 
     %Absinthe.Phase.Error{
       message: """
-      #{artifact_name} #{inspect(type)} is not defined in your schema.
+      In #{artifact_name}, #{inspect(type)} is not defined in your schema.
 
       Types must exist if referenced.
       """,

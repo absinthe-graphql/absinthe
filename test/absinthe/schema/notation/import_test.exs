@@ -1,6 +1,8 @@
 defmodule Absinthe.Schema.Notation.ImportTest do
   use ExUnit.Case, async: true
 
+  alias Absinthe.Phase
+
   describe "import fields" do
     test "fields can be imported" do
       defmodule Foo do
@@ -103,10 +105,11 @@ defmodule Absinthe.Schema.Notation.ImportTest do
                Bar.__absinthe_type__(:baz).fields |> Map.keys() |> Enum.sort()
     end
 
-    @tag :pending_schema
     test "raises errors nicely" do
       defmodule ErrorSchema do
-        use Absinthe.Schema.Notation
+        use Absinthe.Schema
+
+        @pipeline_modifier Absinthe.Schema.Notation.ImportTest
 
         object :bar do
           import_fields :asdf
@@ -114,23 +117,24 @@ defmodule Absinthe.Schema.Notation.ImportTest do
         end
       end
 
-      assert [error] = ErrorSchema.__absinthe_errors__()
-
-      assert %{
-               data: %{
-                 artifact:
-                   "Field Import Error\n\nObject :bar imports fields from :asdf but\n:asdf does not exist in the schema!",
-                 value: :asdf
-               },
-               location: %{file: _, line: _},
-               rule: Absinthe.Schema.Rule.FieldImportsExist
-             } = error
+      assert {:error,
+              [
+                %Absinthe.Phase.Error{
+                  extra: %{},
+                  locations: [_],
+                  message:
+                    "In Bar, :asdf is not defined in your schema.\n\nTypes must exist if referenced.\n",
+                  path: [],
+                  phase: Absinthe.Phase.Schema.Validation.TypeReferencesExist
+                }
+              ]} = validate(ErrorSchema)
     end
 
-    @tag :pending_schema
     test "handles circular errors" do
       defmodule Circles do
-        use Absinthe.Schema.Notation
+        use Absinthe.Schema
+
+        @pipeline_modifier Absinthe.Schema.Notation.ImportTest
 
         object :foo do
           import_fields :bar
@@ -143,17 +147,33 @@ defmodule Absinthe.Schema.Notation.ImportTest do
         end
       end
 
-      assert [error] = Circles.__absinthe_errors__()
-
-      assert %{
-               data: %{
-                 artifact:
-                   "Field Import Cycle Error\n\nField Import in object `foo' `import_fields(:bar) forms a cycle via: (`foo' => `bar' => `foo')",
-                 value: :bar
-               },
-               location: %{file: _, line: _},
-               rule: Absinthe.Schema.Rule.NoCircularFieldImports
-             } = error
+      assert {:error,
+              [
+                %Absinthe.Phase.Error{
+                  extra: :bar,
+                  locations: [
+                    %{
+                      line: _
+                    }
+                  ],
+                  message:
+                    "Field Import Cycle Error\n\nField Import in object `bar' `import_fields([foo: []]) forms a cycle via: ([:bar, :foo, :bar])",
+                  path: [],
+                  phase: Absinthe.Phase.Schema.Validation.NoCircularFieldImports
+                },
+                %Absinthe.Phase.Error{
+                  extra: :foo,
+                  locations: [
+                    %{
+                      line: _
+                    }
+                  ],
+                  message:
+                    "Field Import Cycle Error\n\nField Import in object `foo' `import_fields([bar: []]) forms a cycle via: ([:foo, :bar, :foo])",
+                  path: [],
+                  phase: Absinthe.Phase.Schema.Validation.NoCircularFieldImports
+                }
+              ]} = validate(Circles)
     end
 
     test "can import types from more than one thing" do
@@ -222,5 +242,22 @@ defmodule Absinthe.Schema.Notation.ImportTest do
 
       assert [:email, :name] = Dest.__absinthe_type__(:baz).fields |> Map.keys() |> Enum.sort()
     end
+  end
+
+  defp validate(schema) do
+    pipeline =
+      schema
+      |> Absinthe.Pipeline.for_schema()
+      |> Absinthe.Pipeline.upto(Phase.Schema.FieldImports)
+      |> Kernel.++([Phase.Schema.Validation.Result])
+
+    case Absinthe.Pipeline.run(schema.__absinthe_blueprint__, pipeline) do
+      {ok_or_error, val, _} ->
+        {ok_or_error, val}
+    end
+  end
+
+  def pipeline(_pipeline) do
+    []
   end
 end

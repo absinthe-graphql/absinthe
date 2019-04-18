@@ -35,21 +35,48 @@ defmodule Absinthe.Phase.Schema.Validation.NoCircularFieldImports do
     try do
       _ = build_import_graph(types, graph)
 
-      for type <- types do
-        if cycle = :digraph.get_cycle(graph, type.identifier) do
-          raise "cycle! #{inspect(cycle)}"
-        end
+      {types, cycles?} =
+        Enum.reduce(types, {%{}, false}, fn type, {types, cycles?} ->
+          if cycle = :digraph.get_cycle(graph, type.identifier) do
+            type = type |> put_error(error(type, cycle))
+            {Map.put(types, type.identifier, type), true}
+          else
+            {Map.put(types, type.identifier, type), cycles?}
+          end
+        end)
+
+      if cycles? do
+        Map.values(types)
+      else
+        graph
+        |> :digraph_utils.topsort()
+        |> Enum.reverse()
+        |> Enum.flat_map(fn identifier ->
+          case Map.fetch(types, identifier) do
+            {:ok, type} -> [type]
+            _ -> []
+          end
+        end)
       end
-
-      types = Map.new(types, &{&1.identifier, &1})
-
-      graph
-      |> :digraph_utils.topsort()
-      |> Enum.reverse()
-      |> Enum.map(&Map.fetch!(types, &1))
     after
       :digraph.delete(graph)
     end
+  end
+
+  defp error(type, deps) do
+    %Absinthe.Phase.Error{
+      message:
+        String.trim("""
+        Field Import Cycle Error
+
+        Field Import in object `#{type.identifier}' `import_fields(#{inspect(type.imports)}) forms a cycle via: (#{
+          inspect(deps)
+        })
+        """),
+      locations: [type.__reference__.location],
+      phase: __MODULE__,
+      extra: type.identifier
+    }
   end
 
   defp build_import_graph(types, graph) do
