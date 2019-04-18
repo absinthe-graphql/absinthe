@@ -21,6 +21,9 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
     # Embedded SDL
     import_sdl """
+    directive @foo(name: String!) on SCALAR | OBJECT
+    directive @bar(name: String!) on SCALAR | OBJECT
+
     type Query {
       "A list of posts"
       posts(filter: PostFilter, reverse: Boolean): [Post]
@@ -49,11 +52,10 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       name: String!
     }
 
-    interface Titled {
+    interface Titled @feature(name: "bar") {
       title: String!
     }
 
-    scalar A
     scalar B
 
     union SearchResult = Post | User
@@ -133,6 +135,13 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
         node, _ ->
           {node, nil}
       end)
+    end
+  end
+
+  describe "directives" do
+    test "can be defined" do
+      assert %{name: "foo", identifier: :foo, locations: [:object, :scalar]} = lookup_compiled_directive(Definition, :foo)
+      assert %{name: "bar", identifier: :bar, locations: [:object, :scalar]} = lookup_compiled_directive(Definition, :bar)
     end
   end
 

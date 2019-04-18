@@ -150,8 +150,8 @@ defmodule Absinthe.Middleware do
 
   ```
   YourSchema.middleware([{Absinthe.Resolution, #Function<20.52032458/0>}], lookup_user_field_of_root_query_object, root_query_object)
-  YourSchema.middleware([{Absinthe.Middleware.Map.Get, :name}], name_field_of_user, user_object)
-  YourSchema.middleware([{Absinthe.Middleware.Map.Get, :age}], age_field_of_user, user_object)
+  YourSchema.middleware([{Absinthe.Middleware.MapGet, :name}], name_field_of_user, user_object)
+  YourSchema.middleware([{Absinthe.Middleware.MapGet, :age}], age_field_of_user, user_object)
   ```
 
   In the latter two cases we see that the middleware list is empty. In the first

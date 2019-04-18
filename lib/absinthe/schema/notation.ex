@@ -31,8 +31,6 @@ defmodule Absinthe.Schema.Notation do
   @doc """
   Configure a subscription field.
 
-  The returned topic can be single topic, or a list of topics
-
   ## Examples
 
   ```elixir
@@ -50,6 +48,18 @@ defmodule Absinthe.Schema.Notation do
   ```elixir
   config fn _, _ ->
     {:ok, topic: ["topic_one", "topic_two", "topic_three"]}
+  end
+  ```
+
+  Using `context_id` option to allow de-duplication of updates:
+
+  ```elixir
+  config fn _, %{context: context} ->
+    if authorized?(context) do
+      {:ok, topic: "topic_one", context_id: "authorized"}
+    else
+      {:ok, topic: "topic_one", context_id: "not-authorized"}
+    end
   end
   ```
 
@@ -1573,8 +1583,8 @@ defmodule Absinthe.Schema.Notation do
     sdl_definitions =
       (Module.get_attribute(env.module, :__absinthe_sdl_definitions__) || [])
       |> List.flatten()
-      |> Enum.map(fn type_definition ->
-        Absinthe.Blueprint.prewalk(type_definition, fn
+      |> Enum.map(fn definition ->
+        Absinthe.Blueprint.prewalk(definition, fn
           %{module: _} = node ->
             %{node | module: env.module}
 
@@ -1583,7 +1593,19 @@ defmodule Absinthe.Schema.Notation do
         end)
       end)
 
-    schema = Map.update!(schema, :type_definitions, &(sdl_definitions ++ &1))
+    {sdl_directive_definitions, sdl_type_definitions} =
+      Enum.split_with(sdl_definitions, fn
+        %Absinthe.Blueprint.Schema.DirectiveDefinition{} ->
+          true
+
+        _ ->
+          false
+      end)
+
+    schema =
+      schema
+      |> Map.update!(:type_definitions, &(sdl_type_definitions ++ &1))
+      |> Map.update!(:directive_definitions, &(sdl_directive_definitions ++ &1))
 
     blueprint = %{blueprint | schema_definitions: [schema]}
 

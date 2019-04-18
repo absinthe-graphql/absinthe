@@ -52,7 +52,7 @@ defmodule Absinthe.Type.InputObject do
           fields: map,
           identifier: atom,
           __private__: Keyword.t(),
-          definition: Module.t(),
+          definition: module,
           __reference__: Type.Reference.t()
         }
 

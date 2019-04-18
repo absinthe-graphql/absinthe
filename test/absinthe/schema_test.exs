@@ -42,7 +42,6 @@ defmodule Absinthe.SchemaTest do
     end
   end
 
-  @tag :pending_schema
   describe "using the same name" do
     def load_duplicate_name_schema do
       load_schema("schema_with_duplicate_names")
@@ -51,8 +50,8 @@ defmodule Absinthe.SchemaTest do
     test "raises an exception" do
       assert_schema_error("schema_with_duplicate_names", [
         %{
-          rule: Absinthe.Schema.Rule.TypeNamesAreUnique,
-          data: %{artifact: "Type name", value: "Person"}
+          phase: Absinthe.Phase.Schema.Validation.TypeNamesAreUnique,
+          extra: %{artifact: "Type name", value: "Person"}
         }
       ])
     end

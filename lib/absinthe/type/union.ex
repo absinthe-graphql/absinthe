@@ -45,7 +45,7 @@ defmodule Absinthe.Type.Union do
           identifier: atom,
           fields: map,
           __private__: Keyword.t(),
-          definition: Module.t(),
+          definition: module,
           __reference__: Type.Reference.t()
         }
 

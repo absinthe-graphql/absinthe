@@ -13,7 +13,9 @@ defmodule Absinthe.Blueprint.Schema do
           | Schema.ScalarTypeDefinition.t()
           | Schema.UnionTypeDefinition.t()
 
-  @type t :: type_t | Schema.DirectiveDefinition.t()
+
+  @type directive_t :: Schema.DirectiveDefinition.t()
+  @type t :: type_t | directive_t
 
   @doc """
   Lookup a type definition that is part of a schema.
@@ -23,6 +25,23 @@ defmodule Absinthe.Blueprint.Schema do
     blueprint.schema_definitions
     |> List.first()
     |> Map.get(:type_definitions)
+    |> Enum.find(fn
+      %{identifier: ^identifier} ->
+        true
+
+      _ ->
+        false
+    end)
+  end
+
+  @doc """
+  Lookup a directive definition that is part of a schema.
+  """
+  @spec lookup_directive(Blueprint.t(), atom) :: nil | Blueprint.Schema.directive_t()
+  def lookup_directive(blueprint, identifier) do
+    blueprint.schema_definitions
+    |> List.first()
+    |> Map.get(:directive_definitions)
     |> Enum.find(fn
       %{identifier: ^identifier} ->
         true
