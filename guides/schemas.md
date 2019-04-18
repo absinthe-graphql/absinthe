@@ -58,14 +58,14 @@ object :item do
 end
 ```
 
-Now, you can use Absinthe to execute a query document. Keep in mind that for
+Now you can use Absinthe to execute a query document. Keep in mind that for
 HTTP, you'll probably want to use
 [Absinthe.Plug](plug-phoenix.html) instead of executing
 GraphQL query documents yourself. Absinthe doesn't know or care about HTTP,
-but the `absinthe_plug` project does -- and handles the vagaries of interacting
+but the `absinthe_plug` project does: it handles the vagaries of interacting
 with HTTP GraphQL clients so you don't have to.
 
-If you _were_ executing query documents yourself (lets assume for a local tool),
+If you _were_ executing query documents yourself (let's assume for a local tool),
 it would go something like this:
 
 ```elixir
@@ -80,6 +80,20 @@ it would go something like this:
 
 # Result
 {:ok, %{data: %{"item" => %{"name" => "Foo"}}}}
+```
+
+Your schemas can be further customized using the options available to
+`Absinthe.Schema.Notation.field/4` to help provide for a richer experience for 
+your users, customize the field names, or mark fields as deprecated.
+
+```elixir
+# filename: myapp/language_schema.ex
+@desc "A Language"
+object :language do
+  field :id, :id
+  field :iso_639_1, :string, description: "2 character ISO 639-1 code", name: "iso639"
+  field :name, :string, description: "English name of the language"
+end
 ```
 
 ## Importing Types

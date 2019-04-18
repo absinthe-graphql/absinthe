@@ -525,4 +525,29 @@ defmodule Absinthe.IntrospectionTest do
       )
     end
   end
+
+  test "Doesn't fail for unknown introspection fields" do
+    result =
+      """
+      {
+        __foobar {
+          baz
+        }
+      }
+      """
+      |> run(Absinthe.Fixtures.ContactSchema)
+
+    assert_result(
+      {:ok,
+       %{
+         errors: [
+           %{
+             locations: [%{column: 3, line: 2}],
+             message: "Cannot query field \"__foobar\" on type \"RootQueryType\"."
+           }
+         ]
+       }},
+      result
+    )
+  end
 end

@@ -1,7 +1,7 @@
 # Conclusion
 
 With this we have a basic GraphQL based API for a blog. Head on over
-to [the github page](https://github.com/absinthe-graphql/absinthe_example) if
+to [the github page](https://github.com/absinthe-graphql/absinthe_tutorial) if
 you want the final code.
 
 We hope to expand this tutorial to include a comment system that will

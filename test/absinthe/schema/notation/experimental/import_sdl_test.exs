@@ -10,6 +10,9 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
     # Embedded SDL
     import_sdl """
+    directive @foo(name: String!) on SCALAR | OBJECT
+    directive @bar(name: String!) on SCALAR | OBJECT
+
     type Query {
       "A list of posts"
       posts(filter: PostFilter, reverse: Boolean): [Post]
@@ -37,11 +40,10 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       name: String!
     }
 
-    interface Titled {
+    interface Titled @feature(name: "bar") {
       title: String!
     }
 
-    scalar A
     scalar B
 
     union SearchResult = Post | User
@@ -107,9 +109,20 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
         %{__reference__: %{location: %{file: file}}} = node, _ ->
           assert is_binary(file)
           {node, nil}
+
         node, _ ->
           {node, nil}
       end)
+    end
+  end
+
+  describe "directives" do
+    test "can be defined" do
+      assert %{name: "foo", identifier: :foo, locations: [:object, :scalar]} =
+               lookup_compiled_directive(Definition, :foo)
+
+      assert %{name: "bar", identifier: :bar, locations: [:object, :scalar]} =
+               lookup_compiled_directive(Definition, :bar)
     end
   end
 
@@ -144,11 +157,13 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     end
 
     test "work on fields, defined deeply" do
-      assert %{description: "The title, but upcased"} = lookup_compiled_field(Definition, :post, :upcased_title)
+      assert %{description: "The title, but upcased"} =
+               lookup_compiled_field(Definition, :post, :upcased_title)
     end
 
     test "work on arguments, defined deeply" do
-      assert %{description: "Just reverse the list, if you want"} = lookup_compiled_argument(Definition, :query, :posts, :reverse)
+      assert %{description: "Just reverse the list, if you want"} =
+               lookup_compiled_argument(Definition, :query, :posts, :reverse)
     end
 
     test "can be multiline" do
@@ -167,12 +182,10 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   end
 
   describe "resolve" do
-
     test "work on fields, defined deeply" do
       assert %{middleware: mw} = lookup_compiled_field(Definition, :post, :upcased_title)
       assert length(mw) > 0
     end
-
   end
 
   describe "multiple invocations" do
@@ -203,16 +216,17 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     end
   end
 
+  @tag :pending
   @query """
   { posts { upcasedTitle } }
   """
   describe "execution with deeply decoration-defined resolvers" do
     test "works" do
-      assert {:ok, %{data: %{"posts" => [%{"upcasedTitle" => "FOO"}, %{"upcasedTitle" => "BAR"}]}}} =
+      assert {:ok,
+              %{data: %{"posts" => [%{"upcasedTitle" => "FOO"}, %{"upcasedTitle" => "BAR"}]}}} =
                Absinthe.run(@query, Definition)
     end
   end
-
 
   describe "Absinthe.Schema.used_types/1" do
     test "works" do

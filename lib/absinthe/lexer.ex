@@ -6,17 +6,11 @@ defmodule Absinthe.Lexer do
   @newline 0x000A
   @carriage_return 0x000D
   @space 0x0020
-  @unicode_final 0xFFFF
   @unicode_bom 0xFEFF
 
   # SourceCharacter :: /[\u0009\u000A\u000D\u0020-\uFFFF]/
-  source_character =
-    utf8_char([
-      @horizontal_tab,
-      @newline,
-      @carriage_return,
-      @space..@unicode_final
-    ])
+
+  any_unicode = utf8_char([])
 
   # ## Ignored Tokens
 
@@ -25,7 +19,7 @@ defmodule Absinthe.Lexer do
 
   # WhiteSpace ::
   #   - "Horizontal Tab (U+0009)"
-  #   - "Space (U+0020)"  
+  #   - "Space (U+0020)"
   whitespace =
     ascii_char([
       @horizontal_tab,
@@ -35,7 +29,7 @@ defmodule Absinthe.Lexer do
   # LineTerminator ::
   #   - "New Line (U+000A)"
   #   - "Carriage Return (U+000D)" [ lookahead ! "New Line (U+000A)" ]
-  #   - "Carriage Return (U+000D)" "New Line (U+000A)"    
+  #   - "Carriage Return (U+000D)" "New Line (U+000A)"
   line_terminator =
     choice([
       ascii_char([@newline]),
@@ -47,10 +41,13 @@ defmodule Absinthe.Lexer do
   # CommentChar :: SourceCharacter but not LineTerminator
   comment =
     string("#")
-    |> repeat_while(source_character, {:not_line_terminator, []})
+    |> repeat_while(any_unicode, {:not_line_terminator, []})
 
   # Comma :: ,
   comma = ascii_char([?,])
+
+  # Ampersand :: &
+  ampersand = ascii_char([?&])
 
   # Ignored ::
   #   - UnicodeBOM
@@ -58,13 +55,15 @@ defmodule Absinthe.Lexer do
   #   - LineTerminator
   #   - Comment
   #   - Comma
+  #   - Ampersand
   ignored =
     choice([
       unicode_bom,
       whitespace,
       line_terminator,
       comment,
-      comma
+      comma,
+      ampersand
     ])
 
   # ## Lexical Tokens
@@ -73,7 +72,7 @@ defmodule Absinthe.Lexer do
   #   - Name
   #   - IntValue
   #   - FloatValue
-  #   - StringValue  
+  #   - StringValue
 
   punctuator =
     choice([
@@ -95,10 +94,10 @@ defmodule Absinthe.Lexer do
     ])
     |> traverse({:atom_token, []})
 
-  name_or_reserved_word =
+  boolean_value_or_name_or_reserved_word =
     ascii_char([?_, ?A..?Z, ?a..?z])
     |> repeat(ascii_char([?_, ?0..?9, ?A..?Z, ?a..?z]))
-    |> traverse({:name_or_reserved_word_token, []})
+    |> traverse({:boolean_value_or_name_or_reserved_word, []})
 
   # NegativeSign :: -
   negative_sign = ascii_char([?-])
@@ -180,7 +179,7 @@ defmodule Absinthe.Lexer do
     choice([
       ignore(string(~S(\u))) |> concat(escaped_unicode),
       ignore(ascii_char([?\\])) |> concat(escaped_character),
-      source_character
+      any_unicode
     ])
 
   # BlockStringCharacter ::
@@ -191,33 +190,28 @@ defmodule Absinthe.Lexer do
   # lines and uniform indentation with {BlockStringValue()}.
   block_string_character =
     choice([
-      string(~S(\""")) |> replace(~s(""")),
-      source_character
+      ignore(ascii_char([?\\])) |> concat(times(ascii_char([?"]), 3)),
+      any_unicode
     ])
 
   # StringValue ::
   #   - `"` StringCharacter* `"`
   #   - `"""` BlockStringCharacter* `"""`
-  # TODO: Use block_string_character
   string_value =
-    ascii_char([?"])
+    ignore(ascii_char([?"]))
+    |> traverse({:mark_string_start, []})
     |> repeat_while(string_character, {:not_end_of_quote, []})
-    |> ascii_char([?"])
-    |> traverse({:labeled_token, [:string_value]})
+    |> ignore(ascii_char([?"]))
+    |> traverse({:string_value_token, []})
 
   block_string_value =
-    ignore(string(~S(""")) |> traverse({:mark_block_string_start, []}))
+    ignore(
+      string(~S("""))
+      |> traverse({:mark_block_string_start, []})
+    )
     |> repeat_while(block_string_character, {:not_end_of_block_quote, []})
     |> ignore(string(~S(""")))
     |> traverse({:block_string_value_token, []})
-
-  # BooleanValue : one of `true` `false`
-  boolean_value =
-    choice([
-      string("true"),
-      string("false")
-    ])
-    |> traverse({:boolean_value_token, []})
 
   defp not_end_of_quote(<<?", _::binary>>, context, _, _) do
     {:halt, context}
@@ -236,17 +230,35 @@ defmodule Absinthe.Lexer do
   end
 
   def tokenize(input) do
+    lines = String.split(input, ~r/\r?\n/)
+
     case do_tokenize(input) do
       {:ok, tokens, "", _, _, _} ->
+        tokens = Enum.map(tokens, &convert_token_column(&1, lines))
         {:ok, tokens}
 
       {:ok, _, rest, _, {line, line_offset}, byte_offset} ->
-        column = byte_offset - line_offset + 1
-        {:error, rest, {line, column}}
+        byte_column = byte_offset - line_offset + 1
+        {:error, rest, byte_loc_to_char_loc({line, byte_column}, lines)}
 
       other ->
         other
     end
+  end
+
+  defp convert_token_column({ident, loc, data}, lines) do
+    {ident, byte_loc_to_char_loc(loc, lines), data}
+  end
+
+  defp convert_token_column({ident, loc}, lines) do
+    {ident, byte_loc_to_char_loc(loc, lines)}
+  end
+
+  defp byte_loc_to_char_loc({line, byte_col}, lines) do
+    current_line = Enum.at(lines, line - 1)
+    byte_prefix = binary_part(current_line, 0, byte_col)
+    char_col = String.length(byte_prefix)
+    {line, char_col}
   end
 
   defparsec(
@@ -260,8 +272,7 @@ defmodule Absinthe.Lexer do
         string_value,
         float_value,
         int_value,
-        boolean_value,
-        name_or_reserved_word
+        boolean_value_or_name_or_reserved_word
       ])
     )
   )
@@ -274,6 +285,11 @@ defmodule Absinthe.Lexer do
     binary = :unicode.characters_to_binary([value])
     {[binary], context}
   end
+
+  @boolean_words ~w(
+    true
+    false
+  ) |> Enum.map(&String.to_charlist/1)
 
   @reserved_words ~w(
     directive
@@ -295,29 +311,33 @@ defmodule Absinthe.Lexer do
     union
   ) |> Enum.map(&String.to_charlist/1)
 
-  defp name_or_reserved_word_token(rest, chars, context, loc, byte_offset) do
+  defp boolean_value_or_name_or_reserved_word(rest, chars, context, loc, byte_offset) do
     value = chars |> Enum.reverse()
-    do_name_or_reserved_word_token(rest, value, context, loc, byte_offset)
+    do_boolean_value_or_name_or_reserved_word(rest, value, context, loc, byte_offset)
   end
 
-  defp do_name_or_reserved_word_token(_rest, value, context, loc, byte_offset)
+  defp do_boolean_value_or_name_or_reserved_word(_rest, value, context, loc, byte_offset)
+       when value in @boolean_words do
+    {[{:boolean_value, line_and_column(loc, byte_offset, length(value)), value}], context}
+  end
+
+  defp do_boolean_value_or_name_or_reserved_word(_rest, value, context, loc, byte_offset)
        when value in @reserved_words do
     token_name = value |> List.to_atom()
     {[{token_name, line_and_column(loc, byte_offset, length(value))}], context}
   end
 
-  defp do_name_or_reserved_word_token(_rest, value, context, loc, byte_offset) do
+  defp do_boolean_value_or_name_or_reserved_word(_rest, value, context, loc, byte_offset) do
     {[{:name, line_and_column(loc, byte_offset, length(value)), value}], context}
-  end
-
-  defp boolean_value_token(_rest, [token_string], context, loc, byte_offset) do
-    value = token_string |> String.to_charlist()
-    {[{:boolean_value, line_and_column(loc, byte_offset, length(value)), value}], context}
   end
 
   defp labeled_token(_rest, chars, context, loc, byte_offset, token_name) do
     value = chars |> Enum.reverse()
     {[{token_name, line_and_column(loc, byte_offset, length(value)), value}], context}
+  end
+
+  defp mark_string_start(_rest, chars, context, loc, byte_offset) do
+    {[chars], Map.put(context, :token_location, line_and_column(loc, byte_offset, 1))}
   end
 
   defp mark_block_string_start(_rest, chars, context, loc, byte_offset) do
@@ -327,6 +347,11 @@ defmodule Absinthe.Lexer do
   defp block_string_value_token(_rest, chars, context, _loc, _byte_offset) do
     value = '"""' ++ (chars |> Enum.reverse()) ++ '"""'
     {[{:block_string_value, context.token_location, value}], Map.delete(context, :token_location)}
+  end
+
+  defp string_value_token(_rest, chars, context, _loc, _byte_offset) do
+    value = '"' ++ tl(chars |> Enum.reverse()) ++ '"'
+    {[{:string_value, context.token_location, value}], Map.delete(context, :token_location)}
   end
 
   defp atom_token(_rest, chars, context, loc, byte_offset) do

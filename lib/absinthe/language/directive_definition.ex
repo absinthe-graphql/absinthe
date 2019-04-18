@@ -23,6 +23,7 @@ defmodule Absinthe.Language.DirectiveDefinition do
     def convert(node, doc) do
       %Blueprint.Schema.DirectiveDefinition{
         name: node.name,
+        identifier: Macro.underscore(node.name) |> String.to_atom(),
         description: node.description,
         arguments: Absinthe.Blueprint.Draft.convert(node.arguments, doc),
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),

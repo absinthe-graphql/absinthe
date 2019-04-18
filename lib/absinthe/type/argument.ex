@@ -24,7 +24,7 @@ defmodule Absinthe.Type.Argument do
           default_value: any,
           deprecation: Type.Deprecation.t() | nil,
           description: binary | nil,
-          definition: Module.t(),
+          definition: module,
           __reference__: Type.Reference.t()
         }
 

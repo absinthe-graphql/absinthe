@@ -196,4 +196,49 @@ If you want to subscribe to mutations from within your application, you can do:
 MyAppWeb.Endpoint.subscribe(topic)
 ```
 
+### De-duplicating Updates
+
+By default, Absinthe will resolve each outgoing publish once per individual subscription.  This ensures:
+
+- different GraphQL documents each receive the different fields they requested
+- user-specific updates are sent out, in case `context` contains user-specific data
+
+To improve the scale at which your subscriptions operate, you may tell Absinthe when it is safe to de-duplicate updates.  Simply return a `context_id` from your field's `config` function.
+
+```elixir
+subscription do
+  field :news_article_published, :article do
+    config fn _, _ ->
+      {:ok, topic: "*", context_id: "global"}
+    end
+  end
+end
+```
+
+Here we return a constant (`"global"`) because our `:article` type doesn't contain any user-specific fields on it.
+
+Given these three active subscriptions:
+
+```graphql
+# user 1
+subscription {
+  newsArticlePublished { content }
+}
+
+# user 2
+subscription {
+  newsArticlePublished { content author }
+}
+
+# user 3
+subscription {
+  newsArticlePublished { content }
+}
+```
+
+Since we provided a `context_id`, Absinthe will only run two documents per publish to this field:
+
+1. Once for *user 1* and *user 3* because they have the same context ID (`"global"`) and sent the same document.
+2. Once for *user 2*.  While *user 2* has the same context ID (`"global"`), they provided a different document, so it cannot be de-duplicated with the other two.
+
 This guide is up to date, but incomplete. Stay tuned for more content!
