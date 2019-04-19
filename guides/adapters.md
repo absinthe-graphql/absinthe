@@ -21,14 +21,7 @@ Absinthe ships with two adapters:
 * `Absinthe.Adapter.Passthrough`, which is a no-op adapter and makes no
   modifications.
 
-To set the adapter, you can set an application configuration value:
-
-```elixir
-config :absinthe,
-  adapter: Absinthe.Adapter.TheAdapterName
-```
-
-Or, you can provide it as an option to `Absinthe.run/3`:
+To set the adapter, you provide it as an option to `Absinthe.run/3`:
 
 ```elixir
 Absinthe.run(query, MyAppWeb.Schema,
@@ -39,7 +32,7 @@ Notably, this means you're able to switch adapters on case-by-case basis.
 In a Phoenix application, this means you could even support using different
 adapters for different clients.
 
-A custom adapter module must merely implement the `Absinthe.Adapter` protocol,
+A custom adapter module must merely implement the `Absinthe.Adapter` behaviour,
 in many cases with `use Absinthe.Adapter` and only overriding the desired
 functions.
 

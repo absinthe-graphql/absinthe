@@ -92,14 +92,14 @@ defmodule Absinthe.Schema do
   ```
   """
 
-  defmacro __using__(_opt) do
+  defmacro __using__(opts) do
     Module.register_attribute(__CALLER__.module, :pipeline_modifier,
       accumulate: true,
       persist: true
     )
 
     quote do
-      use Absinthe.Schema.Notation
+      use Absinthe.Schema.Notation, unquote(opts)
       import unquote(__MODULE__), only: :macros
 
       @after_compile unquote(__MODULE__)
