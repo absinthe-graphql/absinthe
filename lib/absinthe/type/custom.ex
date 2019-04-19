@@ -40,7 +40,7 @@ defmodule Absinthe.Type.Custom do
   scalar :date do
     description """
     The `Date` scalar type represents a date. The Date appears in a JSON
-    response as an ISO8601 formatted string.
+    response as an ISO8601 formatted string, without a time component.
     """
 
     serialize &Date.to_iso8601/1
@@ -50,7 +50,7 @@ defmodule Absinthe.Type.Custom do
   scalar :time do
     description """
     The `Time` scalar type represents a time. The Time appears in a JSON
-    response as an ISO8601 formatted string.
+    response as an ISO8601 formatted string, without a date component.
     """
 
     serialize &Time.to_iso8601/1
