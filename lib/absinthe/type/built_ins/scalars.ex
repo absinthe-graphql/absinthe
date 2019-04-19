@@ -11,8 +11,16 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     by [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
     """
 
-    serialize & &1
+    serialize &__MODULE__.serialize_integer/1
     parse parse_with([Absinthe.Blueprint.Input.Integer], &parse_int/1)
+  end
+
+  def serialize_integer(n) when is_integer(n), do: n
+
+  def serialize_integer(n) do
+    raise """
+    Value #{inspect(n)} is not a valid integer
+    """
   end
 
   scalar :float do
@@ -22,12 +30,21 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
     """
 
-    serialize & &1
+    serialize &__MODULE__.serialize_float/1
 
     parse parse_with(
             [Absinthe.Blueprint.Input.Integer, Absinthe.Blueprint.Input.Float],
             &parse_float/1
           )
+  end
+
+  def serialize_float(n) when is_float(n), do: n
+  def serialize_float(n) when is_integer(n), do: n * 1.0
+
+  def serialize_float(n) do
+    raise """
+    Value #{inspect(n)} is not a valid float
+    """
   end
 
   scalar :string do
@@ -63,8 +80,17 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     The `Boolean` scalar type represents `true` or `false`.
     """
 
-    serialize & &1
+    serialize &__MODULE__.serialize_boolean/1
     parse parse_with([Absinthe.Blueprint.Input.Boolean], &parse_boolean/1)
+  end
+
+  def serialize_boolean(true), do: true
+  def serialize_boolean(false), do: false
+
+  def serialize_boolean(val) do
+    raise """
+    Value #{inspect(val)} is not a valid boolean
+    """
   end
 
   # Integers are only safe when between -(2^53 - 1) and 2^53 - 1 due to being
