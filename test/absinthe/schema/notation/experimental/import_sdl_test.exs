@@ -5,17 +5,6 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   @moduletag :experimental
   @moduletag :sdl
 
-  defmodule ExtTypes do
-    use Absinthe.Schema.Notation
-
-    # Extend a Post Object
-    import_sdl """
-    type User {
-      upVotes: Int
-    }
-    """
-  end
-
   defmodule Definition do
     use Absinthe.Schema
 
@@ -244,31 +233,5 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     test "works" do
       assert Absinthe.Schema.used_types(Definition)
     end
-  end
-
-  @query """
-  { admin { upVotes } }
-  """
-  describe "decorator can append fields" do
-    test "works" do
-      assert {:ok, %{data: %{"admin" => %{"upVotes" => 99}}}} =
-               Absinthe.run(@query, Definition, root_value: %{admin: %{up_votes: 99}})
-    end
-  end
-
-  @query """
-  { droppedField }
-  """
-  test "decorator can remove fields" do
-    assert {:ok,
-            %{
-              errors: [
-                %{
-                  locations: [%{column: 3, line: 1}],
-                  message: "Cannot query field \"droppedField\" on type \"Query\"."
-                }
-              ]
-            }} =
-             Absinthe.run(@query, Definition, root_value: %{dropped_field: "Should be ignored"})
   end
 end
