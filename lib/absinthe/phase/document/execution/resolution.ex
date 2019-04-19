@@ -166,6 +166,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp do_resolve_fields([field | fields], res, source, parent_type, path, acc) do
+    field = %{field | parent_type: parent_type}
     {result, res} = resolve_field(field, res, source, parent_type, [field | path])
     do_resolve_fields(fields, res, source, parent_type, path, [result | acc])
   end
