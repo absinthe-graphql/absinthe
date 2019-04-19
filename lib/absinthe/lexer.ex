@@ -92,12 +92,12 @@ defmodule Absinthe.Lexer do
       ]),
       times(ascii_char([?.]), 3)
     ])
-    |> traverse({:atom_token, []})
+    |> post_traverse({:atom_token, []})
 
   boolean_value_or_name_or_reserved_word =
     ascii_char([?_, ?A..?Z, ?a..?z])
     |> repeat(ascii_char([?_, ?0..?9, ?A..?Z, ?a..?z]))
-    |> traverse({:boolean_value_or_name_or_reserved_word, []})
+    |> post_traverse({:boolean_value_or_name_or_reserved_word, []})
 
   # NegativeSign :: -
   negative_sign = ascii_char([?-])
@@ -122,7 +122,7 @@ defmodule Absinthe.Lexer do
   int_value =
     empty()
     |> concat(integer_part)
-    |> traverse({:labeled_token, [:int_value]})
+    |> post_traverse({:labeled_token, [:int_value]})
 
   # FractionalPart :: . Digit+
   fractional_part =
@@ -148,15 +148,15 @@ defmodule Absinthe.Lexer do
   float_value =
     choice([
       integer_part |> concat(fractional_part) |> concat(exponent_part),
-      integer_part |> traverse({:fill_mantissa, []}) |> concat(exponent_part),
+      integer_part |> post_traverse({:fill_mantissa, []}) |> concat(exponent_part),
       integer_part |> concat(fractional_part)
     ])
-    |> traverse({:labeled_token, [:float_value]})
+    |> post_traverse({:labeled_token, [:float_value]})
 
   # EscapedUnicode :: /[0-9A-Fa-f]{4}/
   escaped_unicode =
     times(ascii_char([?0..?9, ?A..?F, ?a..?f]), 4)
-    |> traverse({:unescape_unicode, []})
+    |> post_traverse({:unescape_unicode, []})
 
   # EscapedCharacter :: one of `"` \ `/` b f n r t
   escaped_character =
@@ -199,19 +199,17 @@ defmodule Absinthe.Lexer do
   #   - `"""` BlockStringCharacter* `"""`
   string_value =
     ignore(ascii_char([?"]))
-    |> traverse({:mark_string_start, []})
+    |> post_traverse({:mark_string_start, []})
     |> repeat_while(string_character, {:not_end_of_quote, []})
     |> ignore(ascii_char([?"]))
-    |> traverse({:string_value_token, []})
+    |> post_traverse({:string_value_token, []})
 
   block_string_value =
-    ignore(
-      string(~S("""))
-      |> traverse({:mark_block_string_start, []})
-    )
+    ignore(string(~S(""")))
+    |> post_traverse({:mark_block_string_start, []})
     |> repeat_while(block_string_character, {:not_end_of_block_quote, []})
     |> ignore(string(~S(""")))
-    |> traverse({:block_string_value_token, []})
+    |> post_traverse({:block_string_value_token, []})
 
   defp not_end_of_quote(<<?", _::binary>>, context, _, _) do
     {:halt, context}
@@ -340,8 +338,8 @@ defmodule Absinthe.Lexer do
     {[chars], Map.put(context, :token_location, line_and_column(loc, byte_offset, 1))}
   end
 
-  defp mark_block_string_start(_rest, chars, context, loc, byte_offset) do
-    {[chars], Map.put(context, :token_location, line_and_column(loc, byte_offset, 3))}
+  defp mark_block_string_start(_rest, _chars, context, loc, byte_offset) do
+    {[], Map.put(context, :token_location, line_and_column(loc, byte_offset, 3))}
   end
 
   defp block_string_value_token(_rest, chars, context, _loc, _byte_offset) do
