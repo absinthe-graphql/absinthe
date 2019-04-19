@@ -4,7 +4,7 @@ defmodule Absinthe.Schema.Notation do
 
   Module.register_attribute(__MODULE__, :placement, accumulate: true)
 
-  defmacro __using__(_opts) do
+  defmacro __using__(import_opts \\ [only: :macros]) do
     Module.register_attribute(__CALLER__.module, :absinthe_blueprint, accumulate: true)
     Module.register_attribute(__CALLER__.module, :absinthe_desc, accumulate: true)
     put_attr(__CALLER__.module, %Absinthe.Blueprint{schema: __CALLER__.module})
@@ -20,7 +20,7 @@ defmodule Absinthe.Schema.Notation do
 
       Module.register_attribute(__MODULE__, :__absinthe_type_import__, accumulate: true)
       @desc nil
-      import unquote(__MODULE__), only: :macros
+      import unquote(__MODULE__), unquote(import_opts)
       @before_compile unquote(__MODULE__)
     end
   end
