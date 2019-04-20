@@ -188,14 +188,14 @@ defmodule Absinthe.Blueprint do
   end
 
   def find_field(%{fields: fields}, name) do
-    Enum.find(fields, fn field = %{name: field_name} -> field_name == name end)
+    Enum.find(fields, fn %{name: field_name} -> field_name == name end)
   end
 
   @doc """
   Index the types by their name
   """
   def types_by_name(blueprint = %Blueprint{}) do
-    for schema_def = %{type_definitions: type_defs} <- blueprint.schema_definitions,
+    for %{type_definitions: type_defs} <- blueprint.schema_definitions,
         type_def <- type_defs,
         into: %{} do
       {type_def.name, type_def}

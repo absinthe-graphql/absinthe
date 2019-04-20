@@ -5,8 +5,6 @@ defmodule Absinthe.Schema.Notation.SDL do
   Parse definitions from SDL source
   """
 
-  alias Absinthe.Blueprint
-
   @spec parse(sdl :: String.t(), Module.t(), map(), Keyword.t()) ::
           {:ok, [Absinthe.Blueprint.Schema.type_t()]} | {:error, String.t()}
   def parse(sdl, module, ref, opts) do
@@ -49,11 +47,11 @@ defmodule Absinthe.Schema.Notation.SDL do
 
   defp put_ref(node, ref, opts), do: do_put_ref(node, ref, opts)
 
-  @field_types [
-    Blueprint.Schema.FieldDefinition,
-    Blueprint.Schema.EnumValueDefinition,
-    Blueprint.Schema.InputValueDefinition
-  ]
+  # @field_types [
+  #   Blueprint.Schema.FieldDefinition,
+  #   Blueprint.Schema.EnumValueDefinition,
+  #   Blueprint.Schema.InputValueDefinition
+  # ]
 
   # TODO:  Which else of these need the conversions?
   # Blueprint.Schema.DirectiveDefinition,
@@ -66,8 +64,8 @@ defmodule Absinthe.Schema.Notation.SDL do
   # Blueprint.Schema.EnumValueDefinition
   # Blueprint.Schema.InputValueDefinition
 
-  defp do_put_ref(%node_type{__reference__: nil, name: name} = node, ref, opts) do
-    adapter = Keyword.get(opts, :adapter, Absinthe.Adapter.LanguageConventions)
+  defp do_put_ref(%_{__reference__: nil, name: name} = node, ref, opts) do
+    # adapter = Keyword.get(opts, :adapter, Absinthe.Adapter.LanguageConventions)
 
     ref =
       case opts[:path] do
