@@ -2,8 +2,8 @@ defmodule Elixir.Absinthe.Integration.Execution.OperationByNameTest do
   use ExUnit.Case, async: true
 
   @query """
-  query ThingFoo {
-    thing(id: "foo") {
+  query ThingFoo($id: ID!) {
+    thing(id: $id) {
       name
     }
   }
@@ -16,7 +16,10 @@ defmodule Elixir.Absinthe.Integration.Execution.OperationByNameTest do
 
   test "scenario #1" do
     assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}}} ==
-             Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, operation_name: "ThingFoo")
+             Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema,
+               operation_name: "ThingFoo",
+               variables: %{"id" => "foo"}
+             )
   end
 
   test "scenario #2" do
@@ -41,5 +44,44 @@ defmodule Elixir.Absinthe.Integration.Execution.OperationByNameTest do
                 }
               ]
             }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, operation_name: "invalid")
+  end
+
+  test "scenario #4" do
+    assert {:ok, %{data: %{"thing" => %{"name" => "Bar"}}}} ==
+             Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, operation_name: "ThingBar")
+  end
+
+  @query """
+  mutation First($id: ID!, $thing: InputThing!) {
+    first: updateThing(id: $id thing: $thing) {
+      id
+    }
+  }
+  mutation Second {
+    second: failingThing(type: WITH_CODE) {
+      id
+    }
+  }
+  query Third {
+    third: thing(id: "bar") {
+      name
+    }
+  }
+  """
+
+  test "scenario #5" do
+    assert {:ok,
+            %{
+              data: %{"second" => nil},
+              errors: [
+                %{
+                  code: 42,
+                  locations: [%{column: 3, line: 7}],
+                  message: "Custom Error",
+                  path: ["second"]
+                }
+              ]
+            }} ==
+             Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, operation_name: "Second")
   end
 end
