@@ -17,7 +17,10 @@ defmodule Absinthe.Blueprint.Document.Field do
     source_location: nil,
     type_conditions: [],
     schema_node: nil,
-    complexity: nil
+    complexity: nil,
+    # Set during resolution, this holds the concrete parent type
+    # as determined by the resolution phase.
+    parent_type: nil
   ]
 
   @type t :: %__MODULE__{

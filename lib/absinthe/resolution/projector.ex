@@ -11,9 +11,13 @@ defmodule Absinthe.Resolution.Projector do
   the various type conditions that come along with fragments / inline fragments,
   field merging, and other wondeful stuff like that.
   """
-  def project(selections, %{identifier: identifier} = parent_type, path, cache, exec) do
-    path_names = for %{name: name, alias: alias} <- path, name, do: alias || name
-    key = {identifier, path_names}
+  def project(selections, %{identifier: parent_ident} = parent_type, path, cache, exec) do
+    path =
+      for %{parent_type: %{identifier: i}, name: name, alias: alias} <- path do
+        {i, alias || name}
+      end
+
+    key = [parent_ident | path]
 
     case Map.fetch(cache, key) do
       {:ok, fields} ->
