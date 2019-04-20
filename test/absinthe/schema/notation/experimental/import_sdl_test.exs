@@ -17,6 +17,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       "A list of posts"
       posts(filter: PostFilter, reverse: Boolean): [Post]
       admin: User!
+      droppedField: String
     }
 
     type Comment {

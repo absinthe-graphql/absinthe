@@ -405,6 +405,7 @@ defmodule Absinthe.Schema do
     |> Enum.flat_map(&Type.referenced_types(&1, schema))
     |> MapSet.new()
     |> Enum.map(&Schema.lookup_type(schema, &1))
+    |> Enum.filter(&(!Type.introspection?(&1)))
   end
 
   @doc """

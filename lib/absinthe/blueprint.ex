@@ -139,4 +139,70 @@ defmodule Absinthe.Blueprint do
 
     %{blueprint | operations: ops}
   end
+
+  @doc """
+  Append the given field or fields to the given type
+  """
+  def extend_fields(blueprint = %Blueprint{}, ext_blueprint = %Blueprint{}) do
+    ext_types = types_by_name(ext_blueprint)
+
+    schema_defs =
+      for schema_def = %{type_definitions: type_defs} <- blueprint.schema_definitions do
+        type_defs =
+          for type_def <- type_defs do
+            case ext_types[type_def.name] do
+              nil ->
+                type_def
+
+              %{fields: new_fields} ->
+                %{type_def | fields: type_def.fields ++ new_fields}
+            end
+          end
+
+        %{schema_def | type_definitions: type_defs}
+      end
+
+    %{blueprint | schema_definitions: schema_defs}
+  end
+
+  def extend_fields(blueprint, ext_blueprint) when is_atom(ext_blueprint) do
+    extend_fields(blueprint, ext_blueprint.__absinthe_blueprint__)
+  end
+
+  def add_field(blueprint = %Blueprint{}, type_def_name, new_field) do
+    schema_defs =
+      for schema_def = %{type_definitions: type_defs} <- blueprint.schema_definitions do
+        type_defs =
+          for type_def <- type_defs do
+            if type_def.name == type_def_name do
+              %{type_def | fields: type_def.fields ++ List.wrap(new_field)}
+            else
+              type_def
+            end
+          end
+
+        %{schema_def | type_definitions: type_defs}
+      end
+
+    %{blueprint | schema_definitions: schema_defs}
+  end
+
+  def find_field(%{fields: fields}, name) do
+    Enum.find(fields, fn field = %{name: field_name} -> field_name == name end)
+  end
+
+  @doc """
+  Index the types by their name
+  """
+  def types_by_name(blueprint = %Blueprint{}) do
+    for schema_def = %{type_definitions: type_defs} <- blueprint.schema_definitions,
+        type_def <- type_defs,
+        into: %{} do
+      {type_def.name, type_def}
+    end
+  end
+
+  def types_by_name(module) when is_atom(module) do
+    types_by_name(module.__absinthe_blueprint__)
+  end
 end

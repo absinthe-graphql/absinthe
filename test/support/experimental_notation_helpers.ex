@@ -33,6 +33,7 @@ defmodule ExperimentalNotationHelpers do
     case lookup_field(mod, type_ident, field_ident) do
       nil ->
         nil
+
       field ->
         Enum.find(field.arguments, fn
           %{identifier: ^arg_ident} ->

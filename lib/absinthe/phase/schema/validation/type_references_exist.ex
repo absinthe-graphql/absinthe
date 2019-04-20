@@ -86,9 +86,13 @@ defmodule Absinthe.Phase.Schema.Validation.TypeReferencesExist do
   end
 
   defp unwrap(type) do
-    type
-    |> Absinthe.Blueprint.TypeReference.unwrap()
-    |> unwrap
+    unwrap_type = Absinthe.Blueprint.TypeReference.unwrap(type)
+
+    if unwrap_type == type do
+      type
+    else
+      unwrap(unwrap_type)
+    end
   end
 
   defp error(thing, type) do

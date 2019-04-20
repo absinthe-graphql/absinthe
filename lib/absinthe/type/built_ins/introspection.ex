@@ -110,10 +110,15 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
           result =
             fields
             |> Enum.flat_map(fn {_, %{deprecation: is_deprecated} = field} ->
-              if !is_deprecated || (is_deprecated && show_deprecated) do
-                [field]
-              else
-                []
+              cond do
+                Absinthe.Type.introspection?(field) ->
+                  []
+
+                !is_deprecated || (is_deprecated && show_deprecated) ->
+                  [field]
+
+                true ->
+                  []
               end
             end)
 

@@ -10,8 +10,39 @@ defmodule Absinthe.Phase.Schema.Validation.TypeNamesAreReserved do
     {:ok, bp}
   end
 
+  def allow_reserved(node = %{flags: nil}) do
+    allow_reserved(%{node | flags: %{}})
+  end
+
+  def allow_reserved(node = %{flags: flags}) do
+    flags =
+      flags
+      |> Map.put(:reserved_name, true)
+
+    %{node | flags: flags}
+  end
+
+  def make_reserved(node = %{name: "__" <> _}) do
+    allow_reserved(node)
+  end
+
+  def make_reserved(node = %{name: name, identifier: identifier}) do
+    node = %{
+      node
+      | name: name |> String.replace_prefix("", "__"),
+        identifier:
+          identifier |> to_string() |> String.replace_prefix("", "__") |> String.to_atom()
+    }
+
+    allow_reserved(node)
+  end
+
   defp validate_reserved(%struct{name: "__" <> _} = entity) do
-    if Absinthe.Type.built_in_module?(entity.__reference__.module) do
+    reserved_ok =
+      Absinthe.Type.built_in_module?(entity.__reference__.module) ||
+        reserved_name_ok_flag?(entity)
+
+    if reserved_ok do
       entity
     else
       kind = struct_to_kind(struct)
@@ -24,6 +55,14 @@ defmodule Absinthe.Phase.Schema.Validation.TypeNamesAreReserved do
 
   defp validate_reserved(entity) do
     entity
+  end
+
+  defp reserved_name_ok_flag?(%{flags: flags}) do
+    flags[:reserved_name]
+  end
+
+  defp reserved_name_ok_flag?(_) do
+    false
   end
 
   defp error(object, data) do

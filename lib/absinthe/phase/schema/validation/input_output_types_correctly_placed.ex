@@ -61,6 +61,7 @@ defmodule Absinthe.Phase.Schema.Validation.InputOuputTypesCorrectlyPlaced do
 
   @output_types [
     Blueprint.Schema.ObjectTypeDefinition,
+    Blueprint.Schema.UnionTypeDefinition,
     Blueprint.Schema.InterfaceTypeDefinition
   ]
   defp wrong_type?(type, field_type) when type in @output_types do
