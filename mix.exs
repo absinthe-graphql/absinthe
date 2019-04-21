@@ -24,7 +24,8 @@ defmodule Absinthe.Mixfile do
         extras: extras(),
         groups_for_extras: groups_for_extras()
       ],
-      deps: deps()
+      deps: deps(),
+      dialyzer: [plt_add_apps: [:mix, :dataloader, :decimal]]
     ]
   end
 
