@@ -1,5 +1,7 @@
 defmodule Absinthe.Subscription.Local do
-  @moduledoc false
+  @moduledoc """
+  This module handles broadcasting documents that are local to this node
+  """
 
   require Logger
 
@@ -8,6 +10,16 @@ defmodule Absinthe.Subscription.Local do
   # This module handles running and broadcasting documents that are local to this
   # node.
 
+  @doc """
+  Publish a mutation to the local node only.
+
+  See also `Absinthe.Subscription.publish/3`
+  """
+  @spec publish_mutation(
+          Absinthe.Subscription.Pubsub.t(),
+          term,
+          [Absinthe.Subscription.subscription_field_spec()]
+        ) :: :ok
   def publish_mutation(pubsub, mutation_result, subscribed_fields) do
     docs_and_topics =
       for {field, key_strategy} <- subscribed_fields,
@@ -20,6 +32,8 @@ defmodule Absinthe.Subscription.Local do
     for docset <- docs_by_context do
       run_docset(pubsub, docset)
     end
+
+    :ok
   end
 
   defp group_by_context(docs_and_topics) do

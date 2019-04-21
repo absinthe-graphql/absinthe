@@ -160,7 +160,8 @@ defmodule Absinthe.Mixfile do
       ],
       Subscriptions: [
         Absinthe.Subscription,
-        Absinthe.Subscription.Pubsub
+        Absinthe.Subscription.Pubsub,
+        Absinthe.Subscription.Local
       ],
       Extensibility: [
         Absinthe.Pipeline,
