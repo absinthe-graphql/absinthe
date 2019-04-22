@@ -5,7 +5,7 @@ defmodule Absinthe.Schema.Notation.SDL do
   Parse definitions from SDL source
   """
 
-  @spec parse(sdl :: String.t(), Module.t(), map(), Keyword.t()) ::
+  @spec parse(sdl :: String.t(), module(), map(), Keyword.t()) ::
           {:ok, [Absinthe.Blueprint.Schema.type_t()]} | {:error, String.t()}
   def parse(sdl, module, ref, opts) do
     with {:ok, doc} <- Absinthe.Phase.Parse.run(sdl) do
