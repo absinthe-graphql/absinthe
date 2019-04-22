@@ -89,7 +89,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   end
 
   @doc false
-  @spec generate_schema(Options.t()) :: {:error, binary()} | {:ok, string()}
+  @spec generate_schema(Options.t()) :: {:error, binary()} | {:ok, String.t()}
   def generate_schema(%Options{
         pretty: pretty,
         schema: schema,
