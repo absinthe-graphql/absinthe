@@ -72,13 +72,13 @@ defmodule Absinthe.Resolution.Helpers do
   ```
   """
   @spec batch(Middleware.Batch.batch_fun(), term, Middleware.Batch.post_batch_fun()) ::
-          {:plugin, Middleware.Batch, term}
+          {:middleware, Middleware.Batch, term}
   @spec batch(
           Middleware.Batch.batch_fun(),
           term,
           Middleware.Batch.post_batch_fun(),
           opts :: [{:timeout, pos_integer}]
-        ) :: {:plugin, Middleware.Batch, term}
+        ) :: {:middleware, Middleware.Batch, term}
   def batch(batch_fun, batch_data, post_batch_fun, opts \\ []) do
     batch_config = {batch_fun, batch_data, post_batch_fun, opts}
     {:middleware, Middleware.Batch, batch_config}
