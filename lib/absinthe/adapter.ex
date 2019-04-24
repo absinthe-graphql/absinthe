@@ -8,12 +8,12 @@ defmodule Absinthe.Adapter do
   Adapters aren't a part of GraphQL, but a utility that Absinthe adds so that
   both client and server can use use conventions most natural to them.
 
-  Absinthe ships with two adapters:
+  Absinthe ships with four adapters:
 
   * `Absinthe.Adapter.LanguageConventions`, which expects schemas to be defined
     in `snake_case` (the standard Elixir convention), translating to/from `camelCase`
     for incoming query documents and outgoing results. (This is the default as of v0.3.)
-  * `Absinthe.Adapter.Underscore`, which is similar to the `LanguageConventions`
+  * `Absinthe.Adapter.Underscore`, which is similar to the `Absinthe.Adapter.LanguageConventions`
     adapter but converts all incoming identifiers to underscores and does not
     modify outgoing identifiers (since those are already expected to be
     underscores). Unlike `Absinthe.Adapter.Passthrough` this does not break
@@ -21,6 +21,9 @@ defmodule Absinthe.Adapter do
   * `Absinthe.Adapter.Passthrough`, which is a no-op adapter and makes no
     modifications. (Note at the current time this does not support introspection
     if you're using camelized conventions).
+  * `Absinthe.Adapter.StrictLanguageConventions`, which expects schemas to be
+    defined in `snake_case`, translating to `camelCase` for outgoing results.
+    This adapter requires incoming query documents to use `camelCase`.
 
   To set an adapter, you pass a configuration option at runtime:
 
@@ -108,7 +111,7 @@ defmodule Absinthe.Adapter do
   end
   ```
   """
-  @callback to_internal_name(binary, role_t) :: binary
+  @callback to_internal_name(binary | nil, role_t) :: binary | nil
 
   @doc """
   Convert a name from an internal name to an external name.
@@ -124,5 +127,5 @@ defmodule Absinthe.Adapter do
   end
   ```
   """
-  @callback to_external_name(binary, role_t) :: binary
+  @callback to_external_name(binary | nil, role_t) :: binary | nil
 end

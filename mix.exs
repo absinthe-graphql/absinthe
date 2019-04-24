@@ -182,6 +182,7 @@ defmodule Absinthe.Mixfile do
         Absinthe.Adapter,
         Absinthe.Adapter.LanguageConventions,
         Absinthe.Adapter.Passthrough,
+        Absinthe.Adapter.StrictLanguageConventions,
         Absinthe.Adapter.Underscore
       ],
       Execution: [
