@@ -46,16 +46,16 @@ defmodule Absinthe.Phase.Document.Variables do
   @spec run(Blueprint.t(), Keyword.t()) :: {:ok, Blueprint.t()}
   def run(input, options \\ []) do
     variables = options[:variables] || %{}
-    operations = update_operations(input, variables)
-    telemetry = put_in(input.telemetry, [:variables], variables)
-
-    {:ok, %{input | operations: operations, telemetry: telemetry}}
+    {:ok, update_operations(input, variables)}
   end
 
   def update_operations(input, variables) do
-    for op <- input.operations do
-      update_operation(op, variables)
-    end
+    operations =
+      for op <- input.operations do
+        update_operation(op, variables)
+      end
+
+    %{input | operations: operations}
   end
 
   def update_operation(%{variable_definitions: variable_definitions} = operation, variables) do

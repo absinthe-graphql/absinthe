@@ -6,29 +6,21 @@ defmodule Absinthe.Phase.Telemetry do
 
   use Absinthe.Phase
 
-  def run(blueprint, _options \\ []) do
-    with %{start_time: start_time, start_time_mono: start_time_mono} <- blueprint.telemetry,
-         %{emitter: operation} <- blueprint.execution.result do
+  def run(blueprint, options) do
+    with %{start_time: start_time, start_time_mono: start_time_mono} <- blueprint.telemetry do
       :telemetry.execute(
         @telemetry_event,
         %{
-          start_time: start_time,
           duration: System.monotonic_time() - start_time_mono
         },
         %{
-          query: query(blueprint.telemetry.source),
-          schema: blueprint.schema,
-          variables: blueprint.telemetry.variables,
-          operation_complexity: operation.complexity,
-          operation_type: operation.type,
-          operation_name: operation.name
+          start_time: start_time,
+          blueprint: blueprint,
+          options: options
         }
       )
     end
 
     {:ok, blueprint}
   end
-
-  defp query(%Absinthe.Language.Source{body: query}), do: query
-  defp query(query), do: query
 end

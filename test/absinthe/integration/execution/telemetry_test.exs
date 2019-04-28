@@ -62,30 +62,18 @@ defmodule Elixir.Absinthe.Integration.Execution.TelemetryTest do
     assert_receive {[:absinthe, :query], measurements, meta, _config}
 
     assert measurements[:duration] |> is_number()
-    assert System.convert_time_unit(measurements[:start_time], :native, :millisecond)
-    assert meta[:query] == query
-    assert meta[:variables]["echo"] == "ASYNC"
-    assert meta[:schema] == TestSchema
-    assert meta[:operation_complexity] == 3
-    assert meta[:operation_type] == :query
-    assert meta[:operation_name] == "CustomOperationName"
+    assert System.convert_time_unit(meta[:start_time], :native, :millisecond)
+    assert %Absinthe.Blueprint{} = meta[:blueprint]
+    assert meta[:options][:schema] == TestSchema
 
-    assert_receive {[:absinthe, :resolver], measurements, %{path: ["asyncThing"]} = meta, _}
+    assert_receive {[:absinthe, :resolver], _, _, _}
+    assert_receive {[:absinthe, :resolver], measurements, meta, _}
 
     assert measurements[:duration] |> is_number()
-    assert System.convert_time_unit(measurements[:start_time], :native, :millisecond)
-    assert meta[:path] == ["asyncThing"]
-    assert meta[:schema] == TestSchema
-    assert meta[:arguments][:echo] == "ASYNC"
-    assert meta[:mfa] == {TestSchema, :resolve_async, 3}
-    assert meta[:path] |> is_list()
-    assert meta[:field_name] == "asyncThing"
-    assert meta[:field_type] == "String"
-    assert meta[:parent_type] == "RootQueryType"
-
-    assert_receive {[:absinthe, :resolver], _, %{path: ["objectThing"]}, _}
+    assert System.convert_time_unit(meta[:start_time], :native, :millisecond)
+    assert %Absinthe.Resolution{} = meta[:resolution]
 
     # Don't execute for resolvers that don't call a resolver function (ie: default `Map.get`)
-    refute_receive {[:absinthe, :resolver], _, %{path: ["objectThing", "name"]}, _}
+    refute_receive {[:absinthe, :resolver], _, _, _}
   end
 end

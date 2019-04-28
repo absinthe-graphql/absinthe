@@ -15,11 +15,12 @@ defmodule Absinthe.Blueprint do
             schema_definitions: [],
             schema: nil,
             adapter: nil,
-            telemetry: %{},
             # Added by phases
+            telemetry: %{},
             flags: %{},
             errors: [],
             input: nil,
+            source: nil,
             execution: %Blueprint.Execution{},
             result: %{}
 
@@ -31,10 +32,12 @@ defmodule Absinthe.Blueprint do
           fragments: [Blueprint.Document.Fragment.Named.t()],
           schema: nil | Absinthe.Schema.t(),
           adapter: nil | Absinthe.Adapter.t(),
-          telemetry: map(),
           # Added by phases
+          telemetry: map,
           errors: [Absinthe.Phase.Error.t()],
           flags: flags_t,
+          input: nil | Absinthe.Language.Document.t(),
+          source: nil | String.t() | Absinthe.Language.Source.t(),
           execution: Blueprint.Execution.t(),
           result: result_t
         }
