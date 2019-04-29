@@ -1,8 +1,8 @@
 defmodule Absinthe.Middleware.Telemetry do
   @moduledoc """
-  Gather and report telemetry about an individual resolver function
+  Gather and report telemetry about an individual field resolution
   """
-  @telemetry_event [:absinthe, :resolver]
+  @telemetry_event [:absinthe, :resolve, :field]
 
   @behaviour Absinthe.Middleware
 

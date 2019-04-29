@@ -1,8 +1,8 @@
 defmodule Absinthe.Phase.Telemetry do
   @moduledoc """
-  Gather and report telemetry about a pipeline.
+  Gather and report telemetry about an operation.
   """
-  @telemetry_event [:absinthe, :query]
+  @telemetry_event [:absinthe, :execute, :operation]
 
   use Absinthe.Phase
 

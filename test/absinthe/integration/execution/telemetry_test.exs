@@ -5,8 +5,8 @@ defmodule Elixir.Absinthe.Integration.Execution.TelemetryTest do
     :telemetry.attach_many(
       context.test,
       [
-        [:absinthe, :resolver],
-        [:absinthe, :query]
+        [:absinthe, :resolve, :field],
+        [:absinthe, :execute, :operation]
       ],
       &__MODULE__.handle_event/4,
       %{}
@@ -57,22 +57,22 @@ defmodule Elixir.Absinthe.Integration.Execution.TelemetryTest do
     {:ok, %{data: data}} = Absinthe.run(query, TestSchema, variables: %{"echo" => "ASYNC"})
     assert %{"asyncThing" => "ASYNC", "objectThing" => %{"name" => "Foo"}} == data
 
-    assert_receive {[:absinthe, :query], measurements, meta, _config}
+    assert_receive {[:absinthe, :execute, :operation], measurements, meta, _config}
 
     assert is_number(measurements[:duration])
     assert System.convert_time_unit(meta[:start_time], :native, :millisecond)
     assert %Absinthe.Blueprint{} = meta[:blueprint]
     assert meta[:options][:schema] == TestSchema
 
-    assert_receive {[:absinthe, :resolver], measurements, meta, _}
+    assert_receive {[:absinthe, :resolve, :field], measurements, meta, _}
 
     assert is_number(measurements[:duration])
     assert System.convert_time_unit(meta[:start_time], :native, :millisecond)
     assert %Absinthe.Resolution{} = meta[:resolution]
     assert is_list(meta[:middleware])
 
-    assert_receive {[:absinthe, :resolver], _, _, _}
+    assert_receive {[:absinthe, :resolve, :field], _, _, _}
     # Don't execute for resolvers that don't call a resolver function (ie: default `Map.get`)
-    refute_receive {[:absinthe, :resolver], _, _, _}
+    refute_receive {[:absinthe, :resolve, :field], _, _, _}
   end
 end
