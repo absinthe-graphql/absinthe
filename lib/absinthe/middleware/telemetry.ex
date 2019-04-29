@@ -7,24 +7,22 @@ defmodule Absinthe.Middleware.Telemetry do
   @behaviour Absinthe.Middleware
 
   @impl Absinthe.Middleware
-  def call(%{middleware: [{{Absinthe.Resolution, :call}, resolver_fun} | _]} = resolution, _) do
+  def call(resolution, _) do
     on_complete =
       {{__MODULE__, :on_complete},
        [
          start_time: System.system_time(),
          start_time_mono: System.monotonic_time(),
-         resolver_fun: resolver_fun
+         middleware: resolution.middleware
        ]}
 
     %{resolution | middleware: resolution.middleware ++ [on_complete]}
   end
 
-  def call(resolution, _config), do: resolution
-
   def on_complete(%{state: :resolved} = resolution,
         start_time: start_time,
         start_time_mono: start_time_mono,
-        resolver_fun: resolver_fun
+        middleware: middleware
       ) do
     :telemetry.execute(
       @telemetry_event,
@@ -33,7 +31,7 @@ defmodule Absinthe.Middleware.Telemetry do
       },
       %{
         start_time: start_time,
-        resolver_fun: resolver_fun,
+        middleware: middleware,
         resolution: resolution
       }
     )
