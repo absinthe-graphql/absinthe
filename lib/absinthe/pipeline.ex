@@ -46,6 +46,7 @@ defmodule Absinthe.Pipeline do
     [
       # Parse Document
       Phase.Init,
+      {Phase.Telemetry, [:start]},
       {Phase.Parse, options},
       # Convert to Blueprint
       {Phase.Blueprint, options},

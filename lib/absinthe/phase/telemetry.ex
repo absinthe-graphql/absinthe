@@ -6,6 +6,15 @@ defmodule Absinthe.Phase.Telemetry do
 
   use Absinthe.Phase
 
+  def run(blueprint, [:start]) do
+    telemetry = %{
+      start_time: System.system_time(),
+      start_time_mono: System.monotonic_time()
+    }
+
+    {:ok, %{blueprint | source: blueprint.input, telemetry: telemetry}}
+  end
+
   def run(blueprint, options) do
     with %{start_time: start_time, start_time_mono: start_time_mono} <- blueprint.telemetry do
       :telemetry.execute(
