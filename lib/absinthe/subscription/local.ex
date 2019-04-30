@@ -47,7 +47,8 @@ defmodule Absinthe.Subscription.Local do
     docs = BatchResolver.run(docs, schema: hd(docs).schema, abort_on_error: false)
 
     pipeline = [
-      Absinthe.Phase.Document.Result
+      Absinthe.Phase.Document.Result,
+      {Absinthe.Phase.Telemetry, []}
     ]
 
     for {doc, {topic, key_strategy}} <- Enum.zip(docs, topics), doc != :error do

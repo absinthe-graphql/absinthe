@@ -28,7 +28,8 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
       for field_key <- field_keys,
           do: Absinthe.Subscription.subscribe(pubsub, field_key, subscription_id, blueprint)
 
-      {:replace, blueprint, [{Phase.Subscription.Result, topic: subscription_id}]}
+      {:replace, blueprint,
+       [{Phase.Subscription.Result, topic: subscription_id}, {Phase.Telemetry, options}]}
     else
       {:error, error} ->
         blueprint = update_in(blueprint.execution.validation_errors, &[error | &1])
