@@ -1,5 +1,6 @@
 defmodule Absinthe.Pipeline.BatchResolver do
   alias Absinthe.Phase.Document.Execution
+  alias Absinthe.Phase
 
   require Logger
 
@@ -25,7 +26,7 @@ defmodule Absinthe.Pipeline.BatchResolver do
     }
 
     resolution_phase = {Execution.Resolution, [plugin_callbacks: false] ++ options}
-    resolution_phases = [{Absinthe.Phase.Telemetry, [:subscription, :start]}, resolution_phase]
+    resolution_phases = [{Phase.Telemetry, [:subscription, :publish, :start]}, resolution_phase]
 
     do_resolve(blueprints, resolution_phases, exec, plugins, resolution_phase, options)
   end
@@ -33,8 +34,6 @@ defmodule Absinthe.Pipeline.BatchResolver do
   defp init(blueprints, attr) do
     Enum.reduce(blueprints, %{}, &Map.merge(Map.fetch!(&1.execution, attr), &2))
   end
-
-  # defp update()
 
   defp do_resolve(blueprints, phases, exec, plugins, resolution_phase_template, options) do
     exec =

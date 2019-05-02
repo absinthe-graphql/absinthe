@@ -2,20 +2,20 @@ defmodule Absinthe.Phase.Telemetry do
   @moduledoc """
   Gather and report telemetry about an operation.
   """
-  @telemetry_event_start [:absinthe, :execute, :operation, :start]
-  @telemetry_event [:absinthe, :execute, :operation]
+  @operation_start [:absinthe, :execute, :operation, :start]
+  @operation [:absinthe, :execute, :operation]
 
-  @telemetry_event_subscription_start [:absinthe, :subscription, :publish, :start]
-  @telemetry_event_subscription [:absinthe, :subscription, :publish]
+  @subscription_start [:absinthe, :subscription, :publish, :start]
+  @subscription [:absinthe, :subscription, :publish]
 
   use Absinthe.Phase
 
-  def run(blueprint, [:start]) do
+  def run(blueprint, [:execute, :operation, :start]) do
     id = :erlang.unique_integer()
     start_time = System.system_time()
     start_time_mono = System.monotonic_time()
 
-    :telemetry.execute(@telemetry_event_start, %{start_time: start_time}, %{id: id})
+    :telemetry.execute(@operation_start, %{start_time: start_time}, %{id: id})
 
     {:ok,
      %{
@@ -29,12 +29,12 @@ defmodule Absinthe.Phase.Telemetry do
      }}
   end
 
-  def run(blueprint, [:subscription, :start]) do
+  def run(blueprint, [:subscription, :publish, :start]) do
     id = :erlang.unique_integer()
     start_time = System.system_time()
     start_time_mono = System.monotonic_time()
 
-    :telemetry.execute(@telemetry_event_subscription_start, %{start_time: start_time}, %{id: id})
+    :telemetry.execute(@subscription_start, %{start_time: start_time}, %{id: id})
 
     {:ok,
      %{
@@ -53,7 +53,7 @@ defmodule Absinthe.Phase.Telemetry do
     with %{id: id, start_time: start_time, start_time_mono: start_time_mono} <-
            blueprint.telemetry do
       :telemetry.execute(
-        @telemetry_event_subscription,
+        @subscription,
         %{duration: end_time_mono - start_time_mono},
         %{
           id: id,
@@ -66,13 +66,13 @@ defmodule Absinthe.Phase.Telemetry do
     {:ok, blueprint}
   end
 
-  def run(blueprint, options) do
+  def run(blueprint, [:execute, :operation, options]) do
     end_time_mono = System.monotonic_time()
 
     with %{id: id, start_time: start_time, start_time_mono: start_time_mono} <-
            blueprint.telemetry do
       :telemetry.execute(
-        @telemetry_event,
+        @operation,
         %{duration: end_time_mono - start_time_mono},
         %{
           id: id,

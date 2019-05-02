@@ -2,8 +2,8 @@ defmodule Absinthe.Middleware.Telemetry do
   @moduledoc """
   Gather and report telemetry about an individual field resolution
   """
-  @telemetry_event_start [:absinthe, :resolve, :field, :start]
-  @telemetry_event [:absinthe, :resolve, :field]
+  @field_start [:absinthe, :resolve, :field, :start]
+  @field [:absinthe, :resolve, :field]
 
   @behaviour Absinthe.Middleware
 
@@ -13,7 +13,7 @@ defmodule Absinthe.Middleware.Telemetry do
     start_time = System.system_time()
     start_time_mono = System.monotonic_time()
 
-    :telemetry.execute(@telemetry_event_start, %{start_time: start_time}, %{id: id})
+    :telemetry.execute(@field_start, %{start_time: start_time}, %{id: id})
 
     %{
       resolution
@@ -43,7 +43,7 @@ defmodule Absinthe.Middleware.Telemetry do
     end_time_mono = System.monotonic_time()
 
     :telemetry.execute(
-      @telemetry_event,
+      @field,
       %{duration: end_time_mono - start_time_mono},
       %{
         id: id,
