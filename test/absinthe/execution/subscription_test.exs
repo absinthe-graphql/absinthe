@@ -433,15 +433,17 @@ defmodule Absinthe.Execution.SubscriptionTest do
   end
 
   describe "subscription_ids" do
-
     @query """
     subscription {
       otherUser { id }
     }
     """
     test "subscriptions with the same context_id and same source document have the same subscription_id" do
-      assert {:ok, %{"subscribed" => doc1}} = run(@query, Schema, context: %{context_id: "logged-in"})
-      assert {:ok, %{"subscribed" => doc2}} = run(@query, Schema, context: %{context_id: "logged-in"})
+      assert {:ok, %{"subscribed" => doc1}} =
+               run(@query, Schema, context: %{context_id: "logged-in"})
+
+      assert {:ok, %{"subscribed" => doc2}} =
+               run(@query, Schema, context: %{context_id: "logged-in"})
 
       assert doc1 == doc2
     end
@@ -526,7 +528,10 @@ defmodule Absinthe.Execution.SubscriptionTest do
     :telemetry.attach_many(
       context.test,
       [
-        [:absinthe, :execute, :operation]
+        [:absinthe, :execute, :operation, :start],
+        [:absinthe, :execute, :operation],
+        [:absinthe, :subscription, :publish, :start],
+        [:absinthe, :subscription, :publish]
       ],
       fn event, measurements, metadata, config ->
         send(self(), {event, measurements, metadata, config})
@@ -542,8 +547,10 @@ defmodule Absinthe.Execution.SubscriptionTest do
                context: %{pubsub: PubSub}
              )
 
-    Absinthe.Subscription.publish(PubSub, "foo", thing: client_id)
+    assert_receive {[:absinthe, :execute, :operation, :start], _, %{id: id} = _meta, _config}
+    assert_receive {[:absinthe, :execute, :operation], _, %{id: ^id} = _meta, _config}
 
+    Absinthe.Subscription.publish(PubSub, "foo", thing: client_id)
     assert_receive({:broadcast, msg})
 
     assert %{
@@ -552,12 +559,8 @@ defmodule Absinthe.Execution.SubscriptionTest do
              topic: topic
            } == msg
 
-    # One event for subscription result
-    assert_receive {[:absinthe, :execute, :operation], _measurements, _meta, _config}
-
-    # One event per subscription broadcast
-    assert_receive {[:absinthe, :execute, :operation], _measurements, _meta, _config}
-    refute_receive {[:absinthe, :execute, :operation], _measurements, _meta, _config}
+    assert_receive {[:absinthe, :subscription, :publish, :start], _, %{id: id} = _meta, _config}
+    assert_receive {[:absinthe, :subscription, :publish], _, %{id: ^id} = _meta, _config}
 
     :telemetry.detach(context.test)
   end

@@ -25,7 +25,7 @@ defmodule Absinthe.Pipeline.BatchResolver do
     }
 
     resolution_phase = {Execution.Resolution, [plugin_callbacks: false] ++ options}
-    resolution_phases = [{Absinthe.Phase.Telemetry, [:start]}, resolution_phase]
+    resolution_phases = [{Absinthe.Phase.Telemetry, [:subscription, :start]}, resolution_phase]
 
     do_resolve(blueprints, resolution_phases, exec, plugins, resolution_phase, options)
   end

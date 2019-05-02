@@ -48,7 +48,7 @@ defmodule Absinthe.Subscription.Local do
 
     pipeline = [
       Absinthe.Phase.Document.Result,
-      {Absinthe.Phase.Telemetry, []}
+      {Absinthe.Phase.Telemetry, [:subscription, :publish]}
     ]
 
     for {doc, {topic, key_strategy}} <- Enum.zip(docs, topics), doc != :error do
