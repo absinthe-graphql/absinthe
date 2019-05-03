@@ -349,6 +349,68 @@ defmodule Absinthe.Schema do
     end)
   end
 
+  @doc """
+  List of Plugins to run before / after resolution.
+
+  Plugins are modules that implement the `Absinthe.Plugin` behaviour. These modules
+  have the opportunity to run callbacks before and after the resolution of the entire
+  document, and have access to the resolution accumulator.
+
+  Plugins must be specified by the schema, so that Absinthe can make sure they are
+  all given a chance to run prior to resolution.
+  """
+  @callback plugins() :: [Absinthe.Plugin.t()]
+
+  @doc """
+  Useful for middleware you want to apply on all or a group of fields based on the
+  type of query.
+
+  It is passed the existing middleware for a field, the field itself, and the object
+  that the field is a part of.
+
+  In this example we add our HandleChangesetError Middleware only to mutations.
+
+  ## Example
+      # if it's a field for the mutation object, add this middleware to the end
+      def middleware(middleware, _field, %{identifier: :mutation}) do
+        middleware ++ [MyApp.Middlewares.HandleChangesetErrors]
+      end
+      # if it's any other object keep things as is
+      def middleware(middleware, _field, _object), do: middleware
+  """
+  @callback middleware([Absinthe.Middleware.spec(), ...], Type.Field.t(), Type.Object.t()) :: [
+              Absinthe.Middleware.spec(),
+              ...
+            ]
+
+  @doc """
+  Callback that gives the schema itself an opportunity to set some values in the
+  context that it may need in order to run.
+
+
+  ## Example
+      def context(context) do
+        loader =
+          Dataloader.new
+          |> Dataloader.add_source(Blog, Blog.data())
+
+        Map.put(context, :loader, loader)
+      end
+  """
+  @callback context(map) :: map
+
+  @doc """
+  Callback that gives the opportunity to decorate the schema.
+
+  E.g. in this example we change the description of the user object
+
+  ## Example
+      def decorations(%Absinthe.Blueprint.Schema.ObjectTypeDefinition{identifier: :user}, _) do
+        {:description, "A user"}
+      end
+  """
+  @callback decorations(map, [map, ...]) :: {atom, term}
+
   def lookup_directive(schema, name) do
     schema.__absinthe_directive__(name)
   end
