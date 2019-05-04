@@ -15,7 +15,8 @@ defmodule Absinthe.Plugin do
   NOTE: This function is given the full accumulator. Namespacing is suggested to
   avoid conflicts.
   """
-  @callback before_resolution(execution :: Absinthe.Blueprint.Execution.t()) :: Absinthe.Blueprint.Execution.t()
+  @callback before_resolution(execution :: Absinthe.Blueprint.Execution.t()) ::
+              Absinthe.Blueprint.Execution.t()
 
   @doc """
   callback to do something with the resolution accumulator after
@@ -24,7 +25,8 @@ defmodule Absinthe.Plugin do
   NOTE: This function is given the full accumulator. Namespacing is suggested to
   avoid conflicts.
   """
-  @callback after_resolution(execution :: Absinthe.Blueprint.Execution.t()) :: Absinthe.Blueprint.Execution.t()
+  @callback after_resolution(execution :: Absinthe.Blueprint.Execution.t()) ::
+              Absinthe.Blueprint.Execution.t()
 
   @doc """
   callback used to specify additional phases to run.
@@ -36,7 +38,10 @@ defmodule Absinthe.Plugin do
   NOTE: This function is given the whole pipeline to be inserted after the current
   phase completes.
   """
-  @callback pipeline(next_pipeline :: Absinthe.Pipeline.t(), execution :: Absinthe.Blueprint.Execution.t()) ::
+  @callback pipeline(
+              next_pipeline :: Absinthe.Pipeline.t(),
+              execution :: Absinthe.Blueprint.Execution.t()
+            ) ::
               Absinthe.Pipeline.t()
 
   @doc """

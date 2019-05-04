@@ -13,7 +13,6 @@ defmodule Absinthe.Blueprint.Schema do
           | Schema.ScalarTypeDefinition.t()
           | Schema.UnionTypeDefinition.t()
 
-
   @type directive_t :: Schema.DirectiveDefinition.t()
   @type t :: type_t | directive_t
 

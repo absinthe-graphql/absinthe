@@ -14,7 +14,6 @@ defmodule Absinthe.Schema.Notation.ImportTest do
 
   alias Absinthe.Phase
 
-
   describe "import fields" do
     test "fields can be imported" do
       defmodule Foo do

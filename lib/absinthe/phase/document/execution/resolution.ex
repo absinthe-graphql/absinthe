@@ -366,7 +366,10 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
         raise Absinthe.Resolution.result_error(error_value, bp_field, source)
 
       {[message: message, path: error_path], extra} ->
-        put_error(result, error(bp_field, message, Enum.reverse(error_path) ++ path, Map.new(extra)))
+        put_error(
+          result,
+          error(bp_field, message, Enum.reverse(error_path) ++ path, Map.new(extra))
+        )
 
       {[message: message], extra} ->
         put_error(result, error(bp_field, message, path, Map.new(extra)))

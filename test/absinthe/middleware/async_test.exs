@@ -29,18 +29,22 @@ defmodule Absinthe.Middleware.AsyncTest do
 
       field :async_bare_thing_with_opts, :string do
         resolve fn _, _, _ ->
-          task = Task.async(fn ->
-            {:ok, "bare task"}
-          end)
+          task =
+            Task.async(fn ->
+              {:ok, "bare task"}
+            end)
+
           {:middleware, Elixir.Absinthe.Middleware.Async, {task, []}}
         end
       end
 
       field :async_bare_thing, :string do
         resolve fn _, _, _ ->
-          task = Task.async(fn ->
-            {:ok, "bare task"}
-          end)
+          task =
+            Task.async(fn ->
+              {:ok, "bare task"}
+            end)
+
           {:middleware, Elixir.Absinthe.Middleware.Async, task}
         end
       end
@@ -70,7 +74,6 @@ defmodule Absinthe.Middleware.AsyncTest do
 
     assert {:ok, %{data: %{"asyncBareThing" => "bare task"}}} == Absinthe.run(doc, Schema)
   end
-
 
   test "can resolve a field using the normal test helper" do
     doc = """
