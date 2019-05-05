@@ -115,6 +115,60 @@ const client = new ApolloClient({
 });
 ```
 
+### Reconnecting the websocket link
+
+You may find that you periodically need to reconnect the websocket with different parameters. The most common case for this is when a user logs in or logs out; you will then want to refresh their subscriptions to reflect the new authentication state. You can accomplish this by invoking `phoenixSocket.conn.close();` from your application code whenever the reconnection needs to happen. Phoenix will notice the closed connection and automatically reconnect. It is important that you provide a function that returns the websocket parameters to the socket `params` option. If you provide the parameters directly as an object, the new parameters will not be picked up when the websocket reconnects, but if you provide a function, Phoenix invokes the function on each connection to obtain the parameters.
+
+Note that this solution (reconnecting with `phoenixSocket.conn.close();`) is somewhat unstable because it relies upon an implementation detail of the Phoenix socket. Ideally, a future version of the Phoenix package might add a public API method to reconnect the websocket with new parameters.
+
+```javascript
+import ApolloClient from "apollo-client";
+import * as AbsintheSocket from "@absinthe/socket";
+import { createAbsintheSocketLink } from "@absinthe/socket-apollo-link";
+import { Socket as PhoenixSocket } from "phoenix";
+import { InMemoryCache } from "apollo-cache-inmemory";
+import Cookies from "js-cookie";
+
+// Create a standard Phoenix websocket connection. If you need
+// to provide additional params, like an authentication token,
+// you can configure them in the `params` option.
+//
+// If you plan to reconnect the socket with updated parameters,
+// you must provide a function to the `params` option. If you
+// provide the parameters directly as an object, the updated
+// parameters will not be picked up when the socket reconnects.
+const phoenixSocket = new PhoenixSocket("ws://localhost:4000/socket", {
+  params: () => {
+    if (Cookies.get("token")) {
+      return { token: Cookies.get("token") };
+    } else {
+      return {};
+    }
+  }
+});
+
+// Wrap the Phoenix socket in an AbsintheSocket.
+const absintheSocket = AbsintheSocket.create(phoenixSocket);
+
+// Create an Apollo link from the AbsintheSocket instance.
+const link = createAbsintheSocketLink(absintheSocket);
+
+// Apollo also requires you to provide a cache implementation
+// for caching query results. The InMemoryCache is suitable
+// for most use cases.
+const cache = new InMemoryCache();
+
+// Create the client.
+const client = new ApolloClient({
+  link,
+  cache
+});
+
+// Later in your application code, when you need to reconnect
+// the socket.
+phoenixSocket.conn.close();
+```
+
 ## Using both HTTP and websocket links
 
 A common configuration for Apollo client applications is to use both HTTP and websocket links -- HTTP for queries and mutations, and a websocket for subscriptions. We can implement this in our client using [directional composition with Apollo's `split` helper](https://www.apollographql.com/docs/link/composition#directional).
