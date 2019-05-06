@@ -1,6 +1,5 @@
 defmodule Absinthe.Pipeline.BatchResolver do
   alias Absinthe.Phase.Document.Execution
-  alias Absinthe.Phase
 
   require Logger
 
@@ -9,6 +8,7 @@ defmodule Absinthe.Pipeline.BatchResolver do
   def run([], _), do: []
 
   def run([bp | _] = blueprints, options) do
+    {initial_phases, options} = Keyword.pop(options, :initial_phases, [])
     schema = Keyword.fetch!(options, :schema)
     plugins = schema.plugins()
 
@@ -25,10 +25,10 @@ defmodule Absinthe.Pipeline.BatchResolver do
         result: nil
     }
 
-    resolution_phase = {Execution.Resolution, [plugin_callbacks: false] ++ options}
-    resolution_phases = [{Phase.Telemetry, [:subscription, :publish, :start]}, resolution_phase]
+    resolution_phase = [{Execution.Resolution, [plugin_callbacks: false] ++ options}]
+    phases = initial_phases ++ [resolution_phase]
 
-    do_resolve(blueprints, resolution_phases, exec, plugins, resolution_phase, options)
+    do_resolve(blueprints, phases, exec, plugins, resolution_phase, options)
   end
 
   defp init(blueprints, attr) do
