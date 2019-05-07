@@ -536,6 +536,7 @@ defmodule Absinthe.Schema.Notation do
     |> recordable!(:resolve, @placement[:resolve])
 
     quote do
+      meta :absinthe_telemetry, true
       middleware Absinthe.Resolution, unquote(func_ast)
     end
   end
@@ -1684,8 +1685,12 @@ defmodule Absinthe.Schema.Notation do
     [{Absinthe.Middleware.MapGet, identifier}]
   end
 
-  def __ensure_middleware__(middleware, _field, _object) do
-    middleware
+  def __ensure_middleware__(middleware, field, _object) do
+    if Absinthe.Type.meta(field, :absinthe_telemetry) do
+      [{Absinthe.Middleware.Telemetry, []} | middleware]
+    else
+      middleware
+    end
   end
 
   defp reverse_with_descs(attrs, descs, acc \\ [])

@@ -45,6 +45,8 @@ defmodule Absinthe.Pipeline do
 
     [
       # Parse Document
+      Phase.Init,
+      {Phase.Telemetry, [:execute, :operation, :start]},
       {Phase.Parse, options},
       # Convert to Blueprint
       {Phase.Blueprint, options},
@@ -104,7 +106,8 @@ defmodule Absinthe.Pipeline do
       {Phase.Subscription.SubscribeSelf, options},
       {Phase.Document.Execution.Resolution, options},
       # Format Result
-      Phase.Document.Result
+      Phase.Document.Result,
+      {Phase.Telemetry, [:execute, :operation, options]}
     ]
   end
 

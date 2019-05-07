@@ -544,6 +544,54 @@ defmodule Absinthe.Execution.SubscriptionTest do
     end
   end
 
+  @query """
+  subscription ($clientId: ID!) {
+    thing(clientId: $clientId)
+  }
+  """
+  test "subscription executes telemetry events", context do
+    client_id = "abc"
+
+    :telemetry.attach_many(
+      context.test,
+      [
+        [:absinthe, :execute, :operation, :start],
+        [:absinthe, :execute, :operation],
+        [:absinthe, :subscription, :publish, :start],
+        [:absinthe, :subscription, :publish]
+      ],
+      fn event, measurements, metadata, config ->
+        send(self(), {event, measurements, metadata, config})
+      end,
+      %{}
+    )
+
+    assert {:ok, %{"subscribed" => topic}} =
+             run(
+               @query,
+               Schema,
+               variables: %{"clientId" => client_id},
+               context: %{pubsub: PubSub}
+             )
+
+    assert_receive {[:absinthe, :execute, :operation, :start], _, %{id: id} = _meta, _config}
+    assert_receive {[:absinthe, :execute, :operation], _, %{id: ^id} = _meta, _config}
+
+    Absinthe.Subscription.publish(PubSub, "foo", thing: client_id)
+    assert_receive({:broadcast, msg})
+
+    assert %{
+             event: "subscription:data",
+             result: %{data: %{"thing" => "foo"}},
+             topic: topic
+           } == msg
+
+    assert_receive {[:absinthe, :subscription, :publish, :start], _, %{id: id} = _meta, _config}
+    assert_receive {[:absinthe, :subscription, :publish], _, %{id: ^id} = _meta, _config}
+
+    :telemetry.detach(context.test)
+  end
+
   defp run(query, schema, opts \\ []) do
     opts = Keyword.update(opts, :context, %{pubsub: PubSub}, &Map.put(&1, :pubsub, PubSub))
 
