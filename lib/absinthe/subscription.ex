@@ -55,7 +55,7 @@ defmodule Absinthe.Subscription do
   ## Examples
 
   Note: As with all subscription examples if you're using Absinthe.Phoenix `pubsub`
-  will be `MyApp.Web.Endpoint`.
+  will be `MyAppWeb.Endpoint`.
 
   ```
   Absinthe.Subscription.publish(pubsub, user, [new_users: user.account_id])
