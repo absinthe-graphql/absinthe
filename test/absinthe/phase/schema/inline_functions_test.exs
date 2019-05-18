@@ -1,5 +1,5 @@
 defmodule Absinthe.Phase.Schema.InlineFunctionsTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   defmodule Schema do
     use Absinthe.Schema.Notation

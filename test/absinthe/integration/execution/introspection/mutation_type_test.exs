@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Execution.Introspection.MutationTypeTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   @query """
   query { __schema { mutationType { name kind } } }

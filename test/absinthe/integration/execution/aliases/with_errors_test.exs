@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Execution.Aliases.WithErrorsTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   @query """
   mutation { foo: failingThing(type: WITH_CODE) { name } }

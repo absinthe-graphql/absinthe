@@ -1,5 +1,5 @@
 defmodule Absinthe.Execution.SubscriptionTest do
-  use ExUnit.Case
+  use Absinthe.Case
 
   import ExUnit.CaptureLog
 
@@ -159,7 +159,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
     client_id = "abc"
 
     assert {:ok, %{"subscribed" => topic}} =
-             run(
+             run_subscription(
                @query,
                Schema,
                variables: %{"clientId" => client_id},
@@ -186,7 +186,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
     client_id = "abc"
 
     assert {:ok, %{"subscribed" => topic}} =
-             run(
+             run_subscription(
                @query,
                Schema,
                variables: %{"clientId" => client_id},
@@ -207,7 +207,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
   """
   test "schema can provide multiple topics to subscribe to" do
     assert {:ok, %{"subscribed" => topic}} =
-             run(
+             run_subscription(
                @query,
                Schema,
                variables: %{},
@@ -240,7 +240,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
   """
   test "unsubscription works when multiple topics are provided" do
     assert {:ok, %{"subscribed" => topic}} =
-             run(
+             run_subscription(
                @query,
                Schema,
                variables: %{},
@@ -279,7 +279,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
                  }
                ]
              }
-           } == run(@query, Schema, variables: %{"clientId" => "abc"}, context: %{pubsub: PubSub})
+           } == run_subscription(@query, Schema, variables: %{"clientId" => "abc"}, context: %{pubsub: PubSub})
   end
 
   @query """
@@ -291,7 +291,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
     id = "1"
 
     assert {:ok, %{"subscribed" => topic}} =
-             run(
+             run_subscription(
                @query,
                Schema,
                variables: %{"userId" => id},
@@ -305,7 +305,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
     """
 
     assert {:ok, %{data: _}} =
-             run(mutation, Schema,
+             run_subscription(mutation, Schema,
                variables: %{"userId" => id},
                context: %{pubsub: PubSub}
              )
@@ -326,7 +326,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
   """
   test "can return an error tuple from the topic function" do
     assert {:ok, %{errors: [%{locations: [%{column: 3, line: 2}], message: "unauthorized"}]}} ==
-             run(
+             run_subscription(
                @query,
                Schema,
                variables: %{"clientId" => "abc"},
@@ -340,7 +340,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
   }
   """
   test "topic function receives a document" do
-    assert {:ok, %{"subscribed" => _topic}} = run(@query, Schema, context: %{pubsub: PubSub})
+    assert {:ok, %{"subscribed" => _topic}} = run_subscription(@query, Schema, context: %{pubsub: PubSub})
   end
 
   @query """
@@ -350,7 +350,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
   """
   test "stringifies topics" do
     assert {:ok, %{"subscribed" => topic}} =
-             run(@query, Schema, variables: %{"clientId" => "1"}, context: %{pubsub: PubSub})
+             run_subscription(@query, Schema, variables: %{"clientId" => "1"}, context: %{pubsub: PubSub})
 
     Absinthe.Subscription.publish(PubSub, "foo", thing: 1)
 
@@ -364,8 +364,8 @@ defmodule Absinthe.Execution.SubscriptionTest do
   end
 
   test "isn't tripped up if one of the subscription docs raises" do
-    assert {:ok, %{"subscribed" => _}} = run("subscription { raises }", Schema)
-    assert {:ok, %{"subscribed" => topic}} = run("subscription { thing(clientId: \"*\")}", Schema)
+    assert {:ok, %{"subscribed" => _}} = run_subscription("subscription { raises }", Schema)
+    assert {:ok, %{"subscribed" => topic}} = run_subscription("subscription { thing(clientId: \"*\")}", Schema)
 
     error_log =
       capture_log(fn ->
@@ -387,11 +387,11 @@ defmodule Absinthe.Execution.SubscriptionTest do
     opts = [context: %{test_pid: self()}]
 
     assert {:ok, %{"subscribed" => doc1}} =
-             run("subscription { user { group { name } id} }", Schema, opts)
+             run_subscription("subscription { user { group { name } id} }", Schema, opts)
 
     # different docs required for test, otherwise they get deduplicated from the start
     assert {:ok, %{"subscribed" => doc2}} =
-             run("subscription { user { group { name } id name} }", Schema, opts)
+             run_subscription("subscription { user { group { name } id name} }", Schema, opts)
 
     user = %{id: "1", name: "Alicia", group: %{name: "Elixir Users"}}
 
@@ -411,12 +411,12 @@ defmodule Absinthe.Execution.SubscriptionTest do
     ctx1 = %{test_pid: self(), user: 1}
 
     assert {:ok, %{"subscribed" => doc1}} =
-             run("subscription { user { group { name } id} }", Schema, context: ctx1)
+             run_subscription("subscription { user { group { name } id} }", Schema, context: ctx1)
 
     ctx2 = %{test_pid: self(), user: 2}
     # different docs required for test, otherwise they get deduplicated from the start
     assert {:ok, %{"subscribed" => doc2}} =
-             run("subscription { user { group { name } id name} }", Schema, context: ctx2)
+             run_subscription("subscription { user { group { name } id name} }", Schema, context: ctx2)
 
     user = %{id: "1", name: "Alicia", group: %{name: "Elixir Users"}}
 
@@ -440,10 +440,10 @@ defmodule Absinthe.Execution.SubscriptionTest do
     """
     test "subscriptions with the same context_id and same source document have the same subscription_id" do
       assert {:ok, %{"subscribed" => doc1}} =
-               run(@query, Schema, context: %{context_id: "logged-in"})
+               run_subscription(@query, Schema, context: %{context_id: "logged-in"})
 
       assert {:ok, %{"subscribed" => doc2}} =
-               run(@query, Schema, context: %{context_id: "logged-in"})
+               run_subscription(@query, Schema, context: %{context_id: "logged-in"})
 
       assert doc1 == doc2
     end
@@ -455,22 +455,22 @@ defmodule Absinthe.Execution.SubscriptionTest do
     """
     test "subscriptions with different context_id but the same source document have different subscription_ids" do
       assert {:ok, %{"subscribed" => doc1}} =
-               run(@query, Schema, context: %{context_id: "logged-in"})
+               run_subscription(@query, Schema, context: %{context_id: "logged-in"})
 
       assert {:ok, %{"subscribed" => doc2}} =
-               run(@query, Schema, context: %{context_id: "not-logged-in"})
+               run_subscription(@query, Schema, context: %{context_id: "not-logged-in"})
 
       assert doc1 != doc2
     end
 
     test "subscriptions with same context_id but different source document have different subscription_ids" do
       assert {:ok, %{"subscribed" => doc1}} =
-               run("subscription { otherUser { id name } }", Schema,
+               run_subscription("subscription { otherUser { id name } }", Schema,
                  context: %{context_id: "logged-in"}
                )
 
       assert {:ok, %{"subscribed" => doc2}} =
-               run("subscription { otherUser { id } }", Schema,
+               run_subscription("subscription { otherUser { id } }", Schema,
                  context: %{context_id: "logged-in"}
                )
 
@@ -479,12 +479,12 @@ defmodule Absinthe.Execution.SubscriptionTest do
 
     test "subscriptions with different context_id and different source document have different subscription_ids" do
       assert {:ok, %{"subscribed" => doc1}} =
-               run("subscription { otherUser { id name } }", Schema,
+               run_subscription("subscription { otherUser { id name } }", Schema,
                  context: %{context_id: "logged-in"}
                )
 
       assert {:ok, %{"subscribed" => doc2}} =
-               run("subscription { otherUser { id } }", Schema,
+               run_subscription("subscription { otherUser { id } }", Schema,
                  context: %{context_id: "not-logged-in"}
                )
 
@@ -496,13 +496,13 @@ defmodule Absinthe.Execution.SubscriptionTest do
     """
     test "subscriptions with the same variables & document have the same subscription_ids" do
       assert {:ok, %{"subscribed" => doc1}} =
-               run(@query, Schema,
+               run_subscription(@query, Schema,
                  variables: %{"id" => "123"},
                  context: %{context_id: "logged-in"}
                )
 
       assert {:ok, %{"subscribed" => doc2}} =
-               run(@query, Schema,
+               run_subscription(@query, Schema,
                  variables: %{"id" => "123"},
                  context: %{context_id: "logged-in"}
                )
@@ -515,13 +515,13 @@ defmodule Absinthe.Execution.SubscriptionTest do
     """
     test "subscriptions with different variables but same document have different subscription_ids" do
       assert {:ok, %{"subscribed" => doc1}} =
-               run(@query, Schema,
+               run_subscription(@query, Schema,
                  variables: %{"id" => "123"},
                  context: %{context_id: "logged-in"}
                )
 
       assert {:ok, %{"subscribed" => doc2}} =
-               run(@query, Schema,
+               run_subscription(@query, Schema,
                  variables: %{"id" => "456"},
                  context: %{context_id: "logged-in"}
                )
@@ -531,12 +531,12 @@ defmodule Absinthe.Execution.SubscriptionTest do
 
     test "document_id can be provided to override the default logic for deriving document_id" do
       assert {:ok, %{"subscribed" => doc1}} =
-               run("subscription { otherUser { id name } }", Schema,
+               run_subscription("subscription { otherUser { id name } }", Schema,
                  context: %{context_id: "logged-in", document_id: "abcdef"}
                )
 
       assert {:ok, %{"subscribed" => doc2}} =
-               run("subscription { otherUser { name id } }", Schema,
+               run_subscription("subscription { otherUser { name id } }", Schema,
                  context: %{context_id: "logged-in", document_id: "abcdef"}
                )
 
@@ -567,7 +567,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
     )
 
     assert {:ok, %{"subscribed" => topic}} =
-             run(
+             run_subscription(
                @query,
                Schema,
                variables: %{"clientId" => client_id},
@@ -592,10 +592,10 @@ defmodule Absinthe.Execution.SubscriptionTest do
     :telemetry.detach(context.test)
   end
 
-  defp run(query, schema, opts \\ []) do
+  defp run_subscription(query, schema, opts \\ []) do
     opts = Keyword.update(opts, :context, %{pubsub: PubSub}, &Map.put(&1, :pubsub, PubSub))
 
-    case Absinthe.run(query, schema, opts) do
+    case run(query, schema, opts) do
       {:ok, %{"subscribed" => topic}} = val ->
         PubSub.subscribe(topic)
         val

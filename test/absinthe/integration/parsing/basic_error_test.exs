@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Parsing.BasicErrorTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   @query """
   {

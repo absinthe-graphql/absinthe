@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Execution.Aliases.AliasTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   # LEAVE ME
 

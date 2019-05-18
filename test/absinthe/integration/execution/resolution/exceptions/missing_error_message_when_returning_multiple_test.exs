@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Execution.Resolution.Exceptions.MissingErrorMessageWhenReturningMultipleTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   @query """
   mutation { failingThing(type: MULTIPLE_WITHOUT_MESSAGE) { name } }

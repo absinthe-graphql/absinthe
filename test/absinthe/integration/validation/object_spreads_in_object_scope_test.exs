@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Validation.ObjectSpreadsInObjectScopeTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   @query """
   query Q {
