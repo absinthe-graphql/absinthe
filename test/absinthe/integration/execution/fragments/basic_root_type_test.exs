@@ -15,6 +15,6 @@ defmodule Elixir.Absinthe.Integration.Execution.Fragments.BasicRootTypeTest do
 
   test "scenario #1" do
     assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}}} ==
-             Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+             Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, [])
   end
 end

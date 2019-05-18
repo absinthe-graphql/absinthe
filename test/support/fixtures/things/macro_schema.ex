@@ -1,4 +1,4 @@
-defmodule Absinthe.Fixtures.ThingsSchema do
+defmodule Absinthe.Fixtures.Things.MacroSchema do
   use Absinthe.Schema
 
   @db %{

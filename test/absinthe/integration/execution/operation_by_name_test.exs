@@ -16,7 +16,7 @@ defmodule Elixir.Absinthe.Integration.Execution.OperationByNameTest do
 
   test "scenario #1" do
     assert {:ok, %{data: %{"thing" => %{"name" => "Foo"}}}} ==
-             Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema,
+             Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema,
                operation_name: "ThingFoo",
                variables: %{"id" => "foo"}
              )
@@ -31,7 +31,7 @@ defmodule Elixir.Absinthe.Integration.Execution.OperationByNameTest do
                     "Must provide a valid operation name if query contains multiple operations."
                 }
               ]
-            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+            }} == Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, [])
   end
 
   test "scenario #3" do
@@ -43,12 +43,12 @@ defmodule Elixir.Absinthe.Integration.Execution.OperationByNameTest do
                     "Must provide a valid operation name if query contains multiple operations."
                 }
               ]
-            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, operation_name: "invalid")
+            }} == Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, operation_name: "invalid")
   end
 
   test "scenario #4" do
     assert {:ok, %{data: %{"thing" => %{"name" => "Bar"}}}} ==
-             Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, operation_name: "ThingBar")
+             Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, operation_name: "ThingBar")
   end
 
   @query """
@@ -82,6 +82,6 @@ defmodule Elixir.Absinthe.Integration.Execution.OperationByNameTest do
                 }
               ]
             }} ==
-             Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, operation_name: "Second")
+             Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, operation_name: "Second")
   end
 end

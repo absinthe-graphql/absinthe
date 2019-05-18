@@ -11,7 +11,7 @@ defmodule Elixir.Absinthe.Integration.Execution.Resolution.Exceptions.BadMatchTe
 
   test "scenario #1" do
     assert_raise(Absinthe.ExecutionError, fn ->
-      Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+      Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, [])
     end)
   end
 end

@@ -12,6 +12,6 @@ defmodule Elixir.Absinthe.Integration.Execution.InputObjectTest do
 
   test "scenario #1" do
     assert {:ok, %{data: %{"updateThing" => %{"name" => "Foo", "value" => 100}}}} ==
-             Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+             Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, [])
   end
 end

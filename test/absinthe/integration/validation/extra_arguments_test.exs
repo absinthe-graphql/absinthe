@@ -19,6 +19,6 @@ defmodule Elixir.Absinthe.Integration.Validation.ExtraArgumentsTest do
                   locations: [%{column: 20, line: 2}]
                 }
               ]
-            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+            }} == Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, [])
   end
 end

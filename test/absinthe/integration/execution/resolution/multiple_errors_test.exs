@@ -13,6 +13,6 @@ defmodule Elixir.Absinthe.Integration.Execution.Resolution.MultipleErrorsTest do
                 %{message: "one", path: ["failingThing"], locations: [%{column: 12, line: 1}]},
                 %{message: "two", path: ["failingThing"], locations: [%{column: 12, line: 1}]}
               ]
-            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+            }} == Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, [])
   end
 end

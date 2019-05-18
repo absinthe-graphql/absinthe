@@ -18,6 +18,6 @@ defmodule Elixir.Absinthe.Integration.Validation.Variables.Unused.WithOperationN
                   locations: [%{column: 23, line: 1}, %{column: 1, line: 1}]
                 }
               ]
-            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+            }} == Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, [])
   end
 end

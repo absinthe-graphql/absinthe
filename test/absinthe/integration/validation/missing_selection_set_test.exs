@@ -17,6 +17,6 @@ defmodule Elixir.Absinthe.Integration.Validation.MissingSelectionSetTest do
                   locations: [%{column: 3, line: 2}]
                 }
               ]
-            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+            }} == Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, [])
   end
 end

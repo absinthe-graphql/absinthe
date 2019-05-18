@@ -116,6 +116,7 @@ defmodule Absinthe.Pipeline do
   def for_schema(schema, _options \\ []) do
     [
       Phase.Schema.TypeImports,
+      Phase.Schema.ApplyDeclaration,
       Phase.Schema.Introspection,
       {Phase.Schema.Decorate, [schema: schema]},
       Phase.Schema.NormalizeReferences,

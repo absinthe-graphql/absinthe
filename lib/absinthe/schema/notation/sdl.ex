@@ -47,25 +47,7 @@ defmodule Absinthe.Schema.Notation.SDL do
 
   defp put_ref(node, ref, opts), do: do_put_ref(node, ref, opts)
 
-  # @field_types [
-  #   Blueprint.Schema.FieldDefinition,
-  #   Blueprint.Schema.EnumValueDefinition,
-  #   Blueprint.Schema.InputValueDefinition
-  # ]
-
-  # TODO:  Which else of these need the conversions?
-  # Blueprint.Schema.DirectiveDefinition,
-  # Blueprint.Schema.EnumTypeDefinition,
-  # Blueprint.Schema.InputObjectTypeDefinition,
-  # Blueprint.Schema.InterfaceTypeDefinition,
-  # Blueprint.Schema.ObjectTypeDefinition,
-  # Blueprint.Schema.ScalarTypeDefinition,
-  # Blueprint.Schema.UnionTypeDefinition
-  # Blueprint.Schema.EnumValueDefinition
-  # Blueprint.Schema.InputValueDefinition
-
-  defp do_put_ref(%_{__reference__: nil, name: name} = node, ref, opts) do
-    # adapter = Keyword.get(opts, :adapter, Absinthe.Adapter.LanguageConventions)
+  defp do_put_ref(%_{__reference__: nil} = node, ref, opts) do
 
     ref =
       case opts[:path] do
@@ -76,7 +58,7 @@ defmodule Absinthe.Schema.Notation.SDL do
           put_in(ref.location, %{file: {:unquote, [], [path]}, line: node.source_location.line})
       end
 
-    %{node | __reference__: ref, name: name}
+    %{node | __reference__: ref}
   end
 
   defp do_put_ref(node, _ref, _opts), do: node

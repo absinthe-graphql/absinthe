@@ -77,7 +77,7 @@ defmodule Absinthe.Phase.Document.VariablesTest do
       ]
     }
 
-    assert {:ok, expected} == Absinthe.run(doc, Absinthe.Fixtures.ThingsSchema)
+    assert {:ok, expected} == Absinthe.run(doc, Absinthe.Fixtures.Things.MacroSchema)
   end
 
   def input(query, values) do

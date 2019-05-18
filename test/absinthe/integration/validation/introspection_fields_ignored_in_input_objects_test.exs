@@ -23,7 +23,7 @@ defmodule Elixir.Absinthe.Integration.Validation.IntrospectionFieldsIgnoredInInp
             }} ==
              Absinthe.run(
                @query,
-               Absinthe.Fixtures.ThingsSchema,
+               Absinthe.Fixtures.Things.MacroSchema,
                variables: %{"input" => %{"__typename" => "foo", "value" => 100}}
              )
   end
