@@ -12,7 +12,9 @@ defmodule Absinthe.Blueprint.Directive do
     # Added by phases
     schema_node: nil,
     flags: %{},
-    errors: []
+    errors: [],
+    __reference__: nil,
+    __private__: []
   ]
 
   @type t :: %__MODULE__{
@@ -21,7 +23,9 @@ defmodule Absinthe.Blueprint.Directive do
           source_location: nil | Blueprint.SourceLocation.t(),
           schema_node: nil | Absinthe.Type.Directive.t(),
           flags: Blueprint.flags_t(),
-          errors: [Phase.Error.t()]
+          errors: [Phase.Error.t()],
+          __reference__: nil,
+          __private__: []
         }
 
   @spec expand(t, Blueprint.node_t()) :: {t, map}

@@ -1,5 +1,5 @@
-defmodule Absinthe.Phase.Validation.KnownDirectivesTest do
-  @phase Absinthe.Phase.Validation.KnownDirectives
+defmodule Absinthe.Phase.Document.Validation.KnownDirectivesTest do
+  @phase Absinthe.Phase.Document.Validation.KnownDirectives
 
   use Absinthe.ValidationPhaseCase,
     phase: @phase,

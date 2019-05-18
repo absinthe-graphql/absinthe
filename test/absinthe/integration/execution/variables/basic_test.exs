@@ -20,11 +20,4 @@ defmodule Elixir.Absinthe.Integration.Execution.Variables.BasicTest do
     end
   end
 
-  defp schema_implementations(base) do
-    [
-      Module.safe_concat(base, MacroSchema),
-      Module.safe_concat(base, SDLSchema)
-    ]
-  end
-
 end
