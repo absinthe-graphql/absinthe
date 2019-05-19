@@ -75,7 +75,7 @@ defmodule Absinthe.Phase.Schema.Validation.KnownDirectives do
 
     %Phase.Error{
       phase: __MODULE__,
-      message: "May not be used on #{placement_name}.",
+      message: "Directive `#{node.name}' may not be used on #{placement_name}.",
       locations: [node.__reference__.location]
     }
   end

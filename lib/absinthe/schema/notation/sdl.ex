@@ -15,7 +15,6 @@ defmodule Absinthe.Schema.Notation.SDL do
         doc.input.definitions
         |> Enum.map(&Absinthe.Blueprint.Draft.convert(&1, doc))
         |> Enum.map(&put_ref(&1, ref, opts))
-        |> IO.inspect
         |> Enum.map(fn type -> %{type | module: module} end)
 
       {:ok, definitions}
@@ -31,6 +30,11 @@ defmodule Absinthe.Schema.Notation.SDL do
       other ->
         other
     end
+  end
+
+  defp put_ref(%{fields: fields, directives: directives} = node, ref, opts) do
+    %{node | fields: Enum.map(fields, &put_ref(&1, ref, opts)), directives: Enum.map(directives, &put_ref(&1, ref, opts))}
+    |> do_put_ref(ref, opts)
   end
 
   defp put_ref(%{fields: fields} = node, ref, opts) do

@@ -18,6 +18,7 @@ defmodule Absinthe.Blueprint.Directive do
   ]
 
   @type t :: %__MODULE__{
+
           name: String.t(),
           arguments: [Blueprint.Input.Argument.t()],
           source_location: nil | Blueprint.SourceLocation.t(),

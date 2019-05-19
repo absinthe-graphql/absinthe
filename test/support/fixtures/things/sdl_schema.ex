@@ -42,35 +42,35 @@ defmodule Absinthe.Fixtures.Things.SDLSchema do
       id: String!,
 
       "This is a deprecated arg"
-      deprecatedArg: String @deprecate,
+      deprecatedArg: String @deprecated,
 
       "This is a non-null deprecated arg"
-      deprecatedNonNullArg: String! @deprecate,
+      deprecatedNonNullArg: String! @deprecated,
 
       "This is a deprecated arg with a reason"
-      deprecatedArgWithReason: String @deprecate(reason: "reason"),
+      deprecatedArgWithReason: String @deprecated(reason: "reason"),
 
       "This is a non-null deprecated arg with a reason"
-      deprecatedNonNullArgWithReason: String! @deprecate(reason: "reason")
+      deprecatedNonNullArgWithReason: String! @deprecated(reason: "reason")
     ): Thing
 
     deprecatedThing(
       "id of the thing"
       id: String!
-    ): Thing @deprecate
+    ): Thing @deprecated
 
     deprecatedThingWithReason(
       "id of the thing"
       id: String!
-    ): Thing @deprecate(reason: "use `thing' instead")
+    ): Thing @deprecated(reason: "use `thing' instead")
   }
 
   "A thing as input"
   input InputThing {
     value: Int
-    deprecatedField: String @deprecate,
-    deprecatedFieldWithReason: String @deprecate(reason: "reason")
-    deprecatedNonNullField: String! @deprecate
+    deprecatedField: String @deprecated,
+    deprecatedFieldWithReason: String @deprecated(reason: "reason")
+    deprecatedNonNullField: String! @deprecated
   }
 
   "A thing"

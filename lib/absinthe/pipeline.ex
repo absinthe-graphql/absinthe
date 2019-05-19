@@ -128,6 +128,7 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.Validation.NoCircularFieldImports,
       Phase.Schema.Validation.Result,
       Phase.Schema.FieldImports,
+      Phase.Schema.AttachDirectives,
       Phase.Schema.Validation.KnownDirectives,
       Phase.Schema.Validation.DefaultEnumValuePresent,
       Phase.Schema.Validation.InputOuputTypesCorrectlyPlaced,

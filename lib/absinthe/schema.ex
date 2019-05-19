@@ -134,7 +134,12 @@ defmodule Absinthe.Schema do
         []
       end
 
-      defoverridable(context: 1, middleware: 3, plugins: 0, decorations: 2)
+      @doc false
+      def sdl_directives(directives) do
+        directives
+      end
+
+      defoverridable(context: 1, middleware: 3, plugins: 0, decorations: 2, sdl_directives: 1)
     end
   end
 
