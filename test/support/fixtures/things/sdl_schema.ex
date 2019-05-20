@@ -99,4 +99,88 @@ defmodule Absinthe.Fixtures.Things.SDLSchema do
 
   """
 
+  @db %{
+    "foo" => %{id: "foo", name: "Foo", value: 4},
+    "bar" => %{id: "bar", name: "Bar", value: 5}
+  }
+
+  def decorations(%Absinthe.Blueprint{}, _) do
+    %{
+      mutation: %{
+        failing_thing: [
+          resolve: &__MODULE__.resolve_failing_thing/3
+        ]
+      },
+      query: %{
+        bad_resolution: [
+          resolve: &__MODULE__.resolve_bad/3
+        ],
+        number: [
+          resolve: &__MODULE__.resolve_number/3
+        ],
+        thing_by_context: [
+          resolve: &__MODULE__.resolve_things_by_context/3
+        ],
+        things: [
+          resolve: &__MODULE__.resolve_things/3
+        ],
+        thing: [
+          resolve: &__MODULE__.resolve_thing/3
+        ],
+        deprecated_thing: [
+          resolve: &__MODULE__.resolve_thing/3
+        ],
+        deprecated_thing_with_reason: [
+          resolve: &__MODULE__.resolve_thing/3
+        ]
+      }
+    }
+  end
+
+  def decorations(_node, _ancestors) do
+    []
+  end
+
+  def resolve_failing_thing(_, %{type: :multiple}, _) do
+    {:error, ["one", "two"]}
+  end
+
+  def resolve_failing_thing(_, %{type: :with_code}, _) do
+    {:error, message: "Custom Error", code: 42}
+  end
+
+  def resolve_failing_thing(_, %{type: :without_message}, _) do
+    {:error, code: 42}
+  end
+
+  def resolve_failing_thing(_, %{type: :multiple_with_code}, _) do
+    {:error, [%{message: "Custom Error 1", code: 1}, %{message: "Custom Error 2", code: 2}]}
+  end
+
+  def resolve_failing_thing(_, %{type: :multiple_without_message}, _) do
+    {:error, [%{message: "Custom Error 1", code: 1}, %{code: 2}]}
+  end
+
+  def resolve_bad(_, _, _) do
+    :not_expected
+  end
+
+  def resolve_number(_, %{val: v}, _), do: {:ok, v |> to_string}
+  def resolve_number(_, args, _), do: {:error, "got #{inspect(args)}"}
+
+  def resolve_things_by_context(_, _, %{context: %{thing: id}}) do
+    {:ok, @db |> Map.get(id)}
+  end
+  def resolve_things_by_context(_, _, _) do
+      {:error, "No :id context provided"}
+  end
+
+  def resolve_things(_, _, _) do
+    {:ok, @db |> Map.values() |> Enum.sort_by(& &1.id)}
+  end
+
+  def resolve_thing(_, %{id: id}, _) do
+    {:ok, @db |> Map.get(id)}
+  end
+
 end
