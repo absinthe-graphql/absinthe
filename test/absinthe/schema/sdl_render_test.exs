@@ -9,6 +9,12 @@ defmodule SdlRenderTest do
       name: String!
     }
 
+    "Sort this thing"
+    input SorterInput {
+      "By this field"
+      field: String!
+    }
+
     "One or the other"
     union SearchResult = Post | User
 
@@ -19,7 +25,7 @@ defmodule SdlRenderTest do
         times: Int
       ): [Category!]!
       posts: Post
-      search(query: String!): [SearchResult]
+      search(limit: Int, sort: SorterInput!): [SearchResult]
     }
 
     \"\"\"
@@ -171,6 +177,24 @@ defmodule SdlRenderTest do
         "type",
         name,
         join_with(field_docs, line())
+      )
+    )
+  end
+
+  def render(%{
+        "kind" => "INPUT_OBJECT",
+        "name" => name,
+        "description" => description,
+        "inputFields" => input_fields
+      }) do
+    input_field_docs = Enum.map(input_fields, &render/1)
+
+    maybe_description(
+      description,
+      block(
+        "input",
+        name,
+        join_with(input_field_docs, line())
       )
     )
   end
