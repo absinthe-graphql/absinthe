@@ -101,43 +101,41 @@ defmodule SdlRenderTest do
     concat([render(type), "!"])
   end
 
-  def render(%{"kind" => "SCALAR", "name" => name}) when name in @builtin do
+  def render(%{"kind" => "SCALAR", "name" => name} = thing) when name in @builtin do
     empty()
   end
 
+  def render(%{"defaultValue" => _, "name" => name, "type" => arg_type} = arg) do
+    IO.inspect(arg, label: "ARG")
+
+    concat([
+      name,
+      ": ",
+      render(arg_type)
+    ])
+  end
+
+  def render(%{"name" => name, "args" => args, "type" => field_type} = field) do
+    IO.inspect(field, label: "FIELD")
+
+    arg_docs = Enum.map(args, &render/1)
+
+    concat([
+      name,
+      join_args(arg_docs),
+      ": ",
+      render(field_type)
+    ])
+  end
+
   def render(%{"kind" => "OBJECT", "name" => name, "fields" => fields}) do
-    field_lines =
-      Enum.map(fields, fn %{
-                            "name" => name,
-                            "args" => args,
-                            "type" => field_type
-                          } = field ->
-        IO.inspect(field, label: "FIELD")
-
-        arg_docs =
-          Enum.map(args, fn %{"name" => name, "type" => arg_type} = arg ->
-            IO.inspect(arg, label: "ARG")
-
-            concat([
-              name,
-              ": ",
-              render(arg_type)
-            ])
-          end)
-
-        concat([
-          name,
-          join_args(arg_docs),
-          ": ",
-          render(field_type)
-        ])
-      end)
+    field_docs = Enum.map(fields, &render/1)
 
     fields =
       block(
         "type",
         name,
-        join_lines(field_lines)
+        join_lines(field_docs)
       )
   end
 
