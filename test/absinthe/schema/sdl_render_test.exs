@@ -59,6 +59,7 @@ defmodule SdlRenderTest do
 
   issues:
     - schema definition order is not respected?
+    - default value is an `inspect`ed blueprint struct
 
   ```
   schema {
