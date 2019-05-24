@@ -4,8 +4,6 @@ defmodule SdlRenderTest do
   defmodule TestSchema do
     use Absinthe.Schema
 
-    # Working based on import_sdl_test.exs
-
     @sdl """
     type User {
       name: String!
@@ -19,11 +17,9 @@ defmodule SdlRenderTest do
         category: Category!
         "The number of times"
         times: Int
-      ): [Category]!
+      ): [Category!]!
       posts: Post
-      search(
-        query: String!
-      ): [SearchResult]
+      search(query: String!): [SearchResult]
     }
 
     \"\"\"
@@ -47,6 +43,8 @@ defmodule SdlRenderTest do
   import Inspect.Algebra
 
   @moduledoc """
+  https://wehavefaces.net/graphql-shorthand-notation-cheatsheet-17cd715861b6
+
   https://github.com/graphql/graphql-js/blob/master/src/utilities/schemaPrinter.js
 
   skips:
@@ -149,10 +147,11 @@ defmodule SdlRenderTest do
         "type" => field_type
       }) do
     arg_docs = Enum.map(args, &render/1)
+    any_descriptions = Enum.any?(args, & &1["description"])
 
     concat([
       name,
-      maybe_args(arg_docs),
+      maybe_args(arg_docs, any_descriptions),
       ": ",
       render(field_type)
     ])
@@ -238,14 +237,12 @@ defmodule SdlRenderTest do
     )
   end
 
-  def maybe_args([]) do
+  def maybe_args([], _) do
     empty()
   end
 
-  def maybe_args(docs) do
-    # TODO:
-    #  figure out 1 line vs multi-line args
-    #  nest(:break), break(), etc
+  # Split to multi-line if there are any descriptions
+  def maybe_args(docs, true) do
     concat([
       "(",
       nest(
@@ -256,6 +253,15 @@ defmodule SdlRenderTest do
         2
       ),
       line(),
+      ")"
+    ])
+  end
+
+  # Stick to single line if there are no descriptions
+  def maybe_args(docs, false) do
+    concat([
+      "(",
+      join_with(docs, ", "),
       ")"
     ])
   end
