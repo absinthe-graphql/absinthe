@@ -13,6 +13,10 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     directive @foo(name: String!) on SCALAR | OBJECT
     directive @bar(name: String!) on SCALAR | OBJECT
 
+    schema {
+      query: Query
+    }
+
     type Query {
       "A list of posts"
       posts(filter: PostFilter, reverse: Boolean): [Post]
