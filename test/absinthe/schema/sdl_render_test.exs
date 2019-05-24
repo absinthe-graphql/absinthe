@@ -53,6 +53,9 @@ defmodule SdlRenderTest do
     - built in scalars.. String Int Float Boolean ID
     - introspection types.. `__Type`
 
+  issues:
+    - schema definition order is not respected?
+
   ```
   schema {
 
