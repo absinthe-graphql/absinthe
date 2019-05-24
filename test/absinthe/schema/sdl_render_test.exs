@@ -8,7 +8,12 @@ defmodule SdlRenderTest do
 
     @sdl """
     type Query {
-      echo: Category
+      echo(category: Category!, times: Int): [Category]!
+      posts: Post
+    }
+
+    type Post {
+      title: String!
     }
 
     enum Category {
@@ -53,7 +58,7 @@ defmodule SdlRenderTest do
       |> Enum.reverse()
       |> Enum.map(&render/1)
       |> Enum.reject(&(&1 == empty()))
-      |> double_lines
+      |> join_double_lines
 
     doc =
       concat(
@@ -75,26 +80,64 @@ defmodule SdlRenderTest do
   end
 
   @builtin ["String", "Int", "Float", "Boolean", "ID"]
-  def render(%{"kind" => "SCALAR", "name" => name}) when name in @builtin do
-    empty()
-  end
 
   def render(%{"name" => "__" <> _introspection_type}) do
     empty()
   end
 
+  def render(%{"ofType" => nil, "kind" => "SCALAR", "name" => name}) do
+    name
+  end
+
+  def render(%{"ofType" => nil, "name" => name}) do
+    name
+  end
+
+  def render(%{"ofType" => type, "kind" => "LIST"}) do
+    concat(["[", render(type), "]"])
+  end
+
+  def render(%{"ofType" => type, "kind" => "NON_NULL"}) do
+    concat([render(type), "!"])
+  end
+
+  def render(%{"kind" => "SCALAR", "name" => name}) when name in @builtin do
+    empty()
+  end
+
   def render(%{"kind" => "OBJECT", "name" => name, "fields" => fields}) do
     field_lines =
-      fields
-      |> Enum.map(fn %{"name" => name, "type" => %{"name" => type_name}} = field ->
-        concat([name, ": ", type_name])
+      Enum.map(fields, fn %{
+                            "name" => name,
+                            "args" => args,
+                            "type" => field_type
+                          } = field ->
+        IO.inspect(field, label: "FIELD")
+
+        arg_docs =
+          Enum.map(args, fn %{"name" => name, "type" => arg_type} = arg ->
+            IO.inspect(arg, label: "ARG")
+
+            concat([
+              name,
+              ": ",
+              render(arg_type)
+            ])
+          end)
+
+        concat([
+          name,
+          join_args(arg_docs),
+          ": ",
+          render(field_type)
+        ])
       end)
 
     fields =
       block(
         "type",
         name,
-        lines(field_lines)
+        join_lines(field_lines)
       )
   end
 
@@ -104,7 +147,7 @@ defmodule SdlRenderTest do
     block(
       "enum",
       name,
-      lines(value_names)
+      join_lines(value_names)
     )
   end
 
@@ -113,13 +156,27 @@ defmodule SdlRenderTest do
     empty()
   end
 
-  def lines(docs) do
+  def join_args([]) do
+    empty()
+  end
+
+  def join_args(docs) do
+    concat([
+      "(",
+      fold_doc(docs, fn doc, acc ->
+        concat([doc, ", ", acc])
+      end),
+      ")"
+    ])
+  end
+
+  def join_lines(docs) do
     fold_doc(docs, fn doc, acc ->
       concat([doc, line(), acc])
     end)
   end
 
-  def double_lines(docs) do
+  def join_double_lines(docs) do
     fold_doc(docs, fn doc, acc ->
       concat([doc, line(), line(), acc])
     end)
