@@ -7,15 +7,34 @@ defmodule SdlRenderTest do
     # Working based on import_sdl_test.exs
 
     @sdl """
-    type Query {
-      echo(category: Category!, times: Int): [Category]!
-      posts: Post
+    type User {
+      name: String!
     }
 
+    "One or the other"
+    union SearchResult = Post | User
+
+    type Query {
+      echo(
+        category: Category!
+        "The number of times"
+        times: Int
+      ): [Category]!
+      posts: Post
+      search(
+        query: String!
+      ): [SearchResult]
+    }
+
+    \"\"\"
+    A submitted post
+    Multiline description
+    \"\"\"
     type Post {
       title: String!
     }
 
+    "Simple description"
     enum Category {
       NEWS
       OPINION
@@ -51,14 +70,14 @@ defmodule SdlRenderTest do
     {:ok, %{data: data}} = Absinthe.Schema.introspect(TestSchema)
     %{"__schema" => %{"types" => types}} = data
 
-    IO.inspect(types)
+    IO.inspect(data)
 
     type_doc =
       types
       |> Enum.reverse()
       |> Enum.map(&render/1)
       |> Enum.reject(&(&1 == empty()))
-      |> join_double_lines
+      |> join_with([line(), line()])
 
     doc =
       concat(
@@ -105,47 +124,90 @@ defmodule SdlRenderTest do
     empty()
   end
 
-  def render(%{"defaultValue" => _, "name" => name, "type" => arg_type} = arg) do
-    IO.inspect(arg, label: "ARG")
-
-    concat([
-      name,
-      ": ",
-      render(arg_type)
-    ])
+  def render(%{
+        "defaultValue" => _,
+        "name" => name,
+        "description" => description,
+        "type" => arg_type
+      }) do
+    maybe_description(
+      description,
+      concat([
+        name,
+        ": ",
+        render(arg_type)
+      ])
+    )
   end
 
-  def render(%{"name" => name, "args" => args, "type" => field_type} = field) do
-    IO.inspect(field, label: "FIELD")
-
+  def render(%{
+        "name" => name,
+        "args" => args,
+        "type" => field_type
+      }) do
     arg_docs = Enum.map(args, &render/1)
 
     concat([
       name,
-      join_args(arg_docs),
+      maybe_args(arg_docs),
       ": ",
       render(field_type)
     ])
   end
 
-  def render(%{"kind" => "OBJECT", "name" => name, "fields" => fields}) do
+  def render(%{
+        "kind" => "OBJECT",
+        "name" => name,
+        "description" => description,
+        "fields" => fields
+      }) do
     field_docs = Enum.map(fields, &render/1)
 
-    fields =
+    maybe_description(
+      description,
       block(
         "type",
         name,
-        join_lines(field_docs)
+        join_with(field_docs, line())
       )
+    )
   end
 
-  def render(%{"kind" => "ENUM", "name" => name, "enumValues" => values}) do
+  def render(%{
+        "kind" => "UNION",
+        "name" => name,
+        "description" => description,
+        "possibleTypes" => possible_types
+      }) do
+    possible_type_docs = Enum.map(possible_types, & &1["name"])
+
+    maybe_description(
+      description,
+      concat([
+        "union",
+        " ",
+        name,
+        " = ",
+        join_with(possible_type_docs, " | ")
+      ])
+    )
+  end
+
+  def render(%{
+        "kind" => "ENUM",
+        "name" => name,
+        "description" => description,
+        "enumValues" => values
+      }) do
     value_names = Enum.map(values, & &1["name"])
 
-    block(
-      "enum",
-      name,
-      join_lines(value_names)
+    maybe_description(
+      description,
+      block(
+        "enum",
+        name,
+        join_with(value_names, line())
+      )
     )
   end
 
@@ -154,29 +216,50 @@ defmodule SdlRenderTest do
     empty()
   end
 
-  def join_args([]) do
+  def maybe_description(nil, docs), do: docs
+
+  def maybe_description(description, docs) do
+    join_with(
+      if String.contains?(description, "\n") do
+        [
+          join_with(["\"\"\"", description, "\"\"\""], line()),
+          docs
+        ]
+      else
+        [
+          concat(["\"", description, "\""]),
+          docs
+        ]
+      end,
+      line()
+    )
+  end
+
+  def maybe_args([]) do
     empty()
   end
 
-  def join_args(docs) do
+  def maybe_args(docs) do
+    # TODO:
+    #  figure out 1 line vs multi-line args
+    #  nest(:break), break(), etc
     concat([
       "(",
-      fold_doc(docs, fn doc, acc ->
-        concat([doc, ", ", acc])
-      end),
+      nest(
+        concat(
+          line(),
+          join_with(docs, line())
+        ),
+        2
+      ),
+      line(),
       ")"
     ])
   end
 
-  def join_lines(docs) do
+  def join_with(docs, joiner) do
     fold_doc(docs, fn doc, acc ->
-      concat([doc, line(), acc])
-    end)
-  end
-
-  def join_double_lines(docs) do
-    fold_doc(docs, fn doc, acc ->
-      concat([doc, line(), line(), acc])
+      concat([doc, concat(List.wrap(joiner)), acc])
     end)
   end
 
