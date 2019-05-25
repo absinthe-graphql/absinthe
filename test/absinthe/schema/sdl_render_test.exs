@@ -64,6 +64,8 @@ defmodule SdlRenderTest do
   issues:
     - schema definition order is not respected?
     - default value is an `inspect`ed blueprint struct
+    - can't define schema block
+        https://github.com/absinthe-graphql/absinthe/pull/735
     - deprecated annotation not picked up
         @deprecated
         @deprecated(reason: "Reason")
@@ -72,13 +74,13 @@ defmodule SdlRenderTest do
     - [ ] interface & implements
     - [x] custom scalar
     - [ ] directives
-    - [ ] schema block
     - [ ] default values (scalar and complex?)
           `foo: Int = 10`
     - [ ] inspect based arg lines
 
   todo after fixed:
     - [ ] @deprecated
+    - [ ] schema block
 
   ```
   schema {
