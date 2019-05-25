@@ -5,6 +5,8 @@ defmodule SdlRenderTest do
     use Absinthe.Schema
 
     @sdl """
+    directive @foo(name: String!) on OBJECT | SCALAR
+
     type User {
       name: String!
     }
@@ -73,14 +75,14 @@ defmodule SdlRenderTest do
   todo:
     - [ ] interface & implements
     - [x] custom scalar
-    - [ ] directives
-    - [ ] default values (scalar and complex?)
-          `foo: Int = 10`
+    - [x] directives
     - [ ] inspect based arg lines
 
   todo after fixed:
     - [ ] @deprecated
     - [ ] schema block
+    - [ ] default values (scalar and complex?)
+          `foo: Int = 10`
 
   ```
   schema {
@@ -97,7 +99,16 @@ defmodule SdlRenderTest do
 
   test "Algebra exploration" do
     {:ok, %{data: data}} = Absinthe.Schema.introspect(TestSchema)
-    %{"__schema" => %{"types" => types}} = data
+
+    %{
+      "__schema" => %{
+        "types" => types,
+        "directives" => directives,
+        "queryType" => query_type,
+        "mutationType" => mutation_type,
+        "subscriptionType" => subscription_type
+      }
+    } = data
 
     IO.inspect(data)
 
@@ -108,11 +119,20 @@ defmodule SdlRenderTest do
       |> Enum.reject(&(&1 == empty()))
       |> join_with([line(), line()])
 
+    directive_doc =
+      directives
+      |> Enum.map(&render/1)
+      |> Enum.reject(&(&1 == empty()))
+      |> join_with([line(), line()])
+
     doc =
-      concat(
+      concat([
+        directive_doc,
+        line(),
+        line(),
         type_doc,
         line()
-      )
+      ])
 
     rendered =
       doc
@@ -126,8 +146,6 @@ defmodule SdlRenderTest do
 
     assert rendered == TestSchema.sdl()
   end
-
-  @builtin ["String", "Int", "Float", "Boolean", "ID"]
 
   def render(%{"name" => "__" <> _introspection_type}) do
     empty()
@@ -149,7 +167,12 @@ defmodule SdlRenderTest do
     concat([render(type), "!"])
   end
 
-  def render(%{"kind" => "SCALAR", "name" => name} = thing) when name in @builtin do
+  @builtin_scalars ["String", "Int", "Float", "Boolean", "ID"]
+  def render(%{
+        "kind" => "SCALAR",
+        "name" => name
+      })
+      when name in @builtin_scalars do
     empty()
   end
 
@@ -169,15 +192,13 @@ defmodule SdlRenderTest do
     )
   end
 
-  def render(
-        %{
-          "name" => name,
-          "args" => args,
-          "isDeprecated" => is_deprecated,
-          "deprecationReason" => deprecation_reason,
-          "type" => field_type
-        } = field
-      ) do
+  def render(%{
+        "name" => name,
+        "args" => args,
+        "isDeprecated" => is_deprecated,
+        "deprecationReason" => deprecation_reason,
+        "type" => field_type
+      }) do
     arg_docs = Enum.map(args, &render/1)
     any_descriptions = Enum.any?(args, & &1["description"])
 
@@ -275,6 +296,39 @@ defmodule SdlRenderTest do
     maybe_description(
       description,
       space("scalar", name)
+    )
+  end
+
+  @builtin_directives ["skip", "include"]
+  def render(%{
+        "name" => name,
+        "locations" => _
+      })
+      when name in @builtin_directives do
+    empty()
+  end
+
+  def render(
+        %{
+          "name" => name,
+          "description" => description,
+          "args" => args,
+          "locations" => locations
+        } = directive
+      ) do
+    arg_docs = Enum.map(args, &render/1)
+    any_descriptions = Enum.any?(args, & &1["description"])
+
+    maybe_description(
+      description,
+      concat([
+        "directive",
+        " ",
+        concat("@", name),
+        maybe_args(arg_docs, any_descriptions),
+        " on ",
+        join_with(locations, " | ")
+      ])
     )
   end
 
