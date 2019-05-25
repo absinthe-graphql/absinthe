@@ -35,6 +35,7 @@ defmodule SdlRenderTest do
     Multiline description
     \"\"\"
     type Post {
+      old: String
       sweet: SweetScalar
       title: String!
     }
@@ -63,6 +64,9 @@ defmodule SdlRenderTest do
   issues:
     - schema definition order is not respected?
     - default value is an `inspect`ed blueprint struct
+    - deprecated annotation not picked up
+        @deprecated
+        @deprecated(reason: "Reason")
 
   todo:
     - [ ] interface & implements
@@ -71,8 +75,10 @@ defmodule SdlRenderTest do
     - [ ] schema block
     - [ ] default values (scalar and complex?)
           `foo: Int = 10`
-    - [ ] @deprecated
     - [ ] inspect based arg lines
+
+  todo after fixed:
+    - [ ] @deprecated
 
   ```
   schema {
@@ -161,20 +167,28 @@ defmodule SdlRenderTest do
     )
   end
 
-  def render(%{
-        "name" => name,
-        "args" => args,
-        "type" => field_type
-      }) do
+  def render(
+        %{
+          "name" => name,
+          "args" => args,
+          "isDeprecated" => is_deprecated,
+          "deprecationReason" => deprecation_reason,
+          "type" => field_type
+        } = field
+      ) do
     arg_docs = Enum.map(args, &render/1)
     any_descriptions = Enum.any?(args, & &1["description"])
 
-    concat([
-      name,
-      maybe_args(arg_docs, any_descriptions),
-      ": ",
-      render(field_type)
-    ])
+    maybe_deprecated(
+      is_deprecated,
+      deprecation_reason,
+      concat([
+        name,
+        maybe_args(arg_docs, any_descriptions),
+        ": ",
+        render(field_type)
+      ])
+    )
   end
 
   def render(%{
@@ -265,6 +279,14 @@ defmodule SdlRenderTest do
   def render(type) do
     IO.inspect(type, label: "MISSIN")
     empty()
+  end
+
+  def maybe_deprecated(true, nil, docs) do
+    space(docs, "@deprecated")
+  end
+
+  def maybe_deprecated(deprecated, reason, docs) do
+    docs
   end
 
   def maybe_description(nil, docs), do: docs
