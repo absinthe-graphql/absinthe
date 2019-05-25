@@ -9,6 +9,8 @@ defmodule SdlRenderTest do
       name: String!
     }
 
+    scalar SweetScalar
+
     "Sort this thing"
     input SorterInput {
       "By this field"
@@ -33,6 +35,7 @@ defmodule SdlRenderTest do
     Multiline description
     \"\"\"
     type Post {
+      sweet: SweetScalar
       title: String!
     }
 
@@ -63,12 +66,13 @@ defmodule SdlRenderTest do
 
   todo:
     - [ ] interface & implements
-    - [ ] custom scalar
+    - [x] custom scalar
     - [ ] directives
     - [ ] schema block
     - [ ] default values (scalar and complex?)
           `foo: Int = 10`
     - [ ] @deprecated
+    - [ ] inspect based arg lines
 
   ```
   schema {
@@ -244,6 +248,17 @@ defmodule SdlRenderTest do
         name,
         join_with(value_names, line())
       )
+    )
+  end
+
+  def render(%{
+        "kind" => "SCALAR",
+        "name" => name,
+        "description" => description
+      }) do
+    maybe_description(
+      description,
+      space("scalar", name)
     )
   end
 
