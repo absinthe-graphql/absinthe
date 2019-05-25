@@ -61,6 +61,15 @@ defmodule SdlRenderTest do
     - schema definition order is not respected?
     - default value is an `inspect`ed blueprint struct
 
+  todo:
+    - [ ] interface & implements
+    - [ ] custom scalar
+    - [ ] directives
+    - [ ] schema block
+    - [ ] default values (scalar and complex?)
+          `foo: Int = 10`
+    - [ ] @deprecated
+
   ```
   schema {
 
