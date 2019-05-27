@@ -32,10 +32,10 @@ defmodule SdlRenderTest do
       search(limit: Int, sort: SorterInput!): [SearchResult]
     }
 
-    \"\"\"
+    \"""
     A submitted post
     Multiline description
-    \"\"\"
+    \"""
     type Post {
       old: String
       sweet: SweetScalar
@@ -56,46 +56,64 @@ defmodule SdlRenderTest do
 
   @moduledoc """
   https://wehavefaces.net/graphql-shorthand-notation-cheatsheet-17cd715861b6
-
   https://github.com/graphql/graphql-js/blob/master/src/utilities/schemaPrinter.js
-
-  skips:
-    - built in scalars.. String Int Float Boolean ID
-    - introspection types.. `__Type`
 
   issues:
     - schema definition order is not respected?
-    - default value is an `inspect`ed blueprint struct
-    - can't define schema block
-        https://github.com/absinthe-graphql/absinthe/pull/735
-    - deprecated annotation not picked up
-        @deprecated
-        @deprecated(reason: "Reason")
 
   todo:
     - [ ] interface & implements
     - [x] custom scalar
     - [x] directives
-    - [ ] inspect based arg lines
+    - [x] inspect based arg lines
 
   todo after fixed:
     - [ ] @deprecated
+            @deprecated(reason: "Reason")
     - [ ] schema block
+            https://github.com/absinthe-graphql/absinthe/pull/735
     - [ ] default values (scalar and complex?)
-          `foo: Int = 10`
-
-  ```
-  schema {
-
-  }
-
-  directives...
-
-  types...
-
-  ```
-
+            `foo: Int = 10`
   """
+
+  test "group, glue, nest" do
+    args = [
+      concat(["foo", ": ", "String!"]),
+      concat(["bar", ": ", "Int"]),
+      concat(["baz", ": ", "Custom"])
+    ]
+
+    # force_unfit
+    docs =
+      concat(
+        "argUment",
+        group(
+          glue(
+            nest(
+              force_unfit(
+                glue(
+                  "(",
+                  "",
+                  fold_doc(args, &glue(&1, ", ", &2))
+                )
+              ),
+              2,
+              :break
+            ),
+            "",
+            ")"
+          )
+        )
+      )
+
+    docs
+    |> format(100)
+    |> IO.puts()
+
+    docs
+    |> format(10)
+    |> IO.puts()
+  end
 
   test "Algebra exploration" do
     {:ok, %{data: data}} = Absinthe.Schema.introspect(TestSchema)
@@ -104,13 +122,13 @@ defmodule SdlRenderTest do
       "__schema" => %{
         "types" => types,
         "directives" => directives,
-        "queryType" => query_type,
-        "mutationType" => mutation_type,
-        "subscriptionType" => subscription_type
+        "queryType" => _query_type,
+        "mutationType" => _mutation_type,
+        "subscriptionType" => _subscription_type
       }
     } = data
 
-    IO.inspect(data)
+    # IO.inspect(data)
 
     type_doc =
       types
@@ -147,16 +165,17 @@ defmodule SdlRenderTest do
     assert rendered == TestSchema.sdl()
   end
 
+  # Don't render introspection types
   def render(%{"name" => "__" <> _introspection_type}) do
     empty()
   end
 
   def render(%{"ofType" => nil, "kind" => "SCALAR", "name" => name}) do
-    name
+    string(name)
   end
 
   def render(%{"ofType" => nil, "name" => name}) do
-    name
+    string(name)
   end
 
   def render(%{"ofType" => type, "kind" => "LIST"}) do
@@ -167,6 +186,7 @@ defmodule SdlRenderTest do
     concat([render(type), "!"])
   end
 
+  # Don't render builtin scalars
   @builtin_scalars ["String", "Int", "Float", "Boolean", "ID"]
   def render(%{
         "kind" => "SCALAR",
@@ -185,7 +205,7 @@ defmodule SdlRenderTest do
     maybe_description(
       description,
       concat([
-        name,
+        string(name),
         ": ",
         render(arg_type)
       ])
@@ -203,14 +223,14 @@ defmodule SdlRenderTest do
     any_descriptions = Enum.any?(args, & &1["description"])
 
     maybe_deprecated(
-      is_deprecated,
-      deprecation_reason,
       concat([
-        name,
-        maybe_args(arg_docs, any_descriptions),
+        string(name),
+        arguments(arg_docs, any_descriptions),
         ": ",
         render(field_type)
-      ])
+      ]),
+      is_deprecated,
+      deprecation_reason
     )
   end
 
@@ -226,8 +246,8 @@ defmodule SdlRenderTest do
       description,
       block(
         "type",
-        name,
-        join_with(field_docs, line())
+        string(name),
+        field_docs
       )
     )
   end
@@ -244,8 +264,8 @@ defmodule SdlRenderTest do
       description,
       block(
         "input",
-        name,
-        join_with(input_field_docs, line())
+        string(name),
+        input_field_docs
       )
     )
   end
@@ -263,7 +283,7 @@ defmodule SdlRenderTest do
       concat([
         "union",
         " ",
-        name,
+        string(name),
         " = ",
         join_with(possible_type_docs, " | ")
       ])
@@ -282,8 +302,8 @@ defmodule SdlRenderTest do
       description,
       block(
         "enum",
-        name,
-        join_with(value_names, line())
+        string(name),
+        value_names
       )
     )
   end
@@ -295,7 +315,7 @@ defmodule SdlRenderTest do
       }) do
     maybe_description(
       description,
-      space("scalar", name)
+      space("scalar", string(name))
     )
   end
 
@@ -308,14 +328,12 @@ defmodule SdlRenderTest do
     empty()
   end
 
-  def render(
-        %{
-          "name" => name,
-          "description" => description,
-          "args" => args,
-          "locations" => locations
-        } = directive
-      ) do
+  def render(%{
+        "name" => name,
+        "description" => description,
+        "args" => args,
+        "locations" => locations
+      }) do
     arg_docs = Enum.map(args, &render/1)
     any_descriptions = Enum.any?(args, & &1["description"])
 
@@ -324,8 +342,8 @@ defmodule SdlRenderTest do
       concat([
         "directive",
         " ",
-        concat("@", name),
-        maybe_args(arg_docs, any_descriptions),
+        concat("@", string(name)),
+        arguments(arg_docs, any_descriptions),
         " on ",
         join_with(locations, " | ")
       ])
@@ -337,80 +355,95 @@ defmodule SdlRenderTest do
     empty()
   end
 
-  def maybe_deprecated(true, nil, docs) do
-    space(docs, "@deprecated")
-  end
-
-  def maybe_deprecated(deprecated, reason, docs) do
-    docs
-  end
-
-  def maybe_description(nil, docs), do: docs
-
-  def maybe_description(description, docs) do
-    join_with(
-      if String.contains?(description, "\n") do
-        [
-          join_with(["\"\"\"", description, "\"\"\""], line()),
-          docs
-        ]
-      else
-        [
-          concat(["\"", description, "\""]),
-          docs
-        ]
-      end,
-      line()
+  def block(kind, name, doc) do
+    glue(
+      kind,
+      glue(
+        name,
+        group(
+          glue(
+            nest(
+              force_unfit(
+                glue(
+                  "{",
+                  "",
+                  fold_doc(doc, &glue(&1, "", &2))
+                )
+              ),
+              2,
+              :always
+            ),
+            "",
+            "}"
+          )
+        )
+      )
     )
   end
 
-  def maybe_args([], _) do
+  def arguments([], _) do
     empty()
   end
 
-  # Split to multi-line if there are any descriptions
-  def maybe_args(docs, true) do
-    concat([
-      "(",
-      nest(
-        concat(
-          line(),
-          join_with(docs, line())
+  def arguments(docs, descriptions?) do
+    group(
+      glue(
+        nest(
+          maybe_force_multiline(
+            glue(
+              "(",
+              "",
+              fold_doc(docs, &glue(&1, ", ", &2))
+            ),
+            descriptions?
+          ),
+          2,
+          :break
         ),
-        2
-      ),
-      line(),
-      ")"
-    ])
+        "",
+        ")"
+      )
+    )
   end
 
-  # Stick to single line if there are no descriptions
-  def maybe_args(docs, false) do
-    concat([
-      "(",
-      join_with(docs, ", "),
-      ")"
-    ])
+  def maybe_deprecated(docs, true, nil) do
+    space(docs, "@deprecated")
+  end
+
+  def maybe_deprecated(docs, _deprecated, _reason) do
+    docs
+  end
+
+  def maybe_description(nil, docs) do
+    docs
+  end
+
+  def maybe_description(description, docs) do
+    if String.contains?(description, "\n") do
+      [
+        join_with(["\"\"\"", description, "\"\"\""], line()),
+        docs
+      ]
+    else
+      [
+        concat(["\"", description, "\""]),
+        docs
+      ]
+    end
+    |> join_with(line())
+  end
+
+  def maybe_force_multiline(docs, true) do
+    force_unfit(docs)
+  end
+
+  def maybe_force_multiline(docs, false) do
+    docs
   end
 
   def join_with(docs, joiner) do
     fold_doc(docs, fn doc, acc ->
       concat([doc, concat(List.wrap(joiner)), acc])
     end)
-  end
-
-  def block(kind, name, doc) do
-    space(
-      space(kind, name),
-      concat([
-        "{",
-        nest(
-          concat(line(), doc),
-          2
-        ),
-        line(),
-        "}"
-      ])
-    )
   end
 end
