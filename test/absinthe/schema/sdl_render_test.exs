@@ -1,7 +1,29 @@
 defmodule SdlRenderTest do
   use ExUnit.Case
 
-  defmodule TestSchema do
+  @moduledoc """
+  https://wehavefaces.net/graphql-shorthand-notation-cheatsheet-17cd715861b6
+  https://github.com/graphql/graphql-js/blob/master/src/utilities/schemaPrinter.js
+
+  issues:
+    - schema definition order is not respected?
+
+  todo:
+    - [x] interface & implements
+    - [x] custom scalar
+    - [x] directives
+    - [x] inspect based arg lines
+
+  todo after fixed:
+    - [ ] @deprecated
+            @deprecated(reason: "Reason")
+    - [ ] schema block
+            https://github.com/absinthe-graphql/absinthe/pull/735
+    - [ ] default values (scalar and complex?)
+            `foo: Int = 10`
+  """
+
+  defmodule SdlTestSchema do
     use Absinthe.Schema
 
     @sdl """
@@ -39,6 +61,7 @@ defmodule SdlRenderTest do
     type Post {
       old: String
       sweet: SweetScalar
+      "Something"
       title: String!
     }
 
@@ -52,38 +75,83 @@ defmodule SdlRenderTest do
     def sdl, do: @sdl
   end
 
-  @moduledoc """
-  https://wehavefaces.net/graphql-shorthand-notation-cheatsheet-17cd715861b6
-  https://github.com/graphql/graphql-js/blob/master/src/utilities/schemaPrinter.js
+  test "Render SDL from schema defined with SDL" do
+    {:ok, %{data: data}} = Absinthe.Schema.introspect(SdlTestSchema)
+    rendered_sdl = Absinthe.Schema.Notation.SDL.Render.from_introspection(data)
+    assert rendered_sdl == SdlTestSchema.sdl()
+    IO.puts("-----------")
+    IO.puts(rendered_sdl)
+    IO.puts("-----------")
+  end
 
-  issues:
-    - schema definition order is not respected?
+  defmodule ClassicTestSchema do
+    use Absinthe.Schema
 
-  todo:
-    - [ ] interface & implements
-    - [x] custom scalar
-    - [x] directives
-    - [x] inspect based arg lines
+    interface :animal do
+      field :legs, non_null(:integer)
 
-  todo after fixed:
-    - [ ] @deprecated
-            @deprecated(reason: "Reason")
-    - [ ] schema block
-            https://github.com/absinthe-graphql/absinthe/pull/735
-    - [ ] default values (scalar and complex?)
-            `foo: Int = 10`
+      resolve_type fn
+        %{name: _} -> :dog
+        %{web_complexity: _} -> :spider
+      end
+    end
+
+    interface :pet do
+      field :name, non_null(:string)
+
+      resolve_type fn
+        %{name: _} -> :dog
+      end
+    end
+
+    object :dog do
+      interfaces [:animal, :pet]
+      field :legs, non_null(:integer)
+      field :name, non_null(:string)
+    end
+
+    object :spider do
+      interfaces [:animal]
+      field :legs, non_null(:integer)
+      field :web_complexity, non_null(:float)
+    end
+
+    query do
+      field :pets, list_of(:pet)
+      field :animals, list_of(:animal)
+    end
+  end
+
+  @expected """
+  type Spider implements Animal {
+    legs: Int!
+    webComplexity: Float!
+  }
+
+  type RootQueryType {
+    animals: [Animal]
+    pets: [Pet]
+  }
+
+  interface Pet {
+    name: String!
+  }
+
+  type Dog implements Pet, Animal {
+    legs: Int!
+    name: String!
+  }
+
+  interface Animal {
+    legs: Int!
+  }
   """
-
-  test "Algebra exploration" do
-    {:ok, %{data: data}} = Absinthe.Schema.introspect(TestSchema)
-
-    rendered = Absinthe.Schema.Notation.SDL.Render.from_introspection(data)
-
-    IO.puts("")
+  test "Render SDL from schema defined with macros" do
+    {:ok, %{data: data}} = Absinthe.Schema.introspect(ClassicTestSchema)
+    rendered_sdl = Absinthe.Schema.Notation.SDL.Render.from_introspection(data)
     IO.puts("-----------")
-    IO.puts(rendered)
+    IO.puts(rendered_sdl)
     IO.puts("-----------")
-
-    assert rendered == TestSchema.sdl()
+    assert rendered_sdl == @expected
   end
 end
