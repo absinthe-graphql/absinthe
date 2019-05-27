@@ -20,18 +20,18 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       |> Enum.reverse()
       |> Enum.map(&render/1)
       |> Enum.reject(&(&1 == empty()))
-      |> join_with([line(), line()])
+      |> join([line(), line()])
 
     directive_doc =
       directives
       |> Enum.map(&render/1)
       |> Enum.reject(&(&1 == empty()))
-      |> join_with([line(), line()])
+      |> join([line(), line()])
 
     doc_segments =
       [directive_doc, type_doc]
       |> Enum.reject(&(&1 == empty()))
-      |> join_with([line(), line()])
+      |> join([line(), line()])
 
     doc =
       concat([
@@ -81,7 +81,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         "description" => description,
         "type" => arg_type
       }) do
-    maybe_description(
+    description(
       description,
       concat([
         string(name),
@@ -102,9 +102,9 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     arg_docs = Enum.map(args, &render/1)
     any_descriptions? = Enum.any?(args, & &1["description"])
 
-    maybe_description(
+    description(
       description,
-      maybe_deprecated(
+      deprecated(
         concat([
           string(name),
           arguments(arg_docs, any_descriptions?),
@@ -124,10 +124,10 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         "fields" => fields,
         "interfaces" => interfaces
       }) do
-    name = concat([string(name), maybe_implements(interfaces)])
+    name = concat([string(name), implements(interfaces)])
     field_docs = Enum.map(fields, &render/1)
 
-    maybe_description(
+    description(
       description,
       block(
         "type",
@@ -145,7 +145,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       }) do
     input_field_docs = Enum.map(input_fields, &render/1)
 
-    maybe_description(
+    description(
       description,
       block(
         "input",
@@ -163,13 +163,13 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       }) do
     possible_type_docs = Enum.map(possible_types, & &1["name"])
 
-    maybe_description(
+    description(
       description,
       concat([
         "union ",
         string(name),
         " = ",
-        join_with(possible_type_docs, " | ")
+        join(possible_type_docs, " | ")
       ])
     )
   end
@@ -182,7 +182,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       }) do
     field_docs = Enum.map(fields, &render/1)
 
-    maybe_description(
+    description(
       description,
       block(
         "interface",
@@ -200,7 +200,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       }) do
     value_names = Enum.map(values, & &1["name"])
 
-    maybe_description(
+    description(
       description,
       block(
         "enum",
@@ -215,7 +215,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         "name" => name,
         "description" => description
       }) do
-    maybe_description(
+    description(
       description,
       space("scalar", string(name))
     )
@@ -239,14 +239,14 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     arg_docs = Enum.map(args, &render/1)
     any_descriptions? = Enum.any?(args, & &1["description"])
 
-    maybe_description(
+    description(
       description,
       concat([
         "directive ",
         concat("@", string(name)),
         arguments(arg_docs, any_descriptions?),
         " on ",
-        join_with(locations, " | ")
+        join(locations, " | ")
       ])
     )
   end
@@ -290,7 +290,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     group(
       glue(
         nest(
-          maybe_force_multiline(
+          multiline(
             glue(
               "(",
               "",
@@ -307,49 +307,49 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     )
   end
 
-  def maybe_deprecated(docs, true, nil) do
+  def deprecated(docs, true, nil) do
     space(docs, "@deprecated")
   end
 
-  def maybe_deprecated(docs, _deprecated, _reason) do
+  def deprecated(docs, _deprecated, _reason) do
     docs
   end
 
-  def maybe_description(nil, docs) do
+  def description(nil, docs) do
     docs
   end
 
-  def maybe_description(description, docs) do
+  def description(description, docs) do
     if String.contains?(description, "\n") do
-      [join_with([~s("""), description, ~s(""")], line()), docs]
+      [join([~s("""), description, ~s(""")], line()), docs]
     else
       [concat([~s("), description, ~s(")]), docs]
     end
-    |> join_with(line())
+    |> join(line())
   end
 
-  def maybe_implements([]) do
+  def implements([]) do
     empty()
   end
 
-  def maybe_implements(interfaces) do
+  def implements(interfaces) do
     interface_names = Enum.map(interfaces, & &1["name"])
 
     concat([
       " implements ",
-      join_with(interface_names, ", ")
+      join(interface_names, ", ")
     ])
   end
 
-  def maybe_force_multiline(docs, true) do
+  def multiline(docs, true) do
     force_unfit(docs)
   end
 
-  def maybe_force_multiline(docs, false) do
+  def multiline(docs, false) do
     docs
   end
 
-  def join_with(docs, joiner) do
+  def join(docs, joiner) do
     fold_doc(docs, fn doc, acc ->
       concat([doc, concat(List.wrap(joiner)), acc])
     end)
