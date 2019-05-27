@@ -141,6 +141,11 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(rest, [enum | stack], buff)
   end
 
+  defp build_types([%Schema.InputValueDefinition{} = arg, {:desc, desc} | rest], stack, buff) do
+    arg = %{arg | description: desc}
+    build_types([arg | rest], stack, buff)
+  end
+
   defp build_types([%Schema.InputValueDefinition{} = arg | rest], [field | stack], buff) do
     arg = Map.update!(arg, :default_value, fn val -> {:unquote, [], [val]} end)
     build_types(rest, [push(field, :arguments, arg) | stack], buff)

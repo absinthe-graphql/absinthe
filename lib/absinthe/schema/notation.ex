@@ -1201,7 +1201,7 @@ defmodule Absinthe.Schema.Notation do
       attrs
       |> handle_deprecate
       |> Keyword.put(:identifier, identifier)
-      |> Keyword.put(:name, to_string(identifier))
+      |> Keyword.put_new(:name, to_string(identifier))
       |> put_reference(env)
 
     struct!(Schema.InputValueDefinition, attrs)
@@ -1209,7 +1209,11 @@ defmodule Absinthe.Schema.Notation do
 
   def record_arg!(env, identifier, attrs) do
     arg = build_arg(identifier, Keyword.put(attrs, :module, env.module), env)
-    put_attr(env.module, arg)
+    ref = put_attr(env.module, arg)
+
+    [
+      get_desc(ref)
+    ]
   end
 
   @doc false
