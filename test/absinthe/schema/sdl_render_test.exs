@@ -13,14 +13,16 @@ defmodule SdlRenderTest do
     - [x] custom scalar
     - [x] directives
     - [x] inspect based arg lines
-
-  todo after fixed:
-    - [ ] @deprecated
-            @deprecated(reason: "Reason")
+    - [x] default values (scalar)
+    - [x] default values (complex)
+    - [ ] deprecated & reason
     - [ ] schema block
             https://github.com/absinthe-graphql/absinthe/pull/735
-    - [x] default values (scalar and complex?)
-            `foo: Int = 10`
+
+  sdl parsing:
+    - default values
+    - deprecated
+    - schema block
   """
 
   defmodule SdlTestSchema do
