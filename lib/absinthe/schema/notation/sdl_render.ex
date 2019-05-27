@@ -5,42 +5,23 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   @doc """
   Render SDL
   """
+  @line_width 120
 
   def from_introspection(%{"__schema" => schema}) do
     %{
-      "types" => types,
       "directives" => directives,
+      "types" => types,
       "queryType" => _query_type,
       "mutationType" => _mutation_type,
       "subscriptionType" => _subscription_type
     } = schema
 
-    type_doc =
-      types
-      |> Enum.reverse()
-      |> Enum.map(&render/1)
-      |> Enum.reject(&(&1 == empty()))
-      |> join([line(), line()])
-
-    directive_doc =
-      directives
-      |> Enum.map(&render/1)
-      |> Enum.reject(&(&1 == empty()))
-      |> join([line(), line()])
-
-    doc_segments =
-      [directive_doc, type_doc]
-      |> Enum.reject(&(&1 == empty()))
-      |> join([line(), line()])
-
-    doc =
-      concat([
-        doc_segments,
-        line()
-      ])
-
-    doc
-    |> format(100)
+    (directives ++ types)
+    |> Enum.map(&render/1)
+    |> Enum.reject(&(&1 == empty()))
+    |> join([line(), line()])
+    |> concat(line())
+    |> format(@line_width)
     |> to_string
   end
 
@@ -75,8 +56,9 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     empty()
   end
 
+  # ARGUMENT
   def render(%{
-        "defaultValue" => _,
+        "defaultValue" => default_value,
         "name" => name,
         "description" => description,
         "type" => arg_type
@@ -86,11 +68,13 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       concat([
         string(name),
         ": ",
-        render(arg_type)
+        render(arg_type),
+        default(default_value)
       ])
     )
   end
 
+  # FIELD
   def render(%{
         "name" => name,
         "description" => description,
@@ -99,15 +83,12 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         "deprecationReason" => deprecation_reason,
         "type" => field_type
       }) do
-    arg_docs = Enum.map(args, &render/1)
-    any_descriptions? = Enum.any?(args, & &1["description"])
-
     description(
       description,
       deprecated(
         concat([
           string(name),
-          arguments(arg_docs, any_descriptions?),
+          arguments(args),
           ": ",
           render(field_type)
         ]),
@@ -124,15 +105,15 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         "fields" => fields,
         "interfaces" => interfaces
       }) do
-    name = concat([string(name), implements(interfaces)])
-    field_docs = Enum.map(fields, &render/1)
-
     description(
       description,
       block(
         "type",
-        name,
-        field_docs
+        concat([
+          string(name),
+          implements(interfaces)
+        ]),
+        Enum.map(fields, &render/1)
       )
     )
   end
@@ -143,14 +124,12 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         "description" => description,
         "inputFields" => input_fields
       }) do
-    input_field_docs = Enum.map(input_fields, &render/1)
-
     description(
       description,
       block(
         "input",
         string(name),
-        input_field_docs
+        Enum.map(input_fields, &render/1)
       )
     )
   end
@@ -180,14 +159,12 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         "description" => description,
         "fields" => fields
       }) do
-    field_docs = Enum.map(fields, &render/1)
-
     description(
       description,
       block(
         "interface",
         string(name),
-        field_docs
+        Enum.map(fields, &render/1)
       )
     )
   end
@@ -198,14 +175,12 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         "description" => description,
         "enumValues" => values
       }) do
-    value_names = Enum.map(values, & &1["name"])
-
     description(
       description,
       block(
         "enum",
         string(name),
-        value_names
+        Enum.map(values, &string(&1["name"]))
       )
     )
   end
@@ -230,21 +205,19 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     empty()
   end
 
+  # DIRECTIVE
   def render(%{
         "name" => name,
         "description" => description,
         "args" => args,
         "locations" => locations
       }) do
-    arg_docs = Enum.map(args, &render/1)
-    any_descriptions? = Enum.any?(args, & &1["description"])
-
     description(
       description,
       concat([
         "directive ",
         concat("@", string(name)),
-        arguments(arg_docs, any_descriptions?),
+        arguments(args),
         " on ",
         join(locations, " | ")
       ])
@@ -282,11 +255,14 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     )
   end
 
-  def arguments([], _) do
+  def arguments([]) do
     empty()
   end
 
-  def arguments(docs, any_descriptions?) do
+  def arguments(args) do
+    arg_docs = Enum.map(args, &render/1)
+    any_descriptions? = Enum.any?(args, & &1["description"])
+
     group(
       glue(
         nest(
@@ -294,7 +270,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
             glue(
               "(",
               "",
-              fold_doc(docs, &glue(&1, ", ", &2))
+              fold_doc(arg_docs, &glue(&1, ", ", &2))
             ),
             any_descriptions?
           ),
@@ -305,6 +281,14 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         ")"
       )
     )
+  end
+
+  def default(nil) do
+    empty()
+  end
+
+  def default(default_value) do
+    concat([" = ", default_value])
   end
 
   def deprecated(docs, true, nil) do

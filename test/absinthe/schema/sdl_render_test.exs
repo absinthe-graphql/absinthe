@@ -19,7 +19,7 @@ defmodule SdlRenderTest do
             @deprecated(reason: "Reason")
     - [ ] schema block
             https://github.com/absinthe-graphql/absinthe/pull/735
-    - [ ] default values (scalar and complex?)
+    - [x] default values (scalar and complex?)
             `foo: Int = 10`
   """
 
@@ -29,29 +29,10 @@ defmodule SdlRenderTest do
     @sdl """
     directive @foo(name: String!) on OBJECT | SCALAR
 
-    type User {
-      name: String!
-    }
-
-    scalar SweetScalar
-
-    "Sort this thing"
-    input SorterInput {
-      "By this field"
-      field: String!
-    }
-
-    "One or the other"
-    union SearchResult = Post | User
-
-    type Query {
-      echo(
-        category: Category!
-        "The number of times"
-        times: Int
-      ): [Category!]!
-      posts: Post
-      search(limit: Int, sort: SorterInput!): [SearchResult]
+    "Simple description"
+    enum Category {
+      NEWS
+      OPINION
     }
 
     \"""
@@ -65,10 +46,29 @@ defmodule SdlRenderTest do
       title: String!
     }
 
-    "Simple description"
-    enum Category {
-      NEWS
-      OPINION
+    type Query {
+      echo(
+        category: Category!
+        "The number of times"
+        times: Int
+      ): [Category!]!
+      posts: Post
+      search(limit: Int, sort: SorterInput!): [SearchResult]
+    }
+
+    "One or the other"
+    union SearchResult = Post | User
+
+    "Sort this thing"
+    input SorterInput {
+      "By this field"
+      field: String!
+    }
+
+    scalar SweetScalar
+
+    type User {
+      name: String!
     }
     """
     import_sdl @sdl
@@ -119,22 +119,16 @@ defmodule SdlRenderTest do
     query do
       field :pets, list_of(:pet)
       field :animals, list_of(:animal)
+
+      field :echo, :integer do
+        arg :n, non_null(:integer), default_value: 10, description: "Echo it back"
+      end
     end
   end
 
   @expected """
-  type Spider implements Animal {
+  interface Animal {
     legs: Int!
-    webComplexity: Float!
-  }
-
-  type RootQueryType {
-    animals: [Animal]
-    pets: [Pet]
-  }
-
-  interface Pet {
-    name: String!
   }
 
   type Dog implements Pet, Animal {
@@ -142,8 +136,22 @@ defmodule SdlRenderTest do
     name: String!
   }
 
-  interface Animal {
+  interface Pet {
+    name: String!
+  }
+
+  type RootQueryType {
+    animals: [Animal]
+    echo(
+      "Echo it back"
+      n: Int! = 10
+    ): Int
+    pets: [Pet]
+  }
+
+  type Spider implements Animal {
     legs: Int!
+    webComplexity: Float!
   }
   """
   test "Render SDL from schema defined with macros" do
