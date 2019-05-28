@@ -109,7 +109,12 @@ defmodule SdlRenderTest do
     object :dog do
       interfaces [:animal, :pet]
       field :legs, non_null(:integer)
-      field :name, non_null(:string)
+
+      field :name, non_null(:string) do
+        deprecate("""
+        Don't use This
+        """)
+      end
     end
 
     object :spider do
@@ -135,7 +140,7 @@ defmodule SdlRenderTest do
 
   type Dog implements Pet, Animal {
     legs: Int!
-    name: String!
+    name: String! @deprecated(reason: "Don't use This")
   }
 
   interface Pet {
