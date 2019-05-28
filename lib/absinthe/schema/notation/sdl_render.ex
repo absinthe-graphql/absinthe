@@ -300,7 +300,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       space(docs, "@deprecated"),
       "(",
       "reason: ",
-      reason(reason),
+      deprecated_reason(reason),
       ")"
     ])
   end
@@ -309,13 +309,27 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     docs
   end
 
-  def reason(reason) do
-    reason = reason |> String.trim()
+  def deprecated_reason(reason) do
+    reason
+    |> String.trim()
+    |> String.split("\n")
+    |> case do
+      [reason] ->
+        concat([~s("), reason, ~s(")])
 
-    if String.contains?(reason, "\n") do
-      join([~s("""), reason, ~s(""")], line())
-    else
-      concat([~s("), reason, ~s(")])
+      reason ->
+        glue(
+          nest(
+            glue(
+              ~s("""),
+              "",
+              fold_doc(reason, &glue(&1, "", &2))
+            ),
+            2,
+            :always
+          ),
+          ~s(""")
+        )
     end
   end
 

@@ -15,7 +15,7 @@ defmodule SdlRenderTest do
     - [x] inspect based arg lines
     - [x] default values (scalar)
     - [x] default values (complex)
-    - [ ] deprecated & reason
+    - [x] deprecated & reason
     - [ ] schema block
             https://github.com/absinthe-graphql/absinthe/pull/735
 
@@ -120,7 +120,13 @@ defmodule SdlRenderTest do
     object :spider do
       interfaces [:animal]
       field :legs, non_null(:integer)
-      field :web_complexity, non_null(:float)
+
+      field :web_complexity, non_null(:float) do
+        deprecate("""
+        Definately
+        Don't use This
+        """)
+      end
     end
 
     query do
@@ -158,7 +164,10 @@ defmodule SdlRenderTest do
 
   type Spider implements Animal {
     legs: Int!
-    webComplexity: Float!
+    webComplexity: Float! @deprecated(reason: \"""
+      Definately
+      Don't use This
+    \""")
   }
   """
   test "Render SDL from schema defined with macros" do
