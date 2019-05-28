@@ -63,7 +63,7 @@ defmodule Absinthe.Mixfile do
 
   defp deps do
     [
-      {:nimble_parsec, "~> 0.4"},
+      {:nimble_parsec, "~> 0.5"},
       {:telemetry, "~> 0.4.0"},
       {:dataloader, "~> 1.0.0", optional: true},
       {:decimal, "~> 1.0", optional: true},
