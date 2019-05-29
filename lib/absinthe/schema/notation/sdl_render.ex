@@ -7,6 +7,9 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   """
   @line_width 120
 
+  @builtin_scalars ["String", "Int", "Float", "Boolean", "ID"]
+  @builtin_directives ["skip", "include"]
+
   def from_introspection(%{"__schema" => schema}) do
     %{
       "directives" => directives,
@@ -47,7 +50,6 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   end
 
   # Don't render builtin scalars
-  @builtin_scalars ["String", "Int", "Float", "Boolean", "ID"]
   def render(%{
         "kind" => "SCALAR",
         "name" => name
@@ -63,15 +65,13 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         "description" => description,
         "type" => arg_type
       }) do
-    description(
-      description,
-      concat([
-        string(name),
-        ": ",
-        render(arg_type),
-        default(default_value)
-      ])
-    )
+    concat([
+      string(name),
+      ": ",
+      render(arg_type),
+      default(default_value)
+    ])
+    |> description(description)
   end
 
   # FIELD
@@ -83,19 +83,14 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         "deprecationReason" => deprecation_reason,
         "type" => field_type
       }) do
-    description(
-      description,
-      deprecated(
-        concat([
-          string(name),
-          arguments(args),
-          ": ",
-          render(field_type)
-        ]),
-        is_deprecated,
-        deprecation_reason
-      )
-    )
+    concat([
+      string(name),
+      arguments(args),
+      ": ",
+      render(field_type)
+    ])
+    |> deprecated(is_deprecated, deprecation_reason)
+    |> description(description)
   end
 
   def render(%{
@@ -105,17 +100,15 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         "fields" => fields,
         "interfaces" => interfaces
       }) do
-    description(
-      description,
-      block(
-        "type",
-        concat([
-          string(name),
-          implements(interfaces)
-        ]),
-        Enum.map(fields, &render/1)
-      )
+    block(
+      "type",
+      concat([
+        string(name),
+        implements(interfaces)
+      ]),
+      Enum.map(fields, &render/1)
     )
+    |> description(description)
   end
 
   def render(%{
@@ -124,14 +117,12 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         "description" => description,
         "inputFields" => input_fields
       }) do
-    description(
-      description,
-      block(
-        "input",
-        string(name),
-        Enum.map(input_fields, &render/1)
-      )
+    block(
+      "input",
+      string(name),
+      Enum.map(input_fields, &render/1)
     )
+    |> description(description)
   end
 
   def render(%{
@@ -142,15 +133,13 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       }) do
     possible_type_docs = Enum.map(possible_types, & &1["name"])
 
-    description(
-      description,
-      concat([
-        "union ",
-        string(name),
-        " = ",
-        join(possible_type_docs, " | ")
-      ])
-    )
+    concat([
+      "union ",
+      string(name),
+      " = ",
+      join(possible_type_docs, " | ")
+    ])
+    |> description(description)
   end
 
   def render(%{
@@ -159,14 +148,12 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         "description" => description,
         "fields" => fields
       }) do
-    description(
-      description,
-      block(
-        "interface",
-        string(name),
-        Enum.map(fields, &render/1)
-      )
+    block(
+      "interface",
+      string(name),
+      Enum.map(fields, &render/1)
     )
+    |> description(description)
   end
 
   def render(%{
@@ -175,14 +162,12 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         "description" => description,
         "enumValues" => values
       }) do
-    description(
-      description,
-      block(
-        "enum",
-        string(name),
-        Enum.map(values, &string(&1["name"]))
-      )
+    block(
+      "enum",
+      string(name),
+      Enum.map(values, &string(&1["name"]))
     )
+    |> description(description)
   end
 
   def render(%{
@@ -190,13 +175,10 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         "name" => name,
         "description" => description
       }) do
-    description(
-      description,
-      space("scalar", string(name))
-    )
+    space("scalar", string(name))
+    |> description(description)
   end
 
-  @builtin_directives ["skip", "include"]
   def render(%{
         "name" => name,
         "locations" => _
@@ -212,47 +194,14 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         "args" => args,
         "locations" => locations
       }) do
-    description(
-      description,
-      concat([
-        "directive ",
-        concat("@", string(name)),
-        arguments(args),
-        " on ",
-        join(locations, " | ")
-      ])
-    )
-  end
-
-  def render(type) do
-    IO.inspect(type, label: "MISSIN")
-    empty()
-  end
-
-  def block(kind, name, doc) do
-    glue(
-      kind,
-      glue(
-        name,
-        group(
-          glue(
-            nest(
-              force_unfit(
-                glue(
-                  "{",
-                  "",
-                  fold_doc(doc, &glue(&1, "", &2))
-                )
-              ),
-              2,
-              :always
-            ),
-            "",
-            "}"
-          )
-        )
-      )
-    )
+    concat([
+      "directive ",
+      concat("@", string(name)),
+      arguments(args),
+      " on ",
+      join(locations, " | ")
+    ])
+    |> description(description)
   end
 
   def arguments([]) do
@@ -333,15 +282,19 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     end
   end
 
-  def description(nil, docs) do
+  def description(docs, nil) do
     docs
   end
 
-  def description(description, docs) do
-    if String.contains?(description, "\n") do
-      [join([~s("""), description, ~s(""")], line()), docs]
-    else
-      [concat([~s("), description, ~s(")]), docs]
+  def description(docs, description) do
+    description
+    |> String.contains?("\n")
+    |> case do
+      true ->
+        [join([~s("""), description, ~s(""")], line()), docs]
+
+      false ->
+        [concat([~s("), description, ~s(")]), docs]
     end
     |> join(line())
   end
@@ -365,6 +318,32 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
   def multiline(docs, false) do
     docs
+  end
+
+  def block(kind, name, doc) do
+    glue(
+      kind,
+      glue(
+        name,
+        group(
+          glue(
+            nest(
+              force_unfit(
+                glue(
+                  "{",
+                  "",
+                  fold_doc(doc, &glue(&1, "", &2))
+                )
+              ),
+              2,
+              :always
+            ),
+            "",
+            "}"
+          )
+        )
+      )
+    )
   end
 
   def join(docs, joiner) do
