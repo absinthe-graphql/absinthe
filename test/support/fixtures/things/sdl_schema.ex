@@ -104,7 +104,7 @@ defmodule Absinthe.Fixtures.Things.SDLSchema do
     "bar" => %{id: "bar", name: "Bar", value: 5}
   }
 
-  def decorations(%Absinthe.Blueprint{}, _) do
+  def hydrate(%Absinthe.Blueprint{}, _) do
     %{
       mutation: %{
         failing_thing: [
@@ -137,7 +137,7 @@ defmodule Absinthe.Fixtures.Things.SDLSchema do
     }
   end
 
-  def decorations(_node, _ancestors) do
+  def hydrate(_node, _ancestors) do
     []
   end
 

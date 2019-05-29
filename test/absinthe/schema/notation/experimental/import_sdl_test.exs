@@ -75,19 +75,19 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       {:ok, Map.get(post, :title) |> String.upcase()}
     end
 
-    def decorations(%{identifier: :admin}, [%{identifier: :query} | _]) do
+    def hydrate(%{identifier: :admin}, [%{identifier: :query} | _]) do
       {:description, "The admin"}
     end
 
-    def decorations(%{identifier: :filter}, [%{identifier: :posts} | _]) do
+    def hydrate(%{identifier: :filter}, [%{identifier: :posts} | _]) do
       {:description, "A filter argument"}
     end
 
-    def decorations(%{identifier: :posts}, [%{identifier: :query} | _]) do
+    def hydrate(%{identifier: :posts}, [%{identifier: :query} | _]) do
       {:resolve, &__MODULE__.get_posts/3}
     end
 
-    def decorations(%Absinthe.Blueprint{}, _) do
+    def hydrate(%Absinthe.Blueprint{}, _) do
       %{
         query: %{
           posts: %{
@@ -103,7 +103,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       }
     end
 
-    def decorations(_node, _ancestors) do
+    def hydrate(_node, _ancestors) do
       []
     end
   end

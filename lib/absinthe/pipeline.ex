@@ -118,7 +118,7 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.TypeImports,
       Phase.Schema.ApplyDeclaration,
       Phase.Schema.Introspection,
-      {Phase.Schema.Decorate, [schema: schema]},
+      {Phase.Schema.Hydrate, [schema: schema]},
       Phase.Schema.NormalizeReferences,
       Phase.Schema.Validation.TypeNamesAreUnique,
       Phase.Schema.Validation.TypeReferencesExist,
