@@ -124,11 +124,10 @@ defmodule Absinthe.ValidationPhaseCase do
     end
   end
 
-  @spec assert_valid(Schema.t(), [Phase.t()], Language.Source.t(), map) :: no_return
   def assert_valid(schema, validations, document, options) do
     result =
       case run(schema, validations, document, options) do
-        {:ok, result} ->
+        {:ok, result, _} ->
           result
 
         # :jump, etc
@@ -148,13 +147,6 @@ defmodule Absinthe.ValidationPhaseCase do
              Enum.join(formatted_errors, "\n  ") <> "\n  ---"
   end
 
-  @spec assert_invalid(
-          Schema.t(),
-          [Phase.t()],
-          Language.Source.t(),
-          map,
-          [error_checker_t] | error_checker_t
-        ) :: no_return
   def assert_invalid(schema, validations, document, options, error_checkers) do
     result =
       case run(schema, validations, document, options) do

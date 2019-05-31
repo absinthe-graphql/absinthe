@@ -11,5 +11,6 @@ Alpha 0 note: 1.5.0 alpha is safe to use on existing schemas. However, there are
 - Feature: SDL support
 - Feature: Schema decorators
 - Feature: Customizable subscription deduplification. See: https://github.com/absinthe-graphql/absinthe/blob/master/guides/subscriptions.md#de-duplicating-updates
+- Feature: Built-in `telemetry` instrumentation (https://github.com/beam-telemetry/telemetry)
 - Breaking Change: `default_value: DateTime.utc_now()` will have its time set at compile time. IE: DON'T DO THIS. It only worked by accident before anyway, and now it no longer works, which is correct.
 - Breaking change: added `node_name/0` callback to `Absinthe.Subscription.PubSub` behaviour. To retain old behaviour, implement this callback to return `Kernel.node/0`.

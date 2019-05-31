@@ -1,5 +1,5 @@
 defmodule Absinthe.Phase.Schema.InlineFunctionsTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   defmodule Schema do
     use Absinthe.Schema.Notation
@@ -41,17 +41,15 @@ defmodule Absinthe.Phase.Schema.InlineFunctionsTest do
 
   describe "resolvers and middleware" do
     test "are inlined when they are a literal external function", %{bp: bp} do
-      assert [
-               {{Absinthe.Resolution, :call}, &Schema.foo/3}
-             ] == get_field(bp, :inlined, :direct).middleware
+      assert {{Absinthe.Resolution, :call}, &Schema.foo/3} in get_field(bp, :inlined, :direct).middleware
 
-      assert [
-               {{Absinthe.Resolution, :call}, &Schema.foo/3}
-             ] == get_field(bp, :inlined, :indirect).middleware
+      assert {{Absinthe.Resolution, :call}, &Schema.foo/3} in get_field(bp, :inlined, :indirect).middleware
 
-      assert [
-               {{Absinthe.Resolution, :call}, &Schema.foo/3}
-             ] == get_field(bp, :inlined, :via_callback).middleware
+      assert {{Absinthe.Resolution, :call}, &Schema.foo/3} in get_field(
+               bp,
+               :inlined,
+               :via_callback
+             ).middleware
     end
 
     test "aren't inlined if they're a local capture", %{bp: bp} do

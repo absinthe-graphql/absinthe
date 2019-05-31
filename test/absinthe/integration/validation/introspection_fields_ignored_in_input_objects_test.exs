@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Validation.IntrospectionFieldsIgnoredInInputObjectsTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   @query """
   mutation ($input: InputThing) {
@@ -23,7 +23,7 @@ defmodule Elixir.Absinthe.Integration.Validation.IntrospectionFieldsIgnoredInInp
             }} ==
              Absinthe.run(
                @query,
-               Absinthe.Fixtures.ThingsSchema,
+               Absinthe.Fixtures.Things.MacroSchema,
                variables: %{"input" => %{"__typename" => "foo", "value" => 100}}
              )
   end

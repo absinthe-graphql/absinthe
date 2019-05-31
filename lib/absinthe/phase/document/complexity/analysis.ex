@@ -50,10 +50,10 @@ defmodule Absinthe.Phase.Document.Complexity.Analysis do
   end
 
   def handle_node(
-    %Blueprint.Document.Fragment.Inline{selections: fields} = node,
-    _info,
-    _fragments
-  ) do
+        %Blueprint.Document.Fragment.Inline{selections: fields} = node,
+        _info,
+        _fragments
+      ) do
     %{node | complexity: sum_complexity(fields)}
   end
 

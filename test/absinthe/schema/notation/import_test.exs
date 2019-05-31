@@ -1,5 +1,5 @@
 defmodule Absinthe.Schema.Notation.ImportTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   defp field_list(module, name) do
     module.__absinthe_type__(name).fields
@@ -13,7 +13,6 @@ defmodule Absinthe.Schema.Notation.ImportTest do
   end
 
   alias Absinthe.Phase
-
 
   describe "import fields" do
     test "fields can be imported" do

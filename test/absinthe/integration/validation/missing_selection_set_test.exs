@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Validation.MissingSelectionSetTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   @query """
   query {
@@ -17,6 +17,6 @@ defmodule Elixir.Absinthe.Integration.Validation.MissingSelectionSetTest do
                   locations: [%{column: 3, line: 2}]
                 }
               ]
-            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+            }} == Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, [])
   end
 end

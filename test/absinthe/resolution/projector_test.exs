@@ -1,5 +1,5 @@
 defmodule Absinthe.Resolution.ProjectorTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   # describe "merging" do
   #   test "asdf"

@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Execution.Resolution.ErrorsIncludePathIndicesTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   @query """
   query {
@@ -23,6 +23,6 @@ defmodule Elixir.Absinthe.Integration.Execution.Resolution.ErrorsIncludePathIndi
                   locations: [%{column: 5, line: 4}]
                 }
               ]
-            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+            }} == Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, [])
   end
 end

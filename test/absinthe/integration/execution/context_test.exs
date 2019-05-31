@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Execution.ContextTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   @query """
   query {
@@ -11,6 +11,6 @@ defmodule Elixir.Absinthe.Integration.Execution.ContextTest do
 
   test "scenario #1" do
     assert {:ok, %{data: %{"thingByContext" => %{"name" => "Bar"}}}} ==
-             Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, context: %{thing: "bar"})
+             Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, context: %{thing: "bar"})
   end
 end

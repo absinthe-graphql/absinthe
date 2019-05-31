@@ -13,7 +13,6 @@ defmodule Absinthe.Blueprint.Schema do
           | Schema.ScalarTypeDefinition.t()
           | Schema.UnionTypeDefinition.t()
 
-
   @type directive_t :: Schema.DirectiveDefinition.t()
   @type t :: type_t | directive_t
 
@@ -95,6 +94,7 @@ defmodule Absinthe.Blueprint.Schema do
     Schema.EnumTypeDefinition,
     Schema.DirectiveDefinition,
     Schema.InputObjectTypeDefinition,
+    Schema.InputValueDefinition,
     Schema.InterfaceTypeDefinition,
     Schema.UnionTypeDefinition,
     Schema.EnumValueDefinition
@@ -142,11 +142,6 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(rest, [enum | stack], buff)
   end
 
-  defp build_types([%Schema.InputValueDefinition{} = arg | rest], [field | stack], buff) do
-    arg = Map.update!(arg, :default_value, fn val -> {:unquote, [], [val]} end)
-    build_types(rest, [push(field, :arguments, arg) | stack], buff)
-  end
-
   defp build_types([{:sdl, sdl_definitions} | rest], [schema | stack], buff) do
     # TODO: Handle directives, etc
     build_types(rest, [concat(schema, :type_definitions, sdl_definitions) | stack], buff)
@@ -164,6 +159,11 @@ defmodule Absinthe.Blueprint.Schema do
 
   defp build_types([:close | rest], [%Schema.EnumValueDefinition{} = value, enum | stack], buff) do
     build_types(rest, [push(enum, :values, value) | stack], buff)
+  end
+
+  defp build_types([:close | rest], [%Schema.InputValueDefinition{} = arg, field | stack], buff) do
+    arg = Map.update!(arg, :default_value, fn val -> {:unquote, [], [val]} end)
+    build_types(rest, [push(field, :arguments, arg) | stack], buff)
   end
 
   defp build_types([:close | rest], [%Schema.FieldDefinition{} = field, obj | stack], buff) do

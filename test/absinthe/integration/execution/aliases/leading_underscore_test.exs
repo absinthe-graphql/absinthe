@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Execution.Aliases.LeadingUnderscoreTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   @query """
   query {
@@ -11,6 +11,6 @@ defmodule Elixir.Absinthe.Integration.Execution.Aliases.LeadingUnderscoreTest do
 
   test "scenario #1" do
     assert {:ok, %{data: %{"_thing123" => %{"name" => "Foo"}}}} ==
-             Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+             Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, [])
   end
 end

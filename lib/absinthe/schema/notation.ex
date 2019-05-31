@@ -536,6 +536,7 @@ defmodule Absinthe.Schema.Notation do
     |> recordable!(:resolve, @placement[:resolve])
 
     quote do
+      meta :absinthe_telemetry, true
       middleware Absinthe.Resolution, unquote(func_ast)
     end
   end
@@ -586,9 +587,11 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro arg(identifier, type, attrs) do
+    attrs = handle_arg_attrs(identifier, type, attrs)
+
     __CALLER__
     |> recordable!(:arg, @placement[:arg])
-    |> record_arg!(identifier, expand_ast(Keyword.put(attrs, :type, type), __CALLER__))
+    |> record!(Schema.InputValueDefinition, identifier, attrs, nil)
   end
 
   @doc """
@@ -597,15 +600,19 @@ defmodule Absinthe.Schema.Notation do
   See `arg/3`
   """
   defmacro arg(identifier, attrs) when is_list(attrs) do
+    attrs = handle_arg_attrs(identifier, nil, attrs)
+
     __CALLER__
     |> recordable!(:arg, @placement[:arg])
-    |> record_arg!(identifier, expand_ast(attrs, __CALLER__))
+    |> record!(Schema.InputValueDefinition, identifier, attrs, nil)
   end
 
   defmacro arg(identifier, type) do
+    attrs = handle_arg_attrs(identifier, type, [])
+
     __CALLER__
     |> recordable!(:arg, @placement[:arg])
-    |> record_arg!(identifier, expand_ast([type: type], __CALLER__))
+    |> record!(Schema.InputValueDefinition, identifier, attrs, nil)
   end
 
   # SCALARS
@@ -1185,6 +1192,7 @@ defmodule Absinthe.Schema.Notation do
     Schema.EnumTypeDefinition,
     Schema.EnumValueDefinition,
     Schema.InputObjectTypeDefinition,
+    Schema.InputValueDefinition,
     Schema.UnionTypeDefinition,
     Schema.InterfaceTypeDefinition,
     Schema.DirectiveDefinition
@@ -1195,20 +1203,11 @@ defmodule Absinthe.Schema.Notation do
     scoped_def(env, type, identifier, attrs, block)
   end
 
-  defp build_arg(identifier, attrs, env) do
-    attrs =
-      attrs
-      |> handle_deprecate
-      |> Keyword.put(:identifier, identifier)
-      |> Keyword.put(:name, to_string(identifier))
-      |> put_reference(env)
-
-    struct!(Schema.InputValueDefinition, attrs)
-  end
-
-  def record_arg!(env, identifier, attrs) do
-    arg = build_arg(identifier, Keyword.put(attrs, :module, env.module), env)
-    put_attr(env.module, arg)
+  def handle_arg_attrs(identifier, type, raw_attrs) do
+    raw_attrs
+    |> Keyword.put_new(:name, to_string(identifier))
+    |> Keyword.put_new(:type, type)
+    |> handle_deprecate
   end
 
   @doc false
@@ -1684,8 +1683,12 @@ defmodule Absinthe.Schema.Notation do
     [{Absinthe.Middleware.MapGet, identifier}]
   end
 
-  def __ensure_middleware__(middleware, _field, _object) do
-    middleware
+  def __ensure_middleware__(middleware, field, _object) do
+    if Absinthe.Type.meta(field, :absinthe_telemetry) do
+      [{Absinthe.Middleware.Telemetry, []} | middleware]
+    else
+      middleware
+    end
   end
 
   defp reverse_with_descs(attrs, descs, acc \\ [])

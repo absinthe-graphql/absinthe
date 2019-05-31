@@ -130,11 +130,16 @@ defmodule Absinthe.Schema do
       end
 
       @doc false
-      def decorations(node, ancestors) do
+      def hydrate(_node, _ancestors) do
         []
       end
 
-      defoverridable(context: 1, middleware: 3, plugins: 0, decorations: 2)
+      @doc false
+      def sdl_directives(directives) do
+        directives
+      end
+
+      defoverridable(context: 1, middleware: 3, plugins: 0, hydrate: 2, sdl_directives: 1)
     end
   end
 

@@ -58,17 +58,18 @@ defmodule Absinthe.Mixfile do
   defp elixirc_paths(_), do: ["lib"]
 
   def application do
-    [applications: [:logger]]
+    [extra_applications: [:logger]]
   end
 
   defp deps do
     [
-      {:benchee, ">= 0.0.0", only: :dev},
-      {:nimble_parsec, "~> 0.4"},
+      {:nimble_parsec, "~> 0.5"},
+      {:telemetry, "~> 0.4.0"},
       {:dataloader, "~> 1.0.0", optional: true},
-      {:ex_doc, "~> 0.20", only: :dev},
-      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
       {:decimal, "~> 1.0", optional: true},
+      {:ex_doc, "~> 0.20", only: :dev},
+      {:benchee, ">= 0.0.0", only: :dev},
+      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
       {:phoenix_pubsub, ">= 0.0.0", only: :test},
       {:mix_test_watch, "~> 0.4.1", only: [:test, :dev]}
     ]

@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Execution.CustomTypes.Datetime.InputObjectTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   @query """
   mutation {

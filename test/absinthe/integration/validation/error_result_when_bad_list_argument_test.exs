@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Validation.ErrorResultWhenBadListArgumentTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   @query """
   query {
@@ -18,6 +18,6 @@ defmodule Elixir.Absinthe.Integration.Validation.ErrorResultWhenBadListArgumentT
                   locations: [%{column: 9, line: 2}]
                 }
               ]
-            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+            }} == Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, [])
   end
 end

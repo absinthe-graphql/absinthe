@@ -64,6 +64,17 @@ use Absinthe.Phoenix.Socket,
 
 Where `MyAppWeb.Schema` is the name of your Absinthe schema module.
 
+### GraphiQL (optional)
+
+If you're using the GraphiQL plug, in your `MyAppWeb.Router`, specify the `socket` option:
+
+```elixir
+forward "/graphiql",
+        Absinthe.Plug.GraphiQL,
+        schema: MyAppWeb.Schema,
+        socket: MyAppWeb.UserSocket
+```
+
 That is all that's required for setup on the server.
 
 ### Setting Options

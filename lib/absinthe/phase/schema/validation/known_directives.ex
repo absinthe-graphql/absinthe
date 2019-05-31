@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Validation.KnownDirectives do
+defmodule Absinthe.Phase.Schema.Validation.KnownDirectives do
   @moduledoc false
 
   alias Absinthe.{Blueprint, Phase}
@@ -64,8 +64,8 @@ defmodule Absinthe.Phase.Validation.KnownDirectives do
   defp error_unknown(node) do
     %Phase.Error{
       phase: __MODULE__,
-      message: "Unknown directive.",
-      locations: [node.source_location]
+      message: "Unknown directive `#{node.name}'.",
+      locations: [node.__reference__.location]
     }
   end
 
@@ -75,8 +75,8 @@ defmodule Absinthe.Phase.Validation.KnownDirectives do
 
     %Phase.Error{
       phase: __MODULE__,
-      message: "May not be used on #{placement_name}.",
-      locations: [node.source_location]
+      message: "Directive `#{node.name}' may not be used on #{placement_name}.",
+      locations: [node.__reference__.location]
     }
   end
 end

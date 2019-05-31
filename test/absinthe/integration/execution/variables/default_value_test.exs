@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Execution.Variables.DefaultValueTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   @query """
   query ($mult: Int = 6) {

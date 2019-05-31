@@ -21,7 +21,47 @@ defmodule Absinthe.PipelineTest do
         Pipeline.for_document(Schema)
         |> Pipeline.upto(Phase.Blueprint)
 
-      assert {:ok, %Blueprint{}, [Phase.Blueprint, Phase.Parse]} = Pipeline.run(@query, pipeline)
+      assert {:ok, %Blueprint{}, [Phase.Blueprint, Phase.Parse, Phase.Telemetry, Phase.Init]} =
+               Pipeline.run(@query, pipeline)
+    end
+  end
+
+  describe "default pipeline accepts possible inputs" do
+    @query """
+    { foo { bar } }
+    """
+
+    test "query string" do
+      pipeline =
+        Pipeline.for_document(Schema)
+        |> Pipeline.upto(Phase.Blueprint)
+
+      pipeline_input = @query
+
+      assert {:ok, %Blueprint{operations: [%{selections: [%{name: "foo"}]}]}, _phases} =
+               Pipeline.run(pipeline_input, pipeline)
+    end
+
+    test "language source" do
+      pipeline =
+        Pipeline.for_document(Schema)
+        |> Pipeline.upto(Phase.Blueprint)
+
+      pipeline_input = %Absinthe.Language.Source{body: @query}
+
+      assert {:ok, %Blueprint{operations: [%{selections: [%{name: "foo"}]}]}, _phases} =
+               Pipeline.run(pipeline_input, pipeline)
+    end
+
+    test "blueprint" do
+      pipeline =
+        Pipeline.for_document(Schema)
+        |> Pipeline.upto(Phase.Blueprint)
+
+      pipeline_input = %Blueprint{input: @query}
+
+      assert {:ok, %Blueprint{operations: [%{selections: [%{name: "foo"}]}]}, _phases} =
+               Pipeline.run(pipeline_input, pipeline)
     end
   end
 

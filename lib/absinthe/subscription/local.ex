@@ -44,10 +44,17 @@ defmodule Absinthe.Subscription.Local do
 
   defp run_docset(pubsub, docs_and_topics) do
     {topics, docs} = Enum.unzip(docs_and_topics)
-    docs = BatchResolver.run(docs, schema: hd(docs).schema, abort_on_error: false)
+
+    docs =
+      BatchResolver.run(docs,
+        schema: hd(docs).schema,
+        abort_on_error: false,
+        initial_phases: [{Absinthe.Phase.Telemetry, [:subscription, :publish, :start]}]
+      )
 
     pipeline = [
-      Absinthe.Phase.Document.Result
+      Absinthe.Phase.Document.Result,
+      {Absinthe.Phase.Telemetry, [:subscription, :publish]}
     ]
 
     for {doc, {topic, key_strategy}} <- Enum.zip(docs, topics), doc != :error do

@@ -5,7 +5,8 @@ defmodule Absinthe.Phase.Parse do
 
   alias Absinthe.{Language, Phase}
 
-  @spec run(Language.Source.t(), Keyword.t()) :: Phase.result_t()
+  @type input_t :: Language.Source.t() | Blueprint.t()
+  @spec run(input_t, Keyword.t()) :: Phase.result_t()
   def run(input, options \\ [])
 
   def run(%Absinthe.Blueprint{} = blueprint, options) do

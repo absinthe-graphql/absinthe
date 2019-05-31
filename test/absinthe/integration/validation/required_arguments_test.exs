@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Validation.RequiredArgumentsTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   @query """
   query { thing { name } }
@@ -14,6 +14,6 @@ defmodule Elixir.Absinthe.Integration.Validation.RequiredArgumentsTest do
                   locations: [%{column: 9, line: 1}]
                 }
               ]
-            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+            }} == Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, [])
   end
 end

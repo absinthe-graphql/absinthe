@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Execution.InputTypes.Null.VariableToTypeNonNull_TTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   @query """
   query ($value: Int!) { times: objTimes(input: {base: $value}) }

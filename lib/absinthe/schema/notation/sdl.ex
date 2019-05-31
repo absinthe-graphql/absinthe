@@ -30,8 +30,26 @@ defmodule Absinthe.Schema.Notation.SDL do
     end
   end
 
+  defp put_ref(%{fields: fields, directives: directives} = node, ref, opts) do
+    %{
+      node
+      | fields: Enum.map(fields, &put_ref(&1, ref, opts)),
+        directives: Enum.map(directives, &put_ref(&1, ref, opts))
+    }
+    |> do_put_ref(ref, opts)
+  end
+
   defp put_ref(%{fields: fields} = node, ref, opts) do
     %{node | fields: Enum.map(fields, &put_ref(&1, ref, opts))}
+    |> do_put_ref(ref, opts)
+  end
+
+  defp put_ref(%{arguments: args, directives: directives} = node, ref, opts) do
+    %{
+      node
+      | arguments: Enum.map(args, &put_ref(&1, ref, opts)),
+        directives: Enum.map(directives, &put_ref(&1, ref, opts))
+    }
     |> do_put_ref(ref, opts)
   end
 
@@ -40,43 +58,28 @@ defmodule Absinthe.Schema.Notation.SDL do
     |> do_put_ref(ref, opts)
   end
 
-  defp put_ref(%{directives: dirs} = node, ref, opts) do
-    %{node | directives: Enum.map(dirs, &put_ref(&1, ref, opts))}
+  defp put_ref(%{directives: directives} = node, ref, opts) do
+    %{node | directives: Enum.map(directives, &put_ref(&1, ref, opts))}
     |> do_put_ref(ref, opts)
   end
 
   defp put_ref(node, ref, opts), do: do_put_ref(node, ref, opts)
 
-  # @field_types [
-  #   Blueprint.Schema.FieldDefinition,
-  #   Blueprint.Schema.EnumValueDefinition,
-  #   Blueprint.Schema.InputValueDefinition
-  # ]
-
-  # TODO:  Which else of these need the conversions?
-  # Blueprint.Schema.DirectiveDefinition,
-  # Blueprint.Schema.EnumTypeDefinition,
-  # Blueprint.Schema.InputObjectTypeDefinition,
-  # Blueprint.Schema.InterfaceTypeDefinition,
-  # Blueprint.Schema.ObjectTypeDefinition,
-  # Blueprint.Schema.ScalarTypeDefinition,
-  # Blueprint.Schema.UnionTypeDefinition
-  # Blueprint.Schema.EnumValueDefinition
-  # Blueprint.Schema.InputValueDefinition
-
-  defp do_put_ref(%_{__reference__: nil, name: name} = node, ref, opts) do
-    # adapter = Keyword.get(opts, :adapter, Absinthe.Adapter.LanguageConventions)
-
+  defp do_put_ref(%{__reference__: nil} = node, ref, opts) do
     ref =
       case opts[:path] do
         nil ->
           ref
 
         path ->
-          put_in(ref.location, %{file: {:unquote, [], [path]}, line: node.source_location.line})
+          put_in(ref.location, %{
+            file: {:unquote, [], [path]},
+            line: node.source_location.line,
+            column: node.source_location.column
+          })
       end
 
-    %{node | __reference__: ref, name: name}
+    %{node | __reference__: ref}
   end
 
   defp do_put_ref(node, _ref, _opts), do: node
