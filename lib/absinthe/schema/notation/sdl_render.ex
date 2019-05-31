@@ -10,16 +10,14 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   @builtin_scalars ["String", "Int", "Float", "Boolean", "ID"]
   @builtin_directives ["skip", "include"]
 
-  def from_introspection(%{"__schema" => schema}) do
-    %{
-      "directives" => directives,
-      "types" => types,
-      "queryType" => _query_type,
-      "mutationType" => _mutation_type,
-      "subscriptionType" => _subscription_type
-    } = schema
-
-    (directives ++ types)
+  def from_introspection(%{
+        "__schema" =>
+          %{
+            "directives" => directives,
+            "types" => types
+          } = schema
+      }) do
+    [schema | directives ++ types]
     |> Enum.map(&render/1)
     |> Enum.reject(&(&1 == empty()))
     |> join([line(), line()])
@@ -33,29 +31,36 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     empty()
   end
 
-  def render(%{"ofType" => nil, "kind" => "SCALAR", "name" => name}) do
-    string(name)
-  end
-
-  def render(%{"ofType" => nil, "name" => name}) do
-    string(name)
-  end
-
-  def render(%{"ofType" => type, "kind" => "LIST"}) do
-    concat(["[", render(type), "]"])
-  end
-
-  def render(%{"ofType" => type, "kind" => "NON_NULL"}) do
-    concat([render(type), "!"])
-  end
-
-  # Don't render builtin scalars
-  def render(%{
-        "kind" => "SCALAR",
-        "name" => name
-      })
+  # Don't render builtin scalar types
+  def render(
+        %{
+          "kind" => "SCALAR",
+          "name" => name,
+          "description" => _
+        } = scalar
+      )
       when name in @builtin_scalars do
     empty()
+  end
+
+  # schema
+  def render(%{
+        "queryType" => query_type,
+        "mutationType" => mutation_type,
+        "subscriptionType" => subscription_type
+      }) do
+    schema_type_docs =
+      [
+        query_type && concat("query: ", render(query_type)),
+        mutation_type && concat("query: ", render(mutation_type)),
+        subscription_type && concat("query: ", render(subscription_type))
+      ]
+      |> Enum.reject(&is_nil/1)
+
+    block(
+      "schema",
+      schema_type_docs
+    )
   end
 
   # ARGUMENT
@@ -93,6 +98,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(description)
   end
 
+  # OBJECT
   def render(%{
         "kind" => "OBJECT",
         "name" => name,
@@ -111,6 +117,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(description)
   end
 
+  # INPUT_OBJECT
   def render(%{
         "kind" => "INPUT_OBJECT",
         "name" => name,
@@ -125,6 +132,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(description)
   end
 
+  # UNION
   def render(%{
         "kind" => "UNION",
         "name" => name,
@@ -142,6 +150,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(description)
   end
 
+  # INTERFACE
   def render(%{
         "kind" => "INTERFACE",
         "name" => name,
@@ -156,6 +165,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(description)
   end
 
+  # ENUM
   def render(%{
         "kind" => "ENUM",
         "name" => name,
@@ -170,6 +180,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(description)
   end
 
+  # SCALAR
   def render(%{
         "kind" => "SCALAR",
         "name" => name,
@@ -202,6 +213,26 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       join(locations, " | ")
     ])
     |> description(description)
+  end
+
+  def render(%{"ofType" => nil, "kind" => "SCALAR", "name" => name}) do
+    string(name)
+  end
+
+  def render(%{"ofType" => nil, "name" => name}) do
+    string(name)
+  end
+
+  def render(%{"ofType" => type, "kind" => "LIST"}) do
+    concat(["[", render(type), "]"])
+  end
+
+  def render(%{"ofType" => type, "kind" => "NON_NULL"}) do
+    concat([render(type), "!"])
+  end
+
+  def render(%{"name" => name}) do
+    string(name)
   end
 
   def arguments([]) do
@@ -323,24 +354,28 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   def block(kind, name, doc) do
     glue(
       kind,
-      glue(
-        name,
-        group(
-          glue(
-            nest(
-              force_unfit(
-                glue(
-                  "{",
-                  "",
-                  fold_doc(doc, &glue(&1, "", &2))
-                )
-              ),
-              2,
-              :always
+      block(name, doc)
+    )
+  end
+
+  def block(name, doc) do
+    glue(
+      name,
+      group(
+        glue(
+          nest(
+            force_unfit(
+              glue(
+                "{",
+                "",
+                fold_doc(doc, &glue(&1, "", &2))
+              )
             ),
-            "",
-            "}"
-          )
+            2,
+            :always
+          ),
+          "",
+          "}"
         )
       )
     )

@@ -137,6 +137,10 @@ defmodule SdlRenderTest do
   end
 
   @expected_sdl """
+  schema {
+    query: RootQueryType
+  }
+
   interface Animal {
     legs: Int!
   }
