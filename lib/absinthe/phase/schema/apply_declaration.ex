@@ -19,7 +19,7 @@ defmodule Absinthe.Phase.Schema.ApplyDeclaration do
     %{blueprint | schema_definitions: Enum.map(blueprint.schema_definitions, &process_schema_definition/1)}
   end
 
-  # Strip the schema declaration out of the schema's type definitions and apply ita
+  # Strip the schema declaration out of the schema's type definitions and apply it
   @spec process_schema_definition(schema_definition :: Blueprint.Schema.SchemaDefinition.t()) :: Blueprint.Schema.SchemaDefinition.t()
   defp process_schema_definition(schema_definition) do
     {declarations, type_defs} =
