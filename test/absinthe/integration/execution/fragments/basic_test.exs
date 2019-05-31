@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Execution.Fragments.BasicTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   @query """
   query Q {

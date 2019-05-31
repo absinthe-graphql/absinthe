@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Execution.Aliases.WithErrorsTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   @query """
   mutation { foo: failingThing(type: WITH_CODE) { name } }
@@ -17,6 +17,6 @@ defmodule Elixir.Absinthe.Integration.Execution.Aliases.WithErrorsTest do
                   locations: [%{column: 12, line: 1}]
                 }
               ]
-            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+            }} == Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, [])
   end
 end

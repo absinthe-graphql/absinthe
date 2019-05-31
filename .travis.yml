@@ -3,11 +3,13 @@ elixir:
   - 1.8.0
 notifications:
   recipients:
+    - vincefoley@gmail.com
     - brwcodes@gmail.com
     - ben.wilson@cargosense.com
 otp_release:
   - 20.0
   - 21.0
+  - 22.0
 script:
  - mix format --check-formatted
  - MIX_ENV=test mix local.hex --force && MIX_ENV=test mix do deps.get, test

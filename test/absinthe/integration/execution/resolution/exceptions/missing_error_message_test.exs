@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Execution.Resolution.Exceptions.MissingErrorMessageTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   @query """
   mutation { failingThing(type: WITHOUT_MESSAGE) { name } }
@@ -7,7 +7,7 @@ defmodule Elixir.Absinthe.Integration.Execution.Resolution.Exceptions.MissingErr
 
   test "scenario #1" do
     assert_raise(Absinthe.ExecutionError, fn ->
-      Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+      Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, [])
     end)
   end
 end

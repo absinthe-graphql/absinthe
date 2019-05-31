@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Validation.UnknownArgForListMemberFieldTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   @query """
   query {
@@ -19,6 +19,6 @@ defmodule Elixir.Absinthe.Integration.Validation.UnknownArgForListMemberFieldTes
                   locations: [%{column: 8, line: 3}]
                 }
               ]
-            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+            }} == Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, [])
   end
 end

@@ -12,7 +12,9 @@ defmodule Absinthe.Blueprint.Directive do
     # Added by phases
     schema_node: nil,
     flags: %{},
-    errors: []
+    errors: [],
+    __reference__: nil,
+    __private__: []
   ]
 
   @type t :: %__MODULE__{
@@ -21,7 +23,9 @@ defmodule Absinthe.Blueprint.Directive do
           source_location: nil | Blueprint.SourceLocation.t(),
           schema_node: nil | Absinthe.Type.Directive.t(),
           flags: Blueprint.flags_t(),
-          errors: [Phase.Error.t()]
+          errors: [Phase.Error.t()],
+          __reference__: nil,
+          __private__: []
         }
 
   @spec expand(t, Blueprint.node_t()) :: {t, map}
@@ -31,7 +35,15 @@ defmodule Absinthe.Blueprint.Directive do
 
   def expand(%__MODULE__{schema_node: type} = directive, node) do
     args = Blueprint.Input.Argument.value_map(directive.arguments)
-    Absinthe.Type.function(type, :expand).(args, node)
+
+    case Absinthe.Type.function(type, :expand) do
+      nil ->
+        # Directive is a no-op
+        node
+
+      expansion when is_function(expansion) ->
+        expansion.(args, node)
+    end
   end
 
   @doc """
@@ -45,6 +57,7 @@ defmodule Absinthe.Blueprint.Directive do
   def placement(%Blueprint.Document.Fragment.Inline{}), do: :inline_fragment
   def placement(%Blueprint.Document.Operation{}), do: :operation_definition
   def placement(%Blueprint.Schema.SchemaDefinition{}), do: :schema
+  def placement(%Blueprint.Schema.SchemaDeclaration{}), do: :schema
   def placement(%Blueprint.Schema.ScalarTypeDefinition{}), do: :scalar
   def placement(%Blueprint.Schema.ObjectTypeDefinition{}), do: :object
   def placement(%Blueprint.Schema.FieldDefinition{}), do: :field_definition

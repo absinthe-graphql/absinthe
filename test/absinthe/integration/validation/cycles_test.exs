@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Validation.CyclesTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   @query """
   query Foo {
@@ -28,7 +28,7 @@ defmodule Elixir.Absinthe.Integration.Validation.CyclesTest do
                   locations: [%{column: 1, line: 8}]
                 }
               ]
-            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+            }} == Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, [])
   end
 
   @query """
@@ -50,6 +50,6 @@ defmodule Elixir.Absinthe.Integration.Validation.CyclesTest do
                   locations: [%{column: 3, line: 6}]
                 }
               ]
-            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+            }} == Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, [])
   end
 end

@@ -12,6 +12,16 @@ defmodule Absinthe.Phase.Schema.Validation.TypeNamesAreUnique do
   end
 
   defp handle_schemas(%Blueprint.Schema.SchemaDefinition{} = schema, key) do
+    if Enum.any?(schema.type_definitions, fn
+         %Blueprint.Schema.SchemaDefinition{} ->
+           true
+
+         _ ->
+           false
+       end) do
+      raise "SchemaDefinition Inside Schema Definition"
+    end
+
     types = Enum.group_by(schema.type_definitions, &Map.fetch!(&1, key))
     directives = Enum.group_by(schema.directive_definitions, &Map.fetch!(&1, key))
 

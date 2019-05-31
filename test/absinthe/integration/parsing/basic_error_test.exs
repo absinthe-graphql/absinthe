@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Parsing.BasicErrorTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   @query """
   {
@@ -13,6 +13,6 @@ defmodule Elixir.Absinthe.Integration.Parsing.BasicErrorTest do
               errors: [
                 %{message: "syntax error before: '}'", locations: [%{column: 21, line: 2}]}
               ]
-            }} == Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+            }} == Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, [])
   end
 end

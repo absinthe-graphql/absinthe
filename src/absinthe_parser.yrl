@@ -194,10 +194,10 @@ DirectiveDefinition -> 'directive' '@' Name 'on' DirectiveDefinitionLocations Di
 DirectiveDefinition -> 'directive' '@' Name ArgumentsDefinition 'on' DirectiveDefinitionLocations Directives :
   build_ast_node('DirectiveDefinition', #{'name' => extract_binary('$3'), 'arguments' => '$4', 'directives' => '$7', 'locations' => extract_directive_locations('$6')}, extract_location('$1')).
 
-SchemaDefinition -> 'schema' : build_ast_node('SchemaDefinition', #{}, extract_location('$1')).
-SchemaDefinition -> 'schema' Directives : build_ast_node('SchemaDefinition', #{'directives' => '$2'}, extract_location('$1')).
-SchemaDefinition -> 'schema' '{' FieldDefinitionList '}' : build_ast_node('SchemaDefinition', #{'fields' => '$3'}, extract_location('$1')).
-SchemaDefinition -> 'schema' Directives '{' FieldDefinitionList '}' : build_ast_node('SchemaDefinition', #{'directives' => '$2', 'fields' => '$4'}, extract_location('$1')).
+SchemaDefinition -> 'schema' : build_ast_node('SchemaDeclaration', #{}, extract_location('$1')).
+SchemaDefinition -> 'schema' Directives : build_ast_node('SchemaDeclaration', #{'directives' => '$2'}, extract_location('$1')).
+SchemaDefinition -> 'schema' '{' FieldDefinitionList '}' : build_ast_node('SchemaDeclaration', #{'fields' => '$3'}, extract_location('$1')).
+SchemaDefinition -> 'schema' Directives '{' FieldDefinitionList '}' : build_ast_node('SchemaDeclaration', #{'directives' => '$2', 'fields' => '$4'}, extract_location('$1')).
 
 ObjectTypeDefinition -> 'type' Name :
   build_ast_node('ObjectTypeDefinition', #{'name' => extract_binary('$2')}, extract_location('$1')).

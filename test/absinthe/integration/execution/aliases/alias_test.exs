@@ -1,5 +1,5 @@
 defmodule Elixir.Absinthe.Integration.Execution.Aliases.AliasTest do
-  use ExUnit.Case, async: true
+  use Absinthe.Case, async: true
 
   # LEAVE ME
 
@@ -13,6 +13,6 @@ defmodule Elixir.Absinthe.Integration.Execution.Aliases.AliasTest do
 
   test "scenario #1" do
     assert {:ok, %{data: %{"widget" => %{"name" => "Foo"}}}} ==
-             Absinthe.run(@query, Absinthe.Fixtures.ThingsSchema, [])
+             Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, [])
   end
 end

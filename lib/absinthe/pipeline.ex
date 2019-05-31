@@ -83,7 +83,7 @@ defmodule Absinthe.Pipeline do
       Phase.Document.MissingLiterals,
       Phase.Document.Arguments.FlagInvalid,
       # Validate Full Document
-      Phase.Validation.KnownDirectives,
+      Phase.Document.Validation.KnownDirectives,
       Phase.Document.Validation.ScalarLeafs,
       Phase.Document.Validation.VariablesAreInputTypes,
       Phase.Document.Validation.ArgumentsOfCorrectType,
@@ -116,8 +116,9 @@ defmodule Absinthe.Pipeline do
   def for_schema(schema, _options \\ []) do
     [
       Phase.Schema.TypeImports,
+      Phase.Schema.ApplyDeclaration,
       Phase.Schema.Introspection,
-      {Phase.Schema.Decorate, [schema: schema]},
+      {Phase.Schema.Hydrate, [schema: schema]},
       Phase.Schema.NormalizeReferences,
       Phase.Schema.Validation.TypeNamesAreUnique,
       Phase.Schema.Validation.TypeReferencesExist,
@@ -127,8 +128,9 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.Validation.NoCircularFieldImports,
       Phase.Schema.Validation.Result,
       Phase.Schema.FieldImports,
-      # This will be needed eventually to support directives
-      # {Phase.Schema, [schema: schema]},
+      Phase.Schema.AttachDirectives,
+      Phase.Schema.Validation.KnownDirectives,
+      Phase.Schema.Directives,
       Phase.Schema.Validation.DefaultEnumValuePresent,
       Phase.Schema.Validation.InputOuputTypesCorrectlyPlaced,
       Phase.Schema.Validation.InterfacesMustResolveTypes,
