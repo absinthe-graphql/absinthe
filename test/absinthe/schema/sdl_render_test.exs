@@ -53,7 +53,7 @@ defmodule SdlRenderTest do
       echo(
         category: Category!
         "The number of times"
-        times: Int
+        times: Int = 10
       ): [Category!]!
       posts: Post
       search(limit: Int, sort: SorterInput!): [SearchResult]
