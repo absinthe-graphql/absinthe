@@ -1,5 +1,4 @@
 defmodule Absinthe.Schema.Hydrator do
-
   @type hydration :: any
 
   @callback apply_hydration(

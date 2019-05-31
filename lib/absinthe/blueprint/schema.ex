@@ -8,20 +8,20 @@ defmodule Absinthe.Blueprint.Schema do
   @type directive_t :: Schema.DirectiveDefinition.t()
 
   @type type_t ::
-    Blueprint.Schema.EnumTypeDefinition.t()
-    | Blueprint.Schema.InputObjectTypeDefinition.t()
-    | Blueprint.Schema.InterfaceTypeDefinition.t()
-    | Blueprint.Schema.ObjectTypeDefinition.t()
-    | Blueprint.Schema.ScalarTypeDefinition.t()
-    | Blueprint.Schema.UnionTypeDefinition.t()
+          Blueprint.Schema.EnumTypeDefinition.t()
+          | Blueprint.Schema.InputObjectTypeDefinition.t()
+          | Blueprint.Schema.InterfaceTypeDefinition.t()
+          | Blueprint.Schema.ObjectTypeDefinition.t()
+          | Blueprint.Schema.ScalarTypeDefinition.t()
+          | Blueprint.Schema.UnionTypeDefinition.t()
 
   @type t ::
-    Blueprint.Schema.EnumValueDefinition.t()
-    | Blueprint.Schema.InputValueDefinition.t()
-    | Blueprint.Schema.SchemaDeclaration.t()
-    | Blueprint.Schema.SchemaDefinition.t()
-    | type_t()
-    | directive_t()
+          Blueprint.Schema.EnumValueDefinition.t()
+          | Blueprint.Schema.InputValueDefinition.t()
+          | Blueprint.Schema.SchemaDeclaration.t()
+          | Blueprint.Schema.SchemaDefinition.t()
+          | type_t()
+          | directive_t()
 
   @doc """
   Lookup a type definition that is part of a schema.

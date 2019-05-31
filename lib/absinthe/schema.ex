@@ -465,7 +465,10 @@ defmodule Absinthe.Schema do
   def hydrate(_node, _ancestors), do: []
   ```
   """
-  @callback hydrate(node :: Absinthe.Blueprint.Schema.t(), ancestors :: [Absinthe.Blueprint.Schema.t()]) :: Absinthe.Schema.Hydrator.hydration()
+  @callback hydrate(
+              node :: Absinthe.Blueprint.Schema.t(),
+              ancestors :: [Absinthe.Blueprint.Schema.t()]
+            ) :: Absinthe.Schema.Hydrator.hydration()
 
   @doc """
   Used to customize the directives available for use in SDL to define schemas.
@@ -502,7 +505,9 @@ defmodule Absinthe.Schema do
   representation of each type definition struct with any desired changes
   (e.g., adding the value of the provided `name` argument to its `__private__` map).
   """
-  @callback sdl_directives(builtin_directives :: [Absinthe.Type.Directive.t()]) :: [Absinthe.Type.Directive.t()]
+  @callback sdl_directives(builtin_directives :: [Absinthe.Type.Directive.t()]) :: [
+              Absinthe.Type.Directive.t()
+            ]
 
   def lookup_directive(schema, name) do
     schema.__absinthe_directive__(name)
