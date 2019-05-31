@@ -176,11 +176,11 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
                lookup_field(Definition, :post, :author)
     end
 
-    test "can be added by a decoration to a field" do
+    test "can be added by hydrating a field" do
       assert %{description: "The admin"} = lookup_compiled_field(Definition, :query, :admin)
     end
 
-    test "can be added by a decoration to an argument" do
+    test "can be added by hydrating an argument" do
       field = lookup_compiled_field(Definition, :query, :posts)
       assert %{description: "A filter argument"} = field.args.filter
     end
@@ -214,7 +214,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   { posts { title } }
   """
 
-  describe "execution with decoration-defined resolvers" do
+  describe "execution with hydration-defined resolvers" do
     test "works" do
       assert {:ok, %{data: %{"posts" => [%{"title" => "Foo"}, %{"title" => "Bar"}]}}} =
                Absinthe.run(@query, Definition)
@@ -225,7 +225,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   @query """
   { posts { upcasedTitle } }
   """
-  describe "execution with deeply decoration-defined resolvers" do
+  describe "execution with deeply hydration-defined resolvers" do
     test "works" do
       assert {:ok,
               %{data: %{"posts" => [%{"upcasedTitle" => "FOO"}, %{"upcasedTitle" => "BAR"}]}}} =

@@ -26,7 +26,7 @@ defmodule Absinthe.Blueprint do
 
   @type t :: %__MODULE__{
           operations: [Blueprint.Document.Operation.t()],
-          schema_definitions: [Blueprint.Schema.t()],
+          schema_definitions: [Blueprint.Schema.SchemaDefinition.t()],
           directives: [Blueprint.Schema.DirectiveDefinition.t()],
           name: nil | String.t(),
           fragments: [Blueprint.Document.Fragment.Named.t()],

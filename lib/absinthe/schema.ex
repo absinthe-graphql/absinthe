@@ -330,10 +330,12 @@ defmodule Absinthe.Schema do
   end
 
   @doc """
-  Replace the default middleware
+  Replace the default middleware.
 
   ## Examples
+
   Replace the default for all fields with a string lookup instead of an atom lookup:
+
   ```
   def middleware(middleware, field, object) do
     new_middleware = {Absinthe.Middleware.MapGet, to_string(field.identifier)}
@@ -355,7 +357,7 @@ defmodule Absinthe.Schema do
   end
 
   @doc """
-  List of Plugins to run before / after resolution.
+  Used to define the list of plugins to run before and after resolution.
 
   Plugins are modules that implement the `Absinthe.Plugin` behaviour. These modules
   have the opportunity to run callbacks before and after the resolution of the entire
@@ -367,21 +369,24 @@ defmodule Absinthe.Schema do
   @callback plugins() :: [Absinthe.Plugin.t()]
 
   @doc """
-  Useful for middleware you want to apply on all or a group of fields based on the
-  type of query.
+  Used to apply middleware on all or a group of fields based on pattern matching.
 
   It is passed the existing middleware for a field, the field itself, and the object
   that the field is a part of.
 
-  In this example we add our HandleChangesetError Middleware only to mutations.
+  ## Examples
 
-  ## Example
-      # if it's a field for the mutation object, add this middleware to the end
-      def middleware(middleware, _field, %{identifier: :mutation}) do
-        middleware ++ [MyApp.Middlewares.HandleChangesetErrors]
-      end
-      # if it's any other object keep things as is
-      def middleware(middleware, _field, _object), do: middleware
+  Adding a `HandleChangesetError` middleware only to mutations:
+
+  ```
+  # if it's a field for the mutation object, add this middleware to the end
+  def middleware(middleware, _field, %{identifier: :mutation}) do
+    middleware ++ [MyAppWeb.Middleware.HandleChangesetErrors]
+  end
+
+  # if it's any other object keep things as is
+  def middleware(middleware, _field, _object), do: middleware
+  ```
   """
   @callback middleware([Absinthe.Middleware.spec(), ...], Type.Field.t(), Type.Object.t()) :: [
               Absinthe.Middleware.spec(),
@@ -389,32 +394,115 @@ defmodule Absinthe.Schema do
             ]
 
   @doc """
-  Callback that gives the schema itself an opportunity to set some values in the
-  context that it may need in order to run.
+  Used to set some values in the context that it may need in order to run.
 
+  ## Examples
 
-  ## Example
-      def context(context) do
-        loader =
-          Dataloader.new
-          |> Dataloader.add_source(Blog, Blog.data())
+  Setup dataloader:
 
-        Map.put(context, :loader, loader)
-      end
+  ```
+  def context(context) do
+    loader =
+      Dataloader.new
+      |> Dataloader.add_source(Blog, Blog.data())
+
+      Map.put(context, :loader, loader)
+  end
+  ```
   """
   @callback context(map) :: map
 
   @doc """
-  Callback that gives the opportunity to decorate the schema.
+  Used to hydrate the schema with dynamic attributes.
 
-  E.g. in this example we change the description of the user object
+  While this is normally used to add resolvers, etc, to schemas
+  defined using `import_sdl/1` and `import_sdl2`, it can also be
+  used in schemas defined using other macros.
 
-  ## Example
-      def decorations(%Absinthe.Blueprint.Schema.ObjectTypeDefinition{identifier: :user}, _) do
-        {:description, "A user"}
-      end
+  The function is passed the blueprint definition node as the first
+  argument and its ancestors in a list (with its parent node as the
+  head) as its second argument.
+
+  See the `Absinthe.Phase.Schema.Hydrate` implementation of
+  `Absinthe.Schema.Hydrator` callbacks to see what hydration
+  values can be returned.
+
+  ## Examples
+
+  Add a resolver for a field:
+
+  ```
+  def hydrate(%Absinthe.Blueprint.Schema.FieldDefinition{identifier: :health}, [%Absinthe.Blueprint.Schema.ObjectTypeDefinition{identifier: :query} | _]) do
+    {:resolve, &__MODULE__.health/3}
+  end
+
+  # Resolver implementation:
+  def health(_, _, _), do: {:ok, "alive!"}
+  ```
+
+  Note that the values provided must be macro-escapable; notably, anonymous functions cannot
+  be used.
+
+  You can, of course, omit the struct names for brevity:
+
+  ```
+  def hydrate(%{identifier: :health}, [%{identifier: :query} | _]) do
+    {:resolve, &__MODULE__.health/3}
+  end
+  ```
+
+  Add a description to a type:
+
+  ```
+  def hydrate(%Absinthe.Blueprint.Schema.ObjectTypeDefinition{identifier: :user}, _) do
+    {:description, "A user"}
+  end
+  ```
+
+  If you define `hydrate/2`, don't forget to include a fallback, e.g.:
+
+  ```
+  def hydrate(_node, _ancestors), do: []
+  ```
   """
-  @callback decorations(map, [map, ...]) :: {atom, term}
+  @callback hydrate(node :: Absinthe.Blueprint.Schema.t(), ancestors :: [Absinthe.Blueprint.Schema.t()]) :: Absinthe.Schema.Hydrator.hydration()
+
+  @doc """
+  Used to customize the directives available for use in SDL to define schemas.
+
+  The function is passed the list of pre-defined, built-in directives and must return
+  a new list of directives back.
+
+  ## Examples
+
+  Add a directive to categorize types by related feature:
+
+  ```
+  def sdl_directives(builtin_directives) do
+    [
+      %Absinthe.Type.Directive{
+        name: "feature",
+        locations: [:object, :interface, :union, :enum, :scalar],
+        expand: &expand_feature_directive/2
+      }
+      | builtin_directives
+    ]
+  end
+  ```
+
+  Example use:
+
+  ```graphql
+  type Profile @feature(name: "social") {
+    name: String!
+  }
+  ```
+
+  `expand_feature_directive/2` would be responsible for returning a modified
+  representation of each type definition struct with any desired changes
+  (e.g., adding the value of the provided `name` argument to its `__private__` map).
+  """
+  @callback sdl_directives(builtin_directives :: [Absinthe.Type.Directive.t()]) :: [Absinthe.Type.Directive.t()]
 
   def lookup_directive(schema, name) do
     schema.__absinthe_directive__(name)
