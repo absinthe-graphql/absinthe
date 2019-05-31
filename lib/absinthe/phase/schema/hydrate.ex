@@ -76,11 +76,11 @@ defmodule Absinthe.Phase.Schema.Hydrate do
 
   @impl Absinthe.Schema.Hydrator
 
-  def hydrate(node, {:description, text}) do
+  def apply_hydration(node, {:description, text}) do
     %{node | description: text}
   end
 
-  def hydrate(node, {:resolve, resolver}) do
+  def apply_hydration(node, {:resolve, resolver}) do
     %{node | middleware: [{Absinthe.Resolution, resolver}]}
   end
 
