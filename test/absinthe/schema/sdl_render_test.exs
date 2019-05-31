@@ -18,6 +18,10 @@ defmodule SdlRenderTest do
     - [x] default values (complex)
     - [x] deprecated & reason
 
+  TODO:
+    - `Inspect` protocol for Blueprint structs!!!!!
+      -> need a reference to the whole blueprint
+
   sdl parsing:
     - default values !!
     - deprecated reason
@@ -82,6 +86,13 @@ defmodule SdlRenderTest do
   test "Render SDL from schema defined with SDL" do
     {:ok, %{data: data}} = Absinthe.Schema.introspect(SdlTestSchema)
     rendered_sdl = Absinthe.Schema.Notation.SDL.Render.from_introspection(data)
+    assert rendered_sdl == SdlTestSchema.sdl()
+  end
+
+  test "Render SDL from blueprint defined with SDL" do
+    rendered_sdl =
+      Absinthe.Schema.Notation.SDL.Render.from_blueprint(SdlTestSchema.__absinthe_blueprint__())
+
     assert rendered_sdl == SdlTestSchema.sdl()
   end
 
@@ -186,12 +197,49 @@ defmodule SdlRenderTest do
     assert rendered_sdl == @expected_sdl
   end
 
-  test "Render SDL from blueprint" do
+  @expected_blueprint_sdl """
+  schema {
+    query: RootQueryType
+  }
+
+  directive @foo(name: String!) on OBJECT | SCALAR
+
+  type RootQueryType {
+    pets: [Pet]
+    animals: [Animal]
+    echo(
+      "Echo it back"
+      n: Int! = 10
+    ): Int
+  }
+
+  type Spider implements Animal {
+    legs: Int!
+    webComplexity: Float! @deprecated(reason: \"""
+      Definately
+      Don't use This
+    \""")
+  }
+
+  type Dog implements Pet, Animal {
+    legs: Int!
+    name: String! @deprecated(reason: "Don't use This")
+  }
+
+  interface Pet {
+    name: String!
+  }
+
+  interface Animal {
+    legs: Int!
+  }
+  """
+  test "Render SDL from blueprint defined with macros" do
     rendered_sdl =
       Absinthe.Schema.Notation.SDL.Render.from_blueprint(
         ClassicTestSchema.__absinthe_blueprint__()
       )
 
-    assert rendered_sdl == @expected_sdl
+    assert rendered_sdl == @expected_blueprint_sdl
   end
 end
