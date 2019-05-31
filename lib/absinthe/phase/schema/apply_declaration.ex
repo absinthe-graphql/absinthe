@@ -82,8 +82,8 @@ defmodule Absinthe.Phase.Schema.ApplyDeclaration do
   end
 
   # If the type definition is declared as a root type, set the identifier appropriately
-  @spec maybe_mark_root(type_def :: Blueprint.Schema.node_t(), root_mappings :: root_mappings()) ::
-          Blueprint.Schema.node_t()
+  @spec maybe_mark_root(type_def :: Blueprint.Schema.t(), root_mappings :: root_mappings()) ::
+          Blueprint.Schema.t()
   defp maybe_mark_root(%Blueprint.Schema.ObjectTypeDefinition{} = type_def, root_mappings) do
     case operation_root_identifier(type_def, root_mappings) do
       nil ->
