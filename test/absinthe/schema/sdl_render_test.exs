@@ -7,6 +7,7 @@ defmodule SdlRenderTest do
 
   issues:
     - schema definition order is not respected?
+    - default value: list of enums?
 
   todo:
     - [x] interface & implements
@@ -18,8 +19,8 @@ defmodule SdlRenderTest do
     - [x] deprecated & reason
 
   sdl parsing:
-    - default values
-    - deprecated
+    - default values !!
+    - deprecated reason
   """
 
   defmodule SdlTestSchema do
