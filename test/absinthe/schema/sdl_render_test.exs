@@ -86,6 +86,11 @@ defmodule SdlRenderTest do
   defmodule ClassicTestSchema do
     use Absinthe.Schema
 
+    directive :foo do
+      arg :name, non_null(:string)
+      on [:object, :scalar]
+    end
+
     interface :animal do
       field :legs, non_null(:integer)
 
@@ -141,6 +146,8 @@ defmodule SdlRenderTest do
     query: RootQueryType
   }
 
+  directive @foo(name: String!) on OBJECT | SCALAR
+
   interface Animal {
     legs: Int!
   }
@@ -174,6 +181,15 @@ defmodule SdlRenderTest do
   test "Render SDL from schema defined with macros" do
     {:ok, %{data: data}} = Absinthe.Schema.introspect(ClassicTestSchema)
     rendered_sdl = Absinthe.Schema.Notation.SDL.Render.from_introspection(data)
+    assert rendered_sdl == @expected_sdl
+  end
+
+  test "Render SDL from blueprint" do
+    rendered_sdl =
+      Absinthe.Schema.Notation.SDL.Render.from_blueprint(
+        ClassicTestSchema.__absinthe_blueprint__()
+      )
+
     assert rendered_sdl == @expected_sdl
   end
 end

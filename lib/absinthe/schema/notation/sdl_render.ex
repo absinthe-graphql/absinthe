@@ -1,6 +1,7 @@
 defmodule Absinthe.Schema.Notation.SDL.Render do
   @moduledoc false
   import Inspect.Algebra
+  alias Absinthe.Blueprint.Schema
 
   @doc """
   Render SDL
@@ -18,6 +19,33 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
           } = schema
       }) do
     [schema | directives ++ types]
+    |> Enum.map(&render/1)
+    |> Enum.reject(&(&1 == empty()))
+    |> join([line(), line()])
+    |> concat(line())
+    |> format(@line_width)
+    |> to_string
+  end
+
+  def from_blueprint(
+        %Absinthe.Blueprint{
+          schema_definitions: [
+            %Absinthe.Blueprint.Schema.SchemaDefinition{
+              type_definitions: type_definitions,
+              directive_definitions: directive_definitions
+            }
+          ]
+        } = blueprint
+      ) do
+    query_type = Enum.find(type_definitions, &(&1.identifier == :query))
+    mutation_type = Enum.find(type_definitions, &(&1.identifier == :mutation))
+    subscription_type = Enum.find(type_definitions, &(&1.identifier == :subscription))
+    schema = %{query: query_type, mutation: mutation_type, subscription: subscription_type}
+
+    IO.inspect(blueprint)
+
+    # [schema | directives ++ types]
+    [schema | directive_definitions]
     |> Enum.map(&render/1)
     |> Enum.reject(&(&1 == empty()))
     |> join([line(), line()])
@@ -63,6 +91,27 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     )
   end
 
+  def render(
+        %{
+          query: query_type,
+          mutation: mutation_type,
+          subscription: subscription_type
+        } = schema_types
+      ) do
+    schema_type_docs =
+      [
+        query_type && concat("query: ", string(query_type.name)),
+        mutation_type && concat("mutation: ", string(mutation_type.name)),
+        subscription_type && concat("subscription: ", string(subscription_type.name))
+      ]
+      |> Enum.reject(&is_nil/1)
+
+    block(
+      "schema",
+      schema_type_docs
+    )
+  end
+
   # ARGUMENT
   def render(%{
         "defaultValue" => default_value,
@@ -77,6 +126,16 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       default(default_value)
     ])
     |> description(description)
+  end
+
+  def render(%Schema.InputValueDefinition{} = input_value) do
+    concat([
+      string(input_value.name),
+      ": ",
+      render(input_value.type),
+      default(input_value.default_value)
+    ])
+    |> description(input_value.description)
   end
 
   # FIELD
@@ -215,6 +274,19 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(description)
   end
 
+  def render(%Schema.DirectiveDefinition{} = directive) do
+    locations = directive.locations |> Enum.map(&String.upcase(to_string(&1)))
+
+    concat([
+      "directive ",
+      concat("@", string(directive.name)),
+      arguments(directive.arguments),
+      " on ",
+      join(locations, " | ")
+    ])
+    |> description(directive.description)
+  end
+
   def render(%{"ofType" => nil, "kind" => "SCALAR", "name" => name}) do
     string(name)
   end
@@ -231,8 +303,16 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     concat([render(type), "!"])
   end
 
+  def render(%Absinthe.Blueprint.TypeReference.NonNull{of_type: of_type}) do
+    concat([render(of_type), "!"])
+  end
+
   def render(%{"name" => name}) do
     string(name)
+  end
+
+  def render(type) when is_atom(type) and type in [:string] do
+    to_string(type)
   end
 
   def arguments([]) do
@@ -241,7 +321,12 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
   def arguments(args) do
     arg_docs = Enum.map(args, &render/1)
-    any_descriptions? = Enum.any?(args, & &1["description"])
+
+    any_descriptions? =
+      Enum.any?(args, fn
+        %{"description" => description} -> description
+        %{description: description} -> description
+      end)
 
     group(
       glue(
