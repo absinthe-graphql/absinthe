@@ -42,7 +42,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     subscription_type = Enum.find(type_definitions, &(&1.identifier == :subscription))
     schema = %{query: query_type, mutation: mutation_type, subscription: subscription_type}
 
-    IO.inspect(blueprint)
+    # IO.inspect(blueprint)
 
     # [schema | directives ++ types]
     [schema | directive_definitions]

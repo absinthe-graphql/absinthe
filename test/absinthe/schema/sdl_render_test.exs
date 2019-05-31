@@ -16,19 +16,20 @@ defmodule SdlRenderTest do
     - [x] default values (scalar)
     - [x] default values (complex)
     - [x] deprecated & reason
-    - [ ] schema block
-            https://github.com/absinthe-graphql/absinthe/pull/735
 
   sdl parsing:
     - default values
     - deprecated
-    - schema block
   """
 
   defmodule SdlTestSchema do
     use Absinthe.Schema
 
     @sdl """
+    schema {
+      query: Query
+    }
+
     directive @foo(name: String!) on OBJECT | SCALAR
 
     "Simple description"
