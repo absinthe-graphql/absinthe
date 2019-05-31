@@ -81,9 +81,6 @@ defmodule SdlRenderTest do
     {:ok, %{data: data}} = Absinthe.Schema.introspect(SdlTestSchema)
     rendered_sdl = Absinthe.Schema.Notation.SDL.Render.from_introspection(data)
     assert rendered_sdl == SdlTestSchema.sdl()
-    IO.puts("-----------")
-    IO.puts(rendered_sdl)
-    IO.puts("-----------")
   end
 
   defmodule ClassicTestSchema do
@@ -139,7 +136,7 @@ defmodule SdlRenderTest do
     end
   end
 
-  @expected """
+  @expected_sdl """
   interface Animal {
     legs: Int!
   }
@@ -173,9 +170,6 @@ defmodule SdlRenderTest do
   test "Render SDL from schema defined with macros" do
     {:ok, %{data: data}} = Absinthe.Schema.introspect(ClassicTestSchema)
     rendered_sdl = Absinthe.Schema.Notation.SDL.Render.from_introspection(data)
-    IO.puts("-----------")
-    IO.puts(rendered_sdl)
-    IO.puts("-----------")
-    assert rendered_sdl == @expected
+    assert rendered_sdl == @expected_sdl
   end
 end
