@@ -279,7 +279,11 @@ defmodule Absinthe.Execution.SubscriptionTest do
                  }
                ]
              }
-           } == run_subscription(@query, Schema, variables: %{"clientId" => "abc"}, context: %{pubsub: PubSub})
+           } ==
+             run_subscription(@query, Schema,
+               variables: %{"clientId" => "abc"},
+               context: %{pubsub: PubSub}
+             )
   end
 
   @query """
@@ -340,7 +344,8 @@ defmodule Absinthe.Execution.SubscriptionTest do
   }
   """
   test "topic function receives a document" do
-    assert {:ok, %{"subscribed" => _topic}} = run_subscription(@query, Schema, context: %{pubsub: PubSub})
+    assert {:ok, %{"subscribed" => _topic}} =
+             run_subscription(@query, Schema, context: %{pubsub: PubSub})
   end
 
   @query """
@@ -350,7 +355,10 @@ defmodule Absinthe.Execution.SubscriptionTest do
   """
   test "stringifies topics" do
     assert {:ok, %{"subscribed" => topic}} =
-             run_subscription(@query, Schema, variables: %{"clientId" => "1"}, context: %{pubsub: PubSub})
+             run_subscription(@query, Schema,
+               variables: %{"clientId" => "1"},
+               context: %{pubsub: PubSub}
+             )
 
     Absinthe.Subscription.publish(PubSub, "foo", thing: 1)
 
@@ -365,7 +373,9 @@ defmodule Absinthe.Execution.SubscriptionTest do
 
   test "isn't tripped up if one of the subscription docs raises" do
     assert {:ok, %{"subscribed" => _}} = run_subscription("subscription { raises }", Schema)
-    assert {:ok, %{"subscribed" => topic}} = run_subscription("subscription { thing(clientId: \"*\")}", Schema)
+
+    assert {:ok, %{"subscribed" => topic}} =
+             run_subscription("subscription { thing(clientId: \"*\")}", Schema)
 
     error_log =
       capture_log(fn ->
@@ -416,7 +426,9 @@ defmodule Absinthe.Execution.SubscriptionTest do
     ctx2 = %{test_pid: self(), user: 2}
     # different docs required for test, otherwise they get deduplicated from the start
     assert {:ok, %{"subscribed" => doc2}} =
-             run_subscription("subscription { user { group { name } id name} }", Schema, context: ctx2)
+             run_subscription("subscription { user { group { name } id name} }", Schema,
+               context: ctx2
+             )
 
     user = %{id: "1", name: "Alicia", group: %{name: "Elixir Users"}}
 

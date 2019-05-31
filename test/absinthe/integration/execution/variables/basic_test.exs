@@ -12,12 +12,11 @@ defmodule Elixir.Absinthe.Integration.Execution.Variables.BasicTest do
   test "scenario #1" do
     for schema <- schema_implementations(Absinthe.Fixtures.Things) do
       assert {:ok, %{data: %{"thing" => %{"name" => "Bar"}}}} ==
-        Absinthe.run(
-          @query,
-          schema,
-          variables: %{"thingId" => "bar"}
-        )
+               Absinthe.run(
+                 @query,
+                 schema,
+                 variables: %{"thingId" => "bar"}
+               )
     end
   end
-
 end

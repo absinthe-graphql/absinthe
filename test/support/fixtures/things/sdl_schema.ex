@@ -171,8 +171,9 @@ defmodule Absinthe.Fixtures.Things.SDLSchema do
   def resolve_things_by_context(_, _, %{context: %{thing: id}}) do
     {:ok, @db |> Map.get(id)}
   end
+
   def resolve_things_by_context(_, _, _) do
-      {:error, "No :id context provided"}
+    {:error, "No :id context provided"}
   end
 
   def resolve_things(_, _, _) do
@@ -182,5 +183,4 @@ defmodule Absinthe.Fixtures.Things.SDLSchema do
   def resolve_thing(_, %{id: id}, _) do
     {:ok, @db |> Map.get(id)}
   end
-
 end

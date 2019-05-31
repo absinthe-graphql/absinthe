@@ -10,18 +10,19 @@ defmodule Absinthe.Phase.Schema.AttachDirectives do
 
   @spec run(Blueprint.t(), Keyword.t()) :: {:ok, Blueprint.t()}
   def run(input, _options \\ []) do
-    node = Blueprint.prewalk(input, &(handle_node(&1, input.schema)))
+    node = Blueprint.prewalk(input, &handle_node(&1, input.schema))
     {:ok, node}
   end
 
-  @spec handle_node(node :: Blueprint.Directive.t(), schema :: Absinthe.Schema.t()) :: Blueprint.Directive.t()
+  @spec handle_node(node :: Blueprint.Directive.t(), schema :: Absinthe.Schema.t()) ::
+          Blueprint.Directive.t()
   defp handle_node(%Blueprint.Directive{} = node, schema) do
-    schema_node =
-      Enum.find(available_directives(schema), &(&1.name == node.name))
+    schema_node = Enum.find(available_directives(schema), &(&1.name == node.name))
     %{node | schema_node: schema_node}
   end
 
-  @spec handle_node(node :: Blueprint.node_t(), schema :: Absinthe.Schema.t()) :: Blueprint.node_t()
+  @spec handle_node(node :: Blueprint.node_t(), schema :: Absinthe.Schema.t()) ::
+          Blueprint.node_t()
   defp handle_node(node, _schema) do
     node
   end
@@ -43,9 +44,11 @@ defmodule Absinthe.Phase.Schema.AttachDirectives do
   @doc """
   Add a deprecation (with an optional reason) to a node.
   """
-  @spec expand_deprecate(arguments :: %{optional(:reason) => String.t()}, node :: Blueprint.node_t()) :: Blueprint.node_t()
+  @spec expand_deprecate(
+          arguments :: %{optional(:reason) => String.t()},
+          node :: Blueprint.node_t()
+        ) :: Blueprint.node_t()
   def expand_deprecate(arguments, node) do
     %{node | deprecation: %Absinthe.Type.Deprecation{reason: arguments[:reason]}}
   end
-
 end

@@ -38,9 +38,11 @@ defmodule Absinthe.Phase.Schema.Directives do
   @doc """
   Add a deprecation (with an optional reason) to a node.
   """
-  @spec expand_deprecate(arguments :: %{optional(:reason) => String.t()}, node :: Blueprint.node_t()) :: Blueprint.node_t()
+  @spec expand_deprecate(
+          arguments :: %{optional(:reason) => String.t()},
+          node :: Blueprint.node_t()
+        ) :: Blueprint.node_t()
   def expand_deprecate(arguments, node) do
     %{node | deprecation: %Absinthe.Type.Deprecation{reason: arguments[:reason]}}
   end
-
 end

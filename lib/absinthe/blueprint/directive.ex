@@ -18,7 +18,6 @@ defmodule Absinthe.Blueprint.Directive do
   ]
 
   @type t :: %__MODULE__{
-
           name: String.t(),
           arguments: [Blueprint.Input.Argument.t()],
           source_location: nil | Blueprint.SourceLocation.t(),
@@ -36,6 +35,7 @@ defmodule Absinthe.Blueprint.Directive do
 
   def expand(%__MODULE__{schema_node: type} = directive, node) do
     args = Blueprint.Input.Argument.value_map(directive.arguments)
+
     case Absinthe.Type.function(type, :expand) do
       nil ->
         # Directive is a no-op

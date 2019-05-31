@@ -43,7 +43,8 @@ defmodule Elixir.Absinthe.Integration.Execution.OperationByNameTest do
                     "Must provide a valid operation name if query contains multiple operations."
                 }
               ]
-            }} == Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, operation_name: "invalid")
+            }} ==
+             Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, operation_name: "invalid")
   end
 
   test "scenario #4" do
