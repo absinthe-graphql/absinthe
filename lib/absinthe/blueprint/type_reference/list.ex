@@ -6,6 +6,7 @@ defmodule Absinthe.Blueprint.TypeReference.List do
   @enforce_keys [:of_type]
   defstruct [
     :of_type,
+    :type_name,
     errors: []
   ]
 

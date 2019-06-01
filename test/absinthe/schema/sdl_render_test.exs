@@ -235,10 +235,14 @@ defmodule SdlRenderTest do
   }
   """
   test "Render SDL from blueprint defined with macros" do
-    rendered_sdl =
-      Absinthe.Schema.Notation.SDL.Render.from_blueprint(
-        ClassicTestSchema.__absinthe_blueprint__()
-      )
+    pipeline = [
+      Absinthe.Phase.Schema.Debugger
+    ]
+
+    {:ok, blueprint, _phases} =
+      Absinthe.Pipeline.run(ClassicTestSchema.__absinthe_blueprint__(), pipeline)
+
+    rendered_sdl = Absinthe.Schema.Notation.SDL.Render.from_blueprint(blueprint)
 
     assert rendered_sdl == @expected_blueprint_sdl
   end

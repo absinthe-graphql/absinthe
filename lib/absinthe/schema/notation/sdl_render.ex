@@ -8,9 +8,11 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   """
   @line_width 120
 
-  @builtin_scalar_identifiers [:string, :integer, :float, :boolean, :id]
   @builtin_scalars ["String", "Int", "Float", "Boolean", "ID"]
   @builtin_directives ["skip", "include"]
+
+  @builtin_scalar_identifiers [:string, :integer, :float, :boolean, :id]
+  @builtin_directive_identifiers [:skip, :include]
 
   def from_introspection(%{
         "__schema" =>
@@ -40,10 +42,8 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       ) do
     # For now, pull out the SchemaDeclaration
     type_definitions =
-      Enum.reject(
-        type_definitions,
-        &(&1.__struct__ == Absinthe.Blueprint.Schema.SchemaDeclaration)
-      )
+      type_definitions
+      |> Enum.reject(&(&1.__struct__ == Absinthe.Blueprint.Schema.SchemaDeclaration))
 
     query_type = Enum.find(type_definitions, &(&1.identifier == :query))
     mutation_type = Enum.find(type_definitions, &(&1.identifier == :mutation))
@@ -66,6 +66,10 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     empty()
   end
 
+  # def render(%{name: "__" <> _introspection_type}, _blueprint) do
+  #   empty()
+  # end
+
   # Don't render builtin scalar types
   def render(
         %{
@@ -78,6 +82,11 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       when name in @builtin_scalars do
     empty()
   end
+
+  # def render(%{identifier: identifier}, _blueprint)
+  #     when identifier in @builtin_scalar_identifiers do
+  #   empty()
+  # end
 
   # schema
   def render(
@@ -215,7 +224,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       "type",
       concat([
         string(object_type.name),
-        implements(object_type.interfaces, blueprint)
+        implements(object_type.interface_names, blueprint)
       ]),
       Enum.map(object_type.fields, &render(&1, blueprint))
     )
@@ -382,6 +391,11 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     empty()
   end
 
+  # def render(%{identifier: identifier}, _blueprint)
+  #     when identifier in @builtin_directive_identifiers do
+  #   empty()
+  # end
+
   # DIRECTIVE
   def render(
         %{
@@ -431,16 +445,16 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     concat(["[", render(type, blueprint), "]"])
   end
 
-  def render(%Absinthe.Blueprint.TypeReference.List{of_type: of_type}, blueprint) do
-    concat(["[", render(of_type, blueprint), "]"])
+  def render(%Absinthe.Blueprint.TypeReference.List{type_name: type_name}, blueprint) do
+    concat(["[", string(type_name), "]"])
   end
 
   def render(%{"ofType" => type, "kind" => "NON_NULL"}, blueprint) do
     concat([render(type, blueprint), "!"])
   end
 
-  def render(%Absinthe.Blueprint.TypeReference.NonNull{of_type: of_type}, blueprint) do
-    concat([render(of_type, blueprint), "!"])
+  def render(%Absinthe.Blueprint.TypeReference.NonNull{type_name: type_name} = ref, blueprint) do
+    concat([string(type_name), "!"])
   end
 
   def render(%{"name" => name}, _blueprint) do
@@ -451,17 +465,6 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
   def render(type, _blueprint) when is_atom(type) and type in @builtin_scalar_identifiers do
     type |> to_string |> String.capitalize()
-  end
-
-  def render(identifier, blueprint) when is_atom(identifier) do
-    case Absinthe.Blueprint.Schema.lookup_type(blueprint, identifier) do
-      %{name: name} -> name
-    end
-  end
-
-  def render(%{__struct__: struct} = something, _blueprint) do
-    IO.inspect(something)
-    raise inspect(struct)
   end
 
   def arguments([], _blueprint) do
@@ -573,16 +576,14 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     empty()
   end
 
-  def implements(interfaces, blueprint) do
+  def implements(interfaces, _blueprint) do
     interface_names =
       Enum.map(interfaces, fn
         %{"name" => name} ->
           name
 
-        identifier when is_atom(identifier) ->
-          case Absinthe.Blueprint.Schema.lookup_type(blueprint, identifier) do
-            %{name: name} -> name
-          end
+        name when is_binary(name) ->
+          name
       end)
 
     concat([
