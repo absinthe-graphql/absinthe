@@ -394,16 +394,24 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     concat(["[", render(type), "]"])
   end
 
-  def render(%Blueprint.TypeReference.List{type_name: type_name}) do
+  def render(%Blueprint.TypeReference.List{type_name: type_name}) when is_binary(type_name) do
     concat(["[", string(type_name), "]"])
+  end
+
+  def render(%Blueprint.TypeReference.List{of_type: of_type}) do
+    concat(["[", render(of_type), "]"])
   end
 
   def render(%{"ofType" => type, "kind" => "NON_NULL"}) do
     concat([render(type), "!"])
   end
 
-  def render(%Blueprint.TypeReference.NonNull{type_name: type_name}) do
+  def render(%Blueprint.TypeReference.NonNull{type_name: type_name}) when is_binary(type_name) do
     concat([string(type_name), "!"])
+  end
+
+  def render(%Blueprint.TypeReference.NonNull{of_type: of_type}) do
+    concat([render(of_type), "!"])
   end
 
   def render(%{"name" => name}) do

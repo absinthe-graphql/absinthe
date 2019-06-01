@@ -11,7 +11,7 @@ defmodule SdlRenderTest do
   TODO:
     - [ ] `Inspect` protocol for Blueprint structs!!!!!
     - [ ] Generate `Blueprint` from introspection
-            instead of render(introspection)
+            remove from_introspection
 
   Make tickets:
     - default values !!
@@ -82,8 +82,14 @@ defmodule SdlRenderTest do
   end
 
   test "Render SDL from blueprint defined with SDL" do
-    rendered_sdl =
-      Absinthe.Schema.Notation.SDL.Render.from_blueprint(SdlTestSchema.__absinthe_blueprint__())
+    pipeline = [
+      Absinthe.Phase.Schema.Debugger
+    ]
+
+    {:ok, blueprint, _phases} =
+      Absinthe.Pipeline.run(SdlTestSchema.__absinthe_blueprint__(), pipeline)
+
+    rendered_sdl = inspect(blueprint, pretty: true)
 
     assert rendered_sdl == SdlTestSchema.sdl()
   end
