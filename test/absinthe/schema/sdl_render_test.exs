@@ -7,24 +7,16 @@ defmodule SdlRenderTest do
 
   issues:
     - schema definition order is not respected?
-    - default value: list of enums?
-
-  todo:
-    - [x] interface & implements
-    - [x] custom scalar
-    - [x] directives
-    - [x] inspect based arg lines
-    - [x] default values (scalar)
-    - [x] default values (complex)
-    - [x] deprecated & reason
 
   TODO:
-    - `Inspect` protocol for Blueprint structs!!!!!
-      -> need a reference to the whole blueprint
+    - [ ] `Inspect` protocol for Blueprint structs!!!!!
+    - [ ] Generate `Blueprint` from introspection
+            instead of render(introspection)
 
-  sdl parsing:
+  Make tickets:
     - default values !!
     - deprecated reason
+    - default value: list of enums?
   """
 
   defmodule SdlTestSchema do
@@ -242,8 +234,21 @@ defmodule SdlRenderTest do
     {:ok, blueprint, _phases} =
       Absinthe.Pipeline.run(ClassicTestSchema.__absinthe_blueprint__(), pipeline)
 
-    rendered_sdl = Absinthe.Schema.Notation.SDL.Render.from_blueprint(blueprint)
+    rendered_sdl = inspect(blueprint, pretty: true)
 
     assert rendered_sdl == @expected_blueprint_sdl
+
+    [%{type_definitions: type_definitions}] = blueprint.schema_definitions
+    dog_type = Enum.find(type_definitions, &(&1.identifier == :dog))
+
+    expected_dog_sdl = """
+    type Dog implements Pet, Animal {
+      legs: Int!
+      name: String! @deprecated(reason: "Don't use This")
+    }
+    """
+
+    rendered_dog_sdl = inspect(dog_type, pretty: true)
+    assert rendered_dog_sdl == expected_dog_sdl
   end
 end
