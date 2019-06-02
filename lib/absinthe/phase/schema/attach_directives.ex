@@ -35,6 +35,14 @@ defmodule Absinthe.Phase.Schema.AttachDirectives do
     [
       %Absinthe.Type.Directive{
         name: "deprecated",
+        args: %{
+          reason: %Absinthe.Type.Argument{
+            description: "Deprecation reason.",
+            identifier: :reason,
+            name: "reason",
+            type: :string
+          }
+        },
         locations: [:field_definition, :input_field_definition, :argument_definition],
         expand: &expand_deprecate/2
       }

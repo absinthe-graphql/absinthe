@@ -24,25 +24,4 @@ defmodule Absinthe.Phase.Schema.Directives do
   defp handle_node(node) do
     node
   end
-
-  def available_directives do
-    [
-      %Absinthe.Type.Directive{
-        name: "deprecated",
-        locations: [:field_definition, :input_field_definition, :argument_definition],
-        expand: {:ref, __MODULE__, :expand_deprecate}
-      }
-    ]
-  end
-
-  @doc """
-  Add a deprecation (with an optional reason) to a node.
-  """
-  @spec expand_deprecate(
-          arguments :: %{optional(:reason) => String.t()},
-          node :: Blueprint.node_t()
-        ) :: Blueprint.node_t()
-  def expand_deprecate(arguments, node) do
-    %{node | deprecation: %Absinthe.Type.Deprecation{reason: arguments[:reason]}}
-  end
 end

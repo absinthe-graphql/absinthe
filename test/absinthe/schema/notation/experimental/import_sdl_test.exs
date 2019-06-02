@@ -24,6 +24,8 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       author: User!
       subject: Post!
       order: Int
+      deprecatedField: String @deprecated
+      deprecatedFieldWithReason: String @deprecated(reason: "Reason")
     }
 
     enum Category {
@@ -128,6 +130,20 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
       assert %{name: "bar", identifier: :bar, locations: [:object, :scalar]} =
                lookup_compiled_directive(Definition, :bar)
+    end
+  end
+
+  describe "deprecations" do
+    @tag :focus
+    test "can be defined without a reason" do
+      object = lookup_compiled_type(Definition, :comment)
+      assert %{deprecation: %{}} = object.fields.deprecated_field
+    end
+
+    @tag :focus
+    test "can be defined with a reason" do
+      object = lookup_compiled_type(Definition, :comment)
+      assert %{deprecation: %{reason: "Reason"}} = object.fields.deprecated_field_with_reason
     end
   end
 
