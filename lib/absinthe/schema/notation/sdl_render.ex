@@ -28,25 +28,38 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
           }
         ]
       }) do
-    # For now, pull out the SchemaDeclaration
-    type_definitions =
+    {schema_declaration, type_definitions} =
       type_definitions
-      |> Enum.reject(&(&1.__struct__ == Blueprint.Schema.SchemaDeclaration))
+      |> Enum.split_with(&(&1.__struct__ == Blueprint.Schema.SchemaDeclaration))
+      |> case do
+        {[], type_definitions} ->
+          # TODO: remove once macro schema has SchemaDeclaration
+          schema_definition = %{
+            query: Enum.find(type_definitions, &(&1.identifier == :query)),
+            mutation: Enum.find(type_definitions, &(&1.identifier == :mutation)),
+            subscription: Enum.find(type_definitions, &(&1.identifier == :subscription))
+          }
 
-    schema_definition = %{
-      query: Enum.find(type_definitions, &(&1.identifier == :query)),
-      mutation: Enum.find(type_definitions, &(&1.identifier == :mutation)),
-      subscription: Enum.find(type_definitions, &(&1.identifier == :subscription))
-    }
+          {[schema_definition], type_definitions}
 
-    [schema_definition | directive_definitions ++ type_definitions]
+        {schema_declaration, type_definitions} ->
+          {schema_declaration, type_definitions}
+      end
+
+    (schema_declaration ++ directive_definitions ++ type_definitions)
     |> Enum.map(&render/1)
     |> Enum.reject(&(&1 == empty()))
     |> join([line(), line()])
   end
 
-  # schema
+  def render(%Schema.SchemaDeclaration{} = schema) do
+    block(
+      "schema",
+      Enum.map(schema.field_definitions, &render/1)
+    )
+  end
 
+  # TODO: remove once macro schema has SchemaDeclaration
   def render(%{
         query: query_type,
         mutation: mutation_type,
