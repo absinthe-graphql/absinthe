@@ -75,12 +75,6 @@ defmodule SdlRenderTest do
     def sdl, do: @sdl
   end
 
-  test "Render SDL from schema defined with SDL" do
-    {:ok, %{data: data}} = Absinthe.Schema.introspect(SdlTestSchema)
-    rendered_sdl = Absinthe.Schema.Notation.SDL.Render.from_introspection(data)
-    assert rendered_sdl == SdlTestSchema.sdl()
-  end
-
   test "Render SDL from blueprint defined with SDL" do
     pipeline = [
       Absinthe.Phase.Schema.Debugger
@@ -159,49 +153,6 @@ defmodule SdlRenderTest do
 
   directive @foo(name: String!) on OBJECT | SCALAR
 
-  interface Animal {
-    legs: Int!
-  }
-
-  type Dog implements Pet, Animal {
-    legs: Int!
-    name: String! @deprecated(reason: "Don't use This")
-  }
-
-  interface Pet {
-    name: String!
-  }
-
-  type RootQueryType {
-    animals: [Animal]
-    echo(
-      "Echo it back"
-      n: Int! = 10
-    ): Int
-    pets: [Pet]
-  }
-
-  type Spider implements Animal {
-    legs: Int!
-    webComplexity: Float! @deprecated(reason: \"""
-      Definately
-      Don't use This
-    \""")
-  }
-  """
-  test "Render SDL from schema defined with macros" do
-    {:ok, %{data: data}} = Absinthe.Schema.introspect(ClassicTestSchema)
-    rendered_sdl = Absinthe.Schema.Notation.SDL.Render.from_introspection(data)
-    assert rendered_sdl == @expected_sdl
-  end
-
-  @expected_blueprint_sdl """
-  schema {
-    query: RootQueryType
-  }
-
-  directive @foo(name: String!) on OBJECT | SCALAR
-
   type RootQueryType {
     pets: [Pet]
     animals: [Animal]
@@ -242,7 +193,7 @@ defmodule SdlRenderTest do
 
     rendered_sdl = inspect(blueprint, pretty: true)
 
-    assert rendered_sdl == @expected_blueprint_sdl
+    assert rendered_sdl == @expected_sdl
 
     [%{type_definitions: type_definitions}] = blueprint.schema_definitions
     dog_type = Enum.find(type_definitions, &(&1.identifier == :dog))
