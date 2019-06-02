@@ -10,12 +10,13 @@ defmodule SdlRenderTest do
 
   TODO:
     - [ ] `Inspect` protocol for Blueprint structs!!!!!
-    - [ ] Generate `Blueprint` from introspection
-            remove from_introspection
+           - for all structs
+           - return docs, not string?
+    - [X] Remove from_introspection
+    - [ ] Make test schemas match exactly
 
   Make tickets:
     - default values !!
-    - deprecated reason
     - default value: list of enums?
   """
 
