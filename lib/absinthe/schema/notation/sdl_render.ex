@@ -86,7 +86,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       ": ",
       render(field.type)
     ])
-    |> deprecated(!!field.deprecation, field.deprecation)
+    |> deprecated(field.deprecation)
     |> description(field.description)
   end
 
@@ -188,10 +188,6 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     concat(["[", render(of_type), "]"])
   end
 
-  def render(%Blueprint.TypeReference.NonNull{type_name: type_name}) when is_binary(type_name) do
-    concat([string(type_name), "!"])
-  end
-
   def render(%Blueprint.TypeReference.NonNull{of_type: of_type}) do
     concat([render(of_type), "!"])
   end
@@ -238,12 +234,15 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     concat([" = ", to_string(default_value)])
   end
 
-  # TODO: take just 2 args & use struct
-  def deprecated(docs, true, nil) do
+  def deprecated(docs, nil) do
+    docs
+  end
+
+  def deprecated(docs, %{reason: nil}) do
     space(docs, "@deprecated")
   end
 
-  def deprecated(docs, true, reason) do
+  def deprecated(docs, %{reason: reason}) do
     concat([
       space(docs, "@deprecated"),
       "(",
@@ -251,14 +250,6 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       deprecated_reason(reason),
       ")"
     ])
-  end
-
-  def deprecated(docs, _deprecated, _reason) do
-    docs
-  end
-
-  def deprecated_reason(%{reason: reason}) do
-    deprecated_reason(reason)
   end
 
   def deprecated_reason(reason) do
