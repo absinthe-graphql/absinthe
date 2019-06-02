@@ -13,27 +13,21 @@ defmodule Absinthe.Phase.Schema.Debugger do
         %Blueprint.Schema.ObjectTypeDefinition{interfaces: interfaces} = object_type,
         blueprint
       ) do
-    interface_names =
-      Enum.map(interfaces, fn identifier ->
-        case Absinthe.Blueprint.Schema.lookup_type(blueprint, identifier) do
-          %{name: name} -> name
-        end
-      end)
-
-    %{object_type | interface_names: interface_names}
+    interface_types = Enum.map(interfaces, &type_reference_name(&1, blueprint))
+    %{object_type | interface_types: interface_types}
   end
 
-  def inject_name(%Blueprint.TypeReference.NonNull{of_type: identifier} = reference, blueprint)
-      when is_atom(identifier) do
-    %{reference | type_name: type_name(identifier, blueprint)}
-  end
-
-  def inject_name(%Blueprint.TypeReference.List{of_type: identifier} = reference, blueprint)
-      when is_atom(identifier) do
-    %{reference | type_name: type_name(identifier, blueprint)}
+  @replace_type_reference [Blueprint.TypeReference.List, Blueprint.TypeReference.NonNull]
+  def inject_name(%struct{of_type: identifier} = reference, blueprint)
+      when is_atom(identifier) and struct in @replace_type_reference do
+    %{reference | of_type: type_reference_name(identifier, blueprint)}
   end
 
   def inject_name(node, _blueprint), do: node
+
+  defp type_reference_name(identifier, blueprint) do
+    %Blueprint.TypeReference.Name{name: type_name(identifier, blueprint)}
+  end
 
   defp type_name(identifier, blueprint) do
     case Absinthe.Blueprint.Schema.lookup_type(blueprint, identifier) do

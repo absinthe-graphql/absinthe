@@ -106,7 +106,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       "type",
       concat([
         string(object_type.name),
-        implements(object_type.interface_names)
+        implements(object_type.interface_types)
       ]),
       Enum.map(object_type.fields, &render/1)
     )
@@ -306,7 +306,9 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     empty()
   end
 
-  def implements(interface_names) do
+  def implements(interface_types) do
+    interface_names = Enum.map(interface_types, & &1.name)
+
     concat([
       " implements ",
       join(interface_names, ", ")

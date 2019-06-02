@@ -17,7 +17,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
     # Added by phases
     flags: %{},
     imports: [],
-    interface_names: [],
+    interface_types: [],
     errors: [],
     __reference__: nil,
     __private__: []
@@ -41,6 +41,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
   def functions(), do: [:is_type_of]
 
   def build(type_def, schema) do
+    # TODO: change `interfaces` to be `TypeReference.Name`?
     %Type.Object{
       identifier: type_def.identifier,
       name: type_def.name,
