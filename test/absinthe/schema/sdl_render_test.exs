@@ -73,7 +73,7 @@ defmodule SdlRenderTest do
     }
 
     type Dog implements Pet, Animal {
-      legs: Int!
+      legCount: Int!
       name: String!
     }
 
@@ -82,7 +82,7 @@ defmodule SdlRenderTest do
     }
 
     interface Animal {
-      legs: Int!
+      legCount: Int!
     }
     """
     import_sdl @sdl
@@ -121,7 +121,7 @@ defmodule SdlRenderTest do
     end
 
     interface :animal do
-      field :legs, non_null(:integer)
+      field :leg_count, non_null(:integer)
 
       resolve_type fn
         %{name: _} -> :dog
@@ -139,18 +139,16 @@ defmodule SdlRenderTest do
 
     object :dog do
       interfaces [:animal, :pet]
-      field :legs, non_null(:integer)
+      field :leg_count, non_null(:integer)
 
       field :name, non_null(:string) do
-        deprecate("""
-        Don't use This
-        """)
+        deprecate("Don't use this")
       end
     end
 
     object :spider do
       interfaces [:animal]
-      field :legs, non_null(:integer)
+      field :leg_count, non_null(:integer)
 
       field :web_complexity, non_null(:float) do
         deprecate("""
@@ -187,7 +185,7 @@ defmodule SdlRenderTest do
   }
 
   type Spider implements Animal {
-    legs: Int!
+    legCount: Int!
     webComplexity: Float! @deprecated(reason: \"""
       Definately
       Don't use This
@@ -195,8 +193,8 @@ defmodule SdlRenderTest do
   }
 
   type Dog implements Pet, Animal {
-    legs: Int!
-    name: String! @deprecated(reason: "Don't use This")
+    legCount: Int!
+    name: String! @deprecated(reason: "Don't use this")
   }
 
   interface Pet {
@@ -204,7 +202,7 @@ defmodule SdlRenderTest do
   }
 
   interface Animal {
-    legs: Int!
+    legCount: Int!
   }
   """
   test "Render SDL from blueprint defined with macros" do
@@ -224,8 +222,8 @@ defmodule SdlRenderTest do
 
     expected_dog_sdl = """
     type Dog implements Pet, Animal {
-      legs: Int!
-      name: String! @deprecated(reason: "Don't use This")
+      legCount: Int!
+      name: String! @deprecated(reason: "Don't use this")
     }
     """
 
