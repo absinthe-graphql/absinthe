@@ -25,6 +25,10 @@ defmodule Absinthe.Phase.Schema.Debugger do
 
   def inject_name(node, _blueprint), do: node
 
+  defp type_reference_name(%Blueprint.TypeReference.Name{} = reference, _blueprint) do
+    reference
+  end
+
   defp type_reference_name(identifier, blueprint) do
     %Blueprint.TypeReference.Name{name: type_name(identifier, blueprint)}
   end

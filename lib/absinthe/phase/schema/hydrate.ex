@@ -80,6 +80,10 @@ defmodule Absinthe.Phase.Schema.Hydrate do
     %{node | middleware: [{Absinthe.Resolution, resolver}]}
   end
 
+  def apply_hydration(node, {:resolve_type, resolve_type}) do
+    %{node | resolve_type: resolve_type}
+  end
+
   @hydration_level1 [
     Blueprint.Schema.DirectiveDefinition,
     Blueprint.Schema.EnumTypeDefinition,

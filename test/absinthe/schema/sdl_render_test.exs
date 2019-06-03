@@ -71,9 +71,32 @@ defmodule SdlRenderTest do
     type User {
       name: String!
     }
+
+    type Dog implements Pet, Animal {
+      legs: Int!
+      name: String!
+    }
+
+    interface Pet {
+      name: String!
+    }
+
+    interface Animal {
+      legs: Int!
+    }
     """
     import_sdl @sdl
     def sdl, do: @sdl
+
+    def hydrate(%{identifier: :animal}, _) do
+      {:resolve_type, &__MODULE__.resolve_type/1}
+    end
+
+    def hydrate(%{identifier: :pet}, _) do
+      {:resolve_type, &__MODULE__.resolve_type/1}
+    end
+
+    def hydrate(_node, _ancestors), do: []
   end
 
   test "Render SDL from blueprint defined with SDL" do
