@@ -84,8 +84,19 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       :field,
       :fragment_definition,
       :fragment_spread,
-      :inline_fragment
-      # TODO: Schema definitions to support Schema input
+      :inline_fragment,
+      :operation_definition,
+      :schema,
+      :scalar,
+      :object,
+      :field_definition,
+      :interface,
+      :union,
+      :enum,
+      :enum_value,
+      :input_object,
+      :argument_definition,
+      :input_field_definition
     ]
 
   object :__type do
