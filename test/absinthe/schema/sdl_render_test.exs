@@ -9,15 +9,13 @@ defmodule SdlRenderTest do
     - schema definition order is not respected?
 
   TODO:
-    - [ ] `Inspect` protocol for Blueprint structs!!!!!
+    - [-] `Inspect` protocol for Blueprint structs!!!!!
            - for all structs
            - return docs, not string?
     - [X] Remove from_introspection
     - [ ] Make test schemas match exactly
-
-  Make tickets:
-    - default values !!
-    - default value: list of enums?
+          - add default value to SDL test
+          - add deprecated & reason to SDL test
   """
 
   defmodule SdlTestSchema do
@@ -51,7 +49,7 @@ defmodule SdlRenderTest do
       echo(
         category: Category!
         "The number of times"
-        times: Int = 10
+        times: Int
       ): [Category!]!
       posts: Post
       search(limit: Int, sort: SorterInput!): [SearchResult]
