@@ -201,3 +201,20 @@ plug Absinthe.Plug,
 
 It also takes several options. See [the documentation](https://hexdocs.pm/absinthe_plug/Absinthe.Plug.html#init/1)
 for the full listing.
+
+## Inside Phoenix controllers
+
+You can use GraphQL as the datasource for your Phoenix controllers. 
+
+```elixir
+@graphql """
+  query ($filter: UserFilter) {
+    users(filter: $filter, limit: 10)
+  }
+"""
+def index(conn, %{data: data}) do
+  render conn, "index.html", data
+end
+```
+The results of the query are now available in the "index.html" template. For
+more information, see [`Absinthe.Phoenix.Controller`](https://hexdocs.pm/absinthe_phoenix/Absinthe.Phoenix.Controller.html)
