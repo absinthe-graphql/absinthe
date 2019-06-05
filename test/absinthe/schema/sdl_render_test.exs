@@ -13,7 +13,7 @@ defmodule SdlRenderTest do
            - for all structs
            - return docs, not string?
     - [X] Remove from_introspection
-    - [ ] Make test schemas match exactly
+    - [ ] Remove macro based tests when SDL support matches
           - add default value to SDL test
           - add deprecated & reason to SDL test
   """
@@ -114,55 +114,23 @@ defmodule SdlRenderTest do
   defmodule ClassicTestSchema do
     use Absinthe.Schema
 
-    directive :foo do
-      arg :name, non_null(:string)
-      on [:object, :scalar]
-    end
-
-    interface :animal do
-      field :leg_count, non_null(:integer)
-
-      resolve_type fn
-        %{name: _} -> :dog
-        %{web_complexity: _} -> :spider
-      end
-    end
-
-    interface :pet do
-      field :name, non_null(:string)
-
-      resolve_type fn
-        %{name: _} -> :dog
-      end
-    end
-
-    object :dog do
-      interfaces [:animal, :pet]
-      field :leg_count, non_null(:integer)
-
-      field :name, non_null(:string) do
-        deprecate("Don't use this")
-      end
-    end
-
-    object :spider do
-      interfaces [:animal]
-      field :leg_count, non_null(:integer)
-
-      field :web_complexity, non_null(:float) do
-        deprecate("""
+    @desc "Simple description"
+    enum :category do
+      value :opinion,
+        deprecate: """
         Definately
         Don't use This
-        """)
-      end
+        """
+
+      value :news
+      value :classified, deprecate: "Craigslist"
     end
 
     query do
-      field :pets, list_of(:pet)
-      field :animals, list_of(:animal)
-
-      field :echo, :integer do
-        arg :n, non_null(:integer), default_value: 10, description: "Echo it back"
+      field :echo, non_null(list_of(non_null(:category))) do
+        deprecate "Don't use this"
+        arg :times, :integer, default_value: 10, description: "The number of times"
+        arg :category, non_null(:category)
       end
     end
   end
@@ -172,36 +140,23 @@ defmodule SdlRenderTest do
     query: RootQueryType
   }
 
-  directive @foo(name: String!) on OBJECT | SCALAR
-
   type RootQueryType {
-    pets: [Pet]
-    animals: [Animal]
     echo(
-      "Echo it back"
-      n: Int! = 10
-    ): Int
+
+      category: Category!
+      "The number of times"
+      times: Int = 10
+    ): [Category!]! @deprecated(reason: "Don't use this")
   }
 
-  type Spider implements Animal {
-    legCount: Int!
-    webComplexity: Float! @deprecated(reason: \"""
+  "Simple description"
+  enum Category {
+    CLASSIFIED @deprecated(reason: "Craigslist")
+    NEWS
+    OPINION @deprecated(reason: \"""
       Definately
       Don't use This
     \""")
-  }
-
-  type Dog implements Pet, Animal {
-    legCount: Int!
-    name: String! @deprecated(reason: "Don't use this")
-  }
-
-  interface Pet {
-    name: String!
-  }
-
-  interface Animal {
-    legCount: Int!
   }
   """
   test "Render SDL from blueprint defined with macros" do
@@ -217,16 +172,21 @@ defmodule SdlRenderTest do
     assert rendered_sdl == @expected_sdl
 
     [%{type_definitions: type_definitions}] = blueprint.schema_definitions
-    dog_type = Enum.find(type_definitions, &(&1.identifier == :dog))
+    category_type = Enum.find(type_definitions, &(&1.identifier == :category))
 
-    expected_dog_sdl = """
-    type Dog implements Pet, Animal {
-      legCount: Int!
-      name: String! @deprecated(reason: "Don't use this")
+    expected_category_sdl = """
+    "Simple description"
+    enum Category {
+      CLASSIFIED @deprecated(reason: "Craigslist")
+      NEWS
+      OPINION @deprecated(reason: \"""
+        Definately
+        Don't use This
+      \""")
     }
     """
 
-    rendered_dog_sdl = inspect(dog_type, pretty: true)
-    assert rendered_dog_sdl == expected_dog_sdl
+    rendered_category_sdl = inspect(category_type, pretty: true)
+    assert rendered_category_sdl == expected_category_sdl
   end
 end
