@@ -30,9 +30,10 @@ defmodule SdlRenderTest do
 
     "Simple description"
     enum Category {
+      "Just the facts"
       NEWS
       OPINION
-      CLASSIFIED @deprecated(reason: "Craigslist")
+      CLASSIFIED
     }
 
     \"""

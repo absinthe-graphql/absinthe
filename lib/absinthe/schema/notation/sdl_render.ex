@@ -9,9 +9,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   Render SDL
   """
   @line_width 120
-
   @builtin_scalars [:string, :integer, :float, :boolean, :id]
-  @builtin_directives [:skip, :include]
 
   def inspect(term) do
     render(term)
@@ -166,8 +164,6 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   end
 
   def render(%Blueprint.Schema.EnumValueDefinition{} = enum_value) do
-    IO.inspect(enum_value)
-
     string(enum_value.name)
     |> deprecated(enum_value.deprecation)
     |> description(enum_value.description)
@@ -179,6 +175,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   end
 
   # Don't render builtin directives
+  # @builtin_directives [:skip, :include]
   # def render(%Schema.DirectiveDefinition{identifier: identifier})
   #     when identifier in @builtin_directives do
   #   empty()
