@@ -35,7 +35,12 @@ defmodule Absinthe.Phase.Schema.AttachDirectives do
     [
       %Absinthe.Type.Directive{
         name: "deprecated",
-        locations: [:field_definition, :input_field_definition, :argument_definition],
+        locations: [
+          :field_definition,
+          :input_field_definition,
+          :argument_definition,
+          :enum_value
+        ],
         expand: &expand_deprecate/2
       }
     ]
