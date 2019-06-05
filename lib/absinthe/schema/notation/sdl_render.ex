@@ -160,9 +160,17 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     block(
       "enum",
       string(enum_type.name),
-      Enum.map(enum_type.values, &string(&1.name))
+      Enum.map(enum_type.values, &render/1)
     )
     |> description(enum_type.description)
+  end
+
+  def render(%Blueprint.Schema.EnumValueDefinition{} = enum_value) do
+    IO.inspect(enum_value)
+
+    string(enum_value.name)
+    |> deprecated(enum_value.deprecation)
+    |> description(enum_value.description)
   end
 
   def render(%Blueprint.Schema.ScalarTypeDefinition{} = scalar_type) do

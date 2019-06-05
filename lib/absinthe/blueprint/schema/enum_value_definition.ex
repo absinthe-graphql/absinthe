@@ -9,7 +9,6 @@ defmodule Absinthe.Blueprint.Schema.EnumValueDefinition do
     :name,
     :identifier,
     deprecation: nil,
-    deprecation: nil,
     directives: [],
     source_location: nil,
     description: nil,

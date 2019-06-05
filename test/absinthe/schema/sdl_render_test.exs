@@ -32,6 +32,7 @@ defmodule SdlRenderTest do
     enum Category {
       NEWS
       OPINION
+      CLASSIFIED @deprecated(reason: "Craigslist")
     }
 
     \"""
