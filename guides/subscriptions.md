@@ -37,6 +37,25 @@ line:
 ]
 ```
 
+in phoenix 1.4, the supervisor children are mounted like so
+
+```elixir
+# List all child processes to be supervised
+    children = [
+      # Start the Ecto repository
+      MyAppWeb.Repo,
+      # Start the endpoint when the application starts
+      MyAppWeb.Endpoint,
+      {Absinthe.Subscription, [MyAppWeb.Endpoint]}
+    ]
+
+    # See https://hexdocs.pm/elixir/Supervisor.html
+    # for other strategies and supported options
+    opts = [strategy: :one_for_one, name: Blinq.Supervisor]
+    Supervisor.start_link(children, opts)
+
+```
+
 Where `MyAppWeb.Endpoint` is the name of your application's phoenix endpoint.
 
 In your `MyApp.Web.Endpoint` module add:
@@ -46,7 +65,7 @@ use Absinthe.Phoenix.Endpoint
 
 In your socket add:
 
-#### Phoenix 1.3
+#### Phoenix 1.3 and 1.4
 ```elixir
 use Absinthe.Phoenix.Socket,
   schema: MyAppWeb.Schema
@@ -82,12 +101,15 @@ That is all that's required for setup on the server.
 Options like the context can be configured in the `def connect` callback of your
 socket
 
+> Note: the transport macro is deprecated in phoenix 1.4 and can me ommited
+
 ```elixir
 defmodule GitHunt.Web.UserSocket do
   use Phoenix.Socket
   use Absinthe.Phoenix.Socket,
     schema: MyApp.Web.Schema
 
+  #transport deprecated in phoenix 1.4
   transport :websocket, Phoenix.Transports.WebSocket
 
   def connect(params, socket) do
