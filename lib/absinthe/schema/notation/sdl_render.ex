@@ -295,18 +295,14 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       [reason] ->
         concat([~s("), reason, ~s(")])
 
-      reason ->
-        glue(
+      reason_lines ->
+        concat(
           nest(
-            glue(
-              ~s("""),
-              "",
-              fold_doc(reason, &glue(&1, "", &2))
-            ),
+            block_string([~s(""")] ++ reason_lines),
             2,
             :always
           ),
-          ~s(""")
+          concat(line(), ~s("""))
         )
     end
   end
@@ -317,6 +313,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
   def description(docs, description) do
     description
+    |> String.trim()
     |> String.split("\n")
     |> case do
       [description] ->

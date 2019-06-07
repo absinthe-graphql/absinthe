@@ -131,6 +131,7 @@ defmodule SdlRenderTest do
       value :opinion,
         deprecate: """
         Definately
+
         Don't use This
         """
 
@@ -168,6 +169,7 @@ defmodule SdlRenderTest do
     NEWS
     OPINION @deprecated(reason: \"""
       Definately
+
       Don't use This
     \""")
   }
@@ -194,6 +196,7 @@ defmodule SdlRenderTest do
       NEWS
       OPINION @deprecated(reason: \"""
         Definately
+
         Don't use This
       \""")
     }
