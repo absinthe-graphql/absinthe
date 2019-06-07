@@ -53,7 +53,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   def render(%Schema.SchemaDeclaration{} = schema) do
     block(
       "schema",
-      Enum.map(schema.field_definitions, &render/1)
+      render_list(schema.field_definitions)
     )
   end
 
@@ -119,7 +119,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         string(object_type.name),
         implements(object_type.interface_types)
       ]),
-      Enum.map(object_type.fields, &render/1)
+      render_list(object_type.fields)
     )
     |> description(object_type.description)
   end
@@ -128,7 +128,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     block(
       "input",
       string(input_object_type.name),
-      Enum.map(input_object_type.fields, &render/1)
+      render_list(input_object_type.fields)
     )
     |> description(input_object_type.description)
   end
@@ -145,20 +145,20 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(union_type.description)
   end
 
-  def render(%Blueprint.Schema.InterfaceTypeDefinition{} = interace_type) do
+  def render(%Blueprint.Schema.InterfaceTypeDefinition{} = interface_type) do
     block(
       "interface",
-      string(interace_type.name),
-      Enum.map(interace_type.fields, &render/1)
+      string(interface_type.name),
+      render_list(interface_type.fields)
     )
-    |> description(interace_type.description)
+    |> description(interface_type.description)
   end
 
   def render(%Blueprint.Schema.EnumTypeDefinition{} = enum_type) do
     block(
       "enum",
       string(enum_type.name),
-      Enum.map(enum_type.values, &render/1)
+      render_list(enum_type.values)
     )
     |> description(enum_type.description)
   end
@@ -214,6 +214,23 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
   def render(type) when is_atom(type) and type in @builtin_scalars do
     type |> to_string |> String.capitalize()
+  end
+
+  def render_list(items) do
+    splitter =
+      items
+      |> Enum.any?(&(&1.description not in ["", nil]))
+      |> case do
+        true -> [nest(line(), :reset), line()]
+        false -> [line()]
+      end
+
+    items
+    |> Enum.reverse()
+    |> Enum.reduce(:start, fn
+      item, :start -> render(item)
+      item, acc -> concat([render(item)] ++ splitter ++ [acc])
+    end)
   end
 
   def arguments([]) do
@@ -332,14 +349,14 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     docs
   end
 
-  def block(kind, name, doc) do
+  def block(kind, name, docs) do
     glue(
       kind,
-      block(name, doc)
+      block(name, docs)
     )
   end
 
-  def block(name, doc) do
+  def block(name, docs) do
     glue(
       name,
       group(
@@ -349,7 +366,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
               glue(
                 "{",
                 "",
-                fold_doc(doc, &glue(&1, "", &2))
+                docs
               )
             ),
             2,

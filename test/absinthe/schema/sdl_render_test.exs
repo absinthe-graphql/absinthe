@@ -16,8 +16,6 @@ defmodule SdlRenderTest do
     - [ ] Remove macro based tests when SDL support matches
           - add default value to SDL test
           - add deprecated & reason to SDL test
-    - [ ] Ensure newline spacing when there is a description
-          - each `render` needs to control it's own spacing? except first & last
   """
 
   defmodule SdlTestSchema do
@@ -34,12 +32,14 @@ defmodule SdlRenderTest do
     enum Category {
       "Just the facts"
       NEWS
+
       \"""
       What some rando thinks
 
       Take with a grain of salt
       \"""
       OPINION
+
       CLASSIFIED
     }
 
@@ -50,7 +50,9 @@ defmodule SdlRenderTest do
     \"""
     type Post {
       old: String
+
       sweet: SweetScalar
+
       "Something"
       title: String!
     }
