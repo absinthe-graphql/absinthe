@@ -216,13 +216,13 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     type |> to_string |> String.capitalize()
   end
 
-  def render_list(items) do
+  def render_list(items, seperator \\ line()) do
     splitter =
       items
       |> Enum.any?(&(&1.description not in ["", nil]))
       |> case do
         true -> [nest(line(), :reset), line()]
-        false -> [line()]
+        false -> [seperator]
       end
 
     items
@@ -238,7 +238,6 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   end
 
   def arguments(args) do
-    arg_docs = Enum.map(args, &render/1)
     any_descriptions? = Enum.any?(args, & &1.description)
 
     group(
@@ -248,7 +247,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
             glue(
               "(",
               "",
-              fold_doc(arg_docs, &glue(&1, ", ", &2))
+              render_list(args, ", ")
             ),
             any_descriptions?
           ),

@@ -60,6 +60,7 @@ defmodule SdlRenderTest do
     type Query {
       echo(
         category: Category!
+
         "The number of times"
         times: Int
       ): [Category!]!
