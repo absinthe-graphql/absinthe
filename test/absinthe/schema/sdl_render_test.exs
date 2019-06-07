@@ -82,7 +82,7 @@ defmodule SdlRenderTest do
       name: String!
     }
 
-    type Dog implements Pet, Animal {
+    type Dog implements Pet & Animal {
       legCount: Int!
       name: String!
     }

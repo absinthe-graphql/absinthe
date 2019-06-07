@@ -330,7 +330,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
     concat([
       " implements ",
-      join(interface_names, ", ")
+      join(interface_names, " & ")
     ])
   end
 
