@@ -300,15 +300,15 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
   def description(docs, description) do
     description
-    |> String.contains?("\n")
+    |> String.split("\n")
     |> case do
-      true ->
-        [join([~s("""), description, ~s(""")], line()), docs]
+      [description] ->
+        [~s("), description, ~s("), line(), docs]
 
-      false ->
-        [concat([~s("), description, ~s(")]), docs]
+      description_lines ->
+        [block_string([~s(""")] ++ description_lines ++ [~s(""")]), line(), docs]
     end
-    |> join(line())
+    |> concat()
   end
 
   def implements([]) do
@@ -361,6 +361,20 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       )
     )
   end
+
+  defp block_string([string]) do
+    string(string)
+  end
+
+  defp block_string([string | rest]) do
+    string
+    |> string()
+    |> concat(block_string_line(rest))
+    |> concat(block_string(rest))
+  end
+
+  defp block_string_line(["", _ | _]), do: nest(line(), :reset)
+  defp block_string_line(_), do: line()
 
   def join(docs, joiner) do
     fold_doc(docs, fn doc, acc ->

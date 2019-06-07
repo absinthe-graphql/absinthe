@@ -34,12 +34,18 @@ defmodule SdlRenderTest do
     enum Category {
       "Just the facts"
       NEWS
+      \"""
+      What some rando thinks
+
+      Take with a grain of salt
+      \"""
       OPINION
       CLASSIFIED
     }
 
     \"""
     A submitted post
+
     Multiline description
     \"""
     type Post {
