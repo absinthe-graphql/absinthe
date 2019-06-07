@@ -156,6 +156,7 @@ defmodule SdlRenderTest do
     echo(
 
       category: Category!
+
       "The number of times"
       times: Int = 10
     ): [Category!]! @deprecated(reason: "Don't use this")
