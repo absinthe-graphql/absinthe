@@ -12,7 +12,6 @@ defmodule SdlRenderTest do
     - [-] `Inspect` protocol for Blueprint structs!!!!!
            - for all structs
            - return docs, not string?
-    - [X] Remove from_introspection
     - [ ] Remove macro based tests when SDL support matches
           - add default value to SDL test
           - add deprecated & reason to SDL test
