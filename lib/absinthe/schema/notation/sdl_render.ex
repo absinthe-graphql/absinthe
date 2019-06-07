@@ -18,14 +18,14 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> to_string
   end
 
-  def render(%Blueprint{
-        schema_definitions: [
-          %Blueprint.Schema.SchemaDefinition{
-            type_definitions: type_definitions,
-            directive_definitions: directive_definitions
-          }
-        ]
-      }) do
+  defp render(%Blueprint{
+         schema_definitions: [
+           %Blueprint.Schema.SchemaDefinition{
+             type_definitions: type_definitions,
+             directive_definitions: directive_definitions
+           }
+         ]
+       }) do
     {schema_declaration, type_definitions} =
       type_definitions
       |> Enum.split_with(&(&1.__struct__ == Blueprint.Schema.SchemaDeclaration))
@@ -50,7 +50,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> join([line(), line()])
   end
 
-  def render(%Schema.SchemaDeclaration{} = schema) do
+  defp render(%Schema.SchemaDeclaration{} = schema) do
     block(
       "schema",
       render_list(schema.field_definitions)
@@ -58,11 +58,11 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   end
 
   # TODO: remove once macro schema has SchemaDeclaration
-  def render(%{
-        query: query_type,
-        mutation: mutation_type,
-        subscription: subscription_type
-      }) do
+  defp render(%{
+         query: query_type,
+         mutation: mutation_type,
+         subscription: subscription_type
+       }) do
     schema_type_docs =
       [
         query_type && concat("query: ", string(query_type.name)),
@@ -78,7 +78,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     )
   end
 
-  def render(%Schema.InputValueDefinition{} = input_value) do
+  defp render(%Schema.InputValueDefinition{} = input_value) do
     concat([
       string(input_value.name),
       ": ",
@@ -88,7 +88,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(input_value.description)
   end
 
-  def render(%Schema.FieldDefinition{} = field) do
+  defp render(%Schema.FieldDefinition{} = field) do
     # adapter = blueprint.adapter || Absinthe.Adapter.LanguageConventions
     adapter = Absinthe.Adapter.LanguageConventions
 
@@ -103,17 +103,17 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   end
 
   # Don't render introspection types
-  # def render(%Schema.ObjectTypeDefinition{name: "__" <> _introspection_type}) do
+  # defp render(%Schema.ObjectTypeDefinition{name: "__" <> _introspection_type}) do
   #   empty()
   # end
 
   # Don't render builtin scalar types
-  # def render(%Schema.ObjectTypeDefinition{identifier: identifier})
+  # defp render(%Schema.ObjectTypeDefinition{identifier: identifier})
   #     when identifier in @builtin_scalars do
   #   empty()
   # end
 
-  def render(%Schema.ObjectTypeDefinition{} = object_type) do
+  defp render(%Schema.ObjectTypeDefinition{} = object_type) do
     block(
       "type",
       concat([
@@ -125,7 +125,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(object_type.description)
   end
 
-  def render(%Schema.InputObjectTypeDefinition{} = input_object_type) do
+  defp render(%Schema.InputObjectTypeDefinition{} = input_object_type) do
     block(
       "input",
       string(input_object_type.name),
@@ -134,7 +134,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(input_object_type.description)
   end
 
-  def render(%Schema.UnionTypeDefinition{} = union_type) do
+  defp render(%Schema.UnionTypeDefinition{} = union_type) do
     possible_type_docs = Enum.map(union_type.types, & &1.name)
 
     concat([
@@ -146,7 +146,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(union_type.description)
   end
 
-  def render(%Blueprint.Schema.InterfaceTypeDefinition{} = interface_type) do
+  defp render(%Blueprint.Schema.InterfaceTypeDefinition{} = interface_type) do
     block(
       "interface",
       string(interface_type.name),
@@ -155,7 +155,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(interface_type.description)
   end
 
-  def render(%Blueprint.Schema.EnumTypeDefinition{} = enum_type) do
+  defp render(%Blueprint.Schema.EnumTypeDefinition{} = enum_type) do
     block(
       "enum",
       string(enum_type.name),
@@ -164,25 +164,25 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(enum_type.description)
   end
 
-  def render(%Blueprint.Schema.EnumValueDefinition{} = enum_value) do
+  defp render(%Blueprint.Schema.EnumValueDefinition{} = enum_value) do
     string(enum_value.name)
     |> deprecated(enum_value.deprecation)
     |> description(enum_value.description)
   end
 
-  def render(%Blueprint.Schema.ScalarTypeDefinition{} = scalar_type) do
+  defp render(%Blueprint.Schema.ScalarTypeDefinition{} = scalar_type) do
     space("scalar", string(scalar_type.name))
     |> description(scalar_type.description)
   end
 
   # Don't render builtin directives
   # @builtin_directives [:skip, :include]
-  # def render(%Schema.DirectiveDefinition{identifier: identifier})
+  # defp render(%Schema.DirectiveDefinition{identifier: identifier})
   #     when identifier in @builtin_directives do
   #   empty()
   # end
 
-  def render(%Schema.DirectiveDefinition{} = directive) do
+  defp render(%Schema.DirectiveDefinition{} = directive) do
     locations = directive.locations |> Enum.map(&String.upcase(to_string(&1)))
 
     concat([
@@ -195,29 +195,25 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(directive.description)
   end
 
-  def render(%Blueprint.TypeReference.Name{name: name}) do
+  defp render(%Blueprint.TypeReference.Name{name: name}) do
     string(name)
   end
 
-  def render(%Blueprint.TypeReference.List{type_name: type_name}) when is_binary(type_name) do
-    concat(["[", string(type_name), "]"])
-  end
-
-  def render(%Blueprint.TypeReference.List{of_type: of_type}) do
+  defp render(%Blueprint.TypeReference.List{of_type: of_type}) do
     concat(["[", render(of_type), "]"])
   end
 
-  def render(%Blueprint.TypeReference.NonNull{of_type: of_type}) do
+  defp render(%Blueprint.TypeReference.NonNull{of_type: of_type}) do
     concat([render(of_type), "!"])
   end
 
-  def render(:integer), do: "Int"
+  defp render(:integer), do: "Int"
 
-  def render(type) when is_atom(type) and type in @builtin_scalars do
+  defp render(type) when is_atom(type) and type in @builtin_scalars do
     type |> to_string |> String.capitalize()
   end
 
-  def render_list(items, seperator \\ line()) do
+  defp render_list(items, seperator \\ line()) do
     splitter =
       items
       |> Enum.any?(&(&1.description not in ["", nil]))
@@ -234,11 +230,11 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     end)
   end
 
-  def arguments([]) do
+  defp arguments([]) do
     empty()
   end
 
-  def arguments(args) do
+  defp arguments(args) do
     any_descriptions? = Enum.any?(args, & &1.description)
 
     group(
@@ -261,23 +257,23 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     )
   end
 
-  def default(nil) do
+  defp default(nil) do
     empty()
   end
 
-  def default(default_value) do
+  defp default(default_value) do
     concat([" = ", to_string(default_value)])
   end
 
-  def deprecated(docs, nil) do
+  defp deprecated(docs, nil) do
     docs
   end
 
-  def deprecated(docs, %{reason: nil}) do
+  defp deprecated(docs, %{reason: nil}) do
     space(docs, "@deprecated")
   end
 
-  def deprecated(docs, %{reason: reason}) do
+  defp deprecated(docs, %{reason: reason}) do
     concat([
       space(docs, "@deprecated"),
       "(",
@@ -287,7 +283,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     ])
   end
 
-  def deprecated_reason(reason) do
+  defp deprecated_reason(reason) do
     reason
     |> String.trim()
     |> String.split("\n")
@@ -307,11 +303,11 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     end
   end
 
-  def description(docs, nil) do
+  defp description(docs, nil) do
     docs
   end
 
-  def description(docs, description) do
+  defp description(docs, description) do
     description
     |> String.trim()
     |> String.split("\n")
@@ -325,11 +321,11 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> concat()
   end
 
-  def implements([]) do
+  defp implements([]) do
     empty()
   end
 
-  def implements(interface_types) do
+  defp implements(interface_types) do
     interface_names = Enum.map(interface_types, & &1.name)
 
     concat([
@@ -338,22 +334,22 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     ])
   end
 
-  def multiline(docs, true) do
+  defp multiline(docs, true) do
     force_unfit(docs)
   end
 
-  def multiline(docs, false) do
+  defp multiline(docs, false) do
     docs
   end
 
-  def block(kind, name, docs) do
+  defp block(kind, name, docs) do
     glue(
       kind,
       block(name, docs)
     )
   end
 
-  def block(name, docs) do
+  defp block(name, docs) do
     glue(
       name,
       group(
