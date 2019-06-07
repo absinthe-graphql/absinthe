@@ -51,7 +51,7 @@ in phoenix 1.4, the supervisor children are mounted like so
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Blinq.Supervisor]
+    opts = [strategy: :one_for_one, name: MyAppWeb.Supervisor]
     Supervisor.start_link(children, opts)
 
 ```
