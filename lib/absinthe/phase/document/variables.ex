@@ -25,9 +25,9 @@ defmodule Absinthe.Phase.Document.Variables do
   # ``
   #
   # - The operation's `variables` field would have an `"id"` value set to
-  #   `%Blueprint.Input.StringValue{value: "1234"}`
+  #   `%Blueprint.Input.String{value: "1234"}`
   # - The operation's `variables` field would have an `"text"` value set to
-  #   `%Blueprint.Input.StringValue{value: "Another"}`
+  #   `%Blueprint.Input.String{value: "Another"}`
   #
   # ```
   # run(blueprint, %{})
@@ -36,7 +36,7 @@ defmodule Absinthe.Phase.Document.Variables do
   # - The operation's `variables` field would have an `"id"` value set to
   #   `nil`
   # - The operation's `variables` field would have an `"text"` value set to
-  #   `%Blueprint.Input.StringValue{value: "Another"}`
+  #   `%Blueprint.Input.String{value: "Another"}`
   #
   # Note that no validation occurs in this phase.
 
