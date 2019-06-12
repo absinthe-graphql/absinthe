@@ -3,7 +3,7 @@ defmodule Absinthe.Phase.Schema do
 
   # Populate all schema nodes and the adapter for the blueprint tree. If the
   # blueprint tree is a _schema_ tree, this schema is the meta schema (source of
-  # IDL directives, etc).
+  # SDL directives, etc).
   #
   # Note that no validation occurs in this phase.
 

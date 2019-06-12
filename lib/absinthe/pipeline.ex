@@ -111,15 +111,24 @@ defmodule Absinthe.Pipeline do
     ]
   end
 
+  @default_prototype_schema Absinthe.Schema.Prototype
+
   @spec for_schema(nil | Absinthe.Schema.t()) :: t
   @spec for_schema(nil | Absinthe.Schema.t(), Keyword.t()) :: t
-  def for_schema(schema, _options \\ []) do
+  def for_schema(schema, options \\ []) do
+    options =
+      options
+      |> Enum.reject(fn {_, v} -> is_nil(v) end)
+      |> Keyword.put(:schema, schema)
+      |> Keyword.put_new(:prototype_schema, @default_prototype_schema)
+
     [
       Phase.Schema.TypeImports,
       Phase.Schema.ApplyDeclaration,
       Phase.Schema.Introspection,
-      {Phase.Schema.Hydrate, [schema: schema]},
+      {Phase.Schema.Hydrate, options},
       Phase.Schema.NormalizeReferences,
+      {Phase.Schema, [schema: Keyword.fetch!(options, :prototype_schema)]},
       Phase.Schema.Arguments.Normalize,
       Phase.Schema.Validation.TypeNamesAreUnique,
       Phase.Schema.Validation.TypeReferencesExist,
@@ -129,7 +138,7 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.Validation.NoCircularFieldImports,
       Phase.Schema.Validation.Result,
       Phase.Schema.FieldImports,
-      Phase.Schema.AttachDirectives,
+      {Phase.Schema.AttachDirectives, options},
       Phase.Schema.Validation.KnownDirectives,
       Phase.Schema.Arguments.Directives,
       {Phase.Schema.Arguments.Parse, options},
@@ -146,7 +155,7 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.Validation.Result,
       Phase.Schema.Build,
       Phase.Schema.InlineFunctions,
-      {Phase.Schema.Compile, [module: schema]}
+      {Phase.Schema.Compile, options}
     ]
   end
 

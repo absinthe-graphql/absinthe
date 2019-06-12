@@ -5,7 +5,6 @@ defmodule Absinthe.Phase.Schema.Arguments.Directives do
 
   use Absinthe.Phase
   alias Absinthe.Blueprint
-  alias Absinthe.Blueprint.Input
 
   @spec run(Blueprint.t(), Keyword.t()) :: {:ok, Blueprint.t()}
   def run(input, _options \\ []) do
@@ -14,7 +13,8 @@ defmodule Absinthe.Phase.Schema.Arguments.Directives do
   end
 
   # Set provided value from the raw value
-  defp handle_node(%Blueprint.Directive{} = node) do
+  defp handle_node(%Blueprint.Directive{schema_node: schema_node} = node)
+       when not is_nil(schema_node) do
     args =
       for arg <- node.arguments do
         name = arg.name
