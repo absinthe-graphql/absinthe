@@ -129,7 +129,7 @@ defmodule Absinthe.Pipeline do
       {Phase.Schema.Hydrate, options},
       Phase.Schema.NormalizeReferences,
       Phase.Schema.Arguments.Normalize,
-      {Phase.Schema, [schema: Keyword.fetch!(options, :prototype_schema)]},
+      {Phase.Schema, options},
       Phase.Schema.Validation.TypeNamesAreUnique,
       Phase.Schema.Validation.TypeReferencesExist,
       Phase.Schema.Validation.TypeNamesAreReserved,

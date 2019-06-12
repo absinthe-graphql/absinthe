@@ -22,15 +22,27 @@ defmodule Absinthe.Phase.Schema do
   # Thus at each node we need only concern ourselves with immediate children.
   @spec run(Blueprint.t(), Keyword.t()) :: {:ok, Blueprint.t()}
   def run(input, options \\ []) do
-    schema = Keyword.fetch!(options, :schema)
-    adapter = Keyword.get(options, :adapter, Absinthe.Adapter.LanguageConventions)
+    {input, schema} = apply_settings(input, Map.new(options))
 
     result =
       input
       |> update_context(schema)
-      |> Blueprint.prewalk(&handle_node(&1, schema, adapter))
+      |> Blueprint.prewalk(&handle_node(&1, schema, input.adapter))
 
     {:ok, result}
+  end
+
+  # Set schema and adapter settings on the blueprint appropriate to whether we're
+  # applying a normal schema for a document or a prototype schema used to define
+  # a schema.
+  defp apply_settings(input, %{prototype_schema: schema} = options) do
+    adapter = Map.get(options, :adapter, Absinthe.Adapter.LanguageConventions)
+    {%{input | prototype_schema: schema, adapter: adapter}, schema}
+  end
+
+  defp apply_settings(input, options) do
+    adapter = Map.get(options, :adapter, Absinthe.Adapter.LanguageConventions)
+    {%{input | schema: options.schema, adapter: adapter}, options.schema}
   end
 
   defp update_context(input, nil), do: input
@@ -41,7 +53,7 @@ defmodule Absinthe.Phase.Schema do
   end
 
   defp handle_node(%Blueprint{} = node, schema, adapter) do
-    set_children(%{node | schema: schema, adapter: adapter}, schema, adapter)
+    set_children(node, schema, adapter)
   end
 
   defp handle_node(%Absinthe.Blueprint.Document.VariableDefinition{} = node, _, _) do
