@@ -77,7 +77,6 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
 
   enum :__directive_location,
     values: [
-      # OPERATIONS
       :query,
       :mutation,
       :subscription,
@@ -85,7 +84,6 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       :fragment_definition,
       :fragment_spread,
       :inline_fragment,
-      :operation_definition,
       :schema,
       :scalar,
       :object,

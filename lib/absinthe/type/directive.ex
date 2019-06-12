@@ -61,7 +61,6 @@ defmodule Absinthe.Type.Directive do
   defp do_on?(:fragment_definition, %Language.Fragment{}), do: true
   defp do_on?(:fragment_spread, %Language.FragmentSpread{}), do: true
   defp do_on?(:inline_fragment, %Language.InlineFragment{}), do: true
-  defp do_on?(:operation_definition, %Language.OperationDefinition{}), do: true
   defp do_on?(:schema, %Language.SchemaDefinition{}), do: true
   defp do_on?(:schema, %Language.SchemaDeclaration{}), do: true
   defp do_on?(:scalar, %Language.ScalarTypeDefinition{}), do: true
