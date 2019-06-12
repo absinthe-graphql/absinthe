@@ -98,6 +98,8 @@ defmodule Absinthe.Schema do
       persist: true
     )
 
+    Module.register_attribute(__CALLER__.module, :prototype_schema, persist: true)
+
     quote do
       use Absinthe.Schema.Notation, unquote(opts)
       import unquote(__MODULE__), only: :macros
@@ -109,6 +111,7 @@ defmodule Absinthe.Schema do
       defdelegate __absinthe_types__(), to: __MODULE__.Compiled
       defdelegate __absinthe_directives__(), to: __MODULE__.Compiled
       defdelegate __absinthe_interface_implementors__(), to: __MODULE__.Compiled
+      defdelegate __absinthe_prototype_schema__(), to: __MODULE__.Compiled
 
       def __absinthe_lookup__(name) do
         __absinthe_type__(name)
@@ -134,12 +137,7 @@ defmodule Absinthe.Schema do
         []
       end
 
-      @doc false
-      def sdl_directives(directives) do
-        directives
-      end
-
-      defoverridable(context: 1, middleware: 3, plugins: 0, hydrate: 2, sdl_directives: 1)
+      defoverridable(context: 1, middleware: 3, plugins: 0, hydrate: 2)
     end
   end
 
@@ -290,7 +288,14 @@ defmodule Absinthe.Schema do
   end
 
   def __after_compile__(env, _) do
-    pipeline = Absinthe.Pipeline.for_schema(env.module)
+    prototype_schema =
+      env.module
+      |> Module.get_attribute(:prototype_schema)
+
+    pipeline =
+      Absinthe.Pipeline.for_schema(env.module,
+        prototype_schema: prototype_schema
+      )
 
     pipeline =
       env.module
@@ -469,45 +474,6 @@ defmodule Absinthe.Schema do
               node :: Absinthe.Blueprint.Schema.t(),
               ancestors :: [Absinthe.Blueprint.Schema.t()]
             ) :: Absinthe.Schema.Hydrator.hydration()
-
-  @doc """
-  Used to customize the directives available for use in SDL to define schemas.
-
-  The function is passed the list of pre-defined, built-in directives and must return
-  a new list of directives back.
-
-  ## Examples
-
-  Add a directive to categorize types by related feature:
-
-  ```
-  def sdl_directives(builtin_directives) do
-    [
-      %Absinthe.Type.Directive{
-        name: "feature",
-        locations: [:object, :interface, :union, :enum, :scalar],
-        expand: &expand_feature_directive/2
-      }
-      | builtin_directives
-    ]
-  end
-  ```
-
-  Example use:
-
-  ```graphql
-  type Profile @feature(name: "social") {
-    name: String!
-  }
-  ```
-
-  `expand_feature_directive/2` would be responsible for returning a modified
-  representation of each type definition struct with any desired changes
-  (e.g., adding the value of the provided `name` argument to its `__private__` map).
-  """
-  @callback sdl_directives(builtin_directives :: [Absinthe.Type.Directive.t()]) :: [
-              Absinthe.Type.Directive.t()
-            ]
 
   def lookup_directive(schema, name) do
     schema.__absinthe_directive__(name)

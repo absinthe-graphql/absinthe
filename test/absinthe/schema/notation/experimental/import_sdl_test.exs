@@ -5,8 +5,43 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   @moduletag :experimental
   @moduletag :sdl
 
+  defmodule DefinitionPrototype do
+    use Absinthe.Schema
+
+    @pipeline_modifier __MODULE__
+
+    directive :feature do
+      arg :name, non_null(:string)
+      on [:interface]
+    end
+
+    directive :deprecated do
+      arg :reason, :string
+      on [:field_definition, :input_field_definition, :argument_definition]
+      expand &__MODULE__.expand_deprecate/2
+    end
+
+    def pipeline(pipeline) do
+      pipeline
+      |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.Validation.QueryTypeMustBeObject)
+    end
+
+    @doc """
+    Add a deprecation (with an optional reason) to a node.
+    """
+    @spec expand_deprecate(
+            arguments :: %{optional(:reason) => String.t()},
+            node :: Absinthe.Blueprint.node_t()
+          ) :: Absinthe.Blueprint.node_t()
+    def expand_deprecate(arguments, node) do
+      %{node | deprecation: %Absinthe.Type.Deprecation{reason: arguments[:reason]}}
+    end
+  end
+
   defmodule Definition do
     use Absinthe.Schema
+
+    @prototype_schema DefinitionPrototype
 
     # Embedded SDL
     import_sdl """
@@ -24,6 +59,8 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       author: User!
       subject: Post!
       order: Int
+      deprecatedField: String @deprecated
+      deprecatedFieldWithReason: String @deprecated(reason: "Reason")
     }
 
     enum Category {
@@ -57,10 +94,6 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     # Read from file at compile time (with support for automatic recompilation)
     import_sdl path: "test/support/fixtures/import_sdl_path_option.graphql"
     import_sdl path: Path.join("test/support", "fixtures/import_sdl_path_option_fn.graphql")
-
-    def sdl_directives(builtins) do
-      [%Absinthe.Type.Directive{name: "feature", locations: [:interface]} | builtins]
-    end
 
     def get_posts(_, _, _) do
       posts = [
@@ -108,6 +141,12 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     end
   end
 
+  describe "custom prototype schema" do
+    test "is set" do
+      assert Definition.__absinthe_prototype_schema__() == DefinitionPrototype
+    end
+  end
+
   describe "locations" do
     test "have evaluated file values" do
       Absinthe.Blueprint.prewalk(Definition.__absinthe_blueprint__(), nil, fn
@@ -128,6 +167,20 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
       assert %{name: "bar", identifier: :bar, locations: [:object, :scalar]} =
                lookup_compiled_directive(Definition, :bar)
+    end
+  end
+
+  describe "deprecations" do
+    @tag :focus
+    test "can be defined without a reason" do
+      object = lookup_compiled_type(Definition, :comment)
+      assert %{deprecation: %{}} = object.fields.deprecated_field
+    end
+
+    @tag :focus
+    test "can be defined with a reason" do
+      object = lookup_compiled_type(Definition, :comment)
+      assert %{deprecation: %{reason: "Reason"}} = object.fields.deprecated_field_with_reason
     end
   end
 
