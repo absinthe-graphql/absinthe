@@ -152,7 +152,8 @@ defmodule Absinthe.Phase.Schema do
   end
 
   defp set_schema_node(%Blueprint.Input.Argument{name: name} = node, parent, _schema, adapter) do
-    %{node | schema_node: find_schema_argument(parent.schema_node, name, adapter)}
+    schema_node = find_schema_argument(parent.schema_node, name, adapter)
+    %{node | schema_node: schema_node}
   end
 
   defp set_schema_node(%Blueprint.Document.Fragment.Spread{} = node, _, _, _) do
