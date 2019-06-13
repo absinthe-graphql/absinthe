@@ -204,7 +204,8 @@ for the full listing.
 
 ## Inside Phoenix controllers
 
-You can use GraphQL as the datasource for your Phoenix controllers. 
+You can use GraphQL as the datasource for your Phoenix controllers. For this 
+you'll need to add `absinthe_phoenix` to your dependencies. See [Absinthe Phoenix](https://github.com/absinthe-graphql/absinthe_phoenix) for installation instructions.
 
 ```elixir
 @graphql """
