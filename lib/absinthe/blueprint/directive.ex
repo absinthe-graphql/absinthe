@@ -55,7 +55,6 @@ defmodule Absinthe.Blueprint.Directive do
   def placement(%Blueprint.Document.Fragment.Named{}), do: :fragment_definition
   def placement(%Blueprint.Document.Fragment.Spread{}), do: :fragment_spread
   def placement(%Blueprint.Document.Fragment.Inline{}), do: :inline_fragment
-  def placement(%Blueprint.Document.Operation{}), do: :operation_definition
   def placement(%Blueprint.Schema.SchemaDefinition{}), do: :schema
   def placement(%Blueprint.Schema.SchemaDeclaration{}), do: :schema
   def placement(%Blueprint.Schema.ScalarTypeDefinition{}), do: :scalar
