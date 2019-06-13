@@ -8,15 +8,14 @@ At the moment however the most common and fully featured platform that you can r
 
 ### Absinthe.Phoenix Setup
 
-Libraries you'll need:
+Packages you'll need:
 
 ```elixir
 {:absinthe, "~> 1.4.0"},
 {:absinthe_phoenix, "~> 1.4.0"},
 ```
 
-
-You need to have a working phoenix pubsub configured. Here is what the default looks like if you create a new phoenix project:
+You need to have a working Phoenix pubsub configured. Here is what the default looks like if you create a new Phoenix project:
 
 ```elixir
 config :my_app, MyAppWeb.Endpoint,
@@ -25,7 +24,7 @@ config :my_app, MyAppWeb.Endpoint,
            adapter: Phoenix.PubSub.PG2]
 ```
 
-In your application supervisor add a line AFTER your existing endpoint supervision
+In your application supervisor add a line _after_ your existing endpoint supervision
 line:
 
 ```elixir
@@ -37,7 +36,7 @@ line:
 ]
 ```
 
-in phoenix 1.4, the supervisor children are mounted like so
+In Phoenix v1.4, the supervisor children are mounted like so:
 
 ```elixir
 # List all child processes to be supervised
@@ -58,14 +57,17 @@ in phoenix 1.4, the supervisor children are mounted like so
 
 Where `MyAppWeb.Endpoint` is the name of your application's phoenix endpoint.
 
-In your `MyApp.Web.Endpoint` module add:
+In your `MyAppWeb.Endpoint` module add:
+
 ```elixir
 use Absinthe.Phoenix.Endpoint
 ```
 
-In your socket add:
+For your socket, different configurations are used depending on what version of
+Phoenix you're using.
 
 #### Phoenix 1.3 and 1.4
+
 ```elixir
 use Absinthe.Phoenix.Socket,
   schema: MyAppWeb.Schema
@@ -98,18 +100,18 @@ That is all that's required for setup on the server.
 
 ### Setting Options
 
-Options like the context can be configured in the `def connect` callback of your
-socket
+Options like the context can be configured in the `connect/2` callback in your
+socket module.
 
-> Note: the transport macro is deprecated in phoenix 1.4 and can me ommited
+> Note: The transport macro is deprecated in phoenix 1.4 and can be omitted.
 
 ```elixir
-defmodule GitHunt.Web.UserSocket do
+defmodule MyAppWeb.UserSocket do
   use Phoenix.Socket
   use Absinthe.Phoenix.Socket,
     schema: MyApp.Web.Schema
 
-  #transport deprecated in phoenix 1.4
+  # Deprecated in Phoenix v1.4
   transport :websocket, Phoenix.Transports.WebSocket
 
   def connect(params, socket) do
@@ -130,8 +132,8 @@ end
 
 ### Schema
 
-Example schema that lets you use subscriptions to get notified when a comment
-is submitted to a github repo.
+Here's an example schema that lets you use subscriptions to get notified when a comment
+is submitted to a GitHub repository:
 
 ```elixir
 mutation do
@@ -186,7 +188,7 @@ subscription do
 end
 ```
 
-Concretely, if client A submits a subscription doc:
+Concretely, if client A submits a subscription document:
 
 ```graphql
 subscription {
@@ -196,9 +198,9 @@ subscription {
 }
 ```
 
-this tells Absinthe to subscribe client A in the `:comment_added` field on the `"absinthe-graphql/absinthe"` topic, because that's what comes back from the `setup` function.
+This tells Absinthe to subscribe client A in the `:comment_added` field on the `"absinthe-graphql/absinthe"` topic, because that's what comes back from the `setup` function.
 
-Then if client B submits a mutation:
+Then, if client B submits a mutation:
 
 ```graphql
 mutation {
@@ -210,7 +212,7 @@ mutation {
 
 Client B will get the normal response to their mutation, and since they just ask for the `id` that's what they'll get.
 
-Additionally, the `:submit_comment` mutation is configured as a trigger on the `:commented_added` subscription field, so the trigger function is called. That function returns `"absinthe-graphql/absinthe"` because that's the repository name the comment was on, and now Absinthe knows it needs to get all subscriptions on the `:comment_added` field that have the `"absinthe-graphql/absinthe"` topic, so client A gets back
+Additionally, the `:submit_comment` mutation is configured as a trigger on the `:commented_added` subscription field, so the trigger function is called. That function returns `"absinthe-graphql/absinthe"` because that's the repository name for the comment, and now Absinthe knows it needs to get all subscriptions on the `:comment_added` field that have the `"absinthe-graphql/absinthe"` topic, so client A gets back:
 
 ```json
 {"data":{"commentAdded":{"content":"Great library!"}}}
@@ -233,10 +235,10 @@ MyAppWeb.Endpoint.subscribe(topic)
 
 By default, Absinthe will resolve each outgoing publish once per individual subscription.  This ensures:
 
-- different GraphQL documents each receive the different fields they requested
-- user-specific updates are sent out, in case `context` contains user-specific data
+- Different GraphQL documents each receive the different fields they requested
+- User-specific updates are sent out, in case `context` contains user-specific data
 
-To improve the scale at which your subscriptions operate, you may tell Absinthe when it is safe to de-duplicate updates.  Simply return a `context_id` from your field's `config` function.
+To improve the scale at which your subscriptions operate, you may tell Absinthe when it is safe to de-duplicate updates.  Simply return a `context_id` from your field's `config` function:
 
 ```elixir
 subscription do
@@ -273,5 +275,3 @@ Since we provided a `context_id`, Absinthe will only run two documents per publi
 
 1. Once for *user 1* and *user 3* because they have the same context ID (`"global"`) and sent the same document.
 2. Once for *user 2*.  While *user 2* has the same context ID (`"global"`), they provided a different document, so it cannot be de-duplicated with the other two.
-
-This guide is up to date, but incomplete. Stay tuned for more content!
