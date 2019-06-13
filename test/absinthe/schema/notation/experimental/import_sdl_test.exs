@@ -265,4 +265,16 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       assert Absinthe.Schema.used_types(Definition)
     end
   end
+
+  defmodule FakerSchema do
+    use Absinthe.Schema
+
+    import_sdl path: "test/support/fixtures/fake_definition.graphql"
+  end
+
+  describe "graphql-faker schema" do
+    test "defines the correct types" do
+      assert length(FakerSchema.__absinthe_types__()) == 7
+    end
+  end
 end
