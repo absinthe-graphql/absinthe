@@ -371,7 +371,6 @@ defmodule Absinthe.SchemaTest do
   end
 
   describe "can add metadata to an object" do
-    @tag :wip
     test "sets object metadata" do
       foo = Schema.lookup_type(MetadataSchema, :foo)
 

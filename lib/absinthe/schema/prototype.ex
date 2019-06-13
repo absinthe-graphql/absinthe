@@ -1,27 +1,42 @@
 defmodule Absinthe.Schema.Prototype do
-  use Absinthe.Schema
+  @moduledoc """
+  Provides the directives available for SDL schema definitions.
 
-  @pipeline_modifier __MODULE__
+  By default, the only directive provided is `@deprecated`, which supports
+  a `reason` argument (of GraphQL type `String`). This can be used to
+  mark a field
 
-  directive :deprecated do
-    arg :reason, :string
-    on [:field_definition, :input_field_definition, :argument_definition]
-    expand &__MODULE__.expand_deprecate/2
+  To add additional schema directives, define your own prototype schema, e.g.:
+
+  ```
+  defmodule MyAppWeb.SchemaPrototype do
+    use Absinthe.Schema.Prototype
+
+    directive :feature do
+      arg :name, non_null(:string)
+      on [:interface]
+      # Define `expand`, etc.
+    end
+
+    # More directives...
   end
+  ```
 
-  def pipeline(pipeline) do
-    pipeline
-    |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.Validation.QueryTypeMustBeObject)
+  Then, set it as the prototype for your schema:
+
+  ```
+  defmodule MyAppWeb.Schema do
+    use Absinthe.Schema
+
+    @prototype_schema MyAppWeb.SchemaPrototype
+
+    # Use `import_sdl`, etc...
   end
-
-  @doc """
-  Add a deprecation (with an optional reason) to a node.
+  ```
   """
-  @spec expand_deprecate(
-          arguments :: %{optional(:reason) => String.t()},
-          node :: Absinthe.Blueprint.node_t()
-        ) :: Absinthe.Blueprint.node_t()
-  def expand_deprecate(arguments, node) do
-    %{node | deprecation: %Absinthe.Type.Deprecation{reason: arguments[:reason]}}
+  use __MODULE__.Notation
+
+  defmacro __using__(opts \\ []) do
+    __MODULE__.Notation.content(opts)
   end
 end

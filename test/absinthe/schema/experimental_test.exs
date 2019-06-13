@@ -65,7 +65,6 @@ defmodule Absinthe.Schema.ExperimentalTest do
              Absinthe.run(query, Schema)
   end
 
-  @tag :simple
   test "simple input" do
     query = """
     { hello(name: "bob") }
