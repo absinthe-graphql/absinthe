@@ -39,5 +39,4 @@ defmodule Absinthe.Phase.Schema.AttachDirectives do
   defp handle_node(node, _schema, _proto_schema) do
     node
   end
-
 end
