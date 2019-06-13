@@ -26,6 +26,10 @@ defmodule Absinthe.ResolutionTest do
           {:ok, nil}
         end
       end
+
+      field :invalid_resolver, :string do
+        resolve("bogus")
+      end
     end
   end
 
@@ -60,5 +64,17 @@ defmodule Absinthe.ResolutionTest do
     assert_receive({:fields, fields})
 
     assert ["id", "name"] == fields
+  end
+
+  test "invalid resolver" do
+    doc = """
+    { invalidResolver }
+    """
+
+    assert_raise Absinthe.ExecutionError,
+                 ~r/Field resolve property must be a 2 arity anonymous function, 3 arity\nanonymous function, or a `{Module, :function}` tuple.\n\nInstead got: \"bogus\"\n\nResolving field:\n\n    invalidResolver/,
+                 fn ->
+                   {:ok, _} = Absinthe.run(doc, Schema)
+                 end
   end
 end
