@@ -218,6 +218,16 @@ defmodule Absinthe.Resolution do
 
           Instead got: #{inspect(resolution_function)}
 
+          Resolving field:
+
+              #{res.definition.name}
+
+          Defined at:
+
+              #{res.definition.schema_node.__reference__.location.file}:#{
+            res.definition.schema_node.__reference__.location.line
+          }
+
           Info: #{inspect(res)}
           """
       end
