@@ -4,7 +4,7 @@ defmodule Absinthe.Phase.Schema.Compile do
   alias Absinthe.Blueprint.Schema
 
   def run(blueprint, opts) do
-    module_name = Module.concat(opts[:module], Compiled)
+    module_name = Module.concat(opts[:schema], Compiled)
 
     %{schema_definitions: [schema]} = blueprint
 
@@ -20,6 +20,8 @@ defmodule Absinthe.Phase.Schema.Compile do
       Map.new(schema.directive_definitions, fn type_def ->
         {type_def.identifier, type_def.name}
       end)
+
+    prototype_schema = Keyword.fetch!(opts, :prototype_schema)
 
     metadata = build_metadata(schema)
 
@@ -40,6 +42,10 @@ defmodule Absinthe.Phase.Schema.Compile do
 
         def __absinthe_interface_implementors__() do
           unquote(Macro.escape(implementors))
+        end
+
+        def __absinthe_prototype_schema__() do
+          unquote(Macro.escape(prototype_schema))
         end
 
         unquote_splicing(metadata)
