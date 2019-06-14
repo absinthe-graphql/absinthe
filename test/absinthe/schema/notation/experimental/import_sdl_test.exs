@@ -297,5 +297,15 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
         assert directive in directive_names
       end
     end
+
+    test "default values" do
+      type = Absinthe.Schema.lookup_type(FakerSchema, :fake__options)
+      assert %Absinthe.Blueprint.Input.Object{} = type.fields.base_color.default_value
+
+      type = Absinthe.Schema.lookup_type(FakerSchema, :fake__color)
+      assert type.fields.red255.default_value.value == 0
+      assert type.fields.green255.default_value.value == 0
+      assert type.fields.blue255.default_value.value == 0
+    end
   end
 end
