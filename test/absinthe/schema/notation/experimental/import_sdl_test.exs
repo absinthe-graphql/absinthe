@@ -252,7 +252,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   @query """
   { posts { upcasedTitle } }
   """
-  describe "execution with deeply hydration-defined resolvers" do
+  describe "execution with deep hydration-defined resolvers" do
     test "works" do
       assert {:ok,
               %{data: %{"posts" => [%{"upcasedTitle" => "FOO"}, %{"upcasedTitle" => "BAR"}]}}} =
@@ -269,12 +269,33 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   defmodule FakerSchema do
     use Absinthe.Schema
 
+    query do
+      field :hello, :string
+    end
+
     import_sdl path: "test/support/fixtures/fake_definition.graphql"
   end
 
   describe "graphql-faker schema" do
     test "defines the correct types" do
-      assert length(FakerSchema.__absinthe_types__()) == 7
+      type_names =
+        FakerSchema.__absinthe_types__()
+        |> Map.values()
+
+      for type <-
+            ~w(fake__Locale fake__Types fake__imageCategory fake__loremSize fake__color fake__options examples__JSON) do
+        assert type in type_names
+      end
+    end
+
+    test "defines the correct directives" do
+      directive_names =
+        FakerSchema.__absinthe_directives__()
+        |> Map.values()
+
+      for directive <- ~w(examples) do
+        assert directive in directive_names
+      end
     end
   end
 end
