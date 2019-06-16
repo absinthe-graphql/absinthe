@@ -33,11 +33,13 @@ defmodule SdlRenderTest do
 
     \"""
     A submitted post
-
     Multiline description
     \"""
     type Post {
-      old: String
+      old: String @deprecated(reason: \"""
+        It's old
+        Really old
+      \""")
 
       sweet: SweetScalar
 

@@ -9,6 +9,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   Render SDL
   """
   @line_width 120
+
   @skip_modules [
     Absinthe.Phase.Schema.Introspection,
     Absinthe.Type.BuiltIns.Directives,
