@@ -14,7 +14,6 @@ defmodule SdlRenderTest do
            - return docs, not string?
     - [ ] Remove macro based tests when SDL support matches
           - add default value to SDL test
-          - add deprecated & reason to SDL test
   """
 
   defmodule SdlTestSchema do
@@ -112,20 +111,7 @@ defmodule SdlRenderTest do
   end
 
   test "Render SDL from blueprint defined with SDL" do
-    pipeline =
-      SdlTestSchema
-      |> Absinthe.Pipeline.for_schema()
-      |> Absinthe.Pipeline.upto(Absinthe.Phase.Schema.Build)
-      # NormalizeReferences replaces TypeReference structs that we need
-      # with just atom identifiers
-      #  * custom scalars
-      #  * interface types
-      |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.NormalizeReferences)
-      |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.Validation.TypeReferencesExist)
-      |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.Validation.ObjectInterfacesMustBeValid)
-
-    {:ok, blueprint, _phases} =
-      Absinthe.Pipeline.run(SdlTestSchema.__absinthe_blueprint__(), pipeline)
+    {:ok, blueprint, _phases} = run(SdlTestSchema)
 
     rendered_sdl = Absinthe.Schema.Notation.SDL.Render.inspect(blueprint)
 
@@ -135,24 +121,9 @@ defmodule SdlRenderTest do
   defmodule ClassicTestSchema do
     use Absinthe.Schema
 
-    @desc "Simple description"
-    enum :category do
-      value :opinion,
-        deprecate: """
-        Definately
-
-        Don't use This
-        """
-
-      value :news
-      value :classified, deprecate: "Craigslist"
-    end
-
     query do
-      field :echo, non_null(list_of(non_null(:category))) do
-        deprecate "Don't use this"
+      field :echo, :string do
         arg :times, :integer, default_value: 10, description: "The number of times"
-        arg :category, non_null(:category)
       end
     end
   end
@@ -164,54 +135,32 @@ defmodule SdlRenderTest do
 
   type RootQueryType {
     echo(
-
-      category: Category!
-
       "The number of times"
       times: Int = 10
-    ): [Category!]! @deprecated(reason: "Don't use this")
-  }
-
-  "Simple description"
-  enum Category {
-    CLASSIFIED @deprecated(reason: "Craigslist")
-    NEWS
-    OPINION @deprecated(reason: \"""
-      Definately
-
-      Don't use This
-    \""")
+    ): String
   }
   """
   test "Render SDL from blueprint defined with macros" do
-    pipeline = [
-      Absinthe.Phase.Schema.Debugger
-    ]
+    {:ok, blueprint, _phases} = run(ClassicTestSchema)
 
-    {:ok, blueprint, _phases} =
-      Absinthe.Pipeline.run(ClassicTestSchema.__absinthe_blueprint__(), pipeline)
-
-    rendered_sdl = inspect(blueprint, pretty: true)
+    rendered_sdl = Absinthe.Schema.Notation.SDL.Render.inspect(blueprint)
 
     assert rendered_sdl == @expected_sdl
+  end
 
-    [%{type_definitions: type_definitions}] = blueprint.schema_definitions
-    category_type = Enum.find(type_definitions, &(&1.identifier == :category))
+  def run(schema_module) do
+    pipeline =
+      schema_module
+      |> Absinthe.Pipeline.for_schema()
+      |> Absinthe.Pipeline.upto(Absinthe.Phase.Schema.Build)
+      # NormalizeReferences replaces TypeReference structs that we need
+      # with just atom identifiers
+      #  * custom scalars
+      #  * interface types
+      |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.NormalizeReferences)
+      |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.Validation.TypeReferencesExist)
+      |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.Validation.ObjectInterfacesMustBeValid)
 
-    expected_category_sdl = """
-    "Simple description"
-    enum Category {
-      CLASSIFIED @deprecated(reason: "Craigslist")
-      NEWS
-      OPINION @deprecated(reason: \"""
-        Definately
-
-        Don't use This
-      \""")
-    }
-    """
-
-    rendered_category_sdl = inspect(category_type, pretty: true)
-    assert rendered_category_sdl == expected_category_sdl
+    Absinthe.Pipeline.run(schema_module.__absinthe_blueprint__(), pipeline)
   end
 end
