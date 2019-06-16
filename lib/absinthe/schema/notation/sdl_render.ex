@@ -9,7 +9,12 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   Render SDL
   """
   @line_width 120
-  @builtin_scalars [:string, :integer, :float, :boolean, :id]
+  @skip_modules [
+    Absinthe.Phase.Schema.Introspection,
+    Absinthe.Type.BuiltIns.Directives,
+    Absinthe.Type.BuiltIns.Scalars,
+    Absinthe.Type.BuiltIns.Introspection
+  ]
 
   def inspect(term) do
     render(term)
@@ -28,6 +33,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
        }) do
     {schema_declaration, type_definitions} =
       type_definitions
+      |> Enum.reject(&(&1.module in @skip_modules))
       |> Enum.split_with(&(&1.__struct__ == Blueprint.Schema.SchemaDeclaration))
       |> case do
         {[], type_definitions} ->
@@ -43,6 +49,10 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         {schema_declaration, type_definitions} ->
           {schema_declaration, type_definitions}
       end
+
+    directive_definitions =
+      directive_definitions
+      |> Enum.reject(&(&1.module in @skip_modules))
 
     (schema_declaration ++ directive_definitions ++ type_definitions)
     |> Enum.map(&render/1)
@@ -102,23 +112,12 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(field.description)
   end
 
-  # Don't render introspection types
-  # defp render(%Schema.ObjectTypeDefinition{name: "__" <> _introspection_type}) do
-  #   empty()
-  # end
-
-  # Don't render builtin scalar types
-  # defp render(%Schema.ObjectTypeDefinition{identifier: identifier})
-  #     when identifier in @builtin_scalars do
-  #   empty()
-  # end
-
   defp render(%Schema.ObjectTypeDefinition{} = object_type) do
     block(
       "type",
       concat([
         string(object_type.name),
-        implements(object_type.interface_types)
+        implements(object_type.interfaces)
       ]),
       render_list(object_type.fields)
     )
@@ -146,7 +145,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(union_type.description)
   end
 
-  defp render(%Blueprint.Schema.InterfaceTypeDefinition{} = interface_type) do
+  defp render(%Schema.InterfaceTypeDefinition{} = interface_type) do
     block(
       "interface",
       string(interface_type.name),
@@ -155,7 +154,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(interface_type.description)
   end
 
-  defp render(%Blueprint.Schema.EnumTypeDefinition{} = enum_type) do
+  defp render(%Schema.EnumTypeDefinition{} = enum_type) do
     block(
       "enum",
       string(enum_type.name),
@@ -164,23 +163,16 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(enum_type.description)
   end
 
-  defp render(%Blueprint.Schema.EnumValueDefinition{} = enum_value) do
+  defp render(%Schema.EnumValueDefinition{} = enum_value) do
     string(enum_value.name)
     |> deprecated(enum_value.deprecation)
     |> description(enum_value.description)
   end
 
-  defp render(%Blueprint.Schema.ScalarTypeDefinition{} = scalar_type) do
+  defp render(%Schema.ScalarTypeDefinition{} = scalar_type) do
     space("scalar", string(scalar_type.name))
     |> description(scalar_type.description)
   end
-
-  # Don't render builtin directives
-  # @builtin_directives [:skip, :include]
-  # defp render(%Schema.DirectiveDefinition{identifier: identifier})
-  #     when identifier in @builtin_directives do
-  #   empty()
-  # end
 
   defp render(%Schema.DirectiveDefinition{} = directive) do
     locations = directive.locations |> Enum.map(&String.upcase(to_string(&1)))
@@ -209,11 +201,13 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
   defp render(:integer), do: "Int"
 
-  defp render(type) when is_atom(type) and type in @builtin_scalars do
-    type |> to_string |> String.capitalize()
+  defp render(scalar) when is_atom(scalar) do
+    scalar |> to_string |> Macro.camelize()
   end
 
   defp render_list(items, seperator \\ line()) do
+    items = Enum.reject(items, &(&1.module in @skip_modules))
+
     splitter =
       items
       |> Enum.any?(&(&1.description not in ["", nil]))

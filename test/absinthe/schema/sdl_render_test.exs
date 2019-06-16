@@ -27,19 +27,8 @@ defmodule SdlRenderTest do
 
     directive @foo(name: String!) on OBJECT | SCALAR
 
-    "Simple description"
-    enum Category {
-      "Just the facts"
-      NEWS
-
-      \"""
-      What some rando thinks
-
-      Take with a grain of salt
-      \"""
-      OPINION
-
-      CLASSIFIED
+    interface Animal {
+      legCount: Int!
     }
 
     \"""
@@ -56,6 +45,8 @@ defmodule SdlRenderTest do
       title: String!
     }
 
+    scalar SweetScalar
+
     type Query {
       echo(
         category: Category!
@@ -67,6 +58,30 @@ defmodule SdlRenderTest do
       search(limit: Int, sort: SorterInput!): [SearchResult]
     }
 
+    type Dog implements Pet & Animal {
+      legCount: Int!
+      name: String!
+    }
+
+    "Simple description"
+    enum Category {
+      "Just the facts"
+      NEWS
+
+      \"""
+      What some rando thinks
+
+      Take with a grain of salt
+      \"""
+      OPINION
+
+      CLASSIFIED
+    }
+
+    interface Pet {
+      name: String!
+    }
+
     "One or the other"
     union SearchResult = Post | User
 
@@ -76,23 +91,8 @@ defmodule SdlRenderTest do
       field: String!
     }
 
-    scalar SweetScalar
-
     type User {
       name: String!
-    }
-
-    type Dog implements Pet & Animal {
-      legCount: Int!
-      name: String!
-    }
-
-    interface Pet {
-      name: String!
-    }
-
-    interface Animal {
-      legCount: Int!
     }
     """
     import_sdl @sdl
@@ -110,14 +110,22 @@ defmodule SdlRenderTest do
   end
 
   test "Render SDL from blueprint defined with SDL" do
-    pipeline = [
-      Absinthe.Phase.Schema.Debugger
-    ]
+    pipeline =
+      SdlTestSchema
+      |> Absinthe.Pipeline.for_schema()
+      |> Absinthe.Pipeline.upto(Absinthe.Phase.Schema.Build)
+      # NormalizeReferences replaces TypeReference structs that we need
+      # with just atom identifiers
+      #  * custom scalars
+      #  * interface types
+      |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.NormalizeReferences)
+      |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.Validation.TypeReferencesExist)
+      |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.Validation.ObjectInterfacesMustBeValid)
 
     {:ok, blueprint, _phases} =
       Absinthe.Pipeline.run(SdlTestSchema.__absinthe_blueprint__(), pipeline)
 
-    rendered_sdl = inspect(blueprint, pretty: true)
+    rendered_sdl = Absinthe.Schema.Notation.SDL.Render.inspect(blueprint)
 
     assert rendered_sdl == SdlTestSchema.sdl()
   end

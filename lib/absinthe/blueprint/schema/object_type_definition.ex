@@ -17,7 +17,6 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
     # Added by phases
     flags: %{},
     imports: [],
-    interface_types: [],
     errors: [],
     __reference__: nil,
     __private__: []
