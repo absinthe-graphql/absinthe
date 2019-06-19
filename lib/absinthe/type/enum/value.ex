@@ -19,7 +19,7 @@ defmodule Absinthe.Type.Enum.Value do
   * `:value` - The raw, internal value that `:name` map to. This will be
     provided as the argument value to `resolve` functions.
   * `:deprecation` - Deprecation information for a value, usually
-    set-up using the `Absinthe.Schema.Notation.deprecate/2` convenience
+    set-up using the `Absinthe.Schema.Notation.deprecate/1` convenience
     function.
   """
   @type t :: %{

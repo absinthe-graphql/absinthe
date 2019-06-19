@@ -42,7 +42,7 @@ defmodule Absinthe.Type.InputObject do
 
   * `:name` - The name of the input object type. Should be a TitleCased `binary`. Set automatically.
   * `:description` - A nice description for introspection.
-  * `:fields` - A map of `Absinthe.Type.Field` structs. Usually built via `Absinthe.Schema.Notation.field/1`.
+  * `:fields` - A map of `Absinthe.Type.Field` structs. Usually built via `Absinthe.Schema.Notation.field/4`.
 
   The `__private__` and `:__reference__` fields are for internal use.
   """

@@ -71,7 +71,7 @@ defmodule Absinthe.Type.Field do
   The configuration for a field.
 
   * `:name` - The name of the field, usually assigned automatically by
-     the `Absinthe.Schema.Notation.field/1`. Including this option will bypass the snake_case to camelCase conversion.
+     the `Absinthe.Schema.Notation.field/4`. Including this option will bypass the snake_case to camelCase conversion.
   * `:description` - Description of a field, useful for introspection.
   * `:deprecation` - Deprecation information for a field, usually
      set-up using `Absinthe.Schema.Notation.deprecate/1`.
