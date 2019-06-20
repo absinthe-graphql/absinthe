@@ -62,10 +62,6 @@ defmodule Absinthe.Phase.Schema.Hydrate do
     apply_hydrations(node, hydrations, hydrator)
   end
 
-  defp hydrate_node(node, _ancestors, _schema, _hydrator) do
-    node
-  end
-
   defp apply_hydrations(node, hydrations, hydrator) do
     hydrations
     |> List.wrap()
