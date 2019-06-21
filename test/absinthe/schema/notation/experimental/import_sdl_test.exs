@@ -37,6 +37,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       order: Int
       deprecatedField: String @deprecated
       deprecatedFieldWithReason: String @deprecated(reason: "Reason")
+      enumArg(category: Category = NEWS): Category
     }
 
     enum Category {
