@@ -2,7 +2,10 @@ defmodule Absinthe.Middleware.Async do
   @moduledoc """
   This plugin enables asynchronous execution of a field.
 
-  See also `Absinthe.Resolution.Helpers.async/1`
+  See also:
+
+  * `Absinthe.Resolution.Helpers.async/1`
+  * `Absinthe.AsyncTaskWrapper`
 
   # Example Usage:
 
@@ -17,7 +20,7 @@ defmodule Absinthe.Middleware.Async do
   end
   ```
 
-  Using the bare plugin API
+  Using the bare plugin API, disabling any configured `Absinthe.AsyncTaskWrapper`:
   ```elixir
   field :time_consuming, :thing do
     resolve fn _, _, _ ->
@@ -51,7 +54,7 @@ defmodule Absinthe.Middleware.Async do
   # stack for this field. On the next resolution pass, we need to `Task.await` the
   # task so we have actual data. Thus, we prepend this module to the middleware stack.
   def call(%{state: :unresolved} = res, {fun, opts}) when is_function(fun),
-    do: call(res, {Task.async(fun), opts})
+    do: call(res, {Absinthe.AsyncTaskWrapper.async(fun, res), opts})
 
   def call(%{state: :unresolved} = res, {task, opts}) do
     task_data = {task, opts}

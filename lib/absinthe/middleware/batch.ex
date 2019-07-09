@@ -134,23 +134,29 @@ defmodule Absinthe.Middleware.Batch do
   end
 
   def after_resolution(exec) do
-    output = do_batching(exec.acc[__MODULE__][:input])
-    put_in(exec.acc[__MODULE__][:output], output)
+    exec |> do_batching() |> put_batching_output(exec)
   end
 
-  defp do_batching(input) do
-    input
+  defp do_batching(exec) do
+    exec.acc[__MODULE__][:input]
     |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
     |> Enum.map(fn {{batch_fun, batch_opts}, batch_data} ->
       {batch_opts,
-       Task.async(fn ->
-         {batch_fun, call_batch_fun(batch_fun, batch_data)}
-       end)}
+       Absinthe.AsyncTaskWrapper.async(
+         fn ->
+           {batch_fun, call_batch_fun(batch_fun, batch_data)}
+         end,
+         exec
+       )}
     end)
     |> Map.new(fn {batch_opts, task} ->
       timeout = Keyword.get(batch_opts, :timeout, 5_000)
       Task.await(task, timeout)
     end)
+  end
+
+  defp put_batching_output(output, exec) do
+    put_in(exec.acc[__MODULE__][:output], output)
   end
 
   defp call_batch_fun({module, fun}, batch_data) do
