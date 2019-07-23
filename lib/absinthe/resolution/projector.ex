@@ -121,8 +121,8 @@ defmodule Absinthe.Resolution.Projector do
     |> normalize_condition(schema)
     |> passes_type_condition?(parent_type)
     |> case do
-      true -> do_collect(selections, fragments, parent_type, schema, index, acc)
-      false -> {acc, index}
+      nil -> {acc, index}
+      parent_type -> do_collect(selections, fragments, parent_type, schema, index, acc)
     end
   end
 
@@ -149,19 +149,29 @@ defmodule Absinthe.Resolution.Projector do
     Absinthe.Schema.lookup_type(schema, condition)
   end
 
-  defp passes_type_condition?(%Type.Object{name: name}, %Type.Object{name: name}) do
-    true
+  defp passes_type_condition?(%Type.Object{name: name}, %Type.Object{name: name} = type) do
+    type
   end
 
   defp passes_type_condition?(%Type.Interface{} = condition, %Type.Object{} = type) do
-    Type.Interface.member?(condition, type)
+    if Type.Interface.member?(condition, type) do
+      type
+    end
   end
 
   defp passes_type_condition?(%Type.Union{} = condition, %Type.Object{} = type) do
-    Type.Union.member?(condition, type)
+    if Type.Union.member?(condition, type) do
+      type
+    end
+  end
+
+  defp passes_type_condition?(%Type.Object{} = condition, %Type.Interface{} = type) do
+    if Type.Interface.member?(type, condition) do
+      condition
+    end
   end
 
   defp passes_type_condition?(_, _) do
-    false
+    nil
   end
 end

@@ -16,8 +16,24 @@ defmodule Absinthe.ResolutionTest do
       field :name, :string
     end
 
+    object :member do
+      interface :named
+      field :mid, :id
+      field :name, :string
+    end
+
     query do
       field :user, :user do
+        resolve fn _, info ->
+          fields = Absinthe.Resolution.project(info) |> Enum.map(& &1.name)
+
+          # ghetto escape hatch
+          send(self(), {:fields, fields})
+          {:ok, nil}
+        end
+      end
+
+      field :named, :named do
         resolve fn _, info ->
           fields = Absinthe.Resolution.project(info) |> Enum.map(& &1.name)
 
@@ -35,14 +51,14 @@ defmodule Absinthe.ResolutionTest do
 
   test "project/1 works" do
     doc = """
-    { user { id, name } }
+    { user { name } }
     """
 
     {:ok, _} = Absinthe.run(doc, Schema)
 
     assert_receive({:fields, fields})
 
-    assert ["id", "name"] == fields
+    assert ["name"] == fields
   end
 
   test "project/1 works with fragments and things" do
@@ -52,8 +68,9 @@ defmodule Absinthe.ResolutionTest do
         ... on User {
           id
         }
+
         ... on Named {
-          name
+            name
         }
       }
     }
@@ -64,6 +81,30 @@ defmodule Absinthe.ResolutionTest do
     assert_receive({:fields, fields})
 
     assert ["id", "name"] == fields
+  end
+
+  test "project/1 works with interfaces" do
+    doc = """
+    {
+      named {
+        ... on User {
+          id
+        }
+
+        name
+
+        ... on Member {
+          mid
+        }
+      }
+    }
+    """
+
+    {:ok, _} = Absinthe.run(doc, Schema)
+
+    assert_receive({:fields, fields})
+
+    assert ["id", "name", "mid"] == fields
   end
 
   test "invalid resolver" do
