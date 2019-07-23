@@ -22,6 +22,14 @@ defmodule Absinthe.ResolutionTest do
       field :name, :string
     end
 
+    union :union_named do
+      types [:user, :member]
+
+      resolve_type fn
+        _, _ -> :user
+      end
+    end
+
     query do
       field :user, :user do
         resolve fn _, info ->
@@ -34,6 +42,16 @@ defmodule Absinthe.ResolutionTest do
       end
 
       field :named, :named do
+        resolve fn _, info ->
+          fields = Absinthe.Resolution.project(info) |> Enum.map(& &1.name)
+
+          # ghetto escape hatch
+          send(self(), {:fields, fields})
+          {:ok, nil}
+        end
+      end
+
+      field :union_result, :union_named do
         resolve fn _, info ->
           fields = Absinthe.Resolution.project(info) |> Enum.map(& &1.name)
 
@@ -95,6 +113,30 @@ defmodule Absinthe.ResolutionTest do
 
         ... on Member {
           mid
+        }
+      }
+    }
+    """
+
+    {:ok, _} = Absinthe.run(doc, Schema)
+
+    assert_receive({:fields, fields})
+
+    assert ["id", "name", "mid"] == fields
+  end
+
+  test "project/1 works with unions" do
+    doc = """
+    {
+      union_result {
+        ... on User {
+          id
+          name
+        }
+
+        ... on Member {
+          mid
+          name
         }
       }
     }

@@ -171,6 +171,12 @@ defmodule Absinthe.Resolution.Projector do
     end
   end
 
+  defp passes_type_condition?(%Type.Object{} = condition, %Type.Union{} = type) do
+    if Type.Union.member?(type, condition) do
+      condition
+    end
+  end
+
   defp passes_type_condition?(_, _) do
     nil
   end
