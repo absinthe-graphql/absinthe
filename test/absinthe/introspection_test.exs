@@ -107,9 +107,6 @@ defmodule Absinthe.IntrospectionTest do
             queryType {
               fields {
                 name
-                type {
-                  name
-                }
                 args {
                   name
                   defaultValue
@@ -123,9 +120,7 @@ defmodule Absinthe.IntrospectionTest do
 
       assert {:ok, %{data: %{"__schema" => %{"queryType" => %{"fields" => fields}}}}} = result
 
-      assert [
-               %{"name" => "info", "args" => [%{"name" => "channel", "defaultValue" => "RED"}]}
-             ] = fields
+      assert %{"name" => "info", "args" => [%{"name" => "channel", "defaultValue" => "RED"}]} in fields
     end
   end
 
