@@ -26,7 +26,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
     type Query {
       "A list of posts"
-      posts(filter: PostFilter, reverse: Boolean): [Post]
+      posts(filterBy: PostFilter, reverse: Boolean): [Post]
       admin: User!
       droppedField: String
     }
@@ -88,7 +88,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       {:description, "The admin"}
     end
 
-    def hydrate(%{identifier: :filter}, [%{identifier: :posts} | _]) do
+    def hydrate(%{identifier: :filter_by}, [%{identifier: :posts} | _]) do
       {:description, "A filter argument"}
     end
 
@@ -209,7 +209,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
     test "can be added by hydrating an argument" do
       field = lookup_compiled_field(Definition, :query, :posts)
-      assert %{description: "A filter argument"} = field.args.filter
+      assert %{description: "A filter argument"} = field.args.filter_by
     end
   end
 
@@ -248,11 +248,21 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     end
   end
 
-  @tag :pending
   @query """
   { posts { upcasedTitle } }
   """
   describe "execution with deep hydration-defined resolvers" do
+    test "works" do
+      assert {:ok,
+              %{data: %{"posts" => [%{"upcasedTitle" => "FOO"}, %{"upcasedTitle" => "BAR"}]}}} =
+               Absinthe.run(@query, Definition)
+    end
+  end
+
+  @query """
+  { posts(filterBy: {name: "foo"}) { upcasedTitle } }
+  """
+  describe "execution with multi word args" do
     test "works" do
       assert {:ok,
               %{data: %{"posts" => [%{"upcasedTitle" => "FOO"}, %{"upcasedTitle" => "BAR"}]}}} =

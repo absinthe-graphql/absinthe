@@ -160,6 +160,7 @@ defmodule Absinthe.Phase.Schema do
   end
 
   defp set_schema_node(%Blueprint.Document.Field{} = node, parent, schema, adapter) do
+    # binding |> IO.inspect()
     %{node | schema_node: find_schema_field(parent.schema_node, node.name, schema, adapter)}
   end
 
