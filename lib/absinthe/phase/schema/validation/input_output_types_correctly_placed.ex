@@ -35,22 +35,26 @@ defmodule Absinthe.Phase.Schema.Validation.InputOuputTypesCorrectlyPlaced do
 
   defp validate_type(%struct{fields: fields} = type, types) do
     fields =
-      for field <- fields do
-        field_type = Map.get(types, Blueprint.TypeReference.unwrap(field.type))
+      Enum.map(fields, fn
+        %{type: _} = field ->
+          field_type = Map.get(types, Blueprint.TypeReference.unwrap(field.type))
 
-        if field_type && wrong_type?(struct, field_type) do
-          detail = %{
-            field: field.identifier,
-            type: field_type.identifier,
-            struct: field_type.__struct__,
-            parent: struct
-          }
+          if field_type && wrong_type?(struct, field_type) do
+            detail = %{
+              field: field.identifier,
+              type: field_type.identifier,
+              struct: field_type.__struct__,
+              parent: struct
+            }
 
-          field |> put_error(error(field.__reference__.location, detail))
-        else
+            field |> put_error(error(field.__reference__.location, detail))
+          else
+            field
+          end
+
+        field ->
           field
-        end
-      end
+      end)
 
     %{type | fields: fields}
   end

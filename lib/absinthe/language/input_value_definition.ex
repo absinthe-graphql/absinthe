@@ -25,7 +25,7 @@ defmodule Absinthe.Language.InputValueDefinition do
   defimpl Blueprint.Draft do
     def convert(node, doc) do
       %Blueprint.Schema.InputValueDefinition{
-        name: node.name,
+        name: Macro.underscore(node.name),
         description: node.description,
         type: Blueprint.Draft.convert(node.type, doc),
         identifier: Macro.underscore(node.name) |> String.to_atom(),

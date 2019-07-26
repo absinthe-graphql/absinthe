@@ -26,7 +26,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
     type Query {
       "A list of posts"
-      posts(filter: PostFilter, reverse: Boolean): [Post]
+      posts(filterBy: PostFilter, reverse: Boolean): [Post]
       admin: User!
       droppedField: String
     }
@@ -88,7 +88,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       {:description, "The admin"}
     end
 
-    def hydrate(%{identifier: :filter}, [%{identifier: :posts} | _]) do
+    def hydrate(%{identifier: :filter_by}, [%{identifier: :posts} | _]) do
       {:description, "A filter argument"}
     end
 
@@ -209,7 +209,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
     test "can be added by hydrating an argument" do
       field = lookup_compiled_field(Definition, :query, :posts)
-      assert %{description: "A filter argument"} = field.args.filter
+      assert %{description: "A filter argument"} = field.args.filter_by
     end
   end
 
@@ -248,11 +248,21 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     end
   end
 
-  @tag :pending
   @query """
   { posts { upcasedTitle } }
   """
-  describe "execution with deeply hydration-defined resolvers" do
+  describe "execution with deep hydration-defined resolvers" do
+    test "works" do
+      assert {:ok,
+              %{data: %{"posts" => [%{"upcasedTitle" => "FOO"}, %{"upcasedTitle" => "BAR"}]}}} =
+               Absinthe.run(@query, Definition)
+    end
+  end
+
+  @query """
+  { posts(filterBy: {name: "foo"}) { upcasedTitle } }
+  """
+  describe "execution with multi word args" do
     test "works" do
       assert {:ok,
               %{data: %{"posts" => [%{"upcasedTitle" => "FOO"}, %{"upcasedTitle" => "BAR"}]}}} =
@@ -263,6 +273,49 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
   describe "Absinthe.Schema.used_types/1" do
     test "works" do
       assert Absinthe.Schema.used_types(Definition)
+    end
+  end
+
+  defmodule FakerSchema do
+    use Absinthe.Schema
+
+    query do
+      field :hello, :string
+    end
+
+    import_sdl path: "test/support/fixtures/fake_definition.graphql"
+  end
+
+  describe "graphql-faker schema" do
+    test "defines the correct types" do
+      type_names =
+        FakerSchema.__absinthe_types__()
+        |> Map.values()
+
+      for type <-
+            ~w(fake__Locale fake__Types fake__imageCategory fake__loremSize fake__color fake__options examples__JSON) do
+        assert type in type_names
+      end
+    end
+
+    test "defines the correct directives" do
+      directive_names =
+        FakerSchema.__absinthe_directives__()
+        |> Map.values()
+
+      for directive <- ~w(examples) do
+        assert directive in directive_names
+      end
+    end
+
+    test "default values" do
+      type = Absinthe.Schema.lookup_type(FakerSchema, :fake__options)
+      assert %Absinthe.Blueprint.Input.Object{} = type.fields.base_color.default_value
+
+      type = Absinthe.Schema.lookup_type(FakerSchema, :fake__color)
+      assert type.fields.red255.default_value.value == 0
+      assert type.fields.green255.default_value.value == 0
+      assert type.fields.blue255.default_value.value == 0
     end
   end
 end

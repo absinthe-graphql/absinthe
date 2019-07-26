@@ -22,7 +22,7 @@ defmodule Absinthe.Language.FieldDefinition do
   defimpl Blueprint.Draft do
     def convert(node, doc) do
       %Blueprint.Schema.FieldDefinition{
-        name: node.name,
+        name: node.name |> Macro.underscore(),
         description: node.description,
         identifier: node.name |> Macro.underscore() |> String.to_atom(),
         arguments: Absinthe.Blueprint.Draft.convert(node.arguments, doc),
