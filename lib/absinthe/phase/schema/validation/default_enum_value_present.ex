@@ -25,7 +25,7 @@ defmodule Absinthe.Phase.Schema.Validation.DefaultEnumValuePresent do
     node
   end
 
-  def validate_defaults(%{default_value: default, type: type} = node, enums) do
+  def validate_defaults(%{default_value: default_value, type: type} = node, enums) do
     type = Blueprint.TypeReference.unwrap(type)
 
     case Map.fetch(enums, type) do
@@ -33,11 +33,15 @@ defmodule Absinthe.Phase.Schema.Validation.DefaultEnumValuePresent do
         values = Enum.map(enum.values, & &1.value)
         value_list = Enum.map(values, &"\n * #{inspect(&1)}")
 
-        if not (default in values) do
+        default_valid? =
+          List.wrap(default_value)
+          |> Enum.all?(fn default -> default in values end)
+
+        if not default_valid? do
           detail = %{
             value_list: value_list,
             type: type,
-            default_value: default
+            default_value: default_value
           }
 
           node |> put_error(error(node, detail))
@@ -69,7 +73,7 @@ defmodule Absinthe.Phase.Schema.Validation.DefaultEnumValuePresent do
     """
     The default_value for an enum must be present in the enum values.
 
-    Could not use default value of "#{default_value}" for #{inspect(type)}.
+    Could not use default value of "#{inspect(default_value)}" for #{inspect(type)}.
 
     Valid values are:
     #{value_list}
