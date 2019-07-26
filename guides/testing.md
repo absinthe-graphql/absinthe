@@ -1,22 +1,22 @@
-# Testing Absinthe
+# Testing
 
-GraphQL is transport independent, although most often it will be served over
-HTTP. So, to test Absinthe we'll also need [`Absinthe.Plug`](./plug-phoenix.html) as a transport.
+There are three main approaches to testing GraphQL APIs built with Absinthe:
 
-We could test documents directly with `Absinthe.run/3`. However, when in this guide
-we use `Absinthe.Plug` as it has minimal 
-overhead and will oftentimes also setup the [context](./context-and-authentication.html#context-and-plugs)
-of the connection, therefore it provides a more
-comprehensive coverage. The following example therefore uses `Absinthe.Plug` to
-test a resolver. 
+1. Testing resolver functions, since they do most of work.
+2. Testing GraphQL document execution directly via `Absinthe.run/3`, for the bigger picture.
+3. Outside-in, testing the full HTTP request/response cycle with [absinthe_plug](https://hexdocs.pm/absinthe_plug/Absinthe.Plug.html).
 
-The example also assumes that you run `Absinthe` within `Phoenix`, although
-it should not differ a lot from using `Absinthe` with just `Plug`.
+This guide focuses on the third approach, which we generally recommend since it exercises more
+of your application.
 
+## Testing with Absinthe Plug
+
+GraphQL is transport independent, but it's most often served over HTTP. To test HTTP requests with `absinthe` you'll also need `absinthe_plug`. This guide will also assume you're using Phoenix, although 
+it is possible to use Absinthe without it (see the [Plug and Phoenix Setup Guide](./plug-phoenix.md)).
 
 ## Example
 
-Say we want to test the following schema.
+Say we want to test the following schema:
 
 ```elixir
 defmodule MyAppWeb.Schema do
@@ -29,9 +29,9 @@ defmodule MyAppWeb.Schema do
 
   query do
     field :user, :user do
-      arg(:id, non_null(:id))
+      arg :id, non_null(:id)
 
-      resolve(&find_user/2)
+      resolve &find_user/2
     end
   end
 
@@ -44,10 +44,9 @@ defmodule MyAppWeb.Schema do
     {:ok, Map.get(@fakedb, id)}
   end
 end
-
 ```
 
-Which we have exposed at the "/api" endpoint:
+Which we have exposed at the `/api` endpoint:
 
 ```elixir
 defmodule MyAppWeb.Router do
@@ -59,7 +58,7 @@ defmodule MyAppWeb.Router do
 end
 ```
 
-The test will look something like this
+The test could look something like this:
 
 ```elixir
 defmodule MyAppWeb.SchemaTest do
@@ -74,7 +73,7 @@ defmodule MyAppWeb.SchemaTest do
   }
   """
 
-  test "user resolver", %{conn: conn} do
+  test "query: user", %{conn: conn} do
     conn =
       post(conn, "/api", %{
         "query" => @user_query,
@@ -89,14 +88,13 @@ end
 
 ```
 
-Phoenix generates the `MyAppWeb.ConnCase` testhelper module. This supplies the
+Phoenix generates the `MyAppWeb.ConnCase` test helper module. This supplies the
 `conn` variable containing the request and response.  It also has helper functions 
 such as [`post/3`](https://hexdocs.pm/phoenix/Phoenix.ConnTest.html#post/3)
 and [`json_response/2`](https://hexdocs.pm/phoenix/Phoenix.ConnTest.html#json_response/2).
 
 The query is stored in the `@user_query` module attribute. We post this document to
-the GraphQL endpoint at "/api", along with a map of variables which will be 
-transformed to arguments to the `getUser` query.
+the GraphQL endpoint at `/api`, along with a map of variables which will be 
+transformed to arguments for the `getUser` query.
 
-The response to the query is then asserted to be json and of the right shape.
-
+The response to the query can then be directly asserted to be a JSON object of the right shape.
