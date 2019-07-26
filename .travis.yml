@@ -1,6 +1,7 @@
 language: elixir
 elixir:
-  - 1.8.0
+  - 1.8.2
+  - 1.9.1
 notifications:
   recipients:
     - vincefoley@gmail.com
