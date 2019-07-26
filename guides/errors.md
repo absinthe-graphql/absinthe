@@ -50,4 +50,4 @@ Generic handler for interoperability with errors from other libraries:
 
 ## Ecto.Changeset Errors
 
-You may want to look at the [kronky](https://hex.pm/packages/kronky) package.
+You may want to look at the [Absinthe ErrorPayload](https://hex.pm/packages/absinthe_error_payload) package.
