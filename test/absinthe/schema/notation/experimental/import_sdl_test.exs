@@ -29,6 +29,19 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       posts(filterBy: PostFilter, reverse: Boolean): [Post]
       admin: User!
       droppedField: String
+      defaultsOfVariousFlavors(
+        name: String = "Foo"
+        count: Int = 3
+        average: Float = 3.14
+        category: Category = NEWS
+        category: [Category] = [NEWS]
+        valid: Boolean = false
+        complex: ComplexInput = {nested: "String"}
+      ): String
+    }
+
+    input ComplexInput {
+      nested: String
     }
 
     type Comment {
@@ -37,7 +50,6 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       order: Int
       deprecatedField: String @deprecated
       deprecatedFieldWithReason: String @deprecated(reason: "Reason")
-      enumArg(category: Category = NEWS): Category
     }
 
     enum Category {
@@ -311,12 +323,12 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
     test "default values" do
       type = Absinthe.Schema.lookup_type(FakerSchema, :fake__options)
-      assert %Absinthe.Blueprint.Input.Object{} = type.fields.base_color.default_value
+      assert %{red255: _, blue255: _, green255: _} = type.fields.base_color.default_value
 
       type = Absinthe.Schema.lookup_type(FakerSchema, :fake__color)
-      assert type.fields.red255.default_value.value == 0
-      assert type.fields.green255.default_value.value == 0
-      assert type.fields.blue255.default_value.value == 0
+      assert type.fields.red255.default_value == 0
+      assert type.fields.green255.default_value == 0
+      assert type.fields.blue255.default_value == 0
     end
   end
 end
