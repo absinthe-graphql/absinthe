@@ -5,15 +5,10 @@ defmodule SdlRenderTest do
   https://wehavefaces.net/graphql-shorthand-notation-cheatsheet-17cd715861b6
   https://github.com/graphql/graphql-js/blob/master/src/utilities/schemaPrinter.js
 
-  issues:
-    - schema definition order is not respected?
-
   TODO:
     - [-] `Inspect` protocol for Blueprint structs!!!!!
            - for all structs
            - return docs, not string?
-    - [ ] Remove macro based tests when SDL support matches
-          - add default value to SDL test
   """
 
   defmodule SdlTestSchema do
@@ -46,6 +41,10 @@ defmodule SdlRenderTest do
       title: String!
     }
 
+    input ComplexInput {
+      foo: String
+    }
+
     scalar SweetScalar
 
     type Query {
@@ -53,10 +52,14 @@ defmodule SdlRenderTest do
         category: Category!
 
         "The number of times"
-        times: Int
+        times: Int = 10
       ): [Category!]!
       posts: Post
       search(limit: Int, sort: SorterInput!): [SearchResult]
+      defaultBooleanArg(boolean: Boolean = false): String
+      defaultInputArg(input: ComplexInput = {foo: "bar"}): String
+      defaultListArg(things: [String] = ["ThisThing"]): [String]
+      defaultEnumArg(category: Category = NEWS): Category
     }
 
     type Dog implements Pet & Animal {
@@ -126,26 +129,6 @@ defmodule SdlRenderTest do
         arg :times, :integer, default_value: 10, description: "The number of times"
       end
     end
-  end
-
-  @expected_sdl """
-  schema {
-    query: RootQueryType
-  }
-
-  type RootQueryType {
-    echo(
-      "The number of times"
-      times: Int = 10
-    ): String
-  }
-  """
-  test "Render SDL from blueprint defined with macros" do
-    {:ok, blueprint, _phases} = run(ClassicTestSchema)
-
-    rendered_sdl = Absinthe.Schema.Notation.SDL.Render.inspect(blueprint)
-
-    assert rendered_sdl == @expected_sdl
   end
 
   def run(schema_module) do

@@ -94,17 +94,15 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       string(input_value.name),
       ": ",
       render(input_value.type),
-      default(input_value.default_value)
+      default(input_value.default_value_blueprint)
     ])
     |> description(input_value.description)
   end
 
+  @adapter Absinthe.Adapter.LanguageConventions
   defp render(%Schema.FieldDefinition{} = field) do
-    # adapter = blueprint.adapter || Absinthe.Adapter.LanguageConventions
-    adapter = Absinthe.Adapter.LanguageConventions
-
     concat([
-      string(adapter.to_external_name(field.name, :field)),
+      string(@adapter.to_external_name(field.name, :field)),
       arguments(field.arguments),
       ": ",
       render(field.type)
@@ -257,8 +255,30 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   end
 
   defp default(default_value) do
-    concat([" = ", to_string(default_value)])
+    concat([" = ", render_default(default_value)])
   end
+
+  defp render_default(%Blueprint.Input.String{value: value}),
+    do: ~s("#{value}")
+
+  defp render_default(%Blueprint.Input.RawValue{content: content}),
+    do: render_default(content)
+
+  defp render_default(%Blueprint.Input.Object{fields: fields}) do
+    default_fields = Enum.map(fields, &render_default/1)
+    concat(["{", join(default_fields, ", "), "}"])
+  end
+
+  defp render_default(%Blueprint.Input.List{items: items}) do
+    default_list = Enum.map(items, &render_default/1)
+    concat(["[", join(default_list, ", "), "]"])
+  end
+
+  defp render_default(%Blueprint.Input.Field{name: name, input_value: value}),
+    do: "#{name}: #{render_default(value)}"
+
+  defp render_default(%{value: value}),
+    do: to_string(value)
 
   defp deprecated(docs, nil) do
     docs
