@@ -6,9 +6,8 @@ defmodule SdlRenderTest do
   https://github.com/graphql/graphql-js/blob/master/src/utilities/schemaPrinter.js
 
   TODO:
-    - [-] `Inspect` protocol for Blueprint structs!!!!!
-           - for all structs
-           - return docs, not string?
+    - [ ] Directives on lots of things? like types & fields
+           - will look like deprecated
   """
 
   defmodule SdlTestSchema do
@@ -125,5 +124,79 @@ defmodule SdlRenderTest do
       schema_module.__absinthe_blueprint__(),
       Absinthe.Pipeline.for_schema(schema_module)
     )
+  end
+
+  describe "Render SDL" do
+    test "for a type" do
+      assert_rendered("""
+      type Person implements Entity {
+        name: String!
+        baz: Int
+      }
+      """)
+    end
+
+    test "for an interface" do
+      assert_rendered("""
+      interface Entity {
+        name: String!
+      }
+      """)
+    end
+
+    test "for an input" do
+      assert_rendered("""
+      "Description for Profile"
+      input Profile {
+        "Description for name"
+        name: String!
+      }
+      """)
+    end
+
+    test "for a union" do
+      assert_rendered("""
+      union Foo = Bar | Baz
+      """)
+    end
+
+    test "for a scalar" do
+      assert_rendered("""
+      scalar MyGreatScalar
+      """)
+    end
+
+    test "for a directive" do
+      assert_rendered("""
+      directive @foo(name: String!) on OBJECT | SCALAR
+      """)
+    end
+
+    test "for a schema declaration" do
+      assert_rendered("""
+      schema {
+        query: Query
+      }
+      """)
+    end
+  end
+
+  defp assert_rendered(sdl) do
+    assert sdl ==
+             sdl
+             |> from_input()
+             |> inspect(pretty: true)
+  end
+
+  defp from_input(text) do
+    {:ok, %{input: doc}} = Absinthe.Phase.Parse.run(text)
+
+    doc
+    |> extract_ast_node
+    |> Absinthe.Blueprint.Draft.convert(doc)
+  end
+
+  defp extract_ast_node(%Absinthe.Language.Document{definitions: [node]}) do
+    node
   end
 end

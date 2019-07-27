@@ -3,7 +3,6 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   import Inspect.Algebra
 
   alias Absinthe.Blueprint
-  alias Absinthe.Blueprint.Schema
 
   @doc """
   Render SDL
@@ -61,7 +60,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> join([line(), line()])
   end
 
-  defp render(%Schema.SchemaDeclaration{} = schema) do
+  defp render(%Blueprint.Schema.SchemaDeclaration{} = schema) do
     block(
       "schema",
       render_list(schema.field_definitions)
@@ -89,7 +88,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     )
   end
 
-  defp render(%Schema.InputValueDefinition{} = input_value) do
+  defp render(%Blueprint.Schema.InputValueDefinition{} = input_value) do
     concat([
       string(input_value.name),
       ": ",
@@ -100,7 +99,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   end
 
   @adapter Absinthe.Adapter.LanguageConventions
-  defp render(%Schema.FieldDefinition{} = field) do
+  defp render(%Blueprint.Schema.FieldDefinition{} = field) do
     concat([
       string(@adapter.to_external_name(field.name, :field)),
       arguments(field.arguments),
@@ -111,7 +110,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(field.description)
   end
 
-  defp render(%Schema.ObjectTypeDefinition{} = object_type) do
+  defp render(%Blueprint.Schema.ObjectTypeDefinition{} = object_type) do
     block(
       "type",
       concat([
@@ -123,7 +122,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(object_type.description)
   end
 
-  defp render(%Schema.InputObjectTypeDefinition{} = input_object_type) do
+  defp render(%Blueprint.Schema.InputObjectTypeDefinition{} = input_object_type) do
     block(
       "input",
       string(input_object_type.name),
@@ -132,7 +131,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(input_object_type.description)
   end
 
-  defp render(%Schema.UnionTypeDefinition{} = union_type) do
+  defp render(%Blueprint.Schema.UnionTypeDefinition{} = union_type) do
     possible_type_docs = Enum.map(union_type.types, & &1.name)
 
     concat([
@@ -144,7 +143,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(union_type.description)
   end
 
-  defp render(%Schema.InterfaceTypeDefinition{} = interface_type) do
+  defp render(%Blueprint.Schema.InterfaceTypeDefinition{} = interface_type) do
     block(
       "interface",
       string(interface_type.name),
@@ -153,7 +152,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(interface_type.description)
   end
 
-  defp render(%Schema.EnumTypeDefinition{} = enum_type) do
+  defp render(%Blueprint.Schema.EnumTypeDefinition{} = enum_type) do
     block(
       "enum",
       string(enum_type.name),
@@ -162,18 +161,18 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(enum_type.description)
   end
 
-  defp render(%Schema.EnumValueDefinition{} = enum_value) do
+  defp render(%Blueprint.Schema.EnumValueDefinition{} = enum_value) do
     string(enum_value.name)
     |> deprecated(enum_value.deprecation)
     |> description(enum_value.description)
   end
 
-  defp render(%Schema.ScalarTypeDefinition{} = scalar_type) do
+  defp render(%Blueprint.Schema.ScalarTypeDefinition{} = scalar_type) do
     space("scalar", string(scalar_type.name))
     |> description(scalar_type.description)
   end
 
-  defp render(%Schema.DirectiveDefinition{} = directive) do
+  defp render(%Blueprint.Schema.DirectiveDefinition{} = directive) do
     locations = directive.locations |> Enum.map(&String.upcase(to_string(&1)))
 
     concat([
