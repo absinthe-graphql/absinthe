@@ -10,6 +10,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
     :module,
     description: nil,
     interfaces: [],
+    interface_blueprints: [],
     fields: [],
     directives: [],
     is_type_of: nil,

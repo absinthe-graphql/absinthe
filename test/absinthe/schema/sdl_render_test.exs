@@ -114,36 +114,16 @@ defmodule SdlRenderTest do
   end
 
   test "Render SDL from blueprint defined with SDL" do
-    {:ok, blueprint, _phases} = run(SdlTestSchema)
+    {:ok, blueprint, _phases} = run_pipeline(SdlTestSchema)
+    # rendered_sdl = Absinthe.Schema.Notation.SDL.Render.inspect(blueprint)
 
-    rendered_sdl = Absinthe.Schema.Notation.SDL.Render.inspect(blueprint)
-
-    assert rendered_sdl == SdlTestSchema.sdl()
+    assert inspect(blueprint, pretty: true) == SdlTestSchema.sdl()
   end
 
-  defmodule ClassicTestSchema do
-    use Absinthe.Schema
-
-    query do
-      field :echo, :string do
-        arg :times, :integer, default_value: 10, description: "The number of times"
-      end
-    end
-  end
-
-  def run(schema_module) do
-    pipeline =
-      schema_module
-      |> Absinthe.Pipeline.for_schema()
-      |> Absinthe.Pipeline.upto(Absinthe.Phase.Schema.Build)
-      # NormalizeReferences replaces TypeReference structs that we need
-      # with just atom identifiers
-      #  * custom scalars
-      #  * interface types
-      |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.NormalizeReferences)
-      |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.Validation.TypeReferencesExist)
-      |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.Validation.ObjectInterfacesMustBeValid)
-
-    Absinthe.Pipeline.run(schema_module.__absinthe_blueprint__(), pipeline)
+  def run_pipeline(schema_module) do
+    Absinthe.Pipeline.run(
+      schema_module.__absinthe_blueprint__(),
+      Absinthe.Pipeline.for_schema(schema_module)
+    )
   end
 end

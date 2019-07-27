@@ -116,7 +116,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       "type",
       concat([
         string(object_type.name),
-        implements(object_type.interfaces)
+        implements(object_type.interface_blueprints)
       ]),
       render_list(object_type.fields)
     )
