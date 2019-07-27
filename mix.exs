@@ -109,6 +109,7 @@ defmodule Absinthe.Mixfile do
       "guides/adapters.md",
       "guides/complexity-analysis.md",
       "guides/file-uploads.md",
+      "guides/testing.md",
       "guides/client/javascript.md",
       "guides/client/apollo.md",
       "guides/client/relay.md",
