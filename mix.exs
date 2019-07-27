@@ -1,7 +1,7 @@
 defmodule Absinthe.Mixfile do
   use Mix.Project
 
-  @version "1.5.0-alpha.4"
+  @version "1.5.0-beta.0"
 
   def project do
     [
@@ -43,7 +43,8 @@ defmodule Absinthe.Mixfile do
       ],
       maintainers: [
         "Bruce Williams",
-        "Ben Wilson"
+        "Ben Wilson",
+        "Vince Foley"
       ],
       licenses: ["MIT"],
       links: %{
