@@ -15,7 +15,7 @@ defmodule Absinthe.Type.Directive do
 
   * `:name` - The name of the directivee. Should be a lowercase `binary`. Set automatically.
   * `:description` - A nice description for introspection.
-  * `:args` - A map of `Absinthe.Type.Argument` structs. See `Absinthe.Schema.Notation.arg/1`.
+  * `:args` - A map of `Absinthe.Type.Argument` structs. See `Absinthe.Schema.Notation.arg/2`.
   * `:locations` - A list of places the directives can be used.
 
   The `:__reference__` key is for internal use.

@@ -77,7 +77,7 @@ defmodule Absinthe.Type.Object do
 
   * `:name` - The name of the object type. Should be a TitleCased `binary`. Set automatically.
   * `:description` - A nice description for introspection.
-  * `:fields` - A map of `Absinthe.Type.Field` structs. Usually built via `Absinthe.Schema.Notation.field/1`.
+  * `:fields` - A map of `Absinthe.Type.Field` structs. Usually built via `Absinthe.Schema.Notation.field/4`.
   * `:interfaces` - A list of interfaces that this type guarantees to implement. See `Absinthe.Type.Interface`.
   * `:is_type_of` - A function used to identify whether a resolved object belongs to this defined type. For use with `:interfaces` entry and `Absinthe.Type.Interface`.
 

@@ -50,7 +50,7 @@ defmodule Absinthe.Type.Interface do
   @typedoc """
   * `:name` - The name of the interface type. Should be a TitleCased `binary`. Set automatically.
   * `:description` - A nice description for introspection.
-  * `:fields` - A map of `Absinthe.Type.Field` structs. See `Absinthe.Schema.Notation.field/1` and
+  * `:fields` - A map of `Absinthe.Type.Field` structs. See `Absinthe.Schema.Notation.field/4` and
   * `:args` - A map of `Absinthe.Type.Argument` structs. See `Absinthe.Schema.Notation.arg/2`.
   * `:resolve_type` - A function used to determine the implementing type of a resolved object. See also `Absinthe.Type.Object`'s `:is_type_of`.
 
