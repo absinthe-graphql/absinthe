@@ -73,7 +73,7 @@ defmodule Absinthe.Phase.Schema.Validation.DefaultEnumValuePresent do
     """
     The default_value for an enum must be present in the enum values.
 
-    Could not use default value of "#{inspect(default_value)}" for #{inspect(type)}.
+    Could not use default value of `#{inspect(default_value)}` for #{inspect(type)}.
 
     Valid values are:
     #{value_list}
