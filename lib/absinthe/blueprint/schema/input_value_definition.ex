@@ -29,8 +29,8 @@ defmodule Absinthe.Blueprint.Schema.InputValueDefinition do
           name: String.t(),
           description: nil | String.t(),
           type: Blueprint.TypeReference.t(),
-          default_value: any,
-          default_value_blueprint: Blueprint.Input.t(),
+          default_value: Blueprint.Input.t(),
+          default_value_blueprint: Blueprint.Draft.t(),
           directives: [Blueprint.Directive.t()],
           source_location: nil | Blueprint.SourceLocation.t(),
           # The struct module of the parent
