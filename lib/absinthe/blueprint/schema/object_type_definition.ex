@@ -29,6 +29,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
           description: nil | String.t(),
           fields: [Blueprint.Schema.FieldDefinition.t()],
           interfaces: [String.t()],
+          interface_blueprints: [Blueprint.Draft.t()],
           directives: [Blueprint.Directive.t()],
           source_location: nil | Blueprint.SourceLocation.t(),
           # Added by phases
@@ -41,7 +42,6 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
   def functions(), do: [:is_type_of]
 
   def build(type_def, schema) do
-    # TODO: change `interfaces` to be `TypeReference.Name`?
     %Type.Object{
       identifier: type_def.identifier,
       name: type_def.name,

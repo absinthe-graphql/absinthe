@@ -37,7 +37,8 @@ defmodule Absinthe.Language.ObjectTypeDefinition do
     defp source_location(%{loc: loc}), do: Blueprint.SourceLocation.at(loc)
 
     defp interfaces(interfaces, doc) do
-      Absinthe.Blueprint.Draft.convert(interfaces, doc)
+      interfaces
+      |> Absinthe.Blueprint.Draft.convert(doc)
       |> Enum.map(&(&1.name |> Macro.underscore() |> String.to_atom()))
     end
   end
