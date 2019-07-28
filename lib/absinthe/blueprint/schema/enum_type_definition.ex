@@ -55,4 +55,9 @@ defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
       {Map.fetch!(value_def, key), value}
     end
   end
+
+  defimpl Inspect do
+    defdelegate inspect(term, options),
+      to: Absinthe.Schema.Notation.SDL.Render
+  end
 end

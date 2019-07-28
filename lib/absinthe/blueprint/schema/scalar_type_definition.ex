@@ -43,4 +43,9 @@ defmodule Absinthe.Blueprint.Schema.ScalarTypeDefinition do
 
   @doc false
   def functions(), do: [:serialize, :parse]
+
+  defimpl Inspect do
+    defdelegate inspect(term, options),
+      to: Absinthe.Schema.Notation.SDL.Render
+  end
 end

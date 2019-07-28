@@ -24,4 +24,9 @@ defmodule Absinthe.Blueprint.Schema.SchemaDeclaration do
           flags: Blueprint.flags_t(),
           errors: [Absinthe.Phase.Error.t()]
         }
+
+  defimpl Inspect do
+    defdelegate inspect(term, options),
+      to: Absinthe.Schema.Notation.SDL.Render
+  end
 end

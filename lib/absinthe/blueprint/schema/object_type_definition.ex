@@ -89,4 +89,9 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
       {arg_def.identifier, arg}
     end)
   end
+
+  defimpl Inspect do
+    defdelegate inspect(term, options),
+      to: Absinthe.Schema.Notation.SDL.Render
+  end
 end

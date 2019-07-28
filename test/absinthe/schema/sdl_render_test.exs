@@ -113,17 +113,13 @@ defmodule SdlRenderTest do
   end
 
   test "Render SDL from blueprint defined with SDL" do
-    {:ok, blueprint, _phases} = run_pipeline(SdlTestSchema)
-    # rendered_sdl = Absinthe.Schema.Notation.SDL.Render.inspect(blueprint)
+    {:ok, blueprint, _phases} =
+      Absinthe.Pipeline.run(
+        SdlTestSchema.__absinthe_blueprint__(),
+        Absinthe.Pipeline.for_schema(SdlTestSchema)
+      )
 
     assert inspect(blueprint, pretty: true) == SdlTestSchema.sdl()
-  end
-
-  def run_pipeline(schema_module) do
-    Absinthe.Pipeline.run(
-      schema_module.__absinthe_blueprint__(),
-      Absinthe.Pipeline.for_schema(schema_module)
-    )
   end
 
   describe "Render SDL" do
@@ -182,21 +178,46 @@ defmodule SdlRenderTest do
   end
 
   defp assert_rendered(sdl) do
-    assert sdl ==
-             sdl
-             |> from_input()
-             |> inspect(pretty: true)
+    rendered_sdl =
+      with {:ok, %{input: doc}} <- Absinthe.Phase.Parse.run(sdl),
+           %Absinthe.Language.Document{definitions: [node]} <- doc,
+           blueprint = Absinthe.Blueprint.Draft.convert(node, doc) do
+        inspect(blueprint, pretty: true)
+      end
+
+    assert sdl == rendered_sdl
   end
 
-  defp from_input(text) do
-    {:ok, %{input: doc}} = Absinthe.Phase.Parse.run(text)
+  defmodule MacroTestSchema do
+    use Absinthe.Schema
 
-    doc
-    |> extract_ast_node
-    |> Absinthe.Blueprint.Draft.convert(doc)
+    query do
+      field :echo, :string do
+        arg :times, :integer, default_value: 10, description: "The number of times"
+      end
+    end
   end
 
-  defp extract_ast_node(%Absinthe.Language.Document{definitions: [node]}) do
-    node
+  test "Render SDL from blueprint defined with macros" do
+    {:ok, blueprint, _phases} =
+      Absinthe.Pipeline.run(
+        MacroTestSchema.__absinthe_blueprint__(),
+        Absinthe.Pipeline.for_schema(MacroTestSchema)
+      )
+
+    rendered_sdl = inspect(blueprint, pretty: true)
+
+    assert rendered_sdl == """
+           schema {
+             query: RootQueryType
+           }
+
+           type RootQueryType {
+             echo(
+               "The number of times"
+               times: Int
+             ): String
+           }
+           """
   end
 end

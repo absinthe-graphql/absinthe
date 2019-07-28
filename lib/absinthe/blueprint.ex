@@ -212,4 +212,9 @@ defmodule Absinthe.Blueprint do
   def types_by_name(module) when is_atom(module) do
     types_by_name(module.__absinthe_blueprint__)
   end
+
+  defimpl Inspect do
+    defdelegate inspect(term, options),
+      to: Absinthe.Schema.Notation.SDL.Render
+  end
 end

@@ -45,4 +45,9 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
 
   @doc false
   def functions(), do: [:resolve_type]
+
+  defimpl Inspect do
+    defdelegate inspect(term, options),
+      to: Absinthe.Schema.Notation.SDL.Render
+  end
 end

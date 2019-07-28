@@ -4,10 +4,19 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
   alias Absinthe.Blueprint
 
-  @doc """
-  Render SDL
-  """
   @line_width 120
+
+  def inspect(term, %{pretty: true}) do
+    term
+    |> render()
+    |> concat(line())
+    |> format(@line_width)
+    |> to_string
+  end
+
+  def inspect(term, options) do
+    Inspect.Any.inspect(term, options)
+  end
 
   @skip_modules [
     Absinthe.Phase.Schema.Introspection,
@@ -15,14 +24,6 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     Absinthe.Type.BuiltIns.Scalars,
     Absinthe.Type.BuiltIns.Introspection
   ]
-
-  def inspect(term) do
-    render(term)
-    |> concat(line())
-    |> format(@line_width)
-    |> to_string
-  end
-
   defp render(%Blueprint{
          schema_definitions: [
            %Blueprint.Schema.SchemaDefinition{
@@ -31,30 +32,22 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
            }
          ]
        }) do
-    {schema_declaration, type_definitions} =
-      type_definitions
-      |> Enum.reject(&(&1.module in @skip_modules))
-      |> Enum.split_with(&(&1.__struct__ == Blueprint.Schema.SchemaDeclaration))
-      |> case do
-        {[], type_definitions} ->
-          # TODO: remove once macro schema has SchemaDeclaration
-          schema_definition = %{
-            query: Enum.find(type_definitions, &(&1.identifier == :query)),
-            mutation: Enum.find(type_definitions, &(&1.identifier == :mutation)),
-            subscription: Enum.find(type_definitions, &(&1.identifier == :subscription))
-          }
-
-          {[schema_definition], type_definitions}
-
-        {schema_declaration, type_definitions} ->
-          {schema_declaration, type_definitions}
-      end
+    schema_declaration = %{
+      query: Enum.find(type_definitions, &(&1.identifier == :query)),
+      mutation: Enum.find(type_definitions, &(&1.identifier == :mutation)),
+      subscription: Enum.find(type_definitions, &(&1.identifier == :subscription))
+    }
 
     directive_definitions =
       directive_definitions
       |> Enum.reject(&(&1.module in @skip_modules))
 
-    (schema_declaration ++ directive_definitions ++ type_definitions)
+    type_definitions =
+      type_definitions
+      |> Enum.reject(&(&1.__struct__ == Blueprint.Schema.SchemaDeclaration))
+      |> Enum.reject(&(&1.module in @skip_modules))
+
+    ([schema_declaration] ++ directive_definitions ++ type_definitions)
     |> Enum.map(&render/1)
     |> Enum.reject(&(&1 == empty()))
     |> join([line(), line()])
@@ -67,7 +60,6 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     )
   end
 
-  # TODO: remove once macro schema has SchemaDeclaration
   defp render(%{
          query: query_type,
          mutation: mutation_type,
@@ -197,8 +189,10 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     concat([render(of_type), "!"])
   end
 
+  # For macro schema
   defp render(:integer), do: "Int"
 
+  # For macro schema
   defp render(scalar) when is_atom(scalar) do
     scalar |> to_string |> Macro.camelize()
   end
