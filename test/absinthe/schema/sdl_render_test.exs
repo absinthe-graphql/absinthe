@@ -1,15 +1,6 @@
 defmodule SdlRenderTest do
   use ExUnit.Case
 
-  @moduledoc """
-  https://wehavefaces.net/graphql-shorthand-notation-cheatsheet-17cd715861b6
-  https://github.com/graphql/graphql-js/blob/master/src/utilities/schemaPrinter.js
-
-  TODO:
-    - [ ] Directives on lots of things? like types & fields
-           - will look like deprecated
-  """
-
   defmodule SdlTestSchema do
     use Absinthe.Schema
 
