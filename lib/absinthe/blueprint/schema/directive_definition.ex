@@ -42,4 +42,9 @@ defmodule Absinthe.Blueprint.Schema.DirectiveDefinition do
 
   @doc false
   def functions(), do: [:expand]
+
+  defimpl Inspect do
+    defdelegate inspect(term, options),
+      to: Absinthe.Schema.Notation.SDL.Render
+  end
 end

@@ -14,6 +14,7 @@ defmodule Absinthe.Blueprint.Schema.InputValueDefinition do
     placement: :argument_definition,
     description: nil,
     default_value: nil,
+    default_value_blueprint: nil,
     directives: [],
     source_location: nil,
     # Added by phases
@@ -29,6 +30,7 @@ defmodule Absinthe.Blueprint.Schema.InputValueDefinition do
           description: nil | String.t(),
           type: Blueprint.TypeReference.t(),
           default_value: Blueprint.Input.t(),
+          default_value_blueprint: Blueprint.Draft.t(),
           directives: [Blueprint.Directive.t()],
           source_location: nil | Blueprint.SourceLocation.t(),
           # The struct module of the parent

@@ -24,7 +24,7 @@ defmodule Absinthe.Language.EnumValueDefinition do
         value: node.value |> Macro.underscore() |> String.to_atom(),
         name: node.value,
         identifier: node.value |> Macro.underscore() |> String.to_atom(),
-        description: node.value,
+        description: node.description,
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
         source_location: source_location(node)
       }

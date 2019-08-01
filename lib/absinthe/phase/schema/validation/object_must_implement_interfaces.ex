@@ -149,6 +149,15 @@ defmodule Absinthe.Phase.Schema.Validation.ObjectMustImplementInterfaces do
     :ok
   end
 
+  defp check_covariant(
+         %Blueprint.TypeReference.Name{name: name},
+         %Blueprint.TypeReference.Name{name: name},
+         _field_ident,
+         _types
+       ) do
+    :ok
+  end
+
   defp check_covariant(nil, _, field_ident, _), do: {:error, field_ident}
   defp check_covariant(_, nil, field_ident, _), do: {:error, field_ident}
 

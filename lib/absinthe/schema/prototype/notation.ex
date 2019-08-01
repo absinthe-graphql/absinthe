@@ -23,7 +23,8 @@ defmodule Absinthe.Schema.Prototype.Notation do
           # For more information, see:
           # - https://github.com/graphql/graphql-spec/pull/525
           # - https://github.com/absinthe-graphql/absinthe/issues/207
-          :argument_definition
+          :argument_definition,
+          :enum_value
         ]
 
         expand &__MODULE__.expand_deprecate/2

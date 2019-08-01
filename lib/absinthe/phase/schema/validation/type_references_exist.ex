@@ -85,6 +85,10 @@ defmodule Absinthe.Phase.Schema.Validation.TypeReferencesExist do
     value
   end
 
+  defp unwrap(%Absinthe.Blueprint.TypeReference.Name{name: name}) do
+    name
+  end
+
   defp unwrap(type) do
     unwrap_type = Absinthe.Blueprint.TypeReference.unwrap(type)
 

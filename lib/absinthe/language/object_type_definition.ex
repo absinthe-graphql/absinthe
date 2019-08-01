@@ -26,7 +26,8 @@ defmodule Absinthe.Language.ObjectTypeDefinition do
         description: node.description,
         identifier: Macro.underscore(node.name) |> String.to_atom(),
         fields: Absinthe.Blueprint.Draft.convert(node.fields, doc),
-        interfaces: Absinthe.Blueprint.Draft.convert(node.interfaces, doc),
+        interfaces: interfaces(node.interfaces, doc),
+        interface_blueprints: Absinthe.Blueprint.Draft.convert(node.interfaces, doc),
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
         source_location: source_location(node)
       }
@@ -34,5 +35,11 @@ defmodule Absinthe.Language.ObjectTypeDefinition do
 
     defp source_location(%{loc: nil}), do: nil
     defp source_location(%{loc: loc}), do: Blueprint.SourceLocation.at(loc)
+
+    defp interfaces(interfaces, doc) do
+      interfaces
+      |> Absinthe.Blueprint.Draft.convert(doc)
+      |> Enum.map(&(&1.name |> Macro.underscore() |> String.to_atom()))
+    end
   end
 end
