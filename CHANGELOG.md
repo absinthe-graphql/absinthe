@@ -5,6 +5,7 @@ For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe
 ## v1.5.0 (Beta)
 
 - Feature: SDL directives, other improvements
+- Feature: Output rendered SDL for a schema
 - Documentation: Testing guide, numerous fixes and updates
 
 ## v1.5.0 (Alpha)
