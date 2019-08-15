@@ -21,13 +21,13 @@ telemetry events in the documentaiton for `Ecto.Repo`.
 
 ## Measurements
 
-- `start_time`: sent with event names ending `:start`
-- `duration`: sent with event names not ending `:start`
+- `start_time`: sent with event names ending with `:start`
+- `duration`: sent with event names not ending with `:start`
 
 ## Metadata
 
 - `id`: sent with all event names
-- `start_time`: sent with event names not ending `:start`
+- `start_time`: sent with event names not ending with `:start`
 - `middleware`: sent with `[:absinthe, :resolve, :field]`
 - `resolution`: sent with `[:absinthe, :resolve, :field]`
 - `blueprint`: sent with `[:absinthe, :execute, :operation]`
