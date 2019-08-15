@@ -23,17 +23,23 @@ telemetry events in the documentaiton for `Ecto.Repo`.
 
 ## Measurements
 
-- `start_time`: sent with event names ending with `:start`
-- `duration`: sent with event names not ending with `:start`
+Absinthe passes the following measurements in the second argument to your
+handler function:
+
+- `start_time` with event names ending with `:start`
+- `duration` with event names not ending with `:start`
 
 ## Metadata
 
-- `id`: sent with all event names
-- `start_time`: sent with event names not ending with `:start`
-- `middleware`: sent with `[:absinthe, :resolve, :field]`
-- `resolution`: sent with `[:absinthe, :resolve, :field]`
-- `blueprint`: sent with `[:absinthe, :execute, :operation]`
-- `options`: sent with `[:absinthe, :execute, :operation]`
+Absinthe passes the following measurements in the third argument to your
+handler function:
+
+- `id` (`t:integer/0` from `:erlang.unique_integer/0`) with all event names
+- `start_time` (`t:pos_integer/0` from `System.system_time/0`) with event names not ending with `:start`
+- `middleware` (a list of `t:Absinthe.Middleware.spec/0`) with `[:absinthe, :resolve, :field]`
+- `resolution` (`t:Absinthe.Resolution.t/0`) with `[:absinthe, :resolve, :field]`
+- `blueprint` (`t:Absinthe.Blueprint.t/0`) with `[:absinthe, :execute, :operation]` and `[absinthe, :subscription, :publish]`
+- `options` (`t:keyword/0`) with `[:absinthe, :execute, :operation]`
 
 ## Interactive Telemetry
 
