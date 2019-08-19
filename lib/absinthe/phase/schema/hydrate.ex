@@ -72,6 +72,10 @@ defmodule Absinthe.Phase.Schema.Hydrate do
 
   @impl Absinthe.Schema.Hydrator
 
+  def apply_hydration(node, {:meta, keyword_list}) when is_list(keyword_list) do
+    %{node | __private__: Keyword.put(node.__private__, :meta, keyword_list)}
+  end
+
   def apply_hydration(node, {:description, text}) do
     %{node | description: text}
   end
