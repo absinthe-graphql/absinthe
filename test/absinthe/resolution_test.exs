@@ -69,14 +69,14 @@ defmodule Absinthe.ResolutionTest do
 
   test "project/1 works" do
     doc = """
-    { user { name } }
+    { user { id name } }
     """
 
     {:ok, _} = Absinthe.run(doc, Schema)
 
     assert_receive({:fields, fields})
 
-    assert ["name"] == fields
+    assert ["id", "name"] == fields
   end
 
   test "project/1 works with fragments and things" do
