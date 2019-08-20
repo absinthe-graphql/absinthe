@@ -88,7 +88,7 @@ defmodule Absinthe.ResolutionTest do
         }
 
         ... on Named {
-            name
+          name
         }
       }
     }
