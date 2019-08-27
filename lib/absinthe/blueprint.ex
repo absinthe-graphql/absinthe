@@ -16,6 +16,7 @@ defmodule Absinthe.Blueprint do
             schema: nil,
             prototype_schema: nil,
             adapter: nil,
+            initial_phases: [],
             # Added by phases
             telemetry: %{},
             flags: %{},

@@ -6,13 +6,18 @@ defmodule Absinthe.Phase.Init do
   alias Absinthe.{Blueprint, Language, Phase}
 
   @spec run(String.t() | Language.Source.t() | Blueprint.t(), Keyword.t()) :: Phase.result_t()
-  def run(blueprint, options \\ [])
-
-  def run(%Absinthe.Blueprint{} = blueprint, _options) do
-    {:ok, blueprint}
+  def run(input, options \\ []) do
+    {:record_phases, make_blueprint(input),
+     fn bp, phases ->
+       %{bp | initial_phases: phases}
+     end}
   end
 
-  def run(input, _options) do
-    {:ok, %Blueprint{input: input}}
+  defp make_blueprint(%Absinthe.Blueprint{} = blueprint) do
+    blueprint
+  end
+
+  defp make_blueprint(input) do
+    %Blueprint{input: input}
   end
 end

@@ -153,7 +153,7 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
     case config[:document_id] do
       nil ->
         binary =
-          {blueprint.input, options[:variables]}
+          {blueprint.source || blueprint.input, options[:variables] || %{}}
           |> :erlang.term_to_binary()
 
         :crypto.hash(:sha256, binary)

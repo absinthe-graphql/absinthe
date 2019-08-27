@@ -393,6 +393,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
     assert String.contains?(error_log, "boom")
   end
 
+  @tag :pending
   test "different subscription docs are batched together" do
     opts = [context: %{test_pid: self()}]
 
