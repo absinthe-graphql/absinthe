@@ -17,11 +17,12 @@ defmodule Absinthe.Subscription.RedixStore do
           subscription_id,
           :erlang.term_to_binary(doc)
         ])
+
       Redix.command(:redix, [
-            "SADD",
-            subscription_key,
-            binary_key
-          ])
+        "SADD",
+        subscription_key,
+        binary_key
+      ])
     after
       {:ok, _} = Redix.command(:redix, ["EXEC"])
     end

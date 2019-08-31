@@ -146,6 +146,7 @@ defmodule Absinthe.Subscription do
   @doc false
   def publish_remote(pubsub, mutation_result, subscribed_fields) do
     store_module = pubsub |> store_module
+
     {:ok, pool_size} =
       pubsub
       |> registry_name
