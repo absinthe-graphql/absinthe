@@ -5,24 +5,32 @@ defmodule Absinthe.Subscription.Proxy do
 
   defstruct [
     :pubsub,
-    :node
+    :node,
+    :task_super
   ]
+
+  def child_spec([_, _, shard] = args) do
+    %{
+      id: {__MODULE__, shard},
+      start: {__MODULE__, :start_link, [args]}
+    }
+  end
 
   alias Absinthe.Subscription
 
   @gc_interval 5_000
 
-  def start_link(pubsub, shard) do
-    GenServer.start_link(__MODULE__, {pubsub, shard})
+  def start_link(args) do
+    GenServer.start_link(__MODULE__, args)
   end
 
   def topic(shard), do: "__absinthe__:proxy:#{shard}"
 
-  def init({pubsub, shard}) do
+  def init([task_super, pubsub, shard]) do
     node_name = pubsub.node_name()
     :ok = pubsub.subscribe(topic(shard))
     Process.send_after(self(), :gc, @gc_interval)
-    {:ok, %__MODULE__{pubsub: pubsub, node: node_name}}
+    {:ok, %__MODULE__{pubsub: pubsub, node: node_name, task_super: task_super}}
   end
 
   def handle_info(%{node: src_node}, %{node: node} = state) when src_node == node do
@@ -39,15 +47,11 @@ defmodule Absinthe.Subscription.Proxy do
     # There's no meaningful form of backpressure to have here, and we can't
     # bottleneck execution inside each proxy process
 
-    # TODO: This should maybe be supervised? I feel like the linking here isn't
-    # what it should be.
-    Task.start_link(fn ->
-      Subscription.Local.publish_mutation(
-        state.pubsub,
-        payload.mutation_result,
-        payload.subscribed_fields
-      )
-    end)
+    Task.Supervisor.start_child(state.task_super, Subscription.Local, :publish_mutation, [
+      state.pubsub,
+      payload.mutation_result,
+      payload.subscribed_fields
+    ])
 
     {:noreply, state}
   end
