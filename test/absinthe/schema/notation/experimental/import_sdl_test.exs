@@ -38,6 +38,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
         valid: Boolean = false
         complex: ComplexInput = {nested: "String"}
       ): String
+      metaEcho: String
     }
 
     input ComplexInput {
@@ -97,6 +98,10 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       {:ok, Map.get(post, :title) |> String.upcase()}
     end
 
+    def meta_echo(_source, _args, resolution) do
+      {:ok, get_in(resolution.definition.schema_node.__private__, [:meta, :echo])}
+    end
+
     def hydrate(%{identifier: :admin}, [%{identifier: :query} | _]) do
       {:description, "The admin"}
     end
@@ -107,6 +112,13 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
     def hydrate(%{identifier: :posts}, [%{identifier: :query} | _]) do
       {:resolve, &__MODULE__.get_posts/3}
+    end
+
+    def hydrate(%{identifier: :meta_echo}, [%{identifier: :query} | _]) do
+      [
+        {:meta, echo: "Hello"},
+        {:resolve, &__MODULE__.meta_echo/3}
+      ]
     end
 
     def hydrate(%Absinthe.Blueprint{}, _) do
@@ -269,6 +281,16 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       assert {:ok,
               %{data: %{"posts" => [%{"upcasedTitle" => "FOO"}, %{"upcasedTitle" => "BAR"}]}}} =
                Absinthe.run(@query, Definition)
+    end
+  end
+
+  @query """
+  { metaEcho }
+  """
+
+  describe "hydration" do
+    test "allowed for meta data" do
+      assert {:ok, %{data: %{"metaEcho" => "Hello"}}} = Absinthe.run(@query, Definition)
     end
   end
 
