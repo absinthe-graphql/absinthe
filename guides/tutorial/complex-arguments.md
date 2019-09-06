@@ -137,7 +137,7 @@ Everyone else gets an `"Access denied"` error for this field.
 
 Here's our mutation in action in GraphiQL.
 
-<img style="box-shadow: 0 0 6px #ccc;" src="assets/tutorial/graphiql_create_user.png" alt=""/>
+<img style="box-shadow: 0 0 6px #ccc;" src="/guides/assets/tutorial/graphiql_create_user.png" alt=""/>
 
 > Note we're sending a `Authorization` header to authenticate, which a
 > plug is handling. Make sure to read the
