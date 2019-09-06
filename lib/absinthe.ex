@@ -7,6 +7,13 @@ defmodule Absinthe do
   includes guides, API information for important modules, and links to useful resources.
   """
 
+  defmodule SerializationError do
+    @moduledoc """
+    An error during serialization.
+    """
+    defexception message: "serialization failed"
+  end
+
   defmodule ExecutionError do
     @moduledoc """
     An error during execution.

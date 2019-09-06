@@ -18,7 +18,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   def serialize_integer(n) when is_integer(n), do: n
 
   def serialize_integer(n) do
-    raise """
+    raise Absinthe.SerializationError, """
     Value #{inspect(n)} is not a valid integer
     """
   end
@@ -42,7 +42,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   def serialize_float(n) when is_integer(n), do: n * 1.0
 
   def serialize_float(n) do
-    raise """
+    raise Absinthe.SerializationError, """
     Value #{inspect(n)} is not a valid float
     """
   end
@@ -88,7 +88,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   def serialize_boolean(false), do: false
 
   def serialize_boolean(val) do
-    raise """
+    raise Absinthe.SerializationError, """
     Value #{inspect(val)} is not a valid boolean
     """
   end
