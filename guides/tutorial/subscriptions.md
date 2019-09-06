@@ -144,4 +144,4 @@ def create_post(_parent, args, %{context: %{current_user: user}}) do
 
 With this, open a tab and run the query at the top of this section. Then open another tab and run a mutation to add a post you should see a result in the other tab have fun.
 
-<img style="box-shadow: 0 0 6px #ccc;" src="assets/tutorial/graphiql_new_post_sub.png" alt=""/>
+<img style="box-shadow: 0 0 6px #ccc;" src="/guides/assets/tutorial/graphiql_new_post_sub.png" alt=""/>

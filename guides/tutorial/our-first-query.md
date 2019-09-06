@@ -149,11 +149,11 @@ Absinthe does a number of sanity checks during compilation, so if you misspell a
 
 Once it's up-and-running, take a look at [http://localhost:4000/api/graphiql](http://localhost:4000/api/graphiql):
 
-<img style="box-shadow: 0 0 6px #ccc;" src="assets/tutorial/graphiql_blank.png" alt=""/>
+<img style="box-shadow: 0 0 6px #ccc;" src="/guides/assets/tutorial/graphiql_blank.png" alt=""/>
 
 Make sure that the `URL` is pointing to the correct place and press the play button. If everything goes according to plan, you should see something like this:
 
-<img style="box-shadow: 0 0 6px #ccc;" src="assets/tutorial/graphiql.png" alt=""/>
+<img style="box-shadow: 0 0 6px #ccc;" src="/guides/assets/tutorial/graphiql.png" alt=""/>
 
 ## Next Step
 
