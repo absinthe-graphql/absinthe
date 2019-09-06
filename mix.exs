@@ -106,6 +106,7 @@ defmodule Absinthe.Mixfile do
       "guides/importing-fields.md",
       "guides/variables.md",
       "guides/introspection.md",
+      "guides/telemetry.md",
       "guides/deprecation.md",
       "guides/adapters.md",
       "guides/complexity-analysis.md",
