@@ -95,8 +95,9 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
         schema: schema,
         json_codec: json_codec
       }) do
-    with {:ok, result} <- Absinthe.Schema.introspect(schema),
-         content <- json_codec.encode!(result, pretty: pretty) do
+    with {:ok, result} <- Absinthe.Schema.introspect(schema) do
+      result = sort(result)
+      content = json_codec.encode!(result, pretty: pretty)
       {:ok, content}
     else
       {:error, reason} -> {:error, reason}
@@ -141,4 +142,20 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
     create_directory(Path.dirname(filename))
     create_file(filename, content, force: true)
   end
+
+  defp sort(map) when is_map(map) do
+    Map.new(map, fn {key, val} -> {key, sort(val)} end)
+  end
+
+  defp sort(list) when is_list(list) do
+    list
+    |> Enum.sort_by(&list_sorting_value/1)
+    |> Enum.map(&sort/1)
+  end
+
+  defp sort(value), do: value
+
+  defp list_sorting_value(%{name: name}), do: name
+  defp list_sorting_value(%{"name" => name}), do: name
+  defp list_sorting_value(value), do: value
 end
