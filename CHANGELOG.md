@@ -6,6 +6,7 @@ For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe
 
 - Feature: SDL directives, other improvements
 - Feature: Output rendered SDL for a schema
+- Feature: Substantially lower subscription memory usage.
 - Documentation: Testing guide, numerous fixes and updates
 - Breaking Change: Scalar outputs are now type checked and will raise exceptions
 if the result tries to send the wrong data type in the result.
