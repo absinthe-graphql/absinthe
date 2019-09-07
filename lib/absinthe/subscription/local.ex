@@ -24,42 +24,41 @@ defmodule Absinthe.Subscription.Local do
     docs_and_topics =
       for {field, key_strategy} <- subscribed_fields,
           {topic, doc} <- get_docs(pubsub, field, mutation_result, key_strategy) do
-        {{topic, {field, key_strategy}}, put_in(doc.execution.root_value, mutation_result)}
+        {topic, key_strategy, doc}
       end
 
-    docs_by_context = group_by_context(docs_and_topics)
-
-    for docset <- docs_by_context do
-      run_docset(pubsub, docset)
-    end
+    run_docset(pubsub, docs_and_topics, mutation_result)
 
     :ok
   end
 
-  defp group_by_context(docs_and_topics) do
-    docs_and_topics
-    |> Enum.group_by(fn {_, doc} -> doc.execution.context end)
-    |> Map.values()
-  end
+  alias Absinthe.{Phase, Pipeline}
 
-  defp run_docset(pubsub, docs_and_topics) do
-    {topics, docs} = Enum.unzip(docs_and_topics)
-
-    docs =
-      BatchResolver.run(docs,
-        schema: hd(docs).schema,
-        abort_on_error: false,
-        initial_phases: [{Absinthe.Phase.Telemetry, [:subscription, :publish, :start]}]
-      )
-
-    pipeline = [
-      Absinthe.Phase.Document.Result,
-      {Absinthe.Phase.Telemetry, [:subscription, :publish]}
-    ]
-
-    for {doc, {topic, key_strategy}} <- Enum.zip(docs, topics), doc != :error do
+  defp run_docset(pubsub, docs_and_topics, mutation_result) do
+    for {topic, key_strategy, doc} <- docs_and_topics do
       try do
-        {:ok, %{result: data}, _} = Absinthe.Pipeline.run(doc, pipeline)
+        pipeline =
+          doc.initial_phases
+          |> Pipeline.replace(
+            Phase.Telemetry,
+            {Phase.Telemetry, [:subscription, :publish, :start]}
+          )
+          |> Pipeline.without(Phase.Subscription.SubscribeSelf)
+          |> Pipeline.insert_before(
+            Phase.Document.Execution.Resolution,
+            {Phase.Document.OverrideRoot, root_value: mutation_result}
+          )
+          |> Pipeline.upto(Phase.Document.Execution.Resolution)
+
+        pipeline = [
+          pipeline,
+          [
+            Absinthe.Phase.Document.Result,
+            {Absinthe.Phase.Telemetry, [:subscription, :publish]}
+          ]
+        ]
+
+        {:ok, %{result: data}, _} = Absinthe.Pipeline.run(doc.source, pipeline)
 
         Logger.debug("""
         Absinthe Subscription Publication

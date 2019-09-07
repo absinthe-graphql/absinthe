@@ -109,7 +109,15 @@ defmodule Absinthe.Subscription do
   def subscribe(pubsub, field_key, doc_id, doc) do
     registry = pubsub |> registry_name
 
-    {:ok, _} = Registry.register(registry, field_key, {doc_id, doc})
+    doc_value = {
+      doc_id,
+      %{
+        initial_phases: doc.initial_phases,
+        source: doc.source
+      }
+    }
+
+    {:ok, _} = Registry.register(registry, field_key, doc_value)
     {:ok, _} = Registry.register(registry, {self(), doc_id}, field_key)
   end
 

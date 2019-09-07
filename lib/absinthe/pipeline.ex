@@ -44,9 +44,9 @@ defmodule Absinthe.Pipeline do
     options = options(Keyword.put(options, :schema, schema))
 
     [
-      # Parse Document
       Phase.Init,
       {Phase.Telemetry, [:execute, :operation, :start]},
+      # Parse Document
       {Phase.Parse, options},
       # Convert to Blueprint
       {Phase.Blueprint, options},
@@ -360,10 +360,14 @@ defmodule Absinthe.Pipeline do
     {:ok, input, done}
   end
 
-  def run_phase([phase_config | todo], input, done) do
+  def run_phase([phase_config | todo] = all_phases, input, done) do
     {phase, options} = phase_invocation(phase_config)
 
     case phase.run(input, options) do
+      {:record_phases, result, fun} ->
+        result = fun.(result, all_phases)
+        run_phase(todo, result, [phase | done])
+
       {:ok, result} ->
         run_phase(todo, result, [phase | done])
 
