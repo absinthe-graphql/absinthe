@@ -15,6 +15,7 @@ defmodule Absinthe.Phase do
           | {:insert, any, t | [t]}
           | {:replace, any, t | [t]}
           | {:error, any}
+          | {:record_phases, any, (any, any -> any)}
 
   alias __MODULE__
   alias Absinthe.Blueprint
