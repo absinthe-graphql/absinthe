@@ -104,13 +104,8 @@ defmodule SdlRenderTest do
   end
 
   test "Render SDL from blueprint defined with SDL" do
-    {:ok, blueprint, _phases} =
-      Absinthe.Pipeline.run(
-        SdlTestSchema.__absinthe_blueprint__(),
-        Absinthe.Pipeline.for_schema(SdlTestSchema)
-      )
-
-    assert inspect(blueprint, pretty: true) == SdlTestSchema.sdl()
+    {:ok, sdl} = Absinthe.Schema.to_sdl(SdlTestSchema)
+    assert sdl == SdlTestSchema.sdl()
   end
 
   describe "Render SDL" do
@@ -203,15 +198,7 @@ defmodule SdlRenderTest do
   end
 
   test "Render SDL from blueprint defined with macros" do
-    {:ok, blueprint, _phases} =
-      Absinthe.Pipeline.run(
-        MacroTestSchema.__absinthe_blueprint__(),
-        Absinthe.Pipeline.for_schema(MacroTestSchema)
-      )
-
-    opts = %Inspect.Opts{pretty: true}
-
-    rendered_sdl = Inspect.inspect(blueprint, opts)
+    {:ok, rendered_sdl} = Absinthe.Schema.to_sdl(MacroTestSchema)
 
     assert rendered_sdl ==
              """

@@ -72,7 +72,7 @@ defmodule Absinthe.Mixfile do
       {:benchee, ">= 0.0.0", only: :dev},
       {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
       {:phoenix_pubsub, ">= 0.0.0", only: :test},
-      {:mix_test_watch, "~> 0.4.1", only: [:test, :dev]}
+      {:mix_test_watch, "~> 0.4.1", only: [:test]}
     ]
   end
 

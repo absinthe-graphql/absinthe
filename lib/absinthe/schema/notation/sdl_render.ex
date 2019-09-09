@@ -26,17 +26,16 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   ]
   defp render(bp, type_definitions \\ [])
 
-  defp render(
-         %Blueprint{
-           schema_definitions: [
-             %Blueprint.Schema.SchemaDefinition{
-               type_definitions: type_definitions,
-               directive_definitions: directive_definitions
-             }
-           ]
-         },
-         _
-       ) do
+  defp render(%Blueprint{} = bp, _) do
+    %{
+      schema_definitions: [
+        %Blueprint.Schema.SchemaDefinition{
+          type_definitions: type_definitions,
+          directive_definitions: directive_definitions
+        }
+      ]
+    } = bp
+
     schema_declaration = %{
       query: Enum.find(type_definitions, &(&1.identifier == :query)),
       mutation: Enum.find(type_definitions, &(&1.identifier == :mutation)),
@@ -201,7 +200,17 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   end
 
   defp render(%Blueprint.TypeReference.Identifier{id: id}, type_definitions) do
-    string(Enum.find(type_definitions, &(&1.identifier == id)).name)
+    type = Enum.find(type_definitions, &(&1.identifier == id))
+
+    if type do
+      string(type.name)
+    else
+      all_type_ids = Enum.map(type_definitions, & &1.identifier)
+
+      raise """
+      No type found for identifier #{inspect(id)} in #{inspect(all_type_ids)}
+      """
+    end
   end
 
   defp render(%Blueprint.TypeReference.List{of_type: of_type}, type_definitions) do
