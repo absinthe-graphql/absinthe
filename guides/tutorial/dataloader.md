@@ -111,7 +111,7 @@ object :user do
   end
 ```
 
-In this example, we are passing some args go the query in the context where our source lives. For example, this function now receives `args` as `params` meaning we can do now do fun stuff like apply rules to our queries like the following:
+In this example, we are passing some args to the query in the context where our source lives. For example, this function now receives `args` as `params` meaning we can do now do fun stuff like apply rules to our queries like the following:
 
 ```elixir
 def query(query, %{has_admin_rights: true}), do: query
