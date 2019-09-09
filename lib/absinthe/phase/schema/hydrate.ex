@@ -84,6 +84,14 @@ defmodule Absinthe.Phase.Schema.Hydrate do
     %{node | middleware: [{Absinthe.Resolution, resolver}]}
   end
 
+  def apply_hydration(node, {:parse, parse}) when is_function(parse) do
+    %{node | parse: parse}
+  end
+
+  def apply_hydration(node, {:serialize, serialize}) do
+    %{node | serialize: serialize}
+  end
+
   def apply_hydration(node, {:resolve_type, resolve_type}) do
     %{node | resolve_type: resolve_type}
   end

@@ -39,7 +39,10 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
         complex: ComplexInput = {nested: "String"}
       ): String
       metaEcho: String
+      scalarEcho(input: CoolScalar): CoolScalar
     }
+
+    scalar CoolScalar
 
     input ComplexInput {
       nested: String
@@ -102,6 +105,10 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       {:ok, get_in(resolution.definition.schema_node.__private__, [:meta, :echo])}
     end
 
+    def scalar_echo(_source, %{input: scalar}, _resolution) do
+      {:ok, scalar}
+    end
+
     def hydrate(%{identifier: :admin}, [%{identifier: :query} | _]) do
       {:description, "The admin"}
     end
@@ -119,6 +126,17 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
         {:meta, echo: "Hello"},
         {:resolve, &__MODULE__.meta_echo/3}
       ]
+    end
+
+    def hydrate(%{identifier: :cool_scalar}, _) do
+      [
+        {:parse, &__MODULE__.parse_cool_scalar/1},
+        {:serialize, &__MODULE__.serialize_cool_scalar/1}
+      ]
+    end
+
+    def hydrate(%{identifier: :scalar_echo}, [%{identifier: :query} | _]) do
+      [{:resolve, &__MODULE__.scalar_echo/3}]
     end
 
     def hydrate(%Absinthe.Blueprint{}, _) do
@@ -140,6 +158,9 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     def hydrate(_node, _ancestors) do
       []
     end
+
+    def parse_cool_scalar(value), do: {:ok, value}
+    def serialize_cool_scalar(%{value: value}), do: value
   end
 
   describe "custom prototype schema" do
@@ -284,13 +305,19 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     end
   end
 
-  @query """
-  { metaEcho }
-  """
-
   describe "hydration" do
+    @query """
+    { metaEcho }
+    """
     test "allowed for meta data" do
       assert {:ok, %{data: %{"metaEcho" => "Hello"}}} = Absinthe.run(@query, Definition)
+    end
+
+    @query """
+    { scalarEcho(input: "Hey there") }
+    """
+    test "enables scalar creation" do
+      assert {:ok, %{data: %{"scalarEcho" => "Hey there"}}} = Absinthe.run(@query, Definition)
     end
   end
 
