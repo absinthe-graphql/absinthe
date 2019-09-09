@@ -173,7 +173,7 @@ defmodule SdlRenderTest do
       with {:ok, %{input: doc}} <- Absinthe.Phase.Parse.run(sdl),
            %Absinthe.Language.Document{definitions: [node]} <- doc,
            blueprint = Absinthe.Blueprint.Draft.convert(node, doc) do
-        inspect(blueprint, pretty: true)
+        Inspect.inspect(blueprint, %Inspect.Opts{pretty: true})
       end
 
     assert sdl == rendered_sdl
@@ -187,6 +187,19 @@ defmodule SdlRenderTest do
         arg :times, :integer, default_value: 10, description: "The number of times"
       end
     end
+
+    object :order do
+      field :id, :id
+      field :name, :string
+    end
+
+    object :category do
+      field :name, :string
+    end
+
+    union :search_result do
+      types [:order, :category]
+    end
   end
 
   test "Render SDL from blueprint defined with macros" do
@@ -196,19 +209,33 @@ defmodule SdlRenderTest do
         Absinthe.Pipeline.for_schema(MacroTestSchema)
       )
 
-    rendered_sdl = inspect(blueprint, pretty: true)
+    opts = %Inspect.Opts{pretty: true}
 
-    assert rendered_sdl == """
-           schema {
-             query: RootQueryType
-           }
+    rendered_sdl = Inspect.inspect(blueprint, opts)
 
-           type RootQueryType {
-             echo(
-               "The number of times"
-               times: Int
-             ): String
-           }
-           """
+    assert rendered_sdl ==
+             """
+             schema {
+               query: RootQueryType
+             }
+
+             type RootQueryType {
+               echo(
+                 "The number of times"
+                 times: Int
+               ): String
+             }
+
+             type Category {
+               name: String
+             }
+
+             union SearchResult = Order | Category
+
+             type Order {
+               id: ID
+               name: String
+             }
+             """
   end
 end
