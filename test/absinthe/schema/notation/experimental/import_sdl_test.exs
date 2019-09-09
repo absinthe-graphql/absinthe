@@ -158,7 +158,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       ]
     end
 
-    def hydrate(%{identifier: :cool_scalar}, _) do
+    def hydrate(%{name: "CoolScalar"}, _) do
       [
         {:parse, &__MODULE__.parse_cool_scalar/1},
         {:serialize, &__MODULE__.serialize_cool_scalar/1}
