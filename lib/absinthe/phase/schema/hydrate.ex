@@ -88,6 +88,21 @@ defmodule Absinthe.Phase.Schema.Hydrate do
   end
 
   def apply_hydration(
+        %Blueprint.Schema.FieldDefinition{} = node,
+        {:middleware, {_module, _opts} = middleware}
+      ) do
+    %{node | middleware: [middleware]}
+  end
+
+  def apply_hydration(
+        %Blueprint.Schema.FieldDefinition{} = node,
+        {:complexity, complexity}
+      )
+      when is_integer(complexity) do
+    %{node | complexity: complexity}
+  end
+
+  def apply_hydration(
         %Blueprint.Schema.ScalarTypeDefinition{} = node,
         {:parse, parse}
       )

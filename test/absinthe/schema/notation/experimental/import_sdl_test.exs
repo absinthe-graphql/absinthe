@@ -166,7 +166,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     end
 
     def hydrate(%{identifier: :scalar_echo}, [%{identifier: :query} | _]) do
-      [{:resolve, &__MODULE__.scalar_echo/3}]
+      [{:middleware, {Absinthe.Resolution, &__MODULE__.scalar_echo/3}}]
     end
 
     def hydrate(%{identifier: :titled}, _) do
