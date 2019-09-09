@@ -560,10 +560,11 @@ defmodule Absinthe.Schema do
       |> Absinthe.Pipeline.upto({Absinthe.Phase.Schema.Validation.Result, pass: :final})
       |> apply_modifiers(schema)
 
-    case Absinthe.Pipeline.run(schema.__absinthe_blueprint__, pipeline) do
-      {:ok, bp, _} ->
-        {:ok, inspect(bp, pretty: true)}
-    end
+    # we can be assertive here, since this same pipeline was already used to
+    # successfully compile the schema.
+    {:ok, bp, _} = Absinthe.Pipeline.run(schema.__absinthe_blueprint__, pipeline)
+
+    inspect(bp, pretty: true)
   end
 
   @doc """
