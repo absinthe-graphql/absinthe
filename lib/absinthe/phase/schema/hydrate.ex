@@ -96,6 +96,10 @@ defmodule Absinthe.Phase.Schema.Hydrate do
     %{node | resolve_type: resolve_type}
   end
 
+  def apply_hydration(node, {:is_type_of, is_type_of}) do
+    %{node | is_type_of: is_type_of}
+  end
+
   @hydration_level1 [
     Blueprint.Schema.DirectiveDefinition,
     Blueprint.Schema.EnumTypeDefinition,
