@@ -171,13 +171,13 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(enum_type.description)
   end
 
-  defp render(%Blueprint.Schema.EnumValueDefinition{} = enum_value, type_definitions) do
+  defp render(%Blueprint.Schema.EnumValueDefinition{} = enum_value, _type_definitions) do
     string(enum_value.name)
     |> deprecated(enum_value.deprecation)
     |> description(enum_value.description)
   end
 
-  defp render(%Blueprint.Schema.ScalarTypeDefinition{} = scalar_type, type_definitions) do
+  defp render(%Blueprint.Schema.ScalarTypeDefinition{} = scalar_type, _type_definitions) do
     space("scalar", string(scalar_type.name))
     |> description(scalar_type.description)
   end

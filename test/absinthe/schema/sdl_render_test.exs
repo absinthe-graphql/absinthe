@@ -104,8 +104,7 @@ defmodule SdlRenderTest do
   end
 
   test "Render SDL from blueprint defined with SDL" do
-    {:ok, sdl} = Absinthe.Schema.to_sdl(SdlTestSchema)
-    assert sdl == SdlTestSchema.sdl()
+    assert Absinthe.Schema.to_sdl(SdlTestSchema) == SdlTestSchema.sdl()
   end
 
   describe "Render SDL" do
@@ -198,9 +197,7 @@ defmodule SdlRenderTest do
   end
 
   test "Render SDL from blueprint defined with macros" do
-    {:ok, rendered_sdl} = Absinthe.Schema.to_sdl(MacroTestSchema)
-
-    assert rendered_sdl ==
+    assert Absinthe.Schema.to_sdl(MacroTestSchema) ==
              """
              schema {
                query: RootQueryType
