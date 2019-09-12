@@ -39,7 +39,12 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
         complex: ComplexInput = {nested: "String"}
       ): String
       metaEcho: String
+      scalarEcho(input: CoolScalar): CoolScalar
+      namedThings: [Named]
+      titledThings: [Titled]
     }
+
+    scalar CoolScalar
 
     input ComplexInput {
       nested: String
@@ -68,8 +73,28 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       name: String!
     }
 
+    type Human implements Named {
+      name: String!
+      age: Int!
+    }
+
+    type City implements Named {
+      name: String!
+      population: Int!
+    }
+
     interface Titled @feature(name: "bar") {
       title: String!
+    }
+
+    type Book implements Titled {
+      title: String!
+      pages: Int!
+    }
+
+    type Movie implements Titled {
+      title: String!
+      duration: Int!
     }
 
     scalar B
@@ -102,6 +127,18 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       {:ok, get_in(resolution.definition.schema_node.__private__, [:meta, :echo])}
     end
 
+    def scalar_echo(_source, %{input: scalar}, _resolution) do
+      {:ok, scalar}
+    end
+
+    def named_things(_source, _args, _resolution) do
+      {:ok, [%{name: "Sue", age: 38}, %{name: "Portland", population: 647_000}]}
+    end
+
+    def titled_things(_source, _args, _resolution) do
+      {:ok, [%{title: "The Matrix", duration: 150}, %{title: "Origin of Species", pages: 502}]}
+    end
+
     def hydrate(%{identifier: :admin}, [%{identifier: :query} | _]) do
       {:description, "The admin"}
     end
@@ -119,6 +156,37 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
         {:meta, echo: "Hello"},
         {:resolve, &__MODULE__.meta_echo/3}
       ]
+    end
+
+    def hydrate(%{name: "CoolScalar"}, _) do
+      [
+        {:parse, &__MODULE__.parse_cool_scalar/1},
+        {:serialize, &__MODULE__.serialize_cool_scalar/1}
+      ]
+    end
+
+    def hydrate(%{identifier: :scalar_echo}, [%{identifier: :query} | _]) do
+      [{:middleware, {Absinthe.Resolution, &__MODULE__.scalar_echo/3}}]
+    end
+
+    def hydrate(%{identifier: :titled}, _) do
+      [{:resolve_type, &__MODULE__.titled_resolve_type/2}]
+    end
+
+    def hydrate(%{identifier: :human}, _) do
+      [{:is_type_of, &__MODULE__.human_is_type_of/1}]
+    end
+
+    def hydrate(%{identifier: :city}, _) do
+      [{:is_type_of, &__MODULE__.city_is_type_of/1}]
+    end
+
+    def hydrate(%{identifier: :named_things}, [%{identifier: :query} | _]) do
+      [{:resolve, &__MODULE__.named_things/3}]
+    end
+
+    def hydrate(%{identifier: :titled_things}, [%{identifier: :query} | _]) do
+      [{:resolve, &__MODULE__.titled_things/3}]
     end
 
     def hydrate(%Absinthe.Blueprint{}, _) do
@@ -140,6 +208,18 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     def hydrate(_node, _ancestors) do
       []
     end
+
+    def city_is_type_of(%{population: _}), do: true
+    def city_is_type_of(_), do: false
+
+    def human_is_type_of(%{age: _}), do: true
+    def human_is_type_of(_), do: false
+
+    def titled_resolve_type(%{duration: _}, _), do: :movie
+    def titled_resolve_type(%{pages: _}, _), do: :book
+
+    def parse_cool_scalar(value), do: {:ok, value}
+    def serialize_cool_scalar(%{value: value}), do: value
   end
 
   describe "custom prototype schema" do
@@ -284,13 +364,63 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     end
   end
 
-  @query """
-  { metaEcho }
-  """
-
   describe "hydration" do
+    @query """
+    { metaEcho }
+    """
     test "allowed for meta data" do
       assert {:ok, %{data: %{"metaEcho" => "Hello"}}} = Absinthe.run(@query, Definition)
+    end
+
+    @query """
+    { scalarEcho(input: "Hey there") }
+    """
+    test "enables scalar creation" do
+      assert {:ok, %{data: %{"scalarEcho" => "Hey there"}}} = Absinthe.run(@query, Definition)
+    end
+
+    @query """
+    {
+      namedThings {
+        __typename
+        name
+        ... on Human { age }
+        ... on City { population }
+      }
+    }
+    """
+    test "interface via is_type_of" do
+      assert {:ok,
+              %{
+                data: %{
+                  "namedThings" => [
+                    %{"__typename" => "Human", "name" => "Sue", "age" => 38},
+                    %{"__typename" => "City", "name" => "Portland", "population" => 647_000}
+                  ]
+                }
+              }} = Absinthe.run(@query, Definition)
+    end
+
+    @query """
+    {
+      titledThings {
+        __typename
+        title
+        ... on Book { pages }
+        ... on Movie { duration }
+      }
+    }
+    """
+    test "interface via resolve_type" do
+      assert {:ok,
+              %{
+                data: %{
+                  "titledThings" => [
+                    %{"__typename" => "Movie", "title" => "The Matrix", "duration" => 150},
+                    %{"__typename" => "Book", "title" => "Origin of Species", "pages" => 502}
+                  ]
+                }
+              }} = Absinthe.run(@query, Definition)
     end
   end
 
