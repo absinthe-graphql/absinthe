@@ -60,7 +60,9 @@ defmodule Elixir.Absinthe.Integration.Execution.TelemetryTest do
     assert %{"asyncThing" => "ASYNC", "objectThing" => %{"name" => "Foo"}} == data
 
     assert_receive {[:absinthe, :execute, :operation, :start], _, %{id: id}, _config}
-    assert_receive {[:absinthe, :execute, :operation, :stop], measurements, %{id: ^id} = meta, _config}
+
+    assert_receive {[:absinthe, :execute, :operation, :stop], measurements, %{id: ^id} = meta,
+                    _config}
 
     assert is_number(measurements[:duration])
     assert System.convert_time_unit(meta[:start_time], :native, :millisecond)
