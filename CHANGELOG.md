@@ -10,6 +10,7 @@ For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe
 - Documentation: Testing guide, numerous fixes and updates
 - Breaking Change: Scalar outputs are now type checked and will raise exceptions
 if the result tries to send the wrong data type in the result.
+- Breaking Change: `telemetry` event names [changed](https://github.com/absinthe-graphql/absinthe/pull/782) from the `alpha` to match an emerging naming convention for tracing.
 
 ## v1.5.0 (Alpha)
 
