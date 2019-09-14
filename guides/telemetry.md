@@ -5,11 +5,11 @@ Call `:telemetry.attach/4` or `:telemetry.attach_many/4` to attach your
 handler function to any of the following event names:
 
 - `[:absinthe, :execute, :operation, :start]` when the operation starts
-- `[:absinthe, :execute, :operation]` when the operation finishes
+- `[:absinthe, :execute, :operation, :stop]` when the operation finishes
 - `[:absinthe, :subscription, :publish, :start]` when a subscription starts
-- `[:absinthe, :subscription, :publish]` when a subscription finishes
+- `[:absinthe, :subscription, :publish, :stop]` when a subscription finishes
 - `[:absinthe, :resolve, :field, :start]` when field resolution starts
-- `[:absinthe, :resolve, :field]` when field resolution finishes
+- `[:absinthe, :resolve, :field, :stop]` when field resolution finishes
 
 By default, only fields with a resolver get measured. You can override this
 by setting `absinthe_telemetry` in its metadata to `true` or `false` with
@@ -27,7 +27,7 @@ Absinthe passes the following measurements in the second argument to your
 handler function:
 
 - `start_time` with event names ending with `:start`
-- `duration` with event names not ending with `:start`
+- `duration` with event names ending with `:stop`
 
 ## Metadata
 
@@ -49,7 +49,7 @@ your `iex -S mix phx.server` prompt. Paste in:
 ```elixir
 :telemetry.attach_many(
   :demo,
-  [[:absinthe, :execute, :operation], [:absinthe, :resolve, :field]],
+  [[:absinthe, :execute, :operation, :stop], [:absinthe, :resolve, :field, :stop, :stop]],
   fn event_name, measurements, metadata, _config ->
     %{
       event_name: event_name,
@@ -83,7 +83,7 @@ Shortly after the log line for `POST /api/`, you'll see something like:
 
 ```elixir
 telemetry: %{
-  event_name: [:absinthe, :execute, :operation],
+  event_name: [:absinthe, :execute, :operation, :stop],
   measurements: %{duration: 158516000},
   metadata: %{
     blueprint: :...,
