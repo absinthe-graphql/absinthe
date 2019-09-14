@@ -54,7 +54,7 @@ defmodule Absinthe.Subscription.Local do
           pipeline,
           [
             Absinthe.Phase.Document.Result,
-            {Absinthe.Phase.Telemetry, [:subscription, :publish]}
+            {Absinthe.Phase.Telemetry, [:subscription, :publish, :stop]}
           ]
         ]
 

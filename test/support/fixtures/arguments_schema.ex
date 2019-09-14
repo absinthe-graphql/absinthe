@@ -2,8 +2,8 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
   use Absinthe.Schema
 
   @res %{
-    true => "YES",
-    false => "NO"
+    true: "YES",
+    false: "NO"
   }
 
   scalar :input_name do

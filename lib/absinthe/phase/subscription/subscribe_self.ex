@@ -31,7 +31,7 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
       {:replace, blueprint,
        [
          {Phase.Subscription.Result, topic: subscription_id},
-         {Phase.Telemetry, [:execute, :operation, options]}
+         {Phase.Telemetry, [:execute, :operation, :stop, options]}
        ]}
     else
       {:error, error} ->

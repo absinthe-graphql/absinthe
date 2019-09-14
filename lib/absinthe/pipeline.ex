@@ -107,7 +107,7 @@ defmodule Absinthe.Pipeline do
       {Phase.Document.Execution.Resolution, options},
       # Format Result
       Phase.Document.Result,
-      {Phase.Telemetry, [:execute, :operation, options]}
+      {Phase.Telemetry, [:execute, :operation, :stop, options]}
     ]
   end
 

@@ -3,10 +3,10 @@ defmodule Absinthe.Phase.Telemetry do
   Gather and report telemetry about an operation.
   """
   @operation_start [:absinthe, :execute, :operation, :start]
-  @operation [:absinthe, :execute, :operation]
+  @operation_stop [:absinthe, :execute, :operation, :stop]
 
   @subscription_start [:absinthe, :subscription, :publish, :start]
-  @subscription [:absinthe, :subscription, :publish]
+  @subscription_stop [:absinthe, :subscription, :publish, :stop]
 
   use Absinthe.Phase
 
@@ -47,13 +47,13 @@ defmodule Absinthe.Phase.Telemetry do
      }}
   end
 
-  def run(blueprint, [:subscription, :publish]) do
+  def run(blueprint, [:subscription, :publish, :stop]) do
     end_time_mono = System.monotonic_time()
 
     with %{id: id, start_time: start_time, start_time_mono: start_time_mono} <-
            blueprint.telemetry do
       :telemetry.execute(
-        @subscription,
+        @subscription_stop,
         %{duration: end_time_mono - start_time_mono},
         %{
           id: id,
@@ -66,13 +66,13 @@ defmodule Absinthe.Phase.Telemetry do
     {:ok, blueprint}
   end
 
-  def run(blueprint, [:execute, :operation, options]) do
+  def run(blueprint, [:execute, :operation, :stop, options]) do
     end_time_mono = System.monotonic_time()
 
     with %{id: id, start_time: start_time, start_time_mono: start_time_mono} <-
            blueprint.telemetry do
       :telemetry.execute(
-        @operation,
+        @operation_stop,
         %{duration: end_time_mono - start_time_mono},
         %{
           id: id,
