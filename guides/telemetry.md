@@ -19,7 +19,7 @@ For async, batch, and dataloader fields, Absinthe sends the final event when
 it gets the results. That might be later than when the results are ready. If
 you need to know how long the underlying operation took, you'll need to hook
 telemetry up to that underlying operation. See, for example, the recommended
-telemetry events in the documentaiton for `Ecto.Repo`.
+telemetry events in the documentation for `Ecto.Repo`.
 
 ## Measurements
 
