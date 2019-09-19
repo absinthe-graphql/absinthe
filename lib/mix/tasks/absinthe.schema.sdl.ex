@@ -1,18 +1,3 @@
-defmodule TestSchema do
-  use Absinthe.Schema
-
-  """
-  schema {
-    query: Query
-  }
-
-  type Query {
-    helloWorld(name: String!): String
-  }
-  """
-  |> import_sdl
-end
-
 defmodule Mix.Tasks.Absinthe.Schema.Sdl do
   require Logger
   use Mix.Task
