@@ -104,13 +104,7 @@ defmodule SdlRenderTest do
   end
 
   test "Render SDL from blueprint defined with SDL" do
-    {:ok, blueprint, _phases} =
-      Absinthe.Pipeline.run(
-        SdlTestSchema.__absinthe_blueprint__(),
-        Absinthe.Pipeline.for_schema(SdlTestSchema)
-      )
-
-    assert inspect(blueprint, pretty: true) == SdlTestSchema.sdl()
+    assert Absinthe.Schema.to_sdl(SdlTestSchema) == SdlTestSchema.sdl()
   end
 
   describe "Render SDL" do
@@ -173,7 +167,7 @@ defmodule SdlRenderTest do
       with {:ok, %{input: doc}} <- Absinthe.Phase.Parse.run(sdl),
            %Absinthe.Language.Document{definitions: [node]} <- doc,
            blueprint = Absinthe.Blueprint.Draft.convert(node, doc) do
-        inspect(blueprint, pretty: true)
+        Inspect.inspect(blueprint, %Inspect.Opts{pretty: true})
       end
 
     assert sdl == rendered_sdl
@@ -187,28 +181,45 @@ defmodule SdlRenderTest do
         arg :times, :integer, default_value: 10, description: "The number of times"
       end
     end
+
+    object :order do
+      field :id, :id
+      field :name, :string
+    end
+
+    object :category do
+      field :name, :string
+    end
+
+    union :search_result do
+      types [:order, :category]
+    end
   end
 
   test "Render SDL from blueprint defined with macros" do
-    {:ok, blueprint, _phases} =
-      Absinthe.Pipeline.run(
-        MacroTestSchema.__absinthe_blueprint__(),
-        Absinthe.Pipeline.for_schema(MacroTestSchema)
-      )
+    assert Absinthe.Schema.to_sdl(MacroTestSchema) ==
+             """
+             schema {
+               query: RootQueryType
+             }
 
-    rendered_sdl = inspect(blueprint, pretty: true)
+             type RootQueryType {
+               echo(
+                 "The number of times"
+                 times: Int
+               ): String
+             }
 
-    assert rendered_sdl == """
-           schema {
-             query: RootQueryType
-           }
+             type Category {
+               name: String
+             }
 
-           type RootQueryType {
-             echo(
-               "The number of times"
-               times: Int
-             ): String
-           }
-           """
+             union SearchResult = Order | Category
+
+             type Order {
+               id: ID
+               name: String
+             }
+             """
   end
 end

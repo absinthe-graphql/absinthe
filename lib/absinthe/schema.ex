@@ -9,7 +9,7 @@ defmodule Absinthe.Schema do
 
   ## Custom Schema Manipulation (in progress)
   In Absinthe 1.5 schemas are built using the same process by which queries are
-  executed. All the fancy macros build up an intermediary tree of structs in the
+  executed. All the macros in this module and in `Notation` build up an intermediary tree of structs in the
   `%Absinthe.Blueprint{}` namespace, which we generally call "Blueprint structs".
 
   At the top you've got a `%Blueprint{}` struct which holds onto some schema
@@ -67,7 +67,7 @@ defmodule Absinthe.Schema do
       Pipeline.insert_after(pipeline, Phase.Schema.TypeImports, __MODULE__)
     end
 
-    # Here's the blueprint of the schema, let's do whatever we want with it.
+    # Here's the blueprint of the schema, do whatever you want with it.
     def run(blueprint, _) do
       {:ok, blueprint}
     end
@@ -105,6 +105,7 @@ defmodule Absinthe.Schema do
       import unquote(__MODULE__), only: :macros
 
       @after_compile unquote(__MODULE__)
+      @before_compile unquote(__MODULE__)
 
       defdelegate __absinthe_type__(name), to: __MODULE__.Compiled
       defdelegate __absinthe_directive__(name), to: __MODULE__.Compiled
@@ -287,26 +288,34 @@ defmodule Absinthe.Schema do
     Absinthe.Schema.Notation.record!(env, @object_type, :subscription, attrs, block)
   end
 
+  defmacro __before_compile__(_) do
+    quote do
+      @doc false
+      def __absinthe_pipeline_modifiers__ do
+        @pipeline_modifier
+      end
+    end
+  end
+
+  defp apply_modifiers(pipeline, schema) do
+    Enum.reduce(schema.__absinthe_pipeline_modifiers__, pipeline, fn
+      {module, function}, pipeline ->
+        apply(module, function, [pipeline])
+
+      module, pipeline ->
+        module.pipeline(pipeline)
+    end)
+  end
+
   def __after_compile__(env, _) do
     prototype_schema =
       env.module
       |> Module.get_attribute(:prototype_schema)
 
     pipeline =
-      Absinthe.Pipeline.for_schema(env.module,
-        prototype_schema: prototype_schema
-      )
-
-    pipeline =
       env.module
-      |> Module.get_attribute(:pipeline_modifier)
-      |> Enum.reduce(pipeline, fn
-        {module, function}, pipeline ->
-          apply(module, function, [pipeline])
-
-        module, pipeline ->
-          module.pipeline(pipeline)
-      end)
+      |> Absinthe.Pipeline.for_schema(prototype_schema: prototype_schema)
+      |> apply_modifiers(env.module)
 
     env.module.__absinthe_blueprint__
     |> Absinthe.Pipeline.run(pipeline)
@@ -542,6 +551,20 @@ defmodule Absinthe.Schema do
     schema.__absinthe_directives__
     |> Map.keys()
     |> Enum.map(&lookup_directive(schema, &1))
+  end
+
+  def to_sdl(schema) do
+    pipeline =
+      schema
+      |> Absinthe.Pipeline.for_schema()
+      |> Absinthe.Pipeline.upto({Absinthe.Phase.Schema.Validation.Result, pass: :final})
+      |> apply_modifiers(schema)
+
+    # we can be assertive here, since this same pipeline was already used to
+    # successfully compile the schema.
+    {:ok, bp, _} = Absinthe.Pipeline.run(schema.__absinthe_blueprint__, pipeline)
+
+    inspect(bp, pretty: true)
   end
 
   @doc """

@@ -135,7 +135,7 @@ defmodule Absinthe.Pipeline do
       # This phase is run once now because a lot of other
       # validations aren't possible if type references are invalid.
       Phase.Schema.Validation.NoCircularFieldImports,
-      Phase.Schema.Validation.Result,
+      {Phase.Schema.Validation.Result, pass: :initial},
       Phase.Schema.FieldImports,
       Phase.Schema.Validation.KnownDirectives,
       {Phase.Schema.Arguments.Parse, options},
@@ -149,7 +149,7 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.Validation.QueryTypeMustBeObject,
       Phase.Schema.RegisterTriggers,
       # This phase is run again now after additional validations
-      Phase.Schema.Validation.Result,
+      {Phase.Schema.Validation.Result, pass: :final},
       Phase.Schema.Build,
       Phase.Schema.InlineFunctions,
       {Phase.Schema.Compile, options}
@@ -252,7 +252,7 @@ defmodule Absinthe.Pipeline do
   # Whether a phase configuration is for a given phase
   @spec match_phase?(Phase.t(), phase_config_t) :: boolean
   defp match_phase?(phase, phase), do: true
-  defp match_phase?(phase, {phase, _}), do: true
+  defp match_phase?(phase, {phase, _}) when is_atom(phase), do: true
   defp match_phase?(_, _), do: false
 
   @doc """
@@ -263,7 +263,7 @@ defmodule Absinthe.Pipeline do
       iex> Pipeline.upto([A, B, C], B)
       [A, B]
   """
-  @spec upto(t, atom) :: t
+  @spec upto(t, phase_config_t) :: t
   def upto(pipeline, phase) do
     beginning = before(pipeline, phase)
     item = get_in(pipeline, [Access.at(length(beginning))])
