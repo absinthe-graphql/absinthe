@@ -430,4 +430,64 @@ defmodule Absinthe.SchemaTest do
       assert Type.meta(result, :is_union) == true
     end
   end
+
+  defmodule TelemetrySchema do
+    use Absinthe.Schema
+
+    query do
+      field(:example, :example)
+    end
+
+    object :example do
+      field(:default_disabled, :string)
+
+      field(:default_enabled, :string) do
+        resolve(fn _, _, _ -> {:ok, "Hello world"} end)
+      end
+
+      field(:explicitly_disabled, :string) do
+        meta(absinthe_telemetry: false)
+        resolve(fn _, _, _ -> {:ok, "Hello world"} end)
+      end
+
+      field(:explicitly_enabled, :string) do
+        meta(absinthe_telemetry: true)
+      end
+    end
+  end
+
+  describe "telemetry for a field" do
+    test "defaults to disabled when no resolver is defined" do
+      assert [_] = lookup_compiled_field_middleware(TelemetrySchema, "Example", :default_disabled)
+    end
+
+    test "defaults to enabled when a resolver is defined" do
+      assert [{Absinthe.Middleware.Telemetry, _}, _] =
+               lookup_compiled_field_middleware(TelemetrySchema, "Example", :default_enabled)
+    end
+
+    test "can be explicitly disabled by setting meta(absinthe_telemetry: false)" do
+      assert [_] =
+               lookup_compiled_field_middleware(TelemetrySchema, "Example", :explicitly_disabled)
+    end
+
+    test "can be explicitly enabled by setting meta(absinthe_telemetry: true)" do
+      assert [{Absinthe.Middleware.Telemetry, _}, _] =
+               lookup_compiled_field_middleware(TelemetrySchema, "Example", :explicitly_enabled)
+    end
+  end
+
+  defp lookup_compiled_field_middleware(mod, type_ident, field_ident) do
+    import ExperimentalNotationHelpers
+
+    %{middleware: middleware} = lookup_compiled_field(mod, type_ident, field_ident)
+
+    case middleware do
+      [{{Absinthe.Middleware, :shim}, _}] ->
+        Absinthe.Middleware.unshim(middleware, mod)
+
+      middleware ->
+        middleware
+    end
+  end
 end
