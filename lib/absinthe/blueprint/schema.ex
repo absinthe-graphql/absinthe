@@ -240,8 +240,11 @@ defmodule Absinthe.Blueprint.Schema do
 
   defp update_private(existing_private, private) do
     Keyword.merge(existing_private, private, fn
-      _, v1, v2 ->
+      _, v1, v2 when is_list(v1) and is_list(v2) ->
         update_private(v1, v2)
+
+      _, _v1, v2 ->
+        v2
     end)
   end
 end

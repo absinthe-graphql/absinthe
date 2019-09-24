@@ -334,6 +334,12 @@ defmodule Absinthe.SchemaTest do
       field :bar, :string do
         meta :nice, "yup"
       end
+
+      meta duplicate: "not this value"
+      meta duplicate: "this value"
+
+      meta nested: [a: 1]
+      meta nested: [b: 1]
     end
 
     input_object :input_foo do
@@ -374,12 +380,29 @@ defmodule Absinthe.SchemaTest do
     test "sets object metadata" do
       foo = Schema.lookup_type(MetadataSchema, :foo)
 
-      assert Enum.sort(eager: true, cache: false, sql_table: "foos", foo: "bar") ==
+      assert Enum.sort(
+               eager: true,
+               cache: false,
+               sql_table: "foos",
+               foo: "bar",
+               duplicate: "this value",
+               nested: [a: 1, b: 1]
+             ) ==
                Enum.sort(foo.__private__[:meta])
 
       assert Type.meta(foo, :sql_table) == "foos"
       assert Type.meta(foo, :cache) == false
       assert Type.meta(foo, :eager) == true
+    end
+
+    test "sets value to last specified for a key" do
+      foo = Schema.lookup_type(MetadataSchema, :foo)
+      assert Type.meta(foo, :duplicate) == "this value"
+    end
+
+    test "sets value to merged keyword list when multiple keyword list values are specified for same key" do
+      foo = Schema.lookup_type(MetadataSchema, :foo)
+      assert Type.meta(foo, :nested) == [a: 1, b: 1]
     end
 
     test "sets field metadata" do
@@ -446,8 +469,8 @@ defmodule Absinthe.SchemaTest do
       end
 
       field(:explicitly_disabled, :string) do
-        meta(absinthe_telemetry: false)
         resolve(fn _, _, _ -> {:ok, "Hello world"} end)
+        meta(absinthe_telemetry: false)
       end
 
       field(:explicitly_enabled, :string) do
