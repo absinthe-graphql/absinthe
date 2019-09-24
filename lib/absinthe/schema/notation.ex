@@ -536,7 +536,7 @@ defmodule Absinthe.Schema.Notation do
     |> recordable!(:resolve, @placement[:resolve])
 
     quote do
-      meta :absinthe_telemetry_implicit, true
+      meta :absinthe_telemetry, true
       middleware Absinthe.Resolution, unquote(func_ast)
     end
   end
@@ -1685,18 +1685,10 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def __ensure_middleware__(middleware, field, _object) do
-    if add_telemetry_middleware?(field) do
+    if Absinthe.Type.meta(field, :absinthe_telemetry) do
       [{Absinthe.Middleware.Telemetry, []} | middleware]
     else
       middleware
-    end
-  end
-
-  defp add_telemetry_middleware?(field) do
-    case Absinthe.Type.meta(field, :absinthe_telemetry) do
-      true -> true
-      false -> false
-      nil -> Absinthe.Type.meta(field, :absinthe_telemetry_implicit)
     end
   end
 
