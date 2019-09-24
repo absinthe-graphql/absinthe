@@ -13,7 +13,16 @@ handler function to any of the following event names:
 
 By default, only fields with a resolver get measured. You can override this
 by setting `absinthe_telemetry` in its metadata to `true` or `false` with
-`Absinthe.Schema.Notation.meta/1`.
+`Absinthe.Schema.Notation.meta/1`. For example:
+
+```elixir
+field :greeting, :string do
+  resolve fn _, _, _ -> {:ok, "Hello world"} end
+
+  # must come after `resolve`
+  meta absinthe_telemetry: false
+end
+```
 
 For async, batch, and dataloader fields, Absinthe sends the final event when
 it gets the results. That might be later than when the results are ready. If
