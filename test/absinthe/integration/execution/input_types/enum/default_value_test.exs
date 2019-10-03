@@ -25,4 +25,24 @@ defmodule Elixir.Absinthe.Integration.Execution.InputTypes.Enum.DefaultValueTest
               }
             }} == Absinthe.run(@query, Absinthe.Fixtures.ColorSchema, [])
   end
+
+  test "Introspection render_default_value" do
+    {:ok, %{data: data}} =
+      """
+      {
+        __schema {
+          queryType {
+            fields {
+              name
+              args {
+                name
+                defaultValue
+              }
+            }
+          }
+        }
+      }
+      """
+      |> run(Absinthe.Fixtures.ColorSchema)
+  end
 end

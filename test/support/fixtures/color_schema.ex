@@ -36,6 +36,18 @@ defmodule Absinthe.Fixtures.ColorSchema do
            %{name: @names[channel], value: @values[channel]}
          end)}
       end
+
+    field :more_infos,
+      type: list_of(:channel_info),
+      args: [
+        channels: [type: list_of(:channel), default_value: :r]
+      ],
+      resolve: fn %{channels: channels}, _ ->
+        {:ok,
+         Enum.map(channels, fn channel ->
+           %{name: @names[channel], value: @values[channel]}
+         end)}
+      end
   end
 
   @desc "A color channel"
