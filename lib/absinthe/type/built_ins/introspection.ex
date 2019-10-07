@@ -335,7 +335,9 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
 
       %Absinthe.Type.List{of_type: type} ->
         list_values =
-          Enum.map(value, &render_default_value(schema, adapter, type, &1))
+          value
+          |> List.wrap()
+          |> Enum.map(&render_default_value(schema, adapter, type, &1))
           |> Enum.join(", ")
 
         "[#{list_values}]"
