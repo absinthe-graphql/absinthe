@@ -11,35 +11,14 @@ handler function to any of the following event names:
 - `[:absinthe, :resolve, :field, :start]` when field resolution starts
 - `[:absinthe, :resolve, :field, :stop]` when field resolution finishes
 
-By default, only fields with a resolver get measured. You can override this
-by setting `absinthe_telemetry` in its metadata to `true` or `false` with
-`Absinthe.Schema.Notation.meta/1`.
-
 For async, batch, and dataloader fields, Absinthe sends the final event when
 it gets the results. That might be later than when the results are ready. If
 you need to know how long the underlying operation took, you'll need to hook
 telemetry up to that underlying operation. See, for example, the recommended
 telemetry events in the documentation for `Ecto.Repo`.
 
-## Measurements
-
-Absinthe passes the following measurements in the second argument to your
-handler function:
-
-- `start_time` with event names ending with `:start`
-- `duration` with event names ending with `:stop`
-
-## Metadata
-
-Absinthe passes the following measurements in the third argument to your
-handler function:
-
-- `id` (`t:integer/0` from `:erlang.unique_integer/0`) with all event names
-- `start_time` (`t:pos_integer/0` from `System.system_time/0`) with event names not ending with `:start`
-- `middleware` (a list of `t:Absinthe.Middleware.spec/0`) with `[:absinthe, :resolve, :field]`
-- `resolution` (`t:Absinthe.Resolution.t/0`) with `[:absinthe, :resolve, :field]`
-- `blueprint` (`t:Absinthe.Blueprint.t/0`) with `[:absinthe, :execute, :operation]` and `[absinthe, :subscription, :publish]`
-- `options` (`t:keyword/0`) with `[:absinthe, :execute, :operation]`
+Telemetry handles are called with `measurements` and `metadata`. For details on
+what is passed, checkout `Absinthe.Phase.Telemetry` and `Absinthe.Middleware.Telemetry`
 
 ## Interactive Telemetry
 
@@ -66,7 +45,7 @@ Shortly after the log line for `POST /api/`, you'll see something like:
 
 ```elixir
 %{
-  event_name: [:absinthe, :resolve, :field],
+  event_name: [:absinthe, :resolve, :field, :stop],
   measurements: %{duration: 14000},
   metadata: %{
     id: -576460752303351647,
