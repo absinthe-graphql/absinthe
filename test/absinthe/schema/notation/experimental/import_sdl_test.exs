@@ -483,4 +483,47 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       assert type.fields.blue255.default_value == 0
     end
   end
+
+  def handle_event(event, measurements, metadata, config) do
+    send(self(), {event, measurements, metadata, config})
+  end
+
+  describe "telemetry" do
+    setup context do
+      :telemetry.attach_many(
+        context.test,
+        [
+          [:absinthe, :resolve, :field, :start],
+          [:absinthe, :resolve, :field, :stop],
+          [:absinthe, :execute, :operation, :start],
+          [:absinthe, :execute, :operation, :stop]
+        ],
+        &__MODULE__.handle_event/4,
+        %{}
+      )
+
+      on_exit(fn ->
+        :telemetry.detach(context.test)
+      end)
+
+      :ok
+    end
+
+    test "executes on SDL defined schemas" do
+      assert {:ok,
+              %{data: %{"posts" => [%{"upcasedTitle" => "FOO"}, %{"upcasedTitle" => "BAR"}]}}} =
+               Absinthe.run(@query, Definition)
+
+      assert_receive {[:absinthe, :execute, :operation, :start], _, %{id: id}, _config}
+
+      assert_receive {[:absinthe, :execute, :operation, :stop], measurements, %{id: ^id} = meta,
+                      _config}
+
+      assert_receive {[:absinthe, :resolve, :field, :start], measurements,
+                      %{resolution: %{definition: %{name: "posts"}}} = meta, config}
+
+      assert_receive {[:absinthe, :resolve, :field, :stop], measurements,
+                      %{resolution: %{definition: %{name: "posts"}}} = meta, config}
+    end
+  end
 end
