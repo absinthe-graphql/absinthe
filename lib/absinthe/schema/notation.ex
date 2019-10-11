@@ -1682,7 +1682,7 @@ defmodule Absinthe.Schema.Notation do
     [{Absinthe.Middleware.MapGet, identifier}]
   end
 
-  # Don't install Telemetry middleweare for Introspection fields
+  # Don't install Telemetry middleware for Introspection fields
   @introspection [Absinthe.Phase.Schema.Introspection, Absinthe.Type.BuiltIns.Introspection]
   def __ensure_middleware__(middleware, %{definition: definition}, _object)
       when definition in @introspection do
