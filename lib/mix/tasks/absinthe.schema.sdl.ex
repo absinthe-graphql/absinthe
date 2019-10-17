@@ -14,7 +14,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Sdl do
 
   ## Usage
 
-    absinthe.schema.sdl [FILENAME] [OPTIONS]
+      absinthe.schema.sdl [FILENAME] [OPTIONS]
 
   ## Options
 
