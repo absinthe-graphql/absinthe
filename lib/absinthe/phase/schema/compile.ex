@@ -29,6 +29,8 @@ defmodule Absinthe.Phase.Schema.Compile do
 
     body =
       quote do
+        @moduledoc false
+
         unquote_splicing(type_ast)
         unquote_splicing(directive_ast)
 

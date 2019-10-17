@@ -1,4 +1,6 @@
 defmodule Absinthe.Phase.Schema.Validation.ObjectInterfacesMustBeValid do
+  @moduledoc false
+
   use Absinthe.Phase
   alias Absinthe.Blueprint
 

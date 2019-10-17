@@ -10,6 +10,8 @@ defmodule Absinthe.Phase.Validation do
   end
 
   defmodule Helpers do
+    @moduledoc false
+
     @spec any_invalid?([Blueprint.node_t()]) :: boolean
     def any_invalid?(nodes) do
       Enum.any?(nodes, fn

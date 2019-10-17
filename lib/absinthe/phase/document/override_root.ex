@@ -1,4 +1,6 @@
 defmodule Absinthe.Phase.Document.OverrideRoot do
+  @moduledoc false
+
   @behaviour Absinthe.Phase
 
   def run(blueprint, root_value: new_root) do
