@@ -1,22 +1,9 @@
 defmodule Absinthe.Phase.Schema.Validation.NoCircularFieldImports do
-  # types = sort_and_validate_types(types)
+  @moduledoc false
+
   use Absinthe.Phase
   alias Absinthe.Blueprint
   alias Absinthe.Blueprint.Schema
-
-  #   deps =
-  #   [definition.identifier | path]
-  #   |> Enum.map(&"`#{&1}'")
-  #   |> Enum.join(" => ")
-
-  # msg =
-  #   String.trim("""
-  #   Field Import Cycle Error
-
-  #   Field Import in object `#{definition.identifier}' `import_fields(#{inspect(ref)}) forms a cycle via: (#{
-  #     deps
-  #   })
-  #   """)
 
   def run(blueprint, _opts) do
     blueprint = Blueprint.prewalk(blueprint, &validate_schema/1)
