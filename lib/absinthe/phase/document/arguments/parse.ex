@@ -39,7 +39,8 @@ defmodule Absinthe.Phase.Document.Arguments.Parse do
     {:error, :non_null}
   end
 
-  defp build_value(normalized, %Type.Scalar{} = schema_node, context) do
+  defp build_value(%{__struct__: struct} = normalized, %Type.Scalar{} = schema_node, context)
+       when struct in [Input.Boolean, Input.Float, Input.Integer, Input.String, Input.Null] do
     case Type.Scalar.parse(schema_node, normalized, context) do
       :error ->
         {:error, :bad_parse}
@@ -47,6 +48,10 @@ defmodule Absinthe.Phase.Document.Arguments.Parse do
       {:ok, val} ->
         {:ok, val}
     end
+  end
+
+  defp build_value(_normalized, %Type.Scalar{}, _context) do
+    {:error, :bad_parse}
   end
 
   defp build_value(%Input.Null{}, %Type.Enum{}, _) do
