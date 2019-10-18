@@ -195,7 +195,7 @@ defmodule Absinthe.Schema do
   outlines what data they want to receive in the event of particular updates.
 
   For a full walk through of how to setup your project with subscriptions and
-  Phoenix see the Absinthe.Phoenix project moduledoc.
+  `Phoenix` see the `Absinthe.Phoenix` project moduledoc.
 
   When you push a mutation, you can have selections on that mutation result
   to get back data you need, IE
