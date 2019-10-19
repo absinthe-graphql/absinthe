@@ -2,6 +2,26 @@ defmodule Absinthe.Schema.Notation do
   alias Absinthe.Blueprint.Schema
   alias Absinthe.Utils
 
+  @moduledoc """
+  Provides a set of macro's to use when creating a schema. Especially useful
+  when moving definitions out into a different module than the schema itself.
+
+  ## Example
+
+      defmodule MyAppWeb.Schema.Types do
+        use Absinthe.Schema.Notation
+
+        object :item do
+          field :id, :id
+          field :name, :string
+        end
+
+        # ...
+
+      end
+
+  """
+
   Module.register_attribute(__MODULE__, :placement, accumulate: true)
 
   defmacro __using__(import_opts \\ [only: :macros]) do
@@ -582,7 +602,8 @@ defmodule Absinthe.Schema.Notation do
   ```
   field do
     arg :size, :integer
-    arg :name, :string, description: "The desired name"
+    arg :name, non_null(:string), description: "The desired name"
+    arg :public, :boolean, default_value: true
   end
   ```
   """
