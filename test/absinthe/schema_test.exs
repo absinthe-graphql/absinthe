@@ -289,6 +289,14 @@ defmodule Absinthe.SchemaTest do
     end
   end
 
+  describe "to_sdl/1" do
+    test "return schema sdl" do
+      assert Schema.to_sdl(SourceSchema) == """
+             schema {\n  query: RootQueryType\n}\n\ntype Foo {\n  name: String\n}\n\n\"can describe query\"\ntype RootQueryType {\n  foo: Foo\n}
+             """
+    end
+  end
+
   defmodule FragmentSpreadSchema do
     use Absinthe.Schema
 

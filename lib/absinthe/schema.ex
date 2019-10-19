@@ -553,6 +553,17 @@ defmodule Absinthe.Schema do
     |> Enum.map(&lookup_directive(schema, &1))
   end
 
+  @doc """
+  Converts a schema to an SDL string
+
+  ## Example
+
+      Absinthe.Schema.to_sdl(MyAppWeb.Schema)
+      "schema {
+        query {...}
+      }"
+  """
+  @spec to_sdl(schema :: t) :: String.t()
   def to_sdl(schema) do
     pipeline =
       schema
