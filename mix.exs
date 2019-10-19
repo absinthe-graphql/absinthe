@@ -165,7 +165,6 @@ defmodule Absinthe.Mixfile do
         Absinthe.Middleware.MapGet,
         Absinthe.Middleware.PassParent,
         Absinthe.Middleware.Telemetry
-
       ],
       Subscriptions: [
         Absinthe.Subscription,
