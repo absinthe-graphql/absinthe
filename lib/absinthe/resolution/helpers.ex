@@ -226,10 +226,11 @@ defmodule Absinthe.Resolution.Helpers do
     - `:args` default: `%{}`. Any arguments you want to always pass into the
     `Dataloader.load/4` call. Resolver arguments are merged into this value and,
     in the event of a conflict, the resolver arguments win.
-    - `:callback` default: `default_callback/3`. Callback that is run with result
-    of dataloader. It receives the result as the first argument, and the parent
-    and args as second and third. Can be used to e.g. compute fields on the return
-    value of the loader. Should return an ok or error tuple.
+    - `:callback` default: return result wrapped in ok or error tuple.
+    Callback that is run with result of dataloader. It receives the result as
+    the first argument, and the parent and args as second and third. Can be used
+    to e.g. compute fields on the return value of the loader. Should return an
+    ok or error tuple.
     - `:use_parent` default: `true`. This option affects whether or not the `dataloader/2`
     helper will use any pre-existing value on the parent. IE if you return
     `%{author: %User{...}}` from a blog post the helper will by default simply use
@@ -288,7 +289,7 @@ defmodule Absinthe.Resolution.Helpers do
       |> use_parent(source, resource, parent, args, opts)
       |> Dataloader.load(source, {resource, args}, parent)
       |> on_load(fn loader ->
-        callback = Keyword.get(opts, :callback, &default_callback/3)
+        callback = Keyword.get(opts, :callback, default_callback(loader))
 
         loader
         |> Dataloader.get(source, {resource, args}, parent)
@@ -296,6 +297,12 @@ defmodule Absinthe.Resolution.Helpers do
       end)
     end
 
-    defp default_callback(result, _parent, _args), do: {:ok, result}
+    defp default_callback(%{options: loader_options}) do
+      if loader_options[:get_policy] == :tuples do
+        fn result, _parent, _args -> result end
+      else
+        fn result, _parent, _args -> {:ok, result} end
+      end
+    end
   end
 end
