@@ -27,5 +27,11 @@ defmodule Absinthe.Type.ImportTypesTest do
     test "works with an alias, {} and scoped reference" do
       assert Absinthe.Schema.lookup_type(ImportTypes.Schema, :avatar)
     end
+
+    test "works with __MODULE__ and {}" do
+      assert Absinthe.Schema.lookup_type(ImportTypes.SelfContainedSchema, :decline_reasons)
+      assert Absinthe.Schema.lookup_type(ImportTypes.SelfContainedSchema, :credit_card)
+      assert Absinthe.Schema.lookup_type(ImportTypes.SelfContainedSchema, :credit_card_type)
+    end
   end
 end

@@ -93,4 +93,39 @@ defmodule Absinthe.Fixtures.ImportTypes do
       field :customers, list_of(:customer)
     end
   end
+
+  defmodule SelfContainedSchema do
+    use Absinthe.Schema
+
+    defmodule PaymentTypes do
+      use Absinthe.Schema.Notation
+
+      object :credit_card do
+        field :number, non_null(:string)
+        field :type, non_null(:credit_card_type)
+        field :expiration_month, non_null(:integer)
+        field :expiration_year, non_null(:integer)
+        field :cvv, non_null(:string)
+      end
+    end
+
+    defmodule CardTypes do
+      use Absinthe.Schema.Notation
+
+      enum :credit_card_type, values: [:visa, :mastercard, :amex]
+    end
+
+    defmodule Errors.DeclineReasons do
+      use Absinthe.Schema.Notation
+
+      enum :decline_reasons, values: [:insufficient_funds, :invalid_card]
+    end
+
+    import_types __MODULE__.Errors.DeclineReasons
+    import_types __MODULE__.{PaymentTypes, CardTypes}
+
+    query do
+      field :credit_cards, list_of(:credit_card)
+    end
+  end
 end
