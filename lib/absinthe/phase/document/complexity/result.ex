@@ -79,4 +79,8 @@ defmodule Absinthe.Phase.Document.Complexity.Result do
   defp describe_node(%Blueprint.Document.Fragment.Spread{name: name}) do
     "Spread #{name}"
   end
+
+  defp describe_node(%Blueprint.Document.Fragment.Inline{}) do
+    "Inline Fragment"
+  end
 end
