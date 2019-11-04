@@ -80,7 +80,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         subscription_type && concat("subscription: ", string(subscription_type.name))
       ]
       |> Enum.reject(&is_nil/1)
-      |> concat()
+      |> join([line()])
 
     block(
       "schema",
