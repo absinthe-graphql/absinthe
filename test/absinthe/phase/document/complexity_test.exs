@@ -57,6 +57,10 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       field :nested, :foo do
         complexity 1
       end
+
+      field :nested_heavy, :foo do
+        complexity 100
+      end
     end
 
     defp penalize_guests(penalty) do
@@ -283,6 +287,41 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
       assert errors == [
                "Field fooComplexity is too complex: complexity is 105 and maximum is 100",
                "Operation is too complex: complexity is 105 and maximum is 100"
+             ]
+    end
+
+    test "errors when inline fragment is too complex" do
+      doc = """
+      query ComplexityInlineFrag {
+        unionComplexity {
+          ... on Quux {
+            ...QuuxFields
+          }
+        }
+      }
+      fragment QuuxFields on Quux {
+        nested_heavy {
+          bar
+        }
+      }
+      """
+
+      assert {:error, result, _} =
+               run_phase(
+                 doc,
+                 operation_name: "ComplexityInlineFrag",
+                 variables: %{},
+                 max_complexity: 1,
+                 schema: Absinthe.Fixtures.ContactSchema
+               )
+
+      errors = result.execution.validation_errors |> Enum.map(& &1.message)
+
+      assert errors == [
+               "Spread QuuxFields is too complex: complexity is 100 and maximum is 1",
+               "Inline Fragment is too complex: complexity is 100 and maximum is 1",
+               "Field unionComplexity is too complex: complexity is 101 and maximum is 1",
+               "Operation ComplexityInlineFrag is too complex: complexity is 101 and maximum is 1"
              ]
     end
 
