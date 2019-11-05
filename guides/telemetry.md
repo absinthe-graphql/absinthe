@@ -49,7 +49,7 @@ your `iex -S mix phx.server` prompt. Paste in:
 ```elixir
 :telemetry.attach_many(
   :demo,
-  [[:absinthe, :execute, :operation, :stop], [:absinthe, :resolve, :field, :stop]],
+  [[:absinthe, :execute, :operation, :start], [:absinthe, :resolve, :field, :stop]],
   fn event_name, measurements, metadata, _config ->
     %{
       event_name: event_name,
