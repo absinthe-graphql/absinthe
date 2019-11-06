@@ -212,7 +212,7 @@ mutation {
 
 Client B will get the normal response to their mutation, and since they just ask for the `id` that's what they'll get.
 
-Additionally, the `:submit_comment` mutation is configured as a trigger on the `:commented_added` subscription field, so the trigger function is called. That function returns `"absinthe-graphql/absinthe"` because that's the repository name for the comment, and now Absinthe knows it needs to get all subscriptions on the `:comment_added` field that have the `"absinthe-graphql/absinthe"` topic, so client A gets back:
+Additionally, the `:submit_comment` mutation is configured as a trigger on the `:comment_added` subscription field, so the trigger function is called. That function returns `"absinthe-graphql/absinthe"` because that's the repository name for the comment, and now Absinthe knows it needs to get all subscriptions on the `:comment_added` field that have the `"absinthe-graphql/absinthe"` topic, so client A gets back:
 
 ```json
 {"data":{"commentAdded":{"content":"Great library!"}}}
