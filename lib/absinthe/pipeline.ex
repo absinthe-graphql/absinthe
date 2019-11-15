@@ -109,7 +109,8 @@ defmodule Absinthe.Pipeline do
       # Format Result
       Phase.Document.Result,
       {Phase.Telemetry, [:execute, :operation, :stop, options]}
-    ] |> skip_telemetry(Keyword.get(options, :telemetry))
+    ]
+    |> skip_telemetry(Keyword.get(options, :telemetry))
   end
 
   @default_prototype_schema Absinthe.Schema.Prototype

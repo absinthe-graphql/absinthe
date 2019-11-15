@@ -11,6 +11,7 @@ defmodule Absinthe.Middleware.Telemetry do
   def call(%{telemetry: false} = resolution, _) do
     resolution
   end
+
   def call(resolution, _opts) do
     id = :erlang.unique_integer()
     start_time = System.system_time()
