@@ -53,7 +53,8 @@ defmodule Absinthe.Resolution do
           acc: %{any => any},
           extensions: %{any => any},
           arguments: arguments,
-          fragments: [Absinthe.Blueprint.Document.Fragment.Named.t()]
+          fragments: [Absinthe.Blueprint.Document.Fragment.Named.t()],
+          telemetry: boolean
         }
 
   defstruct [
@@ -74,7 +75,8 @@ defmodule Absinthe.Resolution do
     path: [],
     state: :unresolved,
     fragments: [],
-    fields_cache: %{}
+    fields_cache: %{},
+    telemetry: true
   ]
 
   def resolver_spec(fun) do

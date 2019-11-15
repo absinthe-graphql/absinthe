@@ -45,6 +45,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     plugins = bp_root.schema.plugins()
     run_callbacks? = Keyword.get(options, :plugin_callbacks, true)
+    telemetry? = Keyword.get(options, :telemetry)
 
     exec = plugins |> run_callbacks(:before_resolution, exec, run_callbacks?)
 
@@ -58,7 +59,8 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
         parent_type: nil,
         middleware: nil,
         definition: nil,
-        arguments: nil
+        arguments: nil,
+        telemetry: telemetry?
       }
       |> Map.merge(common)
 

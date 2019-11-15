@@ -31,7 +31,8 @@ defmodule Absinthe.Pipeline do
     root_value: %{},
     validation_result_phase: Phase.Document.Validation.Result,
     result_phase: Phase.Document.Result,
-    jump_phases: true
+    jump_phases: true,
+    telemetry: true
   ]
 
   def options(overrides \\ []) do
@@ -108,7 +109,7 @@ defmodule Absinthe.Pipeline do
       # Format Result
       Phase.Document.Result,
       {Phase.Telemetry, [:execute, :operation, :stop, options]}
-    ]
+    ] |> skip_telemetry(Keyword.get(options, :telemetry))
   end
 
   @default_prototype_schema Absinthe.Schema.Prototype
@@ -400,5 +401,13 @@ defmodule Absinthe.Pipeline do
 
   defp phase_invocation(phase) do
     {phase, []}
+  end
+
+  defp skip_telemetry(pipeline, false) do
+    pipeline |> reject(~r/Phase.Telemetry/)
+  end
+
+  defp skip_telemetry(pipeline, true) do
+    pipeline
   end
 end

@@ -8,7 +8,10 @@ defmodule Absinthe.Middleware.Telemetry do
   @behaviour Absinthe.Middleware
 
   @impl Absinthe.Middleware
-  def call(resolution, _) do
+  def call(%{telemetry: false} = resolution, _) do
+    resolution
+  end
+  def call(resolution, _opts) do
     id = :erlang.unique_integer()
     start_time = System.system_time()
     start_time_mono = System.monotonic_time()

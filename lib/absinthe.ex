@@ -68,6 +68,7 @@ defmodule Absinthe do
   executing an operation.
   * `:max_complexity` -> An integer (or `:infinity`) for the maximum allowed
   complexity for the operation being executed.
+  * `:telemetry` -> A boolean whether to run telemetry. Defaults to true.
 
   ## Examples
 
