@@ -5,8 +5,8 @@ defmodule Absinthe.Phase.Schema.Validation.NamesMustBeValid do
   alias Absinthe.Blueprint
   alias Absinthe.Blueprint.Schema
 
-  @valid_name_pattern "[_A-Za-z][_0-9A-Za-z]*"
-  @valid_name_regex Regex.compile!(@valid_name_pattern)
+  @valid_name_regex ~r/[_A-Za-z][_0-9A-Za-z]*/
+
   def run(bp, _) do
     bp = Blueprint.prewalk(bp, &validate_names/1)
     {:ok, bp}
@@ -53,7 +53,7 @@ defmodule Absinthe.Phase.Schema.Validation.NamesMustBeValid do
   defp struct_to_kind(_), do: "type"
 
   @description """
-  Name does not match possible /#{@valid_name_pattern}/ regex.
+  Name does not match possible #{inspect(@valid_name_regex)} regex.
 
   > Names in GraphQL are limited to this ASCII subset of possible characters to
   > support interoperation with as many other systems as possible.
