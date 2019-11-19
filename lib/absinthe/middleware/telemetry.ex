@@ -13,7 +13,14 @@ defmodule Absinthe.Middleware.Telemetry do
     start_time = System.system_time()
     start_time_mono = System.monotonic_time()
 
-    :telemetry.execute(@field_start, %{start_time: start_time}, %{id: id})
+    :telemetry.execute(
+      @field_start,
+      %{start_time: start_time},
+      %{
+        id: id,
+        resolution: resolution
+      }
+    )
 
     %{
       resolution
