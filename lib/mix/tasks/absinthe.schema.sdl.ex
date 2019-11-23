@@ -8,7 +8,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Sdl do
   @default_filename "./schema.graphql"
 
   @moduledoc """
-  Generate a schema.json file
+  Generate a schema.graphql file
 
   mix absinthe.schema.sdl --schema MySchema
 
