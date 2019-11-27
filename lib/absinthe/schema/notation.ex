@@ -1456,9 +1456,15 @@ defmodule Absinthe.Schema.Notation do
     |> Absinthe.Utils.camelize()
   end
 
-  defp do_import_types({{:., _, [root_ast, :{}]}, _, modules_ast_list}, env, opts) do
-    {:__aliases__, _, root} = root_ast
+  defp do_import_types({{:., _, [{:__MODULE__, _, _}, :{}]}, _, modules_ast_list}, env, opts) do
+    for {_, _, leaf} <- modules_ast_list do
+      type_module = Module.concat([env.module | leaf])
 
+      do_import_types(type_module, env, opts)
+    end
+  end
+
+  defp do_import_types({{:., _, [{:__aliases__, _, root}, :{}]}, _, modules_ast_list}, env, opts) do
     root_module = Module.concat(root)
     root_module_with_alias = Keyword.get(env.aliases, root_module, root_module)
 
