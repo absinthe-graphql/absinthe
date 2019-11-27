@@ -95,8 +95,8 @@ end
 
 Dataloader ships with two different built in sources:
 
-* Ecto - for easily pulling out data with ecto
-* KV - a simple KV key value source.
+* `Dataloader.Ecto` - for easily pulling out data with ecto
+* `Dataloader.KV` - a simple KV key value source.
 
 #### KV
 
@@ -150,6 +150,6 @@ end
 ```
 
 `Dataloader.KV` requires a load function that accepts a batch and args. It must return a map of values keyed by the args.
-This is the purpose of the `fetch/2` function. The `dataloader` helper we imported above uses the field name as the batch, and a map where the argument name is the key. For example: `fetch(:team, [%{ id: 1 }])`
+This is the purpose of the `fetch/2` function. The `dataloader/1` helper we imported above uses the field name as the batch, and a map where the argument name is the key. For example: `fetch(:team, [%{ id: 1 }])`
 
 Pattern matching can be used to fetch differently depending on the batch. For example, when the :teams batch is requested, the args will actually be an empty map (i.e. `%{}`).

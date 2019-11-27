@@ -3,7 +3,7 @@ defmodule Absinthe.Subscription do
   Real time updates via GraphQL
 
   For a how to guide on getting started with Absinthe.Subscriptions in your phoenix
-  project see the Absinthe.Phoenix package.
+  project see the `Absinthe.Phoenix` package.
 
   Define in your schema via `Absinthe.Schema.subscription/2`
 

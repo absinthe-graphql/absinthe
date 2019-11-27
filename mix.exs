@@ -136,7 +136,9 @@ defmodule Absinthe.Mixfile do
     [
       "Schema Definition and Types": [
         Absinthe.Schema,
+        Absinthe.Schema.Hydrator,
         Absinthe.Schema.Notation,
+        Absinthe.Schema.Prototype,
         Absinthe.Resolution.Helpers,
         Absinthe.Type,
         Absinthe.Type.Custom,
@@ -161,7 +163,8 @@ defmodule Absinthe.Mixfile do
         Absinthe.Middleware.Batch,
         Absinthe.Middleware.Dataloader,
         Absinthe.Middleware.MapGet,
-        Absinthe.Middleware.PassParent
+        Absinthe.Middleware.PassParent,
+        Absinthe.Middleware.Telemetry
       ],
       Subscriptions: [
         Absinthe.Subscription,
@@ -171,7 +174,8 @@ defmodule Absinthe.Mixfile do
       Extensibility: [
         Absinthe.Pipeline,
         Absinthe.Phase,
-        Absinthe.Phase.Validation.Helpers,
+        Absinthe.Phase.Document.Context,
+        Absinthe.Phase.Telemetry,
         Absinthe.Pipeline.ErrorResult
       ],
       "Document Adapters": [
