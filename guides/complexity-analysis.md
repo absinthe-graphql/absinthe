@@ -57,8 +57,6 @@ defmodule MyAppWeb.Schema do
   object :person do
     field :name, :string
     field :age, :integer
-    # constant complexity for this object
-    complexity 3
   end
 
 end
@@ -68,17 +66,19 @@ For a field, the first argument to the function you supply to `complexity/1` is 
 -- just as a field's resolver can use user arguments to resolve its value, the complexity
 function that you provide can use the same arguments to calculate the field's complexity.
 
-The second argument passed to your complexity function is the child (that is,
-the result of the field); in the example above, `child_complexity` would be `3`,
-as the field returns a list of `:person` objects, and the complexity of
-`:person` is explicitly set to `3`.
+The second argument passed to your complexity function is the sum of all the complexity scores
+of all the fields nested below the current field.
 
 (If a complexity function accepts three arguments, the third will be an
 `%Absinthe.Resolution{}` struct, just as with resolvers.)
 
-If the value of a document's `:limit` argument was `10`, the complexity of a single
-`:people` field would be calculated as `30`; `10`, the value of `:limit`, times `3`, the complexity of
-the `:person` type.
+If the value of a document's `:limit` argument was `10` and both `name` and `age` were queried for,
+the complexity of the `:people` field would be calculated as `20`:
+
+* `10`, the value of `:limit`
+* times `2`, the sum of the complexity of the fields requested on the `:person`
+
+A field's complexity will default to `1` if it's not set explicitly.
 
 So this would be okay:
 
@@ -94,7 +94,7 @@ But this, at a complexity of `60`, wouldn't:
 
 ```graphql
 {
-  people(limit: 20) {
+  people(limit: 30) {
     name
   }
 }
