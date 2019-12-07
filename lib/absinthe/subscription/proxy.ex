@@ -33,10 +33,6 @@ defmodule Absinthe.Subscription.Proxy do
     {:ok, %__MODULE__{pubsub: pubsub, node: node_name, task_super: task_super}}
   end
 
-  def handle_info(%{node: src_node}, %{node: node} = state) when src_node == node do
-    {:noreply, state}
-  end
-
   def handle_info(:gc, state) do
     :erlang.garbage_collect()
     Process.send_after(self(), :gc, @gc_interval)
@@ -47,11 +43,13 @@ defmodule Absinthe.Subscription.Proxy do
     # There's no meaningful form of backpressure to have here, and we can't
     # bottleneck execution inside each proxy process
 
-    Task.Supervisor.start_child(state.task_super, Subscription.Local, :publish_mutation, [
-      state.pubsub,
-      payload.mutation_result,
-      payload.subscribed_fields
-    ])
+    unless payload.node == state.pubsub.node_name() do
+      Task.Supervisor.start_child(state.task_super, Subscription.Local, :publish_mutation, [
+        state.pubsub,
+        payload.mutation_result,
+        payload.subscribed_fields
+      ])
+    end
 
     {:noreply, state}
   end
