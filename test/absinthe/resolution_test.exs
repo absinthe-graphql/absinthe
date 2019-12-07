@@ -6,6 +6,7 @@ defmodule Absinthe.ResolutionTest do
 
     interface :named do
       field :name, :string
+      field :parent, :named
 
       resolve_type fn _, _ -> :user end
     end
@@ -14,6 +15,7 @@ defmodule Absinthe.ResolutionTest do
       interface :named
       field :id, :id
       field :name, :string
+      field :parent, :named
     end
 
     query do
