@@ -43,7 +43,8 @@ defmodule Absinthe.Phase.Schema.RegisterTriggers do
     update_fields(mutation_object, fn mut_field ->
       triggers =
         for sub_field <- sub_fields,
-            sub_triggers = %{} <- Absinthe.Type.function(sub_field, :triggers),
+            sub_triggers = Absinthe.Type.function(sub_field, :triggers),
+            is_map(sub_triggers),
             Map.has_key?(sub_triggers, mut_field.identifier),
             do: sub_field.identifier
 
