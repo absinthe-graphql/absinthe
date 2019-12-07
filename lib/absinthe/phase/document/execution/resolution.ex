@@ -281,8 +281,8 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     |> propagate_null_trimming
   end
 
-  defp maybe_add_non_null_error(errors, nil, %Type.NonNull{}) do
-    ["Cannot return null for non-nullable field" | errors]
+  defp maybe_add_non_null_error([], nil, %Type.NonNull{}) do
+    ["Cannot return null for non-nullable field"]
   end
 
   defp maybe_add_non_null_error(errors, _, _) do
@@ -353,8 +353,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp non_null_list_violation?(_) do
     false
   end
-
-  # defp maybe_add_non_null_error(errors, nil, %)
 
   defp add_errors(result, errors, fun) do
     Enum.reduce(errors, result, fun)
