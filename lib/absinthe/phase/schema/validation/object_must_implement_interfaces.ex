@@ -146,6 +146,16 @@ defmodule Absinthe.Phase.Schema.Validation.ObjectMustImplementInterfaces do
   end
 
   defp check_covariant(
+         %Blueprint.Schema.InterfaceTypeDefinition{identifier: interface_ident},
+         field_type,
+         field_ident,
+         types
+       ) do
+    %{interfaces: field_type_interfaces} = Map.get(types, field_type)
+    (interface_ident in field_type_interfaces && :ok) || {:error, field_ident}
+  end
+
+  defp check_covariant(
          %wrapper{of_type: inner_type1},
          %wrapper{of_type: inner_type2},
          field_ident,
