@@ -1146,6 +1146,16 @@ defmodule Absinthe.Schema.Notation do
     put_attr(__CALLER__.module, {:import_fields, {source_criteria, opts}})
   end
 
+  @placement {:extend, [toplevel: true]}
+  defmacro extend(identifier, do: block) do
+    put_attr(__CALLER__.module, {:extend, identifier})
+
+    [
+      block,
+      quote(do: unquote(__MODULE__).close_scope())
+    ]
+  end
+
   @placement {:import_types, [toplevel: true]}
   @doc """
   Import types from another module

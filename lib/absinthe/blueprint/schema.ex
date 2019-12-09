@@ -111,6 +111,11 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(rest, [type | stack], buff)
   end
 
+  defp build_types([{:extend, identifier} | rest], [schema | _] = stack, buff) do
+    type = Enum.find(schema.type_definitions, &(&1.identifier == identifier))
+    build_types(rest, [type | stack], [:extend | buff])
+  end
+
   defp build_types([{:import_fields, criterion} | rest], [obj | stack], buff) do
     build_types(rest, [push(obj, :imports, criterion) | stack], buff)
   end
@@ -183,6 +188,16 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(rest, [push(obj, :fields, field) | stack], buff)
   end
 
+  # When extending, replace the object instead of adding it
+  defp build_types(
+         [:close | rest],
+         [%Schema.ObjectTypeDefinition{} = extended, schema | stack],
+         [:extend | buff]
+       ) do
+    extended = Map.update!(extended, :fields, &Enum.reverse/1)
+    build_types(rest, [replace_type(schema, extended) | stack], buff)
+  end
+
   defp build_types([:close | rest], [%Schema.ObjectTypeDefinition{} = obj, schema | stack], buff) do
     obj = Map.update!(obj, :fields, &Enum.reverse/1)
     build_types(rest, [push(schema, :type_definitions, obj) | stack], buff)
@@ -236,6 +251,16 @@ defmodule Absinthe.Blueprint.Schema do
 
   defp concat(entity, key, value) do
     Map.update!(entity, key, &(&1 ++ value))
+  end
+
+  defp replace_type(schema, %{identifier: identifier} = type) do
+    type_definitions =
+      Enum.map(schema.type_definitions, fn
+        %{identifier: ^identifier} -> type
+        other -> other
+      end)
+
+    %{schema | type_definitions: type_definitions}
   end
 
   defp update_private(existing_private, private) do
