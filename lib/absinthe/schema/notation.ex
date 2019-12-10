@@ -28,6 +28,7 @@ defmodule Absinthe.Schema.Notation do
     Module.register_attribute(__CALLER__.module, :absinthe_blueprint, accumulate: true)
     Module.register_attribute(__CALLER__.module, :absinthe_desc, accumulate: true)
     put_attr(__CALLER__.module, %Absinthe.Blueprint{schema: __CALLER__.module})
+    Module.put_attribute(__CALLER__.module, :absinthe_scope_stack, [:schema])
 
     quote do
       import Absinthe.Resolution.Helpers,
@@ -167,9 +168,8 @@ defmodule Absinthe.Schema.Notation do
 
   defmacro object(identifier, _attrs, _block) when identifier in @reserved_identifiers do
     raise Absinthe.Schema.Notation.Error,
-          "Invalid schema notation: cannot create an `object` with reserved identifier `#{
-            identifier
-          }`"
+          "Invalid schema notation: cannot create an `object` " <>
+            "with reserved identifier `#{identifier}`"
   end
 
   defmacro object(identifier, attrs, do: block) do
@@ -193,7 +193,7 @@ defmodule Absinthe.Schema.Notation do
     |> record!(Schema.ObjectTypeDefinition, identifier, attrs, block)
   end
 
-  @placement {:interfaces, [under: :object]}
+  @placement {:interfaces, [under: [:object]]}
   @doc """
   Declare implemented interfaces for an object.
 
@@ -219,7 +219,7 @@ defmodule Absinthe.Schema.Notation do
     |> record_interfaces!(ifaces)
   end
 
-  @placement {:resolve, [under: [:field]]}
+  @placement {:deprecate, [under: [:field]]}
   @doc """
   Mark a field as deprecated
 
@@ -272,14 +272,10 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
-  @placement {:interface_attribute, [under: :object]}
+  @placement {:interface_attribute, [under: [:object]]}
   defmacro interface(identifier) do
     __CALLER__
-    |> recordable!(
-      :interface_attribute,
-      @placement[:interface_attribute],
-      as: "`interface` (as an attribute)"
-    )
+    |> recordable!(:interface_attribute, @placement[:interface_attribute])
     |> record_interface!(identifier)
   end
 
@@ -821,7 +817,7 @@ defmodule Absinthe.Schema.Notation do
     |> record_directive!(identifier, attrs, block)
   end
 
-  @placement {:on, [under: :directive]}
+  @placement {:on, [under: [:directive]]}
   @doc """
   Declare a directive as operating an a AST node type
 
@@ -837,7 +833,7 @@ defmodule Absinthe.Schema.Notation do
     |> record_locations!(ast_node)
   end
 
-  @placement {:expand, [under: :directive]}
+  @placement {:expand, [under: [:directive]]}
   @doc """
   Define the expansion for a directive
 
@@ -1419,6 +1415,9 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   defmacro close_scope() do
     put_attr(__CALLER__.module, :close)
+
+    [_ | scope] = Module.get_attribute(__CALLER__.module, :absinthe_scope_stack)
+    Module.put_attribute(__CALLER__.module, :absinthe_scope_stack, scope)
   end
 
   def put_reference(attrs, env) do
@@ -1435,6 +1434,18 @@ defmodule Absinthe.Schema.Notation do
     }
   end
 
+  @scope_map %{
+    Schema.ObjectTypeDefinition => :object,
+    Schema.FieldDefinition => :field,
+    Schema.ScalarTypeDefinition => :scalar,
+    Schema.EnumTypeDefinition => :enum,
+    Schema.EnumValueDefinition => :value,
+    Schema.InputObjectTypeDefinition => :input_object,
+    Schema.InputValueDefinition => :arg,
+    Schema.UnionTypeDefinition => :union,
+    Schema.InterfaceTypeDefinition => :interface,
+    Schema.DirectiveDefinition => :directive
+  }
   defp scoped_def(caller, type, identifier, attrs, body) do
     attrs =
       attrs
@@ -1446,6 +1457,9 @@ defmodule Absinthe.Schema.Notation do
     definition = struct!(type, attrs)
 
     ref = put_attr(caller.module, definition)
+
+    stack = Module.get_attribute(caller.module, :absinthe_scope_stack)
+    Module.put_attribute(caller.module, :absinthe_scope_stack, [@scope_map[type] | stack])
 
     [
       get_desc(ref),
@@ -1750,11 +1764,30 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Ensure the provided operation can be recorded in the current environment,
   # in the current scope context
-  def recordable!(env, usage) do
-    recordable!(env, usage, Keyword.get(@placement, usage, []))
+  def recordable!(env, usage, placement) do
+    [scope | _] = Module.get_attribute(env.module, :absinthe_scope_stack)
+
+    unless recordable?(placement, scope) do
+      raise Absinthe.Schema.Notation.Error, invalid_message(placement, usage)
+    end
+
+    env
   end
 
-  def recordable!(env, _usage, _kw_rules, _opts \\ []) do
-    env
+  defp recordable?([under: under], scope), do: scope in under
+  defp recordable?([toplevel: true], scope), do: scope == :schema
+  defp recordable?([toplevel: false], scope), do: scope != :schema
+
+  defp invalid_message([under: under], usage) do
+    allowed = under |> Enum.map(&"`#{&1}`") |> Enum.join(", ")
+    "Invalid schema notation: `#{usage}` must only be used within #{allowed}"
+  end
+
+  defp invalid_message([toplevel: true], usage) do
+    "Invalid schema notation: `#{usage}` must only be used toplevel"
+  end
+
+  defp invalid_message([toplevel: false], usage) do
+    "Invalid schema notation: `#{usage}` must not be used toplevel"
   end
 end
