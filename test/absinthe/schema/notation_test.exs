@@ -1,8 +1,6 @@
 defmodule Absinthe.Schema.NotationTest do
   use Absinthe.Case, async: true
 
-  @moduletag :pending
-
   describe "arg" do
     test "can be under field as an attribute" do
       assert_no_notation_error("ArgFieldValid", """
@@ -150,7 +148,7 @@ defmodule Absinthe.Schema.NotationTest do
         """
         expand fn _, _ -> :ok end
         """,
-        "Invalid schema notation: `instruction` must only be used within `directive`"
+        "Invalid schema notation: `expand` must only be used within `directive`"
       )
     end
 
@@ -162,7 +160,7 @@ defmodule Absinthe.Schema.NotationTest do
           expand fn _, _ -> :ok end
         end
         """,
-        "Invalid schema notation: `instruction` must only be used within `directive`"
+        "Invalid schema notation: `expand` must only be used within `directive`"
       )
     end
   end
@@ -202,7 +200,7 @@ defmodule Absinthe.Schema.NotationTest do
           interface :foo
         end
         """,
-        "Invalid schema notation: `interface` (as an attribute) must only be used within `object`"
+        "Invalid schema notation: `interface_attribute` must only be used within `object`"
       )
     end
   end

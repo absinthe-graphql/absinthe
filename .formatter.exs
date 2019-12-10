@@ -32,8 +32,6 @@ locals_without_parens = [
   object: 3,
   on: 1,
   parse: 1,
-  record_object!: 4,
-  recordable!: 4,
   resolve: 1,
   resolve_type: 1,
   scalar: 2,
