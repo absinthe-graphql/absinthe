@@ -191,11 +191,11 @@ defmodule Absinthe.Blueprint.Schema do
   # When extending, replace the object instead of adding it
   defp build_types(
          [:close | rest],
-         [%Schema.ObjectTypeDefinition{} = extended, schema | stack],
+         [%Schema.ObjectTypeDefinition{} = obj, schema | stack],
          [:extend | buff]
        ) do
-    extended = Map.update!(extended, :fields, &Enum.reverse/1)
-    build_types(rest, [replace_type(schema, extended) | stack], buff)
+    obj = Map.update!(obj, :fields, &Enum.reverse/1)
+    build_types(rest, [replace_type(schema, obj) | stack], buff)
   end
 
   defp build_types([:close | rest], [%Schema.ObjectTypeDefinition{} = obj, schema | stack], buff) do
@@ -210,6 +210,15 @@ defmodule Absinthe.Blueprint.Schema do
        ) do
     obj = Map.update!(obj, :fields, &Enum.reverse/1)
     build_types(rest, [push(schema, :type_definitions, obj) | stack], buff)
+  end
+
+  defp build_types(
+         [:close | rest],
+         [%Schema.InterfaceTypeDefinition{} = iface, schema | stack],
+         [:extend | buff]
+       ) do
+    iface = Map.update!(iface, :fields, &Enum.reverse/1)
+    build_types(rest, [replace_type(schema, iface) | stack], buff)
   end
 
   defp build_types(

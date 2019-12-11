@@ -28,8 +28,7 @@ defmodule Absinthe.Schema.Notation do
     Module.register_attribute(__CALLER__.module, :absinthe_blueprint, accumulate: true)
     Module.register_attribute(__CALLER__.module, :absinthe_desc, accumulate: true)
     put_attr(__CALLER__.module, %Absinthe.Blueprint{schema: __CALLER__.module})
-    Module.put_attribute(__CALLER__.module, :absinthe_scope_stack, [:schema])
-    Module.put_attribute(__CALLER__.module, :absinthe_scope_stack_stash, [])
+    put_scope_stack(__CALLER__.module, [:schema])
 
     quote do
       import Absinthe.Resolution.Helpers,
@@ -393,7 +392,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   # FIELDS
-  @placement {:field, [under: [:input_object, :interface, :object]]}
+  @placement {:field, [under: [:input_object, :interface, :object, :extend]]}
   @doc """
   Defines a GraphQL field
 
@@ -1149,6 +1148,8 @@ defmodule Absinthe.Schema.Notation do
   @placement {:extend, [toplevel: true]}
   defmacro extend(identifier, do: block) do
     put_attr(__CALLER__.module, {:extend, identifier})
+    stack = get_scope_stack(__CALLER__.module)
+    put_scope_stack(__CALLER__.module, [:extend | stack])
 
     [
       block,
@@ -1459,7 +1460,9 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   defmacro close_scope() do
     put_attr(__CALLER__.module, :close)
-    pop_stack(__CALLER__.module, :absinthe_scope_stack)
+
+    [_ | scope] = get_scope_stack(__CALLER__.module)
+    put_scope_stack(__CALLER__.module, scope)
   end
 
   def put_reference(attrs, env) do
@@ -1628,6 +1631,14 @@ defmodule Absinthe.Schema.Notation do
   def put_desc(module, ref) do
     Module.put_attribute(module, :absinthe_desc, {ref, Module.get_attribute(module, :desc)})
     Module.put_attribute(module, :desc, nil)
+  end
+
+  defp get_scope_stack(module) do
+    Module.get_attribute(module, :absinthe_scope_stack)
+  end
+
+  defp put_scope_stack(module, stack) do
+    Module.put_attribute(module, :absinthe_scope_stack, stack)
   end
 
   def noop(_desc) do
@@ -1818,7 +1829,7 @@ defmodule Absinthe.Schema.Notation do
   # Ensure the provided operation can be recorded in the current environment,
   # in the current scope context
   def recordable!(env, usage, placement) do
-    [scope | _] = Module.get_attribute(env.module, :absinthe_scope_stack)
+    [scope | _] = get_scope_stack(env.module)
 
     unless recordable?(placement, scope) do
       raise Absinthe.Schema.Notation.Error, invalid_message(placement, usage)

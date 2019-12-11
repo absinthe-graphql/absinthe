@@ -14,21 +14,67 @@ defmodule Absinthe.Schema.Notation.Experimental.ExtendTest do
     extend :my_object do
       field :bar, :string
     end
+
+    interface :my_interface do
+      field :foo, :string
+    end
+
+    extend :my_interface do
+      field :bar, :string
+    end
   end
 
   describe "extend" do
-    test "my_object" do
+    test "object" do
       assert %{name: "MyObject", identifier: :my_object, fields: fields} =
                lookup_type(Definition, :my_object)
 
       field_identifiers = Enum.map(fields, & &1.identifier)
       assert :foo in field_identifiers
       assert :bar in field_identifiers
-
-      %{schema_definitions: [%{type_definitions: type_definitions}]} =
-        Definition.__absinthe_blueprint__()
-
-      assert length(type_definitions) == 1
     end
+
+    test "interface" do
+      assert %{name: "MyInterface", identifier: :my_interface, fields: fields} =
+               lookup_type(Definition, :my_interface)
+
+      field_identifiers = Enum.map(fields, & &1.identifier)
+      assert :foo in field_identifiers
+      assert :bar in field_identifiers
+    end
+
+    test "applies placement rules!" do
+      assert_notation_error(
+        "PlacementRules",
+        """
+        interface :my_interface do
+          field :foo, :string
+        end
+
+        extend :my_interface do
+          field :bar, :string
+          arg :input, :string
+        end
+        """,
+        "Invalid schema notation: `arg` must only be used within `directive`, `field`"
+      )
+    end
+  end
+
+  def assert_notation_error(name, text, message) do
+    assert_raise(Absinthe.Schema.Notation.Error, message, fn ->
+      """
+      defmodule MyTestSchema.#{name} do
+        use Absinthe.Schema
+
+        query do
+          #Query type must exist
+        end
+
+        #{text}
+      end
+      """
+      |> Code.eval_string()
+    end)
   end
 end
