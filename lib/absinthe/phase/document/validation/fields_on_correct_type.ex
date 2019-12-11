@@ -180,7 +180,12 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
   end
 
   defp suggested_type_names(external_field_name, type, blueprint) do
-    internal_field_name = blueprint.adapter.to_internal_name(external_field_name, :field)
+    internal_field_name =
+      case blueprint.adapter.to_internal_name(external_field_name, :field) do
+        nil -> external_field_name
+        internal_field_name -> internal_field_name
+      end
+
     possible_types = find_possible_types(internal_field_name, type, blueprint.schema)
 
     possible_interfaces =
@@ -193,7 +198,11 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
   end
 
   defp suggested_field_names(external_field_name, %{fields: _} = type, blueprint) do
-    internal_field_name = blueprint.adapter.to_internal_name(external_field_name, :field)
+    internal_field_name =
+      case blueprint.adapter.to_internal_name(external_field_name, :field) do
+        nil -> external_field_name
+        internal_field_name -> internal_field_name
+      end
 
     Map.values(type.fields)
     |> Enum.map(& &1.name)
