@@ -56,10 +56,6 @@ defmodule Absinthe.Adapter.LanguageConventions do
     "__" <> to_internal_name(camelized_name, role)
   end
 
-  def to_internal_name(camelized_name, :operation) when is_binary(camelized_name) do
-    camelized_name
-  end
-
   def to_internal_name(camelized_name, _role) when is_binary(camelized_name) do
     camelized_name
     |> Macro.underscore()
@@ -73,10 +69,6 @@ defmodule Absinthe.Adapter.LanguageConventions do
 
   def to_external_name("__" <> underscored_name, role) do
     "__" <> to_external_name(underscored_name, role)
-  end
-
-  def to_external_name(underscored_name, :operation) when is_binary(underscored_name) do
-    underscored_name
   end
 
   def to_external_name(<<c::utf8, _::binary>> = name, _) when c in ?A..?Z do

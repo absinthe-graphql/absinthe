@@ -16,10 +16,6 @@ defmodule Absinthe.Adapter.StrictLanguageConventionsTest do
       assert "foo_bar" = StrictLanguageConventions.to_internal_name("fooBar", :variable)
     end
 
-    test "preserves external operation names" do
-      assert "fooBar" = StrictLanguageConventions.to_internal_name("fooBar", :operation)
-    end
-
     test "nullifies external field names that do not match internal name" do
       assert is_nil(StrictLanguageConventions.to_internal_name("foo_bar", :field))
       assert is_nil(StrictLanguageConventions.to_internal_name("FooBar", :field))
@@ -34,10 +30,6 @@ defmodule Absinthe.Adapter.StrictLanguageConventionsTest do
 
     test "converts internal underscored variable names to camelcase external variable names" do
       assert "fooBar" = StrictLanguageConventions.to_external_name("foo_bar", :variable)
-    end
-
-    test "preserves internal operation names" do
-      assert "foo_bar" = StrictLanguageConventions.to_external_name("foo_bar", :operation)
     end
   end
 end
