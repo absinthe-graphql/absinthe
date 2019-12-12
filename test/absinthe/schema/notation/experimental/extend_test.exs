@@ -116,6 +116,21 @@ defmodule Absinthe.Schema.Notation.Experimental.ExtendTest do
         "Can't extend `non_existant_object` because it doesn't exist"
       )
     end
+
+    test "can't extend a field" do
+      assert_notation_error(
+        "ExtendField",
+        """
+        object :my_object do
+          field :bar, :string do
+          end
+          extend :bar do
+          end
+        end
+        """,
+        "Can't extend a `field`"
+      )
+    end
   end
 
   def assert_notation_error(name, text, message) do

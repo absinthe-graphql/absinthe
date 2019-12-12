@@ -1828,6 +1828,13 @@ defmodule Absinthe.Schema.Notation do
     end)
   end
 
+  @extendable [
+    Schema.ObjectTypeDefinition,
+    Schema.EnumTypeDefinition,
+    Schema.InputObjectTypeDefinition,
+    Schema.UnionTypeDefinition,
+    Schema.InterfaceTypeDefinition
+  ]
   defp extendable!(module, identifier) do
     module
     |> Module.get_attribute(:absinthe_blueprint)
@@ -1836,8 +1843,9 @@ defmodule Absinthe.Schema.Notation do
       _ -> false
     end)
     |> case do
-      {_, %type{}} -> @scope_map[type]
-      nil -> raise __MODULE__.Error, invalid_message({:extend, identifier})
+      {_, %type{}} when type in @extendable -> @scope_map[type]
+      {_, %type{}} -> raise __MODULE__.Error, error_msg({:no_extend, @scope_map[type]})
+      nil -> raise __MODULE__.Error, error_msg({:not_found, identifier})
     end
   end
 
@@ -1847,7 +1855,7 @@ defmodule Absinthe.Schema.Notation do
     [scope | _] = get_scope_stack(env.module)
 
     unless recordable?(placement, scope) do
-      raise Absinthe.Schema.Notation.Error, invalid_message(placement, usage)
+      raise Absinthe.Schema.Notation.Error, error_msg(placement, usage)
     end
 
     env
@@ -1857,20 +1865,24 @@ defmodule Absinthe.Schema.Notation do
   defp recordable?([toplevel: true], scope), do: scope == :schema
   defp recordable?([toplevel: false], scope), do: scope != :schema
 
-  defp invalid_message([under: under], usage) do
+  defp error_msg([under: under], usage) do
     allowed = under |> Enum.map(&"`#{&1}`") |> Enum.join(", ")
     "Invalid schema notation: `#{usage}` must only be used within #{allowed}"
   end
 
-  defp invalid_message([toplevel: true], usage) do
+  defp error_msg([toplevel: true], usage) do
     "Invalid schema notation: `#{usage}` must only be used toplevel"
   end
 
-  defp invalid_message([toplevel: false], usage) do
+  defp error_msg([toplevel: false], usage) do
     "Invalid schema notation: `#{usage}` must not be used toplevel"
   end
 
-  defp invalid_message({:extend, identifier}) do
+  defp error_msg({:not_found, identifier}) do
     "Can't extend `#{identifier}` because it doesn't exist"
+  end
+
+  defp error_msg({:no_extend, identifier}) do
+    "Can't extend a `#{identifier}`"
   end
 end
