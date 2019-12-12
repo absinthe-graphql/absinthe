@@ -46,19 +46,6 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
-  @scope_map %{
-    Schema.ObjectTypeDefinition => :object,
-    Schema.FieldDefinition => :field,
-    Schema.ScalarTypeDefinition => :scalar,
-    Schema.EnumTypeDefinition => :enum,
-    Schema.EnumValueDefinition => :value,
-    Schema.InputObjectTypeDefinition => :input_object,
-    Schema.InputValueDefinition => :arg,
-    Schema.UnionTypeDefinition => :union,
-    Schema.InterfaceTypeDefinition => :interface,
-    Schema.DirectiveDefinition => :directive
-  }
-
   ### Macro API ###
 
   @placement {:config, [under: [:field]]}
@@ -1160,17 +1147,12 @@ defmodule Absinthe.Schema.Notation do
 
   @placement {:extend, [toplevel: true]}
   defmacro extend(identifier, do: block) do
+    type = extendable!(__CALLER__.module, identifier)
+
     put_attr(__CALLER__.module, {:extend, identifier})
 
-    {_, %type{}} =
-      Module.get_attribute(__CALLER__.module, :absinthe_blueprint)
-      |> Enum.find(fn
-        {_, %{identifier: ^identifier}} -> true
-        _ -> false
-      end)
-
     stack = get_scope_stack(__CALLER__.module)
-    put_scope_stack(__CALLER__.module, [@scope_map[type] | stack])
+    put_scope_stack(__CALLER__.module, [type | stack])
 
     [
       block,
@@ -1500,6 +1482,18 @@ defmodule Absinthe.Schema.Notation do
     }
   end
 
+  @scope_map %{
+    Schema.ObjectTypeDefinition => :object,
+    Schema.FieldDefinition => :field,
+    Schema.ScalarTypeDefinition => :scalar,
+    Schema.EnumTypeDefinition => :enum,
+    Schema.EnumValueDefinition => :value,
+    Schema.InputObjectTypeDefinition => :input_object,
+    Schema.InputValueDefinition => :arg,
+    Schema.UnionTypeDefinition => :union,
+    Schema.InterfaceTypeDefinition => :interface,
+    Schema.DirectiveDefinition => :directive
+  }
   defp scoped_def(caller, type, identifier, attrs, body) do
     attrs =
       attrs
@@ -1834,10 +1828,22 @@ defmodule Absinthe.Schema.Notation do
     end)
   end
 
-  @doc false
+  defp extendable!(module, identifier) do
+    module
+    |> Module.get_attribute(:absinthe_blueprint)
+    |> Enum.find(fn
+      {_, %{identifier: ^identifier}} -> true
+      _ -> false
+    end)
+    |> case do
+      {_, %type{}} -> @scope_map[type]
+      nil -> raise __MODULE__.Error, invalid_message({:extend, identifier})
+    end
+  end
+
   # Ensure the provided operation can be recorded in the current environment,
   # in the current scope context
-  def recordable!(env, usage, placement) do
+  defp recordable!(env, usage, placement) do
     [scope | _] = get_scope_stack(env.module)
 
     unless recordable?(placement, scope) do
@@ -1862,5 +1868,9 @@ defmodule Absinthe.Schema.Notation do
 
   defp invalid_message([toplevel: false], usage) do
     "Invalid schema notation: `#{usage}` must not be used toplevel"
+  end
+
+  defp invalid_message({:extend, identifier}) do
+    "Can't extend `#{identifier}` because it doesn't exist"
   end
 end

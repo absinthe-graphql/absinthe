@@ -104,6 +104,18 @@ defmodule Absinthe.Schema.Notation.Experimental.ExtendTest do
         "Invalid schema notation: `arg` must only be used within `directive`, `field`"
       )
     end
+
+    test "can't extend something that doesn't exist" do
+      assert_notation_error(
+        "NonExistant",
+        """
+        extend :non_existant_object do
+          field :bar, :string
+        end
+        """,
+        "Can't extend `non_existant_object` because it doesn't exist"
+      )
+    end
   end
 
   def assert_notation_error(name, text, message) do
