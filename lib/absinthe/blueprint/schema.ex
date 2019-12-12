@@ -222,14 +222,12 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(rest, [push(schema, :directive_definitions, dir) | stack], buff)
   end
 
-  @simple_close [
-    Schema.ScalarTypeDefinition,
-    Schema.EnumTypeDefinition
-  ]
+  defp build_types([:close | rest], [%Schema.ScalarTypeDefinition{} = type, schema | stack], buff) do
+    build_types(rest, [push(schema, :type_definitions, type) | stack], buff)
+  end
 
-  defp build_types([:close | rest], [%module{} = type, schema | stack], buff)
-       when module in @simple_close do
-    schema = push(schema, :type_definitions, type)
+  defp build_types([:close | rest], [%Schema.EnumTypeDefinition{} = type, schema | stack], buff) do
+    {schema, buff} = modify(schema, :type_definitions, type, buff)
     build_types(rest, [schema | stack], buff)
   end
 
