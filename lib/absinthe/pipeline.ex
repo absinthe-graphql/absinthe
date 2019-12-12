@@ -58,7 +58,7 @@ defmodule Absinthe.Pipeline do
       # Validate Document Structure
       {Phase.Document.Validation.NoFragmentCycles, options},
       Phase.Document.Validation.LoneAnonymousOperation,
-      Phase.Document.Validation.SelectedCurrentOperation,
+      {Phase.Document.Validation.SelectedCurrentOperation, options},
       Phase.Document.Validation.KnownFragmentNames,
       Phase.Document.Validation.NoUndefinedVariables,
       Phase.Document.Validation.NoUnusedVariables,
