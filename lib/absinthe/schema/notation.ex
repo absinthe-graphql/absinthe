@@ -46,6 +46,19 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
+  @scope_map %{
+    Schema.ObjectTypeDefinition => :object,
+    Schema.FieldDefinition => :field,
+    Schema.ScalarTypeDefinition => :scalar,
+    Schema.EnumTypeDefinition => :enum,
+    Schema.EnumValueDefinition => :value,
+    Schema.InputObjectTypeDefinition => :input_object,
+    Schema.InputValueDefinition => :arg,
+    Schema.UnionTypeDefinition => :union,
+    Schema.InterfaceTypeDefinition => :interface,
+    Schema.DirectiveDefinition => :directive
+  }
+
   ### Macro API ###
 
   @placement {:config, [under: [:field]]}
@@ -392,7 +405,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   # FIELDS
-  @placement {:field, [under: [:input_object, :interface, :object, :extend]]}
+  @placement {:field, [under: [:input_object, :interface, :object]]}
   @doc """
   Defines a GraphQL field
 
@@ -1148,8 +1161,16 @@ defmodule Absinthe.Schema.Notation do
   @placement {:extend, [toplevel: true]}
   defmacro extend(identifier, do: block) do
     put_attr(__CALLER__.module, {:extend, identifier})
+
+    {_, %type{}} =
+      Module.get_attribute(__CALLER__.module, :absinthe_blueprint)
+      |> Enum.find(fn
+        {_, %{identifier: ^identifier}} -> true
+        _ -> false
+      end)
+
     stack = get_scope_stack(__CALLER__.module)
-    put_scope_stack(__CALLER__.module, [:extend | stack])
+    put_scope_stack(__CALLER__.module, [@scope_map[type] | stack])
 
     [
       block,
@@ -1479,18 +1500,6 @@ defmodule Absinthe.Schema.Notation do
     }
   end
 
-  @scope_map %{
-    Schema.ObjectTypeDefinition => :object,
-    Schema.FieldDefinition => :field,
-    Schema.ScalarTypeDefinition => :scalar,
-    Schema.EnumTypeDefinition => :enum,
-    Schema.EnumValueDefinition => :value,
-    Schema.InputObjectTypeDefinition => :input_object,
-    Schema.InputValueDefinition => :arg,
-    Schema.UnionTypeDefinition => :union,
-    Schema.InterfaceTypeDefinition => :interface,
-    Schema.DirectiveDefinition => :directive
-  }
   defp scoped_def(caller, type, identifier, attrs, body) do
     attrs =
       attrs

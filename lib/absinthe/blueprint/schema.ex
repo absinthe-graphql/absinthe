@@ -200,7 +200,8 @@ defmodule Absinthe.Blueprint.Schema do
          buff
        ) do
     obj = Map.update!(obj, :fields, &Enum.reverse/1)
-    build_types(rest, [push(schema, :type_definitions, obj) | stack], buff)
+    {schema, buff} = modify(schema, :type_definitions, obj, buff)
+    build_types(rest, [schema | stack], buff)
   end
 
   defp build_types(

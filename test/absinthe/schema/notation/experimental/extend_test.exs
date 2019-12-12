@@ -22,12 +22,19 @@ defmodule Absinthe.Schema.Notation.Experimental.ExtendTest do
     extend :my_interface do
       field :bar, :string
     end
+
+    input_object :my_input_object do
+      field :foo, :string
+    end
+
+    extend :my_input_object do
+      field :bar, :string
+    end
   end
 
   describe "extend" do
     test "object" do
-      assert %{name: "MyObject", identifier: :my_object, fields: fields} =
-               lookup_type(Definition, :my_object)
+      assert %{identifier: :my_object, fields: fields} = lookup_type(Definition, :my_object)
 
       field_identifiers = Enum.map(fields, & &1.identifier)
       assert :foo in field_identifiers
@@ -35,8 +42,16 @@ defmodule Absinthe.Schema.Notation.Experimental.ExtendTest do
     end
 
     test "interface" do
-      assert %{name: "MyInterface", identifier: :my_interface, fields: fields} =
-               lookup_type(Definition, :my_interface)
+      assert %{identifier: :my_interface, fields: fields} = lookup_type(Definition, :my_interface)
+
+      field_identifiers = Enum.map(fields, & &1.identifier)
+      assert :foo in field_identifiers
+      assert :bar in field_identifiers
+    end
+
+    test "input_object" do
+      assert %{identifier: :my_input_object, fields: fields} =
+               lookup_type(Definition, :my_input_object)
 
       field_identifiers = Enum.map(fields, & &1.identifier)
       assert :foo in field_identifiers
