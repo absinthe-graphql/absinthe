@@ -38,6 +38,14 @@ defmodule Absinthe.Schema.Notation.Experimental.ExtendTest do
     extend :my_enum do
       value :two
     end
+
+    union :my_union do
+      types [:one]
+    end
+
+    extend :my_union do
+      types [:two]
+    end
   end
 
   describe "extend" do
@@ -71,6 +79,13 @@ defmodule Absinthe.Schema.Notation.Experimental.ExtendTest do
       value_identifiers = Enum.map(values, & &1.identifier)
       assert :one in value_identifiers
       assert :two in value_identifiers
+    end
+
+    test "union" do
+      assert %{types: types} = lookup_type(Definition, :my_union)
+
+      assert :one in types
+      assert :two in types
     end
 
     test "applies placement rules!" do

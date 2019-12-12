@@ -164,6 +164,11 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(rest, [directive | stack], buff)
   end
 
+  defp build_types([{:types, types} | rest], [union | stack], buff) do
+    union = Map.update!(union, :types, &(types ++ &1))
+    build_types(rest, [union | stack], buff)
+  end
+
   defp build_types([{attr, value} | rest], [entity | stack], buff) do
     entity = %{entity | attr => value}
     build_types(rest, [entity | stack], buff)
@@ -215,7 +220,8 @@ defmodule Absinthe.Blueprint.Schema do
   end
 
   defp build_types([:close | rest], [%Schema.UnionTypeDefinition{} = union, schema | stack], buff) do
-    build_types(rest, [push(schema, :type_definitions, union) | stack], buff)
+    {schema, buff} = modify(schema, :type_definitions, union, buff)
+    build_types(rest, [schema | stack], buff)
   end
 
   defp build_types([:close | rest], [%Schema.DirectiveDefinition{} = dir, schema | stack], buff) do
