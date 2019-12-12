@@ -106,7 +106,7 @@ defmodule Absinthe.Schema.NotationTest do
         """
         field :foo, :string
         """,
-        "Invalid schema notation: `field` must only be used within `input_object`, `interface`, `object`, `extend`"
+        "Invalid schema notation: `field` must only be used within `input_object`, `interface`, `object`"
       )
     end
   end
