@@ -38,10 +38,9 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperation do
     }
   end
 
-  @error_message "Must provide a valid operation name if query contains multiple operations."
   def error_message(nil, _) do
     """
-    #{@error_message}
+    Must provide a valid operation name if query contains multiple operations.
 
     No operation name was given.
     """
@@ -57,7 +56,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperation do
 
   def error_message(operation_name, _) do
     """
-    #{@error_message}
+    Must provide a valid operation name if query contains multiple operations.
 
     The provided operation name was: #{inspect(operation_name)}
     """
