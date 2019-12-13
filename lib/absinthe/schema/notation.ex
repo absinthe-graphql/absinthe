@@ -1145,6 +1145,29 @@ defmodule Absinthe.Schema.Notation do
     put_attr(__CALLER__.module, {:import_fields, {source_criteria, opts}})
   end
 
+  @doc """
+  Extend another type
+
+  ## Example
+  ```
+  object :person do
+    field :name, :string
+  end
+
+  extend :person do
+    field :age, :integer
+  end
+  ```
+
+  This results in a `Person` object which contains two fields, `name` and `age`.
+
+  A limited set of types can be extended:
+  * `object`
+  * `input_object`
+  * `enum`
+  * `interface`
+  * `union`
+  """
   @placement {:extend, [toplevel: true]}
   defmacro extend(identifier, do: block) do
     type = extendable!(__CALLER__.module, identifier)
