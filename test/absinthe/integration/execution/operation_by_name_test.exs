@@ -106,7 +106,7 @@ defmodule Elixir.Absinthe.Integration.Execution.OperationByNameTest do
               errors: [
                 %{
                   message: """
-                  The provided operation name dit not match the operation in the query.
+                  The provided operation name did not match the operation in the query.
 
                   The provided operation name was: "Second"
                   """

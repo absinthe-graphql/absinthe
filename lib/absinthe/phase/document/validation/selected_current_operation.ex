@@ -49,7 +49,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperation do
 
   def error_message(operation_name, 1) do
     """
-    The provided operation name dit not match the operation in the query.
+    The provided operation name did not match the operation in the query.
 
     The provided operation name was: #{inspect(operation_name)}
     """
