@@ -7,10 +7,10 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
 
   alias Absinthe.Blueprint
 
-  defp no_current_operation do
+  defp no_current_operation(operation_name, count) do
     bad_value(
       Blueprint,
-      @phase.error_message,
+      @phase.error_message(operation_name, count),
       nil
     )
   end
@@ -30,6 +30,18 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
       )
     end
 
+    test "fails when single operation in document does not match given operation name" do
+      assert_fails_validation(
+        """
+        query Bar {
+          name
+        }
+        """,
+        [operation_name: "Nothere"],
+        no_current_operation("Nothere", 1)
+      )
+    end
+
     test "fails when the operation is not provided" do
       assert_fails_validation(
         """
@@ -41,7 +53,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
         }
         """,
         [operation_name: "Nothere"],
-        no_current_operation()
+        no_current_operation("Nothere", 2)
       )
     end
   end
@@ -80,7 +92,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperationTest do
         }
         """,
         [],
-        no_current_operation()
+        no_current_operation(nil, 2)
       )
     end
   end

@@ -27,8 +27,11 @@ defmodule Elixir.Absinthe.Integration.Execution.OperationByNameTest do
             %{
               errors: [
                 %{
-                  message:
-                    "Must provide a valid operation name if query contains multiple operations."
+                  message: """
+                  Must provide a valid operation name if query contains multiple operations.
+
+                  No operation name was given.
+                  """
                 }
               ]
             }} == Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, [])
@@ -39,8 +42,11 @@ defmodule Elixir.Absinthe.Integration.Execution.OperationByNameTest do
             %{
               errors: [
                 %{
-                  message:
-                    "Must provide a valid operation name if query contains multiple operations."
+                  message: """
+                  Must provide a valid operation name if query contains multiple operations.
+
+                  The provided operation name was: "invalid"
+                  """
                 }
               ]
             }} ==
@@ -80,6 +86,30 @@ defmodule Elixir.Absinthe.Integration.Execution.OperationByNameTest do
                   locations: [%{column: 3, line: 7}],
                   message: "Custom Error",
                   path: ["second"]
+                }
+              ]
+            }} ==
+             Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, operation_name: "Second")
+  end
+
+  @query """
+  mutation First($id: ID!, $thing: InputThing!) {
+    updateThing(id: $id thing: $thing) {
+      id
+    }
+  }
+  """
+
+  test "return error when single operation in document does not match given operation name" do
+    assert {:ok,
+            %{
+              errors: [
+                %{
+                  message: """
+                  The provided operation name did not match the operation in the query.
+
+                  The provided operation name was: "Second"
+                  """
                 }
               ]
             }} ==
