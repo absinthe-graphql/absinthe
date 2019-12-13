@@ -179,6 +179,7 @@ defmodule SdlRenderTest do
     query do
       field :echo, :string do
         arg :times, :integer, default_value: 10, description: "The number of times"
+        arg :time_interval, :integer
       end
     end
 
@@ -205,6 +206,8 @@ defmodule SdlRenderTest do
 
              type RootQueryType {
                echo(
+                 timeInterval: Int
+
                  "The number of times"
                  times: Int
                ): String
