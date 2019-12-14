@@ -88,9 +88,10 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     )
   end
 
+  @adapter Absinthe.Adapter.LanguageConventions
   defp render(%Blueprint.Schema.InputValueDefinition{} = input_value, type_definitions) do
     concat([
-      string(input_value.name),
+      string(@adapter.to_external_name(input_value.name, :argument)),
       ": ",
       render(input_value.type, type_definitions),
       default(input_value.default_value_blueprint)
@@ -98,7 +99,6 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(input_value.description)
   end
 
-  @adapter Absinthe.Adapter.LanguageConventions
   defp render(%Blueprint.Schema.FieldDefinition{} = field, type_definitions) do
     concat([
       string(@adapter.to_external_name(field.name, :field)),
