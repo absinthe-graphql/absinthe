@@ -29,7 +29,7 @@ defmodule Absinthe.Schema.Rule do
     Rule.ObjectInterfacesMustBeValid,
     Rule.ObjectMustImplementInterfaces,
     Rule.InterfacesMustResolveTypes,
-    Rule.InputOuputTypesCorrectlyPlaced,
+    Rule.InputOutputTypesCorrectlyPlaced,
     Rule.DefaultEnumValuePresent
   ]
 

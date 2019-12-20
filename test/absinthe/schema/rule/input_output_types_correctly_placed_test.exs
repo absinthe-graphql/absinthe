@@ -1,4 +1,4 @@
-defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlacedTest do
+defmodule Absinthe.Schema.Rule.InputOutputTypesCorrectlyPlacedTest do
   use Absinthe.Case, async: true
 
   describe "rule" do
@@ -17,7 +17,7 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlacedTest do
               line: 11
             }
           ],
-          phase: Absinthe.Phase.Schema.Validation.InputOuputTypesCorrectlyPlaced
+          phase: Absinthe.Phase.Schema.Validation.InputOutputTypesCorrectlyPlaced
         },
         %{
           extra: %{
@@ -31,7 +31,7 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlacedTest do
               line: 16
             }
           ],
-          phase: Absinthe.Phase.Schema.Validation.InputOuputTypesCorrectlyPlaced
+          phase: Absinthe.Phase.Schema.Validation.InputOutputTypesCorrectlyPlaced
         }
       ])
     end
@@ -51,7 +51,7 @@ defmodule Absinthe.Schema.Rule.InputOuputTypesCorrectlyPlacedTest do
               line: 8
             }
           ],
-          phase: Absinthe.Phase.Schema.Validation.InputOuputTypesCorrectlyPlaced
+          phase: Absinthe.Phase.Schema.Validation.InputOutputTypesCorrectlyPlaced
         }
       ])
     end

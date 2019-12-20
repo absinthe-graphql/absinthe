@@ -142,7 +142,7 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.Arguments.Data,
       Phase.Schema.Directives,
       Phase.Schema.Validation.DefaultEnumValuePresent,
-      Phase.Schema.Validation.InputOuputTypesCorrectlyPlaced,
+      Phase.Schema.Validation.InputOutputTypesCorrectlyPlaced,
       Phase.Schema.Validation.InterfacesMustResolveTypes,
       Phase.Schema.Validation.ObjectInterfacesMustBeValid,
       Phase.Schema.Validation.ObjectMustImplementInterfaces,

@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Schema.Validation.InputOuputTypesCorrectlyPlaced do
+defmodule Absinthe.Phase.Schema.Validation.InputOutputTypesCorrectlyPlaced do
   use Absinthe.Phase
   alias Absinthe.Blueprint
 
