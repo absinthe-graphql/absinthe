@@ -557,6 +557,33 @@ defmodule Absinthe.Schema.Notation do
   end
 
   @placement {:complexity, [under: [:field]]}
+  @doc """
+  Set the complexity of a field
+
+  For a field, the first argument to the function you supply to complexity/1 is the user arguments -- just as a field's resolver can use user arguments to resolve its value, the complexity function that you provide can use the same arguments to calculate the field's complexity.
+
+  The second argument passed to your complexity function is the sum of all the complexity scores of all the fields nested below the current field.
+
+  (If a complexity function accepts three arguments, the third will be an `%Absinthe.Resolution{}` struct, just as with resolvers.)
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+
+  ## Examples
+  ```
+  query do
+    field :people, list_of(:person) do
+      arg :limit, :integer, default_value: 10
+      complexity fn %{limit: limit}, child_complexity ->
+        # set complexity based on maximum number of items in the list and
+        # complexity of a child.
+        limit * child_complexity
+      end
+    end
+  end
+  ```
+  """
   defmacro complexity(func_ast) do
     __CALLER__
     |> recordable!(:complexity, @placement[:complexity])
