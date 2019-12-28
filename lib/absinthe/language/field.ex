@@ -40,11 +40,4 @@ defmodule Absinthe.Language.Field do
     defp selections(nil), do: []
     defp selections(node), do: node.selections
   end
-
-  defimpl Absinthe.Traversal.Node do
-    def children(node, _schema) do
-      [node.arguments, node.directives, node.selection_set |> List.wrap()]
-      |> Enum.concat()
-    end
-  end
 end

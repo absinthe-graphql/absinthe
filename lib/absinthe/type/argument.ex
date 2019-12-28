@@ -36,10 +36,4 @@ defmodule Absinthe.Type.Argument do
             default_value: nil,
             definition: nil,
             __reference__: nil
-
-  defimpl Absinthe.Traversal.Node do
-    def children(node, _traversal) do
-      [node.type]
-    end
-  end
 end

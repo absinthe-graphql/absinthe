@@ -113,10 +113,4 @@ defmodule Absinthe.Type.Object do
     fields
     |> Map.get(identifier)
   end
-
-  defimpl Absinthe.Traversal.Node do
-    def children(node, _traversal) do
-      Map.values(node.fields) ++ node.interfaces
-    end
-  end
 end

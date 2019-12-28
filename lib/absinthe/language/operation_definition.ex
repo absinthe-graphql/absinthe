@@ -34,11 +34,4 @@ defmodule Absinthe.Language.OperationDefinition do
     defp source_location(%{loc: nil}), do: nil
     defp source_location(%{loc: loc}), do: Blueprint.SourceLocation.at(loc)
   end
-
-  defimpl Absinthe.Traversal.Node do
-    def children(node, _schema) do
-      [node.variable_definitions, node.directives, List.wrap(node.selection_set)]
-      |> Enum.concat()
-    end
-  end
 end

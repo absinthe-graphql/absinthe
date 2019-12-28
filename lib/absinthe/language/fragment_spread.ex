@@ -29,10 +29,4 @@ defmodule Absinthe.Language.FragmentSpread do
       Blueprint.SourceLocation.at(loc)
     end
   end
-
-  defimpl Absinthe.Traversal.Node do
-    def children(node, _schema) do
-      node.directives
-    end
-  end
 end

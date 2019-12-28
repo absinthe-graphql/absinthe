@@ -63,10 +63,4 @@ defmodule Absinthe.Type.InputObject do
             __private__: [],
             definition: nil,
             __reference__: nil
-
-  defimpl Absinthe.Traversal.Node do
-    def children(node, _traversal) do
-      Map.values(node.fields)
-    end
-  end
 end
