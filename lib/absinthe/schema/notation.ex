@@ -29,6 +29,7 @@ defmodule Absinthe.Schema.Notation do
     Module.register_attribute(__CALLER__.module, :absinthe_desc, accumulate: true)
     put_attr(__CALLER__.module, %Absinthe.Blueprint{schema: __CALLER__.module})
     Module.put_attribute(__CALLER__.module, :absinthe_scope_stack, [:schema])
+    Module.put_attribute(__CALLER__.module, :absinthe_scope_stack_stash, [])
 
     quote do
       import Absinthe.Resolution.Helpers,
@@ -1404,20 +1405,24 @@ defmodule Absinthe.Schema.Notation do
 
   @doc false
   defmacro pop() do
+    module = __CALLER__.module
+    popped = pop_stack(module, :absinthe_scope_stack_stash)
+    push_stack(module, :absinthe_scope_stack, popped)
     put_attr(__CALLER__.module, :pop)
   end
 
   @doc false
   defmacro stash() do
-    put_attr(__CALLER__.module, :stash)
+    module = __CALLER__.module
+    popped = pop_stack(module, :absinthe_scope_stack)
+    push_stack(module, :absinthe_scope_stack_stash, popped)
+    put_attr(module, :stash)
   end
 
   @doc false
   defmacro close_scope() do
     put_attr(__CALLER__.module, :close)
-
-    [_ | scope] = Module.get_attribute(__CALLER__.module, :absinthe_scope_stack)
-    Module.put_attribute(__CALLER__.module, :absinthe_scope_stack, scope)
+    pop_stack(__CALLER__.module, :absinthe_scope_stack)
   end
 
   def put_reference(attrs, env) do
@@ -1458,8 +1463,7 @@ defmodule Absinthe.Schema.Notation do
 
     ref = put_attr(caller.module, definition)
 
-    stack = Module.get_attribute(caller.module, :absinthe_scope_stack)
-    Module.put_attribute(caller.module, :absinthe_scope_stack, [@scope_map[type] | stack])
+    push_stack(caller.module, :absinthe_scope_stack, Map.fetch!(@scope_map, type))
 
     [
       get_desc(ref),
@@ -1472,6 +1476,18 @@ defmodule Absinthe.Schema.Notation do
     quote do
       unquote(__MODULE__).put_desc(__MODULE__, unquote(ref))
     end
+  end
+
+  defp push_stack(module, key, val) do
+    stack = Module.get_attribute(module, key)
+    stack = [val | stack]
+    Module.put_attribute(module, key, stack)
+  end
+
+  defp pop_stack(module, key) do
+    [popped | stack] = Module.get_attribute(module, key)
+    Module.put_attribute(module, key, stack)
+    popped
   end
 
   def put_attr(module, thing) do
