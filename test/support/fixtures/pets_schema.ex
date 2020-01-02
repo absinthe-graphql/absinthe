@@ -157,6 +157,7 @@ defmodule Absinthe.Fixtures.PetsSchema do
 
     field :complex_arg_field, :string do
       arg :complex_arg, :complex_input
+      arg :complex_arg_list, list_of(:complex_input)
     end
 
     field :multiple_reqs, :string do
