@@ -72,6 +72,11 @@ defmodule Absinthe.Phase.Document.Arguments.Parse do
     build_value(normalized, inner_type, context)
   end
 
+  defp build_value(%{__struct__: struct} = _normalized, _not_scalar, _context)
+       when struct in [Input.Boolean, Input.Float, Input.Integer, Input.String] do
+    {:error, :bad_parse}
+  end
+
   defp build_value(_, _, _) do
     :not_leaf_node
   end
