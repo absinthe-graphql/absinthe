@@ -8,6 +8,7 @@ defmodule Absinthe.Language.FieldDefinition do
             arguments: [],
             directives: [],
             type: nil,
+            complexity: nil,
             loc: %{line: nil}
 
   @type t :: %__MODULE__{
@@ -28,6 +29,7 @@ defmodule Absinthe.Language.FieldDefinition do
         arguments: Absinthe.Blueprint.Draft.convert(node.arguments, doc),
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
         type: Absinthe.Blueprint.Draft.convert(node.type, doc),
+        complexity: node.complexity,
         source_location: source_location(node)
       }
     end
