@@ -188,7 +188,6 @@ defmodule Absinthe.Mixfile do
       Execution: [
         Absinthe.Blueprint,
         Absinthe.Blueprint.Execution,
-        Absinthe.Traversal,
         Absinthe.Resolution,
         Absinthe.Complexity
       ],

@@ -12,10 +12,4 @@ defmodule Absinthe.Language.SelectionSet do
           ],
           loc: Language.loc_t()
         }
-
-  defimpl Absinthe.Traversal.Node do
-    def children(node, _schema) do
-      node.selections
-    end
-  end
 end

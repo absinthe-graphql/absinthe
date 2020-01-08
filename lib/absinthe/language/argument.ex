@@ -27,10 +27,4 @@ defmodule Absinthe.Language.Argument do
     defp source_location(%{loc: nil}), do: nil
     defp source_location(%{loc: loc}), do: Blueprint.SourceLocation.at(loc)
   end
-
-  defimpl Absinthe.Traversal.Node do
-    def children(node, _schema) do
-      [node.value]
-    end
-  end
 end

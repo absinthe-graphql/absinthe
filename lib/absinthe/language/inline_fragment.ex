@@ -33,11 +33,4 @@ defmodule Absinthe.Language.InlineFragment do
       Blueprint.SourceLocation.at(loc)
     end
   end
-
-  defimpl Absinthe.Traversal.Node do
-    def children(node, _schema) do
-      [List.wrap(node.type_condition), node.directives, List.wrap(node.selection_set)]
-      |> Enum.concat()
-    end
-  end
 end

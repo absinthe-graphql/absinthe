@@ -10,7 +10,7 @@ defmodule Absinthe.Language.Document do
 
   @typedoc false
   @type t :: %__MODULE__{
-          definitions: [Absinthe.Traversal.Node.t()],
+          definitions: [Absinthe.Language.t()],
           loc: Language.loc_t()
         }
 
@@ -84,9 +84,5 @@ defmodule Absinthe.Language.Document do
     defp convert_definition(%struct{} = node, doc, blueprint) when struct in @fragments do
       update_in(blueprint.fragments, &[Blueprint.Draft.convert(node, doc) | &1])
     end
-  end
-
-  defimpl Absinthe.Traversal.Node do
-    def children(%{definitions: definitions}, _schema), do: definitions
   end
 end
