@@ -11,12 +11,12 @@ For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe
 - Breaking Change: Scalar outputs are now type checked and will raise exceptions if the result tries to send the wrong data type in the result.
 - Breaking Change: `telemetry` event names [changed](https://github.com/absinthe-graphql/absinthe/pull/782) from the `alpha` to match an emerging naming convention for tracing.
 - Breaking Change: Added phase to check validity of field names according to graphql spec. Might break existing schema's. Remove the `Absinthe.Phase.Schema.Validation.NamesMustBeValid` from the schema pipeline if you want to ignore this.
-- Breaking Change: To match the GraphQL spec, we [no longer](https://github.com/absinthe-graphql/absinthe/pull/816) add a non-null error when a resolver on a non-null field explicitly returns it's own error.
+- Breaking Change: To match the GraphQL spec, we [no longer](https://github.com/absinthe-graphql/absinthe/pull/816) add a non-null error when a resolver on a non-null field explicitly returns its own error.
 - Breaking Change: Removed `Absinthe.Traversal` module
 
 ## v1.5.0 (Alpha)
 
-Alpha 0 note: 1.5.0 alpha is safe to use on existing schemas. However, there are no schema validations at the moment, so when writing new ones you may get undefined behaviour if you write an invalid schema. 
+Alpha 0 note: 1.5.0 alpha is safe to use on existing schemas. However, there are no schema validations at the moment, so when writing new ones you may get undefined behaviour if you write an invalid schema.
 
 - COLUMN NUMBERS! The Absinthe Lexer has been rewritten using `nimble_parsec` and now Absinthe includes column information.
 - Complete rewrite of schema internals. This fixes a number of long standing bugs, and provides a variety of new features
