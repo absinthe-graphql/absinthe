@@ -380,5 +380,38 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
                  analyze_complexity: true
                )
     end
+
+    test "__typename doesn't increase complexity" do
+      doc_with = """
+      query TypenameComplexity {
+        fooComplexity(limit: 3) {
+          bar
+          __typename
+        }
+      }
+      """
+
+      doc_without = """
+      query TypenameComplexity {
+        fooComplexity(limit: 3) {
+          bar
+        }
+      }
+      """
+
+      assert {:ok, result_with, _} =
+               run_phase(doc_with, operation_name: "TypenameComplexity", variables: %{})
+
+      op_with = result_with.operations |> Enum.find(&(&1.name == "TypenameComplexity"))
+      complexity_with = op_with.complexity
+
+      assert {:ok, result_without, _} =
+               run_phase(doc_without, operation_name: "TypenameComplexity", variables: %{})
+
+      op_without = result_without.operations |> Enum.find(&(&1.name == "TypenameComplexity"))
+      complexity_without = op_without.complexity
+
+      assert complexity_with == complexity_without
+    end
   end
 end

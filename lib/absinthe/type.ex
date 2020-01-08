@@ -3,7 +3,7 @@ defmodule Absinthe.Type do
 
   alias __MODULE__
 
-  alias Absinthe.{Introspection, Schema}
+  alias Absinthe.Schema
 
   @type function_identifier :: {module, any}
   @type function_ref :: {:ref, module, function_identifier}
@@ -374,21 +374,6 @@ defmodule Absinthe.Type do
 
   def valid_input?(_, _) do
     true
-  end
-
-  def field(_type, "__" <> meta_name) do
-    Introspection.Field.meta(meta_name)
-  end
-
-  def field(%{fields: fields}, name) do
-    fields
-    |> Map.get(name |> String.to_existing_atom())
-  rescue
-    ArgumentError -> nil
-  end
-
-  def field(_, _name) do
-    nil
   end
 
   @spec referenced_types(t, Schema.t()) :: [t]

@@ -65,6 +65,7 @@ defmodule Absinthe.Phase.Schema.Introspection do
       module: __MODULE__,
       type: :string,
       description: "The name of the object type currently being queried.",
+      complexity: 0,
       triggers: %{},
       middleware: [
         {:ref, __MODULE__, :typename}
