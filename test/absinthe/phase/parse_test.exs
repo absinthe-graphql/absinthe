@@ -29,6 +29,26 @@ defmodule Absinthe.Phase.ParseTest do
            ] == bp.execution.validation_errors
   end
 
+  @graphql """
+  query {
+    user {
+      name
+    }
+
+  """
+  test "handle parse error when column not available" do
+    assert {:error, bp} = Absinthe.Phase.Parse.run(@graphql, jump_phases: false)
+
+    assert [
+             %Absinthe.Phase.Error{
+               extra: %{},
+               locations: [%{column: 0, line: 4}],
+               message: "syntax error before: ",
+               phase: Absinthe.Phase.Parse
+             }
+           ] == bp.execution.validation_errors
+  end
+
   @reserved ~w(query mutation subscription fragment on implements interface union scalar enum input extend)
   test "can parse queries with arguments and variables that are 'reserved words'" do
     @reserved
