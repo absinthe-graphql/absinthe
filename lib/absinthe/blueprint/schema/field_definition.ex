@@ -18,7 +18,6 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
     directives: [],
     complexity: nil,
     source_location: nil,
-    description: nil,
     middleware: [],
     function_ref: nil,
     flags: %{},

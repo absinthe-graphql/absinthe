@@ -75,8 +75,7 @@ defmodule Absinthe.Type.Interface do
             resolve_type: nil,
             __private__: [],
             definition: nil,
-            __reference__: nil,
-            resolve_type: nil
+            __reference__: nil
 
   @doc false
   defdelegate functions, to: Absinthe.Blueprint.Schema.InterfaceTypeDefinition
