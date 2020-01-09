@@ -35,15 +35,9 @@ defmodule Absinthe.Phase.Schema.Hydrate do
 
   defp handle_node(%node_module{} = node, ancestors, schema, hydrator)
        when node_module in @hydrate do
-    case Absinthe.Type.built_in_module?(node.module) do
-      true ->
-        {:halt, node}
-
-      false ->
-        node
-        |> hydrate_node(ancestors, schema, hydrator)
-        |> set_children(ancestors, schema, hydrator)
-    end
+    node
+    |> hydrate_node(ancestors, schema, hydrator)
+    |> set_children(ancestors, schema, hydrator)
   end
 
   defp handle_node(node, ancestors, schema, hydrator) do
