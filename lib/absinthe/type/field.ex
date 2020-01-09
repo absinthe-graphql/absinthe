@@ -11,7 +11,6 @@ defmodule Absinthe.Type.Field do
 
   alias Absinthe.Type
   alias Absinthe.Type.Deprecation
-  alias Absinthe.Schema
 
   use Type.Fetch
 
