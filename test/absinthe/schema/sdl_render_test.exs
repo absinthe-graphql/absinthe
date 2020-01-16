@@ -186,6 +186,7 @@ defmodule SdlRenderTest do
     object :order do
       field :id, :id
       field :name, :string
+      import_fields :imported_fields
     end
 
     object :category do
@@ -194,6 +195,10 @@ defmodule SdlRenderTest do
 
     union :search_result do
       types [:order, :category]
+    end
+
+    object :imported_fields do
+      field :imported, non_null(:boolean)
     end
   end
 
@@ -220,6 +225,7 @@ defmodule SdlRenderTest do
              union SearchResult = Order | Category
 
              type Order {
+               imported: Boolean!
                id: ID
                name: String
              }
