@@ -126,9 +126,7 @@ defmodule Absinthe.Phase.Schema.Compile do
     |> Enum.filter(&match?(%Schema.InterfaceTypeDefinition{}, &1))
     |> Map.new(fn iface ->
       implementors =
-        for %Schema.ObjectTypeDefinition{} = obj <- schema.type_definitions,
-            iface.identifier in obj.interfaces,
-            do: obj.identifier
+        Schema.InterfaceTypeDefinition.find_implementors(iface, schema.type_definitions)
 
       {iface.identifier, Enum.sort(implementors)}
     end)

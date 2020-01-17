@@ -2,6 +2,7 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
   @moduledoc false
 
   alias Absinthe.Blueprint
+  alias Absinthe.Blueprint.Schema
 
   @enforce_keys [:name]
   defstruct [
@@ -41,6 +42,12 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
       resolve_type: type_def.resolve_type,
       definition: type_def.module
     }
+  end
+
+  def find_implementors(iface, type_defs) do
+    for %Schema.ObjectTypeDefinition{} = obj <- type_defs,
+        iface.identifier in obj.interfaces,
+        do: obj.identifier
   end
 
   @doc false

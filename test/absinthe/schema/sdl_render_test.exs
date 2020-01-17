@@ -104,7 +104,8 @@ defmodule SdlRenderTest do
   end
 
   test "Render SDL from blueprint defined with SDL" do
-    assert Absinthe.Schema.to_sdl(SdlTestSchema) == SdlTestSchema.sdl()
+    assert Absinthe.Schema.to_sdl(SdlTestSchema, include_disconnected: true) ==
+             SdlTestSchema.sdl()
   end
 
   describe "Render SDL" do
@@ -181,6 +182,8 @@ defmodule SdlRenderTest do
         arg :times, :integer, default_value: 10, description: "The number of times"
         arg :time_interval, :integer
       end
+
+      field :search, :search_result
     end
 
     object :order do
@@ -216,6 +219,7 @@ defmodule SdlRenderTest do
                  "The number of times"
                  times: Int
                ): String
+               search: SearchResult
              }
 
              type Category {

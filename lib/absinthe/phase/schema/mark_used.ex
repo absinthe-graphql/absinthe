@@ -13,6 +13,7 @@ defmodule Absinthe.Phase.Schema.MarkUsed do
     {:ok, %{blueprint | schema_definitions: [schema]}}
   end
 
+  @roots [:query, :mutation, :subscription]
   defp mark_used(type_defs, directive_defs) do
     types_by_ref =
       Enum.reduce(type_defs, %{}, fn type_def, acc ->
@@ -22,7 +23,7 @@ defmodule Absinthe.Phase.Schema.MarkUsed do
       end)
 
     referenced_type_ids =
-      [:query, :mutation, :subscription]
+      @roots
       |> Enum.map(&Map.get(types_by_ref, &1))
       |> Enum.reject(&is_nil/1)
       |> Enum.concat(directive_defs)
@@ -83,6 +84,11 @@ defmodule Absinthe.Phase.Schema.MarkUsed do
     else
       acc = MapSet.put(acc, identifier)
 
+      acc =
+        interface
+        |> Schema.InterfaceTypeDefinition.find_implementors(Map.values(schema))
+        |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
+
       interface.fields
       |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
     end
@@ -115,14 +121,6 @@ defmodule Absinthe.Phase.Schema.MarkUsed do
     end
   end
 
-  defp referenced_types(%TypeReference.Identifier{} = ref, schema, acc) do
-    referenced_types(Map.fetch!(schema, ref.id), schema, acc)
-  end
-
-  defp referenced_types(%TypeReference.Name{} = ref, schema, acc) do
-    referenced_types(Map.fetch!(schema, ref.name), schema, acc)
-  end
-
   defp referenced_types(%Schema.ScalarTypeDefinition{identifier: identifier}, _schema, acc) do
     MapSet.put(acc, identifier)
   end
@@ -136,6 +134,14 @@ defmodule Absinthe.Phase.Schema.MarkUsed do
       union.types
       |> Enum.reduce(acc, &referenced_types(&1, schema, &2))
     end
+  end
+
+  defp referenced_types(%TypeReference.Identifier{} = ref, schema, acc) do
+    referenced_types(Map.fetch!(schema, ref.id), schema, acc)
+  end
+
+  defp referenced_types(%TypeReference.Name{} = ref, schema, acc) do
+    referenced_types(Map.fetch!(schema, ref.name), schema, acc)
   end
 
   defp referenced_types(type, schema, acc) when is_atom(type) and type != nil do
