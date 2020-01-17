@@ -15,7 +15,7 @@ defmodule Absinthe.Blueprint.Result.Object do
 
   @type t :: %__MODULE__{
           emitter: Blueprint.Document.Field.t(),
-          fields: [Blueprint.Document.Resolution.node_t()],
+          fields: [Blueprint.Execution.node_t()],
           errors: [Phase.Error.t()],
           flags: Blueprint.flags_t(),
           extensions: %{any => any}
