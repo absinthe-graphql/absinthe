@@ -533,12 +533,7 @@ defmodule Absinthe.Schema do
   """
   @spec used_types(t) :: [Type.t()]
   def used_types(schema) do
-    [:query, :mutation, :subscription]
-    |> Enum.map(&lookup_type(schema, &1))
-    |> Enum.concat(directives(schema))
-    |> Enum.filter(&(!is_nil(&1)))
-    |> Enum.flat_map(&Type.referenced_types(&1, schema))
-    |> MapSet.new()
+    schema.__absinthe_types__
     |> Enum.map(&Schema.lookup_type(schema, &1))
     |> Enum.filter(&(!Type.introspection?(&1)))
   end
