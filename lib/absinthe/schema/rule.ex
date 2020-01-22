@@ -17,8 +17,8 @@ defmodule Absinthe.Schema.Rule do
     end
   end
 
-  @callback check(Absinthe.Schema.t()) :: [Absinthe.Schema.Error.detail_t()]
-  @callback explanation(Absinthe.Schema.Error.detail_t()) :: binary
+  @callback check(Absinthe.Schema.t()) :: [Absinthe.Phase.Error.t()]
+  @callback explanation(Absinthe.Phase.Error.t()) :: binary
 
   @type t :: module
 
@@ -33,7 +33,7 @@ defmodule Absinthe.Schema.Rule do
     Rule.DefaultEnumValuePresent
   ]
 
-  @spec check(Absinthe.Schema.t()) :: [Absinthe.Schema.Error.detail_t()]
+  @spec check(Absinthe.Schema.t()) :: [Absinthe.Phase.Error.t()]
   def check(schema) do
     Enum.flat_map(@rules, & &1.check(schema))
   end

@@ -25,7 +25,10 @@ defmodule Absinthe.Mixfile do
         groups_for_extras: groups_for_extras()
       ],
       deps: deps(),
-      dialyzer: [plt_add_apps: [:mix, :dataloader, :decimal]]
+      dialyzer: [
+        plt_add_apps: [:mix, :dataloader, :decimal, :ex_unit, :inets],
+        plt_file: {:no_warn, "priv/plts/absinthe.plt"}
+      ]
     ]
   end
 
@@ -69,8 +72,8 @@ defmodule Absinthe.Mixfile do
       {:dataloader, "~> 1.0.0", optional: true},
       {:decimal, "~> 1.0", optional: true},
       {:ex_doc, "~> 0.20", only: :dev},
-      {:benchee, ">= 0.0.0", only: :dev},
-      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
+      {:benchee, ">= 1.0.0", only: :dev},
+      {:dialyxir, "~> 1.0.0-rc.7", only: [:dev, :test], runtime: false},
       {:phoenix_pubsub, ">= 0.0.0", only: :test},
       {:mix_test_watch, "~> 0.4.1", only: [:test]}
     ]

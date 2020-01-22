@@ -1565,7 +1565,8 @@ defmodule Absinthe.Schema.Notation do
     []
   end
 
-  @spec do_import_sdl(Macro.Env.t(), nil, [import_sdl_option()]) :: Macro.t()
+  @spec do_import_sdl(Macro.Env.t(), nil | String.t() | Macro.t(), [import_sdl_option()]) ::
+          Macro.t()
   defp do_import_sdl(env, nil, opts) do
     case Keyword.fetch(opts, :path) do
       {:ok, path} ->
@@ -1591,7 +1592,6 @@ defmodule Absinthe.Schema.Notation do
     end
   end
 
-  @spec do_import_sdl(Macro.Env.t(), String.t() | Macro.t(), Keyword.t()) :: Macro.t()
   defp do_import_sdl(env, sdl, opts) do
     ref = build_reference(env)
 

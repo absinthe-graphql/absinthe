@@ -19,7 +19,6 @@ defmodule Absinthe.Blueprint.TypeReference do
     value
   end
 
-  @spec unwrap(t) :: t
   def unwrap(%TypeReference.Identifier{} = value) do
     value
   end

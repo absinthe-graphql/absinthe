@@ -154,7 +154,7 @@ defmodule Absinthe.Resolution.Helpers do
     field :author, :user, resolve: dataloader(Blog, :author, [])
     ```
     """
-    @spec dataloader(Dataloader.source_name()) :: dataloader_tuple
+    @spec dataloader(Dataloader.source_name()) :: dataloader_key_fun()
     def dataloader(source) do
       fn parent, args, %{context: %{loader: loader}} = res ->
         resource = res.definition.schema_node.identifier
@@ -256,7 +256,7 @@ defmodule Absinthe.Resolution.Helpers do
     def dataloader(source, fun, opts \\ [])
 
     @spec dataloader(Dataloader.source_name(), dataloader_key_fun | any, [dataloader_opt]) ::
-            dataloader_tuple
+            dataloader_key_fun
     def dataloader(source, fun, opts) when is_function(fun, 3) do
       fn parent, args, %{context: %{loader: loader}} = res ->
         {resource, args} = fun.(parent, args, res)

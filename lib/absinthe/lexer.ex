@@ -227,6 +227,7 @@ defmodule Absinthe.Lexer do
     {:cont, context}
   end
 
+  @spec tokenize(binary()) :: {:ok, [any()]} | {:error, binary(), {integer(), non_neg_integer()}}
   def tokenize(input) do
     lines = String.split(input, ~r/\r?\n/)
 
@@ -238,9 +239,6 @@ defmodule Absinthe.Lexer do
       {:ok, _, rest, _, {line, line_offset}, byte_offset} ->
         byte_column = byte_offset - line_offset + 1
         {:error, rest, byte_loc_to_char_loc({line, byte_column}, lines)}
-
-      other ->
-        other
     end
   end
 
@@ -259,6 +257,8 @@ defmodule Absinthe.Lexer do
     {line, char_col}
   end
 
+  @spec do_tokenize(binary()) ::
+          {:ok, [any()], binary(), map(), {pos_integer(), pos_integer()}, pos_integer()}
   defparsec(
     :do_tokenize,
     repeat(

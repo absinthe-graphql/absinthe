@@ -52,7 +52,7 @@ defmodule Absinthe.Blueprint do
         }
 
   @type node_t ::
-          Blueprint.t()
+          t()
           | Blueprint.Directive.t()
           | Blueprint.Document.t()
           | Blueprint.Schema.t()
