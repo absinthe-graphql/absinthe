@@ -50,6 +50,8 @@ defmodule SdlRenderTest do
       defaultInputArg(input: ComplexInput = {foo: "bar"}): String
       defaultListArg(things: [String] = ["ThisThing"]): [String]
       defaultEnumArg(category: Category = NEWS): Category
+      pets: [Pet]
+      animals: [Animal]
     }
 
     type Dog implements Pet & Animal {
@@ -104,8 +106,7 @@ defmodule SdlRenderTest do
   end
 
   test "Render SDL from blueprint defined with SDL" do
-    assert Absinthe.Schema.to_sdl(SdlTestSchema, include_disconnected: true) ==
-             SdlTestSchema.sdl()
+    assert Absinthe.Schema.to_sdl(SdlTestSchema) == SdlTestSchema.sdl()
   end
 
   describe "Render SDL" do
