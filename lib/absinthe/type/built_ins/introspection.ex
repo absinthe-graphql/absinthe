@@ -8,7 +8,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
 
     field :types, list_of(:__type) do
       resolve fn _, %{schema: schema} ->
-        {:ok, Absinthe.Schema.used_types(schema) ++ Absinthe.Schema.introspection_types(schema)}
+        {:ok, Absinthe.Schema.introspectable_types(schema)}
       end
     end
 

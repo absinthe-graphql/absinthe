@@ -528,6 +528,16 @@ defmodule Absinthe.Schema do
   end
 
   @doc """
+  Get all types that are referenced in a schema
+  """
+  @spec used_types(t) :: [Type.t()]
+  def used_types(schema) do
+    schema
+    |> types()
+    |> Enum.filter(&(!Type.introspection?(&1) && &1.referenced))
+  end
+
+  @doc """
   List all directives on a schema
   """
   @spec directives(t) :: [Type.Directive.t()]
@@ -597,12 +607,12 @@ defmodule Absinthe.Schema do
   end
 
   @doc """
-  Get all types that are referenced in a schema
+  Get all types that are introspectable
   """
-  @spec used_types(t) :: [Type.t()]
-  def used_types(schema) do
+  @spec introspection_types(t) :: [Type.t()]
+  def introspectable_types(schema) do
     schema
     |> types()
-    |> Enum.filter(&(!Type.introspection?(&1) && &1.referenced))
+    |> Enum.filter(& &1.referenced)
   end
 end
