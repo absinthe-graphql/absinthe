@@ -2,19 +2,19 @@ defmodule Absinthe.ValidationPhaseCase do
   import ExUnit.Assertions
   alias Absinthe.{Blueprint, Schema, Phase, Pipeline, Language}
 
-  @type error_checker_t :: ([{Blueprint.t(), Blueprint.Error.t()}] -> boolean)
+  @type error_checker_t :: ([{Blueprint.t(), Phase.Error.t()}] -> boolean)
 
   def get_error_location(line) do
     case List.wrap(line) do
+      [] ->
+        "(at any line number)"
+
       [single] ->
         "(from line ##{single})"
 
       multiple when is_list(multiple) ->
         numbers = multiple |> Enum.join(", #")
         "(from lines ##{numbers})"
-
-      nil ->
-        "(at any line number)"
     end
   end
 

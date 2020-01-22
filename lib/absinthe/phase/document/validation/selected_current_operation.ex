@@ -30,7 +30,7 @@ defmodule Absinthe.Phase.Document.Validation.SelectedCurrentOperation do
   end
 
   # Generate the error
-  @spec error(String.t(), Integer.t()) :: Phase.Error.t()
+  @spec error(String.t(), integer()) :: Phase.Error.t()
   defp error(operation_name, operation_count) do
     %Phase.Error{
       phase: __MODULE__,

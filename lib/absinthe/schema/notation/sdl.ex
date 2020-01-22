@@ -5,8 +5,10 @@ defmodule Absinthe.Schema.Notation.SDL do
   Parse definitions from SDL source
   """
 
-  @spec parse(sdl :: String.t(), module(), map(), Keyword.t()) ::
-          {:ok, [Absinthe.Blueprint.Schema.t()]} | {:error, String.t()}
+  alias Absinthe.{Blueprint, Language.Source}
+
+  @spec parse(sdl :: Source.t() | Blueprint.t(), module(), map(), Keyword.t()) ::
+          {:ok, [Blueprint.Schema.t()]} | {:error, String.t()}
   def parse(sdl, module, ref, opts) do
     with {:ok, doc} <- Absinthe.Phase.Parse.run(sdl) do
       definitions =
@@ -17,7 +19,7 @@ defmodule Absinthe.Schema.Notation.SDL do
 
       {:ok, definitions}
     else
-      {:error, %Absinthe.Blueprint{execution: %{validation_errors: [_ | _] = errors}}} ->
+      {:error, %Blueprint{execution: %{validation_errors: [_ | _] = errors}}} ->
         error =
           errors
           |> Enum.map(&"#{&1.message} (#{inspect(&1.locations)})")

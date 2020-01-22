@@ -14,6 +14,9 @@ defmodule Absinthe.Case.Assertions.Result do
     assert_error_message(Enum.join(lines, "\n"), result)
   end
 
+  # Dialyzer often has issues with test code, and here it says that
+  # the assertion on line 20 can never match, which is silly.
+  @dialyzer {:no_match, assert_error_message: 2}
   def assert_error_message(error_message, result) do
     assert {:ok, %{errors: errors}} = result
 

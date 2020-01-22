@@ -3,10 +3,12 @@ defmodule Absinthe.Phase.Parse do
 
   use Absinthe.Phase
 
-  alias Absinthe.{Language, Phase}
+  alias Absinthe.{Blueprint, Language, Phase}
 
-  @type input_t :: Language.Source.t() | Blueprint.t()
-  @spec run(input_t, Keyword.t()) :: Phase.result_t()
+  # This is because Dialyzer is telling us tokenizing can never fail,
+  # but we know it's possible.
+  @dialyzer {:no_match, run: 2}
+  @spec run(Language.Source.t() | %Blueprint{}, Keyword.t()) :: Phase.result_t()
   def run(input, options \\ [])
 
   def run(%Absinthe.Blueprint{} = blueprint, options) do
@@ -27,6 +29,9 @@ defmodule Absinthe.Phase.Parse do
     run(%Absinthe.Blueprint{input: input}, options)
   end
 
+  # This is because Dialyzer is telling us tokenizing can never fail,
+  # but we know it's possible.
+  @dialyzer {:no_unused, add_validation_error: 2}
   defp add_validation_error(bp, error) do
     put_in(bp.execution.validation_errors, [error])
   end
@@ -39,7 +44,7 @@ defmodule Absinthe.Phase.Parse do
     {:error, blueprint}
   end
 
-  @spec tokenize(binary) :: {:ok, [tuple]} | {:error, binary}
+  @spec tokenize(binary) :: {:ok, [tuple]} | {:error, String.t()}
   def tokenize(input) do
     case Absinthe.Lexer.tokenize(input) do
       {:error, rest, loc} ->
@@ -50,15 +55,17 @@ defmodule Absinthe.Phase.Parse do
     end
   end
 
-  @spec parse(binary) :: {:ok, Language.Document.t()} | {:error, tuple}
-  @spec parse(Language.Source.t()) :: {:ok, Language.Document.t()} | {:error, tuple}
+  # This is because Dialyzer is telling us tokenizing can never fail,
+  # but we know it's possible.
+  @dialyzer {:no_match, parse: 1}
+  @spec parse(binary | Language.Source.t()) :: {:ok, Language.Document.t()} | {:error, tuple}
   defp parse(input) when is_binary(input) do
     parse(%Language.Source{body: input})
   end
 
   defp parse(input) do
     try do
-      case input.body |> tokenize do
+      case tokenize(input.body) do
         {:ok, []} ->
           {:ok, %Language.Document{}}
 

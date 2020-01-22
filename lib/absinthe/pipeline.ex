@@ -165,7 +165,7 @@ defmodule Absinthe.Pipeline do
       iex> Pipeline.before([A, B, C], B)
       [A]
   """
-  @spec before(t, atom) :: t
+  @spec before(t, phase_config_t) :: t
   def before(pipeline, phase) do
     result =
       List.flatten(pipeline)
@@ -225,7 +225,7 @@ defmodule Absinthe.Pipeline do
       [A, {X, [name: "Nope"]}, C]
 
   """
-  @spec replace(t, Phase.t(), phase_config_t) :: t
+  @spec replace(t, Phase.t(), t | {Phase.t(), list}) :: t
   def replace(pipeline, phase, replacement) do
     Enum.map(pipeline, fn candidate ->
       case match_phase?(phase, candidate) do
@@ -235,12 +235,10 @@ defmodule Absinthe.Pipeline do
               replacement
 
             {_, opts} ->
-              case is_atom(replacement) do
-                true ->
-                  {replacement, opts}
-
-                false ->
-                  replacement
+              if is_atom(replacement) do
+                {replacement, opts}
+              else
+                replacement
               end
           end
 

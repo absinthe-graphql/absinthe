@@ -118,12 +118,7 @@ defmodule Absinthe.Phase.Schema do
       type_reference
       |> type_reference_to_type(schema)
 
-    wrapped
-    |> Type.unwrap()
-    |> case do
-      nil -> node
-      _ -> %{node | schema_node: wrapped}
-    end
+    %{node | schema_node: wrapped}
   end
 
   defp set_schema_node(node, %{schema_node: nil}, _, _) do
