@@ -15,6 +15,7 @@ defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
     # Added by phases,
     flags: %{},
     errors: [],
+    referenced: false,
     __reference__: nil,
     __private__: []
   ]
@@ -26,6 +27,7 @@ defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
           identifier: atom,
           source_location: nil | Blueprint.SourceLocation.t(),
           # Added by phases
+          referenced: boolean,
           flags: Blueprint.flags_t(),
           errors: [Absinthe.Phase.Error.t()]
         }
@@ -36,6 +38,7 @@ defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
       values: values_by(type_def, :identifier),
       values_by_internal_value: values_by(type_def, :value),
       values_by_name: values_by(type_def, :name),
+      referenced: type_def.referenced,
       definition: type_def.module,
       description: type_def.description
     }

@@ -19,6 +19,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
     flags: %{},
     imports: [],
     errors: [],
+    referenced: false,
     __reference__: nil,
     __private__: []
   ]
@@ -33,6 +34,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
           directives: [Blueprint.Directive.t()],
           source_location: nil | Blueprint.SourceLocation.t(),
           # Added by phases
+          referenced: boolean,
           flags: Blueprint.flags_t(),
           errors: [Absinthe.Phase.Error.t()],
           __private__: Keyword.t()
@@ -49,6 +51,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
       fields: build_fields(type_def, schema),
       interfaces: type_def.interfaces,
       definition: type_def.module,
+      referenced: type_def.referenced,
       is_type_of: type_def.is_type_of
     }
   end

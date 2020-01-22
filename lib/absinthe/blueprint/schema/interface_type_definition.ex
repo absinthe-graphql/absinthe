@@ -18,6 +18,7 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
     errors: [],
     resolve_type: nil,
     imports: [],
+    referenced: false,
     __reference__: nil,
     __private__: []
   ]
@@ -29,6 +30,7 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
           directives: [Blueprint.Directive.t()],
           source_location: nil | Blueprint.SourceLocation.t(),
           # Added by phases
+          referenced: boolean,
           flags: Blueprint.flags_t(),
           errors: [Absinthe.Phase.Error.t()]
         }
@@ -40,6 +42,7 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
       fields: Blueprint.Schema.ObjectTypeDefinition.build_fields(type_def, schema),
       identifier: type_def.identifier,
       resolve_type: type_def.resolve_type,
+      referenced: type_def.referenced,
       definition: type_def.module
     }
   end

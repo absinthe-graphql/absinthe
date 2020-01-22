@@ -17,6 +17,7 @@ defmodule Absinthe.Blueprint.Schema.UnionTypeDefinition do
     # Added by phases
     flags: %{},
     errors: [],
+    referenced: false,
     __reference__: nil,
     __private__: []
   ]
@@ -28,6 +29,7 @@ defmodule Absinthe.Blueprint.Schema.UnionTypeDefinition do
           types: [Blueprint.TypeReference.Name.t()],
           source_location: nil | Blueprint.SourceLocation.t(),
           # Added by phases
+          referenced: boolean,
           flags: Blueprint.flags_t(),
           errors: [Absinthe.Phase.Error.t()]
         }
@@ -40,6 +42,7 @@ defmodule Absinthe.Blueprint.Schema.UnionTypeDefinition do
       types: type_def.types |> Enum.sort(),
       fields: build_fields(type_def, schema),
       definition: type_def.module,
+      referenced: type_def.referenced,
       resolve_type: type_def.resolve_type
     }
   end

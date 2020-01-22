@@ -28,6 +28,7 @@ defmodule Absinthe.Type.Directive do
           locations: [location],
           expand: (map, Absinthe.Blueprint.node_t() -> atom),
           definition: module,
+          referenced: boolean,
           __private__: Keyword.t(),
           __reference__: Type.Reference.t()
         }
@@ -42,6 +43,7 @@ defmodule Absinthe.Type.Directive do
             locations: [],
             expand: nil,
             definition: nil,
+            referenced: false,
             __private__: [],
             __reference__: nil
 

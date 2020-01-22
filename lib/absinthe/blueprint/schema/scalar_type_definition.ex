@@ -16,6 +16,7 @@ defmodule Absinthe.Blueprint.Schema.ScalarTypeDefinition do
     # Added by phases
     flags: %{},
     errors: [],
+    referenced: false,
     __reference__: nil,
     __private__: []
   ]
@@ -26,6 +27,7 @@ defmodule Absinthe.Blueprint.Schema.ScalarTypeDefinition do
           directives: [Blueprint.Directive.t()],
           source_location: nil | Blueprint.SourceLocation.t(),
           # Added by phases
+          referenced: boolean,
           flags: Blueprint.flags_t(),
           errors: [Absinthe.Phase.Error.t()]
         }
@@ -36,6 +38,7 @@ defmodule Absinthe.Blueprint.Schema.ScalarTypeDefinition do
       name: type_def.name,
       description: type_def.description,
       definition: type_def.module,
+      referenced: type_def.referenced,
       serialize: type_def.serialize,
       parse: type_def.parse
     }

@@ -72,6 +72,7 @@ defmodule Absinthe.Type.Enum do
           description: binary,
           values: %{binary => Type.Enum.Value.t()},
           identifier: atom,
+          referenced: boolean,
           __private__: Keyword.t(),
           definition: module,
           __reference__: Type.Reference.t()
@@ -83,6 +84,7 @@ defmodule Absinthe.Type.Enum do
             values: %{},
             values_by_internal_value: %{},
             values_by_name: %{},
+            referenced: false,
             __private__: [],
             definition: nil,
             __reference__: nil

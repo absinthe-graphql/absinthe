@@ -66,6 +66,7 @@ defmodule Absinthe.Type.Scalar do
           name: binary,
           description: binary,
           identifier: atom,
+          referenced: boolean,
           __private__: Keyword.t(),
           definition: module,
           __reference__: Type.Reference.t()
@@ -74,6 +75,7 @@ defmodule Absinthe.Type.Scalar do
   defstruct name: nil,
             description: nil,
             identifier: nil,
+            referenced: false,
             __private__: [],
             definition: nil,
             __reference__: nil,

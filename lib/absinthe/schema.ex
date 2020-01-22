@@ -1,6 +1,5 @@
 defmodule Absinthe.Schema do
   alias Absinthe.Type
-  alias __MODULE__
 
   @type t :: module
 
@@ -529,17 +528,6 @@ defmodule Absinthe.Schema do
   end
 
   @doc """
-  Get all types that are used by an operation
-  """
-  @spec used_types(t) :: [Type.t()]
-  def used_types(schema) do
-    schema.__absinthe_types__
-    |> Map.keys()
-    |> Enum.map(&Schema.lookup_type(schema, &1))
-    |> Enum.filter(&(!Type.introspection?(&1) && &1.__private__[:__absinthe_used__]))
-  end
-
-  @doc """
   List all directives on a schema
   """
   @spec directives(t) :: [Type.Directive.t()]
@@ -570,17 +558,6 @@ defmodule Absinthe.Schema do
     # we can be assertive here, since this same pipeline was already used to
     # successfully compile the schema.
     {:ok, bp, _} = Absinthe.Pipeline.run(schema.__absinthe_blueprint__, pipeline)
-
-    bp =
-      Map.update!(bp, :schema_definitions, fn schema_defs ->
-        for schema_def <- schema_defs do
-          Map.update!(schema_def, :type_definitions, fn type_defs ->
-            Enum.filter(type_defs, fn type_def ->
-              type_def.__private__[:__absinthe_used__]
-            end)
-          end)
-        end
-      end)
 
     inspect(bp, pretty: true)
   end
@@ -615,7 +592,17 @@ defmodule Absinthe.Schema do
   @spec introspection_types(t) :: [Type.t()]
   def introspection_types(schema) do
     schema
-    |> Schema.types()
+    |> types()
     |> Enum.filter(&Type.introspection?/1)
+  end
+
+  @doc """
+  Get all types that are referenced in a schema
+  """
+  @spec used_types(t) :: [Type.t()]
+  def used_types(schema) do
+    schema
+    |> types()
+    |> Enum.filter(&(!Type.introspection?(&1) && &1.referenced))
   end
 end

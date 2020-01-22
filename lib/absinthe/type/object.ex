@@ -89,6 +89,7 @@ defmodule Absinthe.Type.Object do
           description: binary,
           fields: map,
           interfaces: [Absinthe.Type.Interface.t()],
+          referenced: boolean,
           __private__: Keyword.t(),
           definition: module,
           __reference__: Type.Reference.t()
@@ -99,6 +100,7 @@ defmodule Absinthe.Type.Object do
             description: nil,
             fields: nil,
             interfaces: [],
+            referenced: false,
             __private__: [],
             definition: nil,
             __reference__: nil,

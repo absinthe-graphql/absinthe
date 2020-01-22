@@ -16,6 +16,7 @@ defmodule Absinthe.Blueprint.Schema.InputObjectTypeDefinition do
     # Added by phases,
     flags: %{},
     errors: [],
+    referenced: false,
     __reference__: nil,
     __private__: []
   ]
@@ -27,6 +28,7 @@ defmodule Absinthe.Blueprint.Schema.InputObjectTypeDefinition do
           directives: [Blueprint.Directive.t()],
           source_location: nil | Blueprint.SourceLocation.t(),
           # Added by phases
+          referenced: boolean,
           flags: Blueprint.flags_t(),
           errors: [Absinthe.Phase.Error.t()]
         }
@@ -37,6 +39,7 @@ defmodule Absinthe.Blueprint.Schema.InputObjectTypeDefinition do
       name: type_def.name,
       fields: build_fields(type_def, schema),
       description: type_def.description,
+      referenced: type_def.referenced,
       definition: type_def.module
     }
   end
