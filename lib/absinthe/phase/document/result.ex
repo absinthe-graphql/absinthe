@@ -15,6 +15,9 @@ defmodule Absinthe.Phase.Document.Result do
   defp process(blueprint) do
     result =
       case blueprint.execution do
+        %{validation_errors: [], result: nil} ->
+          {:ok, data(%{value: nil}, [])}
+
         %{validation_errors: [], result: result} ->
           {:ok, data(result, [])}
 
