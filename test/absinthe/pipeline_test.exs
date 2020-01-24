@@ -26,6 +26,52 @@ defmodule Absinthe.PipelineTest do
     end
   end
 
+  describe ".run handles pipelines that exclude Execution and Subscription phases" do
+    defmodule ValidationOnlySchema do
+      use Absinthe.Schema
+
+      query do
+        field :foo, :Stuff do
+          resolve fn _, _, _ -> nil end
+        end
+      end
+
+      object :Stuff do
+        field :bar, :string
+      end
+    end
+
+    @goodQuery """
+    { foo { bar } }
+    """
+
+    @badQuery """
+    { noFoo { bar } }
+    """
+    test "well-formed query" do
+      {:ok, %{execution: %{validation_errors: validation_errors}}, _} =
+        validation_only_query(@goodQuery)
+
+      assert length(validation_errors) == 0
+    end
+
+    test "ill-formed query" do
+      {:ok, %{execution: %{validation_errors: validation_errors}}, _} =
+        validation_only_query(@badQuery)
+
+      refute length(validation_errors) == 0
+    end
+
+    defp validation_only_query(query) do
+      pipeline =
+        Pipeline.for_document(ValidationOnlySchema)
+        |> Pipeline.without(Phase.Subscription.SubscribeSelf)
+        |> Pipeline.without(Phase.Document.Execution.Resolution)
+
+      Pipeline.run(query, pipeline)
+    end
+  end
+
   describe "default pipeline accepts possible inputs" do
     @query """
     { foo { bar } }
