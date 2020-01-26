@@ -39,6 +39,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   end
 
   def serialize_float(n) when is_float(n), do: n
+  def serialize_float(n) when is_integer(n), do: n * 1.0
 
   def serialize_float(n) do
     raise Absinthe.SerializationError, """

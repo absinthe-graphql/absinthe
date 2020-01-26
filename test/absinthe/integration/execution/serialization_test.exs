@@ -10,7 +10,7 @@ defmodule Absinthe.Integration.Execution.SerializationTest do
       end
 
       field :bad_float, :float do
-        resolve fn _, _, _ -> {:ok, 1} end
+        resolve fn _, _, _ -> {:ok, "1"} end
       end
 
       field :bad_boolean, :boolean do
