@@ -4,6 +4,8 @@ defmodule SdlRenderTest do
   defmodule SdlTestSchema do
     use Absinthe.Schema
 
+    alias Absinthe.Blueprint.Schema
+
     @sdl """
     schema {
       query: Query
@@ -50,6 +52,7 @@ defmodule SdlRenderTest do
       defaultInputArg(input: ComplexInput = {foo: "bar"}): String
       defaultListArg(things: [String] = ["ThisThing"]): [String]
       defaultEnumArg(category: Category = NEWS): Category
+      animal: Animal
     }
 
     type Dog implements Pet & Animal {
@@ -92,7 +95,7 @@ defmodule SdlRenderTest do
     import_sdl @sdl
     def sdl, do: @sdl
 
-    def hydrate(%{identifier: :animal}, _) do
+    def hydrate(%Schema.InterfaceTypeDefinition{identifier: :animal}, _) do
       {:resolve_type, &__MODULE__.resolve_type/1}
     end
 
@@ -104,7 +107,7 @@ defmodule SdlRenderTest do
   end
 
   test "Render SDL from blueprint defined with SDL" do
-    assert Absinthe.Schema.to_sdl(SdlTestSchema, include_disconnected: true) ==
+    assert Absinthe.Schema.to_sdl(SdlTestSchema) ==
              SdlTestSchema.sdl()
   end
 

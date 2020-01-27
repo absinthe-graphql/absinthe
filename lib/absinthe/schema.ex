@@ -566,7 +566,7 @@ defmodule Absinthe.Schema do
       }"
   """
   @spec to_sdl(schema :: t) :: String.t()
-  def to_sdl(schema, opts \\ []) do
+  def to_sdl(schema) do
     pipeline =
       schema
       |> Absinthe.Pipeline.for_schema()
@@ -578,19 +578,15 @@ defmodule Absinthe.Schema do
     {:ok, bp, _} = Absinthe.Pipeline.run(schema.__absinthe_blueprint__, pipeline)
 
     bp =
-      if Keyword.get(opts, :include_disconnected, false) do
-        bp
-      else
-        Map.update!(bp, :schema_definitions, fn schema_defs ->
-          for schema_def <- schema_defs do
-            Map.update!(schema_def, :type_definitions, fn type_defs ->
-              Enum.filter(type_defs, fn type_def ->
-                type_def.__private__[:__absinthe_referenced__]
-              end)
+      Map.update!(bp, :schema_definitions, fn schema_defs ->
+        for schema_def <- schema_defs do
+          Map.update!(schema_def, :type_definitions, fn type_defs ->
+            Enum.filter(type_defs, fn type_def ->
+              type_def.__private__[:__absinthe_referenced__]
             end)
-          end
-        end)
-      end
+          end)
+        end
+      end)
 
     inspect(bp, pretty: true)
   end
