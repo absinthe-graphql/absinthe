@@ -553,8 +553,8 @@ defmodule Absinthe.Schema do
   @doc """
   Converts a schema to an SDL string
 
-  Per the spec, only types that are actually referenced within the schema are
-  included.
+  Per the spec, only types that are actually referenced directly or transitively from
+  the root query, subscription, or mutation objects are included.
 
   ## Example
 
