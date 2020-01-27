@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Schema.MarkUsed do
+defmodule Absinthe.Phase.Schema.MarkReferenced do
   @moduledoc false
 
   use Absinthe.Phase
@@ -8,13 +8,14 @@ defmodule Absinthe.Phase.Schema.MarkUsed do
   def run(blueprint, _opts) do
     %{schema_definitions: [schema]} = blueprint
 
-    schema = Map.update!(schema, :type_definitions, &mark_used(&1, schema.directive_definitions))
+    schema =
+      Map.update!(schema, :type_definitions, &mark_referenced(&1, schema.directive_definitions))
 
     {:ok, %{blueprint | schema_definitions: [schema]}}
   end
 
   @roots [:query, :mutation, :subscription]
-  defp mark_used(type_defs, directive_defs) do
+  defp mark_referenced(type_defs, directive_defs) do
     types_by_ref =
       Enum.reduce(type_defs, %{}, fn type_def, acc ->
         acc
