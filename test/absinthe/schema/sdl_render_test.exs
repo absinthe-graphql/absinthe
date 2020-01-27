@@ -4,6 +4,8 @@ defmodule SdlRenderTest do
   defmodule SdlTestSchema do
     use Absinthe.Schema
 
+    alias Absinthe.Blueprint.Schema
+
     @sdl """
     schema {
       query: Query
@@ -50,6 +52,7 @@ defmodule SdlRenderTest do
       defaultInputArg(input: ComplexInput = {foo: "bar"}): String
       defaultListArg(things: [String] = ["ThisThing"]): [String]
       defaultEnumArg(category: Category = NEWS): Category
+      animal: Animal
     }
 
     type Dog implements Pet & Animal {
@@ -92,7 +95,7 @@ defmodule SdlRenderTest do
     import_sdl @sdl
     def sdl, do: @sdl
 
-    def hydrate(%{identifier: :animal}, _) do
+    def hydrate(%Schema.InterfaceTypeDefinition{identifier: :animal}, _) do
       {:resolve_type, &__MODULE__.resolve_type/1}
     end
 
@@ -104,7 +107,8 @@ defmodule SdlRenderTest do
   end
 
   test "Render SDL from blueprint defined with SDL" do
-    assert Absinthe.Schema.to_sdl(SdlTestSchema) == SdlTestSchema.sdl()
+    assert Absinthe.Schema.to_sdl(SdlTestSchema) ==
+             SdlTestSchema.sdl()
   end
 
   describe "Render SDL" do
@@ -181,11 +185,14 @@ defmodule SdlRenderTest do
         arg :times, :integer, default_value: 10, description: "The number of times"
         arg :time_interval, :integer
       end
+
+      field :search, :search_result
     end
 
     object :order do
       field :id, :id
       field :name, :string
+      import_fields :imported_fields
     end
 
     object :category do
@@ -194,6 +201,10 @@ defmodule SdlRenderTest do
 
     union :search_result do
       types [:order, :category]
+    end
+
+    object :imported_fields do
+      field :imported, non_null(:boolean)
     end
   end
 
@@ -211,6 +222,7 @@ defmodule SdlRenderTest do
                  "The number of times"
                  times: Int
                ): String
+               search: SearchResult
              }
 
              type Category {
@@ -220,6 +232,7 @@ defmodule SdlRenderTest do
              union SearchResult = Order | Category
 
              type Order {
+               imported: Boolean!
                id: ID
                name: String
              }

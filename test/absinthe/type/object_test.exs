@@ -26,7 +26,7 @@ defmodule Absinthe.Type.ObjectTest do
       assert %Absinthe.Type.Object{name: "Person", description: "A person"} =
                Schema.__absinthe_type__(:person)
 
-      assert %{person: "Person"} = Schema.__absinthe_types__()
+      assert %{person: "Person"} = Schema.__absinthe_types__(:all)
     end
 
     test "can define fields" do

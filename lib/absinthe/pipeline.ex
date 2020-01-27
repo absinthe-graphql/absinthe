@@ -149,6 +149,7 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.Validation.QueryTypeMustBeObject,
       Phase.Schema.Validation.NamesMustBeValid,
       Phase.Schema.RegisterTriggers,
+      Phase.Schema.MarkReferenced,
       # This phase is run again now after additional validations
       {Phase.Schema.Validation.Result, pass: :final},
       Phase.Schema.Build,

@@ -165,7 +165,7 @@ defmodule Absinthe.SchemaTest do
     end
 
     test "adds the types from a grandparent" do
-      assert %{foo: "Foo", bar: "Bar", baz: "Baz"} = ThirdSchema.__absinthe_types__()
+      assert %{foo: "Foo", bar: "Bar", baz: "Baz"} = ThirdSchema.__absinthe_types__(:all)
       assert "Foo" == ThirdSchema.__absinthe_type__(:foo).name
     end
   end

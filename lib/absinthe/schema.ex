@@ -110,6 +110,7 @@ defmodule Absinthe.Schema do
       defdelegate __absinthe_type__(name), to: __MODULE__.Compiled
       defdelegate __absinthe_directive__(name), to: __MODULE__.Compiled
       defdelegate __absinthe_types__(), to: __MODULE__.Compiled
+      defdelegate __absinthe_types__(group), to: __MODULE__.Compiled
       defdelegate __absinthe_directives__(), to: __MODULE__.Compiled
       defdelegate __absinthe_interface_implementors__(), to: __MODULE__.Compiled
       defdelegate __absinthe_prototype_schema__(), to: __MODULE__.Compiled
@@ -533,12 +534,8 @@ defmodule Absinthe.Schema do
   """
   @spec used_types(t) :: [Type.t()]
   def used_types(schema) do
-    [:query, :mutation, :subscription]
-    |> Enum.map(&lookup_type(schema, &1))
-    |> Enum.concat(directives(schema))
-    |> Enum.filter(&(!is_nil(&1)))
-    |> Enum.flat_map(&Type.referenced_types(&1, schema))
-    |> MapSet.new()
+    schema.__absinthe_types__
+    |> Map.keys()
     |> Enum.map(&Schema.lookup_type(schema, &1))
     |> Enum.filter(&(!Type.introspection?(&1)))
   end
@@ -555,6 +552,9 @@ defmodule Absinthe.Schema do
 
   @doc """
   Converts a schema to an SDL string
+
+  Per the spec, only types that are actually referenced directly or transitively from
+  the root query, subscription, or mutation objects are included.
 
   ## Example
 
@@ -574,6 +574,17 @@ defmodule Absinthe.Schema do
     # we can be assertive here, since this same pipeline was already used to
     # successfully compile the schema.
     {:ok, bp, _} = Absinthe.Pipeline.run(schema.__absinthe_blueprint__, pipeline)
+
+    bp =
+      Map.update!(bp, :schema_definitions, fn schema_defs ->
+        for schema_def <- schema_defs do
+          Map.update!(schema_def, :type_definitions, fn type_defs ->
+            Enum.filter(type_defs, fn type_def ->
+              type_def.__private__[:__absinthe_referenced__]
+            end)
+          end)
+        end
+      end)
 
     inspect(bp, pretty: true)
   end

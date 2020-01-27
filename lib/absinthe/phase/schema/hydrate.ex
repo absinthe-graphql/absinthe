@@ -205,4 +205,16 @@ defmodule Absinthe.Phase.Schema.Hydrate do
 
     root
   end
+
+  def apply_hydration(root, result) do
+    raise ArgumentError, """
+    Invalid hydration!
+
+    #{inspect(result)}
+
+    is not a valid way to hydrate
+
+    #{inspect(root)}
+    """
+  end
 end

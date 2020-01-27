@@ -16,6 +16,12 @@ defmodule Absinthe.Phase.Schema.Compile do
         {type_def.identifier, type_def.name}
       end)
 
+    referenced_types =
+      for type_def <- schema.type_definitions,
+          type_def.__private__[:__absinthe_referenced__],
+          into: %{},
+          do: {type_def.identifier, type_def.name}
+
     directive_list =
       Map.new(schema.directive_definitions, fn type_def ->
         {type_def.identifier, type_def.name}
@@ -35,6 +41,14 @@ defmodule Absinthe.Phase.Schema.Compile do
         unquote_splicing(directive_ast)
 
         def __absinthe_types__() do
+          __absinthe_types__(:referenced)
+        end
+
+        def __absinthe_types__(:referenced) do
+          unquote(Macro.escape(referenced_types))
+        end
+
+        def __absinthe_types__(:all) do
           unquote(Macro.escape(type_list))
         end
 
@@ -126,9 +140,7 @@ defmodule Absinthe.Phase.Schema.Compile do
     |> Enum.filter(&match?(%Schema.InterfaceTypeDefinition{}, &1))
     |> Map.new(fn iface ->
       implementors =
-        for %Schema.ObjectTypeDefinition{} = obj <- schema.type_definitions,
-            iface.identifier in obj.interfaces,
-            do: obj.identifier
+        Schema.InterfaceTypeDefinition.find_implementors(iface, schema.type_definitions)
 
       {iface.identifier, Enum.sort(implementors)}
     end)
