@@ -553,10 +553,8 @@ defmodule Absinthe.Schema do
   @doc """
   Converts a schema to an SDL string
 
-  By default it excludes any types not referenced directly or transitively from
-  the root query, subscription, or mutation objects. This prevents objects
-  merely used as field imports from appearing in the SDL. If you wish all
-  types to appear, use the `:include_disconnected` option.
+  Per the spec, only types that are actually referenced within the schema are
+  included.
 
   ## Example
 
