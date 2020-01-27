@@ -110,6 +110,7 @@ defmodule Absinthe.Schema do
       defdelegate __absinthe_type__(name), to: __MODULE__.Compiled
       defdelegate __absinthe_directive__(name), to: __MODULE__.Compiled
       defdelegate __absinthe_types__(), to: __MODULE__.Compiled
+      defdelegate __absinthe_types__(group), to: __MODULE__.Compiled
       defdelegate __absinthe_directives__(), to: __MODULE__.Compiled
       defdelegate __absinthe_interface_implementors__(), to: __MODULE__.Compiled
       defdelegate __absinthe_prototype_schema__(), to: __MODULE__.Compiled
@@ -536,7 +537,7 @@ defmodule Absinthe.Schema do
     schema.__absinthe_types__
     |> Map.keys()
     |> Enum.map(&Schema.lookup_type(schema, &1))
-    |> Enum.filter(&(!Type.introspection?(&1) && &1.__private__[:__absinthe_used__]))
+    |> Enum.filter(&(!Type.introspection?(&1)))
   end
 
   @doc """

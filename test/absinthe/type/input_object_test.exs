@@ -20,7 +20,7 @@ defmodule Absinthe.Type.InputObjectTest do
       assert %Absinthe.Type.InputObject{name: "Profile", description: "A profile"} =
                Schema.__absinthe_type__(:profile)
 
-      assert %{profile: "Profile"} = Schema.__absinthe_types__()
+      assert %{profile: "Profile"} = Schema.__absinthe_types__(:all)
     end
 
     test "can define fields" do

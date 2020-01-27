@@ -16,6 +16,12 @@ defmodule Absinthe.Phase.Schema.Compile do
         {type_def.identifier, type_def.name}
       end)
 
+    used_types =
+      for type_def <- schema.type_definitions,
+          type_def.__private__[:__absinthe_used__],
+          into: %{},
+          do: {type_def.identifier, type_def.name}
+
     directive_list =
       Map.new(schema.directive_definitions, fn type_def ->
         {type_def.identifier, type_def.name}
@@ -35,6 +41,14 @@ defmodule Absinthe.Phase.Schema.Compile do
         unquote_splicing(directive_ast)
 
         def __absinthe_types__() do
+          __absinthe_types__(:used)
+        end
+
+        def __absinthe_types__(:used) do
+          unquote(Macro.escape(used_types))
+        end
+
+        def __absinthe_types__(:all) do
           unquote(Macro.escape(type_list))
         end
 
