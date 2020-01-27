@@ -16,9 +16,9 @@ defmodule Absinthe.Phase.Schema.Compile do
         {type_def.identifier, type_def.name}
       end)
 
-    used_types =
+    referenced_types =
       for type_def <- schema.type_definitions,
-          type_def.__private__[:__absinthe_used__],
+          type_def.__private__[:__absinthe_referenced__],
           into: %{},
           do: {type_def.identifier, type_def.name}
 
@@ -41,11 +41,11 @@ defmodule Absinthe.Phase.Schema.Compile do
         unquote_splicing(directive_ast)
 
         def __absinthe_types__() do
-          __absinthe_types__(:used)
+          __absinthe_types__(:referenced)
         end
 
-        def __absinthe_types__(:used) do
-          unquote(Macro.escape(used_types))
+        def __absinthe_types__(:referenced) do
+          unquote(Macro.escape(referenced_types))
         end
 
         def __absinthe_types__(:all) do

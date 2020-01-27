@@ -585,7 +585,7 @@ defmodule Absinthe.Schema do
           for schema_def <- schema_defs do
             Map.update!(schema_def, :type_definitions, fn type_defs ->
               Enum.filter(type_defs, fn type_def ->
-                type_def.__private__[:__absinthe_used__]
+                type_def.__private__[:__absinthe_referenced__]
               end)
             end)
           end

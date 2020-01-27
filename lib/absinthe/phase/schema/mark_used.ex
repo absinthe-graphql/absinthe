@@ -31,7 +31,7 @@ defmodule Absinthe.Phase.Schema.MarkUsed do
 
     for type <- type_defs do
       if type.identifier in referenced_type_ids do
-        put_in(type.__private__[:__absinthe_used__], true)
+        put_in(type.__private__[:__absinthe_referenced__], true)
       else
         type
       end
