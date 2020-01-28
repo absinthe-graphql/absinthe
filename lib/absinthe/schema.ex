@@ -534,9 +534,8 @@ defmodule Absinthe.Schema do
   """
   @spec used_types(t) :: [Type.t()]
   def used_types(schema) do
-    schema.__absinthe_types__
-    |> Map.keys()
-    |> Enum.map(&Schema.lookup_type(schema, &1))
+    schema
+    |> Schema.types()
     |> Enum.filter(&(!Type.introspection?(&1)))
   end
 
