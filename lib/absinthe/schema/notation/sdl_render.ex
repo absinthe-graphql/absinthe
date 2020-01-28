@@ -50,7 +50,10 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       type_definitions
       |> Enum.reject(&(&1.__struct__ == Blueprint.Schema.SchemaDeclaration))
 
-    types_to_render = Enum.reject(all_type_definitions, &(&1.module in @skip_modules))
+    types_to_render =
+      all_type_definitions
+      |> Enum.reject(&(&1.module in @skip_modules))
+      |> Enum.filter(& &1.__private__[:__absinthe_referenced__])
 
     ([schema_declaration] ++ directive_definitions ++ types_to_render)
     |> Enum.map(&render(&1, all_type_definitions))

@@ -574,17 +574,6 @@ defmodule Absinthe.Schema do
     # successfully compile the schema.
     {:ok, bp, _} = Absinthe.Pipeline.run(schema.__absinthe_blueprint__, pipeline)
 
-    bp =
-      Map.update!(bp, :schema_definitions, fn schema_defs ->
-        for schema_def <- schema_defs do
-          Map.update!(schema_def, :type_definitions, fn type_defs ->
-            Enum.filter(type_defs, fn type_def ->
-              type_def.__private__[:__absinthe_referenced__]
-            end)
-          end)
-        end
-      end)
-
     inspect(bp, pretty: true)
   end
 
