@@ -532,11 +532,19 @@ defmodule Absinthe.Schema do
   @doc """
   Get all types that are used by an operation
   """
+  @deprecated "Use Absinthe.Schema.referenced_types/1 instead"
   @spec used_types(t) :: [Type.t()]
   def used_types(schema) do
-    schema.__absinthe_types__
-    |> Map.keys()
-    |> Enum.map(&Schema.lookup_type(schema, &1))
+    referenced_types(schema)
+  end
+
+  @doc """
+  Get all types that are referenced by an operation
+  """
+  @spec referenced_types(t) :: [Type.t()]
+  def referenced_types(schema) do
+    schema
+    |> Schema.types()
     |> Enum.filter(&(!Type.introspection?(&1)))
   end
 
@@ -574,17 +582,6 @@ defmodule Absinthe.Schema do
     # we can be assertive here, since this same pipeline was already used to
     # successfully compile the schema.
     {:ok, bp, _} = Absinthe.Pipeline.run(schema.__absinthe_blueprint__, pipeline)
-
-    bp =
-      Map.update!(bp, :schema_definitions, fn schema_defs ->
-        for schema_def <- schema_defs do
-          Map.update!(schema_def, :type_definitions, fn type_defs ->
-            Enum.filter(type_defs, fn type_def ->
-              type_def.__private__[:__absinthe_referenced__]
-            end)
-          end)
-        end
-      end)
 
     inspect(bp, pretty: true)
   end

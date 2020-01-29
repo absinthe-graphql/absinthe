@@ -198,10 +198,10 @@ defmodule Absinthe.SchemaTest do
     end
   end
 
-  describe "used_types" do
+  describe "referenced_types" do
     test "does not contain introspection types" do
       assert !Enum.any?(
-               Schema.used_types(ThirdSchema),
+               Schema.referenced_types(ThirdSchema),
                &Type.introspection?/1
              )
     end
@@ -209,7 +209,7 @@ defmodule Absinthe.SchemaTest do
     test "contains enums" do
       types =
         ThirdSchema
-        |> Absinthe.Schema.used_types()
+        |> Absinthe.Schema.referenced_types()
         |> Enum.map(& &1.identifier)
 
       assert :some_enum in types
@@ -219,7 +219,7 @@ defmodule Absinthe.SchemaTest do
     test "contains interfaces" do
       types =
         ThirdSchema
-        |> Absinthe.Schema.used_types()
+        |> Absinthe.Schema.referenced_types()
         |> Enum.map(& &1.identifier)
 
       assert :named in types
@@ -228,7 +228,7 @@ defmodule Absinthe.SchemaTest do
     test "contains types only connected via interfaces" do
       types =
         ThirdSchema
-        |> Absinthe.Schema.used_types()
+        |> Absinthe.Schema.referenced_types()
         |> Enum.map(& &1.identifier)
 
       assert :person in types
@@ -237,7 +237,7 @@ defmodule Absinthe.SchemaTest do
     test "contains types only connected via union" do
       types =
         ThirdSchema
-        |> Absinthe.Schema.used_types()
+        |> Absinthe.Schema.referenced_types()
         |> Enum.map(& &1.identifier)
 
       assert :dog in types
