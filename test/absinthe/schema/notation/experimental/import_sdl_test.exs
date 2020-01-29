@@ -435,9 +435,9 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     end
   end
 
-  describe "Absinthe.Schema.used_types/1" do
+  describe "Absinthe.Schema.referenced_types/1" do
     test "works" do
-      assert Absinthe.Schema.used_types(Definition)
+      assert Absinthe.Schema.referenced_types(Definition)
     end
   end
 

@@ -532,8 +532,17 @@ defmodule Absinthe.Schema do
   @doc """
   Get all types that are used by an operation
   """
+  @deprecated "Use Absinthe.Schema.referenced_types/1 instead"
   @spec used_types(t) :: [Type.t()]
   def used_types(schema) do
+    referenced_types(schema)
+  end
+
+  @doc """
+  Get all types that are referenced by an operation
+  """
+  @spec referenced_types(t) :: [Type.t()]
+  def referenced_types(schema) do
     schema
     |> Schema.types()
     |> Enum.filter(&(!Type.introspection?(&1)))
