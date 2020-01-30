@@ -52,4 +52,31 @@ defmodule Mix.Tasks.Absinthe.Schema.SdlTest do
       assert schema =~ "helloWorld(name: String!): String"
     end
   end
+
+  test "can parse schemas with directives having nested args" do
+    defmodule SchemaWithDirectivesWithNestedArgs do
+      use Absinthe.Schema
+
+      defmodule Directives do
+        use Absinthe.Schema.Prototype
+
+        directive :some_directive do
+          on [:field_definition]
+        end
+      end
+
+      @prototype_schema Directives
+
+      """
+      type Widget {
+        name: String @some_directive(a: { b: {} })
+      }
+
+      type Query {
+        widgets: [Widget!]
+      }
+      """
+      |> import_sdl
+    end
+  end
 end
