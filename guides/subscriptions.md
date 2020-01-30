@@ -27,6 +27,18 @@ config :my_app, MyAppWeb.Endpoint,
 In your application supervisor add a line _after_ your existing endpoint supervision
 line:
 
+Elxir >= 1.5.0:
+```elixir
+[
+  # other children ...
+  MyAppWeb.Endpoint, # this line should already exist
+  {Absinthe.Subscription, MyAppWeb.Endpoint}, # add this line
+  # other children ...
+]
+
+```
+
+Elixir < 1.4.x:
 ```elixir
 [
   # other children ...
@@ -45,7 +57,7 @@ In Phoenix v1.4, the supervisor children are mounted like so:
       MyAppWeb.Repo,
       # Start the endpoint when the application starts
       MyAppWeb.Endpoint,
-      {Absinthe.Subscription, [MyAppWeb.Endpoint]}
+      {Absinthe.Subscription, MyAppWeb.Endpoint}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
