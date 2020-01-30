@@ -1366,10 +1366,21 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def handle_enum_value_attrs(identifier, raw_attrs) do
+    value =
+      case Keyword.get(raw_attrs, :as, identifier) do
+        value when is_tuple(value) ->
+          raise Absinthe.Schema.Notation.Error,
+                "Invalid Enum value for #{inspect(identifier)}. " <>
+                  "Must be a literal term, dynamic values must use `hydrate`"
+
+        value ->
+          value
+      end
+
     raw_attrs
     |> expand_ast(raw_attrs)
     |> Keyword.put(:identifier, identifier)
-    |> Keyword.put(:value, Keyword.get(raw_attrs, :as, identifier))
+    |> Keyword.put(:value, value)
     |> Keyword.put_new(:name, String.upcase(to_string(identifier)))
     |> Keyword.delete(:as)
     |> handle_deprecate
