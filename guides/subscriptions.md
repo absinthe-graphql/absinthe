@@ -31,7 +31,7 @@ line:
 [
   # other children ...
   supervisor(MyAppWeb.Endpoint, []), # this line should already exist
-  supervisor(Absinthe.Subscription, [MyAppWeb.Endpoint]), # add this line
+  supervisor(Absinthe.Subscription, MyAppWeb.Endpoint), # add this line
   # other children ...
 ]
 ```
@@ -45,7 +45,7 @@ In Phoenix v1.4, the supervisor children are mounted like so:
       MyAppWeb.Repo,
       # Start the endpoint when the application starts
       MyAppWeb.Endpoint,
-      {Absinthe.Subscription, [MyAppWeb.Endpoint]}
+      {Absinthe.Subscription, MyAppWeb.Endpoint}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
