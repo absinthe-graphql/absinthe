@@ -41,5 +41,6 @@ defmodule Absinthe.Phase.Schema.Arguments.Data do
 
   defp include_field?(%{input_value: %{normalized: %Input.Null{}}}), do: true
   defp include_field?(%{input_value: %{data: nil}}), do: false
+  defp include_field?(%{schema_node: nil}), do: false
   defp include_field?(_), do: true
 end
