@@ -129,7 +129,10 @@ defmodule Absinthe.Resolution.Helpers do
              Absinthe.Resolution.arguments(),
              Absinthe.Resolution.t() ->
                {any, map})
-    @type dataloader_opt :: {:args, map} | {:use_parent, true | false}
+    @type dataloader_opt ::
+            {:args, map}
+            | {:use_parent, true | false}
+            | {:callback, (map(), map(), map() -> any())}
 
     @doc """
     Resolve a field with a dataloader source.
