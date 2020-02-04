@@ -484,6 +484,30 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     end
   end
 
+  test "Keyword extend not yet supported" do
+    schema = """
+    defmodule KeywordExtend do
+      use Absinthe.Schema
+
+      import_sdl "
+      type Movie {
+        title: String!
+      }
+
+      extend type Movie {
+        year: Int
+      }
+      "
+    end
+    """
+
+    error = ~r/Keyword `extend` is not yet supported/
+
+    assert_raise(Absinthe.Schema.Notation.Error, error, fn ->
+      Code.eval_string(schema)
+    end)
+  end
+
   test "Validate known directive arguments in SDL schema" do
     schema = """
     defmodule SchemaWithDirectivesWithNestedArgs do
