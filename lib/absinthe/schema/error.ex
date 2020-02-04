@@ -10,7 +10,10 @@ defmodule Absinthe.Schema.Error do
       |> Enum.map(fn %{message: message, locations: locations} ->
         locations =
           locations
-          |> Enum.map(&"#{&1.file}:#{&1.line}")
+          |> Enum.map(fn
+            %{line: line, file: file} -> "#{file}:#{line}"
+            %{column: column, line: line} -> "Column #{column}, Line #{line}"
+          end)
           |> Enum.sort()
           |> Enum.join("\n")
 
