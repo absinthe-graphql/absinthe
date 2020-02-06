@@ -77,6 +77,22 @@ defmodule Absinthe.Fixtures.ImportTypes do
     end
   end
 
+  defmodule Schema.Types.Flag do
+    use Absinthe.Schema.Notation
+
+    object :flag do
+      field :name, non_null(:string)
+      field :key, non_null(:string)
+      field :enabled, non_null(:boolean)
+    end
+  end
+
+  defmodule Schema.Types.Enum.ValueType do
+    use Absinthe.Schema.Notation
+
+    enum :value_type_enum, values: [:number, :boolean, :string]
+  end
+
   defmodule Schema do
     use Absinthe.Schema
 
@@ -86,6 +102,8 @@ defmodule Absinthe.Fixtures.ImportTypes do
     alias Absinthe.Fixtures.ImportTypes
     import_types ImportTypes.ScheduleTypes
     import_types ImportTypes.{ProfileTypes, AuthTypes, Shared.AvatarTypes}
+
+    import_types __MODULE__.Types.{Flag, Enum.ValueType}
 
     query do
       field :orders, list_of(:order)
@@ -121,8 +139,25 @@ defmodule Absinthe.Fixtures.ImportTypes do
       enum :decline_reasons, values: [:insufficient_funds, :invalid_card]
     end
 
+    defmodule Types.Category do
+      use Absinthe.Schema.Notation
+
+      object :category do
+        field :name, non_null(:string)
+        field :slug, non_null(:string)
+        field :description, :string
+      end
+    end
+
+    defmodule Types.Enums.Role do
+      use Absinthe.Schema.Notation
+
+      enum :role_enum, values: [:admin, :client]
+    end
+
     import_types __MODULE__.Errors.DeclineReasons
     import_types __MODULE__.{PaymentTypes, CardTypes}
+    import_types __MODULE__.Types.{Category, Enums.Role}
 
     query do
       field :credit_cards, list_of(:credit_card)
