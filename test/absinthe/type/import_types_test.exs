@@ -29,9 +29,14 @@ defmodule Absinthe.Type.ImportTypesTest do
     end
 
     test "works with __MODULE__ and {}" do
+      assert Absinthe.Schema.lookup_type(ImportTypes.Schema, :flag)
+      assert Absinthe.Schema.lookup_type(ImportTypes.Schema, :value_type_enum)
+
       assert Absinthe.Schema.lookup_type(ImportTypes.SelfContainedSchema, :decline_reasons)
       assert Absinthe.Schema.lookup_type(ImportTypes.SelfContainedSchema, :credit_card)
       assert Absinthe.Schema.lookup_type(ImportTypes.SelfContainedSchema, :credit_card_type)
+      assert Absinthe.Schema.lookup_type(ImportTypes.SelfContainedSchema, :category)
+      assert Absinthe.Schema.lookup_type(ImportTypes.SelfContainedSchema, :role_enum)
     end
   end
 end
