@@ -243,10 +243,12 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         false -> [seperator]
       end
 
+    start = empty()
+
     items
     |> Enum.reverse()
-    |> Enum.reduce(:start, fn
-      item, :start -> render(item, type_definitions)
+    |> Enum.reduce(start, fn
+      item, ^start -> render(item, type_definitions)
       item, acc -> concat([render(item, type_definitions)] ++ splitter ++ [acc])
     end)
   end
