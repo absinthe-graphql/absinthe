@@ -58,10 +58,16 @@ defmodule Mix.Tasks.Absinthe.Schema.Sdl do
   end
 
   def generate_schema(%Options{schema: schema}) do
+    pipeline =
+      schema
+      |> Absinthe.Pipeline.for_schema()
+      |> Absinthe.Pipeline.upto({Absinthe.Phase.Schema.Validation.Result, pass: :final})
+      |> Absinthe.Schema.apply_modifiers(schema)
+
     with {:ok, blueprint, _phases} <-
            Absinthe.Pipeline.run(
              schema.__absinthe_blueprint__(),
-             Absinthe.Pipeline.for_schema(schema)
+             pipeline
            ) do
       {:ok, inspect(blueprint, pretty: true)}
     else
