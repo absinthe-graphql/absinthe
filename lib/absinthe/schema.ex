@@ -298,7 +298,8 @@ defmodule Absinthe.Schema do
     end
   end
 
-  defp apply_modifiers(pipeline, schema) do
+  @spec apply_modifiers(Absinthe.Pipeline.t(), t) :: Absinthe.Pipeline.t()
+  def apply_modifiers(pipeline, schema) do
     Enum.reduce(schema.__absinthe_pipeline_modifiers__, pipeline, fn
       {module, function}, pipeline ->
         apply(module, function, [pipeline])
