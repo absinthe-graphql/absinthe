@@ -136,6 +136,8 @@ defmodule Absinthe.Subscription do
 
   @doc false
   def get(pubsub, key) do
+    IO.inspect "WHAT THE KEY???"
+    IO.inspect key
     pubsub
     |> registry_name
     |> Registry.lookup(key)
