@@ -16,8 +16,10 @@ defmodule HydrateDynamicValuesTest do
       end
     end
 
-    def hydrate(%Absinthe.Blueprint.Schema.EnumValueDefinition{identifier: identifier}, [])
-        when identifier in [:red, :blue, :green] do
+    def hydrate(
+          %Absinthe.Blueprint.Schema.EnumValueDefinition{identifier: identifier},
+          [%Absinthe.Blueprint.Schema.EnumTypeDefinition{identifier: :color}]
+        ) do
       {:as, color_map(identifier)}
     end
 
