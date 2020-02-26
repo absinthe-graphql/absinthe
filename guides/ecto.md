@@ -290,4 +290,4 @@ up with dozens and dozens of single purpose data loading functions.
 ## Formatting Ecto.Changeset Errors
 
 You may want to look at the [errors](errors.html) guide and
-the [kronky](https://hex.pm/packages/kronky) package.
+the [Absinthe ErrorPayload](https://hex.pm/packages/absinthe_error_payload) package.
