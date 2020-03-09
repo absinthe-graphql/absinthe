@@ -20,19 +20,22 @@ defmodule Absinthe.Phase.Document.Validation.VariablesAreInputTypes do
 
   # Find variable definitions
   @spec handle_node(Blueprint.node_t(), Schema.t()) :: Blueprint.node_t()
-  defp handle_node(%Blueprint.Document.VariableDefinition{schema_node: nil} = node, _) do
-    node
-  end
-
   defp handle_node(%Blueprint.Document.VariableDefinition{} = node, schema) do
-    type = Schema.lookup_type(schema, node.schema_node)
+    schema
+    |> Schema.lookup_type(node.schema_node)
+    |> Type.unwrap()
+    |> case do
+      nil ->
+        node
 
-    if Type.input_type?(Type.unwrap(type)) do
-      node
-    else
-      node
-      |> flag_invalid(:non_input_type)
-      |> put_error(error(node, Type.name(node.schema_node)))
+      type ->
+        if Type.input_type?(type) do
+          node
+        else
+          node
+          |> flag_invalid(:non_input_type)
+          |> put_error(error(node, Type.name(node.schema_node)))
+        end
     end
   end
 

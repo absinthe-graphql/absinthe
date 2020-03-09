@@ -275,7 +275,7 @@ defmodule Absinthe.Type do
   def wrapped?(_), do: false
 
   @doc "Unwrap a type from a List or NonNull"
-  @spec unwrap(custom_t | wrapping_t | map) :: custom_t | map
+  @spec unwrap(custom_t | wrapping_t | map) :: custom_t | map | nil
   def unwrap(%{of_type: t}), do: unwrap(t)
   def unwrap(type), do: type
 

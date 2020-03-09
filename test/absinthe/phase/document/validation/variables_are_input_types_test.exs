@@ -43,5 +43,16 @@ defmodule Absinthe.Phase.Document.Validation.VariablesAreInputTypesTest do
         ]
       )
     end
+
+    test "unknown types don't blow up this validation" do
+      assert_passes_validation(
+        """
+        query Foo($a: Number!) {
+          field(a: $a)
+        }
+        """,
+        []
+      )
+    end
   end
 end
