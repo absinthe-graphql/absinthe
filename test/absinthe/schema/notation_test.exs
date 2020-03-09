@@ -534,6 +534,18 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
+  test "No nested non_null" do
+    assert_notation_error(
+      "NestedNonNull",
+      """
+      object :really_null do
+        field :foo, non_null(non_null(:string))
+      end
+      """,
+      "Invalid schema notation: `non_null` must not be nested"
+    )
+  end
+
   @doc """
   Assert a notation error occurs.
 
