@@ -19,7 +19,7 @@ defmodule Absinthe.Type.Custom do
     The `DateTime` scalar type represents a date and time in the UTC
     timezone. The DateTime appears in a JSON response as an ISO8601 formatted
     string, including UTC timezone ("Z"). The parsed date and time string will
-    be converted to UTC and any UTC offset other than 0 will be rejected.
+    be converted to UTC if there is an offset.
     """
 
     serialize &DateTime.to_iso8601/1
@@ -74,8 +74,7 @@ defmodule Absinthe.Type.Custom do
   @spec parse_datetime(Absinthe.Blueprint.Input.Null.t()) :: {:ok, nil}
   defp parse_datetime(%Absinthe.Blueprint.Input.String{value: value}) do
     case DateTime.from_iso8601(value) do
-      {:ok, datetime, 0} -> {:ok, datetime}
-      {:ok, _datetime, _offset} -> :error
+      {:ok, datetime, _} -> {:ok, datetime}
       _error -> :error
     end
   end
