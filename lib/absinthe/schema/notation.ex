@@ -1081,6 +1081,12 @@ defmodule Absinthe.Schema.Notation do
 
   See `field/3` for examples
   """
+
+  defmacro non_null({:non_null, _, _}) do
+    raise Absinthe.Schema.Notation.Error,
+          "Invalid schema notation: `non_null` must not be nested"
+  end
+
   defmacro non_null(type) do
     %Absinthe.Blueprint.TypeReference.NonNull{of_type: expand_ast(type, __CALLER__)}
   end
