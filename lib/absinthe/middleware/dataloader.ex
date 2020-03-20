@@ -14,7 +14,9 @@ if Code.ensure_loaded?(Dataloader) do
 
     def call(%{state: :unresolved} = resolution, {loader, callback}) do
       if !Dataloader.pending_batches?(loader) do
-        get_result(resolution, callback)
+        resolution.context.loader
+        |> put_in(loader)
+        |> get_result(callback)
       else
         %{
           resolution

@@ -273,14 +273,22 @@ defmodule Absinthe.Resolution.Helpers do
       end
     end
 
-    defp use_parent(loader, source, resource, parent, args, opts) do
-      with true <- Keyword.get(opts, :use_parent, false),
-           {:ok, val} <- is_map(parent) && Map.fetch(parent, resource) do
+    defp use_parent(loader, source, resource, parent, args, opts) when is_map(parent) do
+      with true <- Keyword.get(opts, :use_parent, true),
+           {:ok, val} <- parent |> Map.fetch(resource) |> check_assoc_loaded() do
         Dataloader.put(loader, source, {resource, args}, parent, val)
       else
         _ -> loader
       end
     end
+
+    defp use_parent(loader, _source, _resource, _parent, _args, _opts), do: loader
+
+    if Code.ensure_loaded?(Ecto) do
+      defp check_assoc_loaded({:ok, %Ecto.Association.NotLoaded{}}), do: :error
+    end
+
+    defp check_assoc_loaded(result), do: result
 
     defp do_dataloader(loader, source, resource, args, parent, opts) do
       args =
