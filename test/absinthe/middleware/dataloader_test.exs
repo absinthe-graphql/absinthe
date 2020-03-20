@@ -27,15 +27,15 @@ defmodule Absinthe.Middleware.DataloaderTest do
 
         @users_with_organization 1..3
                                  |> Enum.map(
-                                    &%{
-                                      id: &1,
-                                      name: "User: ##{&1}",
-                                      organization_id: &1,
-                                      organization: %{
-                                        id: &1,
-                                        name: "Organization: ##{&1}"
-                                      }
-                                    }
+                                   &%{
+                                     id: &1,
+                                     name: "User: ##{&1}",
+                                     organization_id: &1,
+                                     organization: %{
+                                       id: &1,
+                                       name: "Organization: ##{&1}"
+                                     }
+                                   }
                                  )
 
         def organizations(), do: @organizations
@@ -66,9 +66,13 @@ defmodule Absinthe.Middleware.DataloaderTest do
           field :name, :string
 
           field :foo_organization, :organization do
-            resolve dataloader(:test, fn _, _, %{context: %{test_pid: pid}} ->
-                      {:organization, %{pid: pid}}
-                    end, use_parent: false)
+            resolve dataloader(
+                      :test,
+                      fn _, _, %{context: %{test_pid: pid}} ->
+                        {:organization, %{pid: pid}}
+                      end,
+                      use_parent: false
+                    )
           end
 
           field :bar_organization, :organization do
