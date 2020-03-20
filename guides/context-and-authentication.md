@@ -89,7 +89,7 @@ appropriate values into the connection.
 Let's use this mechanism to set our current_user from the previous example via
 an authentication header. We will use the same Schema as before.
 
-First, our plug. We'll be checking the for the `authorization` header, and calling
+First, our plug. We'll be checking the connection for the `authorization` header, and calling
 out to some unspecified authentication mechanism.
 
 ```elixir
