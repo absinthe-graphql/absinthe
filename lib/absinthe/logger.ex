@@ -21,6 +21,9 @@ defmodule Absinthe.Logger do
   includes the terms `token`, `password`, or `secret`. The match is case
   sensitive.
 
+  Note that filtering only applies to GraphQL variables - the query itself is
+  logged before any parsing happens.
+
   The default is `#{inspect(@default_filter_variables)}`.
 
   ## Pipeline display
