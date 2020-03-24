@@ -7,8 +7,8 @@ eg, [Jason](https://hex.pm/packages/jason):
 # filename: mix.exs
 def deps do
   [
-    {:absinthe_plug, "~> 1.4"},
-    {:jason, "~> 1.1.0"},
+    {:absinthe_plug, "~> 1.5"},
+    {:jason, "~> 1.0"},
   ]
 end
 ```

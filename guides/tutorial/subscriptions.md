@@ -22,7 +22,7 @@ In `mix.exs`
 ```elixir
 defp deps do
   [
-    {:absinthe_phoenix, "~> 1.4.0"}
+    {:absinthe_phoenix, "~> 1.5"}
     << other deps >>
   ]
 ```
