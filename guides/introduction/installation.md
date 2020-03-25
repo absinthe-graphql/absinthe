@@ -6,7 +6,7 @@ To install Absinthe, just add an entry to your `mix.exs`:
 def deps do
   [
     # ...
-    {:absinthe, "~> 1.4"}
+    {:absinthe, "~> 1.5"}
   ]
 end
 ```
@@ -23,7 +23,7 @@ Don't forget you can use the [:override](https://hexdocs.pm/mix/Mix.Tasks.Deps.h
 def deps do
   [
     # ...
-    {:absinthe, "~> 1.4", override: true}
+    {:absinthe, "~> 1.5", override: true}
   ]
 end
 ```

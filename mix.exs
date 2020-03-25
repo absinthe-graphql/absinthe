@@ -118,7 +118,8 @@ defmodule Absinthe.Mixfile do
       "guides/client/javascript.md",
       "guides/client/apollo.md",
       "guides/client/relay.md",
-      "guides/upgrading/v1.4.md"
+      "guides/upgrading/v1.4.md",
+      "guides/upgrading/v1.5.md"
     ]
   end
 

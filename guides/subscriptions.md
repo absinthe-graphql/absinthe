@@ -11,8 +11,8 @@ At the moment however the most common and fully featured platform that you can r
 Packages you'll need:
 
 ```elixir
-{:absinthe, "~> 1.4.0"},
-{:absinthe_phoenix, "~> 1.4.0"},
+{:absinthe, "~> 1.5"},
+{:absinthe_phoenix, "~> 1.5"},
 ```
 
 You need to have a working Phoenix pubsub configured. Here is what the default looks like if you create a new Phoenix project:
