@@ -37,11 +37,17 @@ defmodule Absinthe.Blueprint.Schema.UnionTypeDefinition do
       name: type_def.name,
       description: type_def.description,
       identifier: type_def.identifier,
-      types: type_def.types |> Enum.sort(),
+      types: type_def.types |> atomize_types(schema),
       fields: build_fields(type_def, schema),
       definition: type_def.module,
       resolve_type: type_def.resolve_type
     }
+  end
+
+  defp atomize_types(types, schema) do
+    types
+    |> Enum.map(&Blueprint.TypeReference.to_type(&1, schema))
+    |> Enum.sort()
   end
 
   def build_fields(type_def, schema) do

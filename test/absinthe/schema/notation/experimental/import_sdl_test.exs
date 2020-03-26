@@ -318,6 +318,13 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     end
   end
 
+  describe "union types" do
+    test "have correct type references" do
+      assert content_union = Absinthe.Schema.lookup_type(Definition, :content)
+      assert content_union.types == [:comment, :post]
+    end
+  end
+
   describe "resolve" do
     test "work on fields, defined deeply" do
       assert %{middleware: mw} = lookup_compiled_field(Definition, :post, :upcased_title)
