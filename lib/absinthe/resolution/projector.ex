@@ -117,7 +117,6 @@ defmodule Absinthe.Resolution.Projector do
 
   defp conditionally_collect(condition, selections, fragments, parent_type, schema, index, acc) do
     condition
-    |> Type.unwrap()
     |> normalize_condition(schema)
     |> passes_type_condition?(parent_type)
     |> case do
@@ -137,12 +136,15 @@ defmodule Absinthe.Resolution.Projector do
     %{field | schema_node: :maps.get(identifier, concrete_fields)}
   end
 
-  defp normalize_condition(%{} = condition, _schema) do
-    condition
+  defp normalize_condition(%{schema_node: condition}, schema) do
+    normalize_condition(condition, schema)
   end
 
   defp normalize_condition(condition, schema) do
-    Absinthe.Schema.lookup_type(schema, condition)
+    case Type.unwrap(condition) do
+      %{} = condition -> condition
+      value -> Absinthe.Schema.lookup_type(schema, value)
+    end
   end
 
   defp passes_type_condition?(%Type.Object{name: name}, %Type.Object{name: name}) do
