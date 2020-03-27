@@ -137,10 +137,6 @@ defmodule Absinthe.Resolution.Projector do
     %{field | schema_node: :maps.get(identifier, concrete_fields)}
   end
 
-  defp normalize_condition(%{schema_node: condition}, schema) do
-    normalize_condition(condition, schema)
-  end
-
   defp normalize_condition(%{} = condition, _schema) do
     condition
   end

@@ -38,7 +38,7 @@ defmodule Absinthe.Type do
   @type identifier_t :: atom
 
   @typedoc "A type reference"
-  @type reference_t :: identifier_t | t
+  @type reference_t :: identifier_t | binary | t
 
   def function(type, key) do
     case Map.fetch!(type, key) do
@@ -275,12 +275,12 @@ defmodule Absinthe.Type do
   def wrapped?(_), do: false
 
   @doc "Unwrap a type from a List or NonNull"
-  @spec unwrap(custom_t | wrapping_t | map) :: custom_t | map | nil
+  @spec unwrap(custom_t | wrapping_t | map) :: reference_t | map | nil
   def unwrap(%{of_type: t}), do: unwrap(t)
   def unwrap(type), do: type
 
   @doc "Unwrap a type from NonNull"
-  @spec unwrap_non_null(Type.NonNull.t()) :: custom_t
+  @spec unwrap_non_null(Type.NonNull.t()) :: reference_t
   @spec unwrap_non_null(type) :: type when type: custom_t | Type.List.t()
   def unwrap_non_null(%Type.NonNull{of_type: t}), do: unwrap_non_null(t)
   def unwrap_non_null(type), do: type
