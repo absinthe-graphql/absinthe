@@ -10,12 +10,21 @@ defmodule Absinthe.Phase.Telemetry do
 
   use Absinthe.Phase
 
-  def run(blueprint, [:execute, :operation, :start]) do
+  def run(blueprint, options) do
+    event = Keyword.fetch!(options, :event)
+    do_run(blueprint, event, options)
+  end
+
+  defp do_run(blueprint, [:execute, :operation, :start], options) do
     id = :erlang.unique_integer()
     start_time = System.system_time()
     start_time_mono = System.monotonic_time()
 
-    :telemetry.execute(@operation_start, %{start_time: start_time}, %{id: id})
+    :telemetry.execute(@operation_start, %{start_time: start_time}, %{
+      id: id,
+      blueprint: blueprint,
+      options: options
+    })
 
     {:ok,
      %{
@@ -29,12 +38,16 @@ defmodule Absinthe.Phase.Telemetry do
      }}
   end
 
-  def run(blueprint, [:subscription, :publish, :start]) do
+  defp do_run(blueprint, [:subscription, :publish, :start], options) do
     id = :erlang.unique_integer()
     start_time = System.system_time()
     start_time_mono = System.monotonic_time()
 
-    :telemetry.execute(@subscription_start, %{start_time: start_time}, %{id: id})
+    :telemetry.execute(@subscription_start, %{start_time: start_time}, %{
+      id: id,
+      blueprint: blueprint,
+      options: options
+    })
 
     {:ok,
      %{
@@ -47,7 +60,7 @@ defmodule Absinthe.Phase.Telemetry do
      }}
   end
 
-  def run(blueprint, [:subscription, :publish, :stop]) do
+  defp do_run(blueprint, [:subscription, :publish, :stop], options) do
     end_time_mono = System.monotonic_time()
 
     with %{id: id, start_time: start_time, start_time_mono: start_time_mono} <-
@@ -58,7 +71,8 @@ defmodule Absinthe.Phase.Telemetry do
         %{
           id: id,
           start_time: start_time,
-          blueprint: blueprint
+          blueprint: blueprint,
+          options: options
         }
       )
     end
@@ -66,7 +80,7 @@ defmodule Absinthe.Phase.Telemetry do
     {:ok, blueprint}
   end
 
-  def run(blueprint, [:execute, :operation, :stop, options]) do
+  defp do_run(blueprint, [:execute, :operation, :stop], options) do
     end_time_mono = System.monotonic_time()
 
     with %{id: id, start_time: start_time, start_time_mono: start_time_mono} <-
