@@ -42,7 +42,8 @@ defmodule Absinthe.Blueprint do
           input: nil | Absinthe.Language.Document.t(),
           source: nil | String.t() | Absinthe.Language.Source.t(),
           execution: Blueprint.Execution.t(),
-          result: result_t
+          result: result_t,
+          initial_phases: [Absinthe.Phase.t()]
         }
 
   @type result_t :: %{

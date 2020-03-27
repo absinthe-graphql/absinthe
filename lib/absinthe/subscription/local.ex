@@ -41,7 +41,7 @@ defmodule Absinthe.Subscription.Local do
           doc.initial_phases
           |> Pipeline.replace(
             Phase.Telemetry,
-            {Phase.Telemetry, [:subscription, :publish, :start]}
+            {Phase.Telemetry, event: [:subscription, :publish, :start]}
           )
           |> Pipeline.without(Phase.Subscription.SubscribeSelf)
           |> Pipeline.insert_before(
@@ -54,7 +54,7 @@ defmodule Absinthe.Subscription.Local do
           pipeline,
           [
             Absinthe.Phase.Document.Result,
-            {Absinthe.Phase.Telemetry, [:subscription, :publish, :stop]}
+            {Absinthe.Phase.Telemetry, event: [:subscription, :publish, :stop]}
           ]
         ]
 
