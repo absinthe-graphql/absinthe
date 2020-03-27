@@ -227,7 +227,7 @@ defmodule Absinthe.Pipeline do
       [A, {X, [name: "Nope"]}, C]
 
   """
-  @spec replace(t, Phase.t(), t | {Phase.t(), list}) :: t
+  @spec replace(t, Phase.t(), phase_config_t) :: t
   def replace(pipeline, phase, replacement) do
     Enum.map(pipeline, fn candidate ->
       case match_phase?(phase, candidate) do

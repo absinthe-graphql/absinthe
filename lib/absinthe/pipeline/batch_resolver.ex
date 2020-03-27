@@ -25,7 +25,7 @@ defmodule Absinthe.Pipeline.BatchResolver do
         result: nil
     }
 
-    resolution_phase = [{Execution.Resolution, [plugin_callbacks: false] ++ options}]
+    resolution_phase = {Execution.Resolution, [plugin_callbacks: false] ++ options}
     phases = initial_phases ++ [resolution_phase]
 
     do_resolve(blueprints, phases, exec, plugins, resolution_phase, options)
