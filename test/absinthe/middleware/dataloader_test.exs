@@ -70,13 +70,12 @@ defmodule Absinthe.Middleware.DataloaderTest do
                       :test,
                       fn _, _, %{context: %{test_pid: pid}} ->
                         {:organization, %{pid: pid}}
-                      end,
-                      use_parent: false
+                      end
                     )
           end
 
           field :bar_organization, :organization do
-            resolve dataloader(:test, :organization, args: %{pid: self()})
+            resolve dataloader(:test, :organization, args: %{pid: self()}, use_parent: true)
           end
         end
 
@@ -250,7 +249,7 @@ defmodule Absinthe.Middleware.DataloaderTest do
     refute_receive(:loading)
   end
 
-  test "use parent's pre-existing value when use_parent is true (default)" do
+  test "use parent's pre-existing value when use_parent is true" do
     doc = """
     {
       usersWithOrganization {
@@ -275,7 +274,7 @@ defmodule Absinthe.Middleware.DataloaderTest do
     refute_receive(:loading)
   end
 
-  test "ignore parent's pre-existing value when use_parent is false" do
+  test "ignore parent's pre-existing value when use_parent is false (default)" do
     doc = """
     {
       usersWithOrganization {
