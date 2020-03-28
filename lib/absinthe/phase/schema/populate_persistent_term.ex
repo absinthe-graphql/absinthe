@@ -6,15 +6,15 @@ defmodule Absinthe.Phase.Schema.PopulatePersistentTerm do
   def run(blueprint, opts) do
     %{schema_definitions: [schema]} = blueprint
 
-    type_ident_list =
+    type_list =
       Map.new(schema.type_definitions, fn type_def ->
         {type_def.identifier, type_def.name}
       end)
 
-    type_name_list =
-      Map.new(schema.type_definitions, fn type_def ->
-        {type_def.name, type_def.name}
-      end)
+    types_map =
+      schema.type_artifacts
+      |> Enum.flat_map(fn type -> [{type.identifier, type}, {type.name, type}] end)
+      |> Map.new()
 
     referenced_types =
       for type_def <- schema.type_definitions,
@@ -27,27 +27,38 @@ defmodule Absinthe.Phase.Schema.PopulatePersistentTerm do
         {type_def.identifier, type_def.name}
       end)
 
+    directives_map =
+      schema.directive_artifacts
+      |> Enum.flat_map(fn type -> [{type.identifier, type}, {type.name, type}] end)
+      |> Map.new()
+
     prototype_schema = Keyword.fetch!(opts, :prototype_schema)
 
     metadata = build_metadata(schema)
 
     implementors = build_implementors(schema)
 
-    schema = %{}
+    schema_content = %{
+      __absinthe_types__: %{
+        referenced: referenced_types,
+        all: type_list
+      },
+      __absinthe_directives__: directive_list,
+      __absinthe_interface_implementors__: implementors,
+      __absinthe_prototype_schema__: prototype_schema,
+      __absinthe_type__: types_map,
+      __absinthe_directive__: directives_map
+    }
 
-    persist_kv(opts[:schema], :__absinthe_directive__, directive_list)
-    persist_kv(opts[:schema], :__absinthe_type__, type_ident_list)
-    persist_kv(opts[:schema], :__absinthe_type__, type_name_list)
+    # :erts_debug.flat_size(schema) |> IO.inspect(label: :flat_size)
+    schema_name = opts[:schema] || raise "no schema name provided"
+
+    :persistent_term.put(
+      {Absinthe.Schema.PersistentTerm, schema_name},
+      schema_content
+    )
 
     {:ok, blueprint}
-  end
-
-  defp persist_kv(schema, prop, kv) do
-    for {k, v} <- kv do
-      pk = {Absinthe.Schema.PersistentTerm, schema, prop, k}
-      IO.inspect(pk)
-      :persistent_term.put(pk, v)
-    end
   end
 
   def build_metadata(schema) do

@@ -12,37 +12,52 @@ defmodule Absinthe.Schema.PersistentTerm do
   end
 
   def __absinthe_type__(schema_mod, name) do
-    get({__MODULE__, schema_mod, :__absinthe_type__, name})
+    schema_mod
+    |> get()
+    |> Map.fetch!(:__absinthe_type__)
+    |> Map.get(name)
   end
 
   def __absinthe_directive__(schema_mod, name) do
-    get({__MODULE__, schema_mod, :__absinthe_directive__, name})
+    schema_mod
+    |> get()
+    |> Map.fetch!(:__absinthe_directive__)
+    |> Map.get(name)
   end
 
   def __absinthe_types__(schema_mod) do
-    get({__MODULE__, schema_mod, :__absinthe_types__})
+    schema_mod
+    |> get()
+    |> Map.fetch!(:__absinthe_types__)
+    |> Map.fetch!(:referenced)
   end
 
   def __absinthe_types__(schema_mod, group) do
-    get({__MODULE__, schema_mod, :__absinthe_types__, group})
+    schema_mod
+    |> get()
+    |> Map.fetch!(:__absinthe_types__)
+    |> Map.fetch!(group)
   end
 
   def __absinthe_directives__(schema_mod) do
-    get({__MODULE__, schema_mod, :__absinthe_directives__})
+    schema_mod
+    |> get()
+    |> Map.fetch!(:__absinthe_directives__)
   end
 
   def __absinthe_interface_implementors__(schema_mod) do
-    get({__MODULE__, schema_mod, :__absinthe_interface_implementors__})
+    schema_mod
+    |> get()
+    |> Map.fetch!(:__absinthe_interface_implementors__)
   end
 
   def __absinthe_prototype_schema__(schema_mod) do
-    get({__MODULE__, schema_mod, :__absinthe_prototype_schema__})
+    schema_mod
+    |> get()
+    |> Map.fetch!(:__absinthe_prototype_schema__)
   end
 
-  defp get(key, fallback \\ nil) do
-    :persistent_term.get(key)
-    # rescue
-    #   _ ->
-    #     fallback
+  defp get(schema) do
+    :persistent_term.get({__MODULE__, schema})
   end
 end
