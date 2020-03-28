@@ -97,4 +97,19 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.FullTest do
     {:ok, %{data: %{"__schema" => schema}}} = result
     assert !is_nil(schema)
   end
+
+  defmodule MiddlewareSchema do
+    use Absinthe.Schema
+
+    query do
+    end
+
+    def middleware(_, _, _) do
+      raise "this should not be called when introspecting"
+    end
+  end
+
+  test "middleware callback does not apply to introspection fields" do
+    assert Absinthe.run(@query, MiddlewareSchema, [])
+  end
 end
