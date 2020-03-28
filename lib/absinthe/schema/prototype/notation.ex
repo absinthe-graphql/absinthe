@@ -8,6 +8,7 @@ defmodule Absinthe.Schema.Prototype.Notation do
   def content(_opts \\ []) do
     quote do
       use Absinthe.Schema
+      @schema_provider Absinthe.Schema.Compiled
       @pipeline_modifier __MODULE__
 
       directive :deprecated do
