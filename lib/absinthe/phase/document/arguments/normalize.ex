@@ -39,6 +39,7 @@ defmodule Absinthe.Phase.Document.Arguments.Normalize do
       normalized: Map.get(provided_values, variable_name),
       raw: node
     }
+    |> IO.inspect()
   end
 
   # Argument not using a variable: Set provided value from the raw value
@@ -47,6 +48,7 @@ defmodule Absinthe.Phase.Document.Arguments.Normalize do
       normalized: node.content,
       raw: node
     }
+    |> IO.inspect()
   end
 
   defp handle_node(node, _provided_values) do

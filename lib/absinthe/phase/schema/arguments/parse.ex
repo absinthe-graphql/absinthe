@@ -17,10 +17,12 @@ defmodule Absinthe.Phase.Schema.Arguments.Parse do
   # end
 
   defp handle_node(%{normalized: nil} = node, _context) do
-    node
+    node |> IO.inspect(label: :normalized_nil)
   end
 
   defp handle_node(%Input.Value{normalized: normalized} = node, context) do
+    node |> IO.inspect()
+
     case build_value(normalized, node.schema_node, context) do
       {:ok, value} ->
         %{node | data: value}
