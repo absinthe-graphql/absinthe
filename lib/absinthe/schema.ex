@@ -107,7 +107,7 @@ defmodule Absinthe.Schema do
       @after_compile unquote(__MODULE__)
       @before_compile unquote(__MODULE__)
 
-      @schema_provider Absinthe.Schema.PersistentTerm
+      @schema_provider Absinthe.Schema.Compiled
 
       def __absinthe_lookup__(name) do
         __absinthe_type__(name)
