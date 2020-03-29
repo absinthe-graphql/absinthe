@@ -47,7 +47,8 @@ defmodule Absinthe.Phase.Schema.PopulatePersistentTerm do
       __absinthe_interface_implementors__: implementors,
       __absinthe_prototype_schema__: prototype_schema,
       __absinthe_type__: types_map,
-      __absinthe_directive__: directives_map
+      __absinthe_directive__: directives_map,
+      __absinthe_reference__: metadata
     }
 
     # :erts_debug.flat_size(schema) |> IO.inspect(label: :flat_size)
