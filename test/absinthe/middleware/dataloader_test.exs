@@ -139,7 +139,8 @@ defmodule Absinthe.Middleware.DataloaderTest do
     end
   end
 
-  test "can resolve a field using the normal dataloader helper" do
+  test "can resolve a field using the normal dataloader helper and should emit telemetry events",
+       %{test: test} do
     doc = """
     {
       users {
@@ -158,11 +159,37 @@ defmodule Absinthe.Middleware.DataloaderTest do
       ]
     }
 
+    self = self()
+
+    :ok =
+      :telemetry.attach_many(
+        "#{test}",
+        [
+          [:absinthe, :dataloader, :resolve, :start],
+          [:absinthe, :dataloader, :resolve, :stop]
+        ],
+        fn name, measurements, metadata, _ ->
+          send(self, {:telemetry_event, name, measurements, metadata})
+        end,
+        nil
+      )
+
     assert {:ok, %{data: data}} = Absinthe.run(doc, DefaultSchema)
     assert expected_data == data
 
     assert_receive(:loading)
     refute_receive(:loading)
+
+    assert_receive(
+      {:telemetry_event, [:absinthe, :dataloader, :resolve, :start], %{start_time: _start_time},
+       %{}}
+    )
+
+    assert_receive(
+      {:telemetry_event, [:absinthe, :dataloader, :resolve, :stop], %{duration: _duration}, %{}}
+    )
+
+    assert {:message_queue_len, 0} = Process.info(self, :message_queue_len)
   end
 
   test "can resolve a field when dataloader uses 'tuples' get_policy" do
