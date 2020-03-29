@@ -137,6 +137,14 @@ defmodule Absinthe.Schema do
     end
   end
 
+  def child_spec(schema) do
+    %{
+      id: {__MODULE__, schema},
+      start: {__MODULE__.Manager, :start_link, [schema]},
+      type: :worker
+    }
+  end
+
   @object_type Absinthe.Blueprint.Schema.ObjectTypeDefinition
 
   @default_query_name "RootQueryType"
