@@ -1,5 +1,6 @@
 defmodule Absinthe.Fixtures.ContactSchema do
   use Absinthe.Schema
+  use Absinthe.Fixture
 
   @bruce %{name: "Bruce", age: 35}
   @others [

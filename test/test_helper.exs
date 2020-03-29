@@ -17,6 +17,7 @@ fixtures_schemas = [
   Absinthe.Fixtures.Things.MacroSchema
 ]
 
-for schema <- fixtures_schemas do
+for schema <- fixtures_schemas,
+    schema.__absinthe_schema_provider__ == Absinthe.Schema.PersistentTerm do
   Absinthe.Schema.Manager.start_link(schema)
 end

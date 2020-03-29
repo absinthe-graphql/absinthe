@@ -1,5 +1,6 @@
 defmodule Absinthe.Fixtures.ColorSchema do
   use Absinthe.Schema
+  use Absinthe.Fixture
 
   @names %{
     r: "RED",

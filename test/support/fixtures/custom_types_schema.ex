@@ -1,5 +1,6 @@
 defmodule Absinthe.Fixtures.CustomTypesSchema do
   use Absinthe.Schema
+  use Absinthe.Fixture
 
   import_types Absinthe.Type.Custom
 

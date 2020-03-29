@@ -1,5 +1,6 @@
 defmodule Absinthe.Fixtures.Things.MacroSchema do
   use Absinthe.Schema
+  use Absinthe.Fixture
 
   @db %{
     "foo" => %{id: "foo", name: "Foo", value: 4},
