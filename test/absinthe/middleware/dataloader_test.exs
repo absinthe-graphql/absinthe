@@ -159,14 +159,16 @@ defmodule Absinthe.Middleware.DataloaderTest do
       ]
     }
 
+    # Get test PID and clear mailbox
     self = self()
+    flush_process_mailbox()
 
     :ok =
       :telemetry.attach_many(
         "#{test}",
         [
-          [:absinthe, :dataloader, :resolve, :start],
-          [:absinthe, :dataloader, :resolve, :stop]
+          [:absinthe, :plugin, :callback, :start],
+          [:absinthe, :plugin, :callback, :stop]
         ],
         fn name, measurements, metadata, _ ->
           send(self, {:telemetry_event, name, measurements, metadata})
@@ -180,15 +182,29 @@ defmodule Absinthe.Middleware.DataloaderTest do
     assert_receive(:loading)
     refute_receive(:loading)
 
-    assert_receive(
-      {:telemetry_event, [:absinthe, :dataloader, :resolve, :start], %{start_time: _start_time},
-       %{}}
-    )
+    # This test emits a total of 24 events, but there we are only validating the
+    # dataloader events in this test
+    results =
+      Enum.reduce(1..24, %{dataloader_starts: 0, dataloader_stops: 0}, fn _, acc ->
+        receive do
+          {:telemetry_event, [:absinthe, :plugin, :callback, :start], %{start_time: _},
+           %{loader: Absinthe.Middleware.Dataloader, acc: %{}}} ->
+            Map.update(acc, :dataloader_starts, 0, &(&1 + 1))
 
-    assert_receive(
-      {:telemetry_event, [:absinthe, :dataloader, :resolve, :stop], %{duration: _duration}, %{}}
-    )
+          {:telemetry_event, [:absinthe, :plugin, :callback, :stop], %{duration: _},
+           %{loader: Absinthe.Middleware.Dataloader, acc: %{}}} ->
+            Map.update(acc, :dataloader_stops, 0, &(&1 + 1))
 
+          _skip ->
+            acc
+        after
+          0 ->
+            acc
+        end
+      end)
+
+    assert results.dataloader_starts == 4
+    assert results.dataloader_stops == 4
     assert {:message_queue_len, 0} = Process.info(self, :message_queue_len)
   end
 
@@ -325,5 +341,15 @@ defmodule Absinthe.Middleware.DataloaderTest do
 
     assert_receive(:loading)
     refute_receive(:loading)
+  end
+
+  defp flush_process_mailbox() do
+    receive do
+      _ ->
+        flush_process_mailbox()
+    after
+      0 ->
+        :ok
+    end
   end
 end

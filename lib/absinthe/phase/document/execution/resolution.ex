@@ -12,6 +12,9 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   alias Absinthe.Phase
   use Absinthe.Phase
 
+  @callback_start_event [:absinthe, :plugin, :callback, :start]
+  @callback_stop_event [:absinthe, :plugin, :callback, :stop]
+
   @spec run(Blueprint.t(), Keyword.t()) :: Phase.result_t()
   def run(bp_root, options \\ []) do
     case Blueprint.current_operation(bp_root) do
@@ -46,7 +49,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     plugins = bp_root.schema.plugins()
     run_callbacks? = Keyword.get(options, :plugin_callbacks, true)
 
-    exec = plugins |> run_callbacks(:before_resolution, exec, run_callbacks?)
+    exec = run_callbacks(plugins, :before_resolution, exec, run_callbacks?)
 
     common =
       Map.take(exec, [:adapter, :context, :acc, :root_value, :schema, :fragments, :fields_cache])
@@ -75,10 +78,34 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp run_callbacks(plugins, callback, acc, true) do
-    Enum.reduce(plugins, acc, &apply(&1, callback, [&2]))
+    Enum.reduce(plugins, acc, fn plugin, acc ->
+      start_time = System.monotonic_time()
+
+      emit_start_event(start_time, acc, plugin)
+      acc = apply(plugin, callback, [acc])
+      emit_stop_event(start_time, acc, plugin)
+
+      acc
+    end)
   end
 
   defp run_callbacks(_, _, acc, _), do: acc
+
+  defp emit_start_event(start_time, acc, loader) do
+    :telemetry.execute(
+      @callback_start_event,
+      %{start_time: start_time},
+      %{acc: acc, loader: loader}
+    )
+  end
+
+  defp emit_stop_event(start_time, acc, loader) do
+    :telemetry.execute(
+      @callback_stop_event,
+      %{duration: System.monotonic_time() - start_time},
+      %{acc: acc, loader: loader}
+    )
+  end
 
   @doc """
   This function walks through any existing results. If no results are found at a
