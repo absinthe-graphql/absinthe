@@ -167,8 +167,10 @@ defmodule Absinthe.Middleware.DataloaderTest do
       :telemetry.attach_many(
         "#{test}",
         [
-          [:absinthe, :plugin, :callback, :start],
-          [:absinthe, :plugin, :callback, :stop]
+          [:absinthe, :plugin, :before_resolution, :start],
+          [:absinthe, :plugin, :before_resolution, :stop],
+          [:absinthe, :plugin, :after_resolution, :start],
+          [:absinthe, :plugin, :after_resolution, :stop]
         ],
         fn name, measurements, metadata, _ ->
           send(self, {:telemetry_event, name, measurements, metadata})
@@ -187,12 +189,14 @@ defmodule Absinthe.Middleware.DataloaderTest do
     results =
       Enum.reduce(1..24, %{dataloader_starts: 0, dataloader_stops: 0}, fn _, acc ->
         receive do
-          {:telemetry_event, [:absinthe, :plugin, :callback, :start], %{start_time: _},
-           %{loader: Absinthe.Middleware.Dataloader, acc: %{}}} ->
+          {:telemetry_event, [:absinthe, :plugin, callback, :start], %{start_time: _},
+           %{plugin: Absinthe.Middleware.Dataloader, acc: %{}}}
+          when callback in ~w(before_resolution after_resolution)a ->
             Map.update(acc, :dataloader_starts, 0, &(&1 + 1))
 
-          {:telemetry_event, [:absinthe, :plugin, :callback, :stop], %{duration: _},
-           %{loader: Absinthe.Middleware.Dataloader, acc: %{}}} ->
+          {:telemetry_event, [:absinthe, :plugin, callback, :stop], %{duration: _},
+           %{plugin: Absinthe.Middleware.Dataloader, acc: %{}}}
+          when callback in ~w(before_resolution after_resolution)a ->
             Map.update(acc, :dataloader_stops, 0, &(&1 + 1))
 
           _skip ->

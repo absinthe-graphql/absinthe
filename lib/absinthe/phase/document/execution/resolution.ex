@@ -12,9 +12,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   alias Absinthe.Phase
   use Absinthe.Phase
 
-  @callback_start_event [:absinthe, :plugin, :callback, :start]
-  @callback_stop_event [:absinthe, :plugin, :callback, :stop]
-
   @spec run(Blueprint.t(), Keyword.t()) :: Phase.result_t()
   def run(bp_root, options \\ []) do
     case Blueprint.current_operation(bp_root) do
@@ -81,9 +78,9 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     Enum.reduce(plugins, acc, fn plugin, acc ->
       start_time = System.monotonic_time()
 
-      emit_start_event(start_time, acc, plugin)
+      emit_start_event(start_time, acc, callback, plugin)
       acc = apply(plugin, callback, [acc])
-      emit_stop_event(start_time, acc, plugin)
+      emit_stop_event(start_time, acc, callback, plugin)
 
       acc
     end)
@@ -91,19 +88,19 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   defp run_callbacks(_, _, acc, _), do: acc
 
-  defp emit_start_event(start_time, acc, loader) do
+  defp emit_start_event(start_time, acc, callback, plugin) do
     :telemetry.execute(
-      @callback_start_event,
+      [:absinthe, :plugin, callback, :start],
       %{start_time: start_time},
-      %{acc: acc, loader: loader}
+      %{acc: acc, plugin: plugin}
     )
   end
 
-  defp emit_stop_event(start_time, acc, loader) do
+  defp emit_stop_event(start_time, acc, callback, plugin) do
     :telemetry.execute(
-      @callback_stop_event,
+      [:absinthe, :plugin, callback, :stop],
       %{duration: System.monotonic_time() - start_time},
-      %{acc: acc, loader: loader}
+      %{acc: acc, plugin: plugin}
     )
   end
 

@@ -11,8 +11,10 @@ handler function to any of the following event names:
 - `[:absinthe, :subscription, :publish, :stop]` when a subscription finishes
 - `[:absinthe, :resolve, :field, :start]` when field resolution starts
 - `[:absinthe, :resolve, :field, :stop]` when field resolution finishes
-- `[:absinthe, :plugin, :callback, :start]` when a plugin callback starts
-- `[:absinthe, :plugin, :callback, :stop]` when a plugin callback finishes
+- `[:absinthe, :plugin, :before_resolution, :start]` when a plugin before_resolution callback starts
+- `[:absinthe, :plugin, :before_resolution, :stop]` when a plugin before_resolution callback finishes
+- `[:absinthe, :plugin, :after_resolution, :start]` when a plugin after_resolution callback starts
+- `[:absinthe, :plugin, :after_resolution, :stop]` when a plugin after_resolution callback finishes
 
 Telemetry handlers are called with `measurements` and `metadata`. For details on
 what is passed, checkout `Absinthe.Phase.Telemetry`, `Absinthe.Middleware.Telemetry`,
