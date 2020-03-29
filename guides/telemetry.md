@@ -16,7 +16,7 @@ handler function to any of the following event names:
 
 Telemetry handlers are called with `measurements` and `metadata`. For details on
 what is passed, checkout `Absinthe.Phase.Telemetry`, `Absinthe.Middleware.Telemetry`,
-and `Absinthe.Middleware.Dataloader`.
+and `Absinthe.Phase.Document.Execution.Resolution`.
 
 For async, batch, and dataloader fields, Absinthe sends the final event when
 it gets the results. That might be later than when the results are ready. If
