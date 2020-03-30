@@ -58,6 +58,7 @@ if Code.ensure_loaded?(:persistent_term) do
       |> Map.fetch!(:__absinthe_prototype_schema__)
     end
 
+    @dialyzer {:nowarn_function, [get: 1]}
     defp get(schema) do
       :persistent_term.get({__MODULE__, schema})
     end

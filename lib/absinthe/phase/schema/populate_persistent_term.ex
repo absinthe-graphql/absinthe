@@ -55,12 +55,17 @@ if Code.ensure_loaded?(:persistent_term) do
       # :erts_debug.flat_size(schema) |> IO.inspect(label: :flat_size)
       schema_name = opts[:schema] || raise "no schema name provided"
 
-      :persistent_term.put(
-        {Absinthe.Schema.PersistentTerm, schema_name},
-        schema_content
-      )
+      put_schema(schema_name, schema_content)
 
       {:ok, blueprint}
+    end
+
+    @dialyzer {:nowarn_function, [put_schema: 1]}
+    defp put_schema(schema_name, content) do
+      :persistent_term.put(
+        {Absinthe.Schema.PersistentTerm, schema_name},
+        content
+      )
     end
 
     def build_metadata(schema) do
