@@ -66,7 +66,7 @@ else
   defmodule Absinthe.Schema.PersistentTerm do
     @moduledoc false
 
-    @error "Can't be used without OTP >= 21"
+    @error "Can't be used without OTP >= 21.2"
 
     def pipeline(_), do: raise(@error)
 
