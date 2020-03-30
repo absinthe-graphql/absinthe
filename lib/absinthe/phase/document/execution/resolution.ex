@@ -76,11 +76,13 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   defp run_callbacks(plugins, callback, acc, true) do
     Enum.reduce(plugins, acc, fn plugin, acc ->
-      start_time = System.monotonic_time()
+      id = :erlang.unique_integer()
+      start_time = System.system_time()
+      start_time_mono = System.monotonic_time()
 
-      emit_start_event(start_time, acc, callback, plugin)
+      emit_start_event(id, start_time, acc, callback, plugin)
       acc = apply(plugin, callback, [acc])
-      emit_stop_event(start_time, acc, callback, plugin)
+      emit_stop_event(id, start_time, start_time_mono, acc, callback, plugin)
 
       acc
     end)
@@ -88,19 +90,19 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   defp run_callbacks(_, _, acc, _), do: acc
 
-  defp emit_start_event(start_time, acc, callback, plugin) do
+  defp emit_start_event(id, start_time, acc, callback, plugin) do
     :telemetry.execute(
       [:absinthe, :plugin, callback, :start],
       %{start_time: start_time},
-      %{acc: acc, plugin: plugin}
+      %{acc: acc, plugin: plugin, id: id}
     )
   end
 
-  defp emit_stop_event(start_time, acc, callback, plugin) do
+  defp emit_stop_event(id, start_time, start_time_mono, acc, callback, plugin) do
     :telemetry.execute(
       [:absinthe, :plugin, callback, :stop],
-      %{duration: System.monotonic_time() - start_time},
-      %{acc: acc, plugin: plugin}
+      %{duration: System.monotonic_time() - start_time_mono},
+      %{acc: acc, plugin: plugin, id: id, start_time: start_time}
     )
   end
 

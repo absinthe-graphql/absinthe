@@ -1,5 +1,5 @@
 defmodule Absinthe.Middleware.DataloaderTest do
-  use Absinthe.Case, async: true
+  use Absinthe.Case, async: false
 
   defmodule Schema do
     defmacro __using__(_opts) do
@@ -159,10 +159,6 @@ defmodule Absinthe.Middleware.DataloaderTest do
       ]
     }
 
-    # Get test PID and clear mailbox
-    self = self()
-    flush_process_mailbox()
-
     :ok =
       :telemetry.attach_many(
         "#{test}",
@@ -173,7 +169,7 @@ defmodule Absinthe.Middleware.DataloaderTest do
           [:absinthe, :plugin, :after_resolution, :stop]
         ],
         fn name, measurements, metadata, _ ->
-          send(self, {:telemetry_event, name, measurements, metadata})
+          send(self(), {:telemetry_event, name, measurements, metadata})
         end,
         nil
       )
@@ -190,12 +186,12 @@ defmodule Absinthe.Middleware.DataloaderTest do
       Enum.reduce(1..24, %{dataloader_starts: 0, dataloader_stops: 0}, fn _, acc ->
         receive do
           {:telemetry_event, [:absinthe, :plugin, callback, :start], %{start_time: _},
-           %{plugin: Absinthe.Middleware.Dataloader, acc: %{}}}
+           %{plugin: Absinthe.Middleware.Dataloader, acc: %{}, id: _}}
           when callback in ~w(before_resolution after_resolution)a ->
             Map.update(acc, :dataloader_starts, 0, &(&1 + 1))
 
           {:telemetry_event, [:absinthe, :plugin, callback, :stop], %{duration: _},
-           %{plugin: Absinthe.Middleware.Dataloader, acc: %{}}}
+           %{plugin: Absinthe.Middleware.Dataloader, acc: %{}, id: _, start_time: _}}
           when callback in ~w(before_resolution after_resolution)a ->
             Map.update(acc, :dataloader_stops, 0, &(&1 + 1))
 
@@ -209,7 +205,7 @@ defmodule Absinthe.Middleware.DataloaderTest do
 
     assert results.dataloader_starts == 4
     assert results.dataloader_stops == 4
-    assert {:message_queue_len, 0} = Process.info(self, :message_queue_len)
+    assert {:message_queue_len, 0} = Process.info(self(), :message_queue_len)
   end
 
   test "can resolve a field when dataloader uses 'tuples' get_policy" do
@@ -345,15 +341,5 @@ defmodule Absinthe.Middleware.DataloaderTest do
 
     assert_receive(:loading)
     refute_receive(:loading)
-  end
-
-  defp flush_process_mailbox() do
-    receive do
-      _ ->
-        flush_process_mailbox()
-    after
-      0 ->
-        :ok
-    end
   end
 end
