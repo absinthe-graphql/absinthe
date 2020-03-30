@@ -60,7 +60,7 @@ if Code.ensure_loaded?(:persistent_term) do
       {:ok, blueprint}
     end
 
-    @dialyzer {:nowarn_function, [put_schema: 1]}
+    @dialyzer {:nowarn_function, [put_schema: 2]}
     defp put_schema(schema_name, content) do
       :persistent_term.put(
         {Absinthe.Schema.PersistentTerm, schema_name},
