@@ -159,9 +159,47 @@ defmodule Absinthe.Resolution.Helpers do
     """
     @spec dataloader(Dataloader.source_name()) :: dataloader_key_fun()
     def dataloader(source) do
+      dataloader(source, [])
+    end
+
+    @doc """
+    Resolve a field with a dataloader source.
+
+    This function is not imported by default. To make it available in your module do
+
+    ```
+    import Absinthe.Resolution.Helpers
+    ```
+
+    Same as `dataloader/3`, but it infers the resource name from the field name. For `opts` see
+    `dataloader/3` on what options can be passed in.
+
+    ## Examples
+
+    ```
+    object :user do
+      field :posts, list_of(:post),
+        resolve: dataloader(Blog, args: %{deleted: false})
+
+      field :organization, :organization do
+        resolve dataloader(Accounts, use_parent: false)
+      end
+
+      field(:account_active, non_null(:boolean), resolve: dataloader(
+          Accounts, callback: fn account, _parent, _args ->
+            {:ok, account.active}
+          end
+        )
+      )
+    end
+    ```
+
+    """
+    @spec dataloader(Dataloader.source_name(), [dataloader_opt]) :: dataloader_key_fun()
+    def dataloader(source, opts) when is_list(opts) do
       fn parent, args, %{context: %{loader: loader}} = res ->
         resource = res.definition.schema_node.identifier
-        do_dataloader(loader, source, resource, args, parent, [])
+        do_dataloader(loader, source, resource, args, parent, opts)
       end
     end
 
