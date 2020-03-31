@@ -107,13 +107,7 @@ defmodule Absinthe.Schema do
       @after_compile unquote(__MODULE__)
       @before_compile unquote(__MODULE__)
 
-      defdelegate __absinthe_type__(name), to: __MODULE__.Compiled
-      defdelegate __absinthe_directive__(name), to: __MODULE__.Compiled
-      defdelegate __absinthe_types__(), to: __MODULE__.Compiled
-      defdelegate __absinthe_types__(group), to: __MODULE__.Compiled
-      defdelegate __absinthe_directives__(), to: __MODULE__.Compiled
-      defdelegate __absinthe_interface_implementors__(), to: __MODULE__.Compiled
-      defdelegate __absinthe_prototype_schema__(), to: __MODULE__.Compiled
+      @schema_provider Absinthe.Schema.Compiled
 
       def __absinthe_lookup__(name) do
         __absinthe_type__(name)
@@ -141,6 +135,14 @@ defmodule Absinthe.Schema do
 
       defoverridable(context: 1, middleware: 3, plugins: 0, hydrate: 2)
     end
+  end
+
+  def child_spec(schema) do
+    %{
+      id: {__MODULE__, schema},
+      start: {__MODULE__.Manager, :start_link, [schema]},
+      type: :worker
+    }
   end
 
   @object_type Absinthe.Blueprint.Schema.ObjectTypeDefinition
@@ -293,7 +295,39 @@ defmodule Absinthe.Schema do
     quote do
       @doc false
       def __absinthe_pipeline_modifiers__ do
-        @pipeline_modifier
+        [@schema_provider] ++ @pipeline_modifier
+      end
+
+      def __absinthe_schema_provider__ do
+        @schema_provider
+      end
+
+      def __absinthe_type__(name) do
+        @schema_provider.__absinthe_type__(__MODULE__, name)
+      end
+
+      def __absinthe_directive__(name) do
+        @schema_provider.__absinthe_directive__(__MODULE__, name)
+      end
+
+      def __absinthe_types__() do
+        @schema_provider.__absinthe_types__(__MODULE__)
+      end
+
+      def __absinthe_types__(group) do
+        @schema_provider.__absinthe_types__(__MODULE__, group)
+      end
+
+      def __absinthe_directives__() do
+        @schema_provider.__absinthe_directives__(__MODULE__)
+      end
+
+      def __absinthe_interface_implementors__() do
+        @schema_provider.__absinthe_interface_implementors__(__MODULE__)
+      end
+
+      def __absinthe_prototype_schema__() do
+        @schema_provider.__absinthe_prototype_schema__(__MODULE__)
       end
     end
   end

@@ -1,5 +1,6 @@
 defmodule Absinthe.Fixtures.NullListsSchema do
   use Absinthe.Schema
+  use Absinthe.Fixture
 
   query do
     field :nullable_list, :list_details do

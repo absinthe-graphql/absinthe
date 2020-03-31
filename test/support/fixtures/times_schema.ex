@@ -1,5 +1,6 @@
 defmodule Absinthe.Fixtures.TimesSchema do
   use Absinthe.Schema
+  use Absinthe.Fixture
 
   query do
     field :times, :integer do

@@ -1,5 +1,6 @@
 defmodule Absinthe.Fixtures.Things.SDLSchema do
   use Absinthe.Schema
+  use Absinthe.Fixture
 
   import_sdl """
   enum SigilsWork {

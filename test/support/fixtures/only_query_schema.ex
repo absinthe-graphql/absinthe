@@ -1,5 +1,6 @@
 defmodule Absinthe.Fixtures.OnlyQuerySchema do
   use Absinthe.Schema
+  use Absinthe.Fixture
 
   query do
     field :hello, :string do

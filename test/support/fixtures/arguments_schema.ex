@@ -1,5 +1,6 @@
 defmodule Absinthe.Fixtures.ArgumentsSchema do
   use Absinthe.Schema
+  use Absinthe.Fixture
 
   @res %{
     true: "YES",

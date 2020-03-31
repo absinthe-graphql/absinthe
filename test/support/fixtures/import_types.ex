@@ -95,6 +95,7 @@ defmodule Absinthe.Fixtures.ImportTypes do
 
   defmodule Schema do
     use Absinthe.Schema
+    use Absinthe.Fixture
 
     import_types Absinthe.Fixtures.ImportTypes.{AccountTypes, OrderTypes}
     import_types Absinthe.Fixtures.ImportTypes.ReceiptTypes
@@ -114,6 +115,7 @@ defmodule Absinthe.Fixtures.ImportTypes do
 
   defmodule SelfContainedSchema do
     use Absinthe.Schema
+    use Absinthe.Fixture
 
     defmodule PaymentTypes do
       use Absinthe.Schema.Notation

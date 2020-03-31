@@ -1,5 +1,6 @@
 defmodule Absinthe.Fixtures.IdTestSchema do
   use Absinthe.Schema
+  use Absinthe.Fixture
 
   # Example data
   @items %{

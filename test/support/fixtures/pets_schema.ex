@@ -1,5 +1,6 @@
 defmodule Absinthe.Fixtures.PetsSchema do
   use Absinthe.Schema
+  use Absinthe.Fixture
 
   interface :being do
     field :name, :string do

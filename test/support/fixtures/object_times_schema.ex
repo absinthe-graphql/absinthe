@@ -1,5 +1,6 @@
 defmodule Absinthe.Fixtures.ObjectTimesSchema do
   use Absinthe.Schema
+  use Absinthe.Fixture
 
   query do
     field :obj_times, :integer do
