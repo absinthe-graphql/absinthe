@@ -52,7 +52,6 @@ if Code.ensure_loaded?(:persistent_term) do
         __absinthe_reference__: metadata
       }
 
-      # :erts_debug.flat_size(schema) |> IO.inspect(label: :flat_size)
       schema_name = opts[:schema] || raise "no schema name provided"
 
       put_schema(schema_name, schema_content)

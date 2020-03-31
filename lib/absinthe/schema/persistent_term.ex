@@ -2,6 +2,8 @@ if Code.ensure_loaded?(:persistent_term) do
   defmodule Absinthe.Schema.PersistentTerm do
     @moduledoc false
 
+    @behaviour Absinthe.Schema.Provider
+
     def pipeline(pipeline) do
       Enum.map(pipeline, fn
         {Absinthe.Phase.Schema.Compile, options} ->

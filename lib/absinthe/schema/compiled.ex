@@ -1,6 +1,8 @@
 defmodule Absinthe.Schema.Compiled do
   @moduledoc false
 
+  @behaviour Absinthe.Schema.Provider
+
   def pipeline(pipeline) do
     pipeline
   end
