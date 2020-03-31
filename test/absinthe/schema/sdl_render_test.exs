@@ -103,6 +103,8 @@ defmodule SdlRenderTest do
       {:resolve_type, &__MODULE__.resolve_type/1}
     end
 
+    def resolve_type(_), do: false
+
     def hydrate(_node, _ancestors), do: []
   end
 
