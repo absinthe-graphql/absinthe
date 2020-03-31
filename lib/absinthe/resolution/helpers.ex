@@ -254,6 +254,7 @@ defmodule Absinthe.Resolution.Helpers do
           {:ok, Dataloader.get(loader, source_name, {resource, args}, parent)}
         end)
       end
+    end
     ```
 
     """
