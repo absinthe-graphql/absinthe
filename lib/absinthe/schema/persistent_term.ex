@@ -1,6 +1,37 @@
 if Code.ensure_loaded?(:persistent_term) do
   defmodule Absinthe.Schema.PersistentTerm do
-    @moduledoc false
+    @moduledoc """
+    Experimental: Persistent Term based Schema Backend
+
+    By default, Absinthe schemas are stored in a generated module. If your schema
+    is called `MyAppWeb.Schema`, Absinthe creates a `MyAppWeb.Schema.Compiled`
+    module containing the structs and other data that Absinthe needs at runtime
+    to execute GraphQL operations against that schema.
+
+    OTP introduced the `:persistent_term` module to provide many of the same
+    performance benefits of using compiled modules, without the downsides associated
+    with manipulating complex structures at compile time.
+
+    This module is an experimental effort at using the `:persistent_term` module
+    as an Absinthe schema backend. This module has been tested against against
+    the entire Absinthe test suite and shown to perform perhaps even better
+    than the compiled module.
+
+    To use:
+
+    In your schema module:
+    ```
+    @schema_provider Absinthe.Schema.PersistentTerm
+    ```
+
+    In your application's supervision tree, prior to anywhere where you'd use
+    the schema:
+    ```
+    {Absinthe.Schema, MyAppWeb.Schema}
+    ```
+
+    where MyAppWeb.Schema is the name of your schema.
+    """
 
     @behaviour Absinthe.Schema.Provider
 
