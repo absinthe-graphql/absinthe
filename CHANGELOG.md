@@ -2,8 +2,11 @@
 
 For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe/blob/v1.4/CHANGELOG.md) branch.
 
-## v1.5.0 (Beta)
+## v1.5.0 (Rc)
 
+- Feature (Experimental): `:persistent_term` based schema backend
+
+## v1.5.0 (Beta)
 - Feature: SDL directives, other improvements
 - Feature: Output rendered SDL for a schema
 - Feature: Substantially lower subscription memory usage.
