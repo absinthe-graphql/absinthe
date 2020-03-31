@@ -88,7 +88,7 @@ if Code.ensure_loaded?(:persistent_term) do
 else
   defmodule Absinthe.Phase.Schema.PopulatePersistentTerm do
     def run(_, _) do
-      raise "This phase requires OTP >= 22"
+      raise "This phase requires OTP >= 21.2"
     end
   end
 end
