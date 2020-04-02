@@ -587,7 +587,9 @@ defmodule Absinthe.Execution.SubscriptionTest do
                context: %{pubsub: PubSub}
              )
 
-    assert_receive {[:absinthe, :execute, :operation, :start], _, %{id: id} = _meta, _config}
+    assert_receive {[:absinthe, :execute, :operation, :start], measurements, %{id: id}, _config}
+    assert System.convert_time_unit(measurements[:system_time], :native, :millisecond)
+
     assert_receive {[:absinthe, :execute, :operation, :stop], _, %{id: ^id} = _meta, _config}
 
     Absinthe.Subscription.publish(PubSub, "foo", thing: client_id)
@@ -599,8 +601,9 @@ defmodule Absinthe.Execution.SubscriptionTest do
              topic: topic
            } == msg
 
-    assert_receive {[:absinthe, :subscription, :publish, :start], _, %{id: id} = _meta, _config}
-    assert_receive {[:absinthe, :subscription, :publish, :stop], _, %{id: ^id} = _meta, _config}
+    # Subscription events
+    assert_receive {[:absinthe, :subscription, :publish, :start], _, %{id: id}, _config}
+    assert_receive {[:absinthe, :subscription, :publish, :stop], _, %{id: ^id}, _config}
 
     :telemetry.detach(context.test)
   end
