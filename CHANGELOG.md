@@ -5,6 +5,7 @@ For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe
 ## v1.5.0 (Rc)
 
 - Feature (Experimental): `:persistent_term` based schema backend
+- Breaking Change: `telemetry` event keys [changed](https://github.com/absinthe-graphql/absinthe/pull/901) since the beta release.
 
 ## v1.5.0 (Beta)
 - Feature: SDL directives, other improvements

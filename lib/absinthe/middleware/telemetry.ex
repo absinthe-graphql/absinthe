@@ -10,16 +10,13 @@ defmodule Absinthe.Middleware.Telemetry do
   @impl Absinthe.Middleware
   def call(resolution, _) do
     id = :erlang.unique_integer()
-    start_time = System.system_time()
+    system_time = System.system_time()
     start_time_mono = System.monotonic_time()
 
     :telemetry.execute(
       @field_start,
-      %{start_time: start_time},
-      %{
-        id: id,
-        resolution: resolution
-      }
+      %{system_time: system_time},
+      %{id: id, resolution: resolution}
     )
 
     %{
@@ -30,7 +27,6 @@ defmodule Absinthe.Middleware.Telemetry do
               {{__MODULE__, :on_complete},
                %{
                  id: id,
-                 start_time: start_time,
                  start_time_mono: start_time_mono,
                  middleware: resolution.middleware
                }}
@@ -42,7 +38,6 @@ defmodule Absinthe.Middleware.Telemetry do
         %{state: :resolved} = resolution,
         %{
           id: id,
-          start_time: start_time,
           start_time_mono: start_time_mono,
           middleware: middleware
         }
@@ -54,7 +49,6 @@ defmodule Absinthe.Middleware.Telemetry do
       %{duration: end_time_mono - start_time_mono},
       %{
         id: id,
-        start_time: start_time,
         middleware: middleware,
         resolution: resolution
       }

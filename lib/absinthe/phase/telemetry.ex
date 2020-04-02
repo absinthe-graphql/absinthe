@@ -17,63 +17,49 @@ defmodule Absinthe.Phase.Telemetry do
 
   defp do_run(blueprint, [:execute, :operation, :start], options) do
     id = :erlang.unique_integer()
-    start_time = System.system_time()
+    system_time = System.system_time()
     start_time_mono = System.monotonic_time()
 
-    :telemetry.execute(@operation_start, %{start_time: start_time}, %{
-      id: id,
-      blueprint: blueprint,
-      options: options
-    })
+    :telemetry.execute(
+      @operation_start,
+      %{system_time: system_time},
+      %{id: id, blueprint: blueprint, options: options}
+    )
 
     {:ok,
      %{
        blueprint
        | source: blueprint.input,
-         telemetry: %{
-           id: id,
-           start_time: start_time,
-           start_time_mono: start_time_mono
-         }
+         telemetry: %{id: id, start_time_mono: start_time_mono}
      }}
   end
 
   defp do_run(blueprint, [:subscription, :publish, :start], options) do
     id = :erlang.unique_integer()
-    start_time = System.system_time()
+    system_time = System.system_time()
     start_time_mono = System.monotonic_time()
 
-    :telemetry.execute(@subscription_start, %{start_time: start_time}, %{
-      id: id,
-      blueprint: blueprint,
-      options: options
-    })
+    :telemetry.execute(
+      @subscription_start,
+      %{system_time: system_time},
+      %{id: id, blueprint: blueprint, options: options}
+    )
 
     {:ok,
      %{
        blueprint
-       | telemetry: %{
-           id: id,
-           start_time: start_time,
-           start_time_mono: start_time_mono
-         }
+       | telemetry: %{id: id, start_time_mono: start_time_mono}
      }}
   end
 
   defp do_run(blueprint, [:subscription, :publish, :stop], options) do
     end_time_mono = System.monotonic_time()
 
-    with %{id: id, start_time: start_time, start_time_mono: start_time_mono} <-
-           blueprint.telemetry do
+    with %{id: id, start_time_mono: start_time_mono} <- blueprint.telemetry do
       :telemetry.execute(
         @subscription_stop,
         %{duration: end_time_mono - start_time_mono},
-        %{
-          id: id,
-          start_time: start_time,
-          blueprint: blueprint,
-          options: options
-        }
+        %{id: id, blueprint: blueprint, options: options}
       )
     end
 
@@ -83,17 +69,11 @@ defmodule Absinthe.Phase.Telemetry do
   defp do_run(blueprint, [:execute, :operation, :stop], options) do
     end_time_mono = System.monotonic_time()
 
-    with %{id: id, start_time: start_time, start_time_mono: start_time_mono} <-
-           blueprint.telemetry do
+    with %{id: id, start_time_mono: start_time_mono} <- blueprint.telemetry do
       :telemetry.execute(
         @operation_stop,
         %{duration: end_time_mono - start_time_mono},
-        %{
-          id: id,
-          start_time: start_time,
-          blueprint: blueprint,
-          options: options
-        }
+        %{id: id, blueprint: blueprint, options: options}
       )
     end
 
