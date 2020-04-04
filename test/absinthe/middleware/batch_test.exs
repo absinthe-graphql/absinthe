@@ -82,7 +82,8 @@ defmodule Absinthe.Middleware.BatchTest do
     assert expected_data == data
   end
 
-  test "can resolve batched fields cross-query that have different data requirements" do
+  test "can resolve batched fields cross-query that have different data requirements and should emit telemetry events",
+       %{test: test} do
     doc = """
     {
       users {
@@ -105,7 +106,26 @@ defmodule Absinthe.Middleware.BatchTest do
       "organization" => %{"id" => 1}
     }
 
+    :ok =
+      :telemetry.attach_many(
+        "#{test}",
+        [
+          [:absinthe, :middleware, :batch, :start],
+          [:absinthe, :middleware, :batch, :stop]
+        ],
+        fn name, measurements, metadata, _ ->
+          send(self(), {:telemetry_event, name, measurements, metadata})
+        end,
+        nil
+      )
+
     assert {:ok, %{data: data}} = Absinthe.run(doc, Schema)
     assert expected_data == data
+
+    assert_receive {:telemetry_event, [:absinthe, :middleware, :batch, :start], %{system_time: _},
+                    %{id: _, batch_fun: _, batch_opts: _, batch_data: _}}
+
+    assert_receive {:telemetry_event, [:absinthe, :middleware, :batch, :stop], %{duration: _},
+                    %{id: _, batch_fun: _, batch_opts: _, batch_data: _, result: _}}
   end
 end

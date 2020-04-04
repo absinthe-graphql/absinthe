@@ -163,10 +163,8 @@ defmodule Absinthe.Middleware.DataloaderTest do
       :telemetry.attach_many(
         "#{test}",
         [
-          [:absinthe, :plugin, :before_resolution, :start],
-          [:absinthe, :plugin, :before_resolution, :stop],
-          [:absinthe, :plugin, :after_resolution, :start],
-          [:absinthe, :plugin, :after_resolution, :stop]
+          [:dataloader, :batches, :run, :start],
+          [:dataloader, :batches, :run, :stop]
         ],
         fn name, measurements, metadata, _ ->
           send(self(), {:telemetry_event, name, measurements, metadata})
@@ -180,32 +178,11 @@ defmodule Absinthe.Middleware.DataloaderTest do
     assert_receive(:loading)
     refute_receive(:loading)
 
-    # This test emits a total of 24 events, but there we are only validating the
-    # dataloader events in this test
-    results =
-      Enum.reduce(1..24, %{dataloader_starts: 0, dataloader_stops: 0}, fn _, acc ->
-        receive do
-          {:telemetry_event, [:absinthe, :plugin, callback, :start], %{start_time: _},
-           %{plugin: Absinthe.Middleware.Dataloader, acc: %{}, id: _}}
-          when callback in ~w(before_resolution after_resolution)a ->
-            Map.update(acc, :dataloader_starts, 0, &(&1 + 1))
+    assert_receive {:telemetry_event, [:dataloader, :batches, :run, :start], %{system_time: _},
+                    %{id: _, dataloader: _}}
 
-          {:telemetry_event, [:absinthe, :plugin, callback, :stop], %{duration: _},
-           %{plugin: Absinthe.Middleware.Dataloader, acc: %{}, id: _, start_time: _}}
-          when callback in ~w(before_resolution after_resolution)a ->
-            Map.update(acc, :dataloader_stops, 0, &(&1 + 1))
-
-          _skip ->
-            acc
-        after
-          0 ->
-            acc
-        end
-      end)
-
-    assert results.dataloader_starts == 4
-    assert results.dataloader_stops == 4
-    assert {:message_queue_len, 0} = Process.info(self(), :message_queue_len)
+    assert_receive {:telemetry_event, [:dataloader, :batches, :run, :stop], %{duration: _},
+                    %{id: _, dataloader: _}}
   end
 
   test "can resolve a field when dataloader uses 'tuples' get_policy" do
