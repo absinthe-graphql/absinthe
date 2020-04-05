@@ -139,8 +139,7 @@ defmodule Absinthe.Middleware.DataloaderTest do
     end
   end
 
-  test "can resolve a field using the normal dataloader helper",
-       %{test: test} do
+  test "can resolve a field using the normal dataloader helper" do
     doc = """
     {
       users {
