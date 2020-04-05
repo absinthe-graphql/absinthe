@@ -1,5 +1,5 @@
 defmodule Absinthe.Middleware.DataloaderTest do
-  use Absinthe.Case, async: false
+  use Absinthe.Case, async: true
 
   defmodule Schema do
     defmacro __using__(_opts) do
@@ -139,7 +139,7 @@ defmodule Absinthe.Middleware.DataloaderTest do
     end
   end
 
-  test "can resolve a field using the normal dataloader helper and should emit telemetry events",
+  test "can resolve a field using the normal dataloader helper",
        %{test: test} do
     doc = """
     {
@@ -159,30 +159,11 @@ defmodule Absinthe.Middleware.DataloaderTest do
       ]
     }
 
-    :ok =
-      :telemetry.attach_many(
-        "#{test}",
-        [
-          [:dataloader, :batches, :run, :start],
-          [:dataloader, :batches, :run, :stop]
-        ],
-        fn name, measurements, metadata, _ ->
-          send(self(), {:telemetry_event, name, measurements, metadata})
-        end,
-        nil
-      )
-
     assert {:ok, %{data: data}} = Absinthe.run(doc, DefaultSchema)
     assert expected_data == data
 
     assert_receive(:loading)
     refute_receive(:loading)
-
-    assert_receive {:telemetry_event, [:dataloader, :batches, :run, :start], %{system_time: _},
-                    %{id: _, dataloader: _}}
-
-    assert_receive {:telemetry_event, [:dataloader, :batches, :run, :stop], %{duration: _},
-                    %{id: _, dataloader: _}}
   end
 
   test "can resolve a field when dataloader uses 'tuples' get_policy" do
