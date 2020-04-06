@@ -11,9 +11,12 @@ handler function to any of the following event names:
 - `[:absinthe, :subscription, :publish, :stop]` when a subscription finishes
 - `[:absinthe, :resolve, :field, :start]` when field resolution starts
 - `[:absinthe, :resolve, :field, :stop]` when field resolution finishes
+- `[:absinthe, :middleware, :batch, :start]` when the batch processing starts
+- `[:absinthe, :middleware, :batch, :stop]` when the batch processing finishes
 
 Telemetry handlers are called with `measurements` and `metadata`. For details on
-what is passed, checkout `Absinthe.Phase.Telemetry` and `Absinthe.Middleware.Telemetry`
+what is passed, checkout `Absinthe.Phase.Telemetry`, `Absinthe.Middleware.Telemetry`,
+and `Absinthe.Middleware.Batch`.
 
 For async, batch, and dataloader fields, Absinthe sends the final event when
 it gets the results. That might be later than when the results are ready. If

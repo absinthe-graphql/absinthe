@@ -3,6 +3,7 @@ if Code.ensure_loaded?(Dataloader) do
     @behaviour Absinthe.Middleware
     @behaviour Absinthe.Plugin
 
+    @impl Absinthe.Plugin
     def before_resolution(%{context: context} = exec) do
       context =
         with %{loader: loader} <- context do
@@ -12,6 +13,7 @@ if Code.ensure_loaded?(Dataloader) do
       %{exec | context: context}
     end
 
+    @impl Absinthe.Middleware
     def call(%{state: :unresolved} = resolution, {loader, callback}) do
       if !Dataloader.pending_batches?(loader) do
         resolution.context.loader
@@ -36,10 +38,12 @@ if Code.ensure_loaded?(Dataloader) do
       Absinthe.Resolution.put_result(resolution, value)
     end
 
+    @impl Absinthe.Plugin
     def after_resolution(exec) do
       exec
     end
 
+    @impl Absinthe.Plugin
     def pipeline(pipeline, exec) do
       with %{loader: loader} <- exec.context,
            true <- Dataloader.pending_batches?(loader) do
