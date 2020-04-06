@@ -142,60 +142,49 @@ defmodule Absinthe.Middleware.Batch do
     input
     |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
     |> Enum.map(fn {{batch_fun, batch_opts}, batch_data} ->
-      telemetry_data = generate_telemetry_data(batch_fun, batch_opts, batch_data)
+      system_time = System.system_time()
+      start_time_mono = System.monotonic_time()
 
-      emit_start_event(telemetry_data)
-
-      {
-        batch_opts,
+      task =
         Task.async(fn ->
           {batch_fun, call_batch_fun(batch_fun, batch_data)}
-        end),
-        telemetry_data
-      }
+        end)
+
+      metadata = emit_start_event(system_time, batch_fun, batch_opts, batch_data)
+
+      {batch_opts, task, start_time_mono, metadata}
     end)
-    |> Map.new(fn {batch_opts, task, telemetry_data} ->
+    |> Map.new(fn {batch_opts, task, start_time_mono, metadata} ->
       timeout = Keyword.get(batch_opts, :timeout, 5_000)
       result = Task.await(task, timeout)
 
-      emit_stop_event(telemetry_data, result)
+      duration = System.monotonic_time() - start_time_mono
+      emit_stop_event(duration, metadata, result)
 
       result
     end)
   end
 
-  defp generate_telemetry_data(batch_fun, batch_opts, batch_data) do
-    %{
-      id: :erlang.unique_integer(),
-      system_time: System.system_time(),
-      start_time_mono: System.monotonic_time(),
-      batch_fun: batch_fun,
-      batch_opts: batch_opts,
-      batch_data: batch_data
-    }
-  end
-
-  defp emit_start_event(telemetry_data) do
-    :telemetry.execute(
-      [:absinthe, :middleware, :batch, :start],
-      Map.take(telemetry_data, [:system_time]),
-      Map.take(telemetry_data, [:id, :batch_fun, :batch_opts, :batch_data])
-    )
-  end
-
-  defp emit_stop_event(telemetry_data, result) do
-    metadata = %{
-      id: telemetry_data.id,
-      batch_fun: telemetry_data.batch_fun,
-      batch_opts: telemetry_data.batch_opts,
-      batch_data: telemetry_data.batch_data,
-      result: result
-    }
+  @batch_start [:absinthe, :middleware, :batch, :start]
+  @batch_stop [:absinthe, :middleware, :batch, :stop]
+  defp emit_start_event(system_time, batch_fun, batch_opts, batch_data) do
+    id = :erlang.unique_integer()
+    metadata = %{id: id, batch_fun: batch_fun, batch_opts: batch_opts, batch_data: batch_data}
 
     :telemetry.execute(
-      [:absinthe, :middleware, :batch, :stop],
-      %{duration: System.monotonic_time() - telemetry_data.start_time_mono},
+      @batch_start,
+      %{system_time: system_time},
       metadata
+    )
+
+    metadata
+  end
+
+  defp emit_stop_event(duration, metadata, result) do
+    :telemetry.execute(
+      @batch_stop,
+      %{duration: duration},
+      Map.put(metadata, :result, result)
     )
   end
 
