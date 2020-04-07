@@ -79,7 +79,12 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
     node.fields
     |> Enum.flat_map(fn
       %{flags: %{invalid: _}, schema_node: nil} = child ->
-        field_suggestions = suggested_field_names(node.schema_node, child.name)
+        field_suggestions =
+          case node.schema_node do
+            %Type.Scalar{} -> []
+            %Type.Enum{} -> []
+            _ -> suggested_field_names(node.schema_node, child.name)
+          end
 
         [unknown_field_error_message(child.name, field_suggestions)]
 
@@ -107,19 +112,19 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
     end)
   end
 
-  defp suggested_field_names(schema_node, name) do
-    schema_node.fields
-    |> Map.values()
-    |> Enum.map(& &1.name)
-    |> Absinthe.Utils.Suggestion.sort_list(name)
-  end
-
   defp collect_child_errors(%Blueprint.Input.Value{normalized: norm}, schema) do
     collect_child_errors(norm, schema)
   end
 
   defp collect_child_errors(_node, _) do
     []
+  end
+
+  defp suggested_field_names(schema_node, name) do
+    schema_node.fields
+    |> Map.values()
+    |> Enum.map(& &1.name)
+    |> Absinthe.Utils.Suggestion.sort_list(name)
   end
 
   # Generate the error for the node
@@ -149,6 +154,14 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
 
   def value_error_message(id, expected_type_name, inspected_value) do
     ~s(In field "#{id}": ) <> expected_type_error_message(expected_type_name, inspected_value)
+  end
+
+  def unknown_field_error_message(field_name) do
+    unknown_field_error_message(field_name, [])
+  end
+
+  def unknown_field_error_message(field_name, []) do
+    ~s(In field "#{field_name}": Unknown field.)
   end
 
   def unknown_field_error_message(field_name, suggestions) do
