@@ -156,9 +156,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
     ~s(In field "#{id}": ) <> expected_type_error_message(expected_type_name, inspected_value)
   end
 
-  def unknown_field_error_message(field_name) do
-    unknown_field_error_message(field_name, [])
-  end
+  def unknown_field_error_message(field_name, suggestions \\ [])
 
   def unknown_field_error_message(field_name, []) do
     ~s(In field "#{field_name}": Unknown field.)
