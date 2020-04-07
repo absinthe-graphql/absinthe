@@ -1,16 +1,16 @@
-defmodule Absinthe.Phase.Document.Validation.Utils.FieldSuggestions do
+defmodule Absinthe.Phase.Document.Validation.Utils.MessageSuggestions do
   @suggest 5
 
   @doc """
-  Generate an suggestions for a incorrect field
+  Generate an suggestions message for a incorrect field
   """
+  def suggest_message(suggestions) do
+    " Did you mean " <> to_quoted_or_list(suggestions |> Enum.take(@suggest)) <> "?"
+  end
+
   def suggest_fragment_message(suggestions) do
     " Did you mean to use an inline fragment on " <>
       to_quoted_or_list(suggestions |> Enum.take(@suggest)) <> "?"
-  end
-
-  def suggest_message(suggestions) do
-    " Did you mean " <> to_quoted_or_list(suggestions |> Enum.take(@suggest)) <> "?"
   end
 
   defp to_quoted_or_list([a]), do: ~s("#{a}")

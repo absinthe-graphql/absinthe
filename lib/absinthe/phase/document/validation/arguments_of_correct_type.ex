@@ -3,7 +3,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
 
   # Validates document to ensure that all arguments are of the correct type.
 
-  alias Absinthe.{Blueprint, Phase, Schema, Type}
+  alias Absinthe.{Blueprint, Phase, Phase.Document.Validation.Utils, Schema, Type}
 
   use Absinthe.Phase
 
@@ -166,7 +166,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
 
   def unknown_field_error_message(field_name, suggestions) do
     ~s(In field "#{field_name}": Unknown field.) <>
-      Phase.Document.Validation.Utils.FieldSuggestions.suggest_message(suggestions)
+      Utils.MessageSuggestions.suggest_message(suggestions)
   end
 
   defp expected_type_error_message(expected_type_name, inspected_value) do

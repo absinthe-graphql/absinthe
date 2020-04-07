@@ -3,7 +3,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
 
   # Validates document to ensure that all fields are provided on the correct type.
 
-  alias Absinthe.{Blueprint, Phase, Schema, Type}
+  alias Absinthe.{Blueprint, Phase, Phase.Document.Validation.Utils, Schema, Type}
 
   use Absinthe.Phase
 
@@ -164,12 +164,12 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
 
   def error_message(field_name, type_name, [], field_suggestions) do
     error_message(field_name, type_name) <>
-      Phase.Document.Validation.Utils.FieldSuggestions.suggest_message(field_suggestions)
+      Utils.MessageSuggestions.suggest_message(field_suggestions)
   end
 
   def error_message(field_name, type_name, type_suggestions, []) do
     error_message(field_name, type_name) <>
-      Phase.Document.Validation.Utils.FieldSuggestions.suggest_fragment_message(type_suggestions)
+      Utils.MessageSuggestions.suggest_fragment_message(type_suggestions)
   end
 
   def error_message(field_name, type_name, type_suggestions, _) do
