@@ -80,7 +80,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
     |> Enum.flat_map(fn
       %{flags: %{invalid: _}, schema_node: nil} = child ->
         field_suggestions =
-          case node.schema_node do
+          case Type.unwrap(node.schema_node) do
             %Type.Scalar{} -> []
             %Type.Enum{} -> []
             _ -> suggested_field_names(node.schema_node, child.name)

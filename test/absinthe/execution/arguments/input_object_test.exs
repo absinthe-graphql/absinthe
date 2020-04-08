@@ -192,4 +192,15 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
       )
     )
   end
+
+  test "return field error with suggestion for non-null field" do
+    assert_error_message_lines(
+      [
+        ~s(Argument "contact" has invalid value $contact.),
+        ~s(In field "email": Expected type "String!", found null.),
+        ~s(In field "mail": Unknown field. Did you mean "email"?)
+      ],
+      run(@graphql, @schema, variables: %{"contact" => %{"mail" => "bubba@joe.com"}})
+    )
+  end
 end
