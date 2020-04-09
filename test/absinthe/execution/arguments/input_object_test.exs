@@ -155,4 +155,52 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
       run(@graphql, @schema)
     )
   end
+
+  @graphql """
+  query ($contact: ContactInput!) {
+    user(contact: $contact)
+  }
+  """
+
+  test "return field error with suggestion" do
+    assert_error_message_lines(
+      [
+        ~s(Argument "contact" has invalid value $contact.),
+        ~s(In field "default_with_stream": Unknown field. Did you mean "default_with_string"?)
+      ],
+      run(@graphql, @schema,
+        variables: %{"contact" => %{"email" => "bubba@joe.com", "default_with_stream" => "asdf"}}
+      )
+    )
+  end
+
+  test "return field error with multiple suggestions" do
+    assert_error_message_lines(
+      [
+        ~s(Argument "contact" has invalid value $contact.),
+        ~s(In field "contact_typo": Unknown field. Did you mean "contact_type"?),
+        ~s(In field "default_with_stream": Unknown field. Did you mean "default_with_string"?)
+      ],
+      run(@graphql, @schema,
+        variables: %{
+          "contact" => %{
+            "email" => "bubba@joe.com",
+            "default_with_stream" => "asdf",
+            "contact_typo" => "foo"
+          }
+        }
+      )
+    )
+  end
+
+  test "return field error with suggestion for non-null field" do
+    assert_error_message_lines(
+      [
+        ~s(Argument "contact" has invalid value $contact.),
+        ~s(In field "email": Expected type "String!", found null.),
+        ~s(In field "mail": Unknown field. Did you mean "email"?)
+      ],
+      run(@graphql, @schema, variables: %{"contact" => %{"mail" => "bubba@joe.com"}})
+    )
+  end
 end

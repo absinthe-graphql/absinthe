@@ -3,7 +3,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
 
   # Validates document to ensure that all fields are provided on the correct type.
 
-  alias Absinthe.{Blueprint, Phase, Schema, Type}
+  alias Absinthe.{Blueprint, Phase, Phase.Document.Validation.Utils, Schema, Type}
 
   use Absinthe.Phase
 
@@ -152,8 +152,6 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
     }
   end
 
-  @suggest 5
-
   @doc """
   Generate an error for a field
   """
@@ -166,13 +164,12 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
 
   def error_message(field_name, type_name, [], field_suggestions) do
     error_message(field_name, type_name) <>
-      " Did you mean " <> to_quoted_or_list(field_suggestions |> Enum.take(@suggest)) <> "?"
+      Utils.MessageSuggestions.suggest_message(field_suggestions)
   end
 
   def error_message(field_name, type_name, type_suggestions, []) do
     error_message(field_name, type_name) <>
-      " Did you mean to use an inline fragment on " <>
-      to_quoted_or_list(type_suggestions |> Enum.take(@suggest)) <> "?"
+      Utils.MessageSuggestions.suggest_fragment_message(type_suggestions)
   end
 
   def error_message(field_name, type_name, type_suggestions, _) do
@@ -267,22 +264,5 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
 
   defp type_with_field?(_, _) do
     false
-  end
-
-  defp to_quoted_or_list([a]), do: ~s("#{a}")
-  defp to_quoted_or_list([a, b]), do: ~s("#{a}" or "#{b}")
-  defp to_quoted_or_list(other), do: to_longer_quoted_or_list(other)
-
-  defp to_longer_quoted_or_list(list, acc \\ "")
-  defp to_longer_quoted_or_list([word], acc), do: acc <> ~s(, or "#{word}")
-
-  defp to_longer_quoted_or_list([word | rest], "") do
-    rest
-    |> to_longer_quoted_or_list(~s("#{word}"))
-  end
-
-  defp to_longer_quoted_or_list([word | rest], acc) do
-    rest
-    |> to_longer_quoted_or_list(acc <> ~s(, "#{word}"))
   end
 end
