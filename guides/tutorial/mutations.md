@@ -73,4 +73,4 @@ Going back to the resolver code:
 
 ## Next Step
 
-Now let's take a look at [more complex arguments](complex-arguments.html).
+Now let's take a look at [more complex arguments](complex-arguments.md).

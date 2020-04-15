@@ -265,4 +265,4 @@ It should look something like this:
 
 ## Next Step
 
-Next up, we look at how to modify our data using [mutations](mutations.html).
+Next up, we look at how to modify our data using [mutations](mutations.md).
