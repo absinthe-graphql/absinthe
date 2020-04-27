@@ -113,6 +113,8 @@ defmodule Absinthe.Schema do
         __absinthe_type__(name)
       end
 
+      @behaviour Absinthe.Schema
+
       @doc false
       def middleware(middleware, _field, _object) do
         middleware
