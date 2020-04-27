@@ -42,6 +42,12 @@ defmodule Absinthe.Type.EnumTest do
     enum :color_channel3,
       values: [:red, :green, :blue, :alpha],
       description: "The selected color channel"
+
+    enum :negative_value do
+      value :positive_one, as: 1
+      value :zero, as: 0
+      value :negative_one, as: -1
+    end
   end
 
   describe "enums" do

@@ -1049,9 +1049,11 @@ defmodule Absinthe.Schema.Notation do
   #{Utils.placement_docs(@placement)}
   """
   defmacro value(identifier, raw_attrs \\ []) do
+    attrs = expand_ast(raw_attrs, __CALLER__)
+
     __CALLER__
     |> recordable!(:value, @placement[:value])
-    |> record_value!(identifier, raw_attrs)
+    |> record_value!(identifier, attrs)
   end
 
   # GENERAL ATTRIBUTES
