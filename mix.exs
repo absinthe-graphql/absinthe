@@ -97,7 +97,6 @@ defmodule Absinthe.Mixfile do
       "guides/tutorial/conclusion.md",
       "guides/schemas.md",
       "guides/plug-phoenix.md",
-      "guides/ecto.md",
       "guides/middleware-and-plugins.md",
       "guides/errors.md",
       "guides/batching.md",

@@ -23,73 +23,77 @@ that encodes a way of retrieving data. More info in the [Sources](#sources) sect
 Absinthe provides some dataloader helpers out of the box that you can import into your schema
 
 ```elixir
-  import Absinthe.Resolution.Helpers, only: [dataloader: 1]
+import Absinthe.Resolution.Helpers, only: [dataloader: 1]
 ```
 
 This is needed to use the various `dataloader` helpers to resolve a field:
 
 ```elixir
-field(:teams, list_of(:team), resolve: dataloader(Nhl))
+field(:posts, list_of(:post), resolve: dataloader(Blog))
 ```
 
-It also provides a plugin you need to add to help with resolution:
+Let's start with a data source. Dataloader data sources are just structs that encode
+a way of retrieving data in batches. In a Phoenix application you'll generally have one
+source per context, so that each context can control how its data is loaded.
+
+Here is a hypothetical `Blog` context and a dataloader ecto source:
 
 ```elixir
+defmodule MyApp.Blog do
+  def data() do
+    Dataloader.Ecto.new(MyApp.Repo, query: &query/2)
+  end
+
+  def query(queryable, _params) do
+    queryable
+  end
+end
+```
+
+When integrating Dataloader with GraphQL, we want to place it in our context so
+that we can access it in our resolvers. In your schema module add:
+
+```elixir
+alias MyApp.{Blog, Foo}
+
+def context(ctx) do
+  loader =
+    Dataloader.new
+    |> Dataloader.add_source(Blog, Blog.data())
+    |> Dataloader.add_source(Foo, Foo.data()) # Foo source could be a Redis source
+
+  Map.put(ctx, :loader, loader)
+end
+
 def plugins do
   [Absinthe.Middleware.Dataloader] ++ Absinthe.Plugin.defaults()
 end
 ```
 
-Finally you need to make sure your loader is in your context:
+The `context/1` function is a callback specified by the `Absinthe.Schema` behaviour that gives
+the schema itself an opportunity to set some values in the context that it may need in order to run.
+
+The `plugins/0` function has been around for a while, and specifies what plugins the schema needs to resolve.
+See [the documentation](https://hexdocs.pm/absinthe/Absinthe.Schema.html#c:plugins/0) for more.
+
+#### Unpacking Dataloader
+
+The `data/0` function creates an Ecto data source, to which you pass your repo and a query function. This query function
+is called every time you want to load something, and provides an opportunity to apply arguments or
+set defaults. So for example if you always want to only load non-deleted posts you can do:
 
 ```elixir
-def context(ctx) do
-  loader =
-    Dataloader.new()
-    |> Dataloader.add_source(Nhl, Nhl.data())
-
-  Map.put(ctx, :loader, loader)
+def query(Post, _) do
+  from p in Post, where: is_nil(p.deleted_at)
+end
+def query(queryable, _) do
+  queryable
 end
 ```
 
-Putting all that together looks like this:
-
-```elixir
-defmodule MyProject.Schema do
-  use Absinthe.Schema
-  use Absinthe.Schema.Notation
-
-  import Absinthe.Resolution.Helpers, only: [dataloader: 1]
-
-  alias MyProject.Loaders.Nhl
-
-  def context(ctx) do
-    loader =
-      Dataloader.new()
-      |> Dataloader.add_source(Nhl, Nhl.data())
-
-    Map.put(ctx, :loader, loader)
-  end
-
-  def plugins do
-    [Absinthe.Middleware.Dataloader] ++ Absinthe.Plugin.defaults()
-  end
-
-  object :team do
-    field(:id, non_null(:id))
-    field(:name, non_null(:string))
-    field(:city, non_null(:string))
-  end
-
-  query do
-    field(:teams, list_of(:team), resolve: dataloader(Nhl))
-    field :team, :team do
-      arg(:id, non_null(:id))
-      resolve(dataloader(Nhl))
-    end
-  end
-end
-```
+Now any time you're loading posts, you'll just get posts that haven't been
+deleted. Helpfully, this rule is defined within your context, helping ensure
+that it has the final say about data access.
 
 ### Sources
 
