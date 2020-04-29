@@ -157,3 +157,5 @@ end
 This is the purpose of the `fetch/2` function. The `dataloader/1` helper we imported above uses the field name as the batch, and a map where the argument name is the key. For example: `fetch(:team, [%{ id: 1 }])`
 
 Pattern matching can be used to fetch differently depending on the batch. For example, when the :teams batch is requested, the args will actually be an empty map (i.e. `%{}`).
+
+If you’re interested in more generic use of Dataloader, see the [dataloader project source](https://github.com/absinthe-graphql/dataloader).
