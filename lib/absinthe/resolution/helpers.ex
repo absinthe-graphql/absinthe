@@ -199,7 +199,7 @@ defmodule Absinthe.Resolution.Helpers do
     def dataloader(source, opts) when is_list(opts) do
       fn parent, args, %{context: %{loader: loader}} = res ->
         resource = res.definition.schema_node.identifier
-        do_dataloader(loader, source, resource, args, parent, opts)
+        do_dataloader(loader, source, {resource, args}, parent, opts)
       end
     end
 
@@ -302,42 +302,61 @@ defmodule Absinthe.Resolution.Helpers do
             dataloader_key_fun
     def dataloader(source, fun, opts) when is_function(fun, 3) do
       fn parent, args, %{context: %{loader: loader}} = res ->
-        {resource, args} = fun.(parent, args, res)
-        do_dataloader(loader, source, resource, args, parent, opts)
+        {batch_key, parent} =
+          case fun.(parent, args, res) do
+            {resource, args} -> {{resource, args}, parent}
+            %{batch: batch, item: item} -> {batch, item}
+          end
+
+        do_dataloader(loader, source, batch_key, parent, opts)
       end
     end
 
     def dataloader(source, resource, opts) do
       fn parent, args, %{context: %{loader: loader}} ->
-        do_dataloader(loader, source, resource, args, parent, opts)
+        do_dataloader(loader, source, {resource, args}, parent, opts)
       end
     end
 
-    defp use_parent(loader, source, resource, parent, args, opts) when is_map(parent) do
+    defp use_parent(loader, source, batch_key, parent, opts) when is_map(parent) do
+      resource =
+        case batch_key do
+          {_cardinality, resource, _args} -> resource
+          {resource, _args} -> resource
+        end
+
       with true <- Keyword.get(opts, :use_parent, false),
            {:ok, val} <- Map.fetch(parent, resource) do
-        Dataloader.put(loader, source, {resource, args}, parent, val)
+        Dataloader.put(loader, source, batch_key, parent, val)
       else
         _ -> loader
       end
     end
 
-    defp use_parent(loader, _source, _resource, _parent, _args, _opts), do: loader
+    defp use_parent(loader, _source, _batch_key, _parent, _opts), do: loader
 
-    defp do_dataloader(loader, source, resource, args, parent, opts) do
-      args =
-        opts
-        |> Keyword.get(:args, %{})
-        |> Map.merge(args)
+    defp do_dataloader(loader, source, batch_key, parent, opts) do
+      args_from_opts = Keyword.get(opts, :args, %{})
+
+      {batch_key, args} =
+        case batch_key do
+          {cardinality, resource, args} ->
+            args = Map.merge(args_from_opts, args)
+            {{cardinality, resource, args}, args}
+
+          {resource, args} ->
+            args = Map.merge(args_from_opts, args)
+            {{resource, args}, args}
+        end
 
       loader
-      |> use_parent(source, resource, parent, args, opts)
-      |> Dataloader.load(source, {resource, args}, parent)
+      |> use_parent(source, batch_key, parent, opts)
+      |> Dataloader.load(source, batch_key, parent)
       |> on_load(fn loader ->
         callback = Keyword.get(opts, :callback, default_callback(loader))
 
         loader
-        |> Dataloader.get(source, {resource, args}, parent)
+        |> Dataloader.get(source, batch_key, parent)
         |> callback.(parent, args)
       end)
     end
