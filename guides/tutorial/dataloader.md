@@ -1,6 +1,6 @@
 # Dataloader
 
-Maybe you like good performance, or you realized that you are filling your objects with fields that need resolvers like 
+Maybe you like good performance, or you realized that you are filling your objects with fields that need resolvers like
 
 ```elixir
 @desc "A user of the blog"
@@ -17,7 +17,7 @@ Maybe you like good performance, or you realized that you are filling your objec
 
 This is going to get tedious and error-prone very quickly what if we could support a query that supports associations like
 
-```elixir 
+```elixir
 @desc "A user of the blog"
   object :user do
     field :id, :id
@@ -26,7 +26,7 @@ This is going to get tedious and error-prone very quickly what if we could suppo
     field :posts, list_of(:post) do
        arg :date, :date
        resolve: dataloader(Content))
-   end 
+   end
   end
 ```
 
@@ -39,7 +39,7 @@ Let's start by adding `dataloader` as a dependency in `mix.exs`:
 ```elixir
 defp deps do
   [
-    {:dataloader, "~> 1.0.4"}
+    {:dataloader, "~> 1.0.7"}
     << other deps >>
   ]
 ```
@@ -50,11 +50,11 @@ In `lib/blog/content.ex`:
 
 ```elixir
   def data(), do: Dataloader.Ecto.new(Repo, query: &query/2)
-  
+
   def query(queryable, params) do
-    
+
     queryable
-  end 
+  end
 ```
 
 This sets up a loader that can use pattern matching to load different rules for different queryables, also note this function is passed in the context as the second parameter and that can be used for further filtering.
@@ -64,7 +64,7 @@ Then let's add a configuration to our schema (in `lib/blog_web/schema.ex`) so th
 ```elixir
 defmodule BlogWeb.Schema do
   use Absinthe.Schema
-  
+
   def context(ctx) do
      loader =
        Dataloader.new()
@@ -91,13 +91,13 @@ The loader is all set up, now let's modify the resolver to use Dataloader. In `l
     field :posts, list_of(:post) do
        arg :date, :date
        resolve: dataloader(Content))
-   end 
+   end
   end
 ```
 
 That's it! You are now loading associations using [Dataloader](https://github.com/absinthe-graphql/dataloader)
 
-## More Examples 
+## More Examples
 While the above examples are simple and straightforward we can use other strategies with loading associations consider the following:
 
 ```elixir

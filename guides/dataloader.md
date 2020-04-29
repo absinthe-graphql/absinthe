@@ -83,16 +83,25 @@ is called every time you want to load something, and provides an opportunity to 
 set defaults. So for example if you always want to only load non-deleted posts you can do:
 
 ```elixir
-def query(Post, _) do
-  from p in Post, where: is_nil(p.deleted_at)
-end
-def query(queryable, _) do
-  queryable
-end
+def query(Post, _), do: from p in Post, where: is_nil(p.deleted_at)
+
+def query(queryable, _), do: queryable
 ```
 
 Now any time you're loading posts, you'll just get posts that haven't been
-deleted. Helpfully, this rule is defined within your context, helping ensure
+deleted.
+
+We can also use the context to ensure access conditions, so we can only show views for admins:
+
+```elixir
+def query(Post, %{has_admin_rights: true}), do: query
+
+def query(Post, _), do: from(Post in query, select_merge: %{views: nil})
+
+def query(queryable, _), do: queryable
+```
+
+Helpfully, those rules are defined within your context, helping ensure
 that it has the final say about data access.
 
 ### Sources
