@@ -55,15 +55,6 @@ defmodule Absinthe.Middleware.Batch do
   are the second argument to the batching function.
   - `fn batch_results`: This function takes the results from the batching function.
   it should return one of the resolution function values.
-
-  Clearly some of this could be derived for ecto functions. Check out the Absinthe.Ecto
-  library for something that provides this:
-
-  ```elixir
-  field :author, :user, resolve: assoc(:author)
-  ```
-
-  Such a function could be easily built upon the API of this module.
   """
 
   @behaviour Absinthe.Middleware
