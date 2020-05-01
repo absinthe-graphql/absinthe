@@ -183,6 +183,8 @@ defmodule Absinthe.Phase.Schema do
   end
 
   defp set_schema_node(%Blueprint.Input.Value{} = node, parent, schema, _) do
+    binding() |> IO.inspect(label: :set_schema_node)
+
     case parent.schema_node do
       %Type.Argument{type: type} ->
         %{node | schema_node: type |> Type.expand(schema)}

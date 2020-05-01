@@ -50,6 +50,7 @@ defmodule Absinthe.Pipeline do
       {Phase.Parse, options},
       # Convert to Blueprint
       {Phase.Blueprint, options},
+      Phase.Debug,
       # Find Current Operation (if any)
       {Phase.Document.Validation.ProvidedAnOperation, options},
       {Phase.Document.CurrentOperation, options},
@@ -75,6 +76,7 @@ defmodule Absinthe.Pipeline do
       {Phase.Schema, options},
       # Ensure Types
       Phase.Validation.KnownTypeNames,
+      Phase.Document.Arguments.VariableTypesMatch,
       # Process Arguments
       Phase.Document.Arguments.CoerceEnums,
       Phase.Document.Arguments.CoerceLists,
