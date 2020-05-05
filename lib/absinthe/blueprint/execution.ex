@@ -41,7 +41,8 @@ defmodule Absinthe.Blueprint.Execution do
     result: nil,
     acc: %{},
     context: %{},
-    root_value: %{}
+    root_value: %{},
+    current_ref: 0
   ]
 
   @type t :: %__MODULE__{

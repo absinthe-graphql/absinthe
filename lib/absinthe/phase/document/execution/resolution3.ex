@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Document.Execution.Resolution2 do
+defmodule Absinthe.Phase.Document.Execution.Resolution3 do
   @moduledoc false
 
   # Runs resolution functions in a blueprint.
@@ -47,33 +47,81 @@ defmodule Absinthe.Phase.Document.Execution.Resolution2 do
     plugins = bp_root.schema.plugins()
     run_callbacks? = Keyword.get(options, :plugin_callbacks, true)
 
-    stack =
+    {result_stacks, work} =
       case start do
         nil ->
-          result = %Result.Object{
+          base_result = %Result.Object{
             root_value: exec.root_value,
-            ref: cut_ref(),
-            emitter: operation
+            emitter: operation,
+            ref: cut_ref()
           }
 
-          stack = [{:result, :top, result}]
-          push(stack, operation.selections, result)
+          stacks = %{
+            0 => [{:top, base_result}]
+          }
 
-        stack ->
-          stack
+          work = next_work(base_result)
+
+          {stacks, work}
       end
 
-    {result, exec} = resolve(stack, [], exec)
+    {result, exec} =
+      resolve(
+        work,
+        Map.fetch!(result_stacks, 0),
+        result_stacks,
+        bp_root.execution.current_ref,
+        exec
+      )
 
     %{exec | result: result}
   end
 
-  defp push(stack, [], _) do
-    stack
+  defp next_work(%Result.Object{emitter: emitter} = obj) do
+    for field <- emitter.selections do
+      {:work, obj, field}
+    end
   end
 
-  defp push(stack, [field | fields], parent) do
-    push([{:field, parent, field} | stack], fields, parent)
+  defp next_work(%Result.Leaf{}) do
+    []
+  end
+
+  @type result :: Result.Object.t() | Result.List.t() | Result.Leaf.t()
+  @spec next_work(result) :: [{:work, Result.Object.t() | Result.List.t(), term}]
+
+  def resolve(
+        [{:work, parent, field} | remaining_work],
+        result_stack,
+        result_stacks,
+        ref_counter,
+        exec
+      ) do
+    case resolve_field(exec, parent, [], field) do
+      %{state: :resolved} = res ->
+        exec = update_persisted_fields(exec, res)
+
+        result = build_result(exec, parent, [], res)
+
+        next_work = next_work(result)
+
+        remaining_work = next_work ++ remaining_work
+        result_stack = [{parent.ref, result} | result_stack]
+        resolve(remaining_work, result_stack, result_stacks, ref_counter, exec)
+
+      %{state: :suspended} = res ->
+        raise "suspended fields not yet supported"
+
+      final_res ->
+        raise """
+        Should have halted or suspended middleware
+        Ended with: #{inspect(final_res)}
+        """
+    end
+  end
+
+  def resolve([], current_stack, stacks, ref_counter, exec) do
+    {Map.put(stacks, ref_counter, current_stack), exec}
   end
 
   defp run_callbacks(plugins, callback, acc, true) do
@@ -82,65 +130,27 @@ defmodule Absinthe.Phase.Document.Execution.Resolution2 do
 
   defp run_callbacks(_, _, acc, _), do: acc
 
-  defp resolve([], result, exec) do
-    {result |> :lists.reverse(), exec}
-  end
-
-  defp resolve([{:result, _, _} = result | rest], results, exec) do
-    resolve(rest, [result | results], exec)
-  end
-
-  defp resolve([{:field, parent, field} | stack], results, exec) do
-    {stack, exec} = resolve_field2(stack, exec, parent, [], field)
-    resolve(stack, results, exec)
-  end
-
-  def resolve_field2(stack, exec, parent, path, field) do
+  def resolve_field2(exec, parent, path, field) do
     case field.schema_node.middleware do
       [{Absinthe.Middleware.MapGet, key}] ->
         value = Map.get(parent.root_value, key)
 
-        res = %{
+        %Absinthe.Resolution{
           value: value,
           definition: field,
           extensions: %{},
           errors: []
         }
 
-        build_result(stack, exec, parent, path, res)
-
       _ ->
-        resolve_field(stack, exec, parent, path, field)
+        resolve_field(exec, parent, path, field)
     end
   end
 
-  def resolve_field(stack, exec, parent, path, field) do
-    res =
-      build_resolution_struct(exec, field, parent.root_value, parent.emitter.schema_node, path)
-
-    do_resolve_field(stack, exec, parent, path, res)
-  end
-
-  # bp_field needs to have a concrete schema node, AKA no unions or interfaces
-  defp do_resolve_field(stack, exec, parent, path, res) do
-    res
+  def resolve_field(exec, parent, path, field) do
+    exec
+    |> build_resolution_struct(field, parent.root_value, parent.emitter.schema_node, path)
     |> reduce_resolution
-    |> case do
-      %{state: :resolved} = res ->
-        exec = update_persisted_fields(exec, res)
-        build_result(stack, exec, parent, path, res)
-
-      %{state: :suspended} = res ->
-        exec = update_persisted_fields(exec, res)
-        {res, exec}
-
-      final_res ->
-        raise """
-        Should have halted or suspended middleware
-        Started with: #{inspect(res)}
-        Ended with: #{inspect(final_res)}
-        """
-    end
   end
 
   defp update_persisted_fields(dest, %{acc: acc, context: context, fields_cache: cache}) do
@@ -190,7 +200,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution2 do
     fun.(res, [])
   end
 
-  defp build_result(stack, exec, parent, path, %{errors: errors} = res) do
+  defp build_result(exec, parent, path, %{errors: errors} = res) do
     %{
       value: value,
       definition: bp_field,
@@ -210,26 +220,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution2 do
 
     errors = maybe_add_non_null_error(errors, value, full_type)
 
-    result = to_result(value, bp_field, full_type, extensions)
-    {next_work(stack, List.wrap(result), bp_field, parent.ref), exec}
-  end
-
-  defp next_work(stack, [], _, _) do
-    stack
-  end
-
-  defp next_work(stack, [%Result.Object{} = obj | rest], bp_field, parent_ref) do
-    [{:result, parent_ref, obj} | stack]
-    |> push(bp_field.selections, obj)
-    |> next_work(rest, bp_field, parent_ref)
-  end
-
-  defp next_work(stack, [%Result.List{} = list | rest], bp_field, parent_ref) do
-    next_work([{:result, parent_ref, list} | stack], rest, bp_field, list.ref)
-  end
-
-  defp next_work(stack, [%Result.Leaf{} = leaf | rest], bp_field, parent_ref) do
-    next_work([{:result, parent_ref, leaf} | stack], rest, bp_field, parent_ref)
+    to_result(value, bp_field, full_type, extensions)
   end
 
   # defp add_list_values(stack, [], parent_ref) do
@@ -376,21 +367,14 @@ defmodule Absinthe.Phase.Document.Execution.Resolution2 do
     }
   end
 
-  defp to_result(root_value, blueprint, %Type.List{of_type: inner_type}, extensions) do
-    values =
-      for value <- List.wrap(root_value) do
-        to_result(value, blueprint, inner_type, extensions)
-      end
-
-    list = %Result.List{
-      root_value: root_value,
+  defp to_result(root_value, blueprint, %Type.List{}, extensions) do
+    %Result.List{
+      root_value: List.wrap(root_value),
       values: nil,
       emitter: blueprint,
       extensions: extensions,
       ref: cut_ref()
     }
-
-    [list | values]
   end
 
   defp to_result(root_value, blueprint, %Type.Scalar{}, extensions) do
@@ -420,6 +404,8 @@ defmodule Absinthe.Phase.Document.Execution.Resolution2 do
   end
 
   def cut_ref() do
-    :erlang.unique_integer()
+    ref = Process.get({__MODULE__, :ref}, 0)
+    Process.put({__MODULE__, :ref}, ref + 1)
+    ref
   end
 end

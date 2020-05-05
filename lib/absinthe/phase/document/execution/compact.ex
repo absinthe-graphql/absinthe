@@ -14,32 +14,32 @@ defmodule Absinthe.Phase.Document.Execution.Compact do
 
   @spec run(Blueprint.t(), Keyword.t()) :: Phase.result_t()
   def run(bp_root, options \\ []) do
-    {:ok, update_in(bp_root.execution.result, &compact/1)}
+    {:ok, update_in(bp_root.execution.result, &to_tree/1)}
   end
 
-  defp compact(result) when is_list(result) do
+  defp to_tree(%{0 => result}) do
     result |> length |> IO.inspect(label: :nodes)
     # result |> view
     compact(result, %{})
   end
 
-  defp compact([{:result, :top, %Result.Object{} = top}], buffers) do
+  defp compact([{:top, %Result.Object{} = top}], buffers) do
     %{top | fields: Map.fetch!(buffers, top.ref)}
   end
 
-  defp compact([{:result, parent, %Result.Leaf{} = result} | rest], buffers) do
+  defp compact([{parent, %Result.Leaf{} = result} | rest], buffers) do
     buffers = Map.update(buffers, parent, [result], &[result | &1])
     compact(rest, buffers)
   end
 
-  defp compact([{:result, parent, %Result.List{} = result} | rest], buffers) do
+  defp compact([{parent, %Result.List{} = result} | rest], buffers) do
     {values, buffers} = Map.pop(buffers, result.ref, [])
     result = %{result | values: values}
     buffers = Map.update(buffers, parent, [result], &[result | &1])
     compact(rest, buffers)
   end
 
-  defp compact([{:result, parent, %Result.Object{} = result} | rest], buffers) do
+  defp compact([{parent, %Result.Object{} = result} | rest], buffers) do
     {fields, buffers} = Map.pop(buffers, result.ref, [])
     result = %{result | fields: fields}
     buffers = Map.update(buffers, parent, [result], &[result | &1])
