@@ -44,12 +44,12 @@ defmodule Absinthe.Phase.Document.Arguments.VariableTypesMatch do
 
   def check_variable_types(%Operation{} = op) do
     variable_defs = Map.new(op.variable_definitions, &{&1.name, &1})
-    Blueprint.prewalk(op, &check_var_type(&1, op, variable_defs))
+    Blueprint.prewalk(op, &check_var_type(&1, op.name, variable_defs))
   end
 
   def check_variable_types(%Operation{} = op, %Fragment.Named{} = fragment) do
     variable_defs = Map.new(op.variable_definitions, &{&1.name, &1})
-    Blueprint.prewalk(fragment, &check_var_type(&1, op, variable_defs))
+    Blueprint.prewalk(fragment, &check_var_type(&1, op.name, variable_defs))
   end
 
   defp check_var_type(%{schema_node: nil} = node, _, _) do
@@ -61,7 +61,7 @@ defmodule Absinthe.Phase.Document.Arguments.VariableTypesMatch do
            raw: %{content: %Blueprint.Input.Variable{} = var},
            schema_node: schema_node
          } = node,
-         %Operation{} = op,
+         op_name,
          variable_defs
        ) do
     case Map.fetch(variable_defs, var.name) do
@@ -76,7 +76,7 @@ defmodule Absinthe.Phase.Document.Arguments.VariableTypesMatch do
             put_error(var, %Absinthe.Phase.Error{
               phase: __MODULE__,
               message:
-                error_message(op.name, var.name, var_schema_type.name, arg_schema_type.name),
+                error_message(op_name, var.name, var_schema_type.name, arg_schema_type.name),
               locations: [var.source_location]
             })
 
