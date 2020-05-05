@@ -95,8 +95,12 @@ defmodule Absinthe.Phase.Document.Arguments.VariableTypesMatch do
   end
 
   def error_message(op, var_name, var_type, arg_type) do
-    "In operation `#{op}`, variable `#{var_name}` of type `#{var_type}` found as input to argument of type `#{
-      arg_type
-    }`."
+    start =
+      case op || "" do
+        "" -> "Variable"
+        op -> "In operation `#{op}, variable"
+      end
+
+    "#{start} `#{var_name}` of type `#{var_type}` found as input to argument of type `#{arg_type}`."
   end
 end

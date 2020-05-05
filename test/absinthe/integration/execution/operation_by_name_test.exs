@@ -2,7 +2,7 @@ defmodule Elixir.Absinthe.Integration.Execution.OperationByNameTest do
   use Absinthe.Case, async: true
 
   @query """
-  query ThingFoo($id: ID!) {
+  query ThingFoo($id: String!) {
     thing(id: $id) {
       name
     }

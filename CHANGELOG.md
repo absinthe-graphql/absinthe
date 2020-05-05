@@ -4,6 +4,8 @@ For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe
 
 ## v1.5.0 (Rc)
 
+- Breaking Bug Fix: Variable types must align exactly with the argument type. Previously
+Absinthe allowed variables of different types to be used by accident as long as the data parsed.
 - Feature (Experimental): `:persistent_term` based schema backend
 - Breaking Change: `telemetry` event keys [changed](https://github.com/absinthe-graphql/absinthe/pull/901) since the beta release.
 
