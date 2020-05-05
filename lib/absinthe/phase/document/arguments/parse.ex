@@ -8,7 +8,6 @@ defmodule Absinthe.Phase.Document.Arguments.Parse do
   use Absinthe.Phase
 
   def run(input, options \\ []) do
-    IO.puts("running")
     result = Blueprint.prewalk(input, &handle_node(&1, options[:context] || %{}))
     {:ok, result}
   end
@@ -18,10 +17,7 @@ defmodule Absinthe.Phase.Document.Arguments.Parse do
   end
 
   defp handle_node(%Input.Value{normalized: normalized} = node, context) do
-    IO.inspect(node, label: :blah)
-
-    with :ok <- validate_type(node),
-         {:ok, value} <- build_value(normalized, node.schema_node, context) do
+    with {:ok, value} <- build_value(normalized, node.schema_node, context) do
       %{node | data: value}
     else
       :not_leaf_node ->
@@ -33,11 +29,6 @@ defmodule Absinthe.Phase.Document.Arguments.Parse do
   end
 
   defp handle_node(node, _context), do: node
-
-  defp validate_type(%{normalized: %{schema_node: value_type}, schema_node: arg_type} = node) do
-    binding |> IO.inspect()
-    :ok
-  end
 
   defp build_value(%Input.Null{}, %Type.NonNull{}, _) do
     {:error, :non_null}
