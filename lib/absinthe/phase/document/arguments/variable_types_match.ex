@@ -18,45 +18,28 @@ defmodule Absinthe.Phase.Document.Arguments.VariableTypesMatch do
   end
 
   def check_operations(%Blueprint{} = blueprint) do
-    blueprint.operations
-    |> Enum.reduce(blueprint, fn operation, blueprint ->
-      update_operation(blueprint, operation, &check_variable_types/1)
+    blueprint
+    |> Map.update!(:operations, fn operations ->
+      Enum.map(operations, &check_variable_types/1)
     end)
   end
 
+  # A single fragment may be used by multiple operations.
+  # Each operation may define its own variables.
+  # This checks that each fragment is simultaneously consistent with the
+  # variables defined in each of the operations which use that fragment.
   def check_fragments(%Blueprint{} = blueprint) do
-    blueprint.fragments
-    |> Enum.reduce(blueprint, fn fragment, blueprint ->
-      blueprint.operations
-      |> Enum.filter(&Operation.uses?(&1, fragment))
-      |> Enum.reduce(blueprint, fn operation, blueprint ->
-        update_fragment(blueprint, fragment, &check_variable_types(operation, &1))
+    blueprint
+    |> Map.update!(:fragments, fn fragments ->
+      fragments
+      |> Enum.map(fn fragment ->
+        blueprint.operations
+        |> Enum.filter(&Operation.uses?(&1, fragment))
+        |> Enum.reduce(fragment, fn operation, fragment_acc ->
+          check_variable_types(operation, fragment_acc)
+        end)
       end)
     end)
-  end
-
-  defp update_operation(%Blueprint{} = blueprint, %Operation{name: name} = operation, fun) do
-    operations =
-      blueprint.operations
-      |> Enum.map(fn
-        # operations are unique by name
-        %{name: ^name} -> fun.(operation)
-        other -> other
-      end)
-
-    %{blueprint | operations: operations}
-  end
-
-  defp update_fragment(%Blueprint{} = blueprint, %Fragment.Named{name: name} = fragment, fun) do
-    fragments =
-      blueprint.fragments
-      |> Enum.map(fn
-        # named_fragments are unique by name
-        %{name: ^name} -> fun.(fragment)
-        other -> other
-      end)
-
-    %{blueprint | fragments: fragments}
   end
 
   def check_variable_types(%Operation{} = op) do
