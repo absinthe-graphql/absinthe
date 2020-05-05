@@ -21,9 +21,10 @@ defmodule Absinthe.Phase.Document.Arguments.Parse do
   end
 
   defp handle_node(%Input.Value{normalized: normalized} = node, context) do
-    with {:ok, value} <- build_value(normalized, node.schema_node, context) do
-      %{node | data: value}
-    else
+    case build_value(normalized, node.schema_node, context) do
+      {:ok, value} ->
+        %{node | data: value}
+
       :not_leaf_node ->
         node
 
