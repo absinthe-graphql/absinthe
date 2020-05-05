@@ -3,6 +3,11 @@ defmodule Absinthe.Phase.Document.Validation.VariablesOfCorrectTypeTest do
 
   use Absinthe.ValidationPhaseCase, async: true, phase: @phase
 
+  defp error_message(op, variable_name, var_type, arg_type) do
+    var = %Absinthe.Blueprint.Input.Variable{name: variable_name}
+    @phase.error_message(op, var, var_type, arg_type)
+  end
+
   test "types of variables match types of arguments" do
     {:ok, %{errors: errors}} =
       Absinthe.run(
@@ -17,7 +22,7 @@ defmodule Absinthe.Phase.Document.Validation.VariablesOfCorrectTypeTest do
         variables: %{"intArg" => 5}
       )
 
-    expected_error_msg = @phase.error_message("test", "intArg", "Int", "String")
+    expected_error_msg = error_message("test", "intArg", "Int", "String")
     assert expected_error_msg in (errors |> Enum.map(& &1.message))
   end
 
@@ -35,7 +40,7 @@ defmodule Absinthe.Phase.Document.Validation.VariablesOfCorrectTypeTest do
         variables: %{"intArg" => nil}
       )
 
-    expected_error_msg = @phase.error_message("test", "intArg", "Int", "String")
+    expected_error_msg = error_message("test", "intArg", "Int", "String")
     assert expected_error_msg in (errors |> Enum.map(& &1.message))
   end
 
@@ -57,7 +62,7 @@ defmodule Absinthe.Phase.Document.Validation.VariablesOfCorrectTypeTest do
         variables: %{"intArg" => 5}
       )
 
-    expected_error_msg = @phase.error_message("test", "intArg", "Int", "String")
+    expected_error_msg = error_message("test", "intArg", "Int", "String")
     assert expected_error_msg in (errors |> Enum.map(& &1.message))
   end
 end

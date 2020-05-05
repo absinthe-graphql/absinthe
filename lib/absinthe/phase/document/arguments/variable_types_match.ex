@@ -75,8 +75,7 @@ defmodule Absinthe.Phase.Document.Arguments.VariableTypesMatch do
           var_with_error =
             put_error(var, %Absinthe.Phase.Error{
               phase: __MODULE__,
-              message:
-                error_message(op_name, var.name, var_schema_type.name, arg_schema_type.name),
+              message: error_message(op_name, var, var_schema_type.name, arg_schema_type.name),
               locations: [var.source_location]
             })
 
@@ -94,13 +93,15 @@ defmodule Absinthe.Phase.Document.Arguments.VariableTypesMatch do
     node
   end
 
-  def error_message(op, var_name, var_type, arg_type) do
+  def error_message(op, variable, var_type, arg_type) do
     start =
       case op || "" do
         "" -> "Variable"
         op -> "In operation `#{op}, variable"
       end
 
-    "#{start} `#{var_name}` of type `#{var_type}` found as input to argument of type `#{arg_type}`."
+    "#{start} `#{Blueprint.Input.inspect(variable)}` of type `#{var_type}` found as input to argument of type `#{
+      arg_type
+    }`."
   end
 end

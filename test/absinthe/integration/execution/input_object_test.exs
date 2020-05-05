@@ -29,9 +29,13 @@ defmodule Elixir.Absinthe.Integration.Execution.InputObjectTest do
             %{
               errors: [
                 %{
+                  locations: [%{column: 26, line: 2}],
+                  message: "Argument \"thing\" has invalid value $input."
+                },
+                %{
                   locations: [%{column: 33, line: 2}],
                   message:
-                    "Variable `input` of type `Boolean` found as input to argument of type `InputThing`."
+                    "Variable `$input` of type `Boolean` found as input to argument of type `InputThing`."
                 }
               ]
             }} ==
