@@ -1008,38 +1008,4 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
       )
     end
   end
-
-  describe "Variables" do
-    test "types of variables match types of arguments" do
-      assert_fails_validation(
-        """
-        query test($intArg: Int!) {
-          complicatedArgs {
-            stringArgField(stringArg: $intArg)
-          }
-        }
-        """,
-        [variables: %{"intArg" => 5}],
-        [
-          bad_argument("stringArg", "String", "1", 3, [])
-        ]
-      )
-    end
-
-    test "types of variables match types of arguments even when the value is null" do
-      assert_fails_validation(
-        """
-        query test($intArg: Int) {
-          complicatedArgs {
-            stringArgField(stringArg: $intArg)
-          }
-        }
-        """,
-        [variables: %{"intArg" => nil}],
-        [
-          bad_argument("stringArg", "String", "1", 3, [])
-        ]
-      )
-    end
-  end
 end
