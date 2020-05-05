@@ -505,7 +505,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
     end
 
     @query """
-    subscription($id: String!) { otherUser(id: $id) { id } }
+    subscription($id: ID!) { otherUser(id: $id) { id } }
     """
     test "subscriptions with the same variables & document have the same subscription_ids" do
       assert {:ok, %{"subscribed" => doc1}} =
@@ -524,7 +524,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
     end
 
     @query """
-    subscription($id: String!) { otherUser(id: $id) { id } }
+    subscription($id: ID!) { otherUser(id: $id) { id } }
     """
     test "subscriptions with different variables but same document have different subscription_ids" do
       assert {:ok, %{"subscribed" => doc1}} =

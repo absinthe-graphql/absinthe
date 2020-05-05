@@ -75,6 +75,7 @@ defmodule Absinthe.Pipeline do
       {Phase.Schema, options},
       # Ensure Types
       Phase.Validation.KnownTypeNames,
+      Phase.Document.Arguments.VariableTypesMatch,
       # Process Arguments
       Phase.Document.Arguments.CoerceEnums,
       Phase.Document.Arguments.CoerceLists,
