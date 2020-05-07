@@ -91,12 +91,12 @@ def query(queryable, _), do: queryable
 Now any time you're loading posts, you'll just get posts that haven't been
 deleted.
 
-We can also use the context to ensure access conditions, so we can only show views for admins:
+We can also use the context to ensure access conditions, so we can only show deleted posts for admins:
 
 ```elixir
-def query(Post, %{has_admin_rights: true}), do: query
+def query(Post, %{has_admin_rights: true}), do: Post
 
-def query(Post, _), do: from(Post in query, select_merge: %{views: nil})
+def query(Post, _), do: from p in Post, where: is_nil(p.deleted_at)
 
 def query(queryable, _), do: queryable
 ```

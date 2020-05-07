@@ -135,6 +135,7 @@ what's actually happening behind the scenes.
 Using Dataloader is as simple as doing:
 
 ```elixir
+alias MyApp.Blog # Dataloader source, see below
 import Absinthe.Resolution.Helpers, only: [dataloader: 1]
 
 object :post do
