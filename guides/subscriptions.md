@@ -198,7 +198,7 @@ subscription {
 }
 ```
 
-This tells Absinthe to subscribe client A in the `:comment_added` field on the `"absinthe-graphql/absinthe"` topic, because that's what comes back from the `setup` function.
+This tells Absinthe to subscribe client A in the `:comment_added` field on the `"absinthe-graphql/absinthe"` topic, because that's what comes back from the `config` function.
 
 Then, if client B submits a mutation:
 
