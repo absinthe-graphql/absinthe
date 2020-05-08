@@ -83,7 +83,7 @@ it would go something like this:
 ```
 
 Your schemas can be further customized using the options available to
-`Absinthe.Schema.Notation.field/4` to help provide for a richer experience for 
+`Absinthe.Schema.Notation.field/4` to help provide for a richer experience for
 your users, customize the field names, or mark fields as deprecated.
 
 ```elixir
@@ -101,7 +101,7 @@ end
 We could also move our type definitions out into a different module, for instance, `MyAppWeb.Schema.Types`, and then use `import_types` in our `MyAppWeb.Schema`:
 
 ```elixir
-# filename: myapp/schema.ex
+# filename: myapp/schema/types.ex
 defmodule MyAppWeb.Schema.Types do
   use Absinthe.Schema.Notation
 
