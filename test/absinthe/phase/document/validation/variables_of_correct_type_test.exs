@@ -26,6 +26,24 @@ defmodule Absinthe.Phase.Document.Validation.VariablesOfCorrectTypeTest do
     assert expected_error_msg in (errors |> Enum.map(& &1.message))
   end
 
+  test "variable type check handles non existent type" do
+    {:ok, %{errors: errors}} =
+      Absinthe.run(
+        """
+        query test($intArg: DoesNotExist!) {
+          complicatedArgs {
+            stringArgField(stringArg: $intArg)
+          }
+        }
+        """,
+        Absinthe.Fixtures.PetsSchema,
+        variables: %{"intArg" => 5}
+      )
+
+    expected_error_msg = "Argument \"stringArg\" has invalid value $intArg."
+    assert expected_error_msg in (errors |> Enum.map(& &1.message))
+  end
+
   test "types of variables match types of arguments even when the value is null" do
     {:ok, %{errors: errors}} =
       Absinthe.run(

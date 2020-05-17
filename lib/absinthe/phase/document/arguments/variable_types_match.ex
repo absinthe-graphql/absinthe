@@ -65,12 +65,12 @@ defmodule Absinthe.Phase.Document.Arguments.VariableTypesMatch do
          variable_defs
        ) do
     case Map.fetch(variable_defs, var.name) do
-      {:ok, %{schema_node: var_schema_type}} when not is_nil(var_schema_type) ->
+      {:ok, %{schema_node: var_schema_type}} ->
         # null vs not null is handled elsewhere
         var_schema_type = Absinthe.Type.unwrap(var_schema_type)
         arg_schema_type = Absinthe.Type.unwrap(schema_node)
 
-        if var_schema_type.name != arg_schema_type.name do
+        if var_schema_type && arg_schema_type && var_schema_type.name != arg_schema_type.name do
           # error
           var_with_error =
             put_error(var, %Absinthe.Phase.Error{
