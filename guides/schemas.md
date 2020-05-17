@@ -29,10 +29,10 @@ defmodule MyAppWeb.Schema do
 end
 ```
 
-<p class="notice">
-  You may want to refer to the <a href="https://hexdocs.pm/absinthe/">Absinthe API
-  documentation</a> for more detailed information as you look this over..
-</p>
+
+You may want to refer to the <a href="https://hexdocs.pm/absinthe/">Absinthe API
+documentation</a> for more detailed information as you look this over..
+
 
 Some macros and functions used here that are worth mentioning, pulled in automatically from
 `Absinthe.Schema.Notation` by `use Absinthe.Schema`:
