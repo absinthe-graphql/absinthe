@@ -1,7 +1,7 @@
 defmodule Absinthe.Mixfile do
   use Mix.Project
 
-  @version "1.5.0-rc.4"
+  @version "1.5.1"
 
   def project do
     [
@@ -71,7 +71,7 @@ defmodule Absinthe.Mixfile do
       {:telemetry, "~> 0.4.0"},
       {:dataloader, "~> 1.0.0", optional: true},
       {:decimal, "~> 1.0", optional: true},
-      {:ex_doc, "~> 0.20", only: :dev},
+      {:ex_doc, "~> 0.21.0", only: :dev},
       {:benchee, ">= 1.0.0", only: :dev},
       {:dialyxir, "~> 1.0.0", only: [:dev, :test], runtime: false},
       {:phoenix_pubsub, ">= 0.0.0", only: :test},
@@ -97,7 +97,6 @@ defmodule Absinthe.Mixfile do
       "guides/tutorial/conclusion.md",
       "guides/schemas.md",
       "guides/plug-phoenix.md",
-      "guides/ecto.md",
       "guides/middleware-and-plugins.md",
       "guides/errors.md",
       "guides/batching.md",

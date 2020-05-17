@@ -159,9 +159,47 @@ defmodule Absinthe.Resolution.Helpers do
     """
     @spec dataloader(Dataloader.source_name()) :: dataloader_key_fun()
     def dataloader(source) do
+      dataloader(source, [])
+    end
+
+    @doc """
+    Resolve a field with a dataloader source.
+
+    This function is not imported by default. To make it available in your module do
+
+    ```
+    import Absinthe.Resolution.Helpers
+    ```
+
+    Same as `dataloader/3`, but it infers the resource name from the field name. For `opts` see
+    `dataloader/3` on what options can be passed in.
+
+    ## Examples
+
+    ```
+    object :user do
+      field :posts, list_of(:post),
+        resolve: dataloader(Blog, args: %{deleted: false})
+
+      field :organization, :organization do
+        resolve dataloader(Accounts, use_parent: false)
+      end
+
+      field(:account_active, non_null(:boolean), resolve: dataloader(
+          Accounts, callback: fn account, _parent, _args ->
+            {:ok, account.active}
+          end
+        )
+      )
+    end
+    ```
+
+    """
+    @spec dataloader(Dataloader.source_name(), [dataloader_opt]) :: dataloader_key_fun()
+    def dataloader(source, opts) when is_list(opts) do
       fn parent, args, %{context: %{loader: loader}} = res ->
         resource = res.definition.schema_node.identifier
-        do_dataloader(loader, source, resource, args, parent, [])
+        do_dataloader(loader, source, {resource, args}, parent, opts)
       end
     end
 
@@ -234,10 +272,11 @@ defmodule Absinthe.Resolution.Helpers do
     the first argument, and the parent and args as second and third. Can be used
     to e.g. compute fields on the return value of the loader. Should return an
     ok or error tuple.
-    - `:use_parent` default: `true`. This option affects whether or not the `dataloader/2`
+    - `:use_parent` default: `false`. This option affects whether or not the `dataloader/2`
     helper will use any pre-existing value on the parent. IE if you return
     `%{author: %User{...}}` from a blog post the helper will by default simply use
-    the pre-existing author. Set it to false if you always want it to load it fresh.
+    the pre-existing author. Set it to true if you want to opt into using the
+    pre-existing value instead of loading it fresh.
 
     Ultimately, this helper calls `Dataloader.load/4`
     using the loader in your context, the source you provide, the tuple `{resource, args}`
@@ -253,6 +292,7 @@ defmodule Absinthe.Resolution.Helpers do
           {:ok, Dataloader.get(loader, source_name, {resource, args}, parent)}
         end)
       end
+    end
     ```
 
     """
@@ -262,48 +302,61 @@ defmodule Absinthe.Resolution.Helpers do
             dataloader_key_fun
     def dataloader(source, fun, opts) when is_function(fun, 3) do
       fn parent, args, %{context: %{loader: loader}} = res ->
-        {resource, args} = fun.(parent, args, res)
-        do_dataloader(loader, source, resource, args, parent, opts)
+        {batch_key, parent} =
+          case fun.(parent, args, res) do
+            {resource, args} -> {{resource, args}, parent}
+            %{batch: batch, item: item} -> {batch, item}
+          end
+
+        do_dataloader(loader, source, batch_key, parent, opts)
       end
     end
 
     def dataloader(source, resource, opts) do
       fn parent, args, %{context: %{loader: loader}} ->
-        do_dataloader(loader, source, resource, args, parent, opts)
+        do_dataloader(loader, source, {resource, args}, parent, opts)
       end
     end
 
-    defp use_parent(loader, source, resource, parent, args, opts) when is_map(parent) do
-      with true <- Keyword.get(opts, :use_parent, true),
-           {:ok, val} <- parent |> Map.fetch(resource) |> check_assoc_loaded() do
-        Dataloader.put(loader, source, {resource, args}, parent, val)
+    defp use_parent(loader, source, batch_key, parent, opts) when is_map(parent) do
+      resource =
+        case batch_key do
+          {_cardinality, resource, _args} -> resource
+          {resource, _args} -> resource
+        end
+
+      with true <- Keyword.get(opts, :use_parent, false),
+           {:ok, val} <- Map.fetch(parent, resource) do
+        Dataloader.put(loader, source, batch_key, parent, val)
       else
         _ -> loader
       end
     end
 
-    defp use_parent(loader, _source, _resource, _parent, _args, _opts), do: loader
+    defp use_parent(loader, _source, _batch_key, _parent, _opts), do: loader
 
-    if Code.ensure_loaded?(Ecto) do
-      defp check_assoc_loaded({:ok, %Ecto.Association.NotLoaded{}}), do: :error
-    end
+    defp do_dataloader(loader, source, batch_key, parent, opts) do
+      args_from_opts = Keyword.get(opts, :args, %{})
 
-    defp check_assoc_loaded(result), do: result
+      {batch_key, args} =
+        case batch_key do
+          {cardinality, resource, args} ->
+            args = Map.merge(args_from_opts, args)
+            {{cardinality, resource, args}, args}
 
-    defp do_dataloader(loader, source, resource, args, parent, opts) do
-      args =
-        opts
-        |> Keyword.get(:args, %{})
-        |> Map.merge(args)
+          {resource, args} ->
+            args = Map.merge(args_from_opts, args)
+            {{resource, args}, args}
+        end
 
       loader
-      |> use_parent(source, resource, parent, args, opts)
-      |> Dataloader.load(source, {resource, args}, parent)
+      |> use_parent(source, batch_key, parent, opts)
+      |> Dataloader.load(source, batch_key, parent)
       |> on_load(fn loader ->
         callback = Keyword.get(opts, :callback, default_callback(loader))
 
         loader
-        |> Dataloader.get(source, {resource, args}, parent)
+        |> Dataloader.get(source, batch_key, parent)
         |> callback.(parent, args)
       end)
     end

@@ -55,15 +55,6 @@ defmodule Absinthe.Middleware.Batch do
   are the second argument to the batching function.
   - `fn batch_results`: This function takes the results from the batching function.
   it should return one of the resolution function values.
-
-  Clearly some of this could be derived for ecto functions. Check out the Absinthe.Ecto
-  library for something that provides this:
-
-  ```elixir
-  field :author, :user, resolve: assoc(:author)
-  ```
-
-  Such a function could be easily built upon the API of this module.
   """
 
   @behaviour Absinthe.Middleware
@@ -142,15 +133,50 @@ defmodule Absinthe.Middleware.Batch do
     input
     |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
     |> Enum.map(fn {{batch_fun, batch_opts}, batch_data} ->
-      {batch_opts,
-       Task.async(fn ->
-         {batch_fun, call_batch_fun(batch_fun, batch_data)}
-       end)}
+      system_time = System.system_time()
+      start_time_mono = System.monotonic_time()
+
+      task =
+        Task.async(fn ->
+          {batch_fun, call_batch_fun(batch_fun, batch_data)}
+        end)
+
+      metadata = emit_start_event(system_time, batch_fun, batch_opts, batch_data)
+
+      {batch_opts, task, start_time_mono, metadata}
     end)
-    |> Map.new(fn {batch_opts, task} ->
+    |> Map.new(fn {batch_opts, task, start_time_mono, metadata} ->
       timeout = Keyword.get(batch_opts, :timeout, 5_000)
-      Task.await(task, timeout)
+      result = Task.await(task, timeout)
+
+      duration = System.monotonic_time() - start_time_mono
+      emit_stop_event(duration, metadata, result)
+
+      result
     end)
+  end
+
+  @batch_start [:absinthe, :middleware, :batch, :start]
+  @batch_stop [:absinthe, :middleware, :batch, :stop]
+  defp emit_start_event(system_time, batch_fun, batch_opts, batch_data) do
+    id = :erlang.unique_integer()
+    metadata = %{id: id, batch_fun: batch_fun, batch_opts: batch_opts, batch_data: batch_data}
+
+    :telemetry.execute(
+      @batch_start,
+      %{system_time: system_time},
+      metadata
+    )
+
+    metadata
+  end
+
+  defp emit_stop_event(duration, metadata, result) do
+    :telemetry.execute(
+      @batch_stop,
+      %{duration: duration},
+      Map.put(metadata, :result, result)
+    )
   end
 
   defp call_batch_fun({module, fun}, batch_data) do

@@ -57,7 +57,6 @@ defmodule Mix.Tasks.Absinthe.Schema.SdlTest do
   defmodule TestSchemaWithMods do
     use Absinthe.Schema
 
-    @behaviour Absinthe.Schema
     @pipeline_modifier TestModifier
 
     query do

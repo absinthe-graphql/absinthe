@@ -29,10 +29,10 @@ defmodule MyAppWeb.Schema do
 end
 ```
 
-<p class="notice">
-  You may want to refer to the <a href="https://hexdocs.pm/absinthe/">Absinthe API
-  documentation</a> for more detailed information as you look this over..
-</p>
+
+You may want to refer to the <a href="https://hexdocs.pm/absinthe/">Absinthe API
+documentation</a> for more detailed information as you look this over..
+
 
 Some macros and functions used here that are worth mentioning, pulled in automatically from
 `Absinthe.Schema.Notation` by `use Absinthe.Schema`:
@@ -83,7 +83,7 @@ it would go something like this:
 ```
 
 Your schemas can be further customized using the options available to
-`Absinthe.Schema.Notation.field/4` to help provide for a richer experience for 
+`Absinthe.Schema.Notation.field/4` to help provide for a richer experience for
 your users, customize the field names, or mark fields as deprecated.
 
 ```elixir
@@ -101,7 +101,7 @@ end
 We could also move our type definitions out into a different module, for instance, `MyAppWeb.Schema.Types`, and then use `import_types` in our `MyAppWeb.Schema`:
 
 ```elixir
-# filename: myapp/schema.ex
+# filename: myapp/schema/types.ex
 defmodule MyAppWeb.Schema.Types do
   use Absinthe.Schema.Notation
 

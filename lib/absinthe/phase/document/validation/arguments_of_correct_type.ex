@@ -3,7 +3,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
 
   # Validates document to ensure that all arguments are of the correct type.
 
-  alias Absinthe.{Blueprint, Phase, Schema, Type}
+  alias Absinthe.{Blueprint, Phase, Phase.Document.Validation.Utils, Schema, Type}
 
   use Absinthe.Phase
 
@@ -13,6 +13,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
   @spec run(Blueprint.t(), Keyword.t()) :: Phase.result_t()
   def run(input, _options \\ []) do
     result = Blueprint.prewalk(input, &handle_node(&1, input.schema))
+
     {:ok, result}
   end
 
@@ -79,7 +80,14 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
     node.fields
     |> Enum.flat_map(fn
       %{flags: %{invalid: _}, schema_node: nil} = child ->
-        [unknown_field_error_message(child.name)]
+        field_suggestions =
+          case Type.unwrap(node.schema_node) do
+            %Type.Scalar{} -> []
+            %Type.Enum{} -> []
+            _ -> suggested_field_names(node.schema_node, child.name)
+          end
+
+        [unknown_field_error_message(child.name, field_suggestions)]
 
       %{flags: %{invalid: _}} = child ->
         child_type_name =
@@ -113,6 +121,13 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
     []
   end
 
+  defp suggested_field_names(schema_node, name) do
+    schema_node.fields
+    |> Map.values()
+    |> Enum.map(& &1.name)
+    |> Absinthe.Utils.Suggestion.sort_list(name)
+  end
+
   # Generate the error for the node
   @spec error(Blueprint.node_t(), String.t()) :: Phase.Error.t()
   defp error(node, message) do
@@ -142,8 +157,15 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
     ~s(In field "#{id}": ) <> expected_type_error_message(expected_type_name, inspected_value)
   end
 
-  def unknown_field_error_message(field_name) do
+  def unknown_field_error_message(field_name, suggestions \\ [])
+
+  def unknown_field_error_message(field_name, []) do
     ~s(In field "#{field_name}": Unknown field.)
+  end
+
+  def unknown_field_error_message(field_name, suggestions) do
+    ~s(In field "#{field_name}": Unknown field.) <>
+      Utils.MessageSuggestions.suggest_message(suggestions)
   end
 
   defp expected_type_error_message(expected_type_name, inspected_value) do

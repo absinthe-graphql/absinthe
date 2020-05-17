@@ -49,7 +49,8 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
       fields: build_fields(type_def, schema),
       interfaces: type_def.interfaces,
       definition: type_def.module,
-      is_type_of: type_def.is_type_of
+      is_type_of: type_def.is_type_of,
+      __private__: type_def.__private__
     }
   end
 

@@ -59,21 +59,23 @@ defmodule Elixir.Absinthe.Integration.Execution.TelemetryTest do
     {:ok, %{data: data}} = Absinthe.run(query, TestSchema, variables: %{"echo" => "ASYNC"})
     assert %{"asyncThing" => "ASYNC", "objectThing" => %{"name" => "Foo"}} == data
 
-    assert_receive {[:absinthe, :execute, :operation, :start], _, %{id: id}, _config}
+    # Operation events
+    assert_receive {[:absinthe, :execute, :operation, :start], measurements, %{id: id}, _config}
+    assert System.convert_time_unit(measurements[:system_time], :native, :millisecond)
 
     assert_receive {[:absinthe, :execute, :operation, :stop], measurements, %{id: ^id} = meta,
                     _config}
 
     assert is_number(measurements[:duration])
-    assert System.convert_time_unit(meta[:start_time], :native, :millisecond)
     assert %Absinthe.Blueprint{} = meta[:blueprint]
     assert meta[:options][:schema] == TestSchema
 
-    assert_receive {[:absinthe, :resolve, :field, :start], _, %{id: id}, _}
-    assert_receive {[:absinthe, :resolve, :field, :stop], measurements, %{id: ^id} = meta, _}
+    # Field events
+    assert_receive {[:absinthe, :resolve, :field, :start], measurements, %{id: id}, _}
+    assert System.convert_time_unit(measurements[:system_time], :native, :millisecond)
 
+    assert_receive {[:absinthe, :resolve, :field, :stop], measurements, %{id: ^id} = meta, _}
     assert is_number(measurements[:duration])
-    assert System.convert_time_unit(meta[:start_time], :native, :millisecond)
     assert %Absinthe.Resolution{} = meta[:resolution]
     assert is_list(meta[:middleware])
 

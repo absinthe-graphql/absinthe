@@ -104,6 +104,8 @@ defmodule SdlRenderTest do
     end
 
     def hydrate(_node, _ancestors), do: []
+
+    def resolve_type(_), do: false
   end
 
   test "Render SDL from blueprint defined with SDL" do

@@ -919,7 +919,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
       )
     end
 
-    test "Partial object, unknown field arg" do
+    test "Partial object, unknown field arg without suggestion" do
       assert_fails_validation(
         """
         {
@@ -939,6 +939,35 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
           3,
           [
             @phase.unknown_field_error_message("unknownField")
+          ]
+        )
+      )
+    end
+
+    test "Partial object, unknown field arg with suggestion" do
+      assert_fails_validation(
+        """
+        {
+          complicatedArgs {
+            complexArgField(complexArg: {
+              requiredField: true,
+              strinField: "value"
+            })
+          }
+        }
+        """,
+        [],
+        bad_argument(
+          "complexArg",
+          "ComplexInput",
+          ~s({requiredField: true, strinField: "value"}),
+          3,
+          [
+            @phase.unknown_field_error_message("strinField", [
+              "string_list_field",
+              "int_field",
+              "string_field"
+            ])
           ]
         )
       )

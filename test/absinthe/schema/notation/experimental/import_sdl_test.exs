@@ -581,15 +581,13 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
                Absinthe.run(@query, Definition)
 
       assert_receive {[:absinthe, :execute, :operation, :start], _, %{id: id}, _config}
-
-      assert_receive {[:absinthe, :execute, :operation, :stop], measurements, %{id: ^id} = meta,
-                      _config}
+      assert_receive {[:absinthe, :execute, :operation, :stop], measurements, %{id: ^id}, _config}
 
       assert_receive {[:absinthe, :resolve, :field, :start], measurements,
-                      %{resolution: %{definition: %{name: "posts"}}} = meta, config}
+                      %{resolution: %{definition: %{name: "posts"}}}, config}
 
       assert_receive {[:absinthe, :resolve, :field, :stop], measurements,
-                      %{resolution: %{definition: %{name: "posts"}}} = meta, config}
+                      %{resolution: %{definition: %{name: "posts"}}}, config}
     end
   end
 end

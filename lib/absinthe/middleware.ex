@@ -298,10 +298,21 @@ defmodule Absinthe.Middleware do
 
   @doc false
   def expand(schema, middleware, field, object) do
-    middleware
-    |> Enum.flat_map(&get_functions/1)
-    |> Absinthe.Schema.Notation.__ensure_middleware__(field, object)
-    |> schema.middleware(field, object)
+    expanded =
+      middleware
+      |> Enum.flat_map(&get_functions/1)
+      |> Absinthe.Schema.Notation.__ensure_middleware__(field, object)
+
+    case middleware do
+      [{:ref, Absinthe.Phase.Schema.Introspection, _}] ->
+        expanded
+
+      [{:ref, Absinthe.Type.BuiltIns.Introspection, _}] ->
+        expanded
+
+      _ ->
+        schema.middleware(expanded, field, object)
+    end
   end
 
   defp get_functions({:ref, module, identifier}) do

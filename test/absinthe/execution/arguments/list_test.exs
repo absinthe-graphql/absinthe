@@ -23,7 +23,7 @@ defmodule Absinthe.Execution.Arguments.ListTest do
   end
 
   @graphql """
-  query ($names: [Name!]!) {
+  query ($names: [InputName!]!) {
     names(names: $names)
   }
   """

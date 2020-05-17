@@ -107,6 +107,26 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
     assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
   end
 
+  test "returning nil from a non null child of non nulls pushes nil all the way up to data" do
+    doc = """
+    {
+      nonNull { nonNull { nonNull(makeNull: true) { __typename }}}
+    }
+    """
+
+    data = nil
+
+    errors = [
+      %{
+        locations: [%{column: 23, line: 2}],
+        message: "Cannot return null for non-nullable field",
+        path: ["nonNull", "nonNull", "nonNull"]
+      }
+    ]
+
+    assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
+  end
+
   test "error propogation to root field returns nil on data" do
     doc = """
     {
