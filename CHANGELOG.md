@@ -2,6 +2,10 @@
 
 For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe/blob/v1.4/CHANGELOG.md) branch.
 
+## 1.5.1
+
+- Bug Fix: #922
+
 ## v1.5.0 (Rc)
 
 - Breaking Bug Fix: Variable types must align exactly with the argument type. Previously
