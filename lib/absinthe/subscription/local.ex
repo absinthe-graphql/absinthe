@@ -39,7 +39,6 @@ defmodule Absinthe.Subscription.Local do
       try do
         pipeline =
           doc.initial_phases
-          |> IO.inspect(limit: :infinity)
           |> Pipeline.replace(
             Phase.Telemetry,
             {Phase.Telemetry, event: [:subscription, :publish, :start]}
