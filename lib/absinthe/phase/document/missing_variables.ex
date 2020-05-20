@@ -16,6 +16,7 @@ defmodule Absinthe.Phase.Document.MissingVariables do
   @spec run(Blueprint.t(), Keyword.t()) :: {:ok, Blueprint.t()}
   def run(input, _options \\ []) do
     node = Blueprint.prewalk(input, &handle_node/1)
+    # IO.inspect node
     {:ok, node}
   end
 
@@ -36,7 +37,10 @@ defmodule Absinthe.Phase.Document.MissingVariables do
 
   defp handle_defaults(node, schema_node) do
     case schema_node do
-      %{default_value: val} when not is_nil(val) ->
+      %{default_value: %Absinthe.Type.UndefinedDefault{}}  ->
+        node
+
+      %{default_value: val}  ->
         fill_default(node, val)
 
       %{deprecation: %{}} ->

@@ -160,7 +160,8 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
 
       resolve fn
         %{name: name}, _ -> {:ok, name}
-        _args, _ -> {:error, "could not find your default nil arg"}
+        _args, _ ->
+          {:error, "could not find your default nil arg"}
      end
     end
   end
