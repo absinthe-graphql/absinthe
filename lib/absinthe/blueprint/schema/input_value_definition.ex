@@ -13,6 +13,7 @@ defmodule Absinthe.Blueprint.Schema.InputValueDefinition do
     # definition
     placement: :argument_definition,
     description: nil,
+    # default_value: nil,
     default_value: Macro.escape(%Absinthe.Type.UndefinedDefault{}),
     default_value_blueprint: nil,
     directives: [],

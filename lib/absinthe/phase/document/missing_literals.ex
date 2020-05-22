@@ -75,16 +75,11 @@ defmodule Absinthe.Phase.Document.MissingLiterals do
     |> Map.values()
     |> Enum.reduce(arguments, fn
       # If it's deprecated without a default, ignore it
-      %{deprecation: %{}, default_value: nil}, arguments ->
+      %{deprecation: %{}, default_value: %Absinthe.Type.UndefinedDefault{}}, arguments ->
         arguments
 
-      # If it has a default value, we want it.
-      %{default_value: val} = schema_node, arguments when not is_nil(val) ->
-        arg = build_node(type, schema_node, val, source_location, adapter, schema)
-        [arg | arguments]
-
       # It isn't deprecated, it is null, and there's no default value. It's missing
-      %{type: %Type.NonNull{}} = missing_mandatory_arg_schema_node, arguments ->
+      %{type: %Type.NonNull{}, default_value: %Absinthe.Type.UndefinedDefault{}} = missing_mandatory_arg_schema_node, arguments ->
         arg =
           type
           |> build_node(
@@ -97,10 +92,14 @@ defmodule Absinthe.Phase.Document.MissingLiterals do
           |> flag_invalid(:missing)
 
         [arg | arguments]
-
       # No default value, and it's allowed to be null. Ignore it.
-      _, arguments ->
+      %{default_value: %Absinthe.Type.UndefinedDefault{}}, arguments ->
         arguments
+
+      # If it has a default value, we want it.
+      %{default_value: val} = schema_node, arguments ->
+        arg = build_node(type, schema_node, val, source_location, adapter, schema)
+        [arg | arguments]
     end)
   end
 
