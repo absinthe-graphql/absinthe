@@ -561,11 +561,12 @@ defmodule Absinthe.Schema.Notation do
   @doc """
   Set the complexity of a field
 
-  For a field, the first argument to the function you supply to complexity/1 is the user arguments -- just as a field's resolver can use user arguments to resolve its value, the complexity function that you provide can use the same arguments to calculate the field's complexity.
+  For a field, the first argument to the function you supply to `complexity/1` is the user arguments -- just as a field's resolver can use user arguments to resolve its value, the complexity function that you provide can use the same arguments to calculate the field's complexity.
 
   The second argument passed to your complexity function is the sum of all the complexity scores of all the fields nested below the current field.
 
-  (If a complexity function accepts three arguments, the third will be an `%Absinthe.Resolution{}` struct, just as with resolvers.)
+  An optional third argument is passed an `Absinthe.Complexity` struct, which includes information
+  like the context passed to `Absinthe.run/3`.
 
   ## Placement
 
