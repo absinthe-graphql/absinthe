@@ -13,7 +13,7 @@ defmodule Absinthe.Blueprint.Schema.InputValueDefinition do
     # definition
     placement: :argument_definition,
     description: nil,
-    default_value: nil,
+    default_value: Macro.escape(%Absinthe.Type.UndefinedDefault{}),
     default_value_blueprint: nil,
     directives: [],
     source_location: nil,
@@ -29,7 +29,7 @@ defmodule Absinthe.Blueprint.Schema.InputValueDefinition do
           name: String.t(),
           description: nil | String.t(),
           type: Blueprint.TypeReference.t(),
-          default_value: Blueprint.Input.t(),
+          default_value: Blueprint.Input.t() | Absinthe.Type.UndefinedDefault.t(),
           default_value_blueprint: Blueprint.Draft.t(),
           directives: [Blueprint.Directive.t()],
           source_location: nil | Blueprint.SourceLocation.t(),

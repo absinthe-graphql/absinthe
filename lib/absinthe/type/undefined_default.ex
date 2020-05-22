@@ -9,5 +9,5 @@ defmodule Absinthe.Type.UndefinedDefault do
     empty: binary
   }
 
-  defstruct empty: "defined"
+  defstruct empty: "undefined"
 end

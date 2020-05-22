@@ -21,7 +21,7 @@ defmodule Absinthe.Phase.Schema.Validation.DefaultEnumValuePresent do
 
   def validate_schema(node), do: node
 
-  def validate_defaults(%{default_value: nil} = node, _) do
+  def validate_defaults(%{default_value: %Absinthe.Type.UndefinedDefault{}} = node, _) do
     node
   end
 

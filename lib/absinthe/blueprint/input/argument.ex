@@ -49,6 +49,9 @@ defmodule Absinthe.Blueprint.Input.Argument do
       %__MODULE__{value: nil} ->
         false
 
+      %__MODULE__{value: %Absinthe.Type.UndefinedDefault{}} ->
+        false
+
       arg ->
         arg
     end)
