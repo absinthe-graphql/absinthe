@@ -16,7 +16,6 @@ defmodule Absinthe.Phase.Document.MissingVariables do
   @spec run(Blueprint.t(), Keyword.t()) :: {:ok, Blueprint.t()}
   def run(input, _options \\ []) do
     node = Blueprint.prewalk(input, &handle_node/1)
-    # IO.inspect node
     {:ok, node}
   end
 
