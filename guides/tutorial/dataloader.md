@@ -119,6 +119,4 @@ def query(query, %{has_admin_rights: true}), do: query
 def query(query, _), do: from(a in query, select_merge: %{street_number: nil})
 ```
 
-This example is from the awesome [EmCasa Application](https://github.com/emcasa/backend/blob/master/apps/re/lib/addresses/addresses.ex) :) you can see how the [author](https://github.com/rhnonose) is only loading street numbers if a user has admin rights and the same used in a [resolver](https://github.com/emcasa/backend/blob/9a0f86c11499be6e1a07d0b0acf1785521eedf7f/apps/re_web/lib/graphql/resolvers/addresses.ex#L11).
-
 Check out the [docs](https://hexdocs.pm/dataloader/) for more non-trivial ways of using Dataloader.
