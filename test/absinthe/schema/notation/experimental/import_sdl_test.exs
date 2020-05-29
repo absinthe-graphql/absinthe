@@ -173,6 +173,10 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       [{:resolve_type, &__MODULE__.titled_resolve_type/2}]
     end
 
+    def hydrate(%{identifier: :content}, _) do
+      [{:resolve_type, &__MODULE__.content_resolve_type/2}]
+    end
+
     def hydrate(%{identifier: :human}, _) do
       [{:is_type_of, &__MODULE__.human_is_type_of/1}]
     end
@@ -217,6 +221,8 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
     def titled_resolve_type(%{duration: _}, _), do: :movie
     def titled_resolve_type(%{pages: _}, _), do: :book
+
+    def content_resolve_type(_, _), do: :comment
 
     def parse_cool_scalar(value), do: {:ok, value}
     def serialize_cool_scalar(%{value: value}), do: value
@@ -322,6 +328,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     test "have correct type references" do
       assert content_union = Absinthe.Schema.lookup_type(Definition, :content)
       assert content_union.types == [:comment, :post]
+      assert content_union.resolve_type
     end
   end
 
