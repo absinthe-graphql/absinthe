@@ -4,6 +4,7 @@ For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe
 
 ## 1.5.1
 
+- Bug Fix: Enable hydrating resolve_type on unions. #938
 - Bug Fix: #922
 
 ## v1.5.0 (Rc)
