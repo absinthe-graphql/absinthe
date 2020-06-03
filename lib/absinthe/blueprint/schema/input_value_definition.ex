@@ -13,7 +13,7 @@ defmodule Absinthe.Blueprint.Schema.InputValueDefinition do
     # definition
     placement: :argument_definition,
     description: nil,
-    default_value: nil,
+    default_value: :nil,
     default_value_blueprint: nil,
     directives: [],
     source_location: nil,

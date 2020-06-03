@@ -36,7 +36,10 @@ defmodule Absinthe.Blueprint.Input.Argument do
       %__MODULE__{input_value: %{normalized: %Blueprint.Input.Null{}}, value: nil} ->
         true
 
-      %__MODULE__{value: nil} ->
+      %__MODULE__{input_value: %{normalized: %Blueprint.Input.Generated{}}, value: nil} ->
+        true
+
+      %__MODULE__{value: :nil} ->
         false
 
       arg ->
