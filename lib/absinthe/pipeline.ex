@@ -80,6 +80,7 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Arguments.CoerceEnums,
       Phase.Document.Arguments.CoerceLists,
       {Phase.Document.Arguments.Parse, options},
+      Phase.Document.FillDefaults,
       Phase.Document.MissingVariables,
       Phase.Document.MissingLiterals,
       Phase.Document.Arguments.FlagInvalid,
