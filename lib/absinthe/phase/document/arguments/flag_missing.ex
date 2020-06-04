@@ -18,28 +18,20 @@ defmodule Absinthe.Phase.Document.Arguments.FlagMissing do
          %Blueprint.Input.Argument{schema_node: schema_node, input_value: %{normalized: nil}} =
            node
        ) do
-    handle_defaults(node, schema_node)
+    flag_missing(node, schema_node)
   end
 
   defp handle_node(
          %Blueprint.Input.Field{schema_node: schema_node, input_value: %{normalized: nil}} = node
        ) do
-    handle_defaults(node, schema_node)
+    flag_missing(node, schema_node)
   end
 
   defp handle_node(node), do: node
 
-  defp handle_defaults(node, schema_node) do
-    case schema_node do
-      # NOTE: can be removed or we have a test missing here?
-      # %{deprecation: %{}} ->
-      #   node
+  #NOTE: find regression or remove dead code
+  # defp flag_missing(node, %{deprecation: %{}}), do: node
 
-      %{type: %Type.NonNull{}} ->
-        node |> flag_invalid(:missing)
-
-      _ ->
-        node
-    end
-  end
+  defp flag_missing(node, %{type: %Type.NonNull{}}), do: node |> flag_invalid(:missing)
+  defp flag_missing(node, _), do: node
 end
