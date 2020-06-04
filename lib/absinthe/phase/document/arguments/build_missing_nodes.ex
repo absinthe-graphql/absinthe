@@ -5,12 +5,9 @@ defmodule Absinthe.Phase.Document.Arguments.BuildMissingNodes do
   #
   # Filling out means inserting a stubbed `Input.Argument` or `Input.Field` struct.
   #
-  # Only those arguments which are non null filled
-  # out.
-  #
-  # If an argument or input object field is non null and missing, it is marked invalid
+  # Only build those nodes when are non null and has no value or if a default. So
+  # it can be used on `FillDefaults` and flag missing, respectively.
 
-  # TODO: it will be basic a build_literal_nodes
   use Absinthe.Phase
   alias Absinthe.{Blueprint, Type}
 
@@ -79,22 +76,14 @@ defmodule Absinthe.Phase.Document.Arguments.BuildMissingNodes do
       %{deprecation: %{}, default_value: nil}, arguments ->
         arguments
 
-      # If it has a default value, we want it.
+      # If it has a default value, we want build it.
       %{default_value: val} = schema_node, arguments when not is_nil(val) ->
-        arg = build_node(type, schema_node, val, source_location, adapter, schema)
+        arg = build_empty_node(type, schema_node, source_location, adapter, schema)
         [arg | arguments]
 
       # It isn't deprecated, it is null, and there's no default value. It's missing
       %{type: %Type.NonNull{}} = schema_node, arguments ->
-        arg =
-          type
-          |> build_node(
-            schema_node,
-            schema_node.default_value,
-            source_location,
-            adapter,
-            schema
-          )
+        arg = build_empty_node(type, schema_node, source_location, adapter, schema)
 
         [arg | arguments]
 
@@ -118,13 +107,12 @@ defmodule Absinthe.Phase.Document.Arguments.BuildMissingNodes do
     end)
   end
 
-  defp build_node(type, schema_node_arg, default, source_location, adapter, schema) do
+  defp build_empty_node(type, schema_node_arg, source_location, adapter, schema) do
     struct!(type, %{
       name: schema_node_arg.name |> build_name(adapter, type),
       input_value: %Blueprint.Input.Value{
-        data: default,
-        normalized:
-          if(is_nil(default), do: nil, else: %Blueprint.Input.Generated{by: __MODULE__}),
+        data: nil,
+        normalized: nil,
         raw: nil,
         schema_node: Type.expand(schema_node_arg.type, schema)
       },
