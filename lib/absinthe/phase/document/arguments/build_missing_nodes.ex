@@ -6,7 +6,7 @@ defmodule Absinthe.Phase.Document.Arguments.BuildMissingNodes do
   # Filling out means inserting a stubbed `Input.Argument` or `Input.Field` struct.
   #
   # Only build those nodes when are non null and has no value or if a default. So
-  # it can be used on `FillDefaults` and flag missing, respectively.
+  # it can be used on `FillDefaults` and `FlagMissing` steps, respectively.
 
   use Absinthe.Phase
   alias Absinthe.{Blueprint, Type}
