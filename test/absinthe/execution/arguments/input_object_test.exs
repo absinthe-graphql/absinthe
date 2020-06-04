@@ -209,7 +209,7 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
     company(name: $name)
   }
   """
-  @tag dev: true
+  @tag skip: true
   test "return nil when default_value is nil for simple input" do
     assert_data(
       %{"company" => nil},
