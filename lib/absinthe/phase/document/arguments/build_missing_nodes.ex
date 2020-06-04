@@ -1,15 +1,16 @@
-defmodule Absinthe.Phase.Document.MissingLiterals do
+defmodule Absinthe.Phase.Document.Arguments.BuildMissingNodes do
   @moduledoc false
 
   # Fills out missing arguments and input object fields.
   #
   # Filling out means inserting a stubbed `Input.Argument` or `Input.Field` struct.
   #
-  # Only those arguments which are non null and / or have a default value are filled
+  # Only those arguments which are non null filled
   # out.
   #
   # If an argument or input object field is non null and missing, it is marked invalid
 
+  # TODO: it will be basic a build_literal_nodes
   use Absinthe.Phase
   alias Absinthe.{Blueprint, Type}
 
@@ -84,17 +85,16 @@ defmodule Absinthe.Phase.Document.MissingLiterals do
         [arg | arguments]
 
       # It isn't deprecated, it is null, and there's no default value. It's missing
-      %{type: %Type.NonNull{}} = missing_mandatory_arg_schema_node, arguments ->
+      %{type: %Type.NonNull{}} = schema_node, arguments ->
         arg =
           type
           |> build_node(
-            missing_mandatory_arg_schema_node,
-            missing_mandatory_arg_schema_node.default_value,
+            schema_node,
+            schema_node.default_value,
             source_location,
             adapter,
             schema
           )
-          |> flag_invalid(:missing)
 
         [arg | arguments]
 
