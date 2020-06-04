@@ -29,7 +29,7 @@ defmodule Absinthe.Phase.Document.Arguments.FlagMissing do
 
   defp handle_node(node), do: node
 
-  #NOTE: find regression or remove dead code
+  # NOTE: find regression or remove dead code
   # defp flag_missing(node, %{deprecation: %{}}), do: node
 
   defp flag_missing(node, %{type: %Type.NonNull{}}), do: node |> flag_invalid(:missing)
