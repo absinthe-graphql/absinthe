@@ -30,8 +30,4 @@ defmodule Absinthe.Schema.Compiled do
   def __absinthe_interface_implementors__(schema_mod) do
     Module.concat([schema_mod, Compiled]).__absinthe_interface_implementors__
   end
-
-  def __absinthe_prototype_schema__(schema_mod) do
-    Module.concat([schema_mod, Compiled]).__absinthe_prototype_schema__
-  end
 end

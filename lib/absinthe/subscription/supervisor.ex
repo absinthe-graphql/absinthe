@@ -4,6 +4,15 @@ defmodule Absinthe.Subscription.Supervisor do
   use Supervisor
 
   def start_link(pubsub, pool_size \\ System.schedulers_online() * 2) do
+    pubsub =
+      case pubsub do
+        [module] when is_atom(module) ->
+          module
+
+        module ->
+          module
+      end
+
     Supervisor.start_link(__MODULE__, {pubsub, pool_size})
   end
 

@@ -106,6 +106,7 @@ defmodule Absinthe.Schema do
 
       @after_compile unquote(__MODULE__)
       @before_compile unquote(__MODULE__)
+      @prototype_schema Absinthe.Schema.Prototype
 
       @schema_provider Absinthe.Schema.Compiled
 
@@ -329,7 +330,7 @@ defmodule Absinthe.Schema do
       end
 
       def __absinthe_prototype_schema__() do
-        @schema_provider.__absinthe_prototype_schema__(__MODULE__)
+        @prototype_schema
       end
     end
   end
