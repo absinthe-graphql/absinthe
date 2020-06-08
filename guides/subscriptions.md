@@ -63,7 +63,7 @@ In your `MyAppWeb.Endpoint` module add:
 use Absinthe.Phoenix.Endpoint
 ```
 
-For your socket, different configurations are used depending on what version of
+For your socket, different configurations are used in `MyAppWeb.UserSocket` depending on what version of
 Phoenix you're using.
 
 #### Phoenix 1.3 and 1.4
