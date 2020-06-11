@@ -104,7 +104,7 @@ which is where all the domain logic for posts lives, invoking its
 `list_posts/0` function, then returns the posts in an `:ok` tuple.
 
 > Resolvers can return a wide variety of results, to include errors and configuration
-> for [advanced plugins](../middleware-and-plugins.md) that further process the data.
+> for [advanced plugins](middleware-and-plugins.html) that further process the data.
 >
 > If you're asking yourself what the implementation of the domain logic looks like, and exactly how
 > the related Ecto schemas are built, read through the code in the [absinthe_tutorial](http://github.com/absinthe-graphql/absinthe_tutorial)
