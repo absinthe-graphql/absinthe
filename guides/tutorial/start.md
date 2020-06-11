@@ -20,4 +20,4 @@ Before you start, it's a good idea to have some background into GraphQL in gener
 
 ## First Step
 
-Let's get started with [our first query](our-first-query.html)!
+Let's get started with [our first query](our-first-query.md)!

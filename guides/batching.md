@@ -192,7 +192,7 @@ end
 
 That's it! If you run a GraphQL query that hits that field, it will be loaded efficiently without N+1.
 
-See the documentation for [Dataloader](dataloader.html) for more information.
+See the documentation for [Dataloader](dataloader.md) for more information.
 
 ### Deprecated in v1.4: Batching with Absinthe.Ecto
 
