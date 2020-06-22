@@ -191,9 +191,16 @@ defmodule SdlRenderTest do
       field :search, :search_result
     end
 
+    enum :order_status do
+      value :delivered
+      value :processing
+      value :picking
+    end
+
     object :order do
       field :id, :id
       field :name, :string
+      field :status, :order_status
       import_fields :imported_fields
     end
 
@@ -233,10 +240,17 @@ defmodule SdlRenderTest do
 
              union SearchResult = Order | Category
 
+             enum OrderStatus {
+               DELIVERED
+               PROCESSING
+               PICKING
+             }
+
              type Order {
                imported: Boolean!
                id: ID
                name: String
+               status: OrderStatus
              }
              """
   end
