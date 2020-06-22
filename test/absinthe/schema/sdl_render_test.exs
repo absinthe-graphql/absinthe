@@ -219,10 +219,10 @@ defmodule SdlRenderTest do
 
              type RootQueryType {
                echo(
-                 timeInterval: Int
-
                  "The number of times"
                  times: Int
+
+                 timeInterval: Int
                ): String
                search: SearchResult
              }

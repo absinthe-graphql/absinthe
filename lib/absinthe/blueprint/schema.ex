@@ -177,6 +177,7 @@ defmodule Absinthe.Blueprint.Schema do
     field =
       field
       |> Map.update!(:middleware, &Enum.reverse/1)
+      |> Map.update!(:arguments, &Enum.reverse/1)
       |> Map.update!(:triggers, &{:%{}, [], &1})
       |> Map.put(:function_ref, {obj.identifier, field.identifier})
 
