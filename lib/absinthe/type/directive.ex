@@ -17,6 +17,7 @@ defmodule Absinthe.Type.Directive do
   * `:description` - A nice description for introspection.
   * `:args` - A map of `Absinthe.Type.Argument` structs. See `Absinthe.Schema.Notation.arg/2`.
   * `:locations` - A list of places the directives can be used.
+  * `:repeatable` - A directive may be defined as repeatable by including the “repeatable” keyword
 
   The `:__reference__` key is for internal use.
   """
@@ -28,6 +29,7 @@ defmodule Absinthe.Type.Directive do
           locations: [location],
           expand: (map, Absinthe.Blueprint.node_t() -> atom),
           definition: module,
+          repeatable: boolean,
           __private__: Keyword.t(),
           __reference__: Type.Reference.t()
         }
@@ -42,6 +44,7 @@ defmodule Absinthe.Type.Directive do
             locations: [],
             expand: nil,
             definition: nil,
+            repeatable: false,
             __private__: [],
             __reference__: nil
 
