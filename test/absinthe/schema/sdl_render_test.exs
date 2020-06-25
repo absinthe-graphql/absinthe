@@ -11,7 +11,7 @@ defmodule SdlRenderTest do
       query: Query
     }
 
-    directive @foo(name: String!) on OBJECT | SCALAR
+    directive @foo(name: String!) repeatable on OBJECT | SCALAR
 
     interface Animal {
       legCount: Int!
