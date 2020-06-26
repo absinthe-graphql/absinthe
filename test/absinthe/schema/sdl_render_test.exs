@@ -191,6 +191,12 @@ defmodule SdlRenderTest do
       field :search, :search_result
     end
 
+    directive :foo do
+      arg :baz, :string
+
+      on :field
+    end
+
     enum :order_status do
       value :delivered
       value :processing
@@ -223,6 +229,8 @@ defmodule SdlRenderTest do
              schema {
                query: RootQueryType
              }
+
+             directive @foo(baz: String) on FIELD
 
              type RootQueryType {
                echo(

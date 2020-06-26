@@ -10,6 +10,7 @@ defmodule Absinthe.TestSupport.Schema.BadNamesSchema do
   end
 
   directive :mydirective, name: "bad directive name" do
+    on :field
   end
 
   scalar :time, description: "ISOz time", name: "bad?scalar#name" do

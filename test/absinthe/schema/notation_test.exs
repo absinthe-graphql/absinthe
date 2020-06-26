@@ -16,6 +16,8 @@ defmodule Absinthe.Schema.NotationTest do
       assert_no_notation_error("ArgDirectiveValid", """
       directive :test do
         arg :if, :boolean
+
+        on :field
       end
       """)
     end
@@ -35,6 +37,7 @@ defmodule Absinthe.Schema.NotationTest do
     test "can be toplevel" do
       assert_no_notation_error("DirectiveValid", """
       directive :foo do
+        on :field
       end
       """)
     end
@@ -138,6 +141,7 @@ defmodule Absinthe.Schema.NotationTest do
       assert_no_notation_error("InstructionValid", """
       directive :bar do
         expand fn _, _ -> :ok end
+        on :field
       end
       """)
     end
@@ -320,7 +324,7 @@ defmodule Absinthe.Schema.NotationTest do
     test "can be under directive as an attribute" do
       assert_no_notation_error("OnValid", """
       directive :foo do
-        on [Foo, Bar]
+        on [:fragment_spread, :mutation]
       end
       """)
     end
@@ -329,7 +333,7 @@ defmodule Absinthe.Schema.NotationTest do
       assert_notation_error(
         "OnInvalid",
         """
-        on [Foo, Bar]
+        on [:fragment_spread, :mutation]
         """,
         "Invalid schema notation: `on` must only be used within `directive`"
       )
