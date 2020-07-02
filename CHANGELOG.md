@@ -2,6 +2,10 @@
 
 For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe/blob/v1.4/CHANGELOG.md) branch.
 
+## 1.5.2
+
+- Bug Fix: Fix issue with persistent type backend.
+
 ## 1.5.1
 
 - Bug Fix: Enable hydrating resolve_type on unions. #938
