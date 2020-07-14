@@ -50,6 +50,10 @@
 - Bug Fix: Handle null propagation with `non_null(list_of(non_null(type)))` properly
 - Bug Fix: Fix [double escaping issue](https://github.com/absinthe-graphql/absinthe/pull/962) with string literal arguments.
 
+## 1.5.3 (unreleased)
+
+- Bug Fix: Handle null propagation with `non_null(list_of(non_null(type)))` properly
+
 ## 1.5.2
 
 - Bug Fix: Fix issue with persistent term backend.
