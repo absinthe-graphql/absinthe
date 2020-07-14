@@ -350,6 +350,15 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     true
   end
 
+  defp non_null_list_violation?(%{
+         value: nil,
+         emitter: %{
+           schema_node: %{type: %Type.NonNull{of_type: %Type.List{of_type: %Type.NonNull{}}}}
+         }
+       }) do
+    true
+  end
+
   defp non_null_list_violation?(_) do
     false
   end

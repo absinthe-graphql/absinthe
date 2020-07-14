@@ -2,6 +2,10 @@
 
 For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe/blob/v1.4/CHANGELOG.md) branch.
 
+## 1.5.3 (unreleased)
+
+- Bug Fix: Handle null propagation with `non_null(list_of(non_null(type)))` properly
+
 ## 1.5.2
 
 - Bug Fix: Fix issue with persistent type backend.
