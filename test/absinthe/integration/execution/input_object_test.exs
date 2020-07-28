@@ -1,6 +1,8 @@
 defmodule Elixir.Absinthe.Integration.Execution.InputObjectTest do
   use Absinthe.Case, async: true
 
+  import ExUnit.CaptureLog
+
   @query """
   mutation {
     updateThing(id: "foo", thing: {value: 100}) {
@@ -24,23 +26,12 @@ defmodule Elixir.Absinthe.Integration.Execution.InputObjectTest do
   }
   """
 
-  test "errors if an invalid type is passed" do
-    assert {:ok,
-            %{
-              errors: [
-                %{
-                  locations: [%{column: 26, line: 2}],
-                  message: "Argument \"thing\" has invalid value $input."
-                },
-                %{
-                  locations: [%{column: 33, line: 2}],
-                  message:
-                    "Variable `$input` of type `Boolean` found as input to argument of type `InputThing`."
-                }
-              ]
-            }} ==
-             Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema,
-               variables: %{"input" => true}
-             )
+  test "logs a warning if an invalid type is passed" do
+    fun = fn ->
+      Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, variables: %{"input" => true})
+    end
+
+    assert capture_log([level: :warn], fun) =~
+             "WARNING! The field type and schema types are different"
   end
 end

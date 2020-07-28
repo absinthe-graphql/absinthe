@@ -8,6 +8,8 @@ defmodule Absinthe.Phase.Document.Arguments.VariableTypesMatch do
   alias Absinthe.Blueprint
   alias Absinthe.Blueprint.Document.{Operation, Fragment}
 
+  require Logger
+
   def run(blueprint, _) do
     blueprint =
       blueprint
@@ -71,15 +73,10 @@ defmodule Absinthe.Phase.Document.Arguments.VariableTypesMatch do
         arg_schema_type = Absinthe.Type.unwrap(schema_node)
 
         if var_schema_type && arg_schema_type && var_schema_type.name != arg_schema_type.name do
-          # error
-          var_with_error =
-            put_error(var, %Absinthe.Phase.Error{
-              phase: __MODULE__,
-              message: error_message(op_name, var, var_schema_type.name, arg_schema_type.name),
-              locations: [var.source_location]
-            })
-
-          {:halt, put_in(node.raw.content, var_with_error)}
+          # The schema and the arg types does not match
+          # Log an error and continue
+          Logger.warn("WARNING! The field type and schema types are different")
+          node
         else
           node
         end

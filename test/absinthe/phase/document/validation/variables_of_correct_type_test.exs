@@ -1,15 +1,12 @@
 defmodule Absinthe.Phase.Document.Validation.VariablesOfCorrectTypeTest do
   @phase Absinthe.Phase.Document.Arguments.VariableTypesMatch
 
+  import ExUnit.CaptureLog
+
   use Absinthe.ValidationPhaseCase, async: true, phase: @phase
 
-  defp error_message(op, variable_name, var_type, arg_type) do
-    var = %Absinthe.Blueprint.Input.Variable{name: variable_name}
-    @phase.error_message(op, var, var_type, arg_type)
-  end
-
-  test "types of variables match types of arguments" do
-    {:ok, %{errors: errors}} =
+  test "types of variables does not match types of arguments" do
+    fun = fn ->
       Absinthe.run(
         """
         query test($intArg: Int!) {
@@ -21,9 +18,10 @@ defmodule Absinthe.Phase.Document.Validation.VariablesOfCorrectTypeTest do
         Absinthe.Fixtures.PetsSchema,
         variables: %{"intArg" => 5}
       )
+    end
 
-    expected_error_msg = error_message("test", "intArg", "Int", "String")
-    assert expected_error_msg in (errors |> Enum.map(& &1.message))
+    assert capture_log([level: :warn], fun) =~
+             "WARNING! The field type and schema types are different"
   end
 
   test "variable type check handles non existent type" do
@@ -44,8 +42,8 @@ defmodule Absinthe.Phase.Document.Validation.VariablesOfCorrectTypeTest do
     assert expected_error_msg in (errors |> Enum.map(& &1.message))
   end
 
-  test "types of variables match types of arguments even when the value is null" do
-    {:ok, %{errors: errors}} =
+  test "types of variables does not match types of arguments even when the value is null" do
+    fun = fn ->
       Absinthe.run(
         """
         query test($intArg: Int) {
@@ -57,13 +55,14 @@ defmodule Absinthe.Phase.Document.Validation.VariablesOfCorrectTypeTest do
         Absinthe.Fixtures.PetsSchema,
         variables: %{"intArg" => nil}
       )
+    end
 
-    expected_error_msg = error_message("test", "intArg", "Int", "String")
-    assert expected_error_msg in (errors |> Enum.map(& &1.message))
+    assert capture_log([level: :warn], fun) =~
+             "WARNING! The field type and schema types are different"
   end
 
-  test "types of variables match types of arguments in named fragments" do
-    {:ok, %{errors: errors}} =
+  test "types of variables does not match types of arguments in named fragments" do
+    fun = fn ->
       Absinthe.run(
         """
         query test($intArg: Int) {
@@ -79,8 +78,9 @@ defmodule Absinthe.Phase.Document.Validation.VariablesOfCorrectTypeTest do
         Absinthe.Fixtures.PetsSchema,
         variables: %{"intArg" => 5}
       )
+    end
 
-    expected_error_msg = error_message("test", "intArg", "Int", "String")
-    assert expected_error_msg in (errors |> Enum.map(& &1.message))
+    assert capture_log([level: :warn], fun) =~
+             "WARNING! The field type and schema types are different"
   end
 end
