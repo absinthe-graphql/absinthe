@@ -74,7 +74,7 @@ const client = new ApolloClient({
 
 ## Using a websocket link
 
-An HTTP link is suitable for many basic use cases, but if you require two-way communication between the server and the client, you will need to use a websocket link. The most common use case is a client that needs to use GraphQL subscriptions to receive updates from the server when particular events occur. To implement a websocket link, we will need to use the [`@absinthe/socket`](https://www.npmjs.com/package/@absinthe/socket) and [`@absinthe/socket-apollo-link`](https://www.npmjs.com/package/@absinthe/socket) packages.
+An HTTP link is suitable for many basic use cases, but if you require two-way communication between the server and the client, you will need to use a websocket link. The most common use case is a client that needs to use GraphQL subscriptions to receive updates from the server when particular events occur. To implement a websocket link, we will need to use the [`@absinthe/socket`](https://www.npmjs.com/package/@absinthe/socket) and [`@absinthe/socket-apollo-link`](https://www.npmjs.com/package/@absinthe/socket-apollo-link) packages.
 
 ```javascript
 import ApolloClient from "apollo-client";
