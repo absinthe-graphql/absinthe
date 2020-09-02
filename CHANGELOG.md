@@ -9,7 +9,7 @@ For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe
 
 ## 1.5.2
 
-- Bug Fix: Fix issue with persistent type backend.
+- Bug Fix: Fix issue with persistent term backend.
 
 ## 1.5.1
 
