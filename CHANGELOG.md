@@ -2,9 +2,10 @@
 
 For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe/blob/v1.4/CHANGELOG.md) branch.
 
-## 1.5.3 (unreleased)
+## 1.5.3
 
 - Bug Fix: Handle null propagation with `non_null(list_of(non_null(type)))` properly
+- Bug Fix: Fix [double escaping issue](https://github.com/absinthe-graphql/absinthe/pull/962) with string literal arguments.
 
 ## 1.5.2
 
