@@ -356,7 +356,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> String.split("\n")
     |> case do
       [description] ->
-        [~s("), description, ~s("), line(), docs]
+        [~s("), escape_description(description), ~s("), line(), docs]
 
       description_lines ->
         [block_string([~s(""")] ++ description_lines ++ [~s(""")]), line(), docs]
@@ -434,4 +434,31 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       concat([doc, concat(List.wrap(joiner)), acc])
     end)
   end
+
+  @escaped_chars [?", ?\\, ?/, ?\b, ?\f, ?\n, ?\r, ?\t]
+
+  defp escape_description(string) do
+    escape_description(string, [])
+  end
+
+  defp escape_description(<<char, rest::binary>>, acc) when char in @escaped_chars do
+    escape_description(rest, [acc | escape_char(char)])
+  end
+
+  defp escape_description(<<char::utf8, rest::binary>>, acc) do
+    escape_description(rest, [acc | <<char::utf8>>])
+  end
+
+  defp escape_description(<<>>, acc) do
+    to_string(acc)
+  end
+
+  defp escape_char(?"), do: [?\\, ?"]
+  defp escape_char(?\\), do: [?\\, ?\\]
+  defp escape_char(?/), do: [?\\, ?/]
+  defp escape_char(?\b), do: [?\\, ?b]
+  defp escape_char(?\f), do: [?\\, ?f]
+  defp escape_char(?\n), do: [?\\, ?n]
+  defp escape_char(?\r), do: [?\\, ?r]
+  defp escape_char(?\t), do: [?\\, ?t]
 end
