@@ -51,3 +51,43 @@ we were merely putting them in the context as in other implementations.
 * Apollo: [apollo-absinthe-upload-link](https://www.npmjs.com/package/apollo-absinthe-upload-link)
 * Apollo (v1): [apollo-absinthe-upload-client](https://www.npmjs.com/package/apollo-absinthe-upload-client) (Note: does not support Relay Native as of v1.0.1)
 * Relay: _(None known. Please submit a pull request updating this information.)_
+
+## Testing
+
+Use `%Plug.Upload{}` struct to stub your uploaded file.
+
+```Elixir
+defmodule API.UploadFileMutationTest do
+  use API.ConnCase
+
+  @mutation """
+    mutation {
+      uploadFile(users: "users_csv")
+    }
+  """
+
+  test "mutation: uploadFile returns file URL when CSV is attached", %{conn: conn} do
+    path =
+      ["test", "fixtures", "users.csv"]
+      |> Path.join()
+      |> (fn subpath -> Application.app_dir(:api, subpath) end).()
+
+    conn =
+      post(conn, "/api/graphql", %{
+        "query" => @mutation,
+        "users_csv" => %Plug.Upload{
+          path: path,
+          filename: "users.csv",
+          content_type: "text/csv"
+        }
+      })
+
+    assert json_response(conn, 200) == %{
+             "data" => %{
+               "uploadFile" => "https://example.com/uploads/users.csv"
+             }
+           }
+  end
+end
+
+```
