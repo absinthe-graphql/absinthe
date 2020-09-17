@@ -68,9 +68,9 @@ defmodule API.UploadFileMutationTest do
 
   test "mutation: uploadFile returns file URL when CSV is attached", %{conn: conn} do
     path =
-      ["test", "fixtures", "users.csv"]
+      [__DIR__, "..", "..", "test", "fixtures", "users.csv"]
       |> Path.join()
-      |> (fn subpath -> Application.app_dir(:api, subpath) end).()
+      |> Path.expand()
 
     conn =
       post(conn, "/api/graphql", %{
