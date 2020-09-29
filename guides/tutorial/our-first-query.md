@@ -157,4 +157,4 @@ Make sure that the `URL` is pointing to the correct place and press the play but
 
 ## Next Step
 
-Now let's look at how we can [add arguments to our queries](query-arguments.md).
+Now let's look at how we can [add arguments to our queries](query-arguments.html).
