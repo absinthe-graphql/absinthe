@@ -354,6 +354,20 @@ defmodule Absinthe.Schema.Notation do
         end
       end
 
+    block =
+      case Keyword.get(attrs, :meta) do
+        nil ->
+          block
+
+        meta ->
+          meta_ast =
+            quote do
+              meta unquote(meta)
+            end
+
+          [meta_ast, block]
+      end
+
     {func_ast, attrs} = Keyword.pop(attrs, :resolve)
 
     block =
@@ -371,6 +385,7 @@ defmodule Absinthe.Schema.Notation do
       attrs
       |> expand_ast(caller)
       |> Keyword.delete(:args)
+      |> Keyword.delete(:meta)
       |> handle_deprecate
 
     {attrs, block}

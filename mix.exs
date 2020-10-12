@@ -1,7 +1,7 @@
 defmodule Absinthe.Mixfile do
   use Mix.Project
 
-  @version "1.5.2"
+  @version "1.5.3"
 
   def project do
     [
@@ -26,7 +26,7 @@ defmodule Absinthe.Mixfile do
       ],
       deps: deps(),
       dialyzer: [
-        plt_add_apps: [:mix, :dataloader, :decimal, :ex_unit, :inets],
+        plt_add_apps: [:mix, :dataloader, :decimal, :ex_unit],
         plt_file: {:no_warn, "priv/plts/absinthe.plt"}
       ]
     ]
@@ -70,7 +70,7 @@ defmodule Absinthe.Mixfile do
       {:nimble_parsec, "~> 0.5"},
       {:telemetry, "~> 0.4.0"},
       {:dataloader, "~> 1.0.0", optional: true},
-      {:decimal, "~> 1.0", optional: true},
+      {:decimal, "~> 1.0 or ~> 2.0" , optional: true},
       {:ex_doc, "~> 0.21.0", only: :dev},
       {:benchee, ">= 1.0.0", only: :dev},
       {:dialyxir, "~> 1.0.0", only: [:dev, :test], runtime: false},
