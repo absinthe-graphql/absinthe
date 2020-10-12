@@ -43,10 +43,14 @@ defmodule Absinthe.Type.EnumTest do
       values: [:red, :green, :blue, :alpha],
       description: "The selected color channel"
 
+      # def hello(name) do
+        # "Hello #{name}"
+      # end
+
     enum :negative_value do
-      value :positive_one, as: 1
-      value :zero, as: 0
-      value :negative_one, as: -1
+      value :positive_one, as: 1, description: String.replace("Hello a b c", "o", "a")
+      value :zero, as: 0, description: String.replace("Hello a b c", "o", "b")
+      value :negative_one, as: -1, description: String.replace("Hello a b c", "o", "c")
     end
   end
 

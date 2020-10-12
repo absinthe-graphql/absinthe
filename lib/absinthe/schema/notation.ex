@@ -1049,11 +1049,15 @@ defmodule Absinthe.Schema.Notation do
   #{Utils.placement_docs(@placement)}
   """
   defmacro value(identifier, raw_attrs \\ []) do
-    attrs = expand_ast(raw_attrs, __CALLER__)
+    attrs = expand_ast(raw_attrs, __CALLER__) |> Keyword.put(:module, __CALLER__.module)
+    #|> IO.inspect(label: "_____________________________ #{__MODULE__} BBBBBBBBBBBBBBBBB 7")
 
     __CALLER__
+    #|> IO.inspect(label: "_____________________________ #{__MODULE__} BBBBBBBBBBBBBBBBB 8")
     |> recordable!(:value, @placement[:value])
+    #|> IO.inspect(label: "_____________________________ #{__MODULE__} BBBBBBBBBBBBBBBBB 9")
     |> record_value!(identifier, attrs)
+    #|> IO.inspect(label: "_____________________________ #{__MODULE__} BBBBBBBBBBBBBBBBB 10")
   end
 
   # GENERAL ATTRIBUTES
@@ -1374,6 +1378,31 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def handle_enum_value_attrs(identifier, raw_attrs) do
+
+    description =
+      case Keyword.get(raw_attrs, :description) do
+        description when is_tuple(description) ->
+          binding()
+          # |> IO.inspect(label: "_____________________________ #{__MODULE__} AAAAAAAAAAAAAAAAA 0")
+
+          module = raw_attrs[:module]
+          #|> IO.inspect(label: "_____________________________ #{__MODULE__} AAAAAAAAAAAAAAAAA 1")
+
+          {eval_result, []} =
+            # TODO NEXT traverse the ast inside expand_ast?
+            # TODO AFTER figure out how to ensure_loaded?
+            # TODO AFTER check @module_attributes work
+            module
+            |> Module.eval_quoted(description)
+            #|> IO.inspect(label: "_____________________________ #{__MODULE__} AAAAAAAAAAAAAAAAA 2")
+
+          eval_result
+          #|> IO.inspect(label: "_____________________________ #{__MODULE__} AAAAAAAAAAAAAAAAA 3")
+
+        description ->
+          description
+      end
+
     value =
       case Keyword.get(raw_attrs, :as, identifier) do
         value when is_tuple(value) ->
@@ -1385,13 +1414,22 @@ defmodule Absinthe.Schema.Notation do
           value
       end
 
+    if binding() |> inspect() |> String.contains?(":red") do
+      binding() |> IO.inspect(label: "_____________________________ #{__MODULE__} AAAAAAAAAAAAAAAAA -----")
+    end
+
     raw_attrs
-    |> expand_ast(raw_attrs)
+    #|> IO.inspect(label: "_____________________________ #{__MODULE__} AAAAAAAAAAAAAAAAA 4")
+    #|> IO.inspect(label: "_____________________________ #{__MODULE__} AAAAAAAAAAAAAAAAA 5")
     |> Keyword.put(:identifier, identifier)
     |> Keyword.put(:value, value)
+    |> Keyword.put(:description, description)
     |> Keyword.put_new(:name, String.upcase(to_string(identifier)))
     |> Keyword.delete(:as)
+    |> expand_ast(raw_attrs)
+    #|> IO.inspect(label: "_____________________________ #{__MODULE__} AAAAAAAAAAAAAAAAA 6")
     |> handle_deprecate
+    #|> IO.inspect(label: "_____________________________ #{__MODULE__} AAAAAAAAAAAAAAAAA 7")
   end
 
   @doc false
@@ -1828,6 +1866,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp expand_ast(ast, env) do
+    #binding() |> IO.inspect(label: "_____________________________ #{__MODULE__} ccccccccccccccccc 0")
     Macro.prewalk(ast, fn
       {_, _, _} = node ->
         Macro.expand(node, env)
