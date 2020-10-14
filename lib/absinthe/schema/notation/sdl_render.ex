@@ -32,7 +32,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         %Blueprint.Schema.SchemaDefinition{
           type_definitions: type_definitions,
           directive_definitions: directive_definitions
-        }
+        } = schema_definition
       ]
     } = bp
 
@@ -118,7 +118,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       "type",
       concat([
         string(object_type.name),
-        implements(object_type.interfaces)
+        implements(object_type.interfaces, type_definitions)
       ]),
       render_list(object_type.fields, type_definitions)
     )
@@ -364,15 +364,21 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> concat()
   end
 
-  defp implements([]) do
+  defp implements([], _) do
     empty()
   end
 
-  defp implements(interface_names) do
+  defp implements(interface_identifiers, type_definitions) do
+    interface_names =
+      Enum.map(interface_identifiers, fn interface_identifier ->
+        Enum.find_value(type_definitions, fn type ->
+          if interface_identifier == type.identifier, do: type.name
+        end)
+      end)
+
     concat([
       " implements ",
-      Enum.map(interface_names, &(&1 |> Atom.to_string() |> String.capitalize()))
-      |> join(" & ")
+      join(interface_names, " & ")
     ])
   end
 
