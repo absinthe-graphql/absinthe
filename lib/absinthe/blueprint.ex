@@ -175,7 +175,7 @@ defmodule Absinthe.Blueprint do
   end
 
   def extend_fields(blueprint, ext_blueprint) when is_atom(ext_blueprint) do
-    extend_fields(blueprint, ext_blueprint.__absinthe_blueprint__)
+    extend_fields(blueprint, ext_blueprint.__absinthe_blueprint__())
   end
 
   def add_field(blueprint = %Blueprint{}, type_def_name, new_field) do
@@ -212,7 +212,7 @@ defmodule Absinthe.Blueprint do
   end
 
   def types_by_name(module) when is_atom(module) do
-    types_by_name(module.__absinthe_blueprint__)
+    types_by_name(module.__absinthe_blueprint__())
   end
 
   defimpl Inspect do
