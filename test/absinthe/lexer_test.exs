@@ -42,7 +42,7 @@ defmodule Absinthe.LexerTest do
                 {:"(", {2, 8}},
                 {:name, {2, 9}, 'bar'},
                 {:":", {2, 12}},
-                {:string_value, {2, 14}, ~S("\\FOO") |> String.to_char_list()},
+                {:string_value, {2, 14}, ~S("\\FOO") |> String.to_charlist()},
                 {:")", {2, 23}},
                 {:"}", {2, 25}},
                 {:"}", {3, 1}}

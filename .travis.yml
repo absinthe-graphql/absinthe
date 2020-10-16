@@ -6,10 +6,12 @@ otp_release:
   - 20.3
   - 21.3
   - 22.3
+  - 23.1
 elixir:
   - 1.8.2
   - 1.9.4
   - 1.10.2
+  - 1.11.1
 matrix:
   include:
     - elixir: 1.10.2

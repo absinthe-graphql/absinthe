@@ -62,7 +62,7 @@ defmodule Absinthe.Mixfile do
   defp elixirc_paths(_), do: ["lib"]
 
   def application do
-    [extra_applications: [:logger]]
+    [extra_applications: [:crypto, :logger]]
   end
 
   defp deps do

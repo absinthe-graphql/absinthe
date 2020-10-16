@@ -93,7 +93,7 @@ defmodule Absinthe.Pipeline.BatchResolver do
     {:ok, blueprint}
   rescue
     e ->
-      pipeline_error(e, System.stacktrace())
+      pipeline_error(e, __STACKTRACE__)
       :error
   end
 
