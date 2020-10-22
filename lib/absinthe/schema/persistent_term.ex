@@ -23,26 +23,13 @@ if Code.ensure_loaded?(:persistent_term) do
     ```
     @schema_provider Absinthe.Schema.PersistentTerm
     ```
-
-    In your application's supervision tree, prior to anywhere where you'd use
-    the schema:
-    ```
-    {Absinthe.Schema, MyAppWeb.Schema}
-    ```
-
-    where MyAppWeb.Schema is the name of your schema.
     """
 
     @behaviour Absinthe.Schema.Provider
 
     def pipeline(pipeline) do
-      Enum.map(pipeline, fn
-        {Absinthe.Phase.Schema.Compile, options} ->
-          {Absinthe.Phase.Schema.PopulatePersistentTerm, options}
-
-        phase ->
-          phase
-      end)
+      pipeline
+      |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.Compile)
     end
 
     def __absinthe_type__(schema_mod, name) do
