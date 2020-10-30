@@ -118,7 +118,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       "type",
       concat([
         string(object_type.name),
-        implements(object_type.interface_blueprints)
+        implements(object_type.interfaces, type_definitions)
       ]),
       render_list(object_type.fields, type_definitions)
     )
@@ -364,12 +364,17 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> concat()
   end
 
-  defp implements([]) do
+  defp implements([], _) do
     empty()
   end
 
-  defp implements(interface_types) do
-    interface_names = Enum.map(interface_types, & &1.name)
+  defp implements(interface_identifiers, type_definitions) do
+    interface_names =
+      Enum.map(interface_identifiers, fn interface_identifier ->
+        Enum.find_value(type_definitions, fn type ->
+          if interface_identifier == type.identifier, do: type.name
+        end)
+      end)
 
     concat([
       " implements ",
