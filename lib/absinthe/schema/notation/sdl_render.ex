@@ -373,8 +373,9 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       case interface do
         %{interface_blueprints: [], interfaces: identifiers} ->
           Enum.map(identifiers, fn identifier ->
-            Enum.find_value(type_definitions, fn type ->
-              if identifier == type.identifier, do: type.name
+            Enum.find_value(type_definitions, fn
+              %{identifier: ^identifier, name: name} -> name
+              _ -> nil
             end)
           end)
 
