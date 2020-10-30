@@ -110,6 +110,7 @@ defmodule Absinthe.Schema do
 
       @schema_provider Absinthe.Schema.Compiled
 
+      @dialyzer {:no_match, __on_load__: 0}
       @on_load :__on_load__
       def __on_load__ do
         if __absinthe_schema_provider__() == Absinthe.Schema.PersistentTerm do
