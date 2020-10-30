@@ -32,7 +32,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         %Blueprint.Schema.SchemaDefinition{
           type_definitions: type_definitions,
           directive_definitions: directive_definitions
-        } = schema_definition
+        }
       ]
     } = bp
 
