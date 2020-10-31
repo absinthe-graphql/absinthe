@@ -8,9 +8,12 @@ if Code.ensure_loaded?(:persistent_term) do
       %{schema_definitions: [schema]} = blueprint
 
       type_list =
-        Map.new(schema.type_definitions, fn type_def ->
-          {type_def.identifier, type_def.name}
+        schema.type_definitions
+        |> Enum.flat_map(fn
+          %{identifier: identifier, name: name} -> [{identifier, name}]
+          _ -> []
         end)
+        |> Map.new()
 
       types_map =
         schema.type_artifacts
@@ -68,7 +71,7 @@ if Code.ensure_loaded?(:persistent_term) do
     end
 
     def build_metadata(schema) do
-      for type <- schema.type_definitions do
+      for %{identifier: _} = type <- schema.type_definitions do
         {type.identifier, type.__reference__}
       end
     end
