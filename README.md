@@ -2,7 +2,9 @@
 
 [GraphQL](https://facebook.github.io/graphql/) implementation for Elixir.
 
-[![Hex pm](http://img.shields.io/hexpm/v/absinthe.svg?style=flat)](https://hex.pm/packages/absinthe)[![Build Status](https://travis-ci.org/absinthe-graphql/absinthe.svg?branch=master)](https://travis-ci.org/absinthe-graphql/absinthe)[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Hex pm](http://img.shields.io/hexpm/v/absinthe.svg)](https://hex.pm/packages/absinthe)
+[![Build Status](https://github.com/absinthe-graphql/absinthe/workflows/CI/badge.svg)](https://github.com/absinthe-graphql/absinthe/actions?query=workflow%3ACI)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 Goals:
 

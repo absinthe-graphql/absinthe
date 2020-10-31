@@ -602,7 +602,9 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
                Absinthe.run(@query, Definition)
 
       assert_receive {[:absinthe, :execute, :operation, :start], _, %{id: id}, _config}
-      assert_receive {[:absinthe, :execute, :operation, :stop], _measurements, %{id: ^id}, _config}
+
+      assert_receive {[:absinthe, :execute, :operation, :stop], _measurements, %{id: ^id},
+                      _config}
 
       assert_receive {[:absinthe, :resolve, :field, :start], _measurements,
                       %{resolution: %{definition: %{name: "posts"}}}, _config}

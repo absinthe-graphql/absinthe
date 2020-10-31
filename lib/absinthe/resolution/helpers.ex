@@ -195,6 +195,7 @@ defmodule Absinthe.Resolution.Helpers do
     ```
 
     """
+    @dialyzer {:no_contracts, dataloader: 2}
     @spec dataloader(Dataloader.source_name(), [dataloader_opt]) :: dataloader_key_fun()
     def dataloader(source, opts) when is_list(opts) do
       fn parent, args, %{context: %{loader: loader}} = res ->
