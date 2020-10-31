@@ -60,12 +60,12 @@ jobs:
         mix clean
         mix test
 
-    - name: Run unit tests with persistent_term backend
-      run: |
-        mix clean
-        mix test
-      env:
-        SCHEMA_PROVIDER: persistent_term
+    # - name: Run unit tests with persistent_term backend
+    #   run: |
+    #     mix clean
+    #     mix test
+    #   env:
+    #     SCHEMA_PROVIDER: persistent_term
 
     - name: Run dialyzer
       run: |
