@@ -110,19 +110,6 @@ defmodule Absinthe.Schema do
 
       @schema_provider Absinthe.Schema.Compiled
 
-      @dialyzer {:no_match, __on_load__: 0}
-      @on_load :__on_load__
-      def __on_load__ do
-        if __absinthe_schema_provider__() == Absinthe.Schema.PersistentTerm do
-          Absinthe.Phase.Schema.PopulatePersistentTerm.run(__absinthe_blueprint__(),
-            prototype_schema: __absinthe_prototype_schema__(),
-            schema: __MODULE__
-          )
-        end
-
-        :ok
-      end
-
       def __absinthe_lookup__(name) do
         __absinthe_type__(name)
       end
@@ -153,7 +140,6 @@ defmodule Absinthe.Schema do
     end
   end
 
-  @deprecated "`Absinthe.Schema` process no longer needed, please remove it from your supervision tree."
   def child_spec(schema) do
     %{
       id: {__MODULE__, schema},
