@@ -609,7 +609,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       assert_receive {[:absinthe, :resolve, :field, :start], _measurements,
                       %{resolution: %{definition: %{name: "posts"}}}, _config}
 
-      assert_receive {[:absinthe, :resolve, :field, :stop], measurements,
+      assert_receive {[:absinthe, :resolve, :field, :stop], _measurements,
                       %{resolution: %{definition: %{name: "posts"}}}, _config}
     end
   end
