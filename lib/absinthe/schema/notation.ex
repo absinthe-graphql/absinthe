@@ -54,7 +54,7 @@ defmodule Absinthe.Schema.Notation do
   Configure a subscription field.
 
   The first argument to the config function is the field arguments passed in the subscription.
-  The second argument is an Absinthe.Resolution struct, which includes information
+  The second argument is an `Absinthe.Resolution` struct, which includes information
   like the context and other execution data.
 
   ## Placement
