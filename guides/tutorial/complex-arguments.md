@@ -151,4 +151,4 @@ Here's our mutation in action in GraphiQL.
 
 ## Next Step
 
-Now let's [wrap things up](conclusion.md).
+Now let's [wrap things up](conclusion.html).

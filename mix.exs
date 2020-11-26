@@ -1,7 +1,7 @@
 defmodule Absinthe.Mixfile do
   use Mix.Project
 
-  @version "1.5.1"
+  @version "1.5.3"
 
   def project do
     [
@@ -26,7 +26,7 @@ defmodule Absinthe.Mixfile do
       ],
       deps: deps(),
       dialyzer: [
-        plt_add_apps: [:mix, :dataloader, :decimal, :ex_unit, :inets],
+        plt_add_apps: [:mix, :dataloader, :decimal, :ex_unit],
         plt_file: {:no_warn, "priv/plts/absinthe.plt"}
       ]
     ]
@@ -62,16 +62,17 @@ defmodule Absinthe.Mixfile do
   defp elixirc_paths(_), do: ["lib"]
 
   def application do
-    [extra_applications: [:logger]]
+    [extra_applications: [:crypto, :logger]]
   end
 
   defp deps do
     [
-      {:nimble_parsec, "~> 0.5"},
+      {:nimble_parsec, "~> 0.5 or ~> 1.0"},
       {:telemetry, "~> 0.4.0"},
       {:dataloader, "~> 1.0.0", optional: true},
-      {:decimal, "~> 1.0", optional: true},
+      {:decimal, "~> 1.0 or ~> 2.0", optional: true},
       {:ex_doc, "~> 0.22.0", only: :dev},
+      {:ex_doc, "~> 0.21.0", only: :dev},
       {:benchee, ">= 1.0.0", only: :dev},
       {:dialyxir, "~> 1.0.0", only: [:dev, :test], runtime: false},
       {:phoenix_pubsub, ">= 0.0.0", only: :test},

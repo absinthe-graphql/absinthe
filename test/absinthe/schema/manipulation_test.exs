@@ -152,8 +152,7 @@ defmodule Absinthe.Schema.ManipulationTest do
         meta :some_string_meta, "non_dyn_integer meta"
       end
 
-      field :non_dyn_string, :string do
-        meta :some_string_meta, "non_dyn_string meta"
+      field :non_dyn_string, :string, meta: [some_string_meta: "non_dyn_string meta"] do
         resolve fn _, _ -> {:ok, "some_string_val"} end
       end
     end

@@ -183,6 +183,8 @@ defmodule SdlRenderTest do
     use Absinthe.Schema
 
     query do
+      description "Escaped\t\"descrição/description\""
+
       field :echo, :string do
         arg :times, :integer, default_value: 10, description: "The number of times"
         arg :time_interval, :integer
@@ -224,6 +226,7 @@ defmodule SdlRenderTest do
                query: RootQueryType
              }
 
+             "Escaped\\t\\\"descrição\\/description\\\""
              type RootQueryType {
                echo(
                  "The number of times"
