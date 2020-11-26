@@ -240,7 +240,7 @@ defmodule Absinthe.Schema do
     field :new_users, :user do
       arg :account_id, non_null(:id)
 
-      config fn args,_info ->
+      config fn args, _info ->
         {:ok, topic: args.account_id}
       end
     end
