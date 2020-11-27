@@ -4,6 +4,7 @@ For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe
 
 ## 1.5.4
 
+- Feature: Ensure [stable ordering in introspection results](https://github.com/absinthe-graphql/absinthe/pull/997).
 - Bug Fix: Fix [rendering of interfaces in SDL](https://github.com/absinthe-graphql/absinthe/pull/979)
 - Bug Fix: Properly [escape single line descriptions in SDL](https://github.com/absinthe-graphql/absinthe/pull/968)
 - Bug Fix: Fix [`:meta` on fields](https://github.com/absinthe-graphql/absinthe/pull/973)
