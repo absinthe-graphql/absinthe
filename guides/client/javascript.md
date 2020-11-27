@@ -6,8 +6,8 @@ You can interact with an Absinthe GraphQL server via HTTP (thanks to
 We also have special support for configuring and working with specific
 JavaScript frameworks. You can see the guides here:
 
-- [Apollo Client](apollo.html)
-- [Relay](relay.html)
+- [Apollo Client](apollo.md)
+- [Relay](relay.md)
 
 ## Over HTTP
 

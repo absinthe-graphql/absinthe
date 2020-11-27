@@ -6,7 +6,7 @@ its object types, but is present all the way down to the scalar value level.
 Sometimes it makes sense to build custom scalar types to better model your
 domain. Here's how to do it.
 
-The GraphQL Specification doesn't define date and datetime types, but Absinthe ships with several pre-built for use via [import_types](importing-types.html). In this example we'll look at how `:datetime` is defined.
+The GraphQL Specification doesn't define date and datetime types, but Absinthe ships with several pre-built for use via [import_types](importing-types.md). In this example we'll look at how `:datetime` is defined.
 
 ## Defining a scalar
 

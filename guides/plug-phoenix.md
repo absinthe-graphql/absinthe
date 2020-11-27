@@ -80,12 +80,12 @@ Now Absinthe.Plug will only serve GraphQL from the `/api` url.
 on to `Absinthe.run` as the context. This is how you should handle logic that
 uses headers -- most notably, Authentication.
 
-For more information, see the [Context](context-and-authentication.html) guide.
+For more information, see the [Context](context-and-authentication.md) guide.
 
 ## GraphiQL
 
 See the [absinthe_plug](https://github.com/absinthe-graphql/absinthe_plug)
-project and the GraphiQL portion of the [Introspection](introspection.html) guide to
+project and the GraphiQL portion of the [Introspection](introspection.md) guide to
 learn how to use the built-in `Absinthe.Plug.GraphiQL` plug.
 
 ## General Usage
