@@ -74,7 +74,7 @@ The `context/1` function is a callback specified by the `Absinthe.Schema` behavi
 the schema itself an opportunity to set some values in the context that it may need in order to run.
 
 The `plugins/0` function has been around for a while, and specifies what plugins the schema needs to resolve.
-See [the documentation](https://hexdocs.pm/absinthe/Absinthe.Schema.html#c:plugins/0) for more.
+See [the documentation](`c:Absinthe.Schema.plugins/0`) for more.
 
 #### Unpacking Dataloader
 
