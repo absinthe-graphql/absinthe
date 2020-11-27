@@ -60,7 +60,7 @@ defmodule Absinthe.IntrospectionTest do
                  "isDeprecated" => false,
                  "deprecationReason" => nil
                }
-             ] == values |> Enum.sort_by(& &1["name"])
+             ] == values
     end
 
     test "can use __type and value information without deprecations" do

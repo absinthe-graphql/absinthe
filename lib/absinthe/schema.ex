@@ -593,7 +593,6 @@ defmodule Absinthe.Schema do
   def directives(schema) do
     schema.__absinthe_directives__
     |> Map.keys()
-    |> Enum.sort()
     |> Enum.map(&lookup_directive(schema, &1))
   end
 
@@ -646,7 +645,6 @@ defmodule Absinthe.Schema do
   def types(schema) do
     schema.__absinthe_types__
     |> Map.keys()
-    |> Enum.sort()
     |> Enum.map(&lookup_type(schema, &1))
   end
 
