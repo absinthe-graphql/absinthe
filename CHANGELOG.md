@@ -2,6 +2,21 @@
 
 For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe/blob/v1.4/CHANGELOG.md) branch.
 
+## 1.5.4
+
+- Bug Fix: Fix [rendering of interfaces in SDL](https://github.com/absinthe-graphql/absinthe/pull/979)
+- Bug Fix: Properly [escape single line descriptions in SDL](https://github.com/absinthe-graphql/absinthe/pull/968)
+- Bug Fix: Fix [`:meta` on fields](https://github.com/absinthe-graphql/absinthe/pull/973)
+
+## 1.5.3
+
+- Bug Fix: Handle null propagation with `non_null(list_of(non_null(type)))` properly
+- Bug Fix: Fix [double escaping issue](https://github.com/absinthe-graphql/absinthe/pull/962) with string literal arguments.
+
+## 1.5.2
+
+- Bug Fix: Fix issue with persistent term backend.
+
 ## 1.5.1
 
 - Bug Fix: Enable hydrating resolve_type on unions. #938
@@ -21,7 +36,7 @@ Absinthe allowed variables of different types to be used by accident as long as 
 - Documentation: Testing guide, numerous fixes and updates
 - Breaking Change: Scalar outputs are now type checked and will raise exceptions if the result tries to send the wrong data type in the result.
 - Breaking Change: `telemetry` event names [changed](https://github.com/absinthe-graphql/absinthe/pull/782) from the `alpha` to match an emerging naming convention for tracing.
-- Breaking Change: Added phase to check validity of field names according to graphql spec. Might break existing schema's. Remove the `Absinthe.Phase.Schema.Validation.NamesMustBeValid` from the schema pipeline if you want to ignore this.
+- Breaking Change: Added phase to check validity of field names according to GraphQL spec. Might break existing schema's. Remove the `Absinthe.Phase.Schema.Validation.NamesMustBeValid` from the schema pipeline if you want to ignore this.
 - Breaking Change: To match the GraphQL spec, we [no longer](https://github.com/absinthe-graphql/absinthe/pull/816) add a non-null error when a resolver on a non-null field explicitly returns its own error.
 - Breaking Change: Removed `Absinthe.Traversal` module
 

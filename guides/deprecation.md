@@ -31,4 +31,4 @@ field :ssn, :string do
 end
 ```
 
-> Warning: Deprecated fields and enum values are not reported by default during [introspection](introspection.html).
+> Warning: Deprecated fields and enum values are not reported by default during [introspection](introspection.md).

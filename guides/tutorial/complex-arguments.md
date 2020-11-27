@@ -141,7 +141,7 @@ Here's our mutation in action in GraphiQL.
 
 > Note we're sending a `Authorization` header to authenticate, which a
 > plug is handling. Make sure to read the
-> related [guide](context-and-authentication.html) for more
+> related [guide](context-and-authentication.md) for more
 > information on how to set-up authentication in your own
 > applications.
 >

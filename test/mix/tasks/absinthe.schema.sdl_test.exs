@@ -13,9 +13,30 @@ defmodule Mix.Tasks.Absinthe.Schema.SdlTest do
 
     type Query {
       helloWorld(name: String!): String
+      interfaceField: Being
+    }
+
+    interface Being {
+      name: String
+    }
+
+    type Human implements Being {
+      name: String
+    }
+
+    type Robot implements Being {
+      name: String
     }
     """
     |> import_sdl
+
+    def hydrate(%Absinthe.Blueprint.Schema.InterfaceTypeDefinition{}, _) do
+      {:resolve_type, &__MODULE__.resolve_type/1}
+    end
+
+    def hydrate(_node, _ancestors), do: []
+
+    def resolve_type(_), do: false
   end
 
   @test_schema "Mix.Tasks.Absinthe.Schema.SdlTest.TestSchema"
@@ -63,9 +84,26 @@ defmodule Mix.Tasks.Absinthe.Schema.SdlTest do
       field :hello_world, :mod do
         arg :name, non_null(:string)
       end
+
+      field :interface_field, :being
     end
 
     object :mod do
+    end
+
+    interface :being do
+      field :name, :string
+      resolve_type(fn obj, _ -> obj.type end)
+    end
+
+    object :human do
+      interface :being
+      field :name, :string
+    end
+
+    object :robot do
+      interface :being
+      field :name, :string
     end
   end
 
@@ -111,6 +149,7 @@ defmodule Mix.Tasks.Absinthe.Schema.SdlTest do
 
       assert schema =~ "type Mod {"
       assert schema =~ "modField: String"
+      assert schema =~ "type Robot implements Being"
     end
   end
 end

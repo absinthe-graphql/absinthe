@@ -8,14 +8,14 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   @default_filename "./schema.json"
 
   @moduledoc """
-  Generate a schema.json file
+  Generate a `schema.json` file
 
   ## Usage
 
-      absinthe.schema.json [FILENAME] [OPTIONS]
+      mix absinthe.schema.json [OPTIONS] [FILENAME]
 
-    The JSON codec to be used needs to be included in your `mix.exs` dependencies. If using the default codec,
-    see the Jason [installation instructions](https://hexdocs.pm/jason).
+  The JSON codec to be used needs to be included in your `mix.exs` dependencies. If using the default codec,
+  see the Jason [installation instructions](https://hexdocs.pm/jason).
 
   ## Options
 
@@ -26,24 +26,23 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   * `--pretty` - Whether to pretty-print.
      Default: `false`
 
-
   ## Examples
 
   Write to default path `#{@default_filename}` using the `:schema` configured for the `:absinthe` application:
 
-      $ mix absinthe.schema.json
+      mix absinthe.schema.json
 
   Write to default path `#{@default_filename}` using the `MySchema` schema:
 
-      $ mix absinthe.schema.json --schema MySchema
+      mix absinthe.schema.json --schema MySchema
 
   Write to path `/path/to/schema.json` using the `MySchema` schema, with pretty-printing:
 
-      $ mix absinthe.schema.json --schema MySchema --pretty /path/to/schema.json
+      mix absinthe.schema.json --schema MySchema --pretty /path/to/schema.json
 
   Write to default path `#{@default_filename}` using the `MySchema` schema and a custom JSON codec, `MyCodec`:
 
-      $ mix absinthe.schema.json --schema MySchema --json-codec MyCodec
+      mix absinthe.schema.json --schema MySchema --json-codec MyCodec
 
 
   ## Custom Codecs
@@ -56,7 +55,6 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   * `options` will be a keyword list with a `:pretty` boolean, indicating whether the user requested pretty-printing.
 
   The function should return a string to be written to the output file.
-
   """
 
   defmodule Options do
@@ -78,7 +76,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
     Application.ensure_all_started(:absinthe)
 
     Mix.Task.run("loadpaths", argv)
-    Mix.Project.compile(argv)
+    Mix.Task.run("compile", argv)
 
     opts = parse_options(argv)
 

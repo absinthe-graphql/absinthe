@@ -8,7 +8,7 @@ We hope to expand this tutorial to include a comment system that will
 acquaint you with Union types and Fragments in the coming days.
 
 Head on over to the topic guides for further reading, and see
-the [community page](community.html) for information
+the [community page](community.md) for information
 on how to get help, ask questions, or contribute!
 
 ## Please Help!

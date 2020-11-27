@@ -16,7 +16,7 @@ support:
 To do this we're going to need a schema. Let's create some basic types
 for our schema, starting with a `:post`. GraphQL has several fundamental
 types on top of which all of our types will be
-built. The [Object](Absinthe.Type.Object.html) type is the right one
+built. The `Absinthe.Type.Object` type is the right one
 to use when representing a set of key value pairs.
 
 Since our `Post` Ecto schema lives in the `Blog.Content` Phoenix
@@ -72,8 +72,8 @@ end
 ```
 
 > For more information on the macros available to build a schema, see
-> their definitions in [Absinthe.Schema](Absinthe.Schema.html) and
-> [Absinthe.Schema.Notation](Absinthe.Schema.Notation.html).
+> their definitions in `Absinthe.Schema` and
+> `Absinthe.Schema.Notation`.
 
 This uses a resolver module we've created (again, to match the Phoenix context naming)
 at `blog_web/resolvers/content.ex`:
@@ -104,7 +104,7 @@ which is where all the domain logic for posts lives, invoking its
 `list_posts/0` function, then returns the posts in an `:ok` tuple.
 
 > Resolvers can return a wide variety of results, to include errors and configuration
-> for [advanced plugins](middleware-and-plugins.html) that further process the data.
+> for [advanced plugins](middleware-and-plugins.md) that further process the data.
 >
 > If you're asking yourself what the implementation of the domain logic looks like, and exactly how
 > the related Ecto schemas are built, read through the code in the [absinthe_tutorial](http://github.com/absinthe-graphql/absinthe_tutorial)

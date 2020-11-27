@@ -53,7 +53,7 @@ defmodule Absinthe.Type do
   @doc false
   # this is just for debugging
   def expand(%module{} = type) do
-    module.functions
+    module.functions()
     |> Enum.reduce(type, fn
       :middleware, type ->
         type
