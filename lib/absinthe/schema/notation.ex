@@ -111,7 +111,11 @@ defmodule Absinthe.Schema.Notation do
 
   A subscription can have many triggers, and a trigger can push to many topics.
 
-  ### Example
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+
+  ## Example
 
   ```elixir
   mutation do
@@ -138,10 +142,6 @@ defmodule Absinthe.Schema.Notation do
       end
     end
   end
-
-  ## Placement
-
-  #{Utils.placement_docs(@placement)}
   ```
 
   Trigger functions are only called once per event, so database calls within
