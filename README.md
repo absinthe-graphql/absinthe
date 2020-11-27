@@ -100,10 +100,6 @@ Absinthe includes a number of useful Mix tasks for extracting schema metadata.
 
 Run `mix help` in your project and look for tasks starting with `absinthe`.
 
-### Roadmap
-
-See the [Roadmap project board](https://github.com/absinthe-graphql/absinthe/projects/2) for longer term plans.
-
 ## Related Projects
 
 See the [GitHub organization](https://github.com/absinthe-graphql).
