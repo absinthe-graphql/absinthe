@@ -361,36 +361,7 @@ put_description(Node, Description) ->
 % String
 
 extract_quoted_string_token({_Token, _Loc, Value}) ->
-  unicode:characters_to_binary(process_string(lists:sublist(Value, 2, length(Value) - 2))).
-
-process_string(Escaped) ->
-  process_string(Escaped, []).
-
-process_string([], Acc) ->
-  lists:reverse(Acc);
-process_string([$\\, $" | T], Acc) ->
-  process_string(T, [$" | Acc]);
-process_string([$\\, $\\ | T], Acc) ->
-  process_string(T, [$\\ | Acc]);
-process_string([$\\, $/ | T], Acc) ->
-  process_string(T, [$/ | Acc]);
-process_string([$\\, $b | T], Acc) ->
-  process_string(T, [$\b | Acc]);
-process_string([$\\, $f | T], Acc) ->
-  process_string(T, [$\f | Acc]);
-process_string([$\\, $n | T], Acc) ->
-  process_string(T, [$\n | Acc]);
-process_string([$\\, $r | T], Acc) ->
-  process_string(T, [$\r | Acc]);
-process_string([$\\, $t | T], Acc) ->
-  process_string(T, [$\t | Acc]);
-process_string([$\\, $u, A, B, C, D | T], Acc) ->
-  process_string(T, [hexlist_to_utf8_binary([A, B, C, D]) | Acc]);
-process_string([H | T], Acc) ->
-  process_string(T, [H | Acc]).
-
-hexlist_to_utf8_binary(HexList) ->
-  unicode:characters_to_binary([httpd_util:hexlist_to_integer(HexList)]).
+  unicode:characters_to_binary(lists:sublist(Value, 2, length(Value) - 2)).
 
 % Block String
 

@@ -142,7 +142,7 @@ object :post do
   field :posts, list_of(:post), resolve: dataloader(Blog)
 
   @desc "Author of the post"
-  field :author, :user, do
+  field :author, :user do
     resolve dataloader(Blog)
   end
 end

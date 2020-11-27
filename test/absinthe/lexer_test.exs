@@ -27,6 +27,28 @@ defmodule Absinthe.LexerTest do
              Absinthe.Lexer.tokenize(@query)
   end
 
+  @query ~S"""
+  {
+    { foo(bar: "\\\\FOO") }
+  }
+  """
+  test "multiple escaped slashes" do
+    assert Absinthe.Lexer.tokenize(@query) ==
+             {:ok,
+              [
+                {:"{", {1, 1}},
+                {:"{", {2, 3}},
+                {:name, {2, 5}, 'foo'},
+                {:"(", {2, 8}},
+                {:name, {2, 9}, 'bar'},
+                {:":", {2, 12}},
+                {:string_value, {2, 14}, ~S("\\FOO") |> String.to_charlist()},
+                {:")", {2, 23}},
+                {:"}", {2, 25}},
+                {:"}", {3, 1}}
+              ]}
+  end
+
   @query """
   {
     foo(bar: \"""

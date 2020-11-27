@@ -2,6 +2,21 @@
 
 For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe/blob/v1.4/CHANGELOG.md) branch.
 
+## 1.5.4
+
+- Bug Fix: Fix [rendering of interfaces in SDL](https://github.com/absinthe-graphql/absinthe/pull/979)
+- Bug Fix: Properly [escape single line descriptions in SDL](https://github.com/absinthe-graphql/absinthe/pull/968)
+- Bug Fix: Fix [`:meta` on fields](https://github.com/absinthe-graphql/absinthe/pull/973)
+
+## 1.5.3
+
+- Bug Fix: Handle null propagation with `non_null(list_of(non_null(type)))` properly
+- Bug Fix: Fix [double escaping issue](https://github.com/absinthe-graphql/absinthe/pull/962) with string literal arguments.
+
+## 1.5.2
+
+- Bug Fix: Fix issue with persistent term backend.
+
 ## 1.5.1
 
 - Bug Fix: Enable hydrating resolve_type on unions. #938

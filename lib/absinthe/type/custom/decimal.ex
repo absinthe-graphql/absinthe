@@ -6,9 +6,13 @@ if Code.ensure_loaded?(Decimal) do
 
     alias Absinthe.Blueprint.Input
 
+    @dialyzer {:no_match, parse: 1}
     @spec parse(any) :: {:ok, Decimal.t()} | {:ok, nil} | :error
     def parse(%Input.String{value: value}) when is_binary(value) do
       case Decimal.parse(value) do
+        # Decimal V2
+        {decimal, ""} -> {:ok, decimal}
+        # Decimal V1
         {:ok, decimal} -> {:ok, decimal}
         _ -> :error
       end

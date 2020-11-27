@@ -109,7 +109,7 @@ socket module.
 defmodule MyAppWeb.UserSocket do
   use Phoenix.Socket
   use Absinthe.Phoenix.Socket,
-    schema: MyApp.Web.Schema
+    schema: MyAppWeb.Schema
 
   # Deprecated in Phoenix v1.4
   transport :websocket, Phoenix.Transports.WebSocket
