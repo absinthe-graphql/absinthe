@@ -10,11 +10,9 @@ defmodule Mix.Tasks.Absinthe.Schema.Sdl do
   @moduledoc """
   Generate a `schema.graphql` file.
 
-      $ mix absinthe.schema.sdl [FILENAME] [OPTIONS]
-
   ## Usage
 
-      $ mix absinthe.schema.sdl --schema MySchema
+      mix absinthe.schema.sdl [OPTIONS] [FILENAME]
 
   ## Options
 
@@ -25,11 +23,11 @@ defmodule Mix.Tasks.Absinthe.Schema.Sdl do
 
   Write to default path `#{@default_filename}` using the `:schema` configured for the `:absinthe` application:
 
-      $ mix absinthe.schema.sdl
+      mix absinthe.schema.sdl
 
   Write to path `/path/to/schema.graphql` using the `MySchema` schema
 
-      $ mix absinthe.schema.sdl --schema MySchema /path/to/schema.graphql
+      mix absinthe.schema.sdl --schema MySchema /path/to/schema.graphql
 
   """
 
