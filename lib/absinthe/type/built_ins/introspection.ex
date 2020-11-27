@@ -131,7 +131,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
               end
             end)
 
-          {:ok, result}
+          {:ok, Enum.sort_by(result, & &1.identifier)}
 
         _, _ ->
           {:ok, nil}
