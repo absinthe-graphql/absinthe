@@ -1,6 +1,7 @@
 defmodule Absinthe.Mixfile do
   use Mix.Project
 
+  @source_url "https://github.com/absinthe-graphql/absinthe"
   @version "1.5.4"
 
   def project do
@@ -12,7 +13,7 @@ defmodule Absinthe.Mixfile do
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       package: package(),
-      source_url: "https://github.com/absinthe-graphql/absinthe",
+      source_url: @source_url,
       docs: [
         source_ref: "v#{@version}",
         main: "overview",
@@ -52,8 +53,8 @@ defmodule Absinthe.Mixfile do
       licenses: ["MIT"],
       links: %{
         Website: "https://absinthe-graphql.org",
-        Changelog: "https://github.com/absinthe-graphql/absinthe/blob/master/CHANGELOG.md",
-        GitHub: "https://github.com/absinthe-graphql/absinthe"
+        Changelog: "#{@source_url}/blob/master/CHANGELOG.md",
+        GitHub: @source_url
       }
     ]
   end

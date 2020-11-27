@@ -2,9 +2,12 @@
 
 [GraphQL](https://facebook.github.io/graphql/) implementation for Elixir.
 
-[![Hex pm](http://img.shields.io/hexpm/v/absinthe.svg)](https://hex.pm/packages/absinthe)
 [![Build Status](https://github.com/absinthe-graphql/absinthe/workflows/CI/badge.svg)](https://github.com/absinthe-graphql/absinthe/actions?query=workflow%3ACI)
+[![Hex pm](http://img.shields.io/hexpm/v/absinthe.svg)](https://hex.pm/packages/absinthe)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/absinthe/)
+[![Total Download](https://img.shields.io/hexpm/dt/absinthe.svg)](https://hex.pm/packages/absinthe)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Last Updated](https://img.shields.io/github/last-commit/absinthe-graphql/absinthe.svg)](https://github.com/absinthe-graphql/absinthe/commits/master)
 
 Goals:
 
@@ -101,7 +104,7 @@ Run `mix help` in your project and look for tasks starting with `absinthe`.
 
 ### Roadmap
 
-See the [Roadmap project board](https://github.com/absinthe-graphql/absinthe/projects/2) for longer term plans. 
+See the [Roadmap project board](https://github.com/absinthe-graphql/absinthe/projects/2) for longer term plans.
 
 ## Related Projects
 
