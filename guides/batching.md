@@ -100,7 +100,7 @@ Not only is this a very efficient way to query the data, it's also 100% dynamic.
 If a query document asks for authors, they're loaded efficiently. If it does not,
 they aren't loaded at all.
 
-See the documentation for [Absinthe.Middleware.Batch](Absinthe.Middleware.Batch.html) for more information.
+See the documentation for `Absinthe.Middleware.Batch` for more information.
 
 `Absinthe.Middleware.Batch` achieves a lot and, with some helpers, was the
 standard way to solve this problem for a long time. While batching still has a
