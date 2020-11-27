@@ -2,9 +2,10 @@
 
 [GraphQL](https://facebook.github.io/graphql/) implementation for Elixir.
 
-[![Hex pm](http://img.shields.io/hexpm/v/absinthe.svg)](https://hex.pm/packages/absinthe)
 [![Build Status](https://github.com/absinthe-graphql/absinthe/workflows/CI/badge.svg)](https://github.com/absinthe-graphql/absinthe/actions?query=workflow%3ACI)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Hex pm](http://img.shields.io/hexpm/v/absinthe.svg)](https://hex.pm/packages/absinthe)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-green.svg)](https://hexdocs.pm/absinthe/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 Goals:
 
@@ -98,10 +99,6 @@ See [HexDocs](https://hexdocs.pm/absinthe) and <http://absinthe-graphql.org>.
 Absinthe includes a number of useful Mix tasks for extracting schema metadata.
 
 Run `mix help` in your project and look for tasks starting with `absinthe`.
-
-### Roadmap
-
-See the [Roadmap project board](https://github.com/absinthe-graphql/absinthe/projects/2) for longer term plans. 
 
 ## Related Projects
 
