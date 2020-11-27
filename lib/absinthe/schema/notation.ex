@@ -109,56 +109,9 @@ defmodule Absinthe.Schema.Notation do
   A trigger is the name of a mutation. When that mutation runs, data is pushed to the clients
   who are subscribed to the subscription.
 
-  A subscription can have many triggers, a trigger can push to many topics.
+  A subscription can have many triggers, and a trigger can push to many topics.
 
-  ### Examples
-
-  Single trigger:
-
-  ```elixir
-  subscription do
-    field :location_update, :user do
-      arg :user_id, non_null(:id)
-
-      config fn args, _ ->
-        # This sets the topic to be the user's id
-        {:ok, topic: args.user_id}
-      end
-
-      # When the gps_event mutation runs, the event is passed to the topic fn. The result of the
-      # topic fn is the name of the topic that will receive the updated gps_event.
-      trigger :gps_event, topic: fn event ->
-        event.user_id
-      end
-    end
-  end
-  ```
-
-  Multiple Triggers:
-
-  ```elixir
-  mutation do
-    field :gps_event, :gps_event
-    field :other_event, :event
-  end
-  subscription do
-    field :location_update, :user do
-      arg :user_id, non_null(:id)
-
-      config fn args, _ ->
-        {:ok, topic: args.user_id}
-      end
-
-      # Both mutations will trigger the subscription
-      trigger [:gps_event, :other_event], topic: fn event ->
-        event.user_id
-      end
-    end
-  end
-
-  ```
-
-  Multiple Topics:
+  ### Example
 
   ```elixir
   mutation do
@@ -174,13 +127,13 @@ defmodule Absinthe.Schema.Notation do
         {:ok, topic: args.user_id}
       end
 
-      # Both mutations will trigger the subscription
-      trigger :gps_event, topic: fn event ->
-        event.user_id
+      trigger :gps_event, topic: fn gps_event ->
+        gps_event.user_id
       end
 
-      trigger :user_event, topic: fn user ->
-      # Returning a list of topics triggers the subscription for each of the topics in the list.
+      # Trigger on a list of mutations
+      trigger [:user_checkin], topic: fn user ->
+        # Returning a list of topics triggers the subscription for each of the topics in the list.
         [user.id, user.friend.id]
       end
     end
