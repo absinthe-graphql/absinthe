@@ -279,7 +279,7 @@ defmodule Absinthe.Lexer do
 
   defp unescape_unicode(_rest, content, context, _loc, _) do
     code = content |> Enum.reverse()
-    value = :httpd_util.hexlist_to_integer(code)
+    value = :erlang.list_to_integer(code, 16)
     binary = :unicode.characters_to_binary([value])
     {[binary], context}
   end

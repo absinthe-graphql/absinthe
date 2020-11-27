@@ -128,6 +128,14 @@ defmodule Absinthe.Phase.Schema.Hydrate do
   end
 
   def apply_hydration(
+        %Blueprint.Schema.UnionTypeDefinition{} = node,
+        {:resolve_type, resolve_type}
+      )
+      when is_function(resolve_type) do
+    %{node | resolve_type: resolve_type}
+  end
+
+  def apply_hydration(
         %Blueprint.Schema.ObjectTypeDefinition{} = node,
         {:is_type_of, is_type_of}
       )

@@ -25,6 +25,4 @@ defmodule Absinthe.Schema.Provider do
   @callback __absinthe_directives__(schema_identifier) :: Absinthe.Type.Directive.t()
 
   @callback __absinthe_interface_implementors__(schema_identifier) :: term
-
-  @callback __absinthe_prototype_schema__(schema_identifier) :: schema_identifier
 end

@@ -82,10 +82,59 @@ defmodule Absinthe.Schema.ManipulationTest do
     end
   end
 
+  defmodule MyAppWeb.CustomSchemaEnumTypes do
+    alias Absinthe.Blueprint.Schema
+    alias Absinthe.Schema.Notation
+    alias Absinthe.{Blueprint, Pipeline, Phase}
+
+    def pipeline(pipeline) do
+      Pipeline.insert_after(pipeline, Phase.Schema.TypeImports, __MODULE__)
+    end
+
+    def run(blueprint = %Blueprint{}, _) do
+      %{schema_definitions: [schema]} = blueprint
+
+      new_enum = build_dynamic_enum()
+
+      schema =
+        Map.update!(schema, :type_definitions, fn type_definitions ->
+          [new_enum | type_definitions]
+        end)
+
+      {:ok, %{blueprint | schema_definitions: [schema]}}
+    end
+
+    def build_dynamic_enum() do
+      %Schema.EnumTypeDefinition{
+        name: "Categories",
+        identifier: :categories,
+        module: __MODULE__,
+        __reference__: Notation.build_reference(__ENV__),
+        values: [
+          %Schema.EnumValueDefinition{
+            identifier: :foo,
+            value: :foo,
+            name: "FOO",
+            module: __MODULE__,
+            __reference__: Notation.build_reference(__ENV__)
+          },
+          %Schema.EnumValueDefinition{
+            identifier: :bar,
+            value: :foo,
+            name: "BAR",
+            module: __MODULE__,
+            __reference__: Notation.build_reference(__ENV__)
+          }
+        ]
+      }
+    end
+  end
+
   defmodule MyAppWeb.Schema do
     use Absinthe.Schema
 
     @pipeline_modifier MyAppWeb.CustomSchemaPhase
+    @pipeline_modifier MyAppWeb.CustomSchemaEnumTypes
 
     object :some_obj do
       field :some_integer, :integer do
@@ -103,8 +152,7 @@ defmodule Absinthe.Schema.ManipulationTest do
         meta :some_string_meta, "non_dyn_integer meta"
       end
 
-      field :non_dyn_string, :string do
-        meta :some_string_meta, "non_dyn_string meta"
+      field :non_dyn_string, :string, meta: [some_string_meta: "non_dyn_string meta"] do
         resolve fn _, _ -> {:ok, "some_string_val"} end
       end
     end
@@ -130,6 +178,24 @@ defmodule Absinthe.Schema.ManipulationTest do
     expected = %{
       data: %{"some_field" => %{"some_integer" => 1, "some_string" => "some_string_val"}}
     }
+
+    actual = Absinthe.run!(q, MyAppWeb.Schema)
+
+    assert expected == actual
+  end
+
+  test "enum types work" do
+    q = """
+    query {
+      __type(name: "Categories") {
+        enumValues {
+          name
+        }
+      }
+    }
+    """
+
+    expected = %{data: %{"__type" => %{"enumValues" => [%{"name" => "BAR"}, %{"name" => "FOO"}]}}}
 
     actual = Absinthe.run!(q, MyAppWeb.Schema)
 

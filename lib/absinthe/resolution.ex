@@ -21,7 +21,7 @@ defmodule Absinthe.Resolution do
   When a `%Resolution{}` is accessed via middleware, you may want to update the
   context (e.g. to cache a dataloader instance or the result of an ecto query).
   Updating the context can be done simply by using the map updating syntax (or
-  `Map.put/4`):
+  `Map.put/3`):
 
   ```elixir
   %{resolution | context: new_context}

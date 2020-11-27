@@ -63,7 +63,7 @@ In your `MyAppWeb.Endpoint` module add:
 use Absinthe.Phoenix.Endpoint
 ```
 
-For your socket, different configurations are used depending on what version of
+For your socket, different configurations are used in `MyAppWeb.UserSocket` depending on what version of
 Phoenix you're using.
 
 #### Phoenix 1.3 and 1.4
@@ -109,7 +109,7 @@ socket module.
 defmodule MyAppWeb.UserSocket do
   use Phoenix.Socket
   use Absinthe.Phoenix.Socket,
-    schema: MyApp.Web.Schema
+    schema: MyAppWeb.Schema
 
   # Deprecated in Phoenix v1.4
   transport :websocket, Phoenix.Transports.WebSocket
@@ -198,7 +198,7 @@ subscription {
 }
 ```
 
-This tells Absinthe to subscribe client A in the `:comment_added` field on the `"absinthe-graphql/absinthe"` topic, because that's what comes back from the `setup` function.
+This tells Absinthe to subscribe client A in the `:comment_added` field on the `"absinthe-graphql/absinthe"` topic, because that's what comes back from the `config` function.
 
 Then, if client B submits a mutation:
 

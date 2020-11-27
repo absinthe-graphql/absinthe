@@ -169,17 +169,17 @@ defmodule Absinthe.Type.CustomTest do
 
     test "can be parsed from a numeric string" do
       assert {:ok, decimal} = parse(:decimal, %Input.String{value: "-3.49"})
-      assert Decimal.cmp(@decimal, decimal) == :eq
+      assert Decimal.compare(@decimal, decimal) == :eq
     end
 
     test "can be parsed from a float" do
       assert {:ok, decimal} = parse(:decimal, %Input.Float{value: -3.49})
-      assert Decimal.cmp(@decimal, decimal) == :eq
+      assert Decimal.compare(@decimal, decimal) == :eq
     end
 
     test "can be parsed from an integer" do
       assert {:ok, decimal} = parse(:decimal, %Input.Integer{value: 3})
-      assert Decimal.cmp(@decimal_int, decimal) == :eq
+      assert Decimal.compare(@decimal_int, decimal) == :eq
     end
 
     test "cannot be parsed from alphanumeric string" do

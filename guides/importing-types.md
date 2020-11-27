@@ -76,4 +76,4 @@ end
 This will look for a matching object type `:account_queries`, and pull
 its fields into the root query type.
 
-For more information, see the [guide](importing-fields.html).
+For more information, see the [guide](importing-fields.md).

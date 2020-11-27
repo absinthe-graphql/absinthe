@@ -1,7 +1,7 @@
 defmodule Absinthe.Mixfile do
   use Mix.Project
 
-  @version "1.5.0-rc.5"
+  @version "1.5.4"
 
   def project do
     [
@@ -26,7 +26,7 @@ defmodule Absinthe.Mixfile do
       ],
       deps: deps(),
       dialyzer: [
-        plt_add_apps: [:mix, :dataloader, :decimal, :ex_unit, :inets],
+        plt_add_apps: [:mix, :dataloader, :decimal, :ex_unit],
         plt_file: {:no_warn, "priv/plts/absinthe.plt"}
       ]
     ]
@@ -62,20 +62,20 @@ defmodule Absinthe.Mixfile do
   defp elixirc_paths(_), do: ["lib"]
 
   def application do
-    [extra_applications: [:logger]]
+    [extra_applications: [:crypto, :logger]]
   end
 
   defp deps do
     [
-      {:nimble_parsec, "~> 0.5"},
+      {:nimble_parsec, "~> 0.5 or ~> 1.0"},
       {:telemetry, "~> 0.4.0"},
       {:dataloader, "~> 1.0.0", optional: true},
-      {:decimal, "~> 1.0", optional: true},
-      {:ex_doc, "~> 0.20", only: :dev},
+      {:decimal, "~> 1.0 or ~> 2.0", optional: true},
+      {:ex_doc, "~> 0.22", only: :dev},
       {:benchee, ">= 1.0.0", only: :dev},
       {:dialyxir, "~> 1.0.0", only: [:dev, :test], runtime: false},
       {:phoenix_pubsub, ">= 0.0.0", only: :test},
-      {:mix_test_watch, "~> 0.4.1", only: [:test]}
+      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false}
     ]
   end
 
@@ -97,7 +97,6 @@ defmodule Absinthe.Mixfile do
       "guides/tutorial/conclusion.md",
       "guides/schemas.md",
       "guides/plug-phoenix.md",
-      "guides/ecto.md",
       "guides/middleware-and-plugins.md",
       "guides/errors.md",
       "guides/batching.md",

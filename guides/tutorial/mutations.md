@@ -48,17 +48,17 @@ end
 ```
 
 > Obviously things can go wrong in a mutation. To learn more about the
-> types of error results that Absinthe supports, read [the guide](errors.html).
+> types of error results that Absinthe supports, read [the guide](errors.md).
 
 ## Authorization
 
 This resolver adds a new concept: authorization. The resolution struct
-(that is, an [`Absinthe.Resolution`](Absinthe.Resolution.html))
+(that is, an `Absinthe.Resolution`)
 passed to the resolver as the third argument carries along with it the
 Absinthe context, a data structure that serves as the integration
 point with external mechanisms---like a Plug that authenticates the
 current user. You can learn more about how the context can be used in
-the [Context and Authentication](context-and-authentication.html)
+the [Context and Authentication](context-and-authentication.md)
 guide.
 
 Going back to the resolver code:
@@ -73,4 +73,4 @@ Going back to the resolver code:
 
 ## Next Step
 
-Now let's take a look at [more complex arguments](complex-arguments.md).
+Now let's take a look at [more complex arguments](complex-arguments.md)

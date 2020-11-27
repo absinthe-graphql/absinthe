@@ -12,7 +12,7 @@ of your application.
 ## Testing with Absinthe Plug
 
 GraphQL is transport independent, but it's most often served over HTTP. To test HTTP requests with `absinthe` you'll also need `absinthe_plug`. This guide will also assume you're using Phoenix, although 
-it is possible to use Absinthe without it (see the [Plug and Phoenix Setup Guide](./plug-phoenix.md)).
+it is possible to use Absinthe without it (see the [Plug and Phoenix Setup Guide](plug-phoenix.md)).
 
 ## Example
 

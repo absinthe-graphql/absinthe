@@ -29,10 +29,10 @@ defmodule MyAppWeb.Schema do
 end
 ```
 
-<p class="notice">
-  You may want to refer to the <a href="https://hexdocs.pm/absinthe/">Absinthe API
-  documentation</a> for more detailed information as you look this over..
-</p>
+
+You may want to refer to the <a href="https://hexdocs.pm/absinthe/">Absinthe API
+documentation</a> for more detailed information as you look this over..
+
 
 Some macros and functions used here that are worth mentioning, pulled in automatically from
 `Absinthe.Schema.Notation` by `use Absinthe.Schema`:
@@ -60,7 +60,7 @@ end
 
 Now you can use Absinthe to execute a query document. Keep in mind that for
 HTTP, you'll probably want to use
-[Absinthe.Plug](plug-phoenix.html) instead of executing
+[Absinthe.Plug](plug-phoenix.md) instead of executing
 GraphQL query documents yourself. Absinthe doesn't know or care about HTTP,
 but the `absinthe_plug` project does: it handles the vagaries of interacting
 with HTTP GraphQL clients so you don't have to.
@@ -83,7 +83,7 @@ it would go something like this:
 ```
 
 Your schemas can be further customized using the options available to
-`Absinthe.Schema.Notation.field/4` to help provide for a richer experience for 
+`Absinthe.Schema.Notation.field/4` to help provide for a richer experience for
 your users, customize the field names, or mark fields as deprecated.
 
 ```elixir
@@ -101,7 +101,7 @@ end
 We could also move our type definitions out into a different module, for instance, `MyAppWeb.Schema.Types`, and then use `import_types` in our `MyAppWeb.Schema`:
 
 ```elixir
-# filename: myapp/schema.ex
+# filename: myapp/schema/types.ex
 defmodule MyAppWeb.Schema.Types do
   use Absinthe.Schema.Notation
 
@@ -128,4 +128,4 @@ end
 It's a nice way of separating the top-level `query` and `mutation` information,
 which define the surface area of the API, with the actual types that it uses.
 
-See [Importing Types](importing-types.html) for a full guide to importing types.
+See [Importing Types](importing-types.md) for a full guide to importing types.
