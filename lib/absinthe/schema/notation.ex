@@ -103,15 +103,64 @@ defmodule Absinthe.Schema.Notation do
 
   @placement {:trigger, [under: [:field]]}
   @doc """
-  Set a trigger for a subscription field.
+  Sets triggers for a subscription, and configures which topics to publish to when that subscription
+  is triggered.
 
-  It accepts one or more mutation field names, and can be called more than once.
+  A trigger is the name of a mutation. When that mutation runs, data is pushed to the clients
+  who are subscribed to the subscription.
 
-  ## Placement
+  A subscription can have many triggers, a trigger can push to many topics.
 
-  #{Utils.placement_docs(@placement)}
+  ### Examples
+
+  Single trigger:
+
+  ```elixir
+  subscription do
+    field :location_update, :user do
+      arg :user_id, non_null(:id)
+
+      config fn args, _ ->
+        # This sets the topic to be the user's id
+        {:ok, topic: args.user_id}
+      end
+
+      # When the gps_event mutation runs, the event is passed to the topic fn. The result of the
+      # topic fn is the name of the topic that will receive the updated gps_event.
+      trigger :gps_event, topic: fn event ->
+        event.user_id
+      end
+    end
+  end
+  ```
+
+  Multiple Triggers:
+
+  ```elixir
+  mutation do
+    field :gps_event, :gps_event
+    field :other_event, :event
+  end
+  subscription do
+    field :location_update, :user do
+      arg :user_id, non_null(:id)
+
+      config fn args, _ ->
+        {:ok, topic: args.user_id}
+      end
+
+      # Both mutations will trigger the subscription
+      trigger [:gps_event, :other_event], topic: fn event ->
+        event.user_id
+      end
+    end
+  end
 
   ```
+
+  Multiple Topics:
+
+  ```elixir
   mutation do
     field :gps_event, :gps_event
     field :user_checkin, :user
@@ -125,15 +174,21 @@ defmodule Absinthe.Schema.Notation do
         {:ok, topic: args.user_id}
       end
 
+      # Both mutations will trigger the subscription
       trigger :gps_event, topic: fn event ->
         event.user_id
       end
 
-      trigger :user_checkin, topic: fn user ->
-        [user.id, user.parent_id]
+      trigger :user_event, topic: fn user ->
+      # Returning a list of topics triggers the subscription for each of the topics in the list.
+        [user.id, user.friend.id]
       end
     end
   end
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
   ```
 
   Trigger functions are only called once per event, so database calls within
