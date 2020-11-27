@@ -7,6 +7,7 @@ For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe
 - Bug Fix: Fix [rendering of interfaces in SDL](https://github.com/absinthe-graphql/absinthe/pull/979)
 - Bug Fix: Properly [escape single line descriptions in SDL](https://github.com/absinthe-graphql/absinthe/pull/968)
 - Bug Fix: Fix [`:meta` on fields](https://github.com/absinthe-graphql/absinthe/pull/973)
+- Bug Fix: Validate that [DirectivesMustBeValid](https://github.com/absinthe-graphql/absinthe/pull/954)
 
 ## 1.5.3
 
