@@ -103,15 +103,21 @@ defmodule Absinthe.Schema.Notation do
 
   @placement {:trigger, [under: [:field]]}
   @doc """
-  Set a trigger for a subscription field.
+  Sets triggers for a subscription, and configures which topics to publish to when that subscription
+  is triggered.
 
-  It accepts one or more mutation field names, and can be called more than once.
+  A trigger is the name of a mutation. When that mutation runs, data is pushed to the clients
+  who are subscribed to the subscription.
+
+  A subscription can have many triggers, and a trigger can push to many topics.
 
   ## Placement
 
   #{Utils.placement_docs(@placement)}
 
-  ```
+  ## Example
+
+  ```elixir
   mutation do
     field :gps_event, :gps_event
     field :user_checkin, :user
@@ -125,12 +131,14 @@ defmodule Absinthe.Schema.Notation do
         {:ok, topic: args.user_id}
       end
 
-      trigger :gps_event, topic: fn event ->
-        event.user_id
+      trigger :gps_event, topic: fn gps_event ->
+        gps_event.user_id
       end
 
-      trigger :user_checkin, topic: fn user ->
-        [user.id, user.parent_id]
+      # Trigger on a list of mutations
+      trigger [:user_checkin], topic: fn user ->
+        # Returning a list of topics triggers the subscription for each of the topics in the list.
+        [user.id, user.friend.id]
       end
     end
   end
