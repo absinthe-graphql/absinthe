@@ -353,7 +353,9 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
     case Absinthe.Schema.lookup_type(schema, type, unwrap: false) do
       %Absinthe.Type.InputObject{fields: fields} ->
         object_values =
-          Map.values(fields)
+          fields
+          |> Map.take(Map.keys(value))
+          |> Map.values()
           |> Enum.map(&render_default_value(schema, adapter, &1, value))
           |> Enum.join(", ")
 
