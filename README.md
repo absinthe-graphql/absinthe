@@ -1,15 +1,15 @@
 # Absinthe
 
-[GraphQL](https://facebook.github.io/graphql/) implementation for Elixir.
-
 [![Build Status](https://github.com/absinthe-graphql/absinthe/workflows/CI/badge.svg)](https://github.com/absinthe-graphql/absinthe/actions?query=workflow%3ACI)
 [![Hex pm](http://img.shields.io/hexpm/v/absinthe.svg)](https://hex.pm/packages/absinthe)
-[![Hex Docs](https://img.shields.io/badge/hex-docs-green.svg)](https://hexdocs.pm/absinthe/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-blue.svg)](https://hexdocs.pm/absinthe/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
+[GraphQL](https://facebook.github.io/graphql/) implementation for Elixir.
 
 Goals:
 
-- Complete implementation of the [GraphQL Working Draft](https://facebook.github.io/graphql).
+- Complete implementation of the [GraphQL Working Draft](https://spec.graphql.org/draft/).
 - An idiomatic, readable, and comfortable API for Elixir developers
 - Extensibility based on small parts that do one thing well.
 - Detailed error messages and documentation.
@@ -84,7 +84,7 @@ def deps do
 end
 ```
 
-Note: Absinthe requires Elixir 1.4 or higher.
+Note: Absinthe requires Elixir 1.8 or higher.
 
 ## Upgrading
 
