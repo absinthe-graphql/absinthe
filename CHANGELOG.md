@@ -1,7 +1,5 @@
 # Changelog
 
-For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe/blob/v1.4/CHANGELOG.md) branch.
-
 ## 1.5.4
 
 - Feature: Ensure [stable ordering in introspection results](https://github.com/absinthe-graphql/absinthe/pull/997).
@@ -55,3 +53,7 @@ Alpha 0 note: 1.5.0 alpha is safe to use on existing schemas. However, there are
 - Feature: Built-in `telemetry` instrumentation (https://github.com/beam-telemetry/telemetry)
 - Breaking Change: `default_value: DateTime.utc_now()` will have its time set at compile time. IE: DON'T DO THIS. It only worked by accident before anyway, and now it no longer works, which is correct.
 - Breaking change: added `node_name/0` callback to `Absinthe.Subscription.PubSub` behaviour. To retain old behaviour, implement this callback to return `Kernel.node/0`.
+
+## v1.4
+
+For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe/blob/v1.4/CHANGELOG.md) branch.
