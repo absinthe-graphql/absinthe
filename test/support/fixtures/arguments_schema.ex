@@ -56,6 +56,11 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
     field :non_null_field, non_null(:string)
   end
 
+  input_object :filter do
+    field :include, list_of(:integer)
+    field :exclude, list_of(:integer)
+  end
+
   query do
     field :stuff, :integer do
       arg :stuff, non_null(:input_stuff)
@@ -63,6 +68,13 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
       resolve fn _, _ ->
         {:ok, 14}
       end
+    end
+
+    field :filter_numbers, list_of(:integer) do
+      arg :filter_empty, :filter, default_value: %{}
+      arg :filter_include, :filter, default_value: %{include: [1, 2, 3]}
+      arg :filter_exclude, :filter, default_value: %{exclude: [1, 2, 3]}
+      arg :filter_all, :filter, default_value: %{include: [1], exclude: [2, 3]}
     end
 
     field :test_boolean_input_object, :boolean do
