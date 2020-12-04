@@ -85,6 +85,7 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Arguments.FlagInvalid,
       # Validate Full Document
       Phase.Document.Validation.KnownDirectives,
+      Phase.Document.Validation.RepeatableDirectives,
       Phase.Document.Validation.ScalarLeafs,
       Phase.Document.Validation.VariablesAreInputTypes,
       Phase.Document.Validation.ArgumentsOfCorrectType,
