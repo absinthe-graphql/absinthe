@@ -8,6 +8,7 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.DirectivesTest do
         name
         args { name type { kind ofType { name kind } } }
         locations
+        isRepeatable
         onField
         onFragment
         onOperation
@@ -36,7 +37,8 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.DirectivesTest do
                       "name" => "include",
                       "onField" => true,
                       "onFragment" => true,
-                      "onOperation" => false
+                      "onOperation" => false,
+                      "isRepeatable" => false
                     },
                     %{
                       "args" => [
@@ -52,7 +54,8 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.DirectivesTest do
                       "name" => "skip",
                       "onField" => true,
                       "onFragment" => true,
-                      "onOperation" => false
+                      "onOperation" => false,
+                      "isRepeatable" => false
                     }
                   ]
                 }
