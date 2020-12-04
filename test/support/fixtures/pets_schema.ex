@@ -207,6 +207,7 @@ defmodule Absinthe.Fixtures.PetsSchema do
   end
 
   directive :on_field do
+    repeatable true
     on [:field]
   end
 
