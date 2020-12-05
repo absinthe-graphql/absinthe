@@ -48,17 +48,17 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
   object :__directive do
     description "Represents a directive"
 
-    field :name, :string
+    field :name, non_null(:string)
 
     field :description, :string
 
-    field :is_repeatable, :boolean,
+    field :is_repeatable, non_null(:boolean),
       resolve: fn _, %{source: source} ->
         {:ok, source.repeatable}
       end
 
     field :args,
-      type: list_of(:__inputvalue),
+      type: non_null(list_of(non_null(:__inputvalue))),
       resolve: fn _, %{source: source} ->
         args =
           source.args
@@ -89,7 +89,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         {:ok, Enum.member?(source.locations, :field)}
       end
 
-    field :locations, list_of(:__directive_location)
+    field :locations, non_null(list_of(non_null(:__directive_location)))
   end
 
   enum :__directive_location,
