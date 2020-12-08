@@ -124,17 +124,7 @@ defmodule Absinthe.Fixtures.PetsSchema do
   end
 
   scalar :custom_scalar do
-    parse fn
-      %Absinthe.Blueprint.Input.Object{} = input ->
-        {:ok, input}
-
-      %Absinthe.Blueprint.Input.Null{} ->
-        {:ok, nil}
-
-      _other ->
-        :error
-    end
-
+    parse & &1
     serialize & &1
   end
 
