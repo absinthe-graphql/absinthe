@@ -974,6 +974,36 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
     end
   end
 
+  describe "Invalid Custom Scalar value" do
+    test "Invalid scalar input on mutation, no suggestion" do
+      assert_fails_validation(
+        """
+        mutation($scalarInput: CustomScalar) {
+          createDog(customScalarInput: $scalarInput)
+        }
+        """,
+        [
+          variables: %{
+            "scalarInput" => [
+              %{
+                "foo" => "BAR"
+              }
+            ]
+          }
+        ],
+        [
+          bad_argument(
+            "customScalarInput",
+            "CustomScalar",
+            ~s($scalarInput),
+            2,
+            [@phase.unknown_field_error_message("foo")]
+          )
+        ]
+      )
+    end
+  end
+
   describe "Directive arguments" do
     test "with directives of valid types" do
       assert_passes_validation(
