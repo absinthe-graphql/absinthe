@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.5
+
+- Bug Fix: Fix for `nil` in [`ArgumentsOfCorrectType` suggestions](https://github.com/absinthe-graphql/absinthe/pull/1000)
+
 ## 1.5.4
 
 - Feature: Ensure [stable ordering in introspection results](https://github.com/absinthe-graphql/absinthe/pull/997).
