@@ -106,14 +106,15 @@ defmodule Absinthe.Subscription do
   defp fetch_fields(_, _), do: []
 
   @doc false
-  def subscribe(pubsub, field_key, doc_id, doc) do
+  def subscribe(pubsub, field_key, doc_id, doc, options) do
     registry = pubsub |> registry_name
 
     doc_value = {
       doc_id,
       %{
-        initial_phases: doc.initial_phases,
-        source: doc.source
+        schema: doc.schema,
+        source: doc.source,
+        options: options
       }
     }
 
