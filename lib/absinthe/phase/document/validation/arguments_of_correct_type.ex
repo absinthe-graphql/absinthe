@@ -84,6 +84,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
           case Type.unwrap(node.schema_node) do
             %Type.Scalar{} -> []
             %Type.Enum{} -> []
+            nil -> []
             _ -> suggested_field_names(node.schema_node, child.name)
           end
 

@@ -60,7 +60,7 @@ defmodule Absinthe.IntrospectionTest do
                  "isDeprecated" => false,
                  "deprecationReason" => nil
                }
-             ] == values |> Enum.sort_by(& &1["name"])
+             ] == values
     end
 
     test "can use __type and value information without deprecations" do
@@ -544,5 +544,37 @@ defmodule Absinthe.IntrospectionTest do
        }},
       result
     )
+  end
+
+  test "properly render partial default value input objects" do
+    {:ok, result} =
+      """
+      {
+        __schema {
+          queryType {
+            fields {
+              name
+              args {
+                name
+                defaultValue
+              }
+            }
+          }
+        }
+      }
+      """
+      |> run(Absinthe.Fixtures.ArgumentsSchema)
+
+    fields = get_in(result, [:data, "__schema", "queryType", "fields"])
+
+    assert %{
+             "args" => [
+               %{"defaultValue" => "{exclude: [2, 3], include: [1]}", "name" => "filterAll"},
+               %{"defaultValue" => "{}", "name" => "filterEmpty"},
+               %{"defaultValue" => "{exclude: [1, 2, 3]}", "name" => "filterExclude"},
+               %{"defaultValue" => "{include: [1, 2, 3]}", "name" => "filterInclude"}
+             ],
+             "name" => "filterNumbers"
+           } in fields
   end
 end

@@ -100,7 +100,7 @@ Not only is this a very efficient way to query the data, it's also 100% dynamic.
 If a query document asks for authors, they're loaded efficiently. If it does not,
 they aren't loaded at all.
 
-See the documentation for [Absinthe.Middleware.Batch](Absinthe.Middleware.Batch.html) for more information.
+See the documentation for `Absinthe.Middleware.Batch` for more information.
 
 `Absinthe.Middleware.Batch` achieves a lot and, with some helpers, was the
 standard way to solve this problem for a long time. While batching still has a
@@ -142,7 +142,7 @@ object :post do
   field :posts, list_of(:post), resolve: dataloader(Blog)
 
   @desc "Author of the post"
-  field :author, :user, do
+  field :author, :user do
     resolve dataloader(Blog)
   end
 end
@@ -192,7 +192,7 @@ end
 
 That's it! If you run a GraphQL query that hits that field, it will be loaded efficiently without N+1.
 
-See the documentation for [Dataloader](dataloader.html) for more information.
+See the documentation for [Dataloader](dataloader.md) for more information.
 
 ### Deprecated in v1.4: Batching with Absinthe.Ecto
 

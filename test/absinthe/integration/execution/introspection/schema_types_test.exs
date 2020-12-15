@@ -5,15 +5,33 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.SchemaTypesTest do
   query { __schema { types { name } } }
   """
 
+  @expected [
+    "__Directive",
+    "__DirectiveLocation",
+    "__EnumValue",
+    "__Field",
+    "__InputValue",
+    "__Schema",
+    "__Type",
+    "Boolean",
+    "Business",
+    "Contact",
+    "Int",
+    "RootMutationType",
+    "NamedEntity",
+    "Person",
+    "ProfileInput",
+    "RootQueryType",
+    "SearchResult",
+    "String",
+    "RootSubscriptionType"
+  ]
+
   test "scenario #1" do
     result = Absinthe.run(@query, Absinthe.Fixtures.ContactSchema, [])
     assert {:ok, %{data: %{"__schema" => %{"types" => types}}}} = result
-    names = types |> Enum.map(& &1["name"]) |> Enum.sort()
+    names = types |> Enum.map(& &1["name"])
 
-    expected =
-      ~w(Int String Boolean Contact Person Business ProfileInput SearchResult NamedEntity RootMutationType RootQueryType RootSubscriptionType __Schema __Directive __DirectiveLocation __EnumValue __Field __InputValue __Type)
-      |> Enum.sort()
-
-    assert expected == names
+    assert @expected == names
   end
 end

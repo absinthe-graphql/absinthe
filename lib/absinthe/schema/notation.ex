@@ -53,6 +53,14 @@ defmodule Absinthe.Schema.Notation do
   @doc """
   Configure a subscription field.
 
+  The first argument to the config function is the field arguments passed in the subscription.
+  The second argument is an `Absinthe.Resolution` struct, which includes information
+  like the context and other execution data.
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+
   ## Examples
 
   ```elixir
@@ -95,15 +103,26 @@ defmodule Absinthe.Schema.Notation do
 
   @placement {:trigger, [under: [:field]]}
   @doc """
-  Set a trigger for a subscription field.
+  Sets triggers for a subscription, and configures which topics to publish to when that subscription
+  is triggered.
 
-  It accepts one or more mutation field names, and can be called more than once.
+  A trigger is the name of a mutation. When that mutation runs, data is pushed to the clients
+  who are subscribed to the subscription.
 
-  ```
+  A subscription can have many triggers, and a trigger can push to many topics.
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+
+  ## Example
+
+  ```elixir
   mutation do
     field :gps_event, :gps_event
     field :user_checkin, :user
   end
+
   subscription do
     field :location_update, :user do
       arg :user_id, non_null(:id)
@@ -112,12 +131,14 @@ defmodule Absinthe.Schema.Notation do
         {:ok, topic: args.user_id}
       end
 
-      trigger :gps_event, topic: fn event ->
-        event.user_id
+      trigger :gps_event, topic: fn gps_event ->
+        gps_event.user_id
       end
 
-      trigger :user_checkin, topic: fn user ->
-        [user.id, user.parent_id]
+      # Trigger on a list of mutations
+      trigger [:user_checkin], topic: fn user ->
+        # Returning a list of topics triggers the subscription for each of the topics in the list.
+        [user.id, user.friend.id]
       end
     end
   end
@@ -126,7 +147,7 @@ defmodule Absinthe.Schema.Notation do
   Trigger functions are only called once per event, so database calls within
   them do not present a significant burden.
 
-  See the `subscription/2` macro docs for additional details
+  See the `Absinthe.Schema.subscription/2` macro docs for additional details
   """
   defmacro trigger(mutations, attrs) do
     __CALLER__
@@ -576,11 +597,12 @@ defmodule Absinthe.Schema.Notation do
   @doc """
   Set the complexity of a field
 
-  For a field, the first argument to the function you supply to complexity/1 is the user arguments -- just as a field's resolver can use user arguments to resolve its value, the complexity function that you provide can use the same arguments to calculate the field's complexity.
+  For a field, the first argument to the function you supply to `complexity/1` is the user arguments -- just as a field's resolver can use user arguments to resolve its value, the complexity function that you provide can use the same arguments to calculate the field's complexity.
 
   The second argument passed to your complexity function is the sum of all the complexity scores of all the fields nested below the current field.
 
-  (If a complexity function accepts three arguments, the third will be an `%Absinthe.Resolution{}` struct, just as with resolvers.)
+  An optional third argument is passed an `Absinthe.Complexity` struct, which includes information
+  like the context passed to `Absinthe.run/3`.
 
   ## Placement
 

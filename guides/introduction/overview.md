@@ -17,17 +17,17 @@ Here are a few resources that might be helpful:
 
 Absinthe's functionality generally falls into two broad areas. You can read more about the details in the guides provided as part of this documentation and in the related packages/projects:
 
-* [Defining Schemas](schemas.html). A schema:
+* [Defining Schemas](schemas.md). A schema:
   * defines the structure of data entities and the relationships between, as well as the available queries, mutations, and subscriptions, using an elegant collection of declarative macros
-  * defines [custom scalar](custom-scalars.html) types
-  * declares any [deprecated](deprecation.html) definitions
+  * defines [custom scalar](custom-scalars.md) types
+  * declares any [deprecated](deprecation.md) definitions
   * defines resolution functions to access data, using a flexible and extensible middleware/plugin system
 * Executing Documents. A GraphQL document:
   * can be any standard GraphQL query, mutation, or subscription
-  * may include reusable [variable](variables.html) definitions
-  * can be analyzed for its [complexity](complexity-analysis.html) and be rejected if it's unsafe/too expensive
-  * has a [context](context-and-authentication.html) that you can integrate with authentication and authorization strategies
-  * can contain standard GraphQL [introspection](introspection.html) fields
+  * may include reusable [variable](variables.md) definitions
+  * can be analyzed for its [complexity](complexity-analysis.md) and be rejected if it's unsafe/too expensive
+  * has a [context](context-and-authentication.md) that you can integrate with authentication and authorization strategies
+  * can contain standard GraphQL [introspection](introspection.md) fields
   * can include multipart file uploads as GraphQL arguments (as part of the [absinthe_plug](https://hex.pm/packages/absinthe_plug) package)
 
 ## Integrations
@@ -35,10 +35,10 @@ Absinthe's functionality generally falls into two broad areas. You can read more
 Absinthe integrates with a number of other important projects, both on the backend and frontend, to provide a better experience for developers.
 
 * Elixir
-  * Support for HTTP APIs using [Plug and Phoenix](plug-phoenix.html) via the [absinthe_plug](https://hex.pm/packages/absinthe_plug) and [absinthe_phoenix](https://hex.pm/packages/absinthe_phoenix) packages
-  * Support for [Ecto](ecto.html) via the [dataloader](https://github.com/absinthe-graphql/dataloader) package
+  * Support for HTTP APIs using [Plug and Phoenix](plug-phoenix.md) via the [absinthe_plug](https://hex.pm/packages/absinthe_plug) and [absinthe_phoenix](https://hex.pm/packages/absinthe_phoenix) packages
+  * Support for [Ecto](https://hex.pm/packages/ecto) via the [dataloader](https://github.com/absinthe-graphql/dataloader) package
 * JavaScript (client-side)
-  * Support for [Relay](relay.html) and [Apollo Client](apollo.html)
+  * Support for [Relay](relay.md) and [Apollo Client](apollo.md)
   * Support for Absinthe's channel-based subscriptions. See [absinthe-socket](https://github.com/absinthe-graphql/absinthe-socket).
 
 ## Guides

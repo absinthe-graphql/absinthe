@@ -241,7 +241,7 @@ In this example, we accept a list of multiple `:person_input_object` values to
 insert people into a database.
 
 ```elixir
-defmodule YourApp.Schema
+defmodule YourApp.Schema do
   # ...
 
   input_object :person_input_object do
@@ -290,7 +290,7 @@ manually.
 
 ```elixir
 def bulk_create(%{persons: new_persons, group: global_group_id}, _) do
-  {:ok, %{type: :group, id: internal_group_id}} = Absinthe.Relay.Node.from_global_id(global_group_id, YourApp.Schema)`
+  {:ok, %{type: :group, id: internal_group_id}} = Absinthe.Relay.Node.from_global_id(global_group_id, YourApp.Schema)
   # ... manipulate your DB using internal_group_id
 end
 ```

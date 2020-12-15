@@ -151,7 +151,7 @@ type, `:published_at`.
 
 The GraphQL specification doesn't define any official date or time
 types, but it does support custom scalar types (you can read more
-about them in the [related guide](custom-scalars.html), and
+about them in the [related guide](custom-scalars.md), and
 Absinthe ships with several built-in scalar types. We'll use
 `:naive_datetime` (which doesn't include timezone information) here.
 
@@ -181,7 +181,7 @@ import_types Absinthe.Type.Custom
 ```
 
 > For more information about how types are imported,
-> read [the guide on the topic](importing-types.html).
+> read [the guide on the topic](importing-types.md).
 >
 > For now, just remember that `import_types` should _only_ be
 > used in top-level schema module. (Think of it like a manifest.)
@@ -265,4 +265,4 @@ It should look something like this:
 
 ## Next Step
 
-Next up, we look at how to modify our data using [mutations](mutations.html).
+Next up, we look at how to modify our data using [mutations](mutations.md).
