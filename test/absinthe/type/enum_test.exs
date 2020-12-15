@@ -14,6 +14,14 @@ defmodule Absinthe.Type.EnumTest do
       end
     end
 
+    enum :test_macro_inputting_ast do
+      value :red, as: :r, description: hello("red")
+    end
+
+    def hello(arg1) do
+      arg1
+    end
+
     enum :color_channel do
       description "The selected color channel"
       value :red, as: :r, description: "Color Red"
@@ -69,6 +77,12 @@ defmodule Absinthe.Type.EnumTest do
       type = TestSchema.__absinthe_type__(:color_channel3)
       assert %Type.Enum{} = type
       assert %Type.Enum.Value{name: "RED", value: :red, description: nil} = type.values[:red]
+    end
+
+    test "checking if schema works correctly" do
+      type = TestSchema.__absinthe_type__(:test_macro_inputting_ast)
+      assert %Type.Enum{} = type
+      assert %Type.Enum.Value{name: "RED", value: :red, description: "red"} = type.values[:red]
     end
   end
 end

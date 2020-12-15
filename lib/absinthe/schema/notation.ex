@@ -1069,7 +1069,7 @@ defmodule Absinthe.Schema.Notation do
     |> expand_ast(env)
     |> Keyword.update(:values, [], fn values ->
       Enum.map(values, fn ident ->
-        value_attrs = handle_enum_value_attrs(ident, module: env.module)
+        value_attrs = handle_enum_value_attrs(ident, [], env)
         struct!(Schema.EnumValueDefinition, value_attrs)
       end)
     end)
@@ -1410,7 +1410,7 @@ defmodule Absinthe.Schema.Notation do
     put_attr(env.module, {:desc, text})
   end
 
-  def handle_enum_value_attrs(identifier, raw_attrs) do
+  def handle_enum_value_attrs(identifier, raw_attrs, env) do
     value =
       case Keyword.get(raw_attrs, :as, identifier) do
         value when is_tuple(value) ->
@@ -1423,7 +1423,7 @@ defmodule Absinthe.Schema.Notation do
       end
 
     raw_attrs
-    |> expand_ast(raw_attrs)
+    |> expand_ast(env)
     |> Keyword.put(:identifier, identifier)
     |> Keyword.put(:value, value)
     |> Keyword.put_new(:name, String.upcase(to_string(identifier)))
@@ -1434,7 +1434,7 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record an enum value in the current scope
   def record_value!(env, identifier, raw_attrs) do
-    attrs = handle_enum_value_attrs(identifier, raw_attrs)
+    attrs = handle_enum_value_attrs(identifier, raw_attrs, env)
     record!(env, Schema.EnumValueDefinition, identifier, attrs, [])
   end
 
@@ -1445,7 +1445,7 @@ defmodule Absinthe.Schema.Notation do
       values
       |> expand_ast(env)
       |> Enum.map(fn ident ->
-        value_attrs = handle_enum_value_attrs(ident, module: env.module)
+        value_attrs = handle_enum_value_attrs(ident, [], env)
         struct!(Schema.EnumValueDefinition, value_attrs)
       end)
 
