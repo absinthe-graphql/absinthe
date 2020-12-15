@@ -8,14 +8,14 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   @default_filename "./schema.json"
 
   @moduledoc """
-  Generate a schema.json file
+  Generate a `schema.json` file
 
   ## Usage
 
-      absinthe.schema.json [FILENAME] [OPTIONS]
+      mix absinthe.schema.json [OPTIONS] [FILENAME]
 
-    The JSON codec to be used needs to be included in your `mix.exs` dependencies. If using the default codec,
-    see the Jason [installation instructions](https://hexdocs.pm/jason).
+  The JSON codec to be used needs to be included in your `mix.exs` dependencies. If using the default codec,
+  see the Jason [installation instructions](https://hexdocs.pm/jason).
 
   ## Options
 
@@ -26,24 +26,23 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   * `--pretty` - Whether to pretty-print.
      Default: `false`
 
-
   ## Examples
 
   Write to default path `#{@default_filename}` using the `:schema` configured for the `:absinthe` application:
 
-      $ mix absinthe.schema.json
+      mix absinthe.schema.json
 
   Write to default path `#{@default_filename}` using the `MySchema` schema:
 
-      $ mix absinthe.schema.json --schema MySchema
+      mix absinthe.schema.json --schema MySchema
 
   Write to path `/path/to/schema.json` using the `MySchema` schema, with pretty-printing:
 
-      $ mix absinthe.schema.json --schema MySchema --pretty /path/to/schema.json
+      mix absinthe.schema.json --schema MySchema --pretty /path/to/schema.json
 
   Write to default path `#{@default_filename}` using the `MySchema` schema and a custom JSON codec, `MyCodec`:
 
-      $ mix absinthe.schema.json --schema MySchema --json-codec MyCodec
+      mix absinthe.schema.json --schema MySchema --json-codec MyCodec
 
 
   ## Custom Codecs
@@ -56,7 +55,6 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   * `options` will be a keyword list with a `:pretty` boolean, indicating whether the user requested pretty-printing.
 
   The function should return a string to be written to the output file.
-
   """
 
   defmodule Options do
@@ -78,7 +76,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
     Application.ensure_all_started(:absinthe)
 
     Mix.Task.run("loadpaths", argv)
-    Mix.Project.compile(argv)
+    Mix.Task.run("compile", argv)
 
     opts = parse_options(argv)
 
@@ -96,7 +94,6 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
         json_codec: json_codec
       }) do
     with {:ok, result} <- Absinthe.Schema.introspect(schema) do
-      result = sort(result)
       content = json_codec.encode!(result, pretty: pretty)
       {:ok, content}
     else
@@ -142,20 +139,4 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
     create_directory(Path.dirname(filename))
     create_file(filename, content, force: true)
   end
-
-  defp sort(map) when is_map(map) do
-    Map.new(map, fn {key, val} -> {key, sort(val)} end)
-  end
-
-  defp sort(list) when is_list(list) do
-    list
-    |> Enum.sort_by(&list_sorting_value/1)
-    |> Enum.map(&sort/1)
-  end
-
-  defp sort(value), do: value
-
-  defp list_sorting_value(%{name: name}), do: name
-  defp list_sorting_value(%{"name" => name}), do: name
-  defp list_sorting_value(value), do: value
 end

@@ -79,7 +79,7 @@ end
 
 > Before you can import fields from another object type, make sure
 > that the type in question is available to your schema. See
-> the [guide](importing-types.html) on importing types for information
+> the [guide](importing-types.md) on importing types for information
 > on how that's done.
 
 Here's how those object types are defined.
@@ -138,4 +138,4 @@ defmodule MyAppWeb.Schema.ContentTypes do
 end
 ```
 
-For more information on `import_types`, see [the guide](importing-types.html).
+For more information on `import_types`, see [the guide](importing-types.md).

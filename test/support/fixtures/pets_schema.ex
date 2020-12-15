@@ -123,6 +123,11 @@ defmodule Absinthe.Fixtures.PetsSchema do
     field :string_list_field, list_of(:string)
   end
 
+  scalar :custom_scalar do
+    parse & &1
+    serialize & &1
+  end
+
   object :complicated_args do
     field :int_arg_field, :string do
       arg :int_arg, :integer
@@ -192,6 +197,12 @@ defmodule Absinthe.Fixtures.PetsSchema do
     field :dog_or_human, :dog_or_human
     field :human_or_alien, :human_or_alien
     field :complicated_args, :complicated_args
+  end
+
+  mutation do
+    field :create_dog, :dog do
+      arg :custom_scalar_input, non_null(:custom_scalar)
+    end
   end
 
   directive :on_query do

@@ -8,9 +8,9 @@ if Code.ensure_loaded?(:persistent_term) do
       %{schema_definitions: [schema]} = blueprint
 
       type_list =
-        Map.new(schema.type_definitions, fn type_def ->
-          {type_def.identifier, type_def.name}
-        end)
+        for %{identifier: identifier} = type <- schema.type_definitions,
+            into: %{},
+            do: {identifier, type.__reference__}
 
       types_map =
         schema.type_artifacts
@@ -68,8 +68,8 @@ if Code.ensure_loaded?(:persistent_term) do
     end
 
     def build_metadata(schema) do
-      for type <- schema.type_definitions do
-        {type.identifier, type.__reference__}
+      for %{identifier: identifier} = type <- schema.type_definitions do
+        {identifier, type.__reference__}
       end
     end
 

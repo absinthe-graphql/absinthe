@@ -1,6 +1,17 @@
 # Changelog
 
-For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe/blob/v1.4/CHANGELOG.md) branch.
+## 1.5.5
+
+- Bug Fix: Fix for `nil` in [`ArgumentsOfCorrectType` suggestions](https://github.com/absinthe-graphql/absinthe/pull/1000)
+
+## 1.5.4
+
+- Feature: Ensure [stable ordering in introspection results](https://github.com/absinthe-graphql/absinthe/pull/997).
+- Bug Fix: Fix [rendering of interfaces in SDL](https://github.com/absinthe-graphql/absinthe/pull/979)
+- Bug Fix: Properly [escape single line descriptions in SDL](https://github.com/absinthe-graphql/absinthe/pull/968)
+- Bug Fix: Fix [`:meta` on fields](https://github.com/absinthe-graphql/absinthe/pull/973)
+- Bug Fix: Validate that [DirectivesMustBeValid](https://github.com/absinthe-graphql/absinthe/pull/954)
+- Bug Fix: Handle [default value rendering with partial field set](https://github.com/absinthe-graphql/absinthe/pull/998)
 
 ## 1.5.3
 
@@ -30,7 +41,7 @@ Absinthe allowed variables of different types to be used by accident as long as 
 - Documentation: Testing guide, numerous fixes and updates
 - Breaking Change: Scalar outputs are now type checked and will raise exceptions if the result tries to send the wrong data type in the result.
 - Breaking Change: `telemetry` event names [changed](https://github.com/absinthe-graphql/absinthe/pull/782) from the `alpha` to match an emerging naming convention for tracing.
-- Breaking Change: Added phase to check validity of field names according to graphql spec. Might break existing schema's. Remove the `Absinthe.Phase.Schema.Validation.NamesMustBeValid` from the schema pipeline if you want to ignore this.
+- Breaking Change: Added phase to check validity of field names according to GraphQL spec. Might break existing schema's. Remove the `Absinthe.Phase.Schema.Validation.NamesMustBeValid` from the schema pipeline if you want to ignore this.
 - Breaking Change: To match the GraphQL spec, we [no longer](https://github.com/absinthe-graphql/absinthe/pull/816) add a non-null error when a resolver on a non-null field explicitly returns its own error.
 - Breaking Change: Removed `Absinthe.Traversal` module
 
@@ -46,3 +57,7 @@ Alpha 0 note: 1.5.0 alpha is safe to use on existing schemas. However, there are
 - Feature: Built-in `telemetry` instrumentation (https://github.com/beam-telemetry/telemetry)
 - Breaking Change: `default_value: DateTime.utc_now()` will have its time set at compile time. IE: DON'T DO THIS. It only worked by accident before anyway, and now it no longer works, which is correct.
 - Breaking change: added `node_name/0` callback to `Absinthe.Subscription.PubSub` behaviour. To retain old behaviour, implement this callback to return `Kernel.node/0`.
+
+## v1.4
+
+For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe/blob/v1.4/CHANGELOG.md) branch.

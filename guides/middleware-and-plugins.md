@@ -25,7 +25,7 @@ defmodule MyApp.Middlewares.HandleChangesetErrors do
 end
 ```
 
-The resolution struct has all kinds of useful values inside of it. You can access the Absinthe context, the root value, information about the current field's AST, and more. For more information on how the current user ends up in the context please see our full [authentication guide](context-and-authentication.html).
+The resolution struct has all kinds of useful values inside of it. You can access the Absinthe context, the root value, information about the current field's AST, and more. For more information on how the current user ends up in the context please see our full [authentication guide](context-and-authentication.md).
 
 ## Using Middlewares
 Middleware can be placed on a field in few different ways:

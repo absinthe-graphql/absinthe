@@ -123,6 +123,8 @@ defmodule Absinthe.SchemaTest do
 
     directive :directive do
       arg :baz, :dir_enum
+
+      on :field
     end
 
     enum :dir_enum do
