@@ -934,7 +934,12 @@ defmodule Absinthe.Schema.Notation do
   defmacro input_object(identifier, attrs \\ [], do: block) do
     __CALLER__
     |> recordable!(:input_object, @placement[:input_object])
-    |> record!(Schema.InputObjectTypeDefinition, identifier, attrs, block)
+    |> record!(
+      Schema.InputObjectTypeDefinition,
+      identifier,
+      attrs |> Keyword.update(:description, nil, &wrap_in_unquote/1),
+      block
+    )
   end
 
   # UNIONS
