@@ -1308,6 +1308,7 @@ defmodule Absinthe.Schema.Notation do
     raw_attrs
     |> Keyword.put_new(:name, to_string(identifier))
     |> Keyword.put_new(:type, type)
+    |> Keyword.update(:description, nil, &wrap_in_unquote/1)
     |> handle_deprecate
   end
 
