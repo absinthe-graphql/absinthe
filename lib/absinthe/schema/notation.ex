@@ -212,7 +212,12 @@ defmodule Absinthe.Schema.Notation do
 
     __CALLER__
     |> recordable!(:object, @placement[:object])
-    |> record!(Schema.ObjectTypeDefinition, identifier, attrs, block)
+    |> record!(
+      Schema.ObjectTypeDefinition,
+      identifier,
+      attrs |> Keyword.update(:description, nil, &wrap_in_unquote/1),
+      block
+    )
   end
 
   @placement {:interfaces, [under: [:object]]}
