@@ -5,6 +5,7 @@ defmodule Absinthe.Type.EnumTest do
 
   defmodule TestSchema do
     use Absinthe.Schema
+    @module_attribute "goodbye"
 
     defmodule TestNestedModule do
       def nestedFunction(arg1) do
@@ -21,7 +22,7 @@ defmodule Absinthe.Type.EnumTest do
     end
 
     enum :description_keyword_argument do
-      @module_attribute "goodbye"
+      value :normal_string, description: "string"
       value :local_function_call, description: test_function("red")
 
       value :function_call_using_absolute_path,
@@ -74,6 +75,7 @@ defmodule Absinthe.Type.EnumTest do
   end
 
   @description_tests [
+    %{test_label: :normal_string, expected_description: "string"},
     %{test_label: :local_function_call, expected_description: "red"},
     %{test_label: :function_call_using_absolute_path, expected_description: "red"},
     %{test_label: :standard_library_function_works, expected_description: "rad"},
