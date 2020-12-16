@@ -1073,6 +1073,7 @@ defmodule Absinthe.Schema.Notation do
         struct!(Schema.EnumValueDefinition, value_attrs)
       end)
     end)
+    |> Keyword.update(:description, nil, &wrap_in_unquote/1)
   end
 
   @placement {:value, [under: [:enum]]}
