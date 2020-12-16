@@ -212,7 +212,12 @@ defmodule Absinthe.Schema.Notation do
 
     __CALLER__
     |> recordable!(:object, @placement[:object])
-    |> record!(Schema.ObjectTypeDefinition, identifier, attrs, block)
+    |> record!(
+      Schema.ObjectTypeDefinition,
+      identifier,
+      attrs |> Keyword.update(:description, nil, &wrap_in_unquote/1),
+      block
+    )
   end
 
   @placement {:interfaces, [under: [:object]]}
@@ -407,6 +412,7 @@ defmodule Absinthe.Schema.Notation do
       |> expand_ast(caller)
       |> Keyword.delete(:args)
       |> Keyword.delete(:meta)
+      |> Keyword.update(:description, nil, &wrap_in_unquote/1)
       |> handle_deprecate
 
     {attrs, block}
@@ -934,7 +940,12 @@ defmodule Absinthe.Schema.Notation do
   defmacro input_object(identifier, attrs \\ [], do: block) do
     __CALLER__
     |> recordable!(:input_object, @placement[:input_object])
-    |> record!(Schema.InputObjectTypeDefinition, identifier, attrs, block)
+    |> record!(
+      Schema.InputObjectTypeDefinition,
+      identifier,
+      attrs |> Keyword.update(:description, nil, &wrap_in_unquote/1),
+      block
+    )
   end
 
   # UNIONS
@@ -1073,6 +1084,7 @@ defmodule Absinthe.Schema.Notation do
         struct!(Schema.EnumValueDefinition, value_attrs)
       end)
     end)
+    |> Keyword.update(:description, nil, &wrap_in_unquote/1)
   end
 
   @placement {:value, [under: [:enum]]}
@@ -1296,6 +1308,7 @@ defmodule Absinthe.Schema.Notation do
     raw_attrs
     |> Keyword.put_new(:name, to_string(identifier))
     |> Keyword.put_new(:type, type)
+    |> Keyword.update(:description, nil, &wrap_in_unquote/1)
     |> handle_deprecate
   end
 
@@ -1401,12 +1414,11 @@ defmodule Absinthe.Schema.Notation do
     scoped_def(env, :enum, identifier, attrs, block)
   end
 
-  defp reformat_description(text), do: String.trim(text)
-
   @doc false
   # Record a description in the current scope
   def record_description!(env, text_block) do
-    text = reformat_description(text_block)
+    text = wrap_in_unquote(text_block)
+
     put_attr(env.module, {:desc, text})
   end
 
@@ -1428,7 +1440,7 @@ defmodule Absinthe.Schema.Notation do
     |> Keyword.put(:value, value)
     |> Keyword.put_new(:name, String.upcase(to_string(identifier)))
     |> Keyword.delete(:as)
-    |> Keyword.update(:description, nil, fn existing_value -> {:unquote, [], [existing_value]} end)
+    |> Keyword.update(:description, nil, &wrap_in_unquote/1)
     |> handle_deprecate
   end
 
@@ -1483,6 +1495,14 @@ defmodule Absinthe.Schema.Notation do
       end
 
     put_attr(env.module, {:middleware, [new_middleware]})
+  end
+
+  # We wrap the value (from the user) in an `unquote` call, so that when the schema `blueprint` is
+  # placed into `__absinthe_blueprint__` via `unquote(Macro.escape(blueprint, unquote: true))` the
+  # value get's unquoted. This allows us to evaluate function calls in the scope of the schema
+  # module.
+  defp wrap_in_unquote(value) do
+    {:unquote, [], [value]}
   end
 
   # ------------------------------
