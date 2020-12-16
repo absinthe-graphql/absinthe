@@ -15,7 +15,7 @@ defmodule Absinthe.Type.EnumTest do
     end
 
     enum :test_macro_inputting_ast do
-      value :red, as: :r, description: hello("red")
+      value :red, as: :red, description: hello("red")
     end
 
     def hello(arg1) do

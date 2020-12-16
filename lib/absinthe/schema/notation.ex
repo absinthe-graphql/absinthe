@@ -1428,6 +1428,7 @@ defmodule Absinthe.Schema.Notation do
     |> Keyword.put(:value, value)
     |> Keyword.put_new(:name, String.upcase(to_string(identifier)))
     |> Keyword.delete(:as)
+    |> Keyword.update(:description, nil, fn existing_value -> {:unquote, [], [existing_value]} end)
     |> handle_deprecate
   end
 
