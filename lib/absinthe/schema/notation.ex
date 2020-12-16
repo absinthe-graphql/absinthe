@@ -412,6 +412,7 @@ defmodule Absinthe.Schema.Notation do
       |> expand_ast(caller)
       |> Keyword.delete(:args)
       |> Keyword.delete(:meta)
+      |> Keyword.update(:description, nil, &wrap_in_unquote/1)
       |> handle_deprecate
 
     {attrs, block}
