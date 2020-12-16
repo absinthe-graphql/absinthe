@@ -1402,19 +1402,10 @@ defmodule Absinthe.Schema.Notation do
     scoped_def(env, :enum, identifier, attrs, block)
   end
 
-  defp wrap_in_reformat_description(text) do
-    quote do
-      String.trim(unquote(text))
-    end
-  end
-
   @doc false
   # Record a description in the current scope
   def record_description!(env, text_block) do
-    text =
-      text_block
-      |> wrap_in_reformat_description()
-      |> wrap_in_unquote()
+    text = wrap_in_unquote(text_block)
 
     put_attr(env.module, {:desc, text})
   end
