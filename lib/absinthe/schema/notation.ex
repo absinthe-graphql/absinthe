@@ -1497,6 +1497,14 @@ defmodule Absinthe.Schema.Notation do
     put_attr(env.module, {:middleware, [new_middleware]})
   end
 
+  # We wrap the value (from the user) in an `unquote` call, so that when the schema `blueprint` is
+  # placed into `__absinthe_blueprint__` via `unquote(Macro.escape(blueprint, unquote: true))` the
+  # value get's unquoted. This allows us to evaluate function calls in the scope of the schema
+  # module.
+  defp wrap_in_unquote(value) do
+    {:unquote, [], [value]}
+  end
+
   # ------------------------------
 
   @doc false
