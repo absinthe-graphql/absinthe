@@ -6,11 +6,9 @@ defmodule Absinthe.Type.EnumTest do
   defmodule TestSchema do
     use Absinthe.Schema
 
-    query do
-      field :channel, :color_channel, description: "The active color channel" do
-        resolve fn _, _ ->
-          {:ok, :red}
-        end
+    defmodule TestNestedModule do
+      def nestedFunction(arg1) do
+        arg1
       end
     end
 
@@ -18,43 +16,21 @@ defmodule Absinthe.Type.EnumTest do
       value :red, as: :red, description: hello("red")
     end
 
+    enum :test_function_called_without_name do
+      value :red, as: :red, description: Absinthe.Type.EnumTest.TestSchema.hello("red")
+    end
+
+    enum :test_standard_function_works do
+      value :red, as: :red, description: hello("red")
+      String.replace("red", "o", "a")
+    end
+
+    enum :test_nested_function do
+      value :red, as: :red, description: TestNestedModule.nestedFunction("hello")
+    end
+
     def hello(arg1) do
       arg1
-    end
-
-    enum :color_channel do
-      description "The selected color channel"
-      value :red, as: :r, description: "Color Red"
-      value :green, as: :g, description: "Color Green"
-      value :blue, as: :b, description: "Color Blue"
-
-      value :alpha,
-        as: :a,
-        deprecate: "We no longer support opacity settings",
-        description: "Alpha Channel"
-    end
-
-    enum :color_channel2 do
-      description "The selected color channel"
-
-      value :red, description: "Color Red"
-      value :green, description: "Color Green"
-      value :blue, description: "Color Blue"
-
-      value :alpha,
-        as: :a,
-        deprecate: "We no longer support opacity settings",
-        description: "Alpha Channel"
-    end
-
-    enum :color_channel3,
-      values: [:red, :green, :blue, :alpha],
-      description: "The selected color channel"
-
-    enum :negative_value do
-      value :positive_one, as: 1
-      value :zero, as: 0
-      value :negative_one, as: -1
     end
   end
 
@@ -63,26 +39,28 @@ defmodule Absinthe.Type.EnumTest do
       type = TestSchema.__absinthe_type__(:color_channel)
       assert %Type.Enum{} = type
 
-      assert %Type.Enum.Value{name: "RED", value: :r, description: "Color Red"} =
-               type.values[:red]
-    end
-
-    test "can be defined by a map without defined values" do
-      type = TestSchema.__absinthe_type__(:color_channel2)
-      assert %Type.Enum{} = type
-      assert %Type.Enum.Value{name: "RED", value: :red} = type.values[:red]
-    end
-
-    test "can be defined by a shorthand list of atoms" do
-      type = TestSchema.__absinthe_type__(:color_channel3)
-      assert %Type.Enum{} = type
-      assert %Type.Enum.Value{name: "RED", value: :red, description: nil} = type.values[:red]
-    end
-
     test "checking if schema works correctly" do
       type = TestSchema.__absinthe_type__(:test_macro_inputting_ast)
       assert %Type.Enum{} = type
       assert %Type.Enum.Value{name: "RED", value: :red, description: "red"} = type.values[:red]
+    end
+
+    test "function can be called without module name" do
+      type = TestSchema.__absinthe_type__(:test_function_called_without_name)
+      assert %Type.Enum{} = type
+      assert %Type.Enum.Value{name: "RED", value: :red, description: "red"} = type.values[:red]
+    end
+
+    test "calling standard function to ensure it is working correctly" do
+      type = TestSchema.__absinthe_type__(:test_standard_function_works)
+      assert %Type.Enum{} = type
+      assert %Type.Enum.Value{name: "RED", value: :red, description: "a"} = type.values[:red]
+    end
+
+    test "function can be called from nested module" do
+      type = TestSchema.__absinthe_type__(:test_nested_function)
+      assert %Type.Enum{} = type
+      assert %Type.Enum.Value{name: "RED", value: :red, description: "hello"} = type.values[:red]
     end
   end
 end
