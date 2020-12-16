@@ -22,15 +22,15 @@ defmodule Absinthe.Type.EnumTest do
 
     enum :description_keyword_argument do
       @module_attribute "goodbye"
-      value :test_local_function_call, description: test_function("red")
+      value :local_function_call, description: test_function("red")
 
-      value :test_function_is_called_using_path,
+      value :function_call_using_absolute_path,
         description: Absinthe.Type.EnumTest.TestSchema.test_function("red")
 
-      value :test_standard_library_function_works, description: String.replace("red", "e", "a")
-      value :test_function_nested_in_module, description: TestNestedModule.nestedFunction("hello")
-      value :test_module_attribute, description: "hello " <> @module_attribute
-      value :test_module_attribute_interpolates, description: "hello #{@module_attribute}"
+      value :standard_library_function_works, description: String.replace("red", "e", "a")
+      value :function_nested_in_module, description: TestNestedModule.nestedFunction("hello")
+      value :module_attribute, description: "hello " <> @module_attribute
+      value :interpolation_of_module_attribute, description: "hello #{@module_attribute}"
     end
 
     def test_function(arg1) do
@@ -73,6 +73,15 @@ defmodule Absinthe.Type.EnumTest do
     end
   end
 
+  @description_tests [
+    %{test_label: :local_function_call, expected_description: "red"},
+    %{test_label: :function_call_using_absolute_path, expected_description: "red"},
+    %{test_label: :standard_library_function_works, expected_description: "rad"},
+    %{test_label: :function_nested_in_module, expected_description: "hello"},
+    %{test_label: :module_attribute, expected_description: "hello goodbye"},
+    %{test_label: :interpolation_of_module_attribute, expected_description: "hello goodbye"}
+  ]
+
   describe "enums" do
     test "can be defined by a map with defined values" do
       type = TestSchema.__absinthe_type__(:color_channel)
@@ -93,35 +102,17 @@ defmodule Absinthe.Type.EnumTest do
       assert %Type.Enum{} = type
       assert %Type.Enum.Value{name: "RED", value: :red, description: nil} = type.values[:red]
     end
+  end
 
-    test "local function call" do
-      type = TestSchema.__absinthe_type__(:description_keyword_argument)
-      assert type.values[:test_local_function_call].description == "red"
-    end
-
-    test "function can be called using path" do
-      type = TestSchema.__absinthe_type__(:description_keyword_argument)
-      assert type.values[:test_function_is_called_using_path].description == "red"
-    end
-
-    test "standard function is working correctly" do
-      type = TestSchema.__absinthe_type__(:description_keyword_argument)
-      assert type.values[:test_standard_library_function_works].description == "rad"
-    end
-
-    test "function can be called from nested module" do
-      type = TestSchema.__absinthe_type__(:description_keyword_argument)
-      assert type.values[:test_function_nested_in_module].description == "hello"
-    end
-
-    test "module attribute function is operating correctly" do
-      type = TestSchema.__absinthe_type__(:description_keyword_argument)
-      assert type.values[:test_module_attribute].description == "hello goodbye"
-    end
-
-    test "module attribute interpolates" do
-      type = TestSchema.__absinthe_type__(:description_keyword_argument)
-      assert type.values[:test_module_attribute_interpolates].description == "hello goodbye"
-    end
+  describe "enum description evaluation" do
+    Enum.each(@description_tests, fn %{
+                                       test_label: test_label,
+                                       expected_description: expected_description
+                                     } ->
+      test "for #{test_label}" do
+        type = TestSchema.__absinthe_type__(:description_keyword_argument)
+        assert type.values[unquote(test_label)].description == unquote(expected_description)
+      end
+    end)
   end
 end
