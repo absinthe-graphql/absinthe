@@ -164,6 +164,52 @@ defmodule Absinthe.Type.EnumTest do
     end
   end
 
+  defmodule TestSchemaEnumDescriptionMacro do
+    use Absinthe.Schema
+    @module_attribute "goodbye"
+
+    defmodule TestNestedModule do
+      def nestedFunction(arg1) do
+        arg1
+      end
+    end
+
+    query do
+    end
+
+    def test_function(arg1) do
+      arg1
+    end
+
+    enum :normal_string do
+      description "string"
+    end
+
+    enum :local_function_call do
+      description test_function("red")
+    end
+
+    enum :function_call_using_absolute_path do
+      description Absinthe.Type.EnumTest.TestSchemaEnumDescriptionMacro.test_function("red")
+    end
+
+    enum :standard_library_function_works do
+      description String.replace("red", "e", "a")
+    end
+
+    enum :function_nested_in_module do
+      description TestNestedModule.nestedFunction("hello")
+    end
+
+    enum :module_attribute do
+      description "hello " <> @module_attribute
+    end
+
+    enum :interpolation_of_module_attribute do
+      description "hello #{@module_attribute}"
+    end
+  end
+
   @description_tests [
     %{test_label: :normal_string, expected_description: "string"},
     %{test_label: :local_function_call, expected_description: "red"},
@@ -234,6 +280,19 @@ defmodule Absinthe.Type.EnumTest do
                     } ->
       test "for #{test_label}" do
         type = TestSchemaEnumDescriptionAttribute.__absinthe_type__(unquote(test_label))
+        assert type.description == unquote(expected_description)
+      end
+    end)
+  end
+
+  describe "enum description macro evaluation" do
+    @description_tests
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_description: expected_description
+                    } ->
+      test "for #{test_label}" do
+        type = TestSchemaEnumDescriptionMacro.__absinthe_type__(unquote(test_label))
         assert type.description == unquote(expected_description)
       end
     end)
