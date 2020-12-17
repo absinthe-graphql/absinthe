@@ -218,6 +218,38 @@ defmodule Absinthe.Type.InputObjectTest do
       @desc "hello #{@module_attribute}"
       field :interpolation_of_module_attribute, :string
     end
+
+    input_object :description_macro do
+      field :normal_string, :string do
+        description "string"
+      end
+
+      field :local_function_call, :string do
+        description test_function("red")
+      end
+
+      field :function_call_using_absolute_path, :string do
+        description Absinthe.Type.InputObjectTest.TestSchemaInputObjectFieldKeywordDescription.test_function(
+                      "red"
+                    )
+      end
+
+      field :standard_library_function_works, :string do
+        description String.replace("red", "e", "a")
+      end
+
+      field :function_nested_in_module, :string do
+        description TestNestedModule.nestedFunction("hello")
+      end
+
+      field :module_attribute, :string do
+        description "hello " <> @module_attribute
+      end
+
+      field :interpolation_of_module_attribute, :string do
+        description "hello #{@module_attribute}"
+      end
+    end
   end
 
   describe "input object types" do
@@ -311,6 +343,20 @@ defmodule Absinthe.Type.InputObjectTest do
       test "for #{test_label}" do
         type =
           TestSchemaInputObjectFieldKeywordDescription.__absinthe_type__(:description_attribute)
+
+        assert type.fields[unquote(test_label)].description == unquote(expected_description)
+      end
+    end)
+  end
+
+  describe "input object field macro description evaluation" do
+    Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_description: expected_description
+                    } ->
+      test "for #{test_label}" do
+        type = TestSchemaInputObjectFieldKeywordDescription.__absinthe_type__(:description_macro)
 
         assert type.fields[unquote(test_label)].description == unquote(expected_description)
       end
