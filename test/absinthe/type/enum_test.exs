@@ -7,8 +7,8 @@ defmodule Absinthe.Type.EnumTest do
     use Absinthe.Schema
     @module_attribute "goodbye"
 
-    defmodule TestNestedModule do
-      def nestedFunction(arg1) do
+    defmodule NestedModule do
+      def nested_function(arg1) do
         arg1
       end
     end
@@ -29,7 +29,7 @@ defmodule Absinthe.Type.EnumTest do
         description: Absinthe.Type.EnumTest.TestSchema.test_function("red")
 
       value :standard_library_function_works, description: String.replace("red", "e", "a")
-      value :function_nested_in_module, description: TestNestedModule.nestedFunction("hello")
+      value :function_nested_in_module, description: NestedModule.nested_function("hello")
       value :module_attribute, description: "hello " <> @module_attribute
       value :interpolation_of_module_attribute, description: "hello #{@module_attribute}"
     end
@@ -78,8 +78,8 @@ defmodule Absinthe.Type.EnumTest do
     use Absinthe.Schema
     @module_attribute "goodbye"
 
-    defmodule TestNestedModule do
-      def nestedFunction(arg1) do
+    defmodule NestedModule do
+      def nested_function(arg1) do
         arg1
       end
     end
@@ -100,7 +100,7 @@ defmodule Absinthe.Type.EnumTest do
     enum :standard_library_function_works, description: String.replace("red", "e", "a") do
     end
 
-    enum :function_nested_in_module, description: TestNestedModule.nestedFunction("hello") do
+    enum :function_nested_in_module, description: NestedModule.nested_function("hello") do
     end
 
     enum :module_attribute, description: "hello " <> @module_attribute do
@@ -118,8 +118,8 @@ defmodule Absinthe.Type.EnumTest do
     use Absinthe.Schema
     @module_attribute "goodbye"
 
-    defmodule TestNestedModule do
-      def nestedFunction(arg1) do
+    defmodule NestedModule do
+      def nested_function(arg1) do
         arg1
       end
     end
@@ -151,7 +151,7 @@ defmodule Absinthe.Type.EnumTest do
     enum :standard_library_function_works do
     end
 
-    @desc TestNestedModule.nestedFunction("hello")
+    @desc NestedModule.nested_function("hello")
     enum :function_nested_in_module do
     end
 
@@ -168,8 +168,8 @@ defmodule Absinthe.Type.EnumTest do
     use Absinthe.Schema
     @module_attribute "goodbye"
 
-    defmodule TestNestedModule do
-      def nestedFunction(arg1) do
+    defmodule NestedModule do
+      def nested_function(arg1) do
         arg1
       end
     end
@@ -198,7 +198,7 @@ defmodule Absinthe.Type.EnumTest do
     end
 
     enum :function_nested_in_module do
-      description TestNestedModule.nestedFunction("hello")
+      description NestedModule.nested_function("hello")
     end
 
     enum :module_attribute do

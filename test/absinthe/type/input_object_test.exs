@@ -19,8 +19,8 @@ defmodule Absinthe.Type.InputObjectTest do
     use Absinthe.Schema
     @module_attribute "goodbye"
 
-    defmodule TestNestedModule do
-      def nestedFunction(arg1) do
+    defmodule NestedModule do
+      def nested_function(arg1) do
         arg1
       end
     end
@@ -42,7 +42,7 @@ defmodule Absinthe.Type.InputObjectTest do
     input_object :standard_library_function_works, description: String.replace("red", "e", "a") do
     end
 
-    input_object :function_nested_in_module, description: TestNestedModule.nestedFunction("hello") do
+    input_object :function_nested_in_module, description: NestedModule.nested_function("hello") do
     end
 
     input_object :module_attribute, description: "hello " <> @module_attribute do
@@ -60,8 +60,8 @@ defmodule Absinthe.Type.InputObjectTest do
     use Absinthe.Schema
     @module_attribute "goodbye"
 
-    defmodule TestNestedModule do
-      def nestedFunction(arg1) do
+    defmodule NestedModule do
+      def nested_function(arg1) do
         arg1
       end
     end
@@ -93,7 +93,7 @@ defmodule Absinthe.Type.InputObjectTest do
     input_object :standard_library_function_works do
     end
 
-    @desc TestNestedModule.nestedFunction("hello")
+    @desc NestedModule.nested_function("hello")
     input_object :function_nested_in_module do
     end
 
@@ -110,8 +110,8 @@ defmodule Absinthe.Type.InputObjectTest do
     use Absinthe.Schema
     @module_attribute "goodbye"
 
-    defmodule TestNestedModule do
-      def nestedFunction(arg1) do
+    defmodule NestedModule do
+      def nested_function(arg1) do
         arg1
       end
     end
@@ -142,7 +142,7 @@ defmodule Absinthe.Type.InputObjectTest do
     end
 
     input_object :function_nested_in_module do
-      description TestNestedModule.nestedFunction("hello")
+      description NestedModule.nested_function("hello")
     end
 
     input_object :module_attribute do
@@ -154,12 +154,12 @@ defmodule Absinthe.Type.InputObjectTest do
     end
   end
 
-  defmodule TestSchemaInputObjectFieldKeywordDescription do
+  defmodule TestSchemaInputObjectFieldsAndArgsDescription do
     use Absinthe.Schema
     @module_attribute "goodbye"
 
-    defmodule TestNestedModule do
-      def nestedFunction(arg1) do
+    defmodule NestedModule do
+      def nested_function(arg1) do
         arg1
       end
     end
@@ -177,7 +177,7 @@ defmodule Absinthe.Type.InputObjectTest do
 
       field :function_call_using_absolute_path, :string,
         description:
-          Absinthe.Type.InputObjectTest.TestSchemaInputObjectFieldKeywordDescription.test_function(
+          Absinthe.Type.InputObjectTest.TestSchemaInputObjectFieldsAndArgsDescription.test_function(
             "red"
           )
 
@@ -185,7 +185,7 @@ defmodule Absinthe.Type.InputObjectTest do
         description: String.replace("red", "e", "a")
 
       field :function_nested_in_module, :string,
-        description: TestNestedModule.nestedFunction("hello")
+        description: NestedModule.nested_function("hello")
 
       field :module_attribute, :string, description: "hello " <> @module_attribute
       field :interpolation_of_module_attribute, :string, description: "hello #{@module_attribute}"
@@ -202,7 +202,7 @@ defmodule Absinthe.Type.InputObjectTest do
       # @desc test_function("red")
       # field :local_function_call, :string
 
-      # @desc Absinthe.Type.InputObjectTest.TestSchemaInputObjectFieldKeywordDescription.test_function(
+      # @desc Absinthe.Type.InputObjectTest.TestSchemaInputObjectFieldsAndArgsDescription.test_function(
       #         "red"
       #       )
       # field :function_call_using_absolute_path, :string
@@ -210,7 +210,7 @@ defmodule Absinthe.Type.InputObjectTest do
       @desc String.replace("red", "e", "a")
       field :standard_library_function_works, :string
 
-      @desc TestNestedModule.nestedFunction("hello")
+      @desc NestedModule.nested_function("hello")
       field :function_nested_in_module, :string
 
       @desc "hello " <> @module_attribute
@@ -219,7 +219,7 @@ defmodule Absinthe.Type.InputObjectTest do
       field :interpolation_of_module_attribute, :string
     end
 
-    input_object :description_macro do
+    input_object :field_description_macro do
       field :normal_string, :string do
         description "string"
       end
@@ -229,7 +229,7 @@ defmodule Absinthe.Type.InputObjectTest do
       end
 
       field :function_call_using_absolute_path, :string do
-        description Absinthe.Type.InputObjectTest.TestSchemaInputObjectFieldKeywordDescription.test_function(
+        description Absinthe.Type.InputObjectTest.TestSchemaInputObjectFieldsAndArgsDescription.test_function(
                       "red"
                     )
       end
@@ -239,7 +239,7 @@ defmodule Absinthe.Type.InputObjectTest do
       end
 
       field :function_nested_in_module, :string do
-        description TestNestedModule.nestedFunction("hello")
+        description NestedModule.nested_function("hello")
       end
 
       field :module_attribute, :string do
@@ -319,7 +319,7 @@ defmodule Absinthe.Type.InputObjectTest do
                     } ->
       test "for #{test_label}" do
         type =
-          TestSchemaInputObjectFieldKeywordDescription.__absinthe_type__(
+          TestSchemaInputObjectFieldsAndArgsDescription.__absinthe_type__(
             :description_keyword_argument
           )
 
@@ -342,7 +342,7 @@ defmodule Absinthe.Type.InputObjectTest do
                     } ->
       test "for #{test_label}" do
         type =
-          TestSchemaInputObjectFieldKeywordDescription.__absinthe_type__(:description_attribute)
+          TestSchemaInputObjectFieldsAndArgsDescription.__absinthe_type__(:description_attribute)
 
         assert type.fields[unquote(test_label)].description == unquote(expected_description)
       end
@@ -356,7 +356,10 @@ defmodule Absinthe.Type.InputObjectTest do
                       expected_description: expected_description
                     } ->
       test "for #{test_label}" do
-        type = TestSchemaInputObjectFieldKeywordDescription.__absinthe_type__(:description_macro)
+        type =
+          TestSchemaInputObjectFieldsAndArgsDescription.__absinthe_type__(
+            :field_description_macro
+          )
 
         assert type.fields[unquote(test_label)].description == unquote(expected_description)
       end
