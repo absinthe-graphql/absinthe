@@ -39,4 +39,36 @@ defmodule Absinthe.Type.ImportTypesTest do
       assert Absinthe.Schema.lookup_type(ImportTypes.SelfContainedSchema, :role_enum)
     end
   end
+
+  defmodule TestSchema do
+    use Absinthe.Schema
+    @module_attribute "module_attribute"
+
+    query do
+      field :module_attribute, :string, description: @module_attribute
+    end
+  end
+
+  # From inside `defp expand_ast` in `Absinthe.Schema.Notation`:
+  #
+  # > We don't want to expand `@bla` into Module.get_attribute(module, @bla) because this will
+  # > fail at runtime. Remember that the ast gets put into a generated `__absinthe_blueprint__`
+  # > function which is called at "__after_compile__" time, but may be called at runtime
+  # > depending on the ordering of how modules get compiled.
+  #
+  # This test checks that __absinthe_blueprint__ runs and doesn't raise an error saying
+  # "Module.get_attribute" cannot be called because the module is already compiled". This error
+  # happens because the `@module_attribute` gets expanded by `expand_ast` into
+  # `Module.get_attribute(Absinthe.Type.QueryTest.TestSchema, :module_attribute, <line_number>)`.
+  #
+  # We ensure __absinthe_blueprint__ is runnable at runtime because in projects where the schema
+  # is split into multiple modules, one of the modules may already have completely finished
+  # compiling, dumping the Module attribute data (they are baked in to the code at compile time)
+  # which means that the `Module.get_attribute` call will raise the error mentioned above
+  #
+  test "__absinthe_blueprint__ is callable at runtime even if there is a module attribute" do
+    # Sanity check
+    {:module, TestSchema} = Code.ensure_compiled(TestSchema)
+    assert match? %Absinthe.Blueprint{}, TestSchema.__absinthe_blueprint__()
+  end
 end
