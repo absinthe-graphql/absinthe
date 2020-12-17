@@ -198,6 +198,7 @@ defmodule Absinthe.Type.InputObjectTest do
       # These tests do not work as test_function is not available at compile time, and the
       # expression for the @desc attribute is evaluated at compile time. There is nothing we can
       # really do about it
+
       # @desc test_function("red")
       # field :local_function_call, :string
 
