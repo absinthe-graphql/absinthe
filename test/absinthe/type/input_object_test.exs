@@ -154,6 +154,44 @@ defmodule Absinthe.Type.InputObjectTest do
     end
   end
 
+  defmodule TestSchemaInputObjectFieldKeywordDescription do
+    use Absinthe.Schema
+    @module_attribute "goodbye"
+
+    defmodule TestNestedModule do
+      def nestedFunction(arg1) do
+        arg1
+      end
+    end
+
+    query do
+    end
+
+    def test_function(arg1) do
+      arg1
+    end
+
+    input_object :description_keyword_argument do
+      field :normal_string, :string, description: "string"
+      field :local_function_call, :string, description: test_function("red")
+
+      field :function_call_using_absolute_path, :string,
+        description:
+          Absinthe.Type.InputObjectTest.TestSchemaInputObjectFieldKeywordDescription.test_function(
+            "red"
+          )
+
+      field :standard_library_function_works, :string,
+        description: String.replace("red", "e", "a")
+
+      field :function_nested_in_module, :string,
+        description: TestNestedModule.nestedFunction("hello")
+
+      field :module_attribute, :string, description: "hello " <> @module_attribute
+      field :interpolation_of_module_attribute, :string, description: "hello #{@module_attribute}"
+    end
+  end
+
   describe "input object types" do
     test "can be defined" do
       assert %Absinthe.Type.InputObject{name: "Profile", description: "A profile"} =
@@ -209,6 +247,23 @@ defmodule Absinthe.Type.InputObjectTest do
       test "for #{test_label}" do
         type = TestSchemaInputObjectDescriptionMacro.__absinthe_type__(unquote(test_label))
         assert type.description == unquote(expected_description)
+      end
+    end)
+  end
+
+  describe "input object field keyword description evaluation" do
+    Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_description: expected_description
+                    } ->
+      test "for #{test_label}" do
+        type =
+          TestSchemaInputObjectFieldKeywordDescription.__absinthe_type__(
+            :description_keyword_argument
+          )
+
+        assert type.fields[unquote(test_label)].description == unquote(expected_description)
       end
     end)
   end
