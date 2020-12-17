@@ -135,7 +135,10 @@ defmodule Absinthe.Type.EnumTest do
     enum :normal_string do
     end
 
-    # Test does not work as test_function is not available at compile time
+    # These tests do not work as test_function is not available at compile time, and the
+    # expression for the @desc attribute is evaluated at compile time. There is nothing we can
+    # really do about it
+
     # @desc test_function("red")
     # enum :local_function_call do
     # end
@@ -219,6 +222,9 @@ defmodule Absinthe.Type.EnumTest do
 
   describe "enum description attribute evaluation" do
     @description_tests
+    # These tests do not work as test_function is not available at compile time, and the
+    # expression for the @desc attribute is evaluated at compile time. There is nothing we can
+    # really do about it
     |> Enum.filter(fn %{test_label: test_label} ->
       test_label not in [:local_function_call, :function_call_using_absolute_path]
     end)
