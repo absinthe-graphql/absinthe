@@ -165,4 +165,22 @@ defmodule Absinthe.Fixtures.ImportTypes do
       field :credit_cards, list_of(:credit_card)
     end
   end
+
+  defmodule SchemaWithModuleAttributeImports do
+    use Absinthe.Schema.Notation
+    @module_attribute "module_attribute"
+
+    input_object :example_input_object do
+      field :input_object_module_attribute, :string, description: @module_attribute
+    end
+  end
+
+  defmodule SchemaWithModuleAttribute do
+    use Absinthe.Schema
+
+    import_types(SchemaWithModuleAttributeImports)
+
+    query do
+    end
+  end
 end

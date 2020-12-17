@@ -18,7 +18,6 @@ defmodule Absinthe.Type.MutationTest do
     end
 
     query do
-
     end
 
     mutation do

@@ -38,14 +38,14 @@ defmodule Absinthe.Type.ImportTypesTest do
       assert Absinthe.Schema.lookup_type(ImportTypes.SelfContainedSchema, :category)
       assert Absinthe.Schema.lookup_type(ImportTypes.SelfContainedSchema, :role_enum)
     end
-  end
 
-  defmodule TestSchema do
-    use Absinthe.Schema
-    @module_attribute "module_attribute"
+    # See test below "__absinthe_blueprint__ is callable at runtime even if there is a module attribute"
+    # for more information
+    test "works with module attribute used in imported module" do
+      type = ImportTypes.SchemaWithModuleAttribute.__absinthe_type__(:example_input_object)
+      field = type.fields.input_object_module_attribute
 
-    query do
-      field :module_attribute, :string, description: @module_attribute
+      assert field.description == "module_attribute"
     end
   end
 
@@ -59,16 +59,26 @@ defmodule Absinthe.Type.ImportTypesTest do
   # This test checks that __absinthe_blueprint__ runs and doesn't raise an error saying
   # "Module.get_attribute" cannot be called because the module is already compiled". This error
   # happens because the `@module_attribute` gets expanded by `expand_ast` into
-  # `Module.get_attribute(Absinthe.Type.QueryTest.TestSchema, :module_attribute, <line_number>)`.
+  # `Module.get_attribute(Absinthe.Fixtures.ImportTypes.SchemaWithModuleAttribute,
+  # :module_attribute, <line_number>)`.
   #
   # We ensure __absinthe_blueprint__ is runnable at runtime because in projects where the schema
   # is split into multiple modules, one of the modules may already have completely finished
   # compiling, dumping the Module attribute data (they are baked in to the code at compile time)
   # which means that the `Module.get_attribute` call will raise the error mentioned above
   #
+  # Above, test "works with module attribute used in imported module" also checks this same
+  # functionality
+  #
   test "__absinthe_blueprint__ is callable at runtime even if there is a module attribute" do
-    # Sanity check
-    {:module, TestSchema} = Code.ensure_compiled(TestSchema)
-    assert match? %Absinthe.Blueprint{}, TestSchema.__absinthe_blueprint__()
+    # Sanity check. Shouldn't ever really fail (unless something is very wrong), but ensures that
+    # the assertion makes sense
+    {:module, ImportTypes.SchemaWithModuleAttribute} =
+      Code.ensure_compiled(ImportTypes.SchemaWithModuleAttribute)
+
+    assert match?(
+             %Absinthe.Blueprint{},
+             ImportTypes.SchemaWithModuleAttribute.__absinthe_blueprint__()
+           )
   end
 end
