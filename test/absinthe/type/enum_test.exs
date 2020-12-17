@@ -74,6 +74,46 @@ defmodule Absinthe.Type.EnumTest do
     end
   end
 
+  defmodule TestSchemaEnumDescription do
+    use Absinthe.Schema
+    @module_attribute "goodbye"
+
+    defmodule TestNestedModule do
+      def nestedFunction(arg1) do
+        arg1
+      end
+    end
+
+    query do
+    end
+
+    enum :normal_string, description: "string" do
+    end
+
+    enum :local_function_call, description: test_function("red") do
+    end
+
+    enum :function_call_using_absolute_path,
+      description: Absinthe.Type.EnumTest.TestSchemaEnumDescription.test_function("red") do
+    end
+
+    enum :standard_library_function_works, description: String.replace("red", "e", "a") do
+    end
+
+    enum :function_nested_in_module, description: TestNestedModule.nestedFunction("hello") do
+    end
+
+    enum :module_attribute, description: "hello " <> @module_attribute do
+    end
+
+    enum :interpolation_of_module_attribute, description: "hello #{@module_attribute}" do
+    end
+
+    def test_function(arg1) do
+      arg1
+    end
+  end
+
   @description_tests [
     %{test_label: :normal_string, expected_description: "string"},
     %{test_label: :local_function_call, expected_description: "red"},
@@ -106,7 +146,7 @@ defmodule Absinthe.Type.EnumTest do
     end
   end
 
-  describe "enum description evaluation" do
+  describe "enum value description evaluation" do
     Enum.each(@description_tests, fn %{
                                        test_label: test_label,
                                        expected_description: expected_description
@@ -114,6 +154,18 @@ defmodule Absinthe.Type.EnumTest do
       test "for #{test_label}" do
         type = TestSchema.__absinthe_type__(:description_keyword_argument)
         assert type.values[unquote(test_label)].description == unquote(expected_description)
+      end
+    end)
+  end
+
+  describe "enum description evaluation" do
+    Enum.each(@description_tests, fn %{
+                                       test_label: test_label,
+                                       expected_description: expected_description
+                                     } ->
+      test "for #{test_label}" do
+        type = TestSchemaEnumDescription.__absinthe_type__(unquote(test_label))
+        assert type.description == unquote(expected_description)
       end
     end)
   end
