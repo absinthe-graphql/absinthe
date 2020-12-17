@@ -210,16 +210,6 @@ defmodule Absinthe.Type.EnumTest do
     end
   end
 
-  @description_tests [
-    %{test_label: :normal_string, expected_description: "string"},
-    %{test_label: :local_function_call, expected_description: "red"},
-    %{test_label: :function_call_using_absolute_path, expected_description: "red"},
-    %{test_label: :standard_library_function_works, expected_description: "rad"},
-    %{test_label: :function_nested_in_module, expected_description: "hello"},
-    %{test_label: :module_attribute, expected_description: "hello goodbye"},
-    %{test_label: :interpolation_of_module_attribute, expected_description: "hello goodbye"}
-  ]
-
   describe "enums" do
     test "can be defined by a map with defined values" do
       type = TestSchema.__absinthe_type__(:color_channel)
@@ -243,10 +233,11 @@ defmodule Absinthe.Type.EnumTest do
   end
 
   describe "enum value description evaluation" do
-    Enum.each(@description_tests, fn %{
-                                       test_label: test_label,
-                                       expected_description: expected_description
-                                     } ->
+    Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_description: expected_description
+                    } ->
       test "for #{test_label}" do
         type = TestSchema.__absinthe_type__(:description_keyword_argument)
         assert type.values[unquote(test_label)].description == unquote(expected_description)
@@ -255,10 +246,11 @@ defmodule Absinthe.Type.EnumTest do
   end
 
   describe "enum description keyword evaluation" do
-    Enum.each(@description_tests, fn %{
-                                       test_label: test_label,
-                                       expected_description: expected_description
-                                     } ->
+    Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_description: expected_description
+                    } ->
       test "for #{test_label}" do
         type = TestSchemaEnumDescriptionKeyword.__absinthe_type__(unquote(test_label))
         assert type.description == unquote(expected_description)
@@ -267,7 +259,7 @@ defmodule Absinthe.Type.EnumTest do
   end
 
   describe "enum description attribute evaluation" do
-    @description_tests
+    Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
     # These tests do not work as test_function is not available at compile time, and the
     # expression for the @desc attribute is evaluated at compile time. There is nothing we can
     # really do about it
@@ -286,7 +278,7 @@ defmodule Absinthe.Type.EnumTest do
   end
 
   describe "enum description macro evaluation" do
-    @description_tests
+    Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
                       expected_description: expected_description
