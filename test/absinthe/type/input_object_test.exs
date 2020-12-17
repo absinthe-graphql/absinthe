@@ -190,6 +190,33 @@ defmodule Absinthe.Type.InputObjectTest do
       field :module_attribute, :string, description: "hello " <> @module_attribute
       field :interpolation_of_module_attribute, :string, description: "hello #{@module_attribute}"
     end
+
+    input_object :description_attribute do
+      @desc "string"
+      field :normal_string, :string
+
+      # These tests do not work as test_function is not available at compile time, and the
+      # expression for the @desc attribute is evaluated at compile time. There is nothing we can
+      # really do about it
+      # @desc test_function("red")
+      # field :local_function_call, :string
+
+      # @desc Absinthe.Type.InputObjectTest.TestSchemaInputObjectFieldKeywordDescription.test_function(
+      #         "red"
+      #       )
+      # field :function_call_using_absolute_path, :string
+
+      @desc String.replace("red", "e", "a")
+      field :standard_library_function_works, :string
+
+      @desc TestNestedModule.nestedFunction("hello")
+      field :function_nested_in_module, :string
+
+      @desc "hello " <> @module_attribute
+      field :module_attribute, :string
+      @desc "hello #{@module_attribute}"
+      field :interpolation_of_module_attribute, :string
+    end
   end
 
   describe "input object types" do
@@ -262,6 +289,27 @@ defmodule Absinthe.Type.InputObjectTest do
           TestSchemaInputObjectFieldKeywordDescription.__absinthe_type__(
             :description_keyword_argument
           )
+
+        assert type.fields[unquote(test_label)].description == unquote(expected_description)
+      end
+    end)
+  end
+
+  describe "input object field attribute description evaluation" do
+    Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
+    # These tests do not work as test_function is not available at compile time, and the
+    # expression for the @desc attribute is evaluated at compile time. There is nothing we can
+    # really do about it
+    |> Enum.filter(fn %{test_label: test_label} ->
+      test_label not in [:local_function_call, :function_call_using_absolute_path]
+    end)
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_description: expected_description
+                    } ->
+      test "for #{test_label}" do
+        type =
+          TestSchemaInputObjectFieldKeywordDescription.__absinthe_type__(:description_attribute)
 
         assert type.fields[unquote(test_label)].description == unquote(expected_description)
       end
