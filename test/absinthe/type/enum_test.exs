@@ -74,7 +74,7 @@ defmodule Absinthe.Type.EnumTest do
     end
   end
 
-  defmodule TestSchemaEnumDescription do
+  defmodule TestSchemaEnumDescriptionKeyword do
     use Absinthe.Schema
     @module_attribute "goodbye"
 
@@ -94,7 +94,7 @@ defmodule Absinthe.Type.EnumTest do
     end
 
     enum :function_call_using_absolute_path,
-      description: Absinthe.Type.EnumTest.TestSchemaEnumDescription.test_function("red") do
+      description: Absinthe.Type.EnumTest.TestSchemaEnumDescriptionKeyword.test_function("red") do
     end
 
     enum :standard_library_function_works, description: String.replace("red", "e", "a") do
@@ -111,6 +111,53 @@ defmodule Absinthe.Type.EnumTest do
 
     def test_function(arg1) do
       arg1
+    end
+  end
+
+  defmodule TestSchemaEnumDescriptionAttribute do
+    use Absinthe.Schema
+    @module_attribute "goodbye"
+
+    defmodule TestNestedModule do
+      def nestedFunction(arg1) do
+        arg1
+      end
+    end
+
+    query do
+    end
+
+    def test_function(arg1) do
+      arg1
+    end
+
+    @desc "string"
+    enum :normal_string do
+    end
+
+    # Test does not work as test_function is not available at compile time
+    # @desc test_function("red")
+    # enum :local_function_call do
+    # end
+
+    # @desc Absinthe.Type.EnumTest.TestSchemaEnumAttribute.test_function("red")
+    # enum :function_call_using_absolute_path do
+    # end
+
+    @desc String.replace("red", "e", "a")
+    enum :standard_library_function_works do
+    end
+
+    @desc TestNestedModule.nestedFunction("hello")
+    enum :function_nested_in_module do
+    end
+
+    @desc "hello " <> @module_attribute
+    enum :module_attribute do
+    end
+
+    @desc "hello #{@module_attribute}"
+    enum :interpolation_of_module_attribute do
     end
   end
 
@@ -158,13 +205,29 @@ defmodule Absinthe.Type.EnumTest do
     end)
   end
 
-  describe "enum description evaluation" do
+  describe "enum description keyword evaluation" do
     Enum.each(@description_tests, fn %{
                                        test_label: test_label,
                                        expected_description: expected_description
                                      } ->
       test "for #{test_label}" do
-        type = TestSchemaEnumDescription.__absinthe_type__(unquote(test_label))
+        type = TestSchemaEnumDescriptionKeyword.__absinthe_type__(unquote(test_label))
+        assert type.description == unquote(expected_description)
+      end
+    end)
+  end
+
+  describe "enum description attribute evaluation" do
+    @description_tests
+    |> Enum.filter(fn %{test_label: test_label} ->
+      test_label not in [:local_function_call, :function_call_using_absolute_path]
+    end)
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_description: expected_description
+                    } ->
+      test "for #{test_label}" do
+        type = TestSchemaEnumDescriptionAttribute.__absinthe_type__(unquote(test_label))
         assert type.description == unquote(expected_description)
       end
     end)
