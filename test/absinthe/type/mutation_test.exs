@@ -1,4 +1,4 @@
-defmodule Absinthe.Type.QueryTest do
+defmodule Absinthe.Type.MutationTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.Type
@@ -18,6 +18,10 @@ defmodule Absinthe.Type.QueryTest do
     end
 
     query do
+
+    end
+
+    mutation do
       field :normal_string, :string do
         arg :arg_example, :string, description: "string"
       end
@@ -28,7 +32,7 @@ defmodule Absinthe.Type.QueryTest do
 
       field :function_call_using_absolute_path, :string do
         arg :arg_example, :string,
-          description: Absinthe.Type.QueryTest.TestSchema.test_function("red")
+          description: Absinthe.Type.MutationTest.TestSchema.test_function("red")
       end
 
       field :standard_library_function_works, :string do
@@ -49,14 +53,14 @@ defmodule Absinthe.Type.QueryTest do
     end
   end
 
-  describe "query field arg keyword description evaluation" do
+  describe "mutation field arg keyword description evaluation" do
     Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
                       expected_description: expected_description
                     } ->
       test "for #{test_label}" do
-        type = TestSchema.__absinthe_type__("RootQueryType")
+        type = TestSchema.__absinthe_type__("RootMutationType")
 
         assert type.fields[unquote(test_label)].args.arg_example.description ==
                  unquote(expected_description)
