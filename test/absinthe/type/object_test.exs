@@ -43,7 +43,7 @@ defmodule Absinthe.Type.ObjectTest do
     end
   end
 
-  describe "object keyword description evaluation" do
+  describe "input object keyword description evaluation" do
     Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
@@ -52,6 +52,99 @@ defmodule Absinthe.Type.ObjectTest do
       test "for `#{test_label}` (evaluates description to `'#{expected_value}'`)" do
         type = Object.TestSchemaDescriptionKeyword.__absinthe_type__(unquote(test_label))
         assert type.description == unquote(expected_value)
+      end
+    end)
+  end
+
+  describe "input_object description attribute evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    # These tests do not work as test_function is not available at compile time, and the
+    # expression for the @desc attribute is evaluated at compile time. There is nothing we can
+    # really do about it
+    |> Enum.filter(fn %{test_label: test_label} ->
+      test_label not in [
+        :local_function_call,
+        :function_call_using_absolute_path_to_current_module
+      ]
+    end)
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
+        type = Object.TestSchemaDescriptionAttribute.__absinthe_type__(unquote(test_label))
+        assert type.description == unquote(expected_value)
+      end
+    end)
+  end
+
+  describe "input_object description macro evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
+        type = Object.TestSchemaDescriptionMacro.__absinthe_type__(unquote(test_label))
+        assert type.description == unquote(expected_value)
+      end
+    end)
+  end
+
+  describe "input object field keyword description evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
+        type =
+          Object.TestSchemaFieldsAndArgsDescription.__absinthe_type__(
+            :description_keyword_argument
+          )
+
+        assert type.fields[unquote(test_label)].description == unquote(expected_value)
+      end
+    end)
+  end
+
+  describe "input object field attribute description evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    # These tests do not work as test_function is not available at compile time, and the
+    # expression for the @desc attribute is evaluated at compile time. There is nothing we can
+    # really do about it
+    |> Enum.filter(fn %{test_label: test_label} ->
+      test_label not in [
+        :local_function_call,
+        :function_call_using_absolute_path_to_current_module
+      ]
+    end)
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
+        type =
+          Object.TestSchemaFieldsAndArgsDescription.__absinthe_type__(:description_attribute)
+
+        assert type.fields[unquote(test_label)].description == unquote(expected_value)
+      end
+    end)
+  end
+
+  describe "input object field macro description evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
+        type =
+          Object.TestSchemaFieldsAndArgsDescription.__absinthe_type__(
+            :field_description_macro
+          )
+
+        assert type.fields[unquote(test_label)].description == unquote(expected_value)
       end
     end)
   end
