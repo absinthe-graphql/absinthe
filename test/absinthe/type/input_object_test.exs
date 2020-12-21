@@ -46,15 +46,7 @@ defmodule Absinthe.Type.InputObjectTest do
 
   describe "input_object description attribute evaluation" do
     Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
-    # These tests do not work as test_function is not available at compile time, and the
-    # expression for the @desc attribute is evaluated at compile time. There is nothing we can
-    # really do about it
-    |> Enum.filter(fn %{test_label: test_label} ->
-      test_label not in [
-        :local_function_call,
-        :function_call_using_absolute_path_to_current_module
-      ]
-    end)
+    |> Absinthe.Fixtures.FunctionEvaluationHelpers.filter_test_params_for_description_attribute()
     |> Enum.each(fn %{
                       test_label: test_label,
                       expected_value: expected_value
@@ -98,15 +90,7 @@ defmodule Absinthe.Type.InputObjectTest do
 
   describe "input object field attribute description evaluation" do
     Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
-    # These tests do not work as test_function is not available at compile time, and the
-    # expression for the @desc attribute is evaluated at compile time. There is nothing we can
-    # really do about it
-    |> Enum.filter(fn %{test_label: test_label} ->
-      test_label not in [
-        :local_function_call,
-        :function_call_using_absolute_path_to_current_module
-      ]
-    end)
+    |> Absinthe.Fixtures.FunctionEvaluationHelpers.filter_test_params_for_description_attribute()
     |> Enum.each(fn %{
                       test_label: test_label,
                       expected_value: expected_value

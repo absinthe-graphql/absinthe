@@ -12,6 +12,18 @@ defmodule Absinthe.Fixtures.FunctionEvaluationHelpers do
     ]
   end
 
+  # These tests do not work as test_function is not available at compile time, and the
+  # expression for the @desc attribute is evaluated at compile time. There is nothing we can
+  # really do about it
+  def filter_test_params_for_description_attribute(test_params) do
+    Enum.filter(test_params, fn %{test_label: test_label} ->
+      test_label not in [
+        :local_function_call,
+        :function_call_using_absolute_path_to_current_module
+      ]
+    end)
+  end
+
   def external_function(arg) do
     "the value is #{arg}"
   end
