@@ -46,7 +46,7 @@ defmodule Absinthe.Type.InputObjectTest do
     end
 
     input_object :external_module_function_call,
-      description: Absinthe.FunctionEvaluationHelpers.external_function("hello") do
+      description: Absinthe.Fixtures.FunctionEvaluationHelpers.external_function("hello") do
     end
 
     input_object :module_attribute_string_concat, description: "hello " <> @module_attribute do
@@ -101,7 +101,7 @@ defmodule Absinthe.Type.InputObjectTest do
     input_object :function_in_nested_module do
     end
 
-    @desc Absinthe.FunctionEvaluationHelpers.external_function("hello")
+    @desc Absinthe.Fixtures.FunctionEvaluationHelpers.external_function("hello")
     input_object :external_module_function_call do
     end
 
@@ -154,7 +154,7 @@ defmodule Absinthe.Type.InputObjectTest do
     end
 
     input_object :external_module_function_call do
-      description Absinthe.FunctionEvaluationHelpers.external_function("hello")
+      description Absinthe.Fixtures.FunctionEvaluationHelpers.external_function("hello")
     end
 
     input_object :module_attribute_string_concat do
@@ -199,7 +199,7 @@ defmodule Absinthe.Type.InputObjectTest do
         description: NestedModule.nested_function("hello")
 
       field :external_module_function_call, :string,
-        description: Absinthe.FunctionEvaluationHelpers.external_function("hello")
+        description: Absinthe.Fixtures.FunctionEvaluationHelpers.external_function("hello")
 
       field :module_attribute_string_concat, :string, description: "hello " <> @module_attribute
       field :interpolation_of_module_attribute, :string, description: "hello #{@module_attribute}"
@@ -227,7 +227,7 @@ defmodule Absinthe.Type.InputObjectTest do
       @desc NestedModule.nested_function("hello")
       field :function_in_nested_module, :string
 
-      @desc Absinthe.FunctionEvaluationHelpers.external_function("hello")
+      @desc Absinthe.Fixtures.FunctionEvaluationHelpers.external_function("hello")
       field :external_module_function_call, :string
 
       @desc "hello " <> @module_attribute
@@ -261,7 +261,7 @@ defmodule Absinthe.Type.InputObjectTest do
       end
 
       field :external_module_function_call, :string do
-        description Absinthe.FunctionEvaluationHelpers.external_function("hello")
+        description Absinthe.Fixtures.FunctionEvaluationHelpers.external_function("hello")
       end
 
       field :module_attribute_string_concat, :string do
@@ -289,7 +289,7 @@ defmodule Absinthe.Type.InputObjectTest do
   end
 
   describe "input object keyword description evaluation" do
-    Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
                       expected_value: expected_value
@@ -302,7 +302,7 @@ defmodule Absinthe.Type.InputObjectTest do
   end
 
   describe "input_object description attribute evaluation" do
-    Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
     # These tests do not work as test_function is not available at compile time, and the
     # expression for the @desc attribute is evaluated at compile time. There is nothing we can
     # really do about it
@@ -324,7 +324,7 @@ defmodule Absinthe.Type.InputObjectTest do
   end
 
   describe "input_object description macro evaluation" do
-    Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
                       expected_value: expected_value
@@ -337,7 +337,7 @@ defmodule Absinthe.Type.InputObjectTest do
   end
 
   describe "input object field keyword description evaluation" do
-    Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
                       expected_value: expected_value
@@ -354,7 +354,7 @@ defmodule Absinthe.Type.InputObjectTest do
   end
 
   describe "input object field attribute description evaluation" do
-    Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
     # These tests do not work as test_function is not available at compile time, and the
     # expression for the @desc attribute is evaluated at compile time. There is nothing we can
     # really do about it
@@ -378,7 +378,7 @@ defmodule Absinthe.Type.InputObjectTest do
   end
 
   describe "input object field macro description evaluation" do
-    Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
                       expected_value: expected_value

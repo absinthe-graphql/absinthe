@@ -44,7 +44,7 @@ defmodule Absinthe.Type.ImportTypesTest do
     # The module attribute iteration of this test is related to the test below.
     # See "__absinthe_blueprint__ is callable at runtime even if there is a module attribute" for more
     # information
-    Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
                       expected_value: expected_value

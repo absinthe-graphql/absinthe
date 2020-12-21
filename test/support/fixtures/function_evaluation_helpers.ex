@@ -1,4 +1,4 @@
-defmodule Absinthe.FunctionEvaluationHelpers do
+defmodule Absinthe.Fixtures.FunctionEvaluationHelpers do
   def function_evaluation_test_params do
     [
       %{test_label: :normal_string, expected_value: "string"},

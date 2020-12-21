@@ -42,7 +42,7 @@ defmodule Absinthe.Type.MutationTest do
 
       field :external_module_function_call, :string do
         arg :arg_example, :string,
-          description: Absinthe.FunctionEvaluationHelpers.external_function("hello")
+          description: Absinthe.Fixtures.FunctionEvaluationHelpers.external_function("hello")
       end
 
       field :module_attribute_string_concat, :string do
@@ -56,7 +56,7 @@ defmodule Absinthe.Type.MutationTest do
   end
 
   describe "mutation field arg keyword description evaluation" do
-    Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
                       expected_value: expected_value

@@ -79,7 +79,7 @@ defmodule Absinthe.Type.EnumTest do
       value :function_in_nested_module, description: NestedModule.nested_function("hello")
 
       value :external_module_function_call,
-        description: Absinthe.FunctionEvaluationHelpers.external_function("hello")
+        description: Absinthe.Fixtures.FunctionEvaluationHelpers.external_function("hello")
 
       value :module_attribute_string_concat, description: "hello " <> @module_attribute
       value :interpolation_of_module_attribute, description: "hello #{@module_attribute}"
@@ -116,7 +116,7 @@ defmodule Absinthe.Type.EnumTest do
     end
 
     enum :external_module_function_call,
-      description: Absinthe.FunctionEvaluationHelpers.external_function("hello") do
+      description: Absinthe.Fixtures.FunctionEvaluationHelpers.external_function("hello") do
     end
 
     enum :module_attribute_string_concat, description: "hello " <> @module_attribute do
@@ -171,7 +171,7 @@ defmodule Absinthe.Type.EnumTest do
     enum :function_in_nested_module do
     end
 
-    @desc Absinthe.FunctionEvaluationHelpers.external_function("hello")
+    @desc Absinthe.Fixtures.FunctionEvaluationHelpers.external_function("hello")
     enum :external_module_function_call do
     end
 
@@ -222,7 +222,7 @@ defmodule Absinthe.Type.EnumTest do
     end
 
     enum :external_module_function_call do
-      description Absinthe.FunctionEvaluationHelpers.external_function("hello")
+      description Absinthe.Fixtures.FunctionEvaluationHelpers.external_function("hello")
     end
 
     enum :module_attribute_string_concat do
@@ -257,7 +257,7 @@ defmodule Absinthe.Type.EnumTest do
   end
 
   describe "enum value description evaluation" do
-    Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
                       expected_value: expected_value
@@ -272,7 +272,7 @@ defmodule Absinthe.Type.EnumTest do
   end
 
   describe "enum description keyword evaluation" do
-    Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
                       expected_value: expected_value
@@ -285,7 +285,7 @@ defmodule Absinthe.Type.EnumTest do
   end
 
   describe "enum description attribute evaluation" do
-    Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
     # These tests do not work as test_function is not available at compile time, and the
     # expression for the @desc attribute is evaluated at compile time. There is nothing we can
     # really do about it
@@ -307,7 +307,7 @@ defmodule Absinthe.Type.EnumTest do
   end
 
   describe "enum description macro evaluation" do
-    Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
                       expected_value: expected_value
