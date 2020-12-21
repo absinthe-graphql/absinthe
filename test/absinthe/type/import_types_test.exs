@@ -49,7 +49,7 @@ defmodule Absinthe.Type.ImportTypesTest do
                       test_label: test_label,
                       expected_description: expected_description
                     } ->
-      test "for #{test_label}" do
+      test "for #{test_label} (evaluates description to '#{expected_description}')" do
         type = ImportTypes.SchemaWithFunctionEvaluation.__absinthe_type__(:example_input_object)
 
         assert type.fields[unquote(test_label)].description == unquote(expected_description)

@@ -58,7 +58,7 @@ defmodule Absinthe.Type.QueryTest do
                       test_label: test_label,
                       expected_description: expected_description
                     } ->
-      test "for #{test_label}" do
+      test "for #{test_label} (evaluates description to '#{expected_description}')" do
         type = TestSchema.__absinthe_type__("RootQueryType")
 
         assert type.fields[unquote(test_label)].args.arg_example.description ==
