@@ -1,6 +1,8 @@
 defmodule Absinthe.Type.ObjectTest do
   use Absinthe.Case, async: true
 
+  alias Absinthe.Fixtures.Object
+
   defmodule Schema do
     use Absinthe.Schema
 
@@ -39,5 +41,18 @@ defmodule Absinthe.Type.ObjectTest do
       assert %Absinthe.Type.Argument{name: "width", type: :integer} = field.args.width
       assert %Absinthe.Type.Argument{name: "height", type: :integer} = field.args.height
     end
+  end
+
+  describe "object keyword description evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for `#{test_label}` (evaluates description to `'#{expected_value}'`)" do
+        type = Object.TestSchemaDescriptionKeyword.__absinthe_type__(unquote(test_label))
+        assert type.description == unquote(expected_value)
+      end
+    end)
   end
 end
