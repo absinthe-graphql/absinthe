@@ -166,19 +166,45 @@ defmodule Absinthe.Fixtures.ImportTypes do
     end
   end
 
-  defmodule SchemaWithModuleAttributeImports do
+  defmodule SchemaWithFunctionEvaluationImports do
     use Absinthe.Schema.Notation
-    @module_attribute "module_attribute"
+    @module_attribute "goodbye"
+
+    defmodule NestedModule do
+      def nested_function(arg1) do
+        arg1
+      end
+    end
+
+    def test_function(arg1) do
+      arg1
+    end
 
     input_object :example_input_object do
-      field :input_object_module_attribute, :string, description: @module_attribute
+      field :normal_string, :string, description: "string"
+      field :local_function_call, :string, description: test_function("red")
+
+      field :function_call_using_absolute_path, :string,
+        description:
+          Absinthe.Fixtures.ImportTypes.SchemaWithFunctionEvaluationImports.test_function(
+            "red"
+          )
+
+      field :standard_library_function_works, :string,
+        description: String.replace("red", "e", "a")
+
+      field :function_nested_in_module, :string,
+        description: NestedModule.nested_function("hello")
+
+      field :module_attribute, :string, description: "hello " <> @module_attribute
+      field :interpolation_of_module_attribute, :string, description: "hello #{@module_attribute}"
     end
   end
 
-  defmodule SchemaWithModuleAttribute do
+  defmodule SchemaWithFunctionEvaluation do
     use Absinthe.Schema
 
-    import_types(SchemaWithModuleAttributeImports)
+    import_types(SchemaWithFunctionEvaluationImports)
 
     query do
     end
