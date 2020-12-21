@@ -108,8 +108,7 @@ defmodule Absinthe.Type.ObjectTest do
                       expected_value: expected_value
                     } ->
       test "for #{test_label} (evaluates description to '#{expected_value}')" do
-        type =
-          Object.TestSchemaFieldsAndArgsDescription.__absinthe_type__(:description_attribute)
+        type = Object.TestSchemaFieldsAndArgsDescription.__absinthe_type__(:description_attribute)
 
         assert type.fields[unquote(test_label)].description == unquote(expected_value)
       end
@@ -124,9 +123,7 @@ defmodule Absinthe.Type.ObjectTest do
                     } ->
       test "for #{test_label} (evaluates description to '#{expected_value}')" do
         type =
-          Object.TestSchemaFieldsAndArgsDescription.__absinthe_type__(
-            :field_description_macro
-          )
+          Object.TestSchemaFieldsAndArgsDescription.__absinthe_type__(:field_description_macro)
 
         assert type.fields[unquote(test_label)].description == unquote(expected_value)
       end

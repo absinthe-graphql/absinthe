@@ -20,7 +20,8 @@ defmodule Absinthe.Fixtures.Directive do
       on [:field]
     end
 
-    directive :function_call_using_absolute_path_to_current_module, description: Absinthe.Fixtures.Directive.TestSchemaDescriptionKeyword.test_function("red") do
+    directive :function_call_using_absolute_path_to_current_module,
+      description: Absinthe.Fixtures.Directive.TestSchemaDescriptionKeyword.test_function("red") do
       on [:field]
     end
 
@@ -32,7 +33,8 @@ defmodule Absinthe.Fixtures.Directive do
       on [:field]
     end
 
-    directive :external_module_function_call, description: Absinthe.Fixtures.FunctionEvaluationHelpers.external_function("hello") do
+    directive :external_module_function_call,
+      description: Absinthe.Fixtures.FunctionEvaluationHelpers.external_function("hello") do
       on [:field]
     end
 
@@ -166,6 +168,68 @@ defmodule Absinthe.Fixtures.Directive do
     directive :interpolation_of_module_attribute do
       on [:field]
       description "hello #{@module_attribute}"
+    end
+  end
+
+  defmodule TestSchemaArgDescriptionKeyword do
+    use Absinthe.Schema
+    @module_attribute "goodbye"
+
+    defmodule NestedModule do
+      def nested_function(arg1) do
+        arg1
+      end
+    end
+
+    query do
+    end
+
+    directive :normal_string do
+      arg :arg_example, :string, description: "string"
+      on [:field]
+    end
+
+    directive :local_function_call do
+      arg :arg_example, :string, description: test_function("red")
+      on [:field]
+    end
+
+    directive :function_call_using_absolute_path_to_current_module do
+      arg :arg_example, :string,
+        description: Absinthe.Fixtures.Directive.TestSchemaDescriptionKeyword.test_function("red")
+
+      on [:field]
+    end
+
+    directive :standard_library_function do
+      arg :arg_example, :string, description: String.replace("red", "e", "a")
+      on [:field]
+    end
+
+    directive :function_in_nested_module do
+      arg :arg_example, :string, description: NestedModule.nested_function("hello")
+      on [:field]
+    end
+
+    directive :external_module_function_call do
+      arg :arg_example, :string,
+        description: Absinthe.Fixtures.FunctionEvaluationHelpers.external_function("hello")
+
+      on [:field]
+    end
+
+    directive :module_attribute_string_concat do
+      arg :arg_example, :string, description: "hello " <> @module_attribute
+      on [:field]
+    end
+
+    directive :interpolation_of_module_attribute do
+      arg :arg_example, :string, description: "hello #{@module_attribute}"
+      on [:field]
+    end
+
+    def test_function(arg1) do
+      arg1
     end
   end
 end
