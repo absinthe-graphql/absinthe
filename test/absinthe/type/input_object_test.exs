@@ -45,7 +45,8 @@ defmodule Absinthe.Type.InputObjectTest do
     input_object :function_nested_in_module, description: NestedModule.nested_function("hello") do
     end
 
-    input_object :external_module_function_call, description: Absinthe.FunctionEvaluationHelpers.external_function("hello") do
+    input_object :external_module_function_call,
+      description: Absinthe.FunctionEvaluationHelpers.external_function("hello") do
     end
 
     input_object :module_attribute, description: "hello " <> @module_attribute do
@@ -192,8 +193,7 @@ defmodule Absinthe.Type.InputObjectTest do
             "red"
           )
 
-      field :standard_library_function, :string,
-        description: String.replace("red", "e", "a")
+      field :standard_library_function, :string, description: String.replace("red", "e", "a")
 
       field :function_nested_in_module, :string,
         description: NestedModule.nested_function("hello")

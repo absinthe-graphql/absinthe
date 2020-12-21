@@ -84,9 +84,9 @@ defmodule Absinthe.Type.ImportTypesTest do
         Code.ensure_compiled(ImportTypes.SchemaWithFunctionEvaluation)
 
       assert match?(
-              %Absinthe.Blueprint{},
-              ImportTypes.SchemaWithFunctionEvaluation.__absinthe_blueprint__()
-            )
+               %Absinthe.Blueprint{},
+               ImportTypes.SchemaWithFunctionEvaluation.__absinthe_blueprint__()
+             )
     end
   end
 end

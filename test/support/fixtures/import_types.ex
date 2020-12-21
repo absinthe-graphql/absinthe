@@ -186,12 +186,9 @@ defmodule Absinthe.Fixtures.ImportTypes do
 
       field :function_call_using_absolute_path, :string,
         description:
-          Absinthe.Fixtures.ImportTypes.SchemaWithFunctionEvaluationImports.test_function(
-            "red"
-          )
+          Absinthe.Fixtures.ImportTypes.SchemaWithFunctionEvaluationImports.test_function("red")
 
-      field :standard_library_function, :string,
-        description: String.replace("red", "e", "a")
+      field :standard_library_function, :string, description: String.replace("red", "e", "a")
 
       field :function_nested_in_module, :string,
         description: NestedModule.nested_function("hello")

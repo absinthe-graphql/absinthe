@@ -41,7 +41,8 @@ defmodule Absinthe.Type.MutationTest do
       end
 
       field :external_module_function_call, :string do
-        arg :arg_example, :string, description: Absinthe.FunctionEvaluationHelpers.external_function("hello")
+        arg :arg_example, :string,
+          description: Absinthe.FunctionEvaluationHelpers.external_function("hello")
       end
 
       field :module_attribute, :string do
