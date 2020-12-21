@@ -19,8 +19,7 @@ defmodule Absinthe.Fixtures.Object do
     end
 
     input_object :function_call_using_absolute_path_to_current_module,
-      description:
-        Absinthe.Fixtures.Object.TestSchemaDescriptionKeyword.test_function("red") do
+      description: Absinthe.Fixtures.Object.TestSchemaDescriptionKeyword.test_function("red") do
     end
 
     input_object :standard_library_function, description: String.replace("red", "e", "a") do

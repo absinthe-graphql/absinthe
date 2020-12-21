@@ -38,7 +38,7 @@ defmodule Absinthe.Type.InputObjectTest do
                       expected_value: expected_value
                     } ->
       test "for `#{test_label}` (evaluates description to `'#{expected_value}'`)" do
-        type = InputObject.TestSchemaInputObjectDescriptionKeyword.__absinthe_type__(unquote(test_label))
+        type = InputObject.TestSchemaDescriptionKeyword.__absinthe_type__(unquote(test_label))
         assert type.description == unquote(expected_value)
       end
     end)
@@ -60,7 +60,7 @@ defmodule Absinthe.Type.InputObjectTest do
                       expected_value: expected_value
                     } ->
       test "for #{test_label} (evaluates description to '#{expected_value}')" do
-        type = InputObject.TestSchemaInputObjectDescriptionAttribute.__absinthe_type__(unquote(test_label))
+        type = InputObject.TestSchemaDescriptionAttribute.__absinthe_type__(unquote(test_label))
         assert type.description == unquote(expected_value)
       end
     end)
@@ -73,7 +73,7 @@ defmodule Absinthe.Type.InputObjectTest do
                       expected_value: expected_value
                     } ->
       test "for #{test_label} (evaluates description to '#{expected_value}')" do
-        type = InputObject.TestSchemaInputObjectDescriptionMacro.__absinthe_type__(unquote(test_label))
+        type = InputObject.TestSchemaDescriptionMacro.__absinthe_type__(unquote(test_label))
         assert type.description == unquote(expected_value)
       end
     end)
@@ -87,7 +87,7 @@ defmodule Absinthe.Type.InputObjectTest do
                     } ->
       test "for #{test_label} (evaluates description to '#{expected_value}')" do
         type =
-          InputObject.TestSchemaInputObjectFieldsAndArgsDescription.__absinthe_type__(
+          InputObject.TestSchemaFieldsAndArgsDescription.__absinthe_type__(
             :description_keyword_argument
           )
 
@@ -113,7 +113,7 @@ defmodule Absinthe.Type.InputObjectTest do
                     } ->
       test "for #{test_label} (evaluates description to '#{expected_value}')" do
         type =
-          InputObject.TestSchemaInputObjectFieldsAndArgsDescription.__absinthe_type__(:description_attribute)
+          InputObject.TestSchemaFieldsAndArgsDescription.__absinthe_type__(:description_attribute)
 
         assert type.fields[unquote(test_label)].description == unquote(expected_value)
       end
@@ -128,7 +128,7 @@ defmodule Absinthe.Type.InputObjectTest do
                     } ->
       test "for #{test_label} (evaluates description to '#{expected_value}')" do
         type =
-          InputObject.TestSchemaInputObjectFieldsAndArgsDescription.__absinthe_type__(
+          InputObject.TestSchemaFieldsAndArgsDescription.__absinthe_type__(
             :field_description_macro
           )
 

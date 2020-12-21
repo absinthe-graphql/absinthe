@@ -81,7 +81,7 @@ defmodule Absinthe.Type.EnumTest do
                     } ->
       test "for #{test_label} (evaluates description to '#{expected_value}')" do
         type =
-          Enums.TestSchemaEnumValueDescriptionKeyword.__absinthe_type__(:description_keyword_argument)
+          Enums.TestSchemaValueDescriptionKeyword.__absinthe_type__(:description_keyword_argument)
 
         assert type.values[unquote(test_label)].description == unquote(expected_value)
       end
@@ -95,7 +95,7 @@ defmodule Absinthe.Type.EnumTest do
                       expected_value: expected_value
                     } ->
       test "for #{test_label} (evaluates description to '#{expected_value}')" do
-        type = Enums.TestSchemaEnumDescriptionKeyword.__absinthe_type__(unquote(test_label))
+        type = Enums.TestSchemaDescriptionKeyword.__absinthe_type__(unquote(test_label))
         assert type.description == unquote(expected_value)
       end
     end)
@@ -117,7 +117,7 @@ defmodule Absinthe.Type.EnumTest do
                       expected_value: expected_value
                     } ->
       test "for #{test_label} (evaluates description to '#{expected_value}')" do
-        type = Enums.TestSchemaEnumDescriptionAttribute.__absinthe_type__(unquote(test_label))
+        type = Enums.TestSchemaDescriptionAttribute.__absinthe_type__(unquote(test_label))
         assert type.description == unquote(expected_value)
       end
     end)
@@ -130,7 +130,7 @@ defmodule Absinthe.Type.EnumTest do
                       expected_value: expected_value
                     } ->
       test "for #{test_label} (evaluates description to '#{expected_value}')" do
-        type = Enums.TestSchemaEnumDescriptionMacro.__absinthe_type__(unquote(test_label))
+        type = Enums.TestSchemaDescriptionMacro.__absinthe_type__(unquote(test_label))
         assert type.description == unquote(expected_value)
       end
     end)

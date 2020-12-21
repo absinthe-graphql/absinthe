@@ -1,5 +1,5 @@
 defmodule Absinthe.Fixtures.InputObject do
-  defmodule TestSchemaInputObjectDescriptionKeyword do
+  defmodule TestSchemaDescriptionKeyword do
     use Absinthe.Schema
     @module_attribute "goodbye"
 
@@ -19,8 +19,7 @@ defmodule Absinthe.Fixtures.InputObject do
     end
 
     input_object :function_call_using_absolute_path_to_current_module,
-      description:
-        Absinthe.Fixtures.InputObject.TestSchemaInputObjectDescriptionKeyword.test_function("red") do
+      description: Absinthe.Fixtures.InputObject.TestSchemaDescriptionKeyword.test_function("red") do
     end
 
     input_object :standard_library_function, description: String.replace("red", "e", "a") do
@@ -44,7 +43,7 @@ defmodule Absinthe.Fixtures.InputObject do
     end
   end
 
-  defmodule TestSchemaInputObjectDescriptionAttribute do
+  defmodule TestSchemaDescriptionAttribute do
     use Absinthe.Schema
     @module_attribute "goodbye"
 
@@ -73,7 +72,7 @@ defmodule Absinthe.Fixtures.InputObject do
     # input_object :local_function_call do
     # end
 
-    # @desc Absinthe.Fixtures.InputObject.TestSchemaInputObjectAttribute.test_function("red")
+    # @desc Absinthe.Fixtures.InputObject.TestSchemaAttribute.test_function("red")
     # input_object :function_call_using_absolute_path_to_current_module do
     # end
 
@@ -98,7 +97,7 @@ defmodule Absinthe.Fixtures.InputObject do
     end
   end
 
-  defmodule TestSchemaInputObjectDescriptionMacro do
+  defmodule TestSchemaDescriptionMacro do
     use Absinthe.Schema
     @module_attribute "goodbye"
 
@@ -124,9 +123,7 @@ defmodule Absinthe.Fixtures.InputObject do
     end
 
     input_object :function_call_using_absolute_path_to_current_module do
-      description Absinthe.Fixtures.InputObject.TestSchemaInputObjectDescriptionMacro.test_function(
-                    "red"
-                  )
+      description Absinthe.Fixtures.InputObject.TestSchemaDescriptionMacro.test_function("red")
     end
 
     input_object :standard_library_function do
@@ -150,7 +147,7 @@ defmodule Absinthe.Fixtures.InputObject do
     end
   end
 
-  defmodule TestSchemaInputObjectFieldsAndArgsDescription do
+  defmodule TestSchemaFieldsAndArgsDescription do
     use Absinthe.Schema
     @module_attribute "goodbye"
 
@@ -173,9 +170,7 @@ defmodule Absinthe.Fixtures.InputObject do
 
       field :function_call_using_absolute_path_to_current_module, :string,
         description:
-          Absinthe.Fixtures.InputObject.TestSchemaInputObjectFieldsAndArgsDescription.test_function(
-            "red"
-          )
+          Absinthe.Fixtures.InputObject.TestSchemaFieldsAndArgsDescription.test_function("red")
 
       field :standard_library_function, :string, description: String.replace("red", "e", "a")
 
@@ -200,7 +195,7 @@ defmodule Absinthe.Fixtures.InputObject do
       # @desc test_function("red")
       # field :local_function_call, :string
 
-      # @desc Absinthe.Fixtures.InputObject.TestSchemaInputObjectFieldsAndArgsDescription.test_function(
+      # @desc Absinthe.Fixtures.InputObject.TestSchemaFieldsAndArgsDescription.test_function(
       #         "red"
       #       )
       # field :function_call_using_absolute_path_to_current_module, :string
@@ -231,7 +226,7 @@ defmodule Absinthe.Fixtures.InputObject do
       end
 
       field :function_call_using_absolute_path_to_current_module, :string do
-        description Absinthe.Fixtures.InputObject.TestSchemaInputObjectFieldsAndArgsDescription.test_function(
+        description Absinthe.Fixtures.InputObject.TestSchemaFieldsAndArgsDescription.test_function(
                       "red"
                     )
       end

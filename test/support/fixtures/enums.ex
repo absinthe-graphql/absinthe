@@ -1,5 +1,5 @@
 defmodule Absinthe.Fixtures.Enums do
-  defmodule TestSchemaEnumValueDescriptionKeyword do
+  defmodule TestSchemaValueDescriptionKeyword do
     use Absinthe.Schema
     @module_attribute "goodbye"
 
@@ -22,7 +22,7 @@ defmodule Absinthe.Fixtures.Enums do
 
       value :function_call_using_absolute_path_to_current_module,
         description:
-          Absinthe.Fixtures.Enums.TestSchemaEnumValueDescriptionKeyword.test_function("red")
+          Absinthe.Fixtures.Enums.TestSchemaValueDescriptionKeyword.test_function("red")
 
       value :standard_library_function, description: String.replace("red", "e", "a")
       value :function_in_nested_module, description: NestedModule.nested_function("hello")
@@ -35,7 +35,7 @@ defmodule Absinthe.Fixtures.Enums do
     end
   end
 
-  defmodule TestSchemaEnumDescriptionKeyword do
+  defmodule TestSchemaDescriptionKeyword do
     use Absinthe.Schema
     @module_attribute "goodbye"
 
@@ -55,7 +55,7 @@ defmodule Absinthe.Fixtures.Enums do
     end
 
     enum :function_call_using_absolute_path_to_current_module,
-      description: Absinthe.Fixtures.Enums.TestSchemaEnumDescriptionKeyword.test_function("red") do
+      description: Absinthe.Fixtures.Enums.TestSchemaDescriptionKeyword.test_function("red") do
     end
 
     enum :standard_library_function, description: String.replace("red", "e", "a") do
@@ -79,7 +79,7 @@ defmodule Absinthe.Fixtures.Enums do
     end
   end
 
-  defmodule TestSchemaEnumDescriptionAttribute do
+  defmodule TestSchemaDescriptionAttribute do
     use Absinthe.Schema
     @module_attribute "goodbye"
 
@@ -133,7 +133,7 @@ defmodule Absinthe.Fixtures.Enums do
     end
   end
 
-  defmodule TestSchemaEnumDescriptionMacro do
+  defmodule TestSchemaDescriptionMacro do
     use Absinthe.Schema
     @module_attribute "goodbye"
 
@@ -159,7 +159,7 @@ defmodule Absinthe.Fixtures.Enums do
     end
 
     enum :function_call_using_absolute_path_to_current_module do
-      description Absinthe.Fixtures.Enums.TestSchemaEnumDescriptionMacro.test_function("red")
+      description Absinthe.Fixtures.Enums.TestSchemaDescriptionMacro.test_function("red")
     end
 
     enum :standard_library_function do
@@ -182,5 +182,4 @@ defmodule Absinthe.Fixtures.Enums do
       description "hello #{@module_attribute}"
     end
   end
-
 end
