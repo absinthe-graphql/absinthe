@@ -1332,6 +1332,7 @@ defmodule Absinthe.Schema.Notation do
       attrs
       |> Keyword.put(:identifier, identifier)
       |> Keyword.put_new(:name, to_string(identifier))
+      |> Keyword.update(:description, nil, &wrap_in_unquote/1)
 
     scoped_def(env, Schema.DirectiveDefinition, identifier, attrs, block)
   end
