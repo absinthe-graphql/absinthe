@@ -184,7 +184,7 @@ defmodule Absinthe.Fixtures.ImportTypes do
       field :normal_string, :string, description: "string"
       field :local_function_call, :string, description: test_function("red")
 
-      field :function_call_using_absolute_path, :string,
+      field :function_call_using_absolute_path_to_current_module, :string,
         description:
           Absinthe.Fixtures.ImportTypes.SchemaWithFunctionEvaluationImports.test_function("red")
 

@@ -27,7 +27,7 @@ defmodule Absinthe.Type.MutationTest do
         arg :arg_example, :string, description: test_function("red")
       end
 
-      field :function_call_using_absolute_path, :string do
+      field :function_call_using_absolute_path_to_current_module, :string do
         arg :arg_example, :string,
           description: Absinthe.Type.MutationTest.TestSchema.test_function("red")
       end

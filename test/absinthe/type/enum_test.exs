@@ -71,7 +71,7 @@ defmodule Absinthe.Type.EnumTest do
       value :normal_string, description: "string"
       value :local_function_call, description: test_function("red")
 
-      value :function_call_using_absolute_path,
+      value :function_call_using_absolute_path_to_current_module,
         description:
           Absinthe.Type.EnumTest.TestSchemaEnumValueDescriptionKeyword.test_function("red")
 
@@ -105,7 +105,7 @@ defmodule Absinthe.Type.EnumTest do
     enum :local_function_call, description: test_function("red") do
     end
 
-    enum :function_call_using_absolute_path,
+    enum :function_call_using_absolute_path_to_current_module,
       description: Absinthe.Type.EnumTest.TestSchemaEnumDescriptionKeyword.test_function("red") do
     end
 
@@ -160,7 +160,7 @@ defmodule Absinthe.Type.EnumTest do
     # end
 
     # @desc Absinthe.Type.EnumTest.TestSchemaEnumAttribute.test_function("red")
-    # enum :function_call_using_absolute_path do
+    # enum :function_call_using_absolute_path_to_current_module do
     # end
 
     @desc String.replace("red", "e", "a")
@@ -209,7 +209,7 @@ defmodule Absinthe.Type.EnumTest do
       description test_function("red")
     end
 
-    enum :function_call_using_absolute_path do
+    enum :function_call_using_absolute_path_to_current_module do
       description Absinthe.Type.EnumTest.TestSchemaEnumDescriptionMacro.test_function("red")
     end
 
@@ -290,7 +290,10 @@ defmodule Absinthe.Type.EnumTest do
     # expression for the @desc attribute is evaluated at compile time. There is nothing we can
     # really do about it
     |> Enum.filter(fn %{test_label: test_label} ->
-      test_label not in [:local_function_call, :function_call_using_absolute_path]
+      test_label not in [
+        :local_function_call,
+        :function_call_using_absolute_path_to_current_module
+      ]
     end)
     |> Enum.each(fn %{
                       test_label: test_label,

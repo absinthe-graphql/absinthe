@@ -3,7 +3,7 @@ defmodule Absinthe.FunctionEvaluationHelpers do
     [
       %{test_label: :normal_string, expected_value: "string"},
       %{test_label: :local_function_call, expected_value: "red"},
-      %{test_label: :function_call_using_absolute_path, expected_value: "red"},
+      %{test_label: :function_call_using_absolute_path_to_current_module, expected_value: "red"},
       %{test_label: :standard_library_function, expected_value: "rad"},
       %{test_label: :function_in_nested_module, expected_value: "hello"},
       %{test_label: :external_module_function_call, expected_value: "the value is hello"},

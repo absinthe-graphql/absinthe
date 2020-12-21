@@ -34,7 +34,7 @@ defmodule Absinthe.Type.InputObjectTest do
     input_object :local_function_call, description: test_function("red") do
     end
 
-    input_object :function_call_using_absolute_path,
+    input_object :function_call_using_absolute_path_to_current_module,
       description:
         Absinthe.Type.InputObjectTest.TestSchemaInputObjectDescriptionKeyword.test_function("red") do
     end
@@ -90,7 +90,7 @@ defmodule Absinthe.Type.InputObjectTest do
     # end
 
     # @desc Absinthe.Type.InputObjectTest.TestSchemaInputObjectAttribute.test_function("red")
-    # input_object :function_call_using_absolute_path do
+    # input_object :function_call_using_absolute_path_to_current_module do
     # end
 
     @desc String.replace("red", "e", "a")
@@ -139,7 +139,7 @@ defmodule Absinthe.Type.InputObjectTest do
       description test_function("red")
     end
 
-    input_object :function_call_using_absolute_path do
+    input_object :function_call_using_absolute_path_to_current_module do
       description Absinthe.Type.InputObjectTest.TestSchemaInputObjectDescriptionMacro.test_function(
                     "red"
                   )
@@ -187,7 +187,7 @@ defmodule Absinthe.Type.InputObjectTest do
       field :normal_string, :string, description: "string"
       field :local_function_call, :string, description: test_function("red")
 
-      field :function_call_using_absolute_path, :string,
+      field :function_call_using_absolute_path_to_current_module, :string,
         description:
           Absinthe.Type.InputObjectTest.TestSchemaInputObjectFieldsAndArgsDescription.test_function(
             "red"
@@ -219,7 +219,7 @@ defmodule Absinthe.Type.InputObjectTest do
       # @desc Absinthe.Type.InputObjectTest.TestSchemaInputObjectFieldsAndArgsDescription.test_function(
       #         "red"
       #       )
-      # field :function_call_using_absolute_path, :string
+      # field :function_call_using_absolute_path_to_current_module, :string
 
       @desc String.replace("red", "e", "a")
       field :standard_library_function, :string
@@ -246,7 +246,7 @@ defmodule Absinthe.Type.InputObjectTest do
         description test_function("red")
       end
 
-      field :function_call_using_absolute_path, :string do
+      field :function_call_using_absolute_path_to_current_module, :string do
         description Absinthe.Type.InputObjectTest.TestSchemaInputObjectFieldsAndArgsDescription.test_function(
                       "red"
                     )
@@ -307,7 +307,10 @@ defmodule Absinthe.Type.InputObjectTest do
     # expression for the @desc attribute is evaluated at compile time. There is nothing we can
     # really do about it
     |> Enum.filter(fn %{test_label: test_label} ->
-      test_label not in [:local_function_call, :function_call_using_absolute_path]
+      test_label not in [
+        :local_function_call,
+        :function_call_using_absolute_path_to_current_module
+      ]
     end)
     |> Enum.each(fn %{
                       test_label: test_label,
@@ -356,7 +359,10 @@ defmodule Absinthe.Type.InputObjectTest do
     # expression for the @desc attribute is evaluated at compile time. There is nothing we can
     # really do about it
     |> Enum.filter(fn %{test_label: test_label} ->
-      test_label not in [:local_function_call, :function_call_using_absolute_path]
+      test_label not in [
+        :local_function_call,
+        :function_call_using_absolute_path_to_current_module
+      ]
     end)
     |> Enum.each(fn %{
                       test_label: test_label,
