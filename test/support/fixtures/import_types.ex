@@ -196,7 +196,7 @@ defmodule Absinthe.Fixtures.ImportTypes do
       field :external_module_function_call, :string,
         description: Absinthe.FunctionEvaluationHelpers.external_function("hello")
 
-      field :module_attribute, :string, description: "hello " <> @module_attribute
+      field :module_attribute_string_concat, :string, description: "hello " <> @module_attribute
       field :interpolation_of_module_attribute, :string, description: "hello #{@module_attribute}"
     end
   end

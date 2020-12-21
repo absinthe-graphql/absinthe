@@ -49,7 +49,7 @@ defmodule Absinthe.Type.InputObjectTest do
       description: Absinthe.FunctionEvaluationHelpers.external_function("hello") do
     end
 
-    input_object :module_attribute, description: "hello " <> @module_attribute do
+    input_object :module_attribute_string_concat, description: "hello " <> @module_attribute do
     end
 
     input_object :interpolation_of_module_attribute, description: "hello #{@module_attribute}" do
@@ -106,7 +106,7 @@ defmodule Absinthe.Type.InputObjectTest do
     end
 
     @desc "hello " <> @module_attribute
-    input_object :module_attribute do
+    input_object :module_attribute_string_concat do
     end
 
     @desc "hello #{@module_attribute}"
@@ -157,7 +157,7 @@ defmodule Absinthe.Type.InputObjectTest do
       description Absinthe.FunctionEvaluationHelpers.external_function("hello")
     end
 
-    input_object :module_attribute do
+    input_object :module_attribute_string_concat do
       description "hello " <> @module_attribute
     end
 
@@ -201,7 +201,7 @@ defmodule Absinthe.Type.InputObjectTest do
       field :external_module_function_call, :string,
         description: Absinthe.FunctionEvaluationHelpers.external_function("hello")
 
-      field :module_attribute, :string, description: "hello " <> @module_attribute
+      field :module_attribute_string_concat, :string, description: "hello " <> @module_attribute
       field :interpolation_of_module_attribute, :string, description: "hello #{@module_attribute}"
     end
 
@@ -231,7 +231,7 @@ defmodule Absinthe.Type.InputObjectTest do
       field :external_module_function_call, :string
 
       @desc "hello " <> @module_attribute
-      field :module_attribute, :string
+      field :module_attribute_string_concat, :string
 
       @desc "hello #{@module_attribute}"
       field :interpolation_of_module_attribute, :string
@@ -264,7 +264,7 @@ defmodule Absinthe.Type.InputObjectTest do
         description Absinthe.FunctionEvaluationHelpers.external_function("hello")
       end
 
-      field :module_attribute, :string do
+      field :module_attribute_string_concat, :string do
         description "hello " <> @module_attribute
       end
 

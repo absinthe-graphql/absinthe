@@ -42,7 +42,7 @@ defmodule Absinthe.Type.QueryTest do
           description: Absinthe.FunctionEvaluationHelpers.external_function("hello")
       end
 
-      field :module_attribute, :string do
+      field :module_attribute_string_concat, :string do
         arg :arg_example, :string, description: "hello " <> @module_attribute
       end
 

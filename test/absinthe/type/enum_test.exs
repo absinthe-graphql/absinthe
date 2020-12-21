@@ -81,7 +81,7 @@ defmodule Absinthe.Type.EnumTest do
       value :external_module_function_call,
         description: Absinthe.FunctionEvaluationHelpers.external_function("hello")
 
-      value :module_attribute, description: "hello " <> @module_attribute
+      value :module_attribute_string_concat, description: "hello " <> @module_attribute
       value :interpolation_of_module_attribute, description: "hello #{@module_attribute}"
     end
   end
@@ -119,7 +119,7 @@ defmodule Absinthe.Type.EnumTest do
       description: Absinthe.FunctionEvaluationHelpers.external_function("hello") do
     end
 
-    enum :module_attribute, description: "hello " <> @module_attribute do
+    enum :module_attribute_string_concat, description: "hello " <> @module_attribute do
     end
 
     enum :interpolation_of_module_attribute, description: "hello #{@module_attribute}" do
@@ -176,7 +176,7 @@ defmodule Absinthe.Type.EnumTest do
     end
 
     @desc "hello " <> @module_attribute
-    enum :module_attribute do
+    enum :module_attribute_string_concat do
     end
 
     @desc "hello #{@module_attribute}"
@@ -225,7 +225,7 @@ defmodule Absinthe.Type.EnumTest do
       description Absinthe.FunctionEvaluationHelpers.external_function("hello")
     end
 
-    enum :module_attribute do
+    enum :module_attribute_string_concat do
       description "hello " <> @module_attribute
     end
 
