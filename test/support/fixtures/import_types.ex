@@ -190,7 +190,7 @@ defmodule Absinthe.Fixtures.ImportTypes do
 
       field :standard_library_function, :string, description: String.replace("red", "e", "a")
 
-      field :function_nested_in_module, :string,
+      field :function_in_nested_module, :string,
         description: NestedModule.nested_function("hello")
 
       field :external_module_function_call, :string,

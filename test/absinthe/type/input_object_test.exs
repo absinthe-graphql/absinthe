@@ -42,7 +42,7 @@ defmodule Absinthe.Type.InputObjectTest do
     input_object :standard_library_function, description: String.replace("red", "e", "a") do
     end
 
-    input_object :function_nested_in_module, description: NestedModule.nested_function("hello") do
+    input_object :function_in_nested_module, description: NestedModule.nested_function("hello") do
     end
 
     input_object :external_module_function_call,
@@ -98,7 +98,7 @@ defmodule Absinthe.Type.InputObjectTest do
     end
 
     @desc NestedModule.nested_function("hello")
-    input_object :function_nested_in_module do
+    input_object :function_in_nested_module do
     end
 
     @desc Absinthe.FunctionEvaluationHelpers.external_function("hello")
@@ -149,7 +149,7 @@ defmodule Absinthe.Type.InputObjectTest do
       description String.replace("red", "e", "a")
     end
 
-    input_object :function_nested_in_module do
+    input_object :function_in_nested_module do
       description NestedModule.nested_function("hello")
     end
 
@@ -195,7 +195,7 @@ defmodule Absinthe.Type.InputObjectTest do
 
       field :standard_library_function, :string, description: String.replace("red", "e", "a")
 
-      field :function_nested_in_module, :string,
+      field :function_in_nested_module, :string,
         description: NestedModule.nested_function("hello")
 
       field :external_module_function_call, :string,
@@ -225,7 +225,7 @@ defmodule Absinthe.Type.InputObjectTest do
       field :standard_library_function, :string
 
       @desc NestedModule.nested_function("hello")
-      field :function_nested_in_module, :string
+      field :function_in_nested_module, :string
 
       @desc Absinthe.FunctionEvaluationHelpers.external_function("hello")
       field :external_module_function_call, :string
@@ -256,7 +256,7 @@ defmodule Absinthe.Type.InputObjectTest do
         description String.replace("red", "e", "a")
       end
 
-      field :function_nested_in_module, :string do
+      field :function_in_nested_module, :string do
         description NestedModule.nested_function("hello")
       end
 

@@ -33,7 +33,7 @@ defmodule Absinthe.Type.QueryTest do
         arg :arg_example, :string, description: String.replace("red", "e", "a")
       end
 
-      field :function_nested_in_module, :string do
+      field :function_in_nested_module, :string do
         arg :arg_example, :string, description: NestedModule.nested_function("hello")
       end
 

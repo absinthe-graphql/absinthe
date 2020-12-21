@@ -76,7 +76,7 @@ defmodule Absinthe.Type.EnumTest do
           Absinthe.Type.EnumTest.TestSchemaEnumValueDescriptionKeyword.test_function("red")
 
       value :standard_library_function, description: String.replace("red", "e", "a")
-      value :function_nested_in_module, description: NestedModule.nested_function("hello")
+      value :function_in_nested_module, description: NestedModule.nested_function("hello")
 
       value :external_module_function_call,
         description: Absinthe.FunctionEvaluationHelpers.external_function("hello")
@@ -112,7 +112,7 @@ defmodule Absinthe.Type.EnumTest do
     enum :standard_library_function, description: String.replace("red", "e", "a") do
     end
 
-    enum :function_nested_in_module, description: NestedModule.nested_function("hello") do
+    enum :function_in_nested_module, description: NestedModule.nested_function("hello") do
     end
 
     enum :external_module_function_call,
@@ -168,7 +168,7 @@ defmodule Absinthe.Type.EnumTest do
     end
 
     @desc NestedModule.nested_function("hello")
-    enum :function_nested_in_module do
+    enum :function_in_nested_module do
     end
 
     @desc Absinthe.FunctionEvaluationHelpers.external_function("hello")
@@ -217,7 +217,7 @@ defmodule Absinthe.Type.EnumTest do
       description String.replace("red", "e", "a")
     end
 
-    enum :function_nested_in_module do
+    enum :function_in_nested_module do
       description NestedModule.nested_function("hello")
     end
 
