@@ -196,6 +196,9 @@ defmodule Absinthe.Fixtures.ImportTypes do
       field :function_nested_in_module, :string,
         description: NestedModule.nested_function("hello")
 
+      field :external_module_function_call, :string,
+        description: Absinthe.FunctionEvaluationHelpers.external_function("hello")
+
       field :module_attribute, :string, description: "hello " <> @module_attribute
       field :interpolation_of_module_attribute, :string, description: "hello #{@module_attribute}"
     end

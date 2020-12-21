@@ -45,6 +45,9 @@ defmodule Absinthe.Type.InputObjectTest do
     input_object :function_nested_in_module, description: NestedModule.nested_function("hello") do
     end
 
+    input_object :external_module_function_call, description: Absinthe.FunctionEvaluationHelpers.external_function("hello") do
+    end
+
     input_object :module_attribute, description: "hello " <> @module_attribute do
     end
 
@@ -97,6 +100,10 @@ defmodule Absinthe.Type.InputObjectTest do
     input_object :function_nested_in_module do
     end
 
+    @desc Absinthe.FunctionEvaluationHelpers.external_function("hello")
+    input_object :external_module_function_call do
+    end
+
     @desc "hello " <> @module_attribute
     input_object :module_attribute do
     end
@@ -145,6 +152,10 @@ defmodule Absinthe.Type.InputObjectTest do
       description NestedModule.nested_function("hello")
     end
 
+    input_object :external_module_function_call do
+      description Absinthe.FunctionEvaluationHelpers.external_function("hello")
+    end
+
     input_object :module_attribute do
       description "hello " <> @module_attribute
     end
@@ -187,6 +198,9 @@ defmodule Absinthe.Type.InputObjectTest do
       field :function_nested_in_module, :string,
         description: NestedModule.nested_function("hello")
 
+      field :external_module_function_call, :string,
+        description: Absinthe.FunctionEvaluationHelpers.external_function("hello")
+
       field :module_attribute, :string, description: "hello " <> @module_attribute
       field :interpolation_of_module_attribute, :string, description: "hello #{@module_attribute}"
     end
@@ -213,8 +227,12 @@ defmodule Absinthe.Type.InputObjectTest do
       @desc NestedModule.nested_function("hello")
       field :function_nested_in_module, :string
 
+      @desc Absinthe.FunctionEvaluationHelpers.external_function("hello")
+      field :external_module_function_call, :string
+
       @desc "hello " <> @module_attribute
       field :module_attribute, :string
+
       @desc "hello #{@module_attribute}"
       field :interpolation_of_module_attribute, :string
     end
@@ -240,6 +258,10 @@ defmodule Absinthe.Type.InputObjectTest do
 
       field :function_nested_in_module, :string do
         description NestedModule.nested_function("hello")
+      end
+
+      field :external_module_function_call, :string do
+        description Absinthe.FunctionEvaluationHelpers.external_function("hello")
       end
 
       field :module_attribute, :string do

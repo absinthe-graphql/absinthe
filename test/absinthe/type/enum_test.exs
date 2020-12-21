@@ -5,13 +5,6 @@ defmodule Absinthe.Type.EnumTest do
 
   defmodule TestSchema do
     use Absinthe.Schema
-    @module_attribute "goodbye"
-
-    defmodule NestedModule do
-      def nested_function(arg1) do
-        arg1
-      end
-    end
 
     query do
       field :channel, :color_channel, description: "The active color channel" do
@@ -19,23 +12,6 @@ defmodule Absinthe.Type.EnumTest do
           {:ok, :red}
         end
       end
-    end
-
-    enum :description_keyword_argument do
-      value :normal_string, description: "string"
-      value :local_function_call, description: test_function("red")
-
-      value :function_call_using_absolute_path,
-        description: Absinthe.Type.EnumTest.TestSchema.test_function("red")
-
-      value :standard_library_function, description: String.replace("red", "e", "a")
-      value :function_nested_in_module, description: NestedModule.nested_function("hello")
-      value :module_attribute, description: "hello " <> @module_attribute
-      value :interpolation_of_module_attribute, description: "hello #{@module_attribute}"
-    end
-
-    def test_function(arg1) do
-      arg1
     end
 
     enum :color_channel do
@@ -74,6 +50,38 @@ defmodule Absinthe.Type.EnumTest do
     end
   end
 
+  defmodule TestSchemaEnumValueDescriptionKeyword do
+    use Absinthe.Schema
+    @module_attribute "goodbye"
+
+    defmodule NestedModule do
+      def nested_function(arg1) do
+        arg1
+      end
+    end
+
+    query do
+    end
+
+    def test_function(arg1) do
+      arg1
+    end
+
+    enum :description_keyword_argument do
+      value :normal_string, description: "string"
+      value :local_function_call, description: test_function("red")
+
+      value :function_call_using_absolute_path,
+        description: Absinthe.Type.EnumTest.TestSchemaEnumValueDescriptionKeyword.test_function("red")
+
+      value :standard_library_function, description: String.replace("red", "e", "a")
+      value :function_nested_in_module, description: NestedModule.nested_function("hello")
+      value :external_module_function_call, description: Absinthe.FunctionEvaluationHelpers.external_function("hello")
+      value :module_attribute, description: "hello " <> @module_attribute
+      value :interpolation_of_module_attribute, description: "hello #{@module_attribute}"
+    end
+  end
+
   defmodule TestSchemaEnumDescriptionKeyword do
     use Absinthe.Schema
     @module_attribute "goodbye"
@@ -101,6 +109,9 @@ defmodule Absinthe.Type.EnumTest do
     end
 
     enum :function_nested_in_module, description: NestedModule.nested_function("hello") do
+    end
+
+    enum :external_module_function_call, description: Absinthe.FunctionEvaluationHelpers.external_function("hello") do
     end
 
     enum :module_attribute, description: "hello " <> @module_attribute do
@@ -155,6 +166,10 @@ defmodule Absinthe.Type.EnumTest do
     enum :function_nested_in_module do
     end
 
+    @desc Absinthe.FunctionEvaluationHelpers.external_function("hello")
+    enum :external_module_function_call do
+    end
+
     @desc "hello " <> @module_attribute
     enum :module_attribute do
     end
@@ -201,6 +216,10 @@ defmodule Absinthe.Type.EnumTest do
       description NestedModule.nested_function("hello")
     end
 
+    enum :external_module_function_call do
+      description Absinthe.FunctionEvaluationHelpers.external_function("hello")
+    end
+
     enum :module_attribute do
       description "hello " <> @module_attribute
     end
@@ -239,7 +258,7 @@ defmodule Absinthe.Type.EnumTest do
                       expected_description: expected_description
                     } ->
       test "for #{test_label}" do
-        type = TestSchema.__absinthe_type__(:description_keyword_argument)
+        type = TestSchemaEnumValueDescriptionKeyword.__absinthe_type__(:description_keyword_argument)
         assert type.values[unquote(test_label)].description == unquote(expected_description)
       end
     end)

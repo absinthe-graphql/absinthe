@@ -40,6 +40,10 @@ defmodule Absinthe.Type.MutationTest do
         arg :arg_example, :string, description: NestedModule.nested_function("hello")
       end
 
+      field :external_module_function_call, :string do
+        arg :arg_example, :string, description: Absinthe.FunctionEvaluationHelpers.external_function("hello")
+      end
+
       field :module_attribute, :string do
         arg :arg_example, :string, description: "hello " <> @module_attribute
       end
