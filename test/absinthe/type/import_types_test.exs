@@ -47,12 +47,12 @@ defmodule Absinthe.Type.ImportTypesTest do
     Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
-                      expected_description: expected_description
+                      expected_value: expected_value
                     } ->
-      test "for #{test_label} (evaluates description to '#{expected_description}')" do
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
         type = ImportTypes.SchemaWithFunctionEvaluation.__absinthe_type__(:example_input_object)
 
-        assert type.fields[unquote(test_label)].description == unquote(expected_description)
+        assert type.fields[unquote(test_label)].description == unquote(expected_value)
       end
     end)
 

@@ -56,13 +56,13 @@ defmodule Absinthe.Type.QueryTest do
     Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
-                      expected_description: expected_description
+                      expected_value: expected_value
                     } ->
-      test "for #{test_label} (evaluates description to '#{expected_description}')" do
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
         type = TestSchema.__absinthe_type__("RootQueryType")
 
         assert type.fields[unquote(test_label)].args.arg_example.description ==
-                 unquote(expected_description)
+                 unquote(expected_value)
       end
     end)
   end

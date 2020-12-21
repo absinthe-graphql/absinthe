@@ -260,13 +260,13 @@ defmodule Absinthe.Type.EnumTest do
     Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
-                      expected_description: expected_description
+                      expected_value: expected_value
                     } ->
-      test "for #{test_label} (evaluates description to '#{expected_description}')" do
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
         type =
           TestSchemaEnumValueDescriptionKeyword.__absinthe_type__(:description_keyword_argument)
 
-        assert type.values[unquote(test_label)].description == unquote(expected_description)
+        assert type.values[unquote(test_label)].description == unquote(expected_value)
       end
     end)
   end
@@ -275,11 +275,11 @@ defmodule Absinthe.Type.EnumTest do
     Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
-                      expected_description: expected_description
+                      expected_value: expected_value
                     } ->
-      test "for #{test_label} (evaluates description to '#{expected_description}')" do
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
         type = TestSchemaEnumDescriptionKeyword.__absinthe_type__(unquote(test_label))
-        assert type.description == unquote(expected_description)
+        assert type.description == unquote(expected_value)
       end
     end)
   end
@@ -294,11 +294,11 @@ defmodule Absinthe.Type.EnumTest do
     end)
     |> Enum.each(fn %{
                       test_label: test_label,
-                      expected_description: expected_description
+                      expected_value: expected_value
                     } ->
-      test "for #{test_label} (evaluates description to '#{expected_description}')" do
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
         type = TestSchemaEnumDescriptionAttribute.__absinthe_type__(unquote(test_label))
-        assert type.description == unquote(expected_description)
+        assert type.description == unquote(expected_value)
       end
     end)
   end
@@ -307,11 +307,11 @@ defmodule Absinthe.Type.EnumTest do
     Absinthe.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
-                      expected_description: expected_description
+                      expected_value: expected_value
                     } ->
-      test "for #{test_label} (evaluates description to '#{expected_description}')" do
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
         type = TestSchemaEnumDescriptionMacro.__absinthe_type__(unquote(test_label))
-        assert type.description == unquote(expected_description)
+        assert type.description == unquote(expected_value)
       end
     end)
   end
