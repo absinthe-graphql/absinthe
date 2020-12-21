@@ -1,8 +1,6 @@
 defmodule Absinthe.Type.MutationTest do
   use Absinthe.Case, async: true
 
-  alias Absinthe.Type
-
   defmodule TestSchema do
     use Absinthe.Schema
     @module_attribute "goodbye"
@@ -34,7 +32,7 @@ defmodule Absinthe.Type.MutationTest do
           description: Absinthe.Type.MutationTest.TestSchema.test_function("red")
       end
 
-      field :standard_library_function_works, :string do
+      field :standard_library_function, :string do
         arg :arg_example, :string, description: String.replace("red", "e", "a")
       end
 

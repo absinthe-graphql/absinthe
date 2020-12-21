@@ -28,7 +28,7 @@ defmodule Absinthe.Type.EnumTest do
       value :function_call_using_absolute_path,
         description: Absinthe.Type.EnumTest.TestSchema.test_function("red")
 
-      value :standard_library_function_works, description: String.replace("red", "e", "a")
+      value :standard_library_function, description: String.replace("red", "e", "a")
       value :function_nested_in_module, description: NestedModule.nested_function("hello")
       value :module_attribute, description: "hello " <> @module_attribute
       value :interpolation_of_module_attribute, description: "hello #{@module_attribute}"
@@ -97,7 +97,7 @@ defmodule Absinthe.Type.EnumTest do
       description: Absinthe.Type.EnumTest.TestSchemaEnumDescriptionKeyword.test_function("red") do
     end
 
-    enum :standard_library_function_works, description: String.replace("red", "e", "a") do
+    enum :standard_library_function, description: String.replace("red", "e", "a") do
     end
 
     enum :function_nested_in_module, description: NestedModule.nested_function("hello") do
@@ -148,7 +148,7 @@ defmodule Absinthe.Type.EnumTest do
     # end
 
     @desc String.replace("red", "e", "a")
-    enum :standard_library_function_works do
+    enum :standard_library_function do
     end
 
     @desc NestedModule.nested_function("hello")
@@ -193,7 +193,7 @@ defmodule Absinthe.Type.EnumTest do
       description Absinthe.Type.EnumTest.TestSchemaEnumDescriptionMacro.test_function("red")
     end
 
-    enum :standard_library_function_works do
+    enum :standard_library_function do
       description String.replace("red", "e", "a")
     end
 

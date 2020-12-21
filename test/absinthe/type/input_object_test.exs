@@ -39,7 +39,7 @@ defmodule Absinthe.Type.InputObjectTest do
         Absinthe.Type.InputObjectTest.TestSchemaInputObjectDescriptionKeyword.test_function("red") do
     end
 
-    input_object :standard_library_function_works, description: String.replace("red", "e", "a") do
+    input_object :standard_library_function, description: String.replace("red", "e", "a") do
     end
 
     input_object :function_nested_in_module, description: NestedModule.nested_function("hello") do
@@ -90,7 +90,7 @@ defmodule Absinthe.Type.InputObjectTest do
     # end
 
     @desc String.replace("red", "e", "a")
-    input_object :standard_library_function_works do
+    input_object :standard_library_function do
     end
 
     @desc NestedModule.nested_function("hello")
@@ -137,7 +137,7 @@ defmodule Absinthe.Type.InputObjectTest do
                   )
     end
 
-    input_object :standard_library_function_works do
+    input_object :standard_library_function do
       description String.replace("red", "e", "a")
     end
 
@@ -181,7 +181,7 @@ defmodule Absinthe.Type.InputObjectTest do
             "red"
           )
 
-      field :standard_library_function_works, :string,
+      field :standard_library_function, :string,
         description: String.replace("red", "e", "a")
 
       field :function_nested_in_module, :string,
@@ -208,7 +208,7 @@ defmodule Absinthe.Type.InputObjectTest do
       # field :function_call_using_absolute_path, :string
 
       @desc String.replace("red", "e", "a")
-      field :standard_library_function_works, :string
+      field :standard_library_function, :string
 
       @desc NestedModule.nested_function("hello")
       field :function_nested_in_module, :string
@@ -234,7 +234,7 @@ defmodule Absinthe.Type.InputObjectTest do
                     )
       end
 
-      field :standard_library_function_works, :string do
+      field :standard_library_function, :string do
         description String.replace("red", "e", "a")
       end
 
