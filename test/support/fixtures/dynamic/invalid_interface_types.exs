@@ -20,7 +20,7 @@ defmodule Absinthe.Fixtures.InvalidInterfaceTypes do
   end
 
   interface :named do
-    field :name, :string
+    field :name, non_null(:string)
   end
 
   query do
