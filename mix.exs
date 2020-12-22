@@ -179,8 +179,7 @@ defmodule Absinthe.Mixfile do
         Absinthe.Pipeline,
         Absinthe.Phase,
         Absinthe.Phase.Document.Context,
-        Absinthe.Phase.Telemetry,
-        Absinthe.Pipeline.ErrorResult
+        Absinthe.Phase.Telemetry
       ],
       "Document Adapters": [
         Absinthe.Adapter,
