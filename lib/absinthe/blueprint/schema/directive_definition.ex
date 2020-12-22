@@ -12,6 +12,7 @@ defmodule Absinthe.Blueprint.Schema.DirectiveDefinition do
     directives: [],
     arguments: [],
     locations: [],
+    repeatable: false,
     source_location: nil,
     expand: nil,
     errors: [],
@@ -24,6 +25,7 @@ defmodule Absinthe.Blueprint.Schema.DirectiveDefinition do
           description: nil,
           arguments: [Blueprint.Schema.InputValueDefinition.t()],
           locations: [String.t()],
+          repeatable: boolean(),
           source_location: nil | Blueprint.SourceLocation.t(),
           errors: [Absinthe.Phase.Error.t()]
         }
@@ -36,6 +38,7 @@ defmodule Absinthe.Blueprint.Schema.DirectiveDefinition do
       args: Blueprint.Schema.ObjectTypeDefinition.build_args(type_def, schema),
       locations: type_def.locations |> Enum.sort(),
       definition: type_def.module,
+      repeatable: type_def.repeatable,
       expand: type_def.expand
     }
   end

@@ -302,6 +302,7 @@ defmodule Absinthe.Lexer do
     on
     ON
     query
+    repeatable
     scalar
     schema
     subscription

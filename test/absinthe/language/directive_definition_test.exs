@@ -5,8 +5,19 @@ defmodule Absinthe.Language.DirectiveDefinitionTest do
 
   describe "blueprint conversion" do
     test "works, given a Blueprint Schema 'directive' definition without arguments" do
-      assert %Blueprint.Schema.DirectiveDefinition{name: "thingy", locations: [:field, :object]} =
-               from_input("directive @thingy on FIELD | OBJECT")
+      assert %Blueprint.Schema.DirectiveDefinition{
+               name: "thingy",
+               locations: [:field, :object],
+               repeatable: false
+             } = from_input("directive @thingy on FIELD | OBJECT")
+    end
+
+    test "works, given a Blueprint Schema 'repeatable' 'directive' definition without arguments" do
+      assert %Blueprint.Schema.DirectiveDefinition{
+               name: "thingy",
+               locations: [:field, :object],
+               repeatable: true
+             } = from_input("directive @thingy repeatable on FIELD | OBJECT")
     end
 
     test "works, given a Blueprint Schema 'directive' definition without arguments and with directives" do

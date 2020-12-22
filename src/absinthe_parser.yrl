@@ -17,7 +17,7 @@ Nonterminals
 
 Terminals
   '{' '}' '(' ')' '[' ']' '!' ':' '@' '$' '=' '|' '...'
-  'query' 'mutation' 'subscription' 'fragment' 'on' 'directive'
+  'query' 'mutation' 'subscription' 'fragment' 'on' 'directive' 'repeatable'
   'type' 'implements' 'interface' 'union' 'scalar' 'enum' 'input' 'extend' 'schema'
   name int_value float_value string_value block_string_value boolean_value null.
 
@@ -193,6 +193,18 @@ DirectiveDefinition -> 'directive' '@' Name 'on' DirectiveDefinitionLocations Di
   build_ast_node('DirectiveDefinition', #{'name' => extract_binary('$3'), 'directives' => '$6', 'locations' => extract_directive_locations('$5')}, extract_location('$1')).
 DirectiveDefinition -> 'directive' '@' Name ArgumentsDefinition 'on' DirectiveDefinitionLocations Directives :
   build_ast_node('DirectiveDefinition', #{'name' => extract_binary('$3'), 'arguments' => '$4', 'directives' => '$7', 'locations' => extract_directive_locations('$6')}, extract_location('$1')).
+
+DirectiveDefinition -> 'directive' '@' Name 'repeatable' 'on' DirectiveDefinitionLocations :
+  build_ast_node('DirectiveDefinition', #{'name' => extract_binary('$3'), 'locations' => extract_directive_locations('$6'), 'repeatable' => true}, extract_location('$1')).
+DirectiveDefinition -> 'directive' '@' Name ArgumentsDefinition 'repeatable' 'on' DirectiveDefinitionLocations :
+  build_ast_node('DirectiveDefinition', #{'name' => extract_binary('$3'), 'arguments' => '$4', 'locations' => extract_directive_locations('$7'), 'repeatable' => true}, extract_location('$1')).
+
+DirectiveDefinition -> 'directive' '@' Name 'repeatable' 'on' DirectiveDefinitionLocations Directives :
+  build_ast_node('DirectiveDefinition', #{'name' => extract_binary('$3'), 'directives' => '$7', 'locations' => extract_directive_locations('$6'), 'repeatable' => true}, extract_location('$1')).
+DirectiveDefinition -> 'directive' '@' Name ArgumentsDefinition 'repeatable' 'on' DirectiveDefinitionLocations Directives :
+  build_ast_node('DirectiveDefinition', #{'name' => extract_binary('$3'), 'arguments' => '$4', 'directives' => '$8', 'locations' => extract_directive_locations('$7'), 'repeatable' => true}, extract_location('$1')).
+
+
 
 SchemaDefinition -> 'schema' : build_ast_node('SchemaDeclaration', #{}, extract_location('$1')).
 SchemaDefinition -> 'schema' Directives : build_ast_node('SchemaDeclaration', #{'directives' => '$2'}, extract_location('$1')).

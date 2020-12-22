@@ -8,7 +8,8 @@ defmodule Absinthe.Language.DirectiveDefinition do
             arguments: [],
             directives: [],
             locations: [],
-            loc: %{line: nil}
+            loc: %{line: nil},
+            repeatable: false
 
   @type t :: %__MODULE__{
           name: String.t(),
@@ -16,7 +17,8 @@ defmodule Absinthe.Language.DirectiveDefinition do
           directives: [Language.Directive.t()],
           arguments: [Language.Argument.t()],
           locations: [String.t()],
-          loc: Language.loc_t()
+          loc: Language.loc_t(),
+          repeatable: boolean()
         }
 
   defimpl Blueprint.Draft do
@@ -28,6 +30,7 @@ defmodule Absinthe.Language.DirectiveDefinition do
         arguments: Absinthe.Blueprint.Draft.convert(node.arguments, doc),
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
         locations: node.locations,
+        repeatable: node.repeatable,
         source_location: source_location(node)
       }
     end

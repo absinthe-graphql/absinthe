@@ -13,6 +13,8 @@ defmodule Absinthe.Type.BuiltIns.Directives do
 
     on [:field, :fragment_spread, :inline_fragment]
 
+    repeatable false
+
     expand fn
       %{if: true}, node ->
         Blueprint.put_flag(node, :include, __MODULE__)
@@ -26,6 +28,8 @@ defmodule Absinthe.Type.BuiltIns.Directives do
     description """
     Directs the executor to skip this field or fragment when the `if` argument is true.
     """
+
+    repeatable false
 
     arg :if, non_null(:boolean), description: "Skipped when true."
 

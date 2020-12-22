@@ -192,6 +192,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       "directive ",
       concat("@", string(directive.name)),
       arguments(directive.arguments, type_definitions),
+      repeatable(directive.repeatable),
       " on ",
       join(locations, " | ")
     ])
@@ -440,6 +441,9 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
   defp block_string_line(["", _ | _]), do: nest(line(), :reset)
   defp block_string_line(_), do: line()
+
+  defp repeatable(true), do: " repeatable"
+  defp repeatable(_), do: empty()
 
   def join(docs, joiner) do
     fold_doc(docs, fn doc, acc ->

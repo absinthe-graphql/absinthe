@@ -9,6 +9,7 @@ defmodule Absinthe.Language do
           Language.Argument.t()
           | Language.BooleanValue.t()
           | Language.Directive.t()
+          | Language.DirectiveDefinition.t()
           | Language.Document.t()
           | Language.EnumTypeDefinition.t()
           | Language.EnumValue.t()

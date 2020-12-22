@@ -912,6 +912,23 @@ defmodule Absinthe.Schema.Notation do
     |> record_expand!(func_ast)
   end
 
+  @placement {:repeatable, [under: [:directive]]}
+  @doc """
+  Set whether the directive can be applied multiple times
+  an entity.
+
+  If omitted, defaults to `false`
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+  """
+  defmacro repeatable(bool) do
+    __CALLER__
+    |> recordable!(:repeatable, @placement[:repeatable])
+    |> record_repeatable!(bool)
+  end
+
   # INPUT OBJECTS
 
   @placement {:input_object, [toplevel: true]}
@@ -1303,6 +1320,11 @@ defmodule Absinthe.Schema.Notation do
   # Record a directive expand function in the current scope
   def record_expand!(env, func_ast) do
     put_attr(env.module, {:expand, func_ast})
+  end
+
+  @doc false
+  def record_repeatable!(env, bool) do
+    put_attr(env.module, {:repeatable, bool})
   end
 
   @doc false
