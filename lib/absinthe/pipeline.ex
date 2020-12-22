@@ -8,8 +8,6 @@ defmodule Absinthe.Pipeline do
 
   alias Absinthe.Phase
 
-  require Logger
-
   @type data_t :: any
 
   @type phase_config_t :: Phase.t() | {Phase.t(), Keyword.t()}
