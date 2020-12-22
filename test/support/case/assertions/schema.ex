@@ -20,16 +20,17 @@ defmodule Absinthe.Case.Assertions.Schema do
         load_schema(schema_name)
       end
 
-    patterns
-    |> Enum.filter(fn pattern ->
-      assert Enum.find(err.phase_errors, fn error ->
-               keys = Map.keys(pattern)
-               Map.take(error, keys) |> handle_path == pattern |> handle_path
-             end),
-             "Could not find error detail pattern #{inspect(pattern)}\n\nin\n\n#{
-               inspect(err.phase_errors)
-             }"
-    end)
+    patterns =
+      patterns
+      |> Enum.filter(fn pattern ->
+        assert Enum.find(err.phase_errors, fn error ->
+                 keys = Map.keys(pattern)
+                 Map.take(error, keys) |> handle_path == pattern |> handle_path
+               end),
+               "Could not find error detail pattern #{inspect(pattern)}\n\nin\n\n#{
+                 inspect(err.phase_errors)
+               }"
+      end)
 
     assert length(patterns) == length(err.phase_errors)
   end

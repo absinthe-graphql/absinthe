@@ -37,13 +37,14 @@ defmodule Absinthe.Phase.Schema.TypeImports do
 
     types = Enum.reject(other_def.type_definitions, &(&1.identifier in rejections))
 
-    case Keyword.fetch(opts, :only) do
-      {:ok, selections} ->
-        Enum.filter(types, &(&1.identifier in selections))
+    types =
+      case Keyword.fetch(opts, :only) do
+        {:ok, selections} ->
+          Enum.filter(types, &(&1.identifier in selections))
 
-      _ ->
-        types
-    end
+        _ ->
+          types
+      end
 
     do_imports(other_def.imports ++ rest, types ++ acc)
   end
