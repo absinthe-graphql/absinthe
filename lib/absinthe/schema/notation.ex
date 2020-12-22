@@ -976,7 +976,12 @@ defmodule Absinthe.Schema.Notation do
   defmacro union(identifier, attrs \\ [], do: block) do
     __CALLER__
     |> recordable!(:union, @placement[:union])
-    |> record!(Schema.UnionTypeDefinition, identifier, attrs, block)
+    |> record!(
+      Schema.UnionTypeDefinition,
+      identifier,
+      attrs |> Keyword.update(:description, nil, &wrap_in_unquote/1),
+      block
+    )
   end
 
   @placement {:types, [under: [:union]]}

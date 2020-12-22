@@ -93,12 +93,14 @@ defmodule Absinthe.Fixtures.Scalar do
 
     # @desc test_function("red")
     # scalar :local_function_call do
-
+    # parse &Utils.parse/1
+    # serialize &Utils.serialize/1
     # end
 
     # @desc Absinthe.Fixtures.Scalar.TestSchemaEnumAttribute.test_function("red")
     # scalar :function_call_using_absolute_path_to_current_module do
-
+    # parse &Utils.parse/1
+    # serialize &Utils.serialize/1
     # end
 
     @desc String.replace("red", "e", "a")
