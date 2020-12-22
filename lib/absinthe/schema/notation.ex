@@ -725,7 +725,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro scalar(identifier, attrs, do: block) do
     __CALLER__
     |> recordable!(:scalar, @placement[:scalar])
-    |> record!(Schema.ScalarTypeDefinition, identifier, attrs, block)
+    |> record_scalar!(identifier, attrs, block)
   end
 
   @doc """
@@ -736,13 +736,13 @@ defmodule Absinthe.Schema.Notation do
   defmacro scalar(identifier, do: block) do
     __CALLER__
     |> recordable!(:scalar, @placement[:scalar])
-    |> record!(Schema.ScalarTypeDefinition, identifier, [], block)
+    |> record_scalar!(identifier, [], block)
   end
 
   defmacro scalar(identifier, attrs) do
     __CALLER__
     |> recordable!(:scalar, @placement[:scalar])
-    |> record!(Schema.ScalarTypeDefinition, identifier, attrs, nil)
+    |> record_scalar!(identifier, attrs, nil)
   end
 
   @placement {:serialize, [under: [:scalar]]}
@@ -1421,6 +1421,18 @@ defmodule Absinthe.Schema.Notation do
     text = wrap_in_unquote(text_block)
 
     put_attr(env.module, {:desc, text})
+  end
+
+  @doc false
+  # Record a scalar
+  def record_scalar!(env, identifier, attrs, block_or_nil) do
+    record!(
+      env,
+      Schema.ScalarTypeDefinition,
+      identifier,
+      attrs |> Keyword.update(:description, nil, &wrap_in_unquote/1),
+      block_or_nil
+    )
   end
 
   def handle_enum_value_attrs(identifier, raw_attrs, env) do
