@@ -232,7 +232,7 @@ defmodule Absinthe.Type.DirectiveTest do
                       test_label: test_label,
                       expected_value: expected_value
                     } ->
-      test "for `#{test_label}` (evaluates description to `'#{expected_value}'`)" do
+      test "for #{test_label} (evaluates description to `#{expected_value}')" do
         type = Directive.TestSchemaDescriptionKeyword.__absinthe_directive__(unquote(test_label))
         assert type.description == unquote(expected_value)
       end
@@ -274,7 +274,7 @@ defmodule Absinthe.Type.DirectiveTest do
                       test_label: test_label,
                       expected_value: expected_value
                     } ->
-      test "for `#{test_label}` (evaluates description to `'#{expected_value}'`)" do
+      test "for #{test_label} (evaluates description to `#{expected_value}')" do
         type =
           Directive.TestSchemaArgDescriptionKeyword.__absinthe_directive__(unquote(test_label))
 

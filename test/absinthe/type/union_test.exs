@@ -90,7 +90,7 @@ defmodule Absinthe.Type.UnionTest do
                       test_label: test_label,
                       expected_value: expected_value
                     } ->
-      test "for `#{test_label}` (evaluates description to `'#{expected_value}'`)" do
+      test "for #{test_label} (evaluates description to `#{expected_value}')" do
         type = Union.TestSchemaDescriptionKeyword.__absinthe_type__(unquote(test_label))
         assert type.description == unquote(expected_value)
       end
