@@ -1905,13 +1905,15 @@ defmodule Absinthe.Schema.Notation do
 
   defp expand_ast(ast, env) do
     Macro.prewalk(ast, fn
-      # We don't want to expand `@bla` into Module.get_attribute(module, @bla) because this will
-      # fail at runtime. Remember that the ast gets put into a generated `__absinthe_blueprint__`
-      # function which is called at "__after_compile__" time, but may be called at runtime
-      # depending on the ordering of how modules get compiled.
+      # We don't want to expand `@bla` into `Module.get_attribute(module, @bla)` because this
+      # function call will fail if the module is already compiled. Remember that the ast gets put
+      # into a generated `__absinthe_blueprint__` function which is called at "__after_compile__"
+      # time. This will be after a module has been compiled if there are multiple modules in the
+      # schema (in the case of an `import_types`).
       #
       # Also see test "test/absinthe/type/import_types_test.exs"
       # "__absinthe_blueprint__ is callable at runtime even if there is a module attribute"
+      # and it's comment for more information
       {:@, _, _} = node ->
         node
 

@@ -58,10 +58,11 @@ defmodule Absinthe.Type.ImportTypesTest do
 
     # From inside `defp expand_ast` in `Absinthe.Schema.Notation`:
     #
-    # > We don't want to expand `@bla` into Module.get_attribute(module, @bla) because this will
-    # > fail at runtime. Remember that the ast gets put into a generated `__absinthe_blueprint__`
-    # > function which is called at "__after_compile__" time, but may be called at runtime
-    # > depending on the ordering of how modules get compiled.
+    # > We don't want to expand `@bla` into `Module.get_attribute(module, @bla)` because this
+    # > function call will fail if the module is already compiled. Remember that the ast gets put
+    # > into a generated `__absinthe_blueprint__` function which is called at "__after_compile__"
+    # > time. This will be after a module has been compiled if there are multiple modules in the
+    # > schema (in the case of an `import_types`).
     #
     # This test checks that __absinthe_blueprint__ runs and doesn't raise an error saying
     # "Module.get_attribute" cannot be called because the module is already compiled". This error
