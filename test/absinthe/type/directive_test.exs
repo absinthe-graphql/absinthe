@@ -2,6 +2,7 @@ defmodule Absinthe.Type.DirectiveTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.Schema
+  alias Absinthe.Fixtures.Directive
 
   defmodule TestSchema do
     use Absinthe.Schema
@@ -223,5 +224,62 @@ defmodule Absinthe.Type.DirectiveTest do
       assert {:ok, %{data: %{"person" => %{"name" => "Bruce", "age" => 35}}}} ==
                Absinthe.run(@query, Absinthe.Fixtures.ContactSchema)
     end
+  end
+
+  describe "directive keyword description evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
+        type = Directive.TestSchemaDescriptionKeyword.__absinthe_directive__(unquote(test_label))
+        assert type.description == unquote(expected_value)
+      end
+    end)
+  end
+
+  describe "directive description attribute evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Absinthe.Fixtures.FunctionEvaluationHelpers.filter_test_params_for_description_attribute()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
+        type =
+          Directive.TestSchemaDescriptionAttribute.__absinthe_directive__(unquote(test_label))
+
+        assert type.description == unquote(expected_value)
+      end
+    end)
+  end
+
+  describe "directive description macro evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
+        type = Directive.TestSchemaDescriptionMacro.__absinthe_directive__(unquote(test_label))
+        assert type.description == unquote(expected_value)
+      end
+    end)
+  end
+
+  describe "directive arg keyword description evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
+        type =
+          Directive.TestSchemaArgDescriptionKeyword.__absinthe_directive__(unquote(test_label))
+
+        assert type.args[:arg_example].description == unquote(expected_value)
+      end
+    end)
   end
 end

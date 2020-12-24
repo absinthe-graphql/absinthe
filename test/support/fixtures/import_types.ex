@@ -165,4 +165,48 @@ defmodule Absinthe.Fixtures.ImportTypes do
       field :credit_cards, list_of(:credit_card)
     end
   end
+
+  defmodule SchemaWithFunctionEvaluationImports do
+    use Absinthe.Schema.Notation
+    @module_attribute "goodbye"
+
+    defmodule NestedModule do
+      def nested_function(arg1) do
+        arg1
+      end
+    end
+
+    def test_function(arg1) do
+      arg1
+    end
+
+    input_object :example_input_object do
+      field :normal_string, :string, description: "string"
+      field :local_function_call, :string, description: test_function("red")
+
+      field :function_call_using_absolute_path_to_current_module, :string,
+        description:
+          Absinthe.Fixtures.ImportTypes.SchemaWithFunctionEvaluationImports.test_function("red")
+
+      field :standard_library_function, :string, description: String.replace("red", "e", "a")
+
+      field :function_in_nested_module, :string,
+        description: NestedModule.nested_function("hello")
+
+      field :external_module_function_call, :string,
+        description: Absinthe.Fixtures.FunctionEvaluationHelpers.external_function("hello")
+
+      field :module_attribute_string_concat, :string, description: "hello " <> @module_attribute
+      field :interpolation_of_module_attribute, :string, description: "hello #{@module_attribute}"
+    end
+  end
+
+  defmodule SchemaWithFunctionEvaluation do
+    use Absinthe.Schema
+
+    import_types(SchemaWithFunctionEvaluationImports)
+
+    query do
+    end
+  end
 end

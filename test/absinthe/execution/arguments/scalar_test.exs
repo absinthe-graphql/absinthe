@@ -1,6 +1,8 @@
 defmodule Absinthe.Execution.Arguments.ScalarTest do
   use Absinthe.Case, async: true
+
   alias Absinthe.Blueprint.Input
+  alias Absinthe.Fixtures.Scalar
 
   @schema Absinthe.Fixtures.ArgumentsSchema
 
@@ -57,5 +59,46 @@ defmodule Absinthe.Execution.Arguments.ScalarTest do
         end
       )
     end
+  end
+
+  describe "scalar keyword description evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
+        type = Scalar.TestSchemaDescriptionKeyword.__absinthe_type__(unquote(test_label))
+        assert type.description == unquote(expected_value)
+      end
+    end)
+  end
+
+  describe "scalar description attribute evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Absinthe.Fixtures.FunctionEvaluationHelpers.filter_test_params_for_description_attribute()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
+        type = Scalar.TestSchemaDescriptionAttribute.__absinthe_type__(unquote(test_label))
+
+        assert type.description == unquote(expected_value)
+      end
+    end)
+  end
+
+  describe "scalar description macro evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
+        type = Scalar.TestSchemaDescriptionMacro.__absinthe_type__(unquote(test_label))
+        assert type.description == unquote(expected_value)
+      end
+    end)
   end
 end

@@ -1,6 +1,8 @@
 defmodule Absinthe.Type.ObjectTest do
   use Absinthe.Case, async: true
 
+  alias Absinthe.Fixtures.Object
+
   defmodule Schema do
     use Absinthe.Schema
 
@@ -39,5 +41,92 @@ defmodule Absinthe.Type.ObjectTest do
       assert %Absinthe.Type.Argument{name: "width", type: :integer} = field.args.width
       assert %Absinthe.Type.Argument{name: "height", type: :integer} = field.args.height
     end
+  end
+
+  describe "input object keyword description evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
+        type = Object.TestSchemaDescriptionKeyword.__absinthe_type__(unquote(test_label))
+        assert type.description == unquote(expected_value)
+      end
+    end)
+  end
+
+  describe "input_object description attribute evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Absinthe.Fixtures.FunctionEvaluationHelpers.filter_test_params_for_description_attribute()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
+        type = Object.TestSchemaDescriptionAttribute.__absinthe_type__(unquote(test_label))
+        assert type.description == unquote(expected_value)
+      end
+    end)
+  end
+
+  describe "input_object description macro evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
+        type = Object.TestSchemaDescriptionMacro.__absinthe_type__(unquote(test_label))
+        assert type.description == unquote(expected_value)
+      end
+    end)
+  end
+
+  describe "input object field keyword description evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
+        type =
+          Object.TestSchemaFieldsAndArgsDescription.__absinthe_type__(
+            :description_keyword_argument
+          )
+
+        assert type.fields[unquote(test_label)].description == unquote(expected_value)
+      end
+    end)
+  end
+
+  describe "input object field attribute description evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Absinthe.Fixtures.FunctionEvaluationHelpers.filter_test_params_for_description_attribute()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
+        type = Object.TestSchemaFieldsAndArgsDescription.__absinthe_type__(:description_attribute)
+
+        assert type.fields[unquote(test_label)].description == unquote(expected_value)
+      end
+    end)
+  end
+
+  describe "input object field macro description evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
+        type =
+          Object.TestSchemaFieldsAndArgsDescription.__absinthe_type__(:field_description_macro)
+
+        assert type.fields[unquote(test_label)].description == unquote(expected_value)
+      end
+    end)
   end
 end

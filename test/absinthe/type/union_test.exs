@@ -2,6 +2,7 @@ defmodule Absinthe.Type.UnionTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.Type
+  alias Absinthe.Fixtures.Union
 
   defmodule TestSchema do
     use Absinthe.Schema
@@ -81,5 +82,46 @@ defmodule Absinthe.Type.UnionTest do
       assert %Type.Object{name: "Foo"} =
                Type.Union.resolve_type(obj, %{name: "asdf"}, %{schema: TestSchema})
     end
+  end
+
+  describe "union keyword description evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
+        type = Union.TestSchemaDescriptionKeyword.__absinthe_type__(unquote(test_label))
+        assert type.description == unquote(expected_value)
+      end
+    end)
+  end
+
+  describe "union description attribute evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Absinthe.Fixtures.FunctionEvaluationHelpers.filter_test_params_for_description_attribute()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
+        type = Union.TestSchemaDescriptionAttribute.__absinthe_type__(unquote(test_label))
+
+        assert type.description == unquote(expected_value)
+      end
+    end)
+  end
+
+  describe "union description macro evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates description to '#{expected_value}')" do
+        type = Union.TestSchemaDescriptionMacro.__absinthe_type__(unquote(test_label))
+        assert type.description == unquote(expected_value)
+      end
+    end)
   end
 end
