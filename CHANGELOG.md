@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6 (unreleased)
+
+- Feature: [Repeatable directive](https://github.com/absinthe-graphql/absinthe/pull/999)
+- Bug Fix: Dynamic description support [comprehensively fixed](https://github.com/absinthe-graphql/absinthe/pull/1005)
+- lots of bug fixes
+
 ## 1.5.5
 
 - Bug Fix: Fix for `nil` in [`ArgumentsOfCorrectType` suggestions](https://github.com/absinthe-graphql/absinthe/pull/1000)
