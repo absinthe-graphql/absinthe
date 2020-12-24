@@ -10,6 +10,7 @@ query IntrospectionQuery {
       name
       description
       locations
+      isRepeatable
       args {
         ...InputValue
       }
