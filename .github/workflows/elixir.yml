@@ -47,7 +47,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: priv/plts
-        key: ${{ runner.os }}-build-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+        key: ${{ runner.os }}-plt-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
 
     - name: Install deps
       run: mix deps.get
