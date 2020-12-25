@@ -97,17 +97,21 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       string(@adapter.to_external_name(input_value.name, :argument)),
       ": ",
       render(input_value.type, type_definitions),
-      default(input_value.default_value_blueprint)
+      default(input_value.default_value_blueprint),
+      directives(input_value.directives, type_definitions)
     ])
     |> description(input_value.description)
   end
 
   defp render(%Blueprint.Schema.FieldDefinition{} = field, type_definitions) do
+    directives = Enum.reject(field.directives, &(&1.name == "deprecated"))
+
     concat([
       string(@adapter.to_external_name(field.name, :field)),
       arguments(field.arguments, type_definitions),
       ": ",
-      render(field.type, type_definitions)
+      render(field.type, type_definitions),
+      directives(directives, type_definitions)
     ])
     |> deprecated(field.deprecation)
     |> description(field.description)
@@ -128,8 +132,11 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
   defp render(%Blueprint.Schema.InputObjectTypeDefinition{} = input_object_type, type_definitions) do
     block(
-      "input",
-      string(input_object_type.name),
+      concat([
+        "input ",
+        string(input_object_type.name),
+        directives(input_object_type.directives, type_definitions)
+      ]),
       render_list(input_object_type.fields, type_definitions)
     )
     |> description(input_object_type.description)
@@ -149,8 +156,11 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       end)
 
     concat([
-      "union ",
-      string(union_type.name),
+      concat([
+        "union ",
+        string(union_type.name),
+        directives(union_type.directives, type_definitions)
+      ]),
       " = ",
       join(types, " | ")
     ])
@@ -160,7 +170,10 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   defp render(%Blueprint.Schema.InterfaceTypeDefinition{} = interface_type, type_definitions) do
     block(
       "interface",
-      string(interface_type.name),
+      concat([
+        string(interface_type.name),
+        directives(interface_type.directives, type_definitions)
+      ]),
       render_list(interface_type.fields, type_definitions)
     )
     |> description(interface_type.description)
@@ -168,21 +181,31 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
   defp render(%Blueprint.Schema.EnumTypeDefinition{} = enum_type, type_definitions) do
     block(
-      "enum",
-      string(enum_type.name),
+      concat([
+        "enum ",
+        string(enum_type.name),
+        directives(enum_type.directives, type_definitions)
+      ]),
       render_list(enum_type.values, type_definitions)
     )
     |> description(enum_type.description)
   end
 
-  defp render(%Blueprint.Schema.EnumValueDefinition{} = enum_value, _type_definitions) do
-    string(enum_value.name)
+  defp render(%Blueprint.Schema.EnumValueDefinition{} = enum_value, type_definitions) do
+    concat([
+      string(enum_value.name),
+      directives(enum_value.directives, type_definitions)
+    ])
     |> deprecated(enum_value.deprecation)
     |> description(enum_value.description)
   end
 
-  defp render(%Blueprint.Schema.ScalarTypeDefinition{} = scalar_type, _type_definitions) do
-    space("scalar", string(scalar_type.name))
+  defp render(%Blueprint.Schema.ScalarTypeDefinition{} = scalar_type, type_definitions) do
+    concat([
+      "scalar ",
+      string(scalar_type.name),
+      directives(scalar_type.directives, type_definitions)
+    ])
     |> description(scalar_type.description)
   end
 
