@@ -37,7 +37,7 @@ defmodule TypeSystemDirectiveTest do
     @prototype_schema WithTypeSystemDirective
 
     @sdl """
-    schema {
+    schema @feature(name: ":schema") {
       query: Query
     }
 

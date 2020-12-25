@@ -31,16 +31,19 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       schema_definitions: [
         %Blueprint.Schema.SchemaDefinition{
           type_definitions: type_definitions,
-          directive_definitions: directive_definitions
+          directive_definitions: directive_definitions,
+          schema_declaration: schema_declaration
         }
       ]
     } = bp
 
-    schema_declaration = %{
-      query: Enum.find(type_definitions, &(&1.identifier == :query)),
-      mutation: Enum.find(type_definitions, &(&1.identifier == :mutation)),
-      subscription: Enum.find(type_definitions, &(&1.identifier == :subscription))
-    }
+    schema_declaration =
+      schema_declaration ||
+        %{
+          query: Enum.find(type_definitions, &(&1.identifier == :query)),
+          mutation: Enum.find(type_definitions, &(&1.identifier == :mutation)),
+          subscription: Enum.find(type_definitions, &(&1.identifier == :subscription))
+        }
 
     directive_definitions =
       directive_definitions
@@ -63,7 +66,10 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
   defp render(%Blueprint.Schema.SchemaDeclaration{} = schema, type_definitions) do
     block(
-      "schema",
+      concat([
+        "schema",
+        directives(schema.directives, type_definitions)
+      ]),
       render_list(schema.field_definitions, type_definitions)
     )
   end
@@ -230,7 +236,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     concat([
       argument.name,
       ": ",
-      render_value(argument.input_value.normalized)
+      render_value(argument.input_value)
     ])
   end
 
