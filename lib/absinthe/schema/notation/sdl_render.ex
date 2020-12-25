@@ -104,16 +104,13 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   end
 
   defp render(%Blueprint.Schema.FieldDefinition{} = field, type_definitions) do
-    directives = Enum.reject(field.directives, &(&1.name == "deprecated"))
-
     concat([
       string(@adapter.to_external_name(field.name, :field)),
       arguments(field.arguments, type_definitions),
       ": ",
       render(field.type, type_definitions),
-      directives(directives, type_definitions)
+      directives(field.directives, type_definitions)
     ])
-    |> deprecated(field.deprecation)
     |> description(field.description)
   end
 
@@ -196,7 +193,6 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       string(enum_value.name),
       directives(enum_value.directives, type_definitions)
     ])
-    |> deprecated(enum_value.deprecation)
     |> description(enum_value.description)
   end
 
@@ -235,7 +231,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     concat([
       argument.name,
       ": ",
-      render_default(argument.input_value.normalized)
+      render_value(argument.input_value.normalized)
     ])
   end
 
@@ -292,6 +288,8 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     end)
   end
 
+  # SDL Syntax Helpers
+
   defp directives([], _) do
     empty()
   end
@@ -346,64 +344,46 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   end
 
   defp default(default_value) do
-    concat([" = ", render_default(default_value)])
+    concat([" = ", render_value(default_value)])
   end
 
-  defp render_default(%Blueprint.Input.String{value: value}),
-    do: ~s("#{value}")
+  defp render_value(%Blueprint.Input.String{value: value}),
+    do: render_string_value(value)
 
-  defp render_default(%Blueprint.Input.RawValue{content: content}),
-    do: render_default(content)
+  defp render_value(%Blueprint.Input.RawValue{content: content}),
+    do: render_value(content)
 
-  defp render_default(%Blueprint.Input.Value{raw: raw}),
-    do: render_default(raw)
+  defp render_value(%Blueprint.Input.Value{raw: raw}),
+    do: render_value(raw)
 
-  defp render_default(%Blueprint.Input.Object{fields: fields}) do
-    default_fields = Enum.map(fields, &render_default/1)
+  defp render_value(%Blueprint.Input.Object{fields: fields}) do
+    default_fields = Enum.map(fields, &render_value/1)
     concat(["{", join(default_fields, ", "), "}"])
   end
 
-  defp render_default(%Blueprint.Input.List{items: items}) do
-    default_list = Enum.map(items, &render_default/1)
+  defp render_value(%Blueprint.Input.List{items: items}) do
+    default_list = Enum.map(items, &render_value/1)
     concat(["[", join(default_list, ", "), "]"])
   end
 
-  defp render_default(%Blueprint.Input.Field{name: name, input_value: value}),
-    do: "#{name}: #{render_default(value)}"
+  defp render_value(%Blueprint.Input.Field{name: name, input_value: value}),
+    do: concat([name, ": ", render_value(value)])
 
-  defp render_default(%{value: value}),
+  defp render_value(%{value: value}),
     do: to_string(value)
 
-  defp deprecated(docs, nil) do
-    docs
-  end
-
-  defp deprecated(docs, %{reason: nil}) do
-    space(docs, "@deprecated")
-  end
-
-  defp deprecated(docs, %{reason: reason}) do
-    concat([
-      space(docs, "@deprecated"),
-      "(",
-      "reason: ",
-      deprecated_reason(reason),
-      ")"
-    ])
-  end
-
-  defp deprecated_reason(reason) do
-    reason
+  defp render_string_value(str) do
+    str
     |> String.trim()
     |> String.split("\n")
     |> case do
-      [reason] ->
-        concat([~s("), reason, ~s(")])
+      [str_line] ->
+        concat([~s("), str_line, ~s(")])
 
-      reason_lines ->
+      str_lines ->
         concat(
           nest(
-            block_string([~s(""")] ++ reason_lines),
+            block_string([~s(""")] ++ str_lines),
             2,
             :always
           ),
@@ -454,6 +434,11 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       join(interface_names, " & ")
     ])
   end
+
+  defp repeatable(true), do: " repeatable"
+  defp repeatable(_), do: empty()
+
+  # Algebra Helpers
 
   defp multiline(docs, true) do
     force_unfit(docs)
@@ -506,9 +491,6 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
   defp block_string_line(["", _ | _]), do: nest(line(), :reset)
   defp block_string_line(_), do: line()
-
-  defp repeatable(true), do: " repeatable"
-  defp repeatable(_), do: empty()
 
   def join(docs, joiner) do
     fold_doc(docs, fn doc, acc ->

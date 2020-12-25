@@ -42,7 +42,10 @@ defmodule TypeSystemDirectiveTest do
     }
 
     interface Animal @feature(name: ":interface") {
-      legCount: Int!
+      legCount: Int! @feature(name: \"""
+        Multiline here?
+        Second line
+      \""")
     }
 
     input SearchFilter @feature(name: ":input_object") {
@@ -71,6 +74,7 @@ defmodule TypeSystemDirectiveTest do
     enum Category @feature(name: ":enum") {
       THIS
       THAT @feature(name: ":enum_value")
+      THE_OTHER @deprecated(reason: "It's old")
     }
 
     union SearchResult @feature(name: ":union") = Dog | Post
