@@ -118,7 +118,8 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       "type",
       concat([
         string(object_type.name),
-        implements(object_type, type_definitions)
+        implements(object_type, type_definitions),
+        directives(object_type.directives, type_definitions)
       ]),
       render_list(object_type.fields, type_definitions)
     )
@@ -199,6 +200,22 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(directive.description)
   end
 
+  defp render(%Blueprint.Directive{} = directive, type_definitions) do
+    concat([
+      " @",
+      directive.name,
+      directive_arguments(directive.arguments, type_definitions)
+    ])
+  end
+
+  defp render(%Blueprint.Input.Argument{} = argument, _type_definitions) do
+    concat([
+      argument.name,
+      ": ",
+      render_default(argument.input_value.normalized)
+    ])
+  end
+
   defp render(%Blueprint.TypeReference.Name{name: name}, _type_definitions) do
     string(name)
   end
@@ -252,6 +269,28 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     end)
   end
 
+  defp directives([], _) do
+    empty()
+  end
+
+  defp directives(directives, type_definitions) do
+    concat(Enum.map(directives, &render(&1, type_definitions)))
+  end
+
+  defp directive_arguments([], _) do
+    empty()
+  end
+
+  defp directive_arguments(arguments, type_definitions) do
+    args = Enum.map(arguments, &render(&1, type_definitions))
+
+    concat([
+      "(",
+      join(args, ", "),
+      ")"
+    ])
+  end
+
   defp arguments([], _) do
     empty()
   end
@@ -292,6 +331,9 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
   defp render_default(%Blueprint.Input.RawValue{content: content}),
     do: render_default(content)
+
+  defp render_default(%Blueprint.Input.Value{raw: raw}),
+    do: render_default(raw)
 
   defp render_default(%Blueprint.Input.Object{fields: fields}) do
     default_fields = Enum.map(fields, &render_default/1)

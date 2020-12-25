@@ -9,7 +9,7 @@ defmodule Absinthe.Language.ObjectTypeDefinitionTest do
                from_input("type Person { name: String! }")
     end
 
-    test "works, given a Blueprint Schema 'type' definition and a directive" do
+    test "works, given a Blueprint Schema 'type' definition and a built in directive" do
       rep =
         """
         type Person
@@ -23,6 +23,23 @@ defmodule Absinthe.Language.ObjectTypeDefinitionTest do
       assert %Blueprint.Schema.ObjectTypeDefinition{
                name: "Person",
                directives: [%{name: "description"}]
+             } = rep
+    end
+
+    test "works, given a Blueprint Schema 'type' definition and a Type System directive" do
+      rep =
+        """
+        type Person
+        @typeSystemDirective(foo: "Bar")
+        {
+          name: String!
+        }
+        """
+        |> from_input
+
+      assert %Blueprint.Schema.ObjectTypeDefinition{
+               name: "Person",
+               directives: [%{name: "typeSystemDirective"}]
              } = rep
     end
 
