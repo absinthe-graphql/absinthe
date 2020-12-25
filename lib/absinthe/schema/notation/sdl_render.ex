@@ -269,25 +269,6 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     render(%Blueprint.TypeReference.Identifier{id: identifier}, type_definitions)
   end
 
-  defp render_list(items, type_definitions, seperator \\ line()) do
-    items = Enum.reject(items, &(&1.module in @skip_modules))
-
-    splitter =
-      items
-      |> Enum.any?(&(&1.description not in ["", nil]))
-      |> case do
-        true -> [nest(line(), :reset), line()]
-        false -> [seperator]
-      end
-
-    items
-    |> Enum.reverse()
-    |> Enum.reduce(:start, fn
-      item, :start -> render(item, type_definitions)
-      item, acc -> concat([render(item, type_definitions)] ++ splitter ++ [acc])
-    end)
-  end
-
   # SDL Syntax Helpers
 
   defp directives([], _) do
@@ -347,51 +328,6 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     concat([" = ", render_value(default_value)])
   end
 
-  defp render_value(%Blueprint.Input.String{value: value}),
-    do: render_string_value(value)
-
-  defp render_value(%Blueprint.Input.RawValue{content: content}),
-    do: render_value(content)
-
-  defp render_value(%Blueprint.Input.Value{raw: raw}),
-    do: render_value(raw)
-
-  defp render_value(%Blueprint.Input.Object{fields: fields}) do
-    default_fields = Enum.map(fields, &render_value/1)
-    concat(["{", join(default_fields, ", "), "}"])
-  end
-
-  defp render_value(%Blueprint.Input.List{items: items}) do
-    default_list = Enum.map(items, &render_value/1)
-    concat(["[", join(default_list, ", "), "]"])
-  end
-
-  defp render_value(%Blueprint.Input.Field{name: name, input_value: value}),
-    do: concat([name, ": ", render_value(value)])
-
-  defp render_value(%{value: value}),
-    do: to_string(value)
-
-  defp render_string_value(str) do
-    str
-    |> String.trim()
-    |> String.split("\n")
-    |> case do
-      [str_line] ->
-        concat([~s("), str_line, ~s(")])
-
-      str_lines ->
-        concat(
-          nest(
-            block_string([~s(""")] ++ str_lines),
-            2,
-            :always
-          ),
-          concat(line(), ~s("""))
-        )
-    end
-  end
-
   defp description(docs, nil) do
     docs
   end
@@ -437,6 +373,72 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
   defp repeatable(true), do: " repeatable"
   defp repeatable(_), do: empty()
+
+  # Render Helpers
+
+  defp render_list(items, type_definitions, seperator \\ line()) do
+    items = Enum.reject(items, &(&1.module in @skip_modules))
+
+    splitter =
+      items
+      |> Enum.any?(&(&1.description not in ["", nil]))
+      |> case do
+        true -> [nest(line(), :reset), line()]
+        false -> [seperator]
+      end
+
+    items
+    |> Enum.reverse()
+    |> Enum.reduce(:start, fn
+      item, :start -> render(item, type_definitions)
+      item, acc -> concat([render(item, type_definitions)] ++ splitter ++ [acc])
+    end)
+  end
+
+  defp render_value(%Blueprint.Input.String{value: value}),
+    do: render_string_value(value)
+
+  defp render_value(%Blueprint.Input.RawValue{content: content}),
+    do: render_value(content)
+
+  defp render_value(%Blueprint.Input.Value{raw: raw}),
+    do: render_value(raw)
+
+  defp render_value(%Blueprint.Input.Object{fields: fields}) do
+    default_fields = Enum.map(fields, &render_value/1)
+    concat(["{", join(default_fields, ", "), "}"])
+  end
+
+  defp render_value(%Blueprint.Input.List{items: items}) do
+    default_list = Enum.map(items, &render_value/1)
+    concat(["[", join(default_list, ", "), "]"])
+  end
+
+  defp render_value(%Blueprint.Input.Field{name: name, input_value: value}),
+    do: concat([name, ": ", render_value(value)])
+
+  defp render_value(%{value: value}),
+    do: to_string(value)
+
+  defp render_string_value(str) do
+    str
+    |> String.trim()
+    |> String.split("\n")
+    |> case do
+      [str_line] ->
+        concat([~s("), str_line, ~s(")])
+
+      str_lines ->
+        concat(
+          nest(
+            block_string([~s(""")] ++ str_lines),
+            2,
+            :always
+          ),
+          concat(line(), ~s("""))
+        )
+    end
+  end
 
   # Algebra Helpers
 
