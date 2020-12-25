@@ -153,11 +153,9 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       end)
 
     concat([
-      concat([
-        "union ",
-        string(union_type.name),
-        directives(union_type.directives, type_definitions)
-      ]),
+      "union ",
+      string(union_type.name),
+      directives(union_type.directives, type_definitions),
       " = ",
       join(types, " | ")
     ])
@@ -210,7 +208,8 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
     concat([
       "directive ",
-      concat("@", string(directive.name)),
+      "@",
+      string(directive.name),
       arguments(directive.arguments, type_definitions),
       repeatable(directive.repeatable),
       " on ",
@@ -262,7 +261,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   end
 
   defp render(nil, _) do
-    raise "got nil"
+    raise "Unexpected nil"
   end
 
   defp render(identifier, type_definitions) when is_atom(identifier) do
@@ -333,17 +332,11 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   end
 
   defp description(docs, description) do
-    description
-    |> String.trim()
-    |> String.split("\n")
-    |> case do
-      [description] ->
-        [~s("), escape_description(description), ~s("), line(), docs]
-
-      description_lines ->
-        [block_string([~s(""")] ++ description_lines ++ [~s(""")]), line(), docs]
-    end
-    |> concat()
+    concat([
+      render_string_value(description, 0),
+      line(),
+      docs
+    ])
   end
 
   defp implements(%{interface_blueprints: [], interfaces: []}, _) do
@@ -420,25 +413,52 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   defp render_value(%{value: value}),
     do: to_string(value)
 
-  defp render_string_value(str) do
-    str
+  defp render_string_value(string, indent \\ 2) do
+    string
     |> String.trim()
     |> String.split("\n")
     |> case do
-      [str_line] ->
-        concat([~s("), str_line, ~s(")])
+      [string_line] ->
+        concat([~s("), escape_string(string_line), ~s(")])
 
-      str_lines ->
+      string_lines ->
         concat(
           nest(
-            block_string([~s(""")] ++ str_lines),
-            2,
+            block_string([~s(""")] ++ string_lines),
+            indent,
             :always
           ),
           concat(line(), ~s("""))
         )
     end
   end
+
+  @escaped_chars [?", ?\\, ?/, ?\b, ?\f, ?\n, ?\r, ?\t]
+
+  defp escape_string(string) do
+    escape_string(string, [])
+  end
+
+  defp escape_string(<<char, rest::binary>>, acc) when char in @escaped_chars do
+    escape_string(rest, [acc | escape_char(char)])
+  end
+
+  defp escape_string(<<char::utf8, rest::binary>>, acc) do
+    escape_string(rest, [acc | <<char::utf8>>])
+  end
+
+  defp escape_string(<<>>, acc) do
+    to_string(acc)
+  end
+
+  defp escape_char(?"), do: [?\\, ?"]
+  defp escape_char(?\\), do: [?\\, ?\\]
+  defp escape_char(?/), do: [?\\, ?/]
+  defp escape_char(?\b), do: [?\\, ?b]
+  defp escape_char(?\f), do: [?\\, ?f]
+  defp escape_char(?\n), do: [?\\, ?n]
+  defp escape_char(?\r), do: [?\\, ?r]
+  defp escape_char(?\t), do: [?\\, ?t]
 
   # Algebra Helpers
 
@@ -499,31 +519,4 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       concat([doc, concat(List.wrap(joiner)), acc])
     end)
   end
-
-  @escaped_chars [?", ?\\, ?/, ?\b, ?\f, ?\n, ?\r, ?\t]
-
-  defp escape_description(string) do
-    escape_description(string, [])
-  end
-
-  defp escape_description(<<char, rest::binary>>, acc) when char in @escaped_chars do
-    escape_description(rest, [acc | escape_char(char)])
-  end
-
-  defp escape_description(<<char::utf8, rest::binary>>, acc) do
-    escape_description(rest, [acc | <<char::utf8>>])
-  end
-
-  defp escape_description(<<>>, acc) do
-    to_string(acc)
-  end
-
-  defp escape_char(?"), do: [?\\, ?"]
-  defp escape_char(?\\), do: [?\\, ?\\]
-  defp escape_char(?/), do: [?\\, ?/]
-  defp escape_char(?\b), do: [?\\, ?b]
-  defp escape_char(?\f), do: [?\\, ?f]
-  defp escape_char(?\n), do: [?\\, ?n]
-  defp escape_char(?\r), do: [?\\, ?r]
-  defp escape_char(?\t), do: [?\\, ?t]
 end
