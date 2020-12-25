@@ -164,6 +164,15 @@ defmodule Absinthe.Phase.Schema.Validation.ObjectMustImplementInterfaces do
     check_covariant(inner_type1, inner_type2, field_ident, types)
   end
 
+  defp check_covariant(
+         itype,
+         %Absinthe.Blueprint.TypeReference.NonNull{of_type: inner_type},
+         field_ident,
+         types
+       ) do
+    check_covariant(itype, inner_type, field_ident, types)
+  end
+
   defp check_covariant(%{identifier: identifier}, %{identifier: identifier}, _field_ident, _types) do
     :ok
   end
