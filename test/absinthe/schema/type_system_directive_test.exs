@@ -1,4 +1,4 @@
-defmodule TypeSystemDirectiveTest do
+defmodule Absinthe.Schema.TypeSystemDirectiveTest do
   use ExUnit.Case
 
   defmodule WithTypeSystemDirective do
@@ -31,7 +31,7 @@ defmodule TypeSystemDirectiveTest do
     end
   end
 
-  defmodule SdlTestSchema do
+  defmodule TypeSystemDirectivesSchema do
     use Absinthe.Schema
 
     @prototype_schema WithTypeSystemDirective
@@ -91,8 +91,8 @@ defmodule TypeSystemDirectiveTest do
     def resolve_type(_), do: false
   end
 
-  test "Render SDL from blueprint defined with SDL" do
-    assert Absinthe.Schema.to_sdl(SdlTestSchema) ==
-             SdlTestSchema.sdl()
+  test "Render SDL with Type System Directives applied" do
+    assert Absinthe.Schema.to_sdl(TypeSystemDirectivesSchema) ==
+             TypeSystemDirectivesSchema.sdl()
   end
 end

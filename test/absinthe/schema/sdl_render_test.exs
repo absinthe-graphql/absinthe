@@ -1,4 +1,4 @@
-defmodule SdlRenderTest do
+defmodule Absinthe.Schema.SdlRenderTest do
   use ExUnit.Case
 
   defmodule SdlTestSchema do
