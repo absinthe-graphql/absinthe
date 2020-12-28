@@ -2,9 +2,10 @@
 
 ## 1.6 (unreleased)
 
-- Feature: [Repeatable directive](https://github.com/absinthe-graphql/absinthe/pull/999)
+- Feature: Support for the [`repeatable` directive](https://github.com/absinthe-graphql/absinthe/pull/999)
+- Feature: Enable [rendering](https://github.com/absinthe-graphql/absinthe/pull/1010) of Type System Directives in SDL based schemas.
 - Bug Fix: Dynamic description support [comprehensively fixed](https://github.com/absinthe-graphql/absinthe/pull/1005)
-- lots of bug fixes
+- Bug Fix: [Interface nullability](https://github.com/absinthe-graphql/absinthe/pull/1009) corrections
 
 ## 1.5.5
 
