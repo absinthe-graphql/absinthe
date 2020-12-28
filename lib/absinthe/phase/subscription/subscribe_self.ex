@@ -26,14 +26,7 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
       subscription_id = get_subscription_id(config, blueprint, options)
 
       for field_key <- field_keys,
-          do:
-            Absinthe.Subscription.subscribe(
-              pubsub,
-              field_key,
-              subscription_id,
-              blueprint,
-              options
-            )
+          do: Absinthe.Subscription.subscribe(pubsub, field_key, subscription_id, blueprint)
 
       {:replace, blueprint,
        [

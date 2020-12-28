@@ -31,6 +31,8 @@ defmodule Absinthe.Subscription do
   require Logger
   alias __MODULE__
 
+  alias Absinthe.Subscription.PipelineSerializer
+
   @doc """
   Add Absinthe.Subscription to your process tree.
   """
@@ -106,15 +108,14 @@ defmodule Absinthe.Subscription do
   defp fetch_fields(_, _), do: []
 
   @doc false
-  def subscribe(pubsub, field_key, doc_id, doc, options) do
+  def subscribe(pubsub, field_key, doc_id, doc) do
     registry = pubsub |> registry_name
 
     doc_value = {
       doc_id,
       %{
-        schema: doc.schema,
-        source: doc.source,
-        options: options
+        initial_phases: PipelineSerializer.pack(doc.initial_phases),
+        source: doc.source
       }
     }
 
@@ -140,8 +141,12 @@ defmodule Absinthe.Subscription do
     pubsub
     |> registry_name
     |> Registry.lookup(key)
-    |> Enum.map(&elem(&1, 1))
-    |> Map.new()
+    |> Enum.map(fn match ->
+      {_, {name, doc}} = match
+      doc = Map.update!(doc, :initial_phases, &PipelineSerializer.unpack/1)
+
+      {name, doc}
+    end)
   end
 
   @doc false

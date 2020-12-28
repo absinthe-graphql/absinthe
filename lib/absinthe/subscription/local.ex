@@ -37,10 +37,8 @@ defmodule Absinthe.Subscription.Local do
   defp run_docset(pubsub, docs_and_topics, mutation_result) do
     for {topic, key_strategy, doc} <- docs_and_topics do
       try do
-        pipeline = Absinthe.Pipeline.for_document(doc.schema, doc.options)
-
         pipeline =
-          pipeline
+          doc.initial_phases
           |> Pipeline.replace(
             Phase.Telemetry,
             {Phase.Telemetry, event: [:subscription, :publish, :start]}
