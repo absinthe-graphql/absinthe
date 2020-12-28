@@ -92,7 +92,7 @@ learn how to use the built-in `Absinthe.Plug.GraphiQL` plug.
 
 This plug supports requests in a number of ways:
 
-### <a name="via-a-get">Via a GET</a>
+### Via a GET
 
 With a query string:
 

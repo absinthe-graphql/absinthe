@@ -108,14 +108,13 @@ numeric) IDs to the global ID scheme -- an opaque string (like `"UWxf59AcjK="`)
 will be returned instead.
 
 
-<p class="notice">
-<strong>Important:</strong> the global ID is generated based on the object's
-unique identifier, which by default is <strong>the value of its existing <code>:id</code>
-field</strong>. This is convenient, because if you are using Ecto, the
-primary key <code>:id</code> database field is typically enough to uniquely identify an
-object of a given type. It also means, however, that <i>the internal <code>:id</code> of a
-node object will not be available to be queried as <code>:id</code>.</i>
-</p>
+**Important:** the global ID is generated based on the object's
+unique identifier, which by default is **the value of its existing `:id`
+field**. This is convenient, because if you are using Ecto, the
+primary key `:id` database field is typically enough to uniquely identify an
+object of a given type. It also means, however, that *the internal `:id` of a
+node object will not be available to be queried as `:id`.*
+
 
 - If you wish to generate your global IDs based on something other than the
   existing `:id` field (if, for instance, your internal IDs are returned as `_id`),
@@ -231,11 +230,11 @@ result. Thankfully `Absinthe.Relay` abstracts these details away from the schema
 designer, allowing them to focus on any _other_ arguments needed or results
 expected.
 
-<p class="notice">
-  <strong>Important:</strong> Remember that input fields (and arguments in
-  general) cannot be of one of your <code>object</code> types. Use <code>input_object</code> to
-  model complex argument types.
-</p>
+
+**Important:** Remember that input fields (and arguments in
+general) cannot be of one of your `object` types. Use `input_object` to
+model complex argument types.
+
 
 In this example, we accept a list of multiple `:person_input_object` values to
 insert people into a database.
@@ -299,12 +298,12 @@ If, of course, your client knows the internal IDs (in a peer field to `:id`, eg,
 `:internal_id`), you can depends on that ID -- but we recommend that you use
 node IDs as they are opaque values and it's the more conventional practice.
 
-<p class="notice">
-  <strong>Important:</strong> When using <code>from_global_id</code>, remember to always
-  match the <code>:type</code> value to ensure the internal ID is for the type you expect,
-  and a global ID for the wrong type of node hasn't been mistakenly sent to the
-  server.
-</p>
+
+**Important:** When using `from_global_id`, remember to always
+match the `:type` value to ensure the internal ID is for the type you expect,
+and a global ID for the wrong type of node hasn't been mistakenly sent to the
+server.
+
 
 ## Connections
 
@@ -359,7 +358,7 @@ query {
 Check the [documentation](https://hexdocs.pm/absinthe_relay/Absinthe.Relay.Connection.html)
 for more details on connections.
 
-<p class="notice">
-  <strong>Note:</strong> These features do not require using Relay on the client as Apollo
-  and other client implementations generally support Relay connection configuration.
-</p>
+
+**Note:** These features do not require using Relay on the client as Apollo
+and other client implementations generally support Relay connection configuration.
+

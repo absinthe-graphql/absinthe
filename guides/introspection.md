@@ -88,9 +88,8 @@ Getting the name of the fields for a named type:
 }
 ```
 
-Note that you may have to nest several depths of <code>type</code>/<code>ofType</code>, as
-type information includes any wrapping layers of <a href="https://facebook.github.io/graphql/#sec-List">List</a>
-and/or <a href="https://facebook.github.io/graphql/#sec-Non-null">NonNull</a>.
+Note that you may have to nest several depths of `type`/`ofType`, as
+type information includes any wrapping layers of [List](https://facebook.github.io/graphql/#sec-List) and/or [NonNull](https://facebook.github.io/graphql/#sec-Non-null).
 
 ## Using GraphiQL
 
