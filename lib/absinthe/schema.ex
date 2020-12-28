@@ -613,7 +613,7 @@ defmodule Absinthe.Schema do
   def to_sdl(schema) do
     pipeline =
       schema
-      |> Absinthe.Pipeline.for_schema()
+      |> Absinthe.Pipeline.for_schema(prototype_schema: schema.__absinthe_prototype_schema__)
       |> Absinthe.Pipeline.upto({Absinthe.Phase.Schema.Validation.Result, pass: :final})
       |> apply_modifiers(schema)
 

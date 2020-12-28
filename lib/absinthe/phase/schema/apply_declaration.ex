@@ -44,7 +44,8 @@ defmodule Absinthe.Phase.Schema.ApplyDeclaration do
         %{
           schema_definition
           | type_definitions:
-              Enum.map(schema_definition.type_definitions, &maybe_mark_root(&1, root_mappings))
+              Enum.map(schema_definition.type_definitions, &maybe_mark_root(&1, root_mappings)),
+            schema_declaration: declaration
         }
 
       [] ->

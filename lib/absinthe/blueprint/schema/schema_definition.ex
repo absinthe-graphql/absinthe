@@ -13,6 +13,7 @@ defmodule Absinthe.Blueprint.Schema.SchemaDefinition do
             directives: [],
             source_location: nil,
             # Added by phases
+            schema_declaration: nil,
             flags: %{},
             imports: [],
             errors: [],
