@@ -173,6 +173,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       "interface",
       concat([
         string(interface_type.name),
+        implements(interface_type, type_definitions),
         directives(interface_type.directives, type_definitions)
       ]),
       render_list(interface_type.fields, type_definitions)

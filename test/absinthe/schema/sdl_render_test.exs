@@ -75,8 +75,9 @@ defmodule Absinthe.Schema.SdlRenderTest do
       CLASSIFIED
     }
 
-    interface Pet {
+    interface Pet implements Animal {
       name: String!
+      legCount: Int!
     }
 
     "One or the other"
@@ -125,7 +126,7 @@ defmodule Absinthe.Schema.SdlRenderTest do
 
     test "for an interface" do
       assert_rendered("""
-      interface Entity {
+      interface Entity implements Node {
         name: String!
       }
       """)
