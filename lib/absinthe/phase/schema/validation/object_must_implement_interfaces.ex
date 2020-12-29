@@ -25,7 +25,12 @@ defmodule Absinthe.Phase.Schema.Validation.ObjectMustImplementInterfaces do
     obj
   end
 
-  defp validate_objects(%Blueprint.Schema.ObjectTypeDefinition{} = object, ifaces, types) do
+  @interface_types [
+    Blueprint.Schema.ObjectTypeDefinition,
+    Blueprint.Schema.InterfaceTypeDefinition
+  ]
+
+  defp validate_objects(%struct{} = object, ifaces, types) when struct in @interface_types do
     Enum.reduce(object.interfaces, object, fn ident, object ->
       case Map.fetch(ifaces, ident) do
         {:ok, iface} -> validate_object(object, iface, types)
