@@ -142,10 +142,10 @@ defmodule Absinthe.Subscription do
     |> registry_name
     |> Registry.lookup(key)
     |> Enum.map(fn match ->
-      {_, {name, doc}} = match
+      {_, {doc_id, doc}} = match
       doc = Map.update!(doc, :initial_phases, &PipelineSerializer.unpack/1)
 
-      {name, doc}
+      {doc_id, doc}
     end)
   end
 
