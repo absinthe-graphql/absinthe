@@ -220,7 +220,7 @@ defmodule Absinthe.Schema.Notation do
     )
   end
 
-  @placement {:interfaces, [under: [:object]]}
+  @placement {:interfaces, [under: [:object, :interface]]}
   @doc """
   Declare implemented interfaces for an object.
 
@@ -299,7 +299,7 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
-  @placement {:interface_attribute, [under: [:object]]}
+  @placement {:interface_attribute, [under: [:object, :interface]]}
   defmacro interface(identifier) do
     __CALLER__
     |> recordable!(:interface_attribute, @placement[:interface_attribute])

@@ -43,6 +43,13 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfacesTest do
       end
     end
 
+    interface :nameable do
+      interface :named
+      field :name, :string
+      field :parent, :named
+      field :another_parent, :named
+    end
+
     object :dog do
       field :name, :string
       interface :named
@@ -79,8 +86,37 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfacesTest do
     end
   end
 
+  defmodule InterfaceImplementsInterfaces do
+    use Absinthe.Schema
+
+    import_sdl """
+    interface Node {
+      id: ID!
+    }
+
+    interface Resource implements Node {
+      id: ID!
+      url: String
+    }
+
+    interface Image implements Resource & Node {
+      id: ID!
+      url: String
+      thumbnail: String
+    }
+
+    """
+
+    query do
+    end
+  end
+
   test "interfaces are propogated across type imports" do
-    assert %{named: [:cat, :dog, :user], favorite_foods: [:cat, :dog, :user]} ==
+    assert %{
+             named: [:cat, :dog, :nameable, :user],
+             favorite_foods: [:cat, :dog, :user],
+             nameable: []
+           } ==
              Schema.__absinthe_interface_implementors__()
   end
 

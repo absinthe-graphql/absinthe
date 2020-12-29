@@ -204,7 +204,7 @@ defmodule Absinthe.Schema.NotationTest do
           interface :foo
         end
         """,
-        "Invalid schema notation: `interface_attribute` must only be used within `object`"
+        "Invalid schema notation: `interface_attribute` must only be used within `object`, `interface`"
       )
     end
   end
@@ -232,7 +232,7 @@ defmodule Absinthe.Schema.NotationTest do
         end
         interfaces [:bar]
         """,
-        "Invalid schema notation: `interfaces` must only be used within `object`"
+        "Invalid schema notation: `interfaces` must only be used within `object`, `interface`"
       )
     end
   end
