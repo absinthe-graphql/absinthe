@@ -53,7 +53,7 @@ defmodule Absinthe.Phase.Schema.Validation.NoInterfaceCyles do
     implementor
   end
 
-  # Add an edge, modeling the relationship between two fragments
+  # Add an edge, modeling the relationship between two interfaces
   defp edge(implementor, interface, graph) do
     :digraph.add_vertex(graph, interface)
 
