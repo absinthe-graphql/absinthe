@@ -18,19 +18,14 @@ defmodule Absinthe.Subscription.PipelineSerializer do
 
   @spec pack(Pipeline.t()) :: packed_pipeline()
   def pack(pipeline) do
-    {reverse_pipeline, options_reverse_map} =
+    {packed_pipeline, options_reverse_map} =
       pipeline
       |> List.flatten()
-      |> Enum.reduce({[], %{}}, fn phase, {pipeline, options_reverse_map} ->
-        {phase, options_reverse_map} = maybe_pack_phase(phase, options_reverse_map)
+      |> Enum.map_reduce(%{}, &maybe_pack_phase/2)
 
-        {[phase | pipeline], options_reverse_map}
-      end)
-
-    pipeline = Enum.reverse(reverse_pipeline)
     options_map = Map.new(options_reverse_map, fn {options, label} -> {label, options} end)
 
-    {:packed, pipeline, options_map}
+    {:packed, packed_pipeline, options_map}
   end
 
   @spec unpack(Pipeline.t() | packed_pipeline()) :: Pipeline.t()
