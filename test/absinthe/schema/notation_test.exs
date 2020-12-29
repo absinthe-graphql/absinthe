@@ -211,12 +211,25 @@ defmodule Absinthe.Schema.NotationTest do
 
   describe "interfaces" do
     test "can be under object as an attribute" do
-      assert_no_notation_error("InterfacesValid", """
+      assert_no_notation_error("ObjectInterfacesValid", """
       interface :bar do
         field :name, :string
         resolve_type fn _, _ -> :foo end
       end
       object :foo do
+        field :name, :string
+        interfaces [:bar]
+      end
+      """)
+    end
+
+    test "can be under interface as an attribute" do
+      assert_no_notation_error("InterfaceInterfacesValid", """
+      interface :bar do
+        field :name, :string
+        resolve_type fn _, _ -> :foo end
+      end
+      interface :foo do
         field :name, :string
         interfaces [:bar]
       end

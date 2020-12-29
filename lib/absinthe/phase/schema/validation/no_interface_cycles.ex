@@ -23,10 +23,6 @@ defmodule Absinthe.Phase.Schema.Validation.NoInterfaceCyles do
     end
   end
 
-  defp validate_schema(%Schema.InterfaceTypeDefinition{interfaces: []} = interface, graph) do
-    interface
-  end
-
   defp validate_schema(%Schema.InterfaceTypeDefinition{} = interface, graph) do
     if cycle = :digraph.get_cycle(graph, interface.identifier) do
       interface |> put_error(error(interface, cycle))
@@ -43,26 +39,25 @@ defmodule Absinthe.Phase.Schema.Validation.NoInterfaceCyles do
     _ = Blueprint.prewalk(blueprint, &vertex(&1, graph))
   end
 
-  defp vertex(%Schema.InterfaceTypeDefinition{} = iface, graph) do
-    :digraph.add_vertex(graph, iface.identifier)
+  defp vertex(%Schema.InterfaceTypeDefinition{} = implementor, graph) do
+    :digraph.add_vertex(graph, implementor.identifier)
 
-    for interface <- iface.interfaces do
-      edge(iface, interface, graph)
+    for interface <- implementor.interfaces do
+      edge(implementor, interface, graph)
     end
 
-    iface
+    implementor
   end
 
-  defp vertex(iface, _graph) do
-    iface
+  defp vertex(implementor, _graph) do
+    implementor
   end
 
   # Add an edge, modeling the relationship between two fragments
+  defp edge(implementor, interface, graph) do
+    :digraph.add_vertex(graph, interface)
 
-  defp edge(interface, spread, graph) do
-    :digraph.add_vertex(graph, spread)
-
-    :digraph.add_edge(graph, interface.identifier, spread)
+    :digraph.add_edge(graph, implementor.identifier, interface)
 
     true
   end
