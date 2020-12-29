@@ -150,6 +150,7 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.Validation.InterfacesMustResolveTypes,
       Phase.Schema.Validation.ObjectInterfacesMustBeValid,
       Phase.Schema.Validation.ObjectMustImplementInterfaces,
+      Phase.Schema.Validation.NoInterfaceCyles,
       Phase.Schema.Validation.QueryTypeMustBeObject,
       Phase.Schema.Validation.NamesMustBeValid,
       Phase.Schema.RegisterTriggers,

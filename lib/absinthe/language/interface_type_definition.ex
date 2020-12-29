@@ -7,6 +7,7 @@ defmodule Absinthe.Language.InterfaceTypeDefinition do
             description: nil,
             fields: [],
             directives: [],
+            interfaces: [],
             loc: %{line: nil}
 
   @type t :: %__MODULE__{
@@ -14,6 +15,7 @@ defmodule Absinthe.Language.InterfaceTypeDefinition do
           description: nil | String.t(),
           fields: [Language.FieldDefinition.t()],
           directives: [Language.Directive.t()],
+          interfaces: [Language.NamedType.t()],
           loc: Language.loc_t()
         }
 
@@ -25,8 +27,16 @@ defmodule Absinthe.Language.InterfaceTypeDefinition do
         identifier: Macro.underscore(node.name) |> String.to_atom(),
         fields: Absinthe.Blueprint.Draft.convert(node.fields, doc),
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
+        interfaces: interfaces(node.interfaces, doc),
+        interface_blueprints: Absinthe.Blueprint.Draft.convert(node.interfaces, doc),
         source_location: source_location(node)
       }
+    end
+
+    defp interfaces(interfaces, doc) do
+      interfaces
+      |> Absinthe.Blueprint.Draft.convert(doc)
+      |> Enum.map(&(&1.name |> Macro.underscore() |> String.to_atom()))
     end
 
     defp source_location(%{loc: nil}), do: nil

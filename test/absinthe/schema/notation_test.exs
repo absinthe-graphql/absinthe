@@ -204,19 +204,32 @@ defmodule Absinthe.Schema.NotationTest do
           interface :foo
         end
         """,
-        "Invalid schema notation: `interface_attribute` must only be used within `object`"
+        "Invalid schema notation: `interface_attribute` must only be used within `object`, `interface`"
       )
     end
   end
 
   describe "interfaces" do
     test "can be under object as an attribute" do
-      assert_no_notation_error("InterfacesValid", """
+      assert_no_notation_error("ObjectInterfacesValid", """
       interface :bar do
         field :name, :string
         resolve_type fn _, _ -> :foo end
       end
       object :foo do
+        field :name, :string
+        interfaces [:bar]
+      end
+      """)
+    end
+
+    test "can be under interface as an attribute" do
+      assert_no_notation_error("InterfaceInterfacesValid", """
+      interface :bar do
+        field :name, :string
+        resolve_type fn _, _ -> :foo end
+      end
+      interface :foo do
         field :name, :string
         interfaces [:bar]
       end
@@ -232,7 +245,7 @@ defmodule Absinthe.Schema.NotationTest do
         end
         interfaces [:bar]
         """,
-        "Invalid schema notation: `interfaces` must only be used within `object`"
+        "Invalid schema notation: `interfaces` must only be used within `object`, `interface`"
       )
     end
   end
