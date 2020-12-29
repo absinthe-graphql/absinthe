@@ -86,6 +86,15 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfacesTest do
     end
   end
 
+  test "interfaces are propogated across type imports" do
+    assert %{
+             named: [:cat, :dog, :nameable, :user],
+             favorite_foods: [:cat, :dog, :user],
+             nameable: []
+           } ==
+             Schema.__absinthe_interface_implementors__()
+  end
+
   defmodule InterfaceImplementsInterfaces do
     use Absinthe.Schema
 
@@ -111,13 +120,13 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfacesTest do
     end
   end
 
-  test "interfaces are propogated across type imports" do
+  test "interfaces are propagated from sdl" do
     assert %{
-             named: [:cat, :dog, :nameable, :user],
-             favorite_foods: [:cat, :dog, :user],
-             nameable: []
+             image: [],
+             node: [:image, :resource],
+             resource: [:image]
            } ==
-             Schema.__absinthe_interface_implementors__()
+             InterfaceImplementsInterfaces.__absinthe_interface_implementors__()
   end
 
   test "is enforced" do
