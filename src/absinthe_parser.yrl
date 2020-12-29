@@ -261,6 +261,11 @@ InterfaceTypeDefinition -> 'interface' Name '{' FieldDefinitionList '}' :
   build_ast_node('InterfaceTypeDefinition', #{'name' => extract_binary('$2'), 'fields' => '$4'}, extract_location('$1')).
 InterfaceTypeDefinition -> 'interface' Name Directives '{' FieldDefinitionList '}' :
   build_ast_node('InterfaceTypeDefinition', #{'name' => extract_binary('$2'), 'directives' => '$3', 'fields' => '$5'}, extract_location('$1')).
+InterfaceTypeDefinition -> 'interface' Name ImplementsInterfaces '{' FieldDefinitionList '}' :
+  build_ast_node('InterfaceTypeDefinition', #{'name' => extract_binary('$2'), 'interfaces' => '$3', 'fields' => '$5'}, extract_location('$1')).
+InterfaceTypeDefinition -> 'interface' Name ImplementsInterfaces Directives '{' FieldDefinitionList '}' :
+  build_ast_node('InterfaceTypeDefinition', #{'name' => extract_binary('$2'), 'interfaces' => '$3', 'directives' => '$4', 'fields' => '$6'}, extract_location('$1')).
+
 
 UnionTypeDefinition -> 'union' Name :
   build_ast_node('UnionTypeDefinition', #{'name' => extract_binary('$2')}, extract_location('$1')).
