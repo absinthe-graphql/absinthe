@@ -35,7 +35,7 @@ defmodule Absinthe.Subscription.PipelineSerializerTest do
                 {Phase3, {:options, 1}},
                 {Phase4, {:options, 0}}
               ],
-              %{{:options, 0} => [option1: :value1], {:options, 1} => [option2: value2]}} =
+              %{{:options, 0} => [option1: :value1], {:options, 1} => [option2: :value2]}} =
                PipelineSerializer.pack(pipeline)
     end
   end
