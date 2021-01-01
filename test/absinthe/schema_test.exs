@@ -7,26 +7,33 @@ defmodule Absinthe.SchemaTest do
   alias Absinthe.Type
 
   describe "built-in types" do
-    def load_valid_schema do
-      load_schema("valid_schema")
+    defmodule ValidSchema do
+      use Absinthe.Schema
+
+      query do
+        # Query type must exist
+      end
+
+      object :person do
+        description "A person"
+        field :name, :string
+      end
     end
 
     test "are loaded" do
-      load_valid_schema()
-
       builtin_types =
-        Absinthe.Fixtures.ValidSchema
+        ValidSchema
         |> Absinthe.Schema.types()
         |> Enum.filter(&Absinthe.Type.built_in?(&1))
 
       assert length(builtin_types) > 0
 
       Enum.each(builtin_types, fn type ->
-        assert Absinthe.Fixtures.ValidSchema.__absinthe_type__(type.identifier) ==
-                 Absinthe.Fixtures.ValidSchema.__absinthe_type__(type.name)
+        assert ValidSchema.__absinthe_type__(type.identifier) ==
+                 ValidSchema.__absinthe_type__(type.name)
       end)
 
-      int = Absinthe.Fixtures.ValidSchema.__absinthe_type__(:integer)
+      int = ValidSchema.__absinthe_type__(:integer)
       assert 1 == Type.Scalar.serialize(int, 1)
       assert {:ok, 1} == Type.Scalar.parse(int, 1, %{})
     end
