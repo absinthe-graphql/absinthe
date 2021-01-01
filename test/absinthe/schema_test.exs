@@ -1,6 +1,7 @@
 defmodule Absinthe.SchemaTest do
   # can't async due to capture io
   use Absinthe.Case
+  import ExUnit.CaptureIO
 
   alias Absinthe.Schema
   alias Absinthe.Type
@@ -33,20 +34,18 @@ defmodule Absinthe.SchemaTest do
 
   describe "using the same identifier" do
     test "raises an exception" do
-      assert_schema_error("schema_with_duplicate_identifiers", [
-        %{
-          phase: Absinthe.Phase.Schema.Validation.TypeNamesAreUnique,
-          extra: %{artifact: "Absinthe type identifier", value: :person}
-        }
-      ])
+      capture_io(:stderr, fn ->
+        assert_schema_error("schema_with_duplicate_identifiers", [
+          %{
+            phase: Absinthe.Phase.Schema.Validation.TypeNamesAreUnique,
+            extra: %{artifact: "Absinthe type identifier", value: :person}
+          }
+        ])
+      end)
     end
   end
 
   describe "using the same name" do
-    def load_duplicate_name_schema do
-      load_schema("schema_with_duplicate_names")
-    end
-
     test "raises an exception" do
       assert_schema_error("schema_with_duplicate_names", [
         %{
