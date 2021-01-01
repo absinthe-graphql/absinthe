@@ -33,7 +33,7 @@ defmodule Absinthe.Phase.Schema.FieldImports do
     Enum.reduce(type.imports, type, fn {source, opts}, type ->
       source_type = Map.fetch!(types, source)
 
-      rejections = Keyword.get(opts, :except, [])
+      rejections = Keyword.get(opts, :except, []) ++ exclusions(type)
 
       fields = source_type.fields |> Enum.reject(&(&1.identifier in rejections))
 
@@ -51,4 +51,7 @@ defmodule Absinthe.Phase.Schema.FieldImports do
   end
 
   def import_fields(type, _), do: type
+
+  defp exclusions(%Schema.InputObjectTypeDefinition{}), do: [:__typename]
+  defp exclusions(_), do: []
 end
