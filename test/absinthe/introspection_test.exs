@@ -264,6 +264,51 @@ defmodule Absinthe.IntrospectionTest do
         result
       )
     end
+
+    defmodule ImportFieldsIntoInputSchema do
+      use Absinthe.Schema
+
+      query do
+        field :test, :test_object do
+          arg :test, :test_input
+        end
+      end
+
+      object :test_object do
+        import_fields(:import_object)
+      end
+
+      input_object :test_input do
+        import_fields(:import_object)
+      end
+
+      object :import_object do
+        field :id, :id
+      end
+    end
+
+    test "import_fields won't import __typename" do
+      {:ok, %{data: data}} =
+        """
+        {
+          __schema {
+            types {
+              name
+              inputFields {
+                name
+              }
+            }
+          }
+        }
+        """
+        |> Absinthe.run(ImportFieldsIntoInputSchema)
+
+      type =
+        get_in(data, ["__schema", "types"])
+        |> Enum.find(&(&1["name"] == "TestInput"))
+
+      assert get_in(type, ["inputFields"]) == [%{"name" => "id"}]
+    end
   end
 
   describe "introspection of an object type" do

@@ -31,7 +31,7 @@ defmodule Absinthe.Type.InputObject do
   ```
   """
 
-  use Absinthe.Introspection.Kind
+  use Absinthe.Introspection.TypeKind, :input_object
   use Absinthe.Type.Fetch
 
   alias Absinthe.Type

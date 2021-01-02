@@ -2,10 +2,16 @@
 
 ## 1.6 (unreleased)
 
+- Feature: [Interfaces can now implement Interfaces](https://github.com/absinthe-graphql/absinthe/pull/1012), matching the latest spec
 - Feature: Support for the [`repeatable` directive](https://github.com/absinthe-graphql/absinthe/pull/999)
 - Feature: Enable [rendering](https://github.com/absinthe-graphql/absinthe/pull/1010) of Type System Directives in SDL based schemas.
-- Bug Fix: Dynamic description support [comprehensively fixed](https://github.com/absinthe-graphql/absinthe/pull/1005)
+- Feature: Correctly match [Introspection type specs](https://github.com/absinthe-graphql/absinthe/pull/1017)
+- Bug Fix: Restore dynamic description support [comprehensively fixed](https://github.com/absinthe-graphql/absinthe/pull/1005)
 - Bug Fix: [Interface nullability](https://github.com/absinthe-graphql/absinthe/pull/1009) corrections
+- Bug Fix: Fix [field listing for Inputs](https://github.com/absinthe-graphql/absinthe/pull/1015) that import fields
+- Bug Fix: Properly [trim all descriptions](https://github.com/absinthe-graphql/absinthe/pull/1014) no matter the mechanism used to specify them
+- Bug Fix: Fix incorrect specification of [`__TypeKind`](https://github.com/absinthe-graphql/absinthe/pull/1019)
+- Bug Fix: Add missing value to [`__DirectiveLocation`](https://github.com/absinthe-graphql/absinthe/pull/1020)
 
 ## 1.5.5
 

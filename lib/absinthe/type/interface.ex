@@ -42,7 +42,7 @@ defmodule Absinthe.Type.Interface do
   ```
   """
 
-  use Absinthe.Introspection.Kind
+  use Absinthe.Introspection.TypeKind, :interface
 
   alias Absinthe.Type
   alias Absinthe.Schema
