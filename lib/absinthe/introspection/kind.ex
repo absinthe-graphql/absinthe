@@ -8,19 +8,20 @@ defmodule Absinthe.Introspection.Kind do
         __MODULE__
         |> Module.split()
         |> List.last()
-        |> Absinthe.Introspection.Kind.upcase()
+        |> Absinthe.Introspection.Kind.downcase()
+        |> String.to_existing_atom()
       end
 
       defoverridable kind: 0
     end
   end
 
-  def upcase(name) do
+  def downcase(name) do
     Regex.scan(~r{[A-Z]+[a-z]+}, name)
     |> List.flatten()
-    |> Enum.map(&String.upcase/1)
+    |> Enum.map(&String.downcase/1)
     |> Enum.join("_")
   end
 
-  @callback kind :: binary
+  @callback kind :: atom
 end

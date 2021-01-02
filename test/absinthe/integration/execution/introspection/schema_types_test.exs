@@ -13,6 +13,7 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.SchemaTypesTest do
     "__InputValue",
     "__Schema",
     "__Type",
+    "__TypeKind",
     "Boolean",
     "Business",
     "Contact",
