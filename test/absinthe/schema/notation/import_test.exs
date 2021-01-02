@@ -251,6 +251,17 @@ defmodule Absinthe.Schema.Notation.ImportTest do
     end
   end
 
+  describe "unknown imported modules" do
+    test "returns error" do
+      assert_schema_error("unknown_import_schema", [
+        %Absinthe.Phase.Error{
+          message: "Could not load module `Elixir.Test.Unknown`. It returned reason: `nofile`.",
+          phase: Absinthe.Phase.Schema.TypeImports
+        }
+      ])
+    end
+  end
+
   defp validate(schema) do
     pipeline =
       schema
