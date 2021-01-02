@@ -94,15 +94,14 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
 
   enum :__type_kind,
     values: [
-      :schema,
       :scalar,
       :object,
       :interface,
       :union,
       :enum,
-      :non_null,
       :input_object,
-      :list
+      :list,
+      :non_null
     ]
 
   enum :__directive_location,

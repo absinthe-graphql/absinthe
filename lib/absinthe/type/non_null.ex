@@ -21,7 +21,7 @@ defmodule Absinthe.Type.NonNull do
   ```
   """
 
-  use Absinthe.Introspection.Kind
+  use Absinthe.Introspection.TypeKind, :non_null
   use Absinthe.Type.Fetch
 
   @typedoc """

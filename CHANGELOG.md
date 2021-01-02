@@ -10,6 +10,7 @@
 - Bug Fix: [Interface nullability](https://github.com/absinthe-graphql/absinthe/pull/1009) corrections
 - Bug Fix: Fix [field listing for Inputs](https://github.com/absinthe-graphql/absinthe/pull/1015) that import fields
 - Bug Fix: Properly [trim all descriptions](https://github.com/absinthe-graphql/absinthe/pull/1014) no matter the mechanism used to specify them
+- Bug Fix: Fix incorrect specification of [`__TypeKind`](https://github.com/absinthe-graphql/absinthe/pull/1019)
 
 ## 1.5.5
 

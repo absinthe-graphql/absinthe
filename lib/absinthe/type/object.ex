@@ -67,7 +67,7 @@ defmodule Absinthe.Type.Object do
   """
 
   alias Absinthe.Type
-  use Absinthe.Introspection.Kind
+  use Absinthe.Introspection.TypeKind, :object
 
   @typedoc """
   A defined object type.
