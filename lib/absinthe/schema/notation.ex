@@ -1231,7 +1231,9 @@ defmodule Absinthe.Schema.Notation do
 
   Very frequently your schema module will simply have the `query` and `mutation`
   blocks, and you'll want to break out your other types into other modules. This
-  macro imports those types for use the current module
+  macro imports those types for use the current module.
+
+  To selectively import types you can use the `:only` and `:except` opts.
 
   ## Placement
 
@@ -1242,6 +1244,10 @@ defmodule Absinthe.Schema.Notation do
   import_types MyApp.Schema.Types
 
   import_types MyApp.Schema.Types.{TypesA, TypesB}
+
+  import_types MyApp.Schema.Types, only: [:foo]
+
+  import_types MyApp.Schema.Types, except: [:bar]
   ```
   """
   defmacro import_types(type_module_ast, opts \\ []) do

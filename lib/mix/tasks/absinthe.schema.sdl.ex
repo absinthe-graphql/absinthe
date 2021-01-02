@@ -1,5 +1,4 @@
 defmodule Mix.Tasks.Absinthe.Schema.Sdl do
-  require Logger
   use Mix.Task
   import Mix.Generator
 

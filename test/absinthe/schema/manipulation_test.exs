@@ -1,6 +1,5 @@
 defmodule Absinthe.Schema.ManipulationTest do
   use Absinthe.Case, async: true
-  require IEx
 
   alias Absinthe.Phase.Schema.Validation.TypeNamesAreReserved
 

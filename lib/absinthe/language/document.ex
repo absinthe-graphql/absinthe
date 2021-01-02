@@ -1,8 +1,6 @@
 defmodule Absinthe.Language.Document do
   @moduledoc false
 
-  require Logger
-
   alias Absinthe.{Blueprint, Language}
 
   defstruct definitions: [],
