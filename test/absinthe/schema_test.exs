@@ -1,31 +1,39 @@
 defmodule Absinthe.SchemaTest do
   # can't async due to capture io
   use Absinthe.Case
+  import ExUnit.CaptureIO
 
   alias Absinthe.Schema
   alias Absinthe.Type
 
   describe "built-in types" do
-    def load_valid_schema do
-      load_schema("valid_schema")
+    defmodule ValidSchema do
+      use Absinthe.Schema
+
+      query do
+        # Query type must exist
+      end
+
+      object :person do
+        description "A person"
+        field :name, :string
+      end
     end
 
     test "are loaded" do
-      load_valid_schema()
-
       builtin_types =
-        Absinthe.Fixtures.ValidSchema
+        ValidSchema
         |> Absinthe.Schema.types()
         |> Enum.filter(&Absinthe.Type.built_in?(&1))
 
       assert length(builtin_types) > 0
 
       Enum.each(builtin_types, fn type ->
-        assert Absinthe.Fixtures.ValidSchema.__absinthe_type__(type.identifier) ==
-                 Absinthe.Fixtures.ValidSchema.__absinthe_type__(type.name)
+        assert ValidSchema.__absinthe_type__(type.identifier) ==
+                 ValidSchema.__absinthe_type__(type.name)
       end)
 
-      int = Absinthe.Fixtures.ValidSchema.__absinthe_type__(:integer)
+      int = ValidSchema.__absinthe_type__(:integer)
       assert 1 == Type.Scalar.serialize(int, 1)
       assert {:ok, 1} == Type.Scalar.parse(int, 1, %{})
     end
@@ -33,20 +41,18 @@ defmodule Absinthe.SchemaTest do
 
   describe "using the same identifier" do
     test "raises an exception" do
-      assert_schema_error("schema_with_duplicate_identifiers", [
-        %{
-          phase: Absinthe.Phase.Schema.Validation.TypeNamesAreUnique,
-          extra: %{artifact: "Absinthe type identifier", value: :person}
-        }
-      ])
+      capture_io(:stderr, fn ->
+        assert_schema_error("schema_with_duplicate_identifiers", [
+          %{
+            phase: Absinthe.Phase.Schema.Validation.TypeNamesAreUnique,
+            extra: %{artifact: "Absinthe type identifier", value: :person}
+          }
+        ])
+      end)
     end
   end
 
   describe "using the same name" do
-    def load_duplicate_name_schema do
-      load_schema("schema_with_duplicate_names")
-    end
-
     test "raises an exception" do
       assert_schema_error("schema_with_duplicate_names", [
         %{
