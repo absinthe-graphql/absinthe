@@ -113,16 +113,17 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       :fragment_definition,
       :fragment_spread,
       :inline_fragment,
+      :variable_definition,
       :schema,
       :scalar,
       :object,
       :field_definition,
+      :argument_definition,
       :interface,
       :union,
       :enum,
       :enum_value,
       :input_object,
-      :argument_definition,
       :input_field_definition
     ]
 
