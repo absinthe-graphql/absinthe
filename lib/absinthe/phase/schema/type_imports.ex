@@ -58,7 +58,6 @@ defmodule Absinthe.Phase.Schema.TypeImports do
     end
   end
 
-
   # Generate an error when loading module fails
   @spec error(module :: module(), error :: :embedded | :badfile | :nofile | :on_load_failure) ::
           Absinthe.Phase.Error.t()
