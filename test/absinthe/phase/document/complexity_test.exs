@@ -350,27 +350,10 @@ defmodule Absinthe.Phase.Document.ComplexityTest do
     end
 
     test "handles GraphQL introspection" do
-      doc = """
-      query IntrospectionQuery {
-        __schema {
-          types {
-            ...FullType
-          }
-        }
-      }
-
-      fragment FullType on __Type {
-        fields {
-          args {
-            ...InputValue
-          }
-        }
-      }
-
-      fragment InputValue on __InputValue {
-        type { name }
-      }
-      """
+      doc =
+        [:code.priv_dir(:absinthe), "graphql", "introspection.graphql"]
+        |> Path.join()
+        |> File.read!()
 
       assert {:ok, _, _} =
                run_phase(
