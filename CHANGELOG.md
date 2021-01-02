@@ -12,6 +12,7 @@
 - Bug Fix: Properly [trim all descriptions](https://github.com/absinthe-graphql/absinthe/pull/1014) no matter the mechanism used to specify them
 - Bug Fix: Fix incorrect specification of [`__TypeKind`](https://github.com/absinthe-graphql/absinthe/pull/1019)
 - Bug Fix: Add missing value to [`__DirectiveLocation`](https://github.com/absinthe-graphql/absinthe/pull/1020)
+- Bug Fix: Fix [compilation problems with `import_types`](https://github.com/absinthe-graphql/absinthe/pull/1022)
 
 ## 1.5.5
 
