@@ -29,7 +29,7 @@ defmodule Absinthe.Type.Scalar do
   ```
   """
 
-  use Absinthe.Introspection.Kind
+  use Absinthe.Introspection.TypeKind, :scalar
 
   alias Absinthe.Type
 

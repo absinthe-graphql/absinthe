@@ -23,7 +23,7 @@ defmodule Absinthe.Type.Union do
   ```
   """
 
-  use Absinthe.Introspection.Kind
+  use Absinthe.Introspection.TypeKind, :union
 
   alias Absinthe.{Schema, Type}
 

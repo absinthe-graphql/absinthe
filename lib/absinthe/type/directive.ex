@@ -8,7 +8,6 @@ defmodule Absinthe.Type.Directive do
 
   alias Absinthe.Type
   alias Absinthe.Language
-  use Absinthe.Introspection.Kind
 
   @typedoc """
   A defined directive.

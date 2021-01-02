@@ -51,7 +51,7 @@ defmodule Absinthe.Type.Enum do
 
   """
 
-  use Absinthe.Introspection.Kind
+  use Absinthe.Introspection.TypeKind, :enum
 
   alias Absinthe.{Blueprint, Type}
 
