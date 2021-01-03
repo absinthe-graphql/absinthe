@@ -145,7 +145,7 @@ defmodule Absinthe.Blueprint.Schema do
   end
 
   defp build_types([{:values, values} | rest], [enum | stack], buff) do
-    enum = Map.update!(enum, :values, &(values ++ &1))
+    enum = Map.update!(enum, :values, &(List.wrap(values) ++ &1))
     build_types(rest, [enum | stack], buff)
   end
 

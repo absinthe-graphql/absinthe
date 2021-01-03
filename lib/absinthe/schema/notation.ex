@@ -1496,10 +1496,7 @@ defmodule Absinthe.Schema.Notation do
     values =
       values
       |> expand_ast(env)
-      |> Enum.map(fn ident ->
-        value_attrs = handle_enum_value_attrs(ident, [], env)
-        struct!(Schema.EnumValueDefinition, value_attrs)
-      end)
+      |> wrap_in_unquote
 
     put_attr(env.module, {:values, values})
   end

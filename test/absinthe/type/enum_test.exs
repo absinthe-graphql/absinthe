@@ -56,6 +56,12 @@ defmodule Absinthe.Type.EnumTest do
       value :blue, as: color(:blue)
     end
 
+    enum :dynamic_color_list do
+      values color_list()
+    end
+
+    def color_list, do: [:purple, :orange, :yellow]
+
     def color(:red), do: {255, 0, 0}
     def color(:green), do: {0, 255, 0}
     def color(:blue), do: {0, 0, 255}
@@ -88,6 +94,14 @@ defmodule Absinthe.Type.EnumTest do
       assert %Type.Enum.Value{name: "RED", value: {255, 0, 0}} = type.values[:red]
       assert %Type.Enum.Value{name: "GREEN", value: {0, 255, 0}} = type.values[:green]
       assert %Type.Enum.Value{name: "BLUE", value: {0, 0, 255}} = type.values[:blue]
+    end
+
+    test "values can be defined dynamically too" do
+      type = TestSchema.__absinthe_type__(:dynamic_color_list)
+
+      assert %Type.Enum.Value{name: "YELLOW"} = type.values[:yellow]
+      assert %Type.Enum.Value{name: "PURPLE"} = type.values[:purple]
+      assert %Type.Enum.Value{name: "ORANGE"} = type.values[:orange]
     end
   end
 
