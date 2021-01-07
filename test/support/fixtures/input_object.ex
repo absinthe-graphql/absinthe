@@ -269,7 +269,9 @@ defmodule Absinthe.Fixtures.InputObject do
         default_value: Absinthe.Fixtures.FunctionEvaluationHelpers.external_function("hello")
 
       field :module_attribute_string_concat, :string, default_value: "hello " <> @module_attribute
-      field :interpolation_of_module_attribute, :string, default_value: "hello #{@module_attribute}"
+
+      field :interpolation_of_module_attribute, :string,
+        default_value: "hello #{@module_attribute}"
     end
   end
 end

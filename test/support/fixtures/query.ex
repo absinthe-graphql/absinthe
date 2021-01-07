@@ -75,7 +75,8 @@ defmodule Absinthe.Fixtures.Query do
 
       field :function_call_using_absolute_path_to_current_module, :string do
         arg :arg_example, :string,
-          default_value: Absinthe.Fixtures.Query.TestSchemaFieldArgDefaultValue.test_function("red")
+          default_value:
+            Absinthe.Fixtures.Query.TestSchemaFieldArgDefaultValue.test_function("red")
       end
 
       field :standard_library_function, :string do
@@ -130,7 +131,10 @@ defmodule Absinthe.Fixtures.Query do
 
       field :function_call_using_absolute_path_to_current_module, :string do
         arg :arg_example, :string,
-          default_value: Absinthe.Fixtures.Query.TestSchemaFieldArgDefaultValueWithImportFields.test_function("red")
+          default_value:
+            Absinthe.Fixtures.Query.TestSchemaFieldArgDefaultValueWithImportFields.test_function(
+              "red"
+            )
       end
 
       field :standard_library_function, :string do

@@ -138,8 +138,7 @@ defmodule Absinthe.Type.ObjectTest do
                       expected_value: expected_value
                     } ->
       test "for #{test_label} (evaluates default_value to '#{expected_value}')" do
-        type =
-          Object.TestSchemaFieldsAndArgsDescription.__absinthe_type__(:field_default_value)
+        type = Object.TestSchemaFieldsAndArgsDescription.__absinthe_type__(:field_default_value)
 
         assert type.fields[unquote(test_label)].default_value == unquote(expected_value)
       end

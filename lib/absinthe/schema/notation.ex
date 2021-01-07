@@ -1334,10 +1334,6 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def handle_arg_attrs(identifier, type, raw_attrs) do
-    if String.contains?(inspect(binding()), "ZZZZZZZZZZ") do
-      binding() |> IO.inspect(label: "_____________________________ #{__MODULE__} AAAAAAAAAAAAAAAAA ")
-    end
-
     raw_attrs
     |> Keyword.put_new(:name, to_string(identifier))
     |> Keyword.put_new(:type, type)
