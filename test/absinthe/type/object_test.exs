@@ -43,7 +43,7 @@ defmodule Absinthe.Type.ObjectTest do
     end
   end
 
-  describe "input object keyword description evaluation" do
+  describe "object keyword description evaluation" do
     Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
@@ -83,7 +83,7 @@ defmodule Absinthe.Type.ObjectTest do
     end)
   end
 
-  describe "input object field keyword description evaluation" do
+  describe "object field keyword description evaluation" do
     Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
@@ -100,7 +100,7 @@ defmodule Absinthe.Type.ObjectTest do
     end)
   end
 
-  describe "input object field attribute description evaluation" do
+  describe "object field attribute description evaluation" do
     Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Absinthe.Fixtures.FunctionEvaluationHelpers.filter_test_params_for_description_attribute()
     |> Enum.each(fn %{
@@ -115,7 +115,7 @@ defmodule Absinthe.Type.ObjectTest do
     end)
   end
 
-  describe "input object field macro description evaluation" do
+  describe "object field macro description evaluation" do
     Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
@@ -126,6 +126,22 @@ defmodule Absinthe.Type.ObjectTest do
           Object.TestSchemaFieldsAndArgsDescription.__absinthe_type__(:field_description_macro)
 
         assert type.fields[unquote(test_label)].description == unquote(expected_value)
+      end
+    end)
+  end
+
+  # TODO default_value is always nil????
+  describe "object field default_value evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates default_value to '#{expected_value}')" do
+        type =
+          Object.TestSchemaFieldsAndArgsDescription.__absinthe_type__(:field_default_value)
+
+        assert type.fields[unquote(test_label)].default_value == unquote(expected_value)
       end
     end)
   end

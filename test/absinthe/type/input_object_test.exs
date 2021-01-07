@@ -3,6 +3,8 @@ defmodule Absinthe.Type.InputObjectTest do
 
   alias Absinthe.Fixtures.InputObject
 
+  # Note: The arg description evaluation tests are in test/absinthe/type/query_test.exs
+
   defmodule Schema do
     use Absinthe.Schema
 
@@ -117,6 +119,21 @@ defmodule Absinthe.Type.InputObjectTest do
           )
 
         assert type.fields[unquote(test_label)].description == unquote(expected_value)
+      end
+    end)
+  end
+
+  describe "input object field default_value evaluation" do
+    Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
+    |> Enum.each(fn %{
+                      test_label: test_label,
+                      expected_value: expected_value
+                    } ->
+      test "for #{test_label} (evaluates default_value to '#{expected_value}')" do
+        type =
+          InputObject.TestSchemaFieldsAndArgsDescription.__absinthe_type__(:field_default_value)
+
+        assert type.fields[unquote(test_label)].default_value == unquote(expected_value)
       end
     end)
   end

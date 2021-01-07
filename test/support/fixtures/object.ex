@@ -251,5 +251,25 @@ defmodule Absinthe.Fixtures.Object do
         description "hello #{@module_attribute}"
       end
     end
+
+    object :field_default_value do
+      field :normal_string, :string, default_value: "string"
+      field :local_function_call, :string, default_value: test_function("red")
+
+      field :function_call_using_absolute_path_to_current_module, :string,
+        default_value:
+          Absinthe.Fixtures.Object.TestSchemaFieldsAndArgsDescription.test_function("red")
+
+      field :standard_library_function, :string, default_value: String.replace("red", "e", "a")
+
+      field :function_in_nested_module, :string,
+        default_value: NestedModule.nested_function("hello")
+
+      field :external_module_function_call, :string,
+        default_value: Absinthe.Fixtures.FunctionEvaluationHelpers.external_function("hello")
+
+      field :module_attribute_string_concat, :string, default_value: "hello " <> @module_attribute
+      field :interpolation_of_module_attribute, :string, default_value: "hello #{@module_attribute}"
+    end
   end
 end
