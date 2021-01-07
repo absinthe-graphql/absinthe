@@ -22,6 +22,8 @@ defmodule Elixir.Absinthe.Integration.Execution.Variables.DefaultValueTest do
     {:ok, %{data: %{"microsecond" => first_current_microsecond}}} =
       Absinthe.run(@default_value_query, Absinthe.Fixtures.DefaultValueSchema, [])
 
+    Process.sleep(5)
+
     {:ok, %{data: %{"microsecond" => second_current_microsecond}}} =
       Absinthe.run(@default_value_query, Absinthe.Fixtures.DefaultValueSchema, [])
 
