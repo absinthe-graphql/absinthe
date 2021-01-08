@@ -130,6 +130,8 @@ defmodule Absinthe.Middleware.Batch do
   end
 
   defp do_batching(input) do
+    logger_metadata = Logger.metadata()
+
     input
     |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
     |> Enum.map(fn {{batch_fun, batch_opts}, batch_data} ->
@@ -138,6 +140,7 @@ defmodule Absinthe.Middleware.Batch do
 
       task =
         Task.async(fn ->
+          Logger.metadata(logger_metadata)
           {batch_fun, call_batch_fun(batch_fun, batch_data)}
         end)
 
