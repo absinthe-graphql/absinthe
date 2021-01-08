@@ -3,8 +3,6 @@ defmodule Absinthe.Middleware.BatchTest do
   import ExUnit.CaptureLog
   require Logger
 
-  @moduletag :capture_log
-
   defmodule Schema do
     use Absinthe.Schema
 
@@ -56,10 +54,24 @@ defmodule Absinthe.Middleware.BatchTest do
           end)
         end
       end
+
+      field :logged_organization, :organization do
+        arg :id, non_null(:integer)
+
+        resolve fn _, %{id: id}, _ ->
+          batch({__MODULE__, :by_id, :with_logs}, id, fn batch ->
+            {:ok, Map.get(batch, id)}
+          end)
+        end
+      end
+    end
+
+    def by_id(:with_logs, ids) do
+      Logger.info("Getting organizations with ids: #{inspect(ids)}")
+      Map.take(@organizations, ids)
     end
 
     def by_id(_, ids) do
-      Logger.info("Getting organizations with ids: #{inspect(ids)}")
       Map.take(@organizations, ids)
     end
   end
@@ -137,10 +149,8 @@ defmodule Absinthe.Middleware.BatchTest do
   test "includes the logger metadata from the parent process" do
     doc = """
     {
-      users {
-        organization {
-          name
-        }
+      loggedOrganization(id: 1) {
+        id
       }
     }
     """
