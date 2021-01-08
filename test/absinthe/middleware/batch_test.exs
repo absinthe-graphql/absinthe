@@ -1,5 +1,9 @@
 defmodule Absinthe.Middleware.BatchTest do
   use Absinthe.Case, async: true
+  import ExUnit.CaptureLog
+  require Logger
+
+  @moduletag :capture_log
 
   defmodule Schema do
     use Absinthe.Schema
@@ -55,6 +59,7 @@ defmodule Absinthe.Middleware.BatchTest do
     end
 
     def by_id(_, ids) do
+      Logger.info("Getting organizations with ids: #{inspect(ids)}")
       Map.take(@organizations, ids)
     end
   end
@@ -127,5 +132,23 @@ defmodule Absinthe.Middleware.BatchTest do
 
     assert_receive {:telemetry_event, [:absinthe, :middleware, :batch, :stop], %{duration: _},
                     %{id: _, batch_fun: _, batch_opts: _, batch_data: _, result: _}}
+  end
+
+  test "includes the logger metadata from the parent process" do
+    doc = """
+    {
+      users {
+        organization {
+          name
+        }
+      }
+    }
+    """
+
+    Logger.metadata(request_id: "1234")
+
+    assert capture_log(fn ->
+             Absinthe.run(doc, Schema)
+           end) =~ "request_id=1234"
   end
 end

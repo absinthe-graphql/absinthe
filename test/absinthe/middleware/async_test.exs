@@ -1,5 +1,7 @@
 defmodule Absinthe.Middleware.AsyncTest do
   use Absinthe.Case, async: true
+  import ExUnit.CaptureLog
+  require Logger
 
   defmodule Schema do
     use Absinthe.Schema
@@ -11,6 +13,15 @@ defmodule Absinthe.Middleware.AsyncTest do
             async(fn ->
               {:ok, "we async now"}
             end)
+          end)
+        end
+      end
+
+      field :async_log_thing, :string do
+        resolve fn _, _, _ ->
+          async(fn ->
+            Logger.info("logging the thing")
+            {:ok, "async task"}
           end)
         end
       end
@@ -97,5 +108,15 @@ defmodule Absinthe.Middleware.AsyncTest do
     """
 
     assert {:ok, %{data: %{"returnsNil" => nil}}} == Absinthe.run(doc, Schema)
+  end
+
+  test "copies the logger metadata from the parent process" do
+    doc = """
+    {asyncLogThing}
+    """
+
+    Logger.metadata(request_id: "1234")
+
+    assert capture_log(fn -> Absinthe.run(doc, Schema) end) =~ "request_id=1234"
   end
 end
