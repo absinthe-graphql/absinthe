@@ -30,6 +30,8 @@ defmodule Absinthe.Subscription do
 
   alias __MODULE__
 
+  alias Absinthe.Subscription.PipelineSerializer
+
   @doc """
   Add Absinthe.Subscription to your process tree.
   """
@@ -111,7 +113,7 @@ defmodule Absinthe.Subscription do
     doc_value = {
       doc_id,
       %{
-        initial_phases: doc.initial_phases,
+        initial_phases: PipelineSerializer.pack(doc.initial_phases),
         source: doc.source
       }
     }
@@ -138,8 +140,12 @@ defmodule Absinthe.Subscription do
     pubsub
     |> registry_name
     |> Registry.lookup(key)
-    |> Enum.map(&elem(&1, 1))
-    |> Map.new()
+    |> Enum.map(fn match ->
+      {_, {doc_id, doc}} = match
+      doc = Map.update!(doc, :initial_phases, &PipelineSerializer.unpack/1)
+
+      {doc_id, doc}
+    end)
   end
 
   @doc false
