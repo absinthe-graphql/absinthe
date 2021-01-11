@@ -1,5 +1,5 @@
 defmodule Absinthe.Schema.ExperimentalTest do
-  use Absinthe.Case
+  use Absinthe.Case, async: true
 
   @moduletag :experimental
 
