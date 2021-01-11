@@ -7,6 +7,7 @@ defmodule Absinthe.Blueprint.Document.VariableDefinition do
   defstruct [
     :name,
     :type,
+    directives: [],
     default_value: nil,
     source_location: nil,
     # Added by phases
@@ -19,6 +20,7 @@ defmodule Absinthe.Blueprint.Document.VariableDefinition do
   @type t :: %__MODULE__{
           name: String.t(),
           type: Blueprint.TypeReference.t(),
+          directives: [Blueprint.Directive.t()],
           default_value: Blueprint.Input.t(),
           source_location: nil | Blueprint.SourceLocation.t(),
           provided_value: nil | Blueprint.Input.t(),

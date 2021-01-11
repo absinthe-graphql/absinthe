@@ -5,6 +5,7 @@ defmodule Absinthe.Language.VariableDefinition do
 
   defstruct variable: nil,
             type: nil,
+            directives: [],
             default_value: nil,
             loc: %{line: nil}
 
@@ -20,6 +21,7 @@ defmodule Absinthe.Language.VariableDefinition do
       %Blueprint.Document.VariableDefinition{
         name: node.variable.name,
         type: Blueprint.Draft.convert(node.type, doc),
+        directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
         default_value: Blueprint.Draft.convert(node.default_value, doc),
         source_location: source_location(node)
       }
