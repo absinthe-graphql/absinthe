@@ -4,7 +4,7 @@ defmodule Absinthe.Language.VariableDefinitionTest do
   alias Absinthe.{Blueprint, Language}
 
   @query """
-  query Foo($showFoo: Boolean = true) {
+  query Foo($showFoo: Boolean = true @bar(a: 1)) {
     foo @include(if: $showFoo)
   }
   """
@@ -13,6 +13,7 @@ defmodule Absinthe.Language.VariableDefinitionTest do
     test "builds a VariableDefinition.t" do
       assert %Blueprint.Document.VariableDefinition{
                name: "showFoo",
+               directives: [%Blueprint.Directive{name: "bar"}],
                type: %Blueprint.TypeReference.Name{name: "Boolean"},
                default_value: %Blueprint.Input.Boolean{value: true},
                source_location: %Blueprint.SourceLocation{line: 1}

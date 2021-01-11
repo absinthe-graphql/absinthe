@@ -55,6 +55,7 @@ VariableDefinitionList -> VariableDefinition : ['$1'].
 VariableDefinitionList -> VariableDefinition VariableDefinitionList : ['$1'|'$2'].
 VariableDefinition -> Variable ':' Type : build_ast_node('VariableDefinition', #{'variable' => '$1', 'type' => '$3'}, extract_child_location('$1')).
 VariableDefinition -> Variable ':' Type DefaultValue : build_ast_node('VariableDefinition', #{'variable' => '$1', 'type' => '$3', 'default_value' => '$4'}, extract_child_location('$1')).
+VariableDefinition -> Variable ':' Type DefaultValue Directives : build_ast_node('VariableDefinition', #{'variable' => '$1', 'type' => '$3', 'default_value' => '$4', 'directives' => '$5'}, extract_child_location('$1')).
 Variable -> '$' NameWithoutOn : build_ast_node('Variable', #{'name' => extract_binary('$2')}, extract_location('$1')).
 Variable -> '$' 'on' : build_ast_node('Variable', #{'name' => extract_binary('$2')}, extract_location('$1')).
 
