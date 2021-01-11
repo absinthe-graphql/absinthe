@@ -413,6 +413,7 @@ defmodule Absinthe.Schema.Notation do
       |> Keyword.delete(:args)
       |> Keyword.delete(:meta)
       |> Keyword.update(:description, nil, &wrap_in_unquote/1)
+      |> Keyword.update(:default_value, nil, &wrap_in_unquote/1)
       |> handle_deprecate
 
     {attrs, block}
@@ -1337,6 +1338,7 @@ defmodule Absinthe.Schema.Notation do
     |> Keyword.put_new(:name, to_string(identifier))
     |> Keyword.put_new(:type, type)
     |> Keyword.update(:description, nil, &wrap_in_unquote/1)
+    |> Keyword.update(:default_value, nil, &wrap_in_unquote/1)
     |> handle_deprecate
   end
 

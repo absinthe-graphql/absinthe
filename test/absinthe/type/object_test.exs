@@ -43,7 +43,7 @@ defmodule Absinthe.Type.ObjectTest do
     end
   end
 
-  describe "input object keyword description evaluation" do
+  describe "object keyword description evaluation" do
     Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
@@ -83,7 +83,7 @@ defmodule Absinthe.Type.ObjectTest do
     end)
   end
 
-  describe "input object field keyword description evaluation" do
+  describe "object field keyword description evaluation" do
     Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
@@ -100,7 +100,7 @@ defmodule Absinthe.Type.ObjectTest do
     end)
   end
 
-  describe "input object field attribute description evaluation" do
+  describe "object field attribute description evaluation" do
     Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Absinthe.Fixtures.FunctionEvaluationHelpers.filter_test_params_for_description_attribute()
     |> Enum.each(fn %{
@@ -115,7 +115,7 @@ defmodule Absinthe.Type.ObjectTest do
     end)
   end
 
-  describe "input object field macro description evaluation" do
+  describe "object field macro description evaluation" do
     Absinthe.Fixtures.FunctionEvaluationHelpers.function_evaluation_test_params()
     |> Enum.each(fn %{
                       test_label: test_label,
