@@ -6,7 +6,13 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
   object :__schema do
     description "Represents a schema"
 
-    field :types, list_of(:__type) do
+    field :description, :string do
+      resolve(fn _, %{schema: schema} ->
+        {:ok, Absinthe.Schema.lookup_type(schema, :__schema).description}
+      end)
+    end
+
+    field :types, non_null(list_of(non_null(:__type))) do
       resolve fn _, %{schema: schema} ->
         types =
           Absinthe.Schema.types(schema)
@@ -35,7 +41,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       end
 
     field :directives,
-      type: list_of(:__directive),
+      type: non_null(list_of(non_null(:__directive))),
       resolve: fn _, %{schema: schema} ->
         directives =
           Absinthe.Schema.directives(schema)
@@ -140,7 +146,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
 
     field :description, :string
 
-    field :fields, list_of(:__field) do
+    field :fields, list_of(non_null(:__field)) do
       arg :include_deprecated, :boolean, default_value: false
 
       resolve fn
