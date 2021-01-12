@@ -42,7 +42,8 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         %{
           query: Enum.find(type_definitions, &(&1.identifier == :query)),
           mutation: Enum.find(type_definitions, &(&1.identifier == :mutation)),
-          subscription: Enum.find(type_definitions, &(&1.identifier == :subscription))
+          subscription: Enum.find(type_definitions, &(&1.identifier == :subscription)),
+          description: Enum.find(type_definitions, &(&1.identifier == :__schema)).description
         }
 
     directive_definitions =
@@ -72,13 +73,15 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       ]),
       render_list(schema.field_definitions, type_definitions)
     )
+    |> description(schema.description)
   end
 
   defp render(
          %{
            query: query_type,
            mutation: mutation_type,
-           subscription: subscription_type
+           subscription: subscription_type,
+           description: description
          },
          _type_definitions
        ) do
@@ -95,6 +98,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       "schema",
       schema_type_docs
     )
+    |> description(description)
   end
 
   @adapter Absinthe.Adapter.LanguageConventions
