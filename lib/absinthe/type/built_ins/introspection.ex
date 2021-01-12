@@ -6,6 +6,12 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
   object :__schema do
     description "Represents a schema"
 
+    field :description, :string do
+      resolve(fn _, %{schema: schema} ->
+        {:ok, Absinthe.Schema.lookup_type(schema, :__schema).description}
+      end)
+    end
+
     field :types, list_of(:__type) do
       resolve fn _, %{schema: schema} ->
         types =
