@@ -35,24 +35,4 @@ defmodule HydrateDynamicValuesTest do
   test "can hydrate enum values dynamically" do
     assert {:ok, %{data: %{"all" => ["RED", "BLUE", "GREEN"]}}} == Absinthe.run("{ all }", Schema)
   end
-
-  test "can't call functions to configure enum values dynamically" do
-    schema = """
-    defmodule KeywordExtend do
-      use Absinthe.Schema
-
-      enum :color do
-        value :red
-        value :blue, as: color_map(:blue)
-        value :green
-      end
-    end
-    """
-
-    error = ~r/Invalid Enum value/
-
-    assert_raise(Absinthe.Schema.Notation.Error, error, fn ->
-      Code.eval_string(schema)
-    end)
-  end
 end

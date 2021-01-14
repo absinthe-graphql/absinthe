@@ -43,7 +43,8 @@ locals_without_parens = [
   types: 1,
   union: 3,
   value: 1,
-  value: 2
+  value: 2,
+  values: 1
 ]
 
 [

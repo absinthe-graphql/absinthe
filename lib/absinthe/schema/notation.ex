@@ -1101,12 +1101,7 @@ defmodule Absinthe.Schema.Notation do
   defp handle_enum_attrs(attrs, env) do
     attrs
     |> expand_ast(env)
-    |> Keyword.update(:values, [], fn values ->
-      Enum.map(values, fn ident ->
-        value_attrs = handle_enum_value_attrs(ident, [], env)
-        struct!(Schema.EnumValueDefinition, value_attrs)
-      end)
-    end)
+    |> Keyword.update(:values, [], &[wrap_in_unquote(&1)])
     |> Keyword.update(:description, nil, &wrap_in_unquote/1)
   end
 
@@ -1471,21 +1466,12 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def handle_enum_value_attrs(identifier, raw_attrs, env) do
-    value =
-      case Keyword.get(raw_attrs, :as, identifier) do
-        value when is_tuple(value) ->
-          raise Absinthe.Schema.Notation.Error,
-                "Invalid Enum value for #{inspect(identifier)}. " <>
-                  "Must be a literal term, dynamic values must use `hydrate`"
-
-        value ->
-          value
-      end
+    value = Keyword.get(raw_attrs, :as, identifier)
 
     raw_attrs
     |> expand_ast(env)
     |> Keyword.put(:identifier, identifier)
-    |> Keyword.put(:value, value)
+    |> Keyword.put(:value, wrap_in_unquote(value))
     |> Keyword.put_new(:name, String.upcase(to_string(identifier)))
     |> Keyword.delete(:as)
     |> Keyword.update(:description, nil, &wrap_in_unquote/1)
@@ -1505,10 +1491,7 @@ defmodule Absinthe.Schema.Notation do
     values =
       values
       |> expand_ast(env)
-      |> Enum.map(fn ident ->
-        value_attrs = handle_enum_value_attrs(ident, [], env)
-        struct!(Schema.EnumValueDefinition, value_attrs)
-      end)
+      |> wrap_in_unquote
 
     put_attr(env.module, {:values, values})
   end

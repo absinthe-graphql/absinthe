@@ -42,17 +42,40 @@ defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
   end
 
   def values_by(type_def, key) do
-    for value_def <- type_def.values, into: %{} do
-      value = %Absinthe.Type.Enum.Value{
-        name: value_def.name,
-        value: value_def.value,
-        enum_identifier: type_def.identifier,
-        __reference__: value_def.__reference__,
-        description: value_def.description,
-        deprecation: value_def.deprecation
-      }
+    for value_def <- List.flatten(type_def.values), into: %{} do
+      case value_def do
+        %Blueprint.Schema.EnumValueDefinition{} ->
+          value = %Absinthe.Type.Enum.Value{
+            name: value_def.name,
+            value: value_def.value,
+            enum_identifier: type_def.identifier,
+            __reference__: value_def.__reference__,
+            description: value_def.description,
+            deprecation: value_def.deprecation
+          }
 
-      {Map.fetch!(value_def, key), value}
+          {Map.fetch!(value_def, key), value}
+
+        # Values defined via dynamic function calls don't yet get converted
+        # into proper Blueprints, but it works for now. This will get refactored
+        # in the future as we build out a general solution for dynamic values.
+        raw_value ->
+          name = raw_value |> to_string() |> String.upcase()
+
+          value_def = %{
+            name: name,
+            value: raw_value,
+            identifier: raw_value
+          }
+
+          value = %Absinthe.Type.Enum.Value{
+            name: name,
+            value: raw_value,
+            enum_identifier: type_def.identifier
+          }
+
+          {Map.fetch!(value_def, key), value}
+      end
     end
   end
 

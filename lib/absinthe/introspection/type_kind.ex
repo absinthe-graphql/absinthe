@@ -21,4 +21,17 @@ defmodule Absinthe.Introspection.TypeKind do
           | :non_null
 
   @callback kind() :: type_kind()
+
+  def values do
+    [
+      :scalar,
+      :object,
+      :interface,
+      :union,
+      :enum,
+      :input_object,
+      :list,
+      :non_null
+    ]
+  end
 end

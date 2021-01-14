@@ -99,39 +99,10 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
   end
 
   enum :__type_kind,
-    values: [
-      :scalar,
-      :object,
-      :interface,
-      :union,
-      :enum,
-      :input_object,
-      :list,
-      :non_null
-    ]
+    values: Absinthe.Introspection.TypeKind.values()
 
   enum :__directive_location,
-    values: [
-      :query,
-      :mutation,
-      :subscription,
-      :field,
-      :fragment_definition,
-      :fragment_spread,
-      :inline_fragment,
-      :variable_definition,
-      :schema,
-      :scalar,
-      :object,
-      :field_definition,
-      :argument_definition,
-      :interface,
-      :union,
-      :enum,
-      :enum_value,
-      :input_object,
-      :input_field_definition
-    ]
+    values: Absinthe.Introspection.DirectiveLocation.values()
 
   object :__type do
     description "Represents scalars, interfaces, object types, unions, enums in the system"

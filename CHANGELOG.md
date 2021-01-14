@@ -6,8 +6,9 @@
 - Feature: Support for the [`repeatable` directive](https://github.com/absinthe-graphql/absinthe/pull/999)
 - Feature: Enable [rendering](https://github.com/absinthe-graphql/absinthe/pull/1010) of Type System Directives in SDL based schemas.
 - Feature: Correctly match [Introspection type specs](https://github.com/absinthe-graphql/absinthe/pull/1017)
-- Bug Fix: Restore dynamic description support [comprehensively fixed](https://github.com/absinthe-graphql/absinthe/pull/1005) (Note: the `description`s are evaluated once --- at compile time)
-- Bug Fix: Restore dynamic default_value support [comprehensively fixed](https://github.com/absinthe-graphql/absinthe/pull/1026) (Note: the `default_value`s evaluated once --- at compile time)
+- Bug Fix: Restore dynamic [description support](https://github.com/absinthe-graphql/absinthe/pull/1005) (Note: the `description`s are evaluated once --- at compile time)
+- Bug Fix: Restore dynamic [default_value support](https://github.com/absinthe-graphql/absinthe/pull/1026) (Note: the `default_value`s evaluated once --- at compile time)
+- Bug Fix: Restore dynamic [Enum value support](https://github.com/absinthe-graphql/absinthe/pull/1023) (Note: the `value` is evaluated once --- at compile time)
 - Bug Fix: [Interface nullability](https://github.com/absinthe-graphql/absinthe/pull/1009) corrections
 - Bug Fix: Fix [field listing for Inputs](https://github.com/absinthe-graphql/absinthe/pull/1015) that import fields
 - Bug Fix: Properly [trim all descriptions](https://github.com/absinthe-graphql/absinthe/pull/1014) no matter the mechanism used to specify them
