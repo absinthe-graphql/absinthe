@@ -1101,12 +1101,7 @@ defmodule Absinthe.Schema.Notation do
   defp handle_enum_attrs(attrs, env) do
     attrs
     |> expand_ast(env)
-    |> Keyword.update(:values, [], fn values ->
-      Enum.map(values, fn ident ->
-        value_attrs = handle_enum_value_attrs(ident, [], env)
-        struct!(Schema.EnumValueDefinition, value_attrs)
-      end)
-    end)
+    |> Keyword.update(:values, [], &[wrap_in_unquote(&1)])
     |> Keyword.update(:description, nil, &wrap_in_unquote/1)
   end
 

@@ -5,6 +5,7 @@ defmodule Absinthe.Phase.Schema.Validation.DirectivesMustBeValid do
   alias Absinthe.Blueprint
 
   @spec_link "https://spec.graphql.org/draft/#sec-Type-System.Directives"
+  @directive_locations Absinthe.Introspection.DirectiveLocation.values()
 
   @doc """
   Run the validation.
@@ -32,31 +33,6 @@ defmodule Absinthe.Phase.Schema.Validation.DirectivesMustBeValid do
       validate_location(directive, location)
     end)
   end
-
-  @executable_directive_locations [
-    :query,
-    :mutation,
-    :subscription,
-    :field,
-    :fragment_definition,
-    :fragment_spread,
-    :inline_fragment,
-    :variable_definition
-  ]
-  @type_system_directive_locations [
-    :schema,
-    :scalar,
-    :object,
-    :field_definition,
-    :argument_definition,
-    :interface,
-    :union,
-    :enum,
-    :enum_value,
-    :input_object,
-    :input_field_definition
-  ]
-  @directive_locations @executable_directive_locations ++ @type_system_directive_locations
 
   defp validate_location(directive, location) when location in @directive_locations do
     directive

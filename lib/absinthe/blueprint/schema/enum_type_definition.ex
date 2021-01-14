@@ -56,6 +56,9 @@ defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
 
           {Map.fetch!(value_def, key), value}
 
+        # Values defined via dynamic function calls don't yet get converted
+        # into proper Blueprints, but it works for now. This will get refactored
+        # in the future as we build out a general solution for dynamic values.
         raw_value ->
           name = raw_value |> to_string() |> String.upcase()
 
