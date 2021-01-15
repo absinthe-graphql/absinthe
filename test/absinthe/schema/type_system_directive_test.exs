@@ -1,5 +1,5 @@
 defmodule Absinthe.Schema.TypeSystemDirectiveTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   defmodule WithTypeSystemDirective do
     use Absinthe.Schema.Prototype

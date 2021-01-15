@@ -1,5 +1,5 @@
 defmodule Absinthe.Schema.Notation.Experimental.ImportFieldsTest do
-  use Absinthe.Case
+  use Absinthe.Case, async: true
   import ExperimentalNotationHelpers
 
   @moduletag :experimental

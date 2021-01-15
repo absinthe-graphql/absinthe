@@ -1,5 +1,5 @@
 defmodule Absinthe.Schema.Notation.Experimental.ImportTypesTest do
-  use Absinthe.Case
+  use Absinthe.Case, async: true
 
   @moduletag :experimental
 

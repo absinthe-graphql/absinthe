@@ -1,5 +1,5 @@
 defmodule Absinthe.Schema.SdlRenderTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   defmodule SdlTestSchema do
     use Absinthe.Schema
