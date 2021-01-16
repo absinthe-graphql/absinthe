@@ -408,6 +408,9 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   defp render_value(%Blueprint.Input.Value{raw: raw}),
     do: render_value(raw)
 
+  defp render_value(%Blueprint.Input.Null{}),
+    do: "null"
+
   defp render_value(%Blueprint.Input.Object{fields: fields}) do
     default_fields = Enum.map(fields, &render_value/1)
     concat(["{", join(default_fields, ", "), "}"])
