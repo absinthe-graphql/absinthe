@@ -56,9 +56,9 @@ defmodule Absinthe.Phase.Document.Result do
           rescue
             Absinthe.SerializationError ->
               raise(Absinthe.SerializationError, """
-              Could not serialize: #{inspect(value)} as a #{schema_node.name}
+              Could not serialize term #{inspect(value)} as type #{schema_node.name}
 
-              When resolving field:
+              When serializing the field:
               #{emitter.parent_type.name}.#{emitter.schema_node.name} (#{
                 emitter.schema_node.__reference__.location.file
               }:#{emitter.schema_node.__reference__.location.line})
