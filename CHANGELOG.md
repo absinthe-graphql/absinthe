@@ -3,6 +3,7 @@
 ## 1.6.1
 
 - Feature: [Improved serialization failure messages](https://github.com/absinthe-graphql/absinthe/pull/1033)
+- Bug Fix: [Render null default values in SDL](https://github.com/absinthe-graphql/absinthe/pull/1032)
 
 ## 1.6.0
 
