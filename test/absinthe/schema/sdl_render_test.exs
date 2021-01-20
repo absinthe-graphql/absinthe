@@ -53,6 +53,7 @@ defmodule Absinthe.Schema.SdlRenderTest do
       defaultInputArg(input: ComplexInput = {foo: "bar"}): String
       defaultListArg(things: [String] = ["ThisThing"]): [String]
       defaultEnumArg(category: Category = NEWS): Category
+      defaultNullStringArg(name: String = null): String
       animal: Animal
     }
 

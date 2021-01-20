@@ -48,6 +48,9 @@ defmodule Absinthe.Language.InputValueDefinition do
     defp to_term(%Language.ListValue{values: values}),
       do: Enum.map(values, &to_term/1)
 
+    defp to_term(%Language.NullValue{}),
+      do: nil
+
     defp to_term(%Language.ObjectValue{fields: fields}),
       do: Enum.into(fields, %{}, &{String.to_atom(&1.name), to_term(&1.value)})
 
