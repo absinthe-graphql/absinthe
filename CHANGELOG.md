@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.1
+
+- Feature: [Improved serialization failure messages](https://github.com/absinthe-graphql/absinthe/pull/1033)
+
 ## 1.6.0
 
 - Feature: [Interfaces can now implement Interfaces](https://github.com/absinthe-graphql/absinthe/pull/1012), matching the latest spec
