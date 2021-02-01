@@ -26,7 +26,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Set up Elixir
-      uses: actions/setup-elixir@v1
+      uses: erlef/setup-elixir@v1
       with:
         elixir-version: ${{ matrix.elixir }}
         otp-version: ${{ matrix.otp }}
@@ -36,18 +36,24 @@ jobs:
       with:
         path: deps
         key: ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}
 
     - name: Restore _build cache
       uses: actions/cache@v2
       with:
         path: _build
         key: ${{ runner.os }}-build-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ matrix.otp }}-${{ matrix.elixir }}
 
     - name: Restore plt cache
       uses: actions/cache@v2
       with:
         path: priv/plts
         key: ${{ runner.os }}-plt-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-plt-${{ matrix.otp }}-${{ matrix.elixir }}
 
     - name: Install deps
       run: mix deps.get
