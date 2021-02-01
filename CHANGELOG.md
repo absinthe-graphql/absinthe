@@ -4,6 +4,7 @@
 
 - Feature: [Improved serialization failure messages](https://github.com/absinthe-graphql/absinthe/pull/1033)
 - Bug Fix: [Render null default values in SDL](https://github.com/absinthe-graphql/absinthe/pull/1032)
+- Bug Fix: [Reduce memory usage of Schema.Manager](https://github.com/absinthe-graphql/absinthe/pull/1037)
 
 ## 1.6.0
 
