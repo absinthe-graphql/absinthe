@@ -23,6 +23,6 @@ defmodule Absinthe.Schema.Manager do
         raise Absinthe.Schema.Error, phase_errors: List.wrap(errors)
     end
 
-    {:ok, schema_module}
+    {:ok, schema_module, :hibernate}
   end
 end
