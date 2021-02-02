@@ -21,6 +21,7 @@ if Code.ensure_loaded?(:persistent_term) do
 
     In your schema module:
     ```
+    use Absinthe.Schema
     @schema_provider Absinthe.Schema.PersistentTerm
     ```
 
