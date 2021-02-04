@@ -208,10 +208,13 @@ defmodule Absinthe.Schema.SdlRenderTest do
       value :picking
     end
 
+    enum :status, values: [:one, :two, :three]
+
     object :order do
       field :id, :id
       field :name, :string
       field :status, :order_status
+      field :other_status, :status
       import_fields :imported_fields
     end
 
@@ -255,6 +258,12 @@ defmodule Absinthe.Schema.SdlRenderTest do
 
              union SearchResult = Order | Category
 
+             enum Status {
+               ONE
+               TWO
+               THREE
+             }
+
              enum OrderStatus {
                DELIVERED
                PROCESSING
@@ -266,6 +275,7 @@ defmodule Absinthe.Schema.SdlRenderTest do
                id: ID
                name: String
                status: OrderStatus
+               otherStatus: Status
              }
              """
   end
