@@ -192,7 +192,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         string(enum_type.name),
         directives(enum_type.directives, type_definitions)
       ]),
-      render_list(enum_type.values, type_definitions)
+      render_list(List.flatten(enum_type.values), type_definitions)
     )
     |> description(enum_type.description)
   end
@@ -380,7 +380,22 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
   # Render Helpers
 
-  defp render_list(items, type_definitions, seperator \\ line()) do
+  defp render_list(items, type_definitions, seperator \\ line())
+
+  # Workaround for `values` macro which temporarily defines
+  # values as raw atoms to support dynamic schemas
+  defp render_list([first | _] = items, type_definitions, seperator) when is_atom(first) do
+    items
+    |> Enum.map(
+      &%Blueprint.Schema.EnumValueDefinition{
+        value: &1,
+        name: String.upcase(to_string(&1))
+      }
+    )
+    |> render_list(type_definitions, seperator)
+  end
+
+  defp render_list(items, type_definitions, seperator) do
     items = Enum.reject(items, &(&1.module in @skip_modules))
 
     splitter =
