@@ -27,8 +27,8 @@ defmodule Absinthe.Mixfile do
       ],
       deps: deps(),
       dialyzer: [
-        plt_add_apps: [:mix, :dataloader, :decimal, :ex_unit],
-        plt_file: {:no_warn, "priv/plts/absinthe.plt"}
+        plt_core_path: "priv/plts",
+        plt_add_apps: [:mix, :dataloader, :decimal, :ex_unit]
       ]
     ]
   end
