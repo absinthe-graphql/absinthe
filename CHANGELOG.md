@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.2
+
+- Bug Fix: [Fix regression in SDL rendering for enum values](https://github.com/absinthe-graphql/absinthe/pull/1041)
+
 ## 1.6.1
 
 - Feature: [Improved serialization failure messages](https://github.com/absinthe-graphql/absinthe/pull/1033)
