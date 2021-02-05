@@ -35,23 +35,23 @@ jobs:
       uses: actions/cache@v2
       with:
         path: deps
-        key: ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+        key: deps-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
         restore-keys: |
-          ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}
+          deps-${{ matrix.otp }}-${{ matrix.elixir }}
 
     - name: Restore _build cache
       uses: actions/cache@v2
       with:
         path: _build
-        key: ${{ runner.os }}-build-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+        key: _build-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
         restore-keys: |
-          ${{ runner.os }}-build-${{ matrix.otp }}-${{ matrix.elixir }}
+          _build-${{ matrix.otp }}-${{ matrix.elixir }}
 
-    - name: Restore plt cache
+    - name: Restore plts cache
       uses: actions/cache@v2
       with:
         path: priv/plts
-        key: ${{ runner.os }}-plt-${{ matrix.otp }}-${{ matrix.elixir }}
+        key: plts-${{ matrix.otp }}-${{ matrix.elixir }}
 
     - name: Install deps
       run: mix deps.get
@@ -74,6 +74,4 @@ jobs:
     - name: Run dialyzer
       run: |
         mkdir -p priv/plts
-        ls -al priv/plts
-        ls -al _build/test
         MIX_ENV=test mix dialyzer
