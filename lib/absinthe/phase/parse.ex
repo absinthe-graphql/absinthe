@@ -105,6 +105,10 @@ defmodule Absinthe.Phase.Parse do
           Phase.Error.t()
   defp format_raw_parse_error({:lexer, rest, {line, column}}) do
     <<sample::binary-size(10), _::binary>> = rest
+
+    # Proposed Alternative:
+    # sample = String.slice(rest, 0, 10)
+
     message = "Parsing failed at `#{sample}`"
     %Phase.Error{message: message, locations: [%{line: line, column: column}], phase: __MODULE__}
   end
