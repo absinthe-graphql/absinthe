@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.3
+
+- Bug Fix: [Fix unicode bug when encoding parse error](https://github.com/absinthe-graphql/absinthe/pull/1044)
+
 ## 1.6.2
 
 - Bug Fix: [Fix regression in SDL rendering for enum values](https://github.com/absinthe-graphql/absinthe/pull/1041)
