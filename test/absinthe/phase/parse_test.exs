@@ -29,6 +29,34 @@ defmodule Absinthe.Phase.ParseTest do
            ] == bp.execution.validation_errors
   end
 
+  @graphql "aa;bbbbbbbb—cc"
+  test "should provide sample of parsing failure respecting unicode boundary" do
+    assert {:error, bp} = Absinthe.Phase.Parse.run(@graphql, jump_phases: false)
+
+    assert [
+             %Absinthe.Phase.Error{
+               extra: %{},
+               locations: [%{column: 3, line: 1}],
+               message: "Parsing failed at `;bbbbbbbb—`",
+               phase: Absinthe.Phase.Parse
+             }
+           ] == bp.execution.validation_errors
+  end
+
+  @graphql ";"
+  test "should provide sample of parsing failure on very short query strings" do
+    assert {:error, bp} = Absinthe.Phase.Parse.run(@graphql, jump_phases: false)
+
+    assert [
+             %Absinthe.Phase.Error{
+               extra: %{},
+               locations: [%{column: 1, line: 1}],
+               message: "Parsing failed at `;`",
+               phase: Absinthe.Phase.Parse
+             }
+           ] == bp.execution.validation_errors
+  end
+
   @graphql """
   query {
     user {
