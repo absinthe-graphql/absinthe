@@ -55,9 +55,6 @@ jobs:
     - name: Install package dependencies
       run: mix deps.get
 
-    - name: Remove compiled application files
-      run: mix clean
-
     - name: Compile application
       run: mix compile
       env:
@@ -67,10 +64,14 @@ jobs:
       run: mix format --check-formatted
 
     - name: Run unit tests
-      run: mix test
+      run: |
+        mix clean
+        mix test
 
     - name: Run unit tests with persistent_term backend
-      run: mix test
+      run: |
+        mix clean
+        mix test
       env:
         SCHEMA_PROVIDER: persistent_term
 
