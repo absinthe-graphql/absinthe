@@ -7,27 +7,9 @@ on:
       - master
 
 jobs:
-  check_duplicate_runs:
-    name: Check for duplicate runs
-    continue-on-error: true
-    runs-on: ubuntu-latest
-    outputs:
-      should_skip: ${{ steps.skip_check.outputs.should_skip }}
-    steps:
-      - id: skip_check
-        uses: fkirc/skip-duplicate-actions@master
-        with:
-          concurrent_skipping: always
-          cancel_others: true
-          skip_after_successful_duplicate: true
-          paths_ignore: '["**/README.md", "**/CHANGELOG.md", "**/CODE_OF_CONDUCT.md", "**/CONTRIBUTING.md", "**/LICENSE.md"]'
-          do_not_skip: '["pull_request"]'
-
   test:
     name: Elixir ${{matrix.elixir}} / OTP ${{matrix.otp}}
     runs-on: ubuntu-latest
-    needs: check_duplicate_runs
-    if: ${{ needs.check_duplicate_runs.outputs.should_skip != 'true' }}
 
     strategy:
       matrix:
