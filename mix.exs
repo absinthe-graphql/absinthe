@@ -14,6 +14,9 @@ defmodule Absinthe.Mixfile do
       start_permanent: Mix.env() == :prod,
       package: package(),
       source_url: @source_url,
+      preferred_cli_env: [
+        dialyzer: :test
+      ],
       docs: [
         source_ref: "v#{@version}",
         main: "overview",

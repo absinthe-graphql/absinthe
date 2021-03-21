@@ -2,8 +2,6 @@ name: CI
 
 on:
   push:
-    branches:
-      - master
   pull_request:
     branches:
       - master
@@ -34,26 +32,27 @@ jobs:
     - name: Restore deps cache
       uses: actions/cache@v2
       with:
-        path: deps
-        key: deps-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+        path: |
+          deps
+          _build
+        key: deps-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}-${{ github.sha }}
         restore-keys: |
-          deps-${{ matrix.otp }}-${{ matrix.elixir }}
+          deps-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+          deps-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}
 
-    - name: Restore _build cache
-      uses: actions/cache@v2
-      with:
-        path: _build
-        key: _build-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
-        restore-keys: |
-          _build-${{ matrix.otp }}-${{ matrix.elixir }}
+    - name: Create dializer plts path
+      run: mkdir -p priv/plts
 
     - name: Restore plts cache
       uses: actions/cache@v2
       with:
         path: priv/plts
-        key: plts-${{ matrix.otp }}-${{ matrix.elixir }}
+        key: plts-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}-${{ github.sha }}
+        restore-keys: |
+          plts-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+          plts-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}
 
-    - name: Install deps
+    - name: Install package dependencies
       run: mix deps.get
 
     - name: Check Formatting
@@ -72,6 +71,4 @@ jobs:
         SCHEMA_PROVIDER: persistent_term
 
     - name: Run dialyzer
-      run: |
-        mkdir -p priv/plts
-        MIX_ENV=test mix dialyzer
+      run: mix dialyzer
