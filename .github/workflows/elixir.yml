@@ -55,11 +55,6 @@ jobs:
     - name: Install package dependencies
       run: mix deps.get
 
-    - name: Compile application
-      run: mix compile
-      env:
-        MIX_ENV: test
-
     - name: Check Formatting
       run: mix format --check-formatted
 
