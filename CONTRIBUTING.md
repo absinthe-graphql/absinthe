@@ -24,7 +24,7 @@ Make your change. Add tests for your change. Make the tests pass:
 Push to your fork (preferably to a non-`master` branch) and
 [submit a pull request][pr].
 
-[pr]: https://github.com/CargoSense/absinthe/compare/
+[pr]: https://github.com/absinthe-graphql/absinthe/compare/
 
 We'll review and answer your pull request as soon as possible. We may suggest
 some changes, improvements, or alternatives. Let's work through it together.
