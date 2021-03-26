@@ -33,7 +33,7 @@ defmodule Absinthe.Phase.Schema.TypeImports do
   end
 
   defp do_imports([{module, opts} | rest], acc, schema) do
-    case Code.ensure_compiled(module) do
+    case ensure_compiled(module) do
       {:module, module} ->
         [other_def] = module.__absinthe_blueprint__.schema_definitions
 
@@ -55,6 +55,21 @@ defmodule Absinthe.Phase.Schema.TypeImports do
 
       {:error, reason} ->
         do_imports(rest, acc, schema |> put_error(error(module, reason)))
+    end
+  end
+
+  # Elixir v1.12 includes a Code.ensure_compiled!/1 that tells
+  # the compiler it should only continue if the module is available.
+  # This gives the Elixir compiler more information to address
+  # deadlocks.
+  # TODO: Remove the else clause once we require Elixir v1.12+.
+  @compile {:no_warn_undefined, {Code, :ensure_compiled!, 1}}
+  @dialyzer {:nowarn_function, [ensure_compiled: 1]}
+  defp ensure_compiled(module) do
+    if function_exported?(Code, :ensure_compiled!, 1) do
+      {:module, Code.ensure_compiled!(module)}
+    else
+      Code.ensure_compiled(module)
     end
   end
 
