@@ -63,6 +63,7 @@ defmodule Absinthe.Phase.Schema.TypeImports do
   # This gives the Elixir compiler more information to address
   # deadlocks.
   # TODO: Remove the else clause once we require Elixir v1.12+.
+  @compile {:no_warn_undefined, {Code, :ensure_compiled!, 1}}
   defp ensure_compiled(module) do
     if function_exported?(Code, :ensure_compiled!, 1) do
       {:module, Code.ensure_compiled!(module)}
