@@ -26,7 +26,8 @@ defmodule Absinthe.Subscription.Supervisor do
          keys: :duplicate,
          name: registry_name,
          partitions: System.schedulers_online(),
-         meta: meta
+         meta: meta,
+         compressed: true
        ]},
       {Absinthe.Subscription.ProxySupervisor, [pubsub, registry_name, pool_size]}
     ]
