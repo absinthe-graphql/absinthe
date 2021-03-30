@@ -139,12 +139,27 @@ defmodule Absinthe.Subscription do
 
   @doc false
   def get(pubsub, key) do
-    pubsub
-    |> registry_name(:fields)
+    dup_registry = pubsub |> registry_name(:duplicate)
+    uniq_registry = pubsub |> registry_name(:unique)
+
+    dup_registry
     |> Registry.lookup(key)
     |> Enum.map(fn match ->
-      {_, {doc_id, doc}} = match
-      doc = Map.update!(doc, :initial_phases, &PipelineSerializer.unpack/1)
+      {pid, {doc_id, doc}} = match
+      {_, context} = Registry.lookup(uniq_registry, {pid, doc_id, :context})
+
+      doc =
+        Map.update!(doc, :initial_phases, fn phases ->
+          phases
+          |> PipelineSerializer.unpack()
+          |> Enum.map(fn
+            {phase, opts} ->
+              {phase, Keyword.put(opts, :context, context)}
+
+            phase ->
+              phase
+          end)
+        end)
 
       {doc_id, doc}
     end)
