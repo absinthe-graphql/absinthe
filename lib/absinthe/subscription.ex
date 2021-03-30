@@ -174,7 +174,7 @@ defmodule Absinthe.Subscription do
   def publish_remote(pubsub, mutation_result, subscribed_fields) do
     {:ok, pool_size} =
       pubsub
-      |> registry_name(:fields)
+      |> registry_name(:unique)
       |> Registry.meta(:pool_size)
 
     shard = :erlang.phash2(mutation_result, pool_size)
@@ -199,7 +199,7 @@ defmodule Absinthe.Subscription do
   @doc false
   def extract_pubsub(context) do
     with {:ok, pubsub} <- Map.fetch(context, :pubsub),
-         pid when is_pid(pid) <- Process.whereis(registry_name(pubsub, :duplicate)) do
+         pid when is_pid(pid) <- Process.whereis(registry_name(pubsub, :unique)) do
       {:ok, pubsub}
     else
       _ -> :error
