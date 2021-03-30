@@ -108,7 +108,8 @@ defmodule Absinthe.Subscription do
 
   @doc false
   def subscribe(pubsub, field_key, doc_id, doc) do
-    registry = pubsub |> registry_name
+    dup_registry = pubsub |> registry_name(:duplicate)
+    uniq_registry = pubsub |> registry_name(:unique)
 
     doc_value = {
       doc_id,
@@ -118,13 +119,14 @@ defmodule Absinthe.Subscription do
       }
     }
 
-    {:ok, _} = Registry.register(registry, field_key, doc_value)
-    {:ok, _} = Registry.register(registry, {self(), doc_id}, field_key)
+    _ = Registry.register(uniq_registry, {self(), :context}, doc.execution.context)
+    {:ok, _} = Registry.register(dup_registry, field_key, doc_value)
+    {:ok, _} = Registry.register(dup_registry, {self(), doc_id}, field_key)
   end
 
   @doc false
   def unsubscribe(pubsub, doc_id) do
-    registry = pubsub |> registry_name
+    registry = pubsub |> registry_name(:duplicate)
     self = self()
 
     for {^self, field_key} <- Registry.lookup(registry, {self, doc_id}) do
@@ -138,7 +140,7 @@ defmodule Absinthe.Subscription do
   @doc false
   def get(pubsub, key) do
     pubsub
-    |> registry_name
+    |> registry_name(:fields)
     |> Registry.lookup(key)
     |> Enum.map(fn match ->
       {_, {doc_id, doc}} = match
@@ -149,15 +151,15 @@ defmodule Absinthe.Subscription do
   end
 
   @doc false
-  def registry_name(pubsub) do
-    Module.concat([pubsub, :Registry])
+  def registry_name(pubsub, type) do
+    Module.concat([pubsub, :Registry, type])
   end
 
   @doc false
   def publish_remote(pubsub, mutation_result, subscribed_fields) do
     {:ok, pool_size} =
       pubsub
-      |> registry_name
+      |> registry_name(:fields)
       |> Registry.meta(:pool_size)
 
     shard = :erlang.phash2(mutation_result, pool_size)
@@ -182,7 +184,7 @@ defmodule Absinthe.Subscription do
   @doc false
   def extract_pubsub(context) do
     with {:ok, pubsub} <- Map.fetch(context, :pubsub),
-         pid when is_pid(pid) <- Process.whereis(registry_name(pubsub)) do
+         pid when is_pid(pid) <- Process.whereis(registry_name(pubsub, :duplicate)) do
       {:ok, pubsub}
     else
       _ -> :error
