@@ -3,8 +3,8 @@ defmodule Absinthe.Subscription.ProxySupervisor do
 
   use Supervisor
 
-  def start_link([pubsub, registry, pool_size]) do
-    Supervisor.start_link(__MODULE__, {pubsub, registry, pool_size})
+  def start_link([pubsub, pool_size]) do
+    Supervisor.start_link(__MODULE__, {pubsub, pool_size})
   end
 
   def init({pubsub, pool_size}) do

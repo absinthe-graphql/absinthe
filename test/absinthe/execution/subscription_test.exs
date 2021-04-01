@@ -48,6 +48,15 @@ defmodule Absinthe.Execution.SubscriptionTest do
       field :id, :id
       field :name, :string
 
+      field :email, :string do
+        resolve fn
+          _, _, %{context: %{admin: true}} ->
+            {:ok, "foo@example.com"}
+          _, _, _ ->
+            {:error, "unauthorized"}
+        end
+      end
+
       field :group, :group do
         resolve fn user, _, %{context: %{test_pid: pid}} ->
           batch({__MODULE__, :batch_get_group, pid}, nil, fn _results ->
@@ -391,31 +400,6 @@ defmodule Absinthe.Execution.SubscriptionTest do
       end)
 
     assert String.contains?(error_log, "boom")
-  end
-
-  @tag :pending
-  test "different subscription docs are batched together" do
-    opts = [context: %{test_pid: self()}]
-
-    assert {:ok, %{"subscribed" => doc1}} =
-             run_subscription("subscription { user { group { name } id} }", Schema, opts)
-
-    # different docs required for test, otherwise they get deduplicated from the start
-    assert {:ok, %{"subscribed" => doc2}} =
-             run_subscription("subscription { user { group { name } id name} }", Schema, opts)
-
-    user = %{id: "1", name: "Alicia", group: %{name: "Elixir Users"}}
-
-    Absinthe.Subscription.publish(PubSub, user, user: ["*", user.id])
-
-    assert_receive({:broadcast, %{topic: ^doc1, result: %{data: _}}})
-    assert_receive({:broadcast, %{topic: ^doc2, result: %{data: %{"user" => user}}}})
-
-    assert user["group"]["name"] == "Elixir Users"
-
-    # we should get this just once due to batching
-    assert_receive(:batch_get_group)
-    refute_receive(:batch_get_group)
   end
 
   test "subscription docs with different contexts don't leak context" do

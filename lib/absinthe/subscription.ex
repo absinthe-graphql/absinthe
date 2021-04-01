@@ -107,21 +107,22 @@ defmodule Absinthe.Subscription do
   defp fetch_fields(_, _), do: []
 
   @doc false
-  def subscribe(pubsub, field_key, doc_id, doc) do
+  def subscribe(pubsub, doc, field_key, context_id, subscription_id) do
     dup_registry = pubsub |> registry_name(:duplicate)
     uniq_registry = pubsub |> registry_name(:unique)
 
     doc_value = {
-      doc_id,
+      subscription_id,
+      context_id,
       %{
         initial_phases: PipelineSerializer.pack(doc.initial_phases),
         source: doc.source
       }
     }
 
-    _ = Registry.register(uniq_registry, {self(), :context}, doc.execution.context)
+    _ = Registry.register(uniq_registry, {self(), context_id}, doc.execution.context)
     {:ok, _} = Registry.register(dup_registry, field_key, doc_value)
-    {:ok, _} = Registry.register(dup_registry, {self(), doc_id}, field_key)
+    {:ok, _} = Registry.register(dup_registry, {self(), subscription_id}, field_key)
   end
 
   @doc false
@@ -145,8 +146,8 @@ defmodule Absinthe.Subscription do
     dup_registry
     |> Registry.lookup(key)
     |> Enum.map(fn match ->
-      {pid, {doc_id, doc}} = match
-      {_, context} = Registry.lookup(uniq_registry, {pid, doc_id, :context})
+      {pid, {doc_id, context_id, doc}} = match
+      [{_, context}] = Registry.lookup(uniq_registry, {pid, context_id})
 
       doc =
         Map.update!(doc, :initial_phases, fn phases ->
