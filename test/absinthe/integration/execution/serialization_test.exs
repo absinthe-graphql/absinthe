@@ -16,6 +16,10 @@ defmodule Absinthe.Integration.Execution.SerializationTest do
       field :bad_boolean, :boolean do
         resolve fn _, _, _ -> {:ok, "true"} end
       end
+
+      field :bad_string, :string do
+        resolve fn _, _, _ -> {:ok, %{}} end
+      end
     end
   end
 
@@ -41,6 +45,15 @@ defmodule Absinthe.Integration.Execution.SerializationTest do
   query { badBoolean }
   """
   test "returning not a boolean for a boolean raises" do
+    assert_raise(Absinthe.SerializationError, fn ->
+      Absinthe.run(@query, Schema)
+    end)
+  end
+
+  @query """
+  query { badString }
+  """
+  test "returning not a string for a string raises" do
     assert_raise(Absinthe.SerializationError, fn ->
       Absinthe.run(@query, Schema)
     end)
