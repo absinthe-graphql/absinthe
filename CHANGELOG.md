@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.4
+
+- Feature: [Compress registry tables by default](https://github.com/absinthe-graphql/absinthe/pull/1058)
+- Bug Fix: [Fix compilation deadlocks on type imports](https://github.com/absinthe-graphql/absinthe/pull/1056)
+- Bug Fix: [Raise a better error when string serialization fails](https://github.com/absinthe-graphql/absinthe/pull/1062)
+
 ## 1.6.3
 
 - Bug Fix: [Fix unicode bug when encoding parse error](https://github.com/absinthe-graphql/absinthe/pull/1044)
