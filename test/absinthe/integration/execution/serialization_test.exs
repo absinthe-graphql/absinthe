@@ -53,7 +53,7 @@ defmodule Absinthe.Integration.Execution.SerializationTest do
   @query """
   query { badString }
   """
-  test "returning not a string for a string raises" do
+  test "returning a type that can't `to_string` for a string raises" do
     assert_raise(Absinthe.SerializationError, fn ->
       Absinthe.run(@query, Schema)
     end)
