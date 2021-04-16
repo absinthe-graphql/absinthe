@@ -54,16 +54,8 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     represent free-form human-readable text.
     """
 
-    serialize &__MODULE__.serialize_string/1
+    serialize &String.Chars.to_string/1
     parse parse_with([Absinthe.Blueprint.Input.String], &parse_string/1)
-  end
-
-  def serialize_string(n) when not is_map(n), do: String.Chars.to_string(n)
-
-  def serialize_string(n) do
-    raise Absinthe.SerializationError, """
-    Value #{inspect(n)} is not a valid string
-    """
   end
 
   scalar :id, name: "ID" do
