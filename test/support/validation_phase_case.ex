@@ -182,7 +182,7 @@ defmodule Absinthe.ValidationPhaseCase do
     |> Pipeline.upto(Phase.Document.Validation.Result)
     |> Pipeline.reject(fn phase ->
       Regex.match?(~r/Validation/, Atom.to_string(phase)) and
-        not (phase in [Phase.Document.Validation.Result | validations])
+        phase not in [Phase.Document.Validation.Result | validations]
     end)
   end
 

@@ -71,7 +71,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafs do
   end
 
   defp process(%{selections: s} = node, %unwrapped{}, type)
-       when s != [] and not (unwrapped in @has_subfields) do
+       when s != [] and unwrapped not in @has_subfields do
     bad_node(node, type, :bad_subfields)
   end
 
@@ -114,8 +114,6 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafs do
   """
   @spec required_subselection_message(String.t(), String.t()) :: String.t()
   def required_subselection_message(field_name, type_name) do
-    ~s(Field "#{field_name}" of type "#{type_name}" must have a selection of subfields. Did you mean "#{
-      field_name
-    } { ... }"?)
+    ~s(Field "#{field_name}" of type "#{type_name}" must have a selection of subfields. Did you mean "#{field_name} { ... }"?)
   end
 end
