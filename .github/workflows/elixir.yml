@@ -48,10 +48,10 @@ jobs:
       uses: actions/cache@v2
       with:
         path: priv/plts
-        key: plts-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}-${{ github.sha }}
+        key: plts-v2-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}-${{ github.sha }}
         restore-keys: |
-          plts-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
-          plts-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}
+          plts-v2-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+          plts-v2-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}
 
     - name: Install package dependencies
       run: mix deps.get
