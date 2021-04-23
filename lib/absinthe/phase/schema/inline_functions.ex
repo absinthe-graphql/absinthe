@@ -6,59 +6,59 @@ defmodule Absinthe.Phase.Schema.InlineFunctions do
   alias Absinthe.Blueprint.Schema
   alias Absinthe.Type
 
-  def run(blueprint, _opts) do
-    blueprint = Blueprint.prewalk(blueprint, &inline_functions(&1, blueprint.schema))
+  def run(blueprint, opts) do
+    blueprint = Blueprint.prewalk(blueprint, &inline_functions(&1, blueprint.schema, opts))
 
     {:ok, blueprint}
   end
 
-  def inline_functions(%Schema.SchemaDefinition{} = schema_def, schema) do
+  def inline_functions(%Schema.SchemaDefinition{} = schema_def, schema, opts) do
     schema_def = %{
       schema_def
-      | type_artifacts: Enum.map(schema_def.type_artifacts, &inline_functions(&1, schema)),
+      | type_artifacts: Enum.map(schema_def.type_artifacts, &inline_functions(&1, schema, opts)),
         directive_artifacts:
-          Enum.map(schema_def.directive_artifacts, &inline_functions(&1, schema))
+          Enum.map(schema_def.directive_artifacts, &inline_functions(&1, schema, opts))
     }
 
     {:halt, schema_def}
   end
 
-  def inline_functions(%type{identifier: _} = node, schema) do
+  def inline_functions(%type{identifier: _} = node, schema, opts) do
     type
     |> Schema.functions()
     # middleware gets handled specially
     |> Enum.reject(&(&1 in [:middleware]))
-    |> Enum.reduce(node, &inline_function/2)
-    |> inline_middleware(schema)
+    |> Enum.reduce(node, &inline_function(&1, &2, opts))
+    |> inline_middleware(schema, opts)
   end
 
-  def inline_functions(node, _) do
+  def inline_functions(node, _, _) do
     node
   end
 
-  defp inline_function(attr, node) do
+  defp inline_function(attr, node, opts) do
     function = Type.function(node, attr)
 
-    if Absinthe.Utils.escapable?(function) do
+    if Absinthe.Utils.escapable?(function) || opts[:inline_always] do
       %{node | attr => function}
     else
       node
     end
   end
 
-  def inline_middleware(%type_name{} = type, schema)
+  def inline_middleware(%type_name{} = type, schema, opts)
       when type_name in [Type.Object, Type.Union, Type.Interface] do
     Map.update!(type, :fields, fn fields ->
       fields =
         Enum.map(fields, fn {field_ident, field} ->
-          {field_ident, inline_functions(field, schema)}
+          {field_ident, inline_functions(field, schema, opts)}
         end)
 
       Map.new(fields, fn
         {field_ident, %{middleware: middleware} = field} ->
           expanded_middleware = Absinthe.Middleware.expand(schema, middleware, field, type)
 
-          if Absinthe.Utils.escapable?(expanded_middleware) do
+          if Absinthe.Utils.escapable?(expanded_middleware) || opts[:inline_always] do
             {field_ident, %{field | middleware: expanded_middleware}}
           else
             middleware_shim = {
@@ -77,7 +77,7 @@ defmodule Absinthe.Phase.Schema.InlineFunctions do
     end)
   end
 
-  def inline_middleware(type, _) do
+  def inline_middleware(type, _, _) do
     type
   end
 end

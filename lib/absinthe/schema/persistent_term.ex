@@ -38,6 +38,9 @@ if Code.ensure_loaded?(:persistent_term) do
 
     def pipeline(pipeline) do
       Enum.map(pipeline, fn
+        Absinthe.Phase.Schema.InlineFunctions ->
+          {Absinthe.Phase.Schema.InlineFunctions, inline_always: true}
+
         {Absinthe.Phase.Schema.Compile, options} ->
           {Absinthe.Phase.Schema.PopulatePersistentTerm, options}
 
