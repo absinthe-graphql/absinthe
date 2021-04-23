@@ -27,7 +27,9 @@ defmodule Absinthe.Case.Assertions.Schema do
                  keys = Map.keys(pattern)
                  Map.take(error, keys) |> handle_path == pattern |> handle_path
                end),
-               "Could not find error detail pattern #{inspect(pattern)}\n\nin\n\n#{inspect(err.phase_errors)}"
+               "Could not find error detail pattern #{inspect(pattern)}\n\nin\n\n#{
+                 inspect(err.phase_errors)
+               }"
       end)
 
     assert length(patterns) == length(err.phase_errors)

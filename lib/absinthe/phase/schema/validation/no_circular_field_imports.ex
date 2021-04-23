@@ -56,7 +56,9 @@ defmodule Absinthe.Phase.Schema.Validation.NoCircularFieldImports do
         String.trim("""
         Field Import Cycle Error
 
-        Field Import in object `#{type.identifier}' `import_fields(#{inspect(type.imports)}) forms a cycle via: (#{inspect(deps)})
+        Field Import in object `#{type.identifier}' `import_fields(#{inspect(type.imports)}) forms a cycle via: (#{
+          inspect(deps)
+        })
         """),
       locations: [type.__reference__.location],
       phase: __MODULE__,
