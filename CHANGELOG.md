@@ -1,5 +1,9 @@
 # Changelog
 
+## Dev
+
+- Feature: Always inline functions when using persistent_term backend.
+
 ## 1.6.4
 
 - Feature: [Compress registry tables by default](https://github.com/absinthe-graphql/absinthe/pull/1058)
