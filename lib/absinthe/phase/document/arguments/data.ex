@@ -53,7 +53,12 @@ defmodule Absinthe.Phase.Document.Arguments.Data do
   def handle_node(%Input.Value{normalized: %Input.Object{fields: fields}} = node) do
     data =
       for field <- fields, include_field?(field), into: %{} do
-        {field.schema_node.identifier, field.input_value.data}
+        # Scalar child nodes will not have a schema_node
+        if field.schema_node != nil do
+          {field.schema_node.identifier, field.input_value.data}
+        else
+          {field.name, field.input_value.data}
+        end
       end
 
     %{node | data: data}

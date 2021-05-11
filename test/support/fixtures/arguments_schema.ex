@@ -7,6 +7,11 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
     false: "NO"
   }
 
+  scalar :any, open_ended: true do
+    parse fn value -> {:ok, value} end
+    serialize fn value -> value end
+  end
+
   scalar :input_name do
     parse fn %{value: value} -> {:ok, %{first_name: value}} end
     serialize fn %{first_name: name} -> name end
@@ -62,6 +67,14 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
   end
 
   query do
+    field :entities, list_of(:any) do
+      arg :representations, non_null(list_of(non_null(:any)))
+
+      resolve fn %{representations: representations}, _ ->
+        {:ok, representations}
+      end
+    end
+
     field :stuff, :integer do
       arg :stuff, non_null(:input_stuff)
 

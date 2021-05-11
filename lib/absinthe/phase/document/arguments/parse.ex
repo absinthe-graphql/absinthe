@@ -12,10 +12,6 @@ defmodule Absinthe.Phase.Document.Arguments.Parse do
     {:ok, result}
   end
 
-  defp handle_node(%{schema_node: nil} = node, _context) do
-    {:halt, node}
-  end
-
   defp handle_node(%{normalized: nil} = node, _context) do
     node
   end
@@ -50,8 +46,26 @@ defmodule Absinthe.Phase.Document.Arguments.Parse do
     end
   end
 
+  defp build_value(
+         %Input.Object{} = normalized,
+         %Type.Scalar{open_ended: true} = schema_node,
+         context
+       ) do
+    case Type.Scalar.parse(schema_node, normalized, context) do
+      :error ->
+        {:error, :bad_parse}
+
+      {:ok, val} ->
+        {:ok, val}
+    end
+  end
+
   defp build_value(_normalized, %Type.Scalar{}, _context) do
     {:error, :bad_parse}
+  end
+
+  defp build_value(%{value: value} = _normalized, nil = _schema_node, _context) do
+    {:ok, value}
   end
 
   defp build_value(%Input.Null{}, %Type.Enum{}, _) do
