@@ -33,4 +33,4 @@ fetch('http://localhost:4000/graphql', {
 
 See the [@absinthe/socket](https://github.com/absinthe-graphql/absinthe-socket/tree/master/packages/socket) NPM package
 for special support for Absinthe's use of Phoenix channels for GraphQL over websockets, including support for
-[subscriptions](../subscriptions.md).
+[subscriptions](subscriptions.md).

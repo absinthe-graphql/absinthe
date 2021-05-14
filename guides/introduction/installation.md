@@ -32,4 +32,4 @@ end
 
 Most people use Absinthe to support an HTTP API.
 
-You'll want to read the [Plug and Phoenix](../plug-phoenix.md) for specific installation and configuration options, including how you can run the handy, included GraphiQL tool directly from your application.
+You'll want to read the [Plug and Phoenix](plug-phoenix.md) for specific installation and configuration options, including how you can run the handy, included GraphiQL tool directly from your application.

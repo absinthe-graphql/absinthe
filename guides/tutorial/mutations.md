@@ -48,7 +48,7 @@ end
 ```
 
 > Obviously things can go wrong in a mutation. To learn more about the
-> types of error results that Absinthe supports, read [the guide](../errors.md).
+> types of error results that Absinthe supports, read [the guide](errors.md).
 
 ## Authorization
 
@@ -58,7 +58,7 @@ passed to the resolver as the third argument carries along with it the
 Absinthe context, a data structure that serves as the integration
 point with external mechanisms---like a Plug that authenticates the
 current user. You can learn more about how the context can be used in
-the [Context and Authentication](../context-and-authentication.md)
+the [Context and Authentication](context-and-authentication.md)
 guide.
 
 Going back to the resolver code:
