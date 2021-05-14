@@ -133,7 +133,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
     assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
   end
 
-  test "error propogation to root field returns nil on data" do
+  test "error propagation to root field returns nil on data" do
     doc = """
     {
       nullable { nullable { nonNullErrorField }}

@@ -397,10 +397,10 @@ defmodule Absinthe.Schema do
   end
   ```
   """
-  def replace_default(middleware_list, new_middleware, %{identifier: identifer}, _object) do
+  def replace_default(middleware_list, new_middleware, %{identifier: identifier}, _object) do
     Enum.map(middleware_list, fn middleware ->
       case middleware do
-        {Absinthe.Middleware.MapGet, ^identifer} ->
+        {Absinthe.Middleware.MapGet, ^identifier} ->
           new_middleware
 
         middleware ->

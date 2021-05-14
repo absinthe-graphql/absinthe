@@ -2,7 +2,7 @@
 
 There are three main approaches to testing GraphQL APIs built with Absinthe:
 
-1. Testing resolver functions, since they do most of work.
+1. Testing resolver functions, since they do most of the work.
 2. Testing GraphQL document execution directly via `Absinthe.run/3`, for the bigger picture.
 3. Outside-in, testing the full HTTP request/response cycle with [absinthe_plug](https://hexdocs.pm/absinthe_plug/Absinthe.Plug.html).
 

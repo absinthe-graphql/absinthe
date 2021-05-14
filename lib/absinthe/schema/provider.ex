@@ -2,7 +2,7 @@ defmodule Absinthe.Schema.Provider do
   @moduledoc """
   Experimental: Behaviour for providing schema data
 
-  This behaviour is experimental and may change significatly in patch releases.
+  This behaviour is experimental and may change significantly in patch releases.
   """
 
   @type schema_identifier :: term

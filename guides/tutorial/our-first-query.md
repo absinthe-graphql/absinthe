@@ -39,7 +39,7 @@ end
 
 > The GraphQL specification requires that type names be unique, TitleCased words.
 > Absinthe does this automatically for us, extrapolating from our type identifier
-> (in this case `:post` gives us `"Post"`. If really needed, we could provide a
+> (in this case `:post` gives us `"Post"`). If really needed, we could provide a
 > custom type name as a `:name` option to the `object` macro.
 
 If you're curious what the type `:id` is used by the `:id` field, see
@@ -104,7 +104,7 @@ which is where all the domain logic for posts lives, invoking its
 `list_posts/0` function, then returns the posts in an `:ok` tuple.
 
 > Resolvers can return a wide variety of results, to include errors and configuration
-> for [advanced plugins](middleware-and-plugins.md) that further process the data.
+> for [advanced plugins](../middleware-and-plugins.md) that further process the data.
 >
 > If you're asking yourself what the implementation of the domain logic looks like, and exactly how
 > the related Ecto schemas are built, read through the code in the [absinthe_tutorial](http://github.com/absinthe-graphql/absinthe_tutorial)

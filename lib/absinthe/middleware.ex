@@ -48,7 +48,7 @@ defmodule Absinthe.Middleware do
   Middleware can be placed on a field in three different ways:
 
   1. Using the `Absinthe.Schema.Notation.middleware/2`
-  macro used inside a field definition
+  macro used inside a field definition.
   2. Using the `middleware/3` callback in your schema.
   3. Returning a `{:middleware, middleware_spec, config}`
   tuple from a resolution function.
@@ -105,7 +105,7 @@ defmodule Absinthe.Middleware do
   end
   ```
 
-  ## The `middleware/3` callback.
+  ## The `middleware/3` callback
 
   `middleware/3` is a function callback on a schema. When you `use
   Absinthe.Schema` a default implementation of this function is placed in your
@@ -160,9 +160,9 @@ defmodule Absinthe.Middleware do
 
   ### Default Middleware
 
-  One use of `middleware/3` is setting the default middleware on a field
+  One use of `middleware/3` is setting the default middleware on a field.
   By default middleware is placed on a
-  field that looks up a field by its snake case identifier, ie `:resource_name`
+  field that looks up a field by its snake case identifier, ie `:resource_name`.
   Here is an example of how to change the default to use a camel cased string,
   IE, "resourceName".
 
@@ -213,7 +213,7 @@ defmodule Absinthe.Middleware do
   function. If no middleware was applied in the function and it also returned `[]`,
   THEN Absinthe would apply the default.
 
-  This made it very easy to accidently break your schema if you weren't
+  This made it very easy to accidentally break your schema if you weren't
   particularly careful with your pattern matching. Now the defaults are applied
   FIRST by absinthe, and THEN passed to `middleware/3`. Consequently, the
   middleware list argument should always have at least one value. This is also

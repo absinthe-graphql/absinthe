@@ -41,7 +41,7 @@ defmodule Absinthe.ExtensionsTest do
     assert bp.result == %{data: %{"foo" => "hello world"}, extensions: %{foo: 1}}
   end
 
-  test "Result phase doesn't clober the extensions" do
+  test "Result phase doesn't clobber the extensions" do
     doc = "{foo}"
 
     pipeline =

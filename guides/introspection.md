@@ -104,7 +104,7 @@ plug Absinthe.Plug.GraphiQL, schema: MyAppWeb.Schema
 ```
 
 If you want to use it at a particular path (in this case `graphiql` in your Phoenix
-router, simply do:
+router) simply do:
 
 ```elixir
 # filename: router.ex

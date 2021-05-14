@@ -48,7 +48,7 @@ end
 ```
 
 > Obviously things can go wrong in a mutation. To learn more about the
-> types of error results that Absinthe supports, read [the guide](errors.md).
+> types of error results that Absinthe supports, read [the guide](../errors.md).
 
 ## Authorization
 
@@ -58,14 +58,14 @@ passed to the resolver as the third argument carries along with it the
 Absinthe context, a data structure that serves as the integration
 point with external mechanisms---like a Plug that authenticates the
 current user. You can learn more about how the context can be used in
-the [Context and Authentication](context-and-authentication.md)
+the [Context and Authentication](../context-and-authentication.md)
 guide.
 
 Going back to the resolver code:
 
 - If the match for a current user is successful, the underlying
   `Blog.Content.create_post/2` function is invoked. It will return a
-  tuple suitable for return. (To read the Ecto-related nitty gritty,
+  tuple suitable for return. (To read the Ecto-related nitty-gritty,
   check out the [absinthe_tutorial](https://github.com/absinthe-graphql/absinthe_tutorial)
   repository.)
 - If the match for a current user isn't successful, the fall-through

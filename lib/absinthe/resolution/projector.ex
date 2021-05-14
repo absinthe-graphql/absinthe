@@ -9,7 +9,7 @@ defmodule Absinthe.Resolution.Projector do
   Projection amounts to collecting the next set of fields to operate on, based on
   the current field. This is a non trivial operation because you have to handle
   the various type conditions that come along with fragments / inline fragments,
-  field merging, and other wondeful stuff like that.
+  field merging, and other wonderful stuff like that.
   """
   def project(selections, %{identifier: parent_ident} = parent_type, path, cache, exec) do
     path =
