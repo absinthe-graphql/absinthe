@@ -6,7 +6,7 @@ defmodule Absinthe.Adapter.LanguageConventions do
   This defines an adapter that supports GraphQL query documents in their
   conventional (in JS) camelcase notation, while allowing the schema to be
   defined using conventional (in Elixir) underscore (snakecase) notation, and
-  tranforming the names as needed for lookups, results, and error messages.
+  transforming the names as needed for lookups, results, and error messages.
 
   For example, this document:
 

@@ -97,7 +97,7 @@ defmodule Absinthe.Phase.Schema.ApplyDeclaration do
 
   defp maybe_mark_root(type_def, _root_mappings), do: type_def
 
-  # Determine which, if any, root identifier should be applied to an object type definitiona
+  # Determine which, if any, root identifier should be applied to an object type definition
   @spec operation_root_identifier(
           type_def :: Blueprint.Schema.ObjectTypeDefinition.t(),
           root_mappings :: root_mappings()

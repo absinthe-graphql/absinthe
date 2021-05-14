@@ -37,7 +37,7 @@ defmodule Absinthe.Subscription.Pubsub do
   Processes need only subscribe to the pubsub process that
   is running on their own node.
 
-  However, mutations can happen on any node in the custer and must to be 
+  However, mutations can happen on any node in the cluster and must to be
   broadcast to other nodes so that they can also reevaluate their GraphQL 
   subscriptions and notify subscribers on that node.
 

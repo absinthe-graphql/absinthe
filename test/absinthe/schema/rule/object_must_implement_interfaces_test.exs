@@ -85,7 +85,7 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfacesTest do
     end
   end
 
-  test "interfaces are propogated across type imports" do
+  test "interfaces are propagated across type imports" do
     assert %{
              named: [:cat, :dog, :user],
              favorite_foods: [:cat, :dog, :user],

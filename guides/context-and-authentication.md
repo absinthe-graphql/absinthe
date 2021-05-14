@@ -139,7 +139,7 @@ some other library that provides utilities for authenticating users you can use
 those here too, and just add their output to the context.
 
 If there is no current user it's better to simply not have the `:current_user`
-key inside the map, instead of doing `%{current_user: nil}`. This way you an
+key inside the map, instead of doing `%{current_user: nil}`. This way you can
 just pattern match for `%{current_user: user}` in your code and not need to
 worry about the nil case.
 

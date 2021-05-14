@@ -25,7 +25,7 @@ This is going to get tedious and error-prone very quickly what if we could suppo
     field :contacts, list_of(:contact)
     field :posts, list_of(:post) do
        arg :date, :date
-       resolve: dataloader(Content))
+       resolve dataloader(Content)
    end
   end
 ```
@@ -90,7 +90,7 @@ The loader is all set up, now let's modify the resolver to use Dataloader. In `l
     field :contacts, list_of(:contact)
     field :posts, list_of(:post) do
        arg :date, :date
-       resolve: dataloader(Content))
+       resolve dataloader(Content)
    end
   end
 ```

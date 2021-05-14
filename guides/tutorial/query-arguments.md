@@ -151,7 +151,7 @@ type, `:published_at`.
 
 The GraphQL specification doesn't define any official date or time
 types, but it does support custom scalar types (you can read more
-about them in the [related guide](custom-scalars.md), and
+about them in the [related guide](custom-scalars.md)), and
 Absinthe ships with several built-in scalar types. We'll use
 `:naive_datetime` (which doesn't include timezone information) here.
 

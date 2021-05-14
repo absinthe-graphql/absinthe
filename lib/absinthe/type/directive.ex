@@ -12,7 +12,7 @@ defmodule Absinthe.Type.Directive do
   @typedoc """
   A defined directive.
 
-  * `:name` - The name of the directivee. Should be a lowercase `binary`. Set automatically.
+  * `:name` - The name of the directive. Should be a lowercase `binary`. Set automatically.
   * `:description` - A nice description for introspection.
   * `:args` - A map of `Absinthe.Type.Argument` structs. See `Absinthe.Schema.Notation.arg/2`.
   * `:locations` - A list of places the directives can be used.

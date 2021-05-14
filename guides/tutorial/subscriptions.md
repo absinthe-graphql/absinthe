@@ -67,7 +67,7 @@ defmodule BlogWeb.UserSocket do
   << rest of file>>
 ```
 
-Lets now configure GraphQL to use this Socket.
+Let's now configure GraphQL to use this Socket.
 
 In `lib/blog_web/router.ex` :
 

@@ -65,7 +65,7 @@ Going back to the resolver code:
 
 - If the match for a current user is successful, the underlying
   `Blog.Content.create_post/2` function is invoked. It will return a
-  tuple suitable for return. (To read the Ecto-related nitty gritty,
+  tuple suitable for return. (To read the Ecto-related nitty-gritty,
   check out the [absinthe_tutorial](https://github.com/absinthe-graphql/absinthe_tutorial)
   repository.)
 - If the match for a current user isn't successful, the fall-through
