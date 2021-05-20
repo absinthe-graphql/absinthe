@@ -79,7 +79,7 @@ defmodule Absinthe.Type.Object do
   * `:description` - A nice description for introspection.
   * `:fields` - A map of `Absinthe.Type.Field` structs. Usually built via `Absinthe.Schema.Notation.field/4`.
   * `:interfaces` - A list of interfaces that this type guarantees to implement. See `Absinthe.Type.Interface`.
-  * `:is_type_of` - A function used to identify whether a resolved object belongs to this defined type. For use with `:interfaces` entry and `Absinthe.Type.Interface`.
+  * `:is_type_of` - A function used to identify whether a resolved object belongs to this defined type. For use with `:interfaces` entry and `Absinthe.Type.Interface`. This function will be passed one argument; the object whose type needs to be identified, and should return `true` when the object matches this type.
 
   The `__private__` and `:__reference__` keys are for internal use.
   """
