@@ -171,6 +171,11 @@ defmodule MyApp.Blog do
 end
 ```
 
+In this example, the query returned by `query/2` is used as a starting point by Dataloader to build the final query, which it does by traversing schema associations.
+In other words, Dataloader can determine that an author has many posts, and that to retrieve posts it needs to get those with the relevant `author_id`.
+If that's sufficient for your needs, `query/2` need not modify the query it's given.
+But if you only want to load published posts, `query/2` can narrow the query accordingly.
+
 When integrating Dataloader with GraphQL, we want to place it in our context so
 that we can access it in our resolvers. In your schema module add:
 
