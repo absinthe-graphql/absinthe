@@ -28,8 +28,8 @@ The maximum value, `50`, is compared to complexity values calculated for each re
 
 Here's how the complexity value is calculated:
 
-By default each field in a query will increase the complexity by 1. However it
-can be useful to customize how the complexity value for a field. This is done in your schema using the
+By default each field in a query will increase the complexity by 1. However, it
+can be useful to customize how the complexity value for a field is calculated. This is done in your schema using the
 `complexity/1` macro, which can accept a function or an explicit integer value.
 
 As an example, when a field is a list, the complexity is often correlated to the
