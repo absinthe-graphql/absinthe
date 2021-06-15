@@ -24,6 +24,58 @@ defmodule Absinthe.Execution.ArgumentsTest do
     )
   end
 
+  describe "open ended scalar" do
+    @graphql """
+    query {
+      entities(representations: [{__typename: "Product", id: "123"}])
+    }
+    """
+    test "supports passing an object directly" do
+      assert_data(
+        %{"entities" => [%{"__typename" => "Product", "id" => "123"}]},
+        run(@graphql, @schema)
+      )
+    end
+
+    @graphql """
+    query($representations: [Any!]!) {
+      entities(representations: $representations)
+    }
+    """
+    test "supports passing an object through variables" do
+      assert_data(
+        %{"entities" => [%{"__typename" => "Product", "id" => "123"}]},
+        run(@graphql, @schema,
+          variables: %{"representations" => [%{"__typename" => "Product", "id" => "123"}]}
+        )
+      )
+    end
+
+    @graphql """
+    query {
+      entities(representations: [{__typename: "Product", id: null}])
+    }
+    """
+    test "supports passing an object with a nested value of null" do
+      assert_data(
+        %{"entities" => [%{"__typename" => "Product", "id" => nil}]},
+        run(@graphql, @schema)
+      )
+    end
+
+    @graphql """
+    query {
+      entities(representations: [{__typename: "Product", contact_type: PHONE}])
+    }
+    """
+    test "supports passing an object with a nested value of ENUM" do
+      assert_data(
+        %{"entities" => [%{"__typename" => "Product", "contact_type" => "PHONE"}]},
+        run(@graphql, @schema)
+      )
+    end
+  end
+
   describe "errors" do
     @graphql """
     query FindUser {

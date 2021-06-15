@@ -5,7 +5,7 @@ defmodule Absinthe.Phase.Document.Arguments.FlagInvalid do
   #
   # This is later used by the ArgumentsOfCorrectType phase.
 
-  alias Absinthe.{Blueprint, Phase}
+  alias Absinthe.{Blueprint, Phase, Type}
 
   use Absinthe.Phase
 
@@ -32,6 +32,10 @@ defmodule Absinthe.Phase.Document.Arguments.FlagInvalid do
 
   defp handle_node(%Blueprint.Input.List{} = node) do
     check_children(node, node.items |> Enum.map(& &1.normalized), :bad_list)
+  end
+
+  defp handle_node(%Blueprint.Input.Object{schema_node: %Type.Scalar{open_ended: true}} = node) do
+    node
   end
 
   defp handle_node(%Blueprint.Input.Object{} = node) do

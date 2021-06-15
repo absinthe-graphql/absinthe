@@ -3,6 +3,7 @@
 ## Dev
 
 - Feature: Always inline functions when using persistent_term backend.
+- Feature: [Support optional open ended scalars](https://github.com/absinthe-graphql/absinthe/pull/1069)
 
 ## 1.6.4
 
@@ -72,11 +73,12 @@
 ## v1.5.0 (Rc)
 
 - Breaking Bug Fix: Variable types must align exactly with the argument type. Previously
-Absinthe allowed variables of different types to be used by accident as long as the data parsed.
+  Absinthe allowed variables of different types to be used by accident as long as the data parsed.
 - Feature (Experimental): `:persistent_term` based schema backend
 - Breaking Change: `telemetry` event keys [changed](https://github.com/absinthe-graphql/absinthe/pull/901) since the beta release.
 
 ## v1.5.0 (Beta)
+
 - Feature: SDL directives, other improvements
 - Feature: Output rendered SDL for a schema
 - Feature: Substantially lower subscription memory usage.

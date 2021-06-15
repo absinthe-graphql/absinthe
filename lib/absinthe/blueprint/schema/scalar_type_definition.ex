@@ -13,6 +13,7 @@ defmodule Absinthe.Blueprint.Schema.ScalarTypeDefinition do
     serialize: nil,
     directives: [],
     source_location: nil,
+    open_ended: false,
     # Added by phases
     flags: %{},
     errors: [],
@@ -37,7 +38,8 @@ defmodule Absinthe.Blueprint.Schema.ScalarTypeDefinition do
       description: type_def.description,
       definition: type_def.module,
       serialize: type_def.serialize,
-      parse: type_def.parse
+      parse: type_def.parse,
+      open_ended: type_def.open_ended
     }
   end
 
