@@ -144,9 +144,15 @@ defmodule Absinthe.Schema.SdlRenderTest do
       """)
     end
 
-    test "for a union" do
+    test "for a union with types" do
       assert_rendered("""
       union Foo = Bar | Baz
+      """)
+    end
+
+    test "for a union without types" do
+      assert_rendered("""
+      union Foo
       """)
     end
 

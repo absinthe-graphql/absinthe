@@ -150,25 +150,33 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   end
 
   defp render(%Blueprint.Schema.UnionTypeDefinition{} = union_type, type_definitions) do
-    types =
-      Enum.map(union_type.types, fn
-        identifier when is_atom(identifier) ->
-          render(%Blueprint.TypeReference.Identifier{id: identifier}, type_definitions)
+    Enum.map(union_type.types, fn
+      identifier when is_atom(identifier) ->
+        render(%Blueprint.TypeReference.Identifier{id: identifier}, type_definitions)
 
-        %Blueprint.TypeReference.Name{} = ref ->
-          render(ref, type_definitions)
+      %Blueprint.TypeReference.Name{} = ref ->
+        render(ref, type_definitions)
 
-        %Blueprint.TypeReference.Identifier{} = ref ->
-          render(ref, type_definitions)
-      end)
+      %Blueprint.TypeReference.Identifier{} = ref ->
+        render(ref, type_definitions)
+    end)
+    |> case do
+      [] ->
+        concat([
+          "union ",
+          string(union_type.name),
+          directives(union_type.directives, type_definitions)
+        ])
 
-    concat([
-      "union ",
-      string(union_type.name),
-      directives(union_type.directives, type_definitions),
-      " = ",
-      join(types, " | ")
-    ])
+      types ->
+        concat([
+          "union ",
+          string(union_type.name),
+          directives(union_type.directives, type_definitions),
+          " = ",
+          join(types, " | ")
+        ])
+    end
     |> description(union_type.description)
   end
 
