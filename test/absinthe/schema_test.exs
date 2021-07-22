@@ -446,4 +446,75 @@ defmodule Absinthe.SchemaTest do
       assert Type.meta(result, :is_union) == true
     end
   end
+
+  defmodule InterfaceWebSchema do
+    use Absinthe.Schema
+
+    import_types SourceSchema
+
+    query do
+      field :player_field, type: :player_interface
+    end
+
+    interface :player_interface do
+      field :metadata, :player_metadata_interface
+
+      resolve_type fn _, _ -> nil end
+    end
+
+    interface :player_metadata_interface do
+      field :display_name, :string
+
+      resolve_type fn _, _ -> nil end
+    end
+
+    object :human_player do
+      interfaces [:player_interface]
+
+      field :metadata, :human_metadata
+    end
+
+    object :human_metadata do
+      interfaces [:player_metadata_interface]
+
+      field :display_name, :string
+    end
+  end
+
+  describe "Interface Web" do
+    test "is valid maybe?" do
+      human_player_type = Schema.lookup_type(InterfaceWebSchema, :human_player)
+
+      assert human_player_type.fields.metadata.name == "metadata"
+      assert human_player_type.fields.metadata.type == :human_metadata
+
+      # Schema.to_sdl(InterfaceWebSchema)
+      # |> IO.puts()
+      #
+      # "Represents a schema"
+      # schema {
+      #   query: RootQueryType
+      # }
+
+      # interface PlayerMetadataInterface {
+      #   displayName: String
+      # }
+
+      # type HumanMetadata implements PlayerMetadataInterface {
+      #   displayName: String
+      # }
+
+      # type RootQueryType {
+      #   playerField: PlayerInterface
+      # }
+
+      # interface PlayerInterface {
+      #   metadata: PlayerMetadataInterface
+      # }
+
+      # type HumanPlayer implements PlayerInterface {
+      #   metadata: HumanMetadata
+      # }
+    end
+  end
 end
