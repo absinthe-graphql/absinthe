@@ -128,6 +128,60 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfacesTest do
              InterfaceImplementsInterfaces.__absinthe_interface_implementors__()
   end
 
+  defmodule InterfaceFieldsReferenceInterfaces do
+    use Absinthe.Schema
+
+    import_sdl """
+    interface Pet {
+      food: PetFood!
+    }
+
+    interface PetFood {
+      brand: String!
+    }
+
+    type Dog implements Pet {
+      food: DogFood!
+    }
+
+    type DogFood implements PetFood {
+      brand: String!
+    }
+
+    type Cat implements Pet {
+      food: CatFood!
+    }
+
+    type CatFood implements PetFood {
+      brand: String!
+    }
+    """
+
+    query do
+    end
+
+    def hydrate(%{identifier: :pet}, _) do
+      [{:resolve_type, &__MODULE__.pet/2}]
+    end
+
+    def hydrate(%{identifier: :pet_food}, _) do
+      [{:resolve_type, &__MODULE__.pet_food/2}]
+    end
+
+    def hydrate(_, _), do: []
+
+    def pet(_, _), do: nil
+    def pet_food(_, _), do: nil
+  end
+
+  test "interface fields can reference other interfaces" do
+    assert %{
+             pet: [:dog, :cat],
+             pet_food: [:dog_food, :cat_food]
+           } ==
+             InterfaceImplementsInterfaces.__absinthe_interface_implementors__()
+  end
+
   test "is enforced" do
     assert_schema_error("invalid_interface_types", [
       %{

@@ -191,6 +191,18 @@ defmodule Absinthe.Phase.Schema.Validation.ObjectMustImplementInterfaces do
     :ok
   end
 
+  defp check_covariant(
+         %Blueprint.TypeReference.Name{name: iface_name},
+         %Blueprint.TypeReference.Name{name: type_name},
+         field_ident,
+         types
+       ) do
+    {_, itype} = Enum.find(types, fn {_, %{name: name}} -> name == iface_name end)
+    {_, type} = Enum.find(types, fn {_, %{name: name}} -> name == type_name end)
+
+    check_covariant(itype, type, field_ident, types)
+  end
+
   defp check_covariant(nil, _, field_ident, _), do: {:error, field_ident}
   defp check_covariant(_, nil, field_ident, _), do: {:error, field_ident}
 

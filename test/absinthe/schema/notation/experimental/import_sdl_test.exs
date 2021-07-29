@@ -42,6 +42,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       scalarEcho(input: CoolScalar): CoolScalar
       namedThings: [Named]
       titledThings: [Titled]
+      playerField: PlayerInterface
     }
 
     scalar CoolScalar
@@ -95,6 +96,22 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
     type Movie implements Titled {
       title: String!
       duration: Int!
+    }
+
+    interface PlayerInterface {
+      metadata: PlayerMetadataInterface
+    }
+
+    interface PlayerMetadataInterface {
+      displayName: String
+    }
+
+    type HumanPlayer implements PlayerInterface {
+      metadata: HumanMetadata
+    }
+
+    type HumanMetadata implements PlayerMetadataInterface {
+      displayName: String
     }
 
     scalar B
@@ -173,6 +190,14 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
       [{:resolve_type, &__MODULE__.titled_resolve_type/2}]
     end
 
+    def hydrate(%{identifier: :player_interface}, _) do
+      [{:resolve_type, &__MODULE__.player_interface/2}]
+    end
+
+    def hydrate(%{identifier: :player_metadata_interface}, _) do
+      [{:resolve_type, &__MODULE__.player_metadata_interface/2}]
+    end
+
     def hydrate(%{identifier: :content}, _) do
       [{:resolve_type, &__MODULE__.content_resolve_type/2}]
     end
@@ -231,6 +256,9 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
 
     def parse_cool_scalar(value), do: {:ok, value}
     def serialize_cool_scalar(%{value: value}), do: value
+
+    def player_interface(_, _), do: :human_player
+    def player_metadata_interface(_, _), do: :human_metadata
   end
 
   describe "custom prototype schema" do
