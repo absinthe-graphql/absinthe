@@ -1,7 +1,6 @@
 defmodule Absinthe.Pipeline.BatchResolver do
   alias Absinthe.Phase.Document.Execution
-
-  require Logger
+  alias Absinthe.Logger
 
   @moduledoc false
 
@@ -105,7 +104,7 @@ defmodule Absinthe.Pipeline.BatchResolver do
     message = Exception.message(exception)
     stacktrace = trace |> Exception.format_stacktrace()
 
-    Logger.error("""
+    Logger.log(:error, """
     #{message}
 
     #{stacktrace}

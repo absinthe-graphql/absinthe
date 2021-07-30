@@ -37,7 +37,22 @@ defmodule Absinthe.Logger do
 
   The default is `#{inspect(@default_pipeline)}`.
 
-  ## Disabling
+  ## Log levels
+
+  ### Filtering
+
+  To filter out `:debug` level logs, set the `:log` configuration to `:info`
+  or any other level from `Logger.level`.
+
+      # logs info and above
+      config :absinthe,
+        log: :info
+
+      # only logs errors
+      config :absinthe,
+        log: :error
+
+  ### Disabling
 
   To disable Absinthe logging, set the `:log` configuration option to `false`:
 
@@ -50,6 +65,24 @@ defmodule Absinthe.Logger do
   require Logger
 
   @doc """
+  Same as Logger.log/3 but checks if logging is enabled.
+  """
+  def log(level, message_or_fun, meta \\ []) do
+    case Application.get_env(:absinthe, :log, @default_log) do
+      true ->
+        Logger.log(level, message_or_fun, meta)
+
+      false ->
+        :ok
+
+      min_level ->
+        if Logger.compare_levels(level, min_level) != :lt,
+          do: Logger.log(level, message_or_fun, meta),
+          else: :ok
+    end
+  end
+
+  @doc """
   Log a document being processed.
   """
   @spec log_run(
@@ -58,25 +91,21 @@ defmodule Absinthe.Logger do
            pipeline :: Absinthe.Pipeline.t(), opts :: Keyword.t()}
         ) :: :ok
   def log_run(level, {doc, schema, pipeline, opts}) do
-    if Application.get_env(:absinthe, :log, @default_log) do
-      Logger.log(level, fn ->
-        [
-          "ABSINTHE",
-          " schema=",
-          inspect(schema),
-          " variables=",
-          variables_body(opts),
-          pipeline_section(pipeline),
-          "---",
-          ?\n,
-          document(doc),
-          ?\n,
-          "---"
-        ]
-      end)
-    end
-
-    :ok
+    log(level, fn ->
+      [
+        "ABSINTHE",
+        " schema=",
+        inspect(schema),
+        " variables=",
+        variables_body(opts),
+        pipeline_section(pipeline),
+        "---",
+        ?\n,
+        document(doc),
+        ?\n,
+        "---"
+      ]
+    end)
   end
 
   @doc false

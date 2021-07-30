@@ -3,9 +3,8 @@ defmodule Absinthe.Subscription.Local do
   This module handles broadcasting documents that are local to this node
   """
 
-  require Logger
-
   alias Absinthe.Pipeline.BatchResolver
+  alias Absinthe.Logger
 
   # This module handles running and broadcasting documents that are local to this
   # node.
@@ -60,7 +59,7 @@ defmodule Absinthe.Subscription.Local do
 
         {:ok, %{result: data}, _} = Absinthe.Pipeline.run(doc.source, pipeline)
 
-        Logger.debug("""
+        Logger.log(:debug, """
         Absinthe Subscription Publication
         Field Topic: #{inspect(key_strategy)}
         Subscription id: #{inspect(topic)}
