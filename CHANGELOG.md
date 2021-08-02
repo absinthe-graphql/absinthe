@@ -1,7 +1,10 @@
 # Changelog
 
-## Dev
+## 1.6.5
 
+- Bug Fix: [Fix interface compilation behavior difference between SDL & DSL](https://github.com/absinthe-graphql/absinthe/pull/1091)
+- Bug Fix: [Allow SDL syntax to contain union without member types](https://github.com/absinthe-graphql/absinthe/pull/1085)
+- Bug Fix: [Account for prototype schema when rendering SDL via mix task](https://github.com/absinthe-graphql/absinthe/pull/1086)
 - Feature: Always inline functions when using persistent_term backend.
 - Feature: [Support optional open ended scalars](https://github.com/absinthe-graphql/absinthe/pull/1069)
 
