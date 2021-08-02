@@ -176,10 +176,10 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfacesTest do
 
   test "interface fields can reference other interfaces" do
     assert %{
-             pet: [:dog, :cat],
-             pet_food: [:dog_food, :cat_food]
+             pet: [:cat, :dog],
+             pet_food: [:cat_food, :dog_food]
            } ==
-             InterfaceImplementsInterfaces.__absinthe_interface_implementors__()
+             InterfaceFieldsReferenceInterfaces.__absinthe_interface_implementors__()
   end
 
   test "is enforced" do
