@@ -17,7 +17,8 @@ defmodule Absinthe.Schema.Rule.NamesMustBeValidTest do
         %{
           phase: NamesMustBeValid,
           extra: %{artifact: "input object name", value: "bad input name"}
-        }
+        },
+        %{phase: NamesMustBeValid, extra: %{artifact: "enum value name", value: "1"}}
       ])
     end
   end

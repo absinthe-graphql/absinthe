@@ -5,7 +5,7 @@ defmodule Absinthe.Phase.Schema.Validation.NamesMustBeValid do
   alias Absinthe.Blueprint
   alias Absinthe.Blueprint.Schema
 
-  @valid_name_regex ~r/[_A-Za-z][_0-9A-Za-z]*/
+  @valid_name_regex ~r/^[_A-Za-z][_0-9A-Za-z]*$/
 
   def run(bp, _) do
     bp = Blueprint.prewalk(bp, &validate_names/1)
@@ -31,8 +31,7 @@ defmodule Absinthe.Phase.Schema.Validation.NamesMustBeValid do
   end
 
   defp valid_name?(name) do
-    [match] = Regex.run(@valid_name_regex, name)
-    match == name
+    Regex.match?(@valid_name_regex, name)
   end
 
   defp error(object, data) do
@@ -50,6 +49,7 @@ defmodule Absinthe.Phase.Schema.Validation.NamesMustBeValid do
   defp struct_to_kind(Schema.ScalarTypeDefinition), do: "scalar"
   defp struct_to_kind(Schema.ObjectTypeDefinition), do: "object"
   defp struct_to_kind(Schema.InputObjectTypeDefinition), do: "input object"
+  defp struct_to_kind(Schema.EnumValueDefinition), do: "enum value"
   defp struct_to_kind(_), do: "type"
 
   @description """
