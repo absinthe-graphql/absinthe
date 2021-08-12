@@ -25,4 +25,8 @@ defmodule Absinthe.TestSupport.Schema.BadNamesSchema do
       arg :foo, :string, name: "bad arg name"
     end
   end
+
+  enum :rating do
+    value :"1", as: 1
+  end
 end
