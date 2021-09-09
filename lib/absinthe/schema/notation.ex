@@ -3,7 +3,7 @@ defmodule Absinthe.Schema.Notation do
   alias Absinthe.Utils
 
   @moduledoc """
-  Provides a set of macro's to use when creating a schema. Especially useful
+  Provides a set of macros to use when creating a schema. Especially useful
   when moving definitions out into a different module than the schema itself.
 
   ## Example

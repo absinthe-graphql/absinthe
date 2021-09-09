@@ -103,7 +103,7 @@ defmodule BlogWeb.Schema do
 end
 ```
 
-Now lets use the argument in our resolver. In `blog_web/resolvers/accounts.ex`:
+Now let's use the argument in our resolver. In `blog_web/resolvers/accounts.ex`:
 
 ```elixir
 defmodule BlogWeb.Resolvers.Accounts do
