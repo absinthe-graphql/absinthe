@@ -285,4 +285,23 @@ defmodule Absinthe.Schema.SdlRenderTest do
              }
              """
   end
+
+  defmodule EmptyQueryTestSchema do
+    use Absinthe.Schema
+
+    query do
+    end
+  end
+
+  test "empty schema renders correctly" do
+    assert Absinthe.Schema.to_sdl(EmptyQueryTestSchema) == """
+           "Represents a schema"
+           schema {
+             query: RootQueryType
+           }
+
+           type RootQueryType {
+           }
+           """
+  end
 end
