@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.6
+
+- Feature: [Update telemetry dependency to stable ~> 1.0](https://github.com/absinthe-graphql/absinthe/pull/1097)
+- Feature: [Use makeup_graphql to get GraphQL syntax highlighting in docs](https://github.com/absinthe-graphql/absinthe/pull/1099)
+- Bug Fix: [Fix exception when field name contains all invalid characters](https://github.com/absinthe-graphql/absinthe/pull/1096)
+
 ## 1.6.5
 
 - Bug Fix: [Fix interface compilation behavior difference between SDL & DSL](https://github.com/absinthe-graphql/absinthe/pull/1091)
