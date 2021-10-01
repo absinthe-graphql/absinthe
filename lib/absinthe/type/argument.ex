@@ -7,8 +7,6 @@ defmodule Absinthe.Type.Argument do
 
   alias Absinthe.Type
 
-  use Type.Fetch
-
   @typedoc """
   Argument configuration
 
