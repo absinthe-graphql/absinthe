@@ -14,8 +14,7 @@ defmodule Elixir.Absinthe.Integration.Validation.ExtraArgumentsTest do
             %{
               errors: [
                 %{
-                  message:
-                    "Unknown argument \"extra\" on field \"thing\" of type \"RootQueryType\".",
+                  message: "Unknown argument \"extra\" on field \"thing\" of type \"Query\".",
                   locations: [%{column: 20, line: 2}]
                 }
               ]

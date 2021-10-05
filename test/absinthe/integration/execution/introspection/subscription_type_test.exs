@@ -10,7 +10,7 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.SubscriptionTypeTe
             %{
               data: %{
                 "__schema" => %{
-                  "subscriptionType" => %{"kind" => "OBJECT", "name" => "RootSubscriptionType"}
+                  "subscriptionType" => %{"kind" => "OBJECT", "name" => "Subscription"}
                 }
               }
             }} == Absinthe.run(@query, Absinthe.Fixtures.ContactSchema, [])

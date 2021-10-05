@@ -5,7 +5,7 @@ defmodule Absinthe.Language.InlineFragmentTest do
 
   @query """
   {
-    ... on RootQueryType {
+    ... on Query {
       foo
       bar
     }
@@ -15,7 +15,7 @@ defmodule Absinthe.Language.InlineFragmentTest do
   describe "converting to Blueprint" do
     test "builds a Document.Fragment.Inline.t" do
       assert %Blueprint.Document.Fragment.Inline{
-               type_condition: %Blueprint.TypeReference.Name{name: "RootQueryType"},
+               type_condition: %Blueprint.TypeReference.Name{name: "Query"},
                selections: [
                  %Blueprint.Document.Field{name: "foo"},
                  %Blueprint.Document.Field{name: "bar"}

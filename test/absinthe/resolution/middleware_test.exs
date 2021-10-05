@@ -194,7 +194,7 @@ defmodule Absinthe.MiddlewareTest do
     assert {:ok, %{data: data}} =
              Absinthe.run(doc, __MODULE__.Schema, context: %{current_user: %{}})
 
-    assert %{"foo" => %{"bar" => %{"result" => ["result", "bar", "foo", "RootQueryType"]}}} ==
+    assert %{"foo" => %{"bar" => %{"result" => ["result", "bar", "foo", "Query"]}}} ==
              data
   end
 end

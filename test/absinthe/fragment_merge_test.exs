@@ -109,7 +109,7 @@ defmodule Absinthe.FragmentMergeTest do
       }
     }
 
-    fragment fragmentWithOtherField on RootQueryType {
+    fragment fragmentWithOtherField on Query {
       viewer {
         todos {
           completedCount

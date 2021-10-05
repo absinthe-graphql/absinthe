@@ -242,13 +242,13 @@ defmodule Absinthe.Schema.SdlRenderTest do
              """
              "Represents a schema"
              schema {
-               query: RootQueryType
+               query: Query
              }
 
              directive @foo(baz: String) on FIELD
 
              "Escaped\\t\\\"descrição\\/description\\\""
-             type RootQueryType {
+             type Query {
                echo(
                  "The number of times"
                  times: Int

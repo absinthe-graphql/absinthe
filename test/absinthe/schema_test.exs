@@ -201,7 +201,7 @@ defmodule Absinthe.SchemaTest do
       field :name, :string
     end
 
-    subscription name: "RootSubscriptionTypeThing" do
+    subscription name: "SubscriptionThing" do
       field :name, :string
     end
   end
@@ -267,7 +267,7 @@ defmodule Absinthe.SchemaTest do
 
   describe "root fields" do
     test "can have a default name" do
-      assert "RootQueryType" == Schema.lookup_type(RootsSchema, :query).name
+      assert "Query" == Schema.lookup_type(RootsSchema, :query).name
     end
 
     test "can have a custom name" do
@@ -275,7 +275,7 @@ defmodule Absinthe.SchemaTest do
     end
 
     test "supports subscriptions" do
-      assert "RootSubscriptionTypeThing" == Schema.lookup_type(RootsSchema, :subscription).name
+      assert "SubscriptionThing" == Schema.lookup_type(RootsSchema, :subscription).name
     end
   end
 
@@ -300,7 +300,7 @@ defmodule Absinthe.SchemaTest do
   describe "to_sdl/1" do
     test "return schema sdl" do
       assert Schema.to_sdl(SourceSchema) == """
-             \"Represents a schema\"\nschema {\n  query: RootQueryType\n}\n\ntype Foo {\n  name: String\n}\n\n\"can describe query\"\ntype RootQueryType {\n  foo: Foo\n}
+             \"Represents a schema\"\nschema {\n  query: Query\n}\n\ntype Foo {\n  name: String\n}\n\n\"can describe query\"\ntype Query {\n  foo: Foo\n}
              """
     end
   end

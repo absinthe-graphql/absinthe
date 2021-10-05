@@ -158,7 +158,7 @@ defmodule Absinthe.StrictSchemaTest do
       variables = %{"input" => %{"naiveDatetime" => "2017-01-27T20:31:55"}}
 
       assert_error_message(
-        "Cannot query field \"foo_bar_query\" on type \"RootQueryType\". Did you mean to use an inline fragment on \"RootQueryType\"?",
+        "Cannot query field \"foo_bar_query\" on type \"Query\". Did you mean to use an inline fragment on \"Query\"?",
         run(document, Absinthe.Fixtures.StrictSchema,
           adapter: Absinthe.Adapter.StrictLanguageConventions,
           variables: variables
@@ -178,7 +178,7 @@ defmodule Absinthe.StrictSchemaTest do
       variables = %{"input" => %{"naiveDatetime" => "2017-01-27T20:31:55"}}
 
       assert_error_message(
-        "Unknown argument \"baz_qux\" on field \"fooBarQuery\" of type \"RootQueryType\".",
+        "Unknown argument \"baz_qux\" on field \"fooBarQuery\" of type \"Query\".",
         run(document, Absinthe.Fixtures.StrictSchema,
           adapter: Absinthe.Adapter.StrictLanguageConventions,
           variables: variables
@@ -282,7 +282,7 @@ defmodule Absinthe.StrictSchemaTest do
       variables = %{"input" => %{"naiveDatetime" => "2017-01-27T20:31:55"}}
 
       assert_error_message(
-        "Cannot query field \"foo_bar_mutation\" on type \"RootMutationType\". Did you mean to use an inline fragment on \"RootMutationType\"?",
+        "Cannot query field \"foo_bar_mutation\" on type \"Mutation\". Did you mean to use an inline fragment on \"Mutation\"?",
         run(document, Absinthe.Fixtures.StrictSchema,
           adapter: Absinthe.Adapter.StrictLanguageConventions,
           variables: variables
@@ -302,7 +302,7 @@ defmodule Absinthe.StrictSchemaTest do
       variables = %{"input" => %{"naiveDatetime" => "2017-01-27T20:31:55"}}
 
       assert_error_message(
-        "Unknown argument \"baz_qux\" on field \"fooBarMutation\" of type \"RootMutationType\".",
+        "Unknown argument \"baz_qux\" on field \"fooBarMutation\" of type \"Mutation\".",
         run(document, Absinthe.Fixtures.StrictSchema,
           adapter: Absinthe.Adapter.StrictLanguageConventions,
           variables: variables

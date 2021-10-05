@@ -583,7 +583,7 @@ defmodule Absinthe.IntrospectionTest do
          errors: [
            %{
              locations: [%{column: 3, line: 2}],
-             message: "Cannot query field \"__foobar\" on type \"RootQueryType\"."
+             message: "Cannot query field \"__foobar\" on type \"Query\"."
            }
          ]
        }},

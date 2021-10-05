@@ -35,7 +35,7 @@ defmodule Elixir.Absinthe.Integration.Validation.CyclesTest do
   query Foo {
     ...Bar
   }
-  fragment Bar on RootQueryType {
+  fragment Bar on Query {
     version
     ...Foo
   }

@@ -10,7 +10,7 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.MutationTypeTest d
             %{
               data: %{
                 "__schema" => %{
-                  "mutationType" => %{"kind" => "OBJECT", "name" => "RootMutationType"}
+                  "mutationType" => %{"kind" => "OBJECT", "name" => "Mutation"}
                 }
               }
             }} == Absinthe.run(@query, Absinthe.Fixtures.ContactSchema, [])

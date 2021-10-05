@@ -62,7 +62,7 @@ defmodule Absinthe.Type.MutationTest do
                       expected_value: expected_value
                     } ->
       test "for #{test_label} (evaluates description to '#{expected_value}')" do
-        type = TestSchema.__absinthe_type__("RootMutationType")
+        type = TestSchema.__absinthe_type__("Mutation")
 
         assert type.fields[unquote(test_label)].args.arg_example.description ==
                  unquote(expected_value)

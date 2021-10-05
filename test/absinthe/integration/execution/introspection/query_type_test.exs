@@ -9,7 +9,7 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.QueryTypeTest do
     assert {:ok,
             %{
               data: %{
-                "__schema" => %{"queryType" => %{"kind" => "OBJECT", "name" => "RootQueryType"}}
+                "__schema" => %{"queryType" => %{"kind" => "OBJECT", "name" => "Query"}}
               }
             }} == Absinthe.run(@query, Absinthe.Fixtures.ContactSchema, [])
   end

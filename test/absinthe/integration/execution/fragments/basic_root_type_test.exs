@@ -6,7 +6,7 @@ defmodule Elixir.Absinthe.Integration.Execution.Fragments.BasicRootTypeTest do
     ... Fields
   }
 
-  fragment Fields on RootQueryType {
+  fragment Fields on Query {
     thing(id: "foo") {
       name
     }

@@ -57,11 +57,11 @@ defmodule Absinthe.TypeTest do
   end
 
   test "root query type definition" do
-    assert Absinthe.Fixtures.ContactSchema.__absinthe_type__(:query).name == "RootQueryType"
+    assert Absinthe.Fixtures.ContactSchema.__absinthe_type__(:query).name == "Query"
   end
 
   test "root mutation type definition" do
-    assert Absinthe.Fixtures.ContactSchema.__absinthe_type__(:mutation).name == "RootMutationType"
+    assert Absinthe.Fixtures.ContactSchema.__absinthe_type__(:mutation).name == "Mutation"
   end
 
   defmodule MetadataSchema do

@@ -10,7 +10,7 @@ defmodule Absinthe.Type.QueryTest do
                       expected_value: expected_value
                     } ->
       test "for #{test_label} (evaluates description to '#{expected_value}')" do
-        type = Query.TestSchemaFieldArgDescription.__absinthe_type__("RootQueryType")
+        type = Query.TestSchemaFieldArgDescription.__absinthe_type__("Query")
 
         assert type.fields[unquote(test_label)].args.arg_example.description ==
                  unquote(expected_value)
@@ -25,7 +25,7 @@ defmodule Absinthe.Type.QueryTest do
                       expected_value: expected_value
                     } ->
       test "for #{test_label} (evaluates default_value to '#{expected_value}')" do
-        type = Query.TestSchemaFieldArgDefaultValue.__absinthe_type__("RootQueryType")
+        type = Query.TestSchemaFieldArgDefaultValue.__absinthe_type__("Query")
         field = type.fields[unquote(test_label)]
 
         assert field.args.arg_example.default_value == unquote(expected_value)
@@ -40,8 +40,7 @@ defmodule Absinthe.Type.QueryTest do
                       expected_value: expected_value
                     } ->
       test "for #{test_label} (evaluates default_value to '#{expected_value}')" do
-        type =
-          Query.TestSchemaFieldArgDefaultValueWithImportFields.__absinthe_type__("RootQueryType")
+        type = Query.TestSchemaFieldArgDefaultValueWithImportFields.__absinthe_type__("Query")
 
         field = type.fields[unquote(test_label)]
 

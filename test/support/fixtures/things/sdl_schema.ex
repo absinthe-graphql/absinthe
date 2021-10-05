@@ -21,13 +21,13 @@ defmodule Absinthe.Fixtures.Things.SDLSchema do
     MULTIPLE_WITHOUT_MESSAGE
   }
 
-  type RootMutationType {
+  type Mutation {
     updateThing(id: String!, thing: InputThing!): Thing
 
     failingThing(type: FailureType): Thing
   }
 
-  type RootQueryType {
+  type Query {
     version: String
 
     badResolution: Thing
@@ -94,8 +94,8 @@ defmodule Absinthe.Fixtures.Things.SDLSchema do
   }
 
   schema {
-    mutation: RootMutationType
-    query: RootQueryType
+    mutation: Mutation
+    query: Query
   }
 
   """

@@ -18,14 +18,14 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.SchemaTypesTest do
     "Business",
     "Contact",
     "Int",
-    "RootMutationType",
+    "Mutation",
     "NamedEntity",
     "Person",
     "ProfileInput",
-    "RootQueryType",
+    "Query",
     "SearchResult",
     "String",
-    "RootSubscriptionType"
+    "Subscription"
   ]
 
   test "scenario #1" do
