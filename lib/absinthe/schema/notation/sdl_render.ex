@@ -107,7 +107,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       string(@adapter.to_external_name(input_value.name, :argument)),
       ": ",
       render(input_value.type, type_definitions),
-      default(input_value.default_value_blueprint),
+      default(input_value.default_value_blueprint || %{value: input_value.default_value}),
       directives(input_value.directives, type_definitions)
     ])
     |> description(input_value.description)
@@ -339,6 +339,10 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   end
 
   defp default(nil) do
+    empty()
+  end
+
+  defp default(%{value: nil}) do
     empty()
   end
 

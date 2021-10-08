@@ -197,6 +197,7 @@ defmodule Absinthe.Schema.SdlRenderTest do
       field :echo, :string do
         arg :times, :integer, default_value: 10, description: "The number of times"
         arg :time_interval, :integer
+        arg :time_string, :string, default_value: "2021"
       end
 
       field :search, :search_result
@@ -251,9 +252,10 @@ defmodule Absinthe.Schema.SdlRenderTest do
              type RootQueryType {
                echo(
                  "The number of times"
-                 times: Int
+                 times: Int = 10
 
                  timeInterval: Int
+                 timeString: String = "2021"
                ): String
                search: SearchResult
              }
