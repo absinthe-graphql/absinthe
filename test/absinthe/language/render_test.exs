@@ -1,5 +1,5 @@
 defmodule Absinthe.Language.RenderTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   describe "renders graphql" do
     test "for unnamed query" do
