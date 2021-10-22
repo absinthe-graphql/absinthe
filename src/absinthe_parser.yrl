@@ -36,7 +36,7 @@ OperationType -> 'query' : '$1'.
 OperationType -> 'mutation' : '$1'.
 OperationType -> 'subscription' : '$1'.
 
-OperationDefinition -> SelectionSet : build_ast_node('OperationDefinition', #{'operation' => 'query', 'selection_set' => '$1'}, extract_child_location('$1')).
+OperationDefinition -> SelectionSet : build_ast_node('OperationDefinition', #{'operation' => 'query', 'selection_set' => '$1', 'shorthand' => true}, extract_child_location('$1')).
 OperationDefinition -> OperationType SelectionSet : build_ast_node('OperationDefinition', #{'operation' => extract_atom('$1'), 'selection_set' => '$2'}, extract_location('$1')).
 OperationDefinition -> OperationType VariableDefinitions SelectionSet : build_ast_node('OperationDefinition', #{'operation' => extract_atom('$1'), 'variable_definitions' => '$2', 'selection_set' => '$3'}, extract_child_location('$1')).
 OperationDefinition -> OperationType VariableDefinitions Directives SelectionSet : build_ast_node('OperationDefinition', #{'operation' => extract_atom('$1'), 'variable_definitions' => '$2', 'directives' => '$3', 'selection_set' => '$4'}, extract_child_location('$1')).
