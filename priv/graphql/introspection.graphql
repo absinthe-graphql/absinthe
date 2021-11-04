@@ -24,6 +24,7 @@ query IntrospectionQuery {
     }
   }
 }
+
 fragment FullType on __Type {
   kind
   name
@@ -56,6 +57,7 @@ fragment FullType on __Type {
     ...TypeRef
   }
 }
+
 fragment InputValue on __InputValue {
   name
   description
@@ -64,6 +66,7 @@ fragment InputValue on __InputValue {
   }
   defaultValue
 }
+
 fragment TypeRef on __Type {
   kind
   name

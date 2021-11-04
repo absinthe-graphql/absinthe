@@ -20,7 +20,7 @@ defmodule Absinthe.Language.Render do
   defp render(bp)
 
   defp render(%Absinthe.Language.Document{} = doc) do
-    doc.definitions |> Enum.map(&render/1) |> join("\n")
+    doc.definitions |> Enum.map(&render/1) |> join([line(), line()])
   end
 
   defp render(%Absinthe.Language.OperationDefinition{} = op) do

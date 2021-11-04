@@ -19,11 +19,13 @@ defmodule Absinthe.Language.RenderTest do
           ...pageFragment
         }
       }
+
       fragment userFragment on User @defer {
         friends {
           count
         }
       }
+
       fragment pageFragment on Page {
         likers {
           count
