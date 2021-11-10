@@ -143,6 +143,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       directives(input_value.directives, type_definitions)
     ])
     |> description(input_value.description)
+    |> deprecation(input_value.deprecation)
   end
 
   defp render(%Blueprint.Schema.FieldDefinition{} = field, type_definitions) do
@@ -154,6 +155,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       directives(field.directives, type_definitions)
     ])
     |> description(field.description)
+    |> deprecation(field.deprecation)
   end
 
   defp render(%Blueprint.Schema.ObjectTypeDefinition{} = object_type, type_definitions) do
@@ -243,6 +245,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       directives(enum_value.directives, type_definitions)
     ])
     |> description(enum_value.description)
+    |> deprecation(enum_value.deprecation)
   end
 
   defp render(%Blueprint.Schema.ScalarTypeDefinition{} = scalar_type, type_definitions) do
@@ -392,6 +395,14 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       line(),
       docs
     ])
+  end
+
+  defp deprecation(docs, nil) do
+    docs
+  end
+
+  defp deprecation(docs, %Absinthe.Type.Deprecation{reason: reason}) do
+    concat([docs, " @deprecated(reason: \"#{reason}\")"])
   end
 
   defp implements(%{interface_blueprints: [], interfaces: []}, _) do
