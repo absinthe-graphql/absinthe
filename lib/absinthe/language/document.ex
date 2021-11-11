@@ -83,4 +83,9 @@ defmodule Absinthe.Language.Document do
       update_in(blueprint.fragments, &[Blueprint.Draft.convert(node, doc) | &1])
     end
   end
+
+  defimpl Inspect do
+    defdelegate inspect(term, options),
+      to: Absinthe.Language.Render
+  end
 end
