@@ -13,6 +13,14 @@ defmodule Absinthe.Type.EnumTest do
           {:ok, :red}
         end
       end
+
+      field :channel_default_arg, :color_channel, description: "The active color channel" do
+        arg :color, :dynamic_color_list, default_value: :orange
+
+        resolve fn _, _ ->
+          {:ok, :red}
+        end
+      end
     end
 
     enum :color_channel do
