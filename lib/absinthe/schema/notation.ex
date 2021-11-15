@@ -40,7 +40,7 @@ defmodule Absinthe.Schema.Notation do
           batch: 4
         ]
 
-      Module.register_attribute(__MODULE__, :__absinthe_type_import__, accumulate: true)
+      Module.register_attribute(__MODULE__, :__absinthe_type_imports__, accumulate: true)
       @desc nil
       import unquote(__MODULE__), unquote(import_opts)
       @before_compile unquote(__MODULE__)
