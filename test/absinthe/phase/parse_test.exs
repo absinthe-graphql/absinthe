@@ -47,14 +47,15 @@ defmodule Absinthe.Phase.ParseTest do
   test "coerces non-string binaries to strings" do
     assert {:error, bp} = Absinthe.Phase.Parse.run(@graphql)
 
-    assert [
-             %Absinthe.Phase.Error{
-               extra: %{},
-               locations: [%{column: 16, line: 1}],
-               message: "Parsing failed at `<<223, 101, 114, 114, 111, 114>>`",
-               phase: Absinthe.Phase.Parse
-             }
-           ] == bp.execution.validation_errors
+    [parse_error] = bp.execution.validation_errors
+    assert String.valid?(parse_error.message)
+
+    assert %Absinthe.Phase.Error{
+             extra: %{},
+             locations: [%{column: 16, line: 1}],
+             message: "Parsing failed at `<<223, 101, 114, 114, 111, 114>>`",
+             phase: Absinthe.Phase.Parse
+           } == parse_error
   end
 
   @graphql ";"
