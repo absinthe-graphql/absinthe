@@ -104,7 +104,8 @@ defmodule Absinthe.Phase.Parse do
   @spec format_raw_parse_error({:lexer, String.t(), {line :: pos_integer, column :: pos_integer}}) ::
           Phase.Error.t()
   defp format_raw_parse_error({:lexer, rest, {line, column}}) do
-    sample = String.slice(rest, 0, 10)
+    sample_slice = String.slice(rest, 0, 10)
+    sample = if String.valid?(sample_slice), do: sample_slice, else: inspect(sample_slice)
 
     message = "Parsing failed at `#{sample}`"
     %Phase.Error{message: message, locations: [%{line: line, column: column}], phase: __MODULE__}
