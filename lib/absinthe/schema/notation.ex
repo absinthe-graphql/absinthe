@@ -1676,9 +1676,9 @@ defmodule Absinthe.Schema.Notation do
 
   defp do_import_types(module, env, opts) do
     Module.put_attribute(env.module, :__absinthe_type_imports__, [
-       {module, opts} | Module.get_attribute(env.module, :__absinthe_type_imports__) || []
-     ])
-     
+      {module, opts} | Module.get_attribute(env.module, :__absinthe_type_imports__) || []
+    ])
+
     []
   end
 
