@@ -40,7 +40,6 @@ defmodule Absinthe.Schema.Notation do
           batch: 4
         ]
 
-      Module.register_attribute(__MODULE__, :__absinthe_type_imports__, accumulate: true)
       @desc nil
       import unquote(__MODULE__), unquote(import_opts)
       @before_compile unquote(__MODULE__)
@@ -1676,7 +1675,10 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp do_import_types(module, env, opts) do
-    Module.put_attribute(env.module, :__absinthe_type_imports__, {module, opts})
+    Module.put_attribute(env.module, :__absinthe_type_imports__, [
+       {module, opts} | Module.get_attribute(env.module, :__absinthe_type_imports__) || []
+     ])
+     
     []
   end
 
