@@ -28,18 +28,7 @@ In your application supervisor add a line _after_ your existing endpoint supervi
 line:
 
 ```elixir
-[
-  # other children ...
-  supervisor(MyAppWeb.Endpoint, []), # this line should already exist
-  supervisor(Absinthe.Subscription, MyAppWeb.Endpoint), # add this line
-  # other children ...
-]
-```
-
-In Phoenix v1.4, the supervisor children are mounted like so:
-
-```elixir
-# List all child processes to be supervised
+    # List all child processes to be supervised
     children = [
       # Start the Ecto repository
       MyAppWeb.Repo,
@@ -52,7 +41,19 @@ In Phoenix v1.4, the supervisor children are mounted like so:
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: MyAppWeb.Supervisor]
     Supervisor.start_link(children, opts)
+```
 
+In older versions of phoenix (pre 1.4) you might see a slightly different syntax,
+in which case add Absinthe like this:
+
+```elixir
+[
+  # other children ...
+  MyAppWeb.Repo,
+  supervisor(MyAppWeb.Endpoint, []), # this line should already exist
+  supervisor(Absinthe.Subscription, MyAppWeb.Endpoint), # add this line
+  # other children ...
+]
 ```
 
 Where `MyAppWeb.Endpoint` is the name of your application's phoenix endpoint.
