@@ -46,7 +46,7 @@ line:
 In older versions of phoenix (pre 1.4) you might see a slightly different syntax,
 in which case add Absinthe like this:
 
-```
+```elixir
 [
   # other children ...
   MyAppWeb.Repo,
