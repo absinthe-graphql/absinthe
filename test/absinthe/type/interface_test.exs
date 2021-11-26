@@ -142,7 +142,7 @@ defmodule Absinthe.Type.InterfaceTest do
         },
         %{
           phase: Validation.ObjectInterfacesMustBeValid,
-          extra: %{object: :quux, interface: :foo}
+          extra: %{object: :quux, interface: :foo, implemented_by: nil}
         },
         %{phase: Validation.InterfacesMustResolveTypes, extra: :named}
       ])

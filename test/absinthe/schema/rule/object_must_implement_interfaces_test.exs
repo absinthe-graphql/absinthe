@@ -7,6 +7,7 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfacesTest do
     object :user do
       interface :named
       interface :favorite_foods
+      interface :parented
       field :name, :string
       field :id, :id
       field :parent, :named
@@ -22,6 +23,13 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfacesTest do
     interface :parented do
       field :parent, :named
       field :another_parent, :named
+
+      resolve_type fn
+        %{type: :dog}, _ -> :dog
+        %{type: :user}, _ -> :user
+        %{type: :cat}, _ -> :cat
+        _, _ -> nil
+      end
     end
 
     interface :named do
@@ -52,6 +60,7 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfacesTest do
     object :dog do
       field :name, :string
       interface :named
+      interface :parented
       interface :favorite_foods
       field :parent, :named
       field :another_parent, :user
@@ -63,6 +72,7 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfacesTest do
     object :cat do
       interface :named
       interface :favorite_foods
+      interface :parented
       field :name, non_null(:string)
       field :parent, :named
       field :another_parent, :user
@@ -89,7 +99,7 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfacesTest do
     assert %{
              named: [:cat, :dog, :user],
              favorite_foods: [:cat, :dog, :user],
-             parented: [:named]
+             parented: [:cat, :dog, :named, :user]
            } ==
              Schema.__absinthe_interface_implementors__()
   end
