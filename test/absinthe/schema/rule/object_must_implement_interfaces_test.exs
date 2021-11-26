@@ -25,6 +25,9 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfacesTest do
       field :another_parent, :named
 
       resolve_type fn
+        %{type: :dog}, _ -> :dog
+        %{type: :user}, _ -> :user
+        %{type: :cat}, _ -> :cat
         _, _ -> nil
       end
     end
