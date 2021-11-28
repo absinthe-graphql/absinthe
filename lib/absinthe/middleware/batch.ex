@@ -160,7 +160,14 @@ defmodule Absinthe.Middleware.Batch do
   @batch_stop [:absinthe, :middleware, :batch, :stop]
   defp emit_start_event(system_time, batch_fun, batch_opts, batch_data) do
     id = :erlang.unique_integer()
-    metadata = %{id: id, batch_fun: batch_fun, batch_opts: batch_opts, batch_data: batch_data}
+
+    metadata = %{
+      id: id,
+      telemetry_span_context: id,
+      batch_fun: batch_fun,
+      batch_opts: batch_opts,
+      batch_data: batch_data
+    }
 
     :telemetry.execute(
       @batch_start,
