@@ -3,23 +3,43 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
 
   @moduledoc false
 
-  scalar :integer, name: "Int" do
-    description """
-    The `Int` scalar type represents non-fractional signed whole numeric values.
-    Int can represent values between `-(2^53 - 1)` and `2^53 - 1` since it is
-    represented in JSON as double-precision floating point numbers specified
-    by [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
+  if Application.get_env(:absinthe, :use_legacy_non_compliant_integers, true) do
+    @int_description """
+    The `Int` scalar type represents non-fractional signed whole numeric
+    values. It is NOT compliant with the GraphQl spec, it can represent
+    values between `-(2^53 - 1)` and `2^53 - 1` as specified by
+    [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
+    It is kept here for backwargs compatibility, always create your custom
+    types in favor of changing standard types.
     """
 
-    serialize &__MODULE__.serialize_integer/1
+    @max_int 9_007_199_254_740_991
+    @min_int -9_007_199_254_740_991
+  else
+    @int_description """
+    The `Int` scalar type represents non-fractional signed whole numeric
+    values. Int can represent values between `-2^31` and `2^31 - 1` as
+    outlined in the GraphQl spec.
+    """
+
+    @max_int 2_147_483_647
+    @min_int -2_147_483_648
+  end
+
+  scalar :integer, name: "Int" do
+    description @int_description
+
+    serialize &__MODULE__.serialize_int/1
     parse parse_with([Absinthe.Blueprint.Input.Integer], &parse_int/1)
   end
 
-  def serialize_integer(n) when is_integer(n), do: n
+  def serialize_int(value) when is_integer(value) and value >= @min_int and value <= @max_int do
+    value
+  end
 
-  def serialize_integer(n) do
+  def serialize_int(value) do
     raise Absinthe.SerializationError, """
-    Value #{inspect(n)} is not a valid integer
+    Value #{inspect(value)} is not a valid integer.
     """
   end
 
@@ -92,12 +112,6 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     Value #{inspect(val)} is not a valid boolean
     """
   end
-
-  # Integers are only safe when between -(2^53 - 1) and 2^53 - 1 due to being
-  # encoded in JavaScript and represented in JSON as double-precision floating
-  # point numbers, as specified by IEEE 754.
-  @max_int 9_007_199_254_740_991
-  @min_int -9_007_199_254_740_991
 
   @spec parse_int(any) :: {:ok, integer} | :error
   defp parse_int(value) when is_integer(value) and value >= @min_int and value <= @max_int do
