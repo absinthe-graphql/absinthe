@@ -1,7 +1,35 @@
 defmodule Absinthe.Type.BuiltIns.ScalarsTest do
-  use Absinthe.Case, async: true
+  use Absinthe.Case, async: false
 
   alias Absinthe.Type
+
+  setup do
+    previous_use_legacy_non_compliant_int_scalar_type =
+      Application.get_env(
+        :absinthe,
+        :use_legacy_non_compliant_int_scalar_type,
+        :not_configured
+      )
+
+    on_exit(fn ->
+      if previous_use_legacy_non_compliant_int_scalar_type != :not_configured do
+        Application.put_env(
+          :absinthe,
+          :use_legacy_non_compliant_int_scalar_type,
+          previous_use_legacy_non_compliant_int_scalar_type
+        )
+      end
+    end)
+  end
+
+  setup_all do
+    prevous_compiler_options = Code.compiler_options()
+
+    on_exit(fn ->
+      recompile(Absinthe.Type.BuiltIns.Scalars)
+      Code.compiler_options(prevous_compiler_options)
+    end)
+  end
 
   defmodule TestSchema do
     use Absinthe.Schema
@@ -11,8 +39,22 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
     end
   end
 
-  @max_int 9_007_199_254_740_991
-  @min_int -9_007_199_254_740_991
+  @max_graphql_int 2_147_483_647
+  @min_graphql_int -2_147_483_648
+
+  @max_ieee_int 9_007_199_254_740_991
+  @min_ieee_int -9_007_199_254_740_991
+
+  defp recompile(module) do
+    Code.compiler_options(ignore_module_conflict: true)
+
+    [{module, _binary}] =
+      module.module_info(:compile)[:source]
+      |> List.to_string()
+      |> Code.compile_file()
+
+    {:recompiled, module}
+  end
 
   defp serialize(type, value) do
     TestSchema.__absinthe_type__(type)
@@ -25,27 +67,133 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
   end
 
   describe ":integer" do
-    test "serializes as an integer" do
+    test "can serilize a valid integer using default IEEE 754 Int config" do
+      Application.delete_env(:absinthe, :use_legacy_non_compliant_int_scalar_type)
+      recompile(Absinthe.Type.BuiltIns.Scalars)
+
+      assert -1 == serialize(:integer, -1)
+      assert 0 == serialize(:integer, 0)
       assert 1 == serialize(:integer, 1)
+      assert @max_ieee_int == serialize(:integer, @max_ieee_int)
+      assert @min_ieee_int == serialize(:integer, @min_ieee_int)
     end
 
-    test "can be parsed from an integer within the valid range" do
+    test "can serilize a valid integer using explicitly defined IEEE 754 Int config" do
+      Application.put_env(:absinthe, :use_legacy_non_compliant_int_scalar_type, true)
+      recompile(Absinthe.Type.BuiltIns.Scalars)
+
+      assert -1 == serialize(:integer, -1)
+      assert 0 == serialize(:integer, 0)
+      assert 1 == serialize(:integer, 1)
+      assert @max_ieee_int == serialize(:integer, @max_ieee_int)
+      assert @min_ieee_int == serialize(:integer, @min_ieee_int)
+    end
+
+    test "can serilize a valid integer using GraphQl compliant Int config" do
+      Application.put_env(:absinthe, :use_legacy_non_compliant_int_scalar_type, false)
+      recompile(Absinthe.Type.BuiltIns.Scalars)
+
+      assert -1 == serialize(:integer, -1)
+      assert 0 == serialize(:integer, 0)
+      assert 1 == serialize(:integer, 1)
+      assert @max_graphql_int == serialize(:integer, @max_graphql_int)
+      assert @min_graphql_int == serialize(:integer, @min_graphql_int)
+    end
+
+    test "cannot serilize an integer outside boundaries using default IEEE 754 Int config" do
+      Application.delete_env(:absinthe, :use_legacy_non_compliant_int_scalar_type)
+      recompile(Absinthe.Type.BuiltIns.Scalars)
+
+      assert_raise Absinthe.SerializationError, fn ->
+        serialize(:integer, @max_ieee_int + 1)
+      end
+
+      assert_raise Absinthe.SerializationError, fn ->
+        serialize(:integer, @min_ieee_int - 1)
+      end
+    end
+
+    test "cannot serilize an integer outside boundaries using explicitly defined IEEE 754 Int config" do
+      Application.put_env(:absinthe, :use_legacy_non_compliant_int_scalar_type, true)
+      recompile(Absinthe.Type.BuiltIns.Scalars)
+
+      assert_raise Absinthe.SerializationError, fn ->
+        serialize(:integer, @max_ieee_int + 1)
+      end
+
+      assert_raise Absinthe.SerializationError, fn ->
+        serialize(:integer, @min_ieee_int - 1)
+      end
+    end
+
+    test "cannot serilize an integer outside boundaries using GraphQl compliant Int config" do
+      Application.put_env(:absinthe, :use_legacy_non_compliant_int_scalar_type, false)
+      recompile(Absinthe.Type.BuiltIns.Scalars)
+
+      assert_raise Absinthe.SerializationError, fn ->
+        serialize(:integer, @max_graphql_int + 1)
+      end
+
+      assert_raise Absinthe.SerializationError, fn ->
+        serialize(:integer, @min_graphql_int - 1)
+      end
+    end
+
+    test "can parse integer using default IEEE 754 Int config" do
+      Application.delete_env(:absinthe, :use_legacy_non_compliant_int_scalar_type)
+      recompile(Absinthe.Type.BuiltIns.Scalars)
+
       assert {:ok, 0} == parse(:integer, 0)
       assert {:ok, 1} == parse(:integer, 1)
       assert {:ok, -1} == parse(:integer, -1)
-      assert {:ok, @max_int} == parse(:integer, @max_int)
-      assert {:ok, @min_int} == parse(:integer, @min_int)
-      assert :error == parse(:integer, @max_int + 1)
-      assert :error == parse(:integer, @min_int - 1)
+      assert {:ok, @max_ieee_int} == parse(:integer, @max_ieee_int)
+      assert {:ok, @min_ieee_int} == parse(:integer, @min_ieee_int)
     end
 
-    test "cannot be parsed from a float" do
-      assert :error == parse(:integer, 0.0)
+    test "cannot parse integer outside boundaries using default IEEE 754 Int config" do
+      Application.delete_env(:absinthe, :use_legacy_non_compliant_int_scalar_type)
+      recompile(Absinthe.Type.BuiltIns.Scalars)
+
+      assert :error == parse(:integer, @max_ieee_int + 1)
+      assert :error == parse(:integer, @min_ieee_int - 1)
     end
 
-    test "cannot be parsed from a binary" do
-      assert :error == parse(:integer, "")
-      assert :error == parse(:integer, "0")
+    test "can parse integer using explicitly defined IEEE 754 Int config" do
+      Application.put_env(:absinthe, :use_legacy_non_compliant_int_scalar_type, true)
+      recompile(Absinthe.Type.BuiltIns.Scalars)
+
+      assert {:ok, 0} == parse(:integer, 0)
+      assert {:ok, 1} == parse(:integer, 1)
+      assert {:ok, -1} == parse(:integer, -1)
+      assert {:ok, @max_ieee_int} == parse(:integer, @max_ieee_int)
+      assert {:ok, @min_ieee_int} == parse(:integer, @min_ieee_int)
+    end
+
+    test "cannot parse integer outside boundaries using explicitly defined IEEE 754 Int config" do
+      Application.put_env(:absinthe, :use_legacy_non_compliant_int_scalar_type, true)
+      recompile(Absinthe.Type.BuiltIns.Scalars)
+
+      assert :error == parse(:integer, @max_ieee_int + 1)
+      assert :error == parse(:integer, @min_ieee_int - 1)
+    end
+
+    test "can parse integer using GraphQl compliant Int config" do
+      Application.put_env(:absinthe, :use_legacy_non_compliant_int_scalar_type, false)
+      recompile(Absinthe.Type.BuiltIns.Scalars)
+
+      assert {:ok, 0} == parse(:integer, 0)
+      assert {:ok, 1} == parse(:integer, 1)
+      assert {:ok, -1} == parse(:integer, -1)
+      assert {:ok, @max_graphql_int} == parse(:integer, @max_graphql_int)
+      assert {:ok, @min_graphql_int} == parse(:integer, @min_graphql_int)
+    end
+
+    test "cannot parse integer outside boundaries using GraphQl compliant Int config" do
+      Application.put_env(:absinthe, :use_legacy_non_compliant_int_scalar_type, false)
+      recompile(Absinthe.Type.BuiltIns.Scalars)
+
+      assert :error == parse(:integer, @max_graphql_int + 1)
+      assert :error == parse(:integer, @min_graphql_int - 1)
     end
   end
 
@@ -105,8 +253,8 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
 
     test "can be parsed from an integer" do
       assert {:ok, "0"} == parse(:id, 0)
-      assert {:ok, Integer.to_string(@max_int)} == parse(:id, @max_int)
-      assert {:ok, Integer.to_string(@min_int)} == parse(:id, @min_int)
+      assert {:ok, Integer.to_string(@max_ieee_int)} == parse(:id, @max_ieee_int)
+      assert {:ok, Integer.to_string(@min_ieee_int)} == parse(:id, @min_ieee_int)
     end
 
     test "cannot be parsed from a float" do
