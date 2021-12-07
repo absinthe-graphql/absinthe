@@ -8,7 +8,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     The `Int` scalar type represents non-fractional signed whole numeric
     values. It is NOT compliant with the GraphQl spec, it can represent
     values between `-(2^53 - 1)` and `2^53 - 1` as specified by
-    [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
+    [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754).
     It is kept here for backwargs compatibility, always create your custom
     types in favor of changing standard types.
     """
@@ -18,8 +18,8 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   else
     @int_description """
     The `Int` scalar type represents non-fractional signed whole numeric
-    values. Int can represent values between `-2^31` and `2^31 - 1` as
-    outlined in the GraphQl spec.
+    values between `-2^31` and `2^31 - 1` as outlined in the
+    [GraphQl spec](ttps://spec.graphql.org/October2021/#sec-Int).
     """
 
     @max_int 2_147_483_647
@@ -47,7 +47,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     description """
     The `Float` scalar type represents signed double-precision fractional
     values as specified by
-    [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
+    [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754).
     """
 
     serialize &__MODULE__.serialize_float/1
