@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Bug Fix: [Add optional fix for non complient built-in scalar Int type](https://github.com/absinthe-graphql/absinthe/pull/1131)
+
 ## 1.6.6
 
 - Feature: [Update telemetry dependency to stable ~> 1.0](https://github.com/absinthe-graphql/absinthe/pull/1097)

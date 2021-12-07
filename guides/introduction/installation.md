@@ -13,6 +13,14 @@ end
 
 (Check [Hex](https://hex.pm/packages/absinthe) to make sure you're using an up-to-date version number.)
 
+## Configuration
+
+As explained in [Absinthe.Type.Scalar](custom-scalars.md), for legacy reasons, absinthe's default `Int` scalar type is not compliant with the GraphQl spec, thus it is recommended to configure the following for new installations:
+
+```elixir
+config :absinthe, use_legacy_non_compliant_int_scalar_type: :false
+```
+
 ## Overriding Dependencies
 
 Because the Absinthe project is made up of a large number of related packages to support integrations with other tools, sometimes you may want to update only part of your absinthe-related dependencies.

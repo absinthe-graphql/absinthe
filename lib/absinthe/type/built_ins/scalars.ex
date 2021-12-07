@@ -3,7 +3,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
 
   @moduledoc false
 
-  if Application.get_env(:absinthe, :use_legacy_non_compliant_integers, true) do
+  if Application.get_env(:absinthe, :use_legacy_non_compliant_int_scalar_type, true) do
     @int_description """
     The `Int` scalar type represents non-fractional signed whole numeric
     values. It is NOT compliant with the GraphQl spec, it can represent
@@ -39,7 +39,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
 
   def serialize_int(value) do
     raise Absinthe.SerializationError, """
-    Value #{inspect(value)} is not a valid integer.
+    Value #{inspect(value)} is not a valid Int.
     """
   end
 
