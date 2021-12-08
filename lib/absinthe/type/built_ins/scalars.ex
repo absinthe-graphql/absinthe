@@ -3,19 +3,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
 
   @moduledoc false
 
-  if Application.get_env(:absinthe, :use_legacy_non_compliant_int_scalar_type, true) do
-    @int_description """
-    The `Int` scalar type represents non-fractional signed whole numeric
-    values. It is NOT compliant with the GraphQl spec, it can represent
-    values between `-(2^53 - 1)` and `2^53 - 1` as specified by
-    [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754).
-    It is kept here for backwargs compatibility, always create your custom
-    types in favor of changing standard types.
-    """
-
-    @max_int 9_007_199_254_740_991
-    @min_int -9_007_199_254_740_991
-  else
+  if Application.get_env(:absinthe, :use_spec_compliant_int_scalar, false) do
     @int_description """
     The `Int` scalar type represents non-fractional signed whole numeric
     values between `-2^31` and `2^31 - 1` as outlined in the
@@ -24,6 +12,18 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
 
     @max_int 2_147_483_647
     @min_int -2_147_483_648
+  else
+    @int_description """
+    The `Int` scalar type represents non-fractional signed whole numeric
+    values. It is NOT compliant with the GraphQl spec, it can represent
+    values between `-(2^53 - 1)` and `2^53 - 1` as specified by
+    [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754).
+    It is kept here for backwards compatibility, always create your custom
+    types in favor of changing standard types.
+    """
+
+    @max_int 9_007_199_254_740_991
+    @min_int -9_007_199_254_740_991
   end
 
   scalar :integer, name: "Int" do

@@ -6,10 +6,10 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
   setup_all do
     prevous_compiler_options = Code.compiler_options()
 
-    previous_use_legacy_non_compliant_int_scalar_type =
+    previous_use_spec_compliant_int_scalar =
       Application.get_env(
         :absinthe,
-        :use_legacy_non_compliant_int_scalar_type,
+        :use_spec_compliant_int_scalar,
         :not_configured
       )
 
@@ -17,11 +17,11 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
       recompile(Absinthe.Type.BuiltIns.Scalars)
       Code.compiler_options(prevous_compiler_options)
 
-      if previous_use_legacy_non_compliant_int_scalar_type != :not_configured do
+      if previous_use_spec_compliant_int_scalar != :not_configured do
         Application.put_env(
           :absinthe,
-          :use_legacy_non_compliant_int_scalar_type,
-          previous_use_legacy_non_compliant_int_scalar_type
+          :use_spec_compliant_int_scalar,
+          previous_use_spec_compliant_int_scalar
         )
       end
     end)
@@ -64,7 +64,7 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
 
   describe ":integer" do
     test "can serilize a valid integer using default IEEE 754 Int config" do
-      Application.delete_env(:absinthe, :use_legacy_non_compliant_int_scalar_type)
+      Application.delete_env(:absinthe, :use_spec_compliant_int_scalar)
       recompile(Absinthe.Type.BuiltIns.Scalars)
 
       assert -1 == serialize(:integer, -1)
@@ -75,7 +75,7 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
     end
 
     test "can serilize a valid integer using explicitly defined IEEE 754 Int config" do
-      Application.put_env(:absinthe, :use_legacy_non_compliant_int_scalar_type, true)
+      Application.put_env(:absinthe, :use_spec_compliant_int_scalar, false)
       recompile(Absinthe.Type.BuiltIns.Scalars)
 
       assert -1 == serialize(:integer, -1)
@@ -86,7 +86,7 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
     end
 
     test "can serilize a valid integer using GraphQl compliant Int config" do
-      Application.put_env(:absinthe, :use_legacy_non_compliant_int_scalar_type, false)
+      Application.put_env(:absinthe, :use_spec_compliant_int_scalar, true)
       recompile(Absinthe.Type.BuiltIns.Scalars)
 
       assert -1 == serialize(:integer, -1)
@@ -97,7 +97,7 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
     end
 
     test "cannot serilize an integer outside boundaries using default IEEE 754 Int config" do
-      Application.delete_env(:absinthe, :use_legacy_non_compliant_int_scalar_type)
+      Application.delete_env(:absinthe, :use_spec_compliant_int_scalar)
       recompile(Absinthe.Type.BuiltIns.Scalars)
 
       assert_raise Absinthe.SerializationError, fn ->
@@ -110,7 +110,7 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
     end
 
     test "cannot serilize an integer outside boundaries using explicitly defined IEEE 754 Int config" do
-      Application.put_env(:absinthe, :use_legacy_non_compliant_int_scalar_type, true)
+      Application.put_env(:absinthe, :use_spec_compliant_int_scalar, false)
       recompile(Absinthe.Type.BuiltIns.Scalars)
 
       assert_raise Absinthe.SerializationError, fn ->
@@ -123,7 +123,7 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
     end
 
     test "cannot serilize an integer outside boundaries using GraphQl compliant Int config" do
-      Application.put_env(:absinthe, :use_legacy_non_compliant_int_scalar_type, false)
+      Application.put_env(:absinthe, :use_spec_compliant_int_scalar, true)
       recompile(Absinthe.Type.BuiltIns.Scalars)
 
       assert_raise Absinthe.SerializationError, fn ->
@@ -136,7 +136,7 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
     end
 
     test "can parse integer using default IEEE 754 Int config" do
-      Application.delete_env(:absinthe, :use_legacy_non_compliant_int_scalar_type)
+      Application.delete_env(:absinthe, :use_spec_compliant_int_scalar)
       recompile(Absinthe.Type.BuiltIns.Scalars)
 
       assert {:ok, 0} == parse(:integer, 0)
@@ -147,7 +147,7 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
     end
 
     test "cannot parse integer outside boundaries using default IEEE 754 Int config" do
-      Application.delete_env(:absinthe, :use_legacy_non_compliant_int_scalar_type)
+      Application.delete_env(:absinthe, :use_spec_compliant_int_scalar)
       recompile(Absinthe.Type.BuiltIns.Scalars)
 
       assert :error == parse(:integer, @max_ieee_int + 1)
@@ -155,7 +155,7 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
     end
 
     test "can parse integer using explicitly defined IEEE 754 Int config" do
-      Application.put_env(:absinthe, :use_legacy_non_compliant_int_scalar_type, true)
+      Application.put_env(:absinthe, :use_spec_compliant_int_scalar, false)
       recompile(Absinthe.Type.BuiltIns.Scalars)
 
       assert {:ok, 0} == parse(:integer, 0)
@@ -166,7 +166,7 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
     end
 
     test "cannot parse integer outside boundaries using explicitly defined IEEE 754 Int config" do
-      Application.put_env(:absinthe, :use_legacy_non_compliant_int_scalar_type, true)
+      Application.put_env(:absinthe, :use_spec_compliant_int_scalar, false)
       recompile(Absinthe.Type.BuiltIns.Scalars)
 
       assert :error == parse(:integer, @max_ieee_int + 1)
@@ -174,7 +174,7 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
     end
 
     test "can parse integer using GraphQl compliant Int config" do
-      Application.put_env(:absinthe, :use_legacy_non_compliant_int_scalar_type, false)
+      Application.put_env(:absinthe, :use_spec_compliant_int_scalar, true)
       recompile(Absinthe.Type.BuiltIns.Scalars)
 
       assert {:ok, 0} == parse(:integer, 0)
@@ -185,7 +185,7 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
     end
 
     test "cannot parse integer outside boundaries using GraphQl compliant Int config" do
-      Application.put_env(:absinthe, :use_legacy_non_compliant_int_scalar_type, false)
+      Application.put_env(:absinthe, :use_spec_compliant_int_scalar, true)
       recompile(Absinthe.Type.BuiltIns.Scalars)
 
       assert :error == parse(:integer, @max_graphql_int + 1)

@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Bug Fix: Add **optional** fix for non compliant built-in scalar Int type. Set `config :absinthe, use_legacy_non_compliant_int_scalar_type: :false` in your config to use the fixed Int type. It is also advisable to upgrade for custom types if you are leveraging the use of integers outside the standard. More information in the [pull request #1131](https://github.com/absinthe-graphql/absinthe/pull/1131).
+- Bug Fix: Add **optional** fix for non compliant built-in scalar Int type. Set `config :absinthe, use_spec_compliant_int_scalar: :true` in your config to use the fixed Int type. It is also advisable to upgrade for custom types if you are leveraging the use of integers outside the standard. More information in the [pull request #1131](https://github.com/absinthe-graphql/absinthe/pull/1131).
 
 ## 1.6.6
 
