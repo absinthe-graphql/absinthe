@@ -3,7 +3,9 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
 
   alias Absinthe.Type
 
-  setup do
+  setup_all do
+    prevous_compiler_options = Code.compiler_options()
+
     previous_use_legacy_non_compliant_int_scalar_type =
       Application.get_env(
         :absinthe,
@@ -12,6 +14,9 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
       )
 
     on_exit(fn ->
+      recompile(Absinthe.Type.BuiltIns.Scalars)
+      Code.compiler_options(prevous_compiler_options)
+
       if previous_use_legacy_non_compliant_int_scalar_type != :not_configured do
         Application.put_env(
           :absinthe,
@@ -19,15 +24,6 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
           previous_use_legacy_non_compliant_int_scalar_type
         )
       end
-    end)
-  end
-
-  setup_all do
-    prevous_compiler_options = Code.compiler_options()
-
-    on_exit(fn ->
-      recompile(Absinthe.Type.BuiltIns.Scalars)
-      Code.compiler_options(prevous_compiler_options)
     end)
   end
 
