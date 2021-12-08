@@ -14,9 +14,6 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
       )
 
     on_exit(fn ->
-      recompile(Absinthe.Type.BuiltIns.Scalars)
-      Code.compiler_options(prevous_compiler_options)
-
       if previous_use_spec_compliant_int_scalar != :not_configured do
         Application.put_env(
           :absinthe,
@@ -24,6 +21,10 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
           previous_use_spec_compliant_int_scalar
         )
       end
+
+      recompile(Absinthe.Type.BuiltIns.Scalars)
+      Code.compiler_options(prevous_compiler_options)
+      :ok
     end)
   end
 
