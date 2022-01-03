@@ -29,7 +29,9 @@ defmodule Absinthe.Phase.Schema.Validation.UniqueFieldNames do
             ] do
     fields =
       for field <- object.fields do
-        if duplicate?(object.fields, field, key) do
+        name_counts = Enum.frequencies_by(object.fields, &Map.get(&1, key))
+
+        if duplicate?(name_counts, field, key) do
           Absinthe.Phase.put_error(field, error(field, object))
         else
           field
@@ -43,8 +45,9 @@ defmodule Absinthe.Phase.Schema.Validation.UniqueFieldNames do
     type
   end
 
-  defp duplicate?(fields, field, key) do
-    Enum.count(fields, &(Map.get(&1, key) == Map.get(field, key))) > 1
+  defp duplicate?(name_counts, field, key) do
+    field_identifier = Map.get(field, key)
+    Map.get(name_counts, field_identifier, 0) > 1
   end
 
   defp error(field, object) do
