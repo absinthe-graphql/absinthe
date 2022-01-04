@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Bug Fix: [Validate field names are unique to an object/interface/input object](https://github.com/absinthe-graphql/absinthe/pull/1135)
+
 ## 1.6.6
 
 - Feature: [Update telemetry dependency to stable ~> 1.0](https://github.com/absinthe-graphql/absinthe/pull/1097)
