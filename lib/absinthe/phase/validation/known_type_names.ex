@@ -33,7 +33,7 @@ defmodule Absinthe.Phase.Validation.KnownTypeNames do
     |> put_error(error(node, name))
   end
 
-  defp handle_node(%Blueprint.Document.VariableDefinition{schema_node: nil} = node, schema) do
+  defp handle_node(%Blueprint.Document.VariableDefinition{} = node, schema) do
     name = Blueprint.TypeReference.unwrap(node.type).name
     inner_schema_type = schema.__absinthe_lookup__(name)
 
