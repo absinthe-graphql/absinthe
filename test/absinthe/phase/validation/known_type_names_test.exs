@@ -61,7 +61,7 @@ defmodule Absinthe.Phase.Validation.KnownTypeNamesTest do
     test "unknown type names are invalid" do
       assert_fails_validation(
         """
-        query Foo($var: JumbledUpLetters) {
+        query Foo($var: JumbledUpLetters, $foo: Foo!, $bar: [Bar!]) {
           user(id: 4) {
             name
             pets { ... on Badger { name }, ...PetFields }
@@ -74,6 +74,8 @@ defmodule Absinthe.Phase.Validation.KnownTypeNamesTest do
         [],
         [
           unknown_type(:variable_definition, "JumbledUpLetters", 1),
+          unknown_type(:variable_definition, "Foo", 1),
+          unknown_type(:variable_definition, "Bar", 1),
           unknown_type(:inline_type_condition, "Badger", 4),
           unknown_type(:named_type_condition, "Peettt", 7)
         ]
