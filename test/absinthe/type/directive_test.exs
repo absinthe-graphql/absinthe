@@ -52,12 +52,6 @@ defmodule Absinthe.Type.DirectiveTest do
                  Absinthe.Fixtures.ContactSchema,
                  variables: %{"skipPerson" => true}
                )
-
-      assert_result(
-        {:ok,
-         %{errors: [%{message: ~s(In argument "if": Expected type "Boolean!", found null.)}]}},
-        run(@query_field, Absinthe.Fixtures.ContactSchema)
-      )
     end
 
     @query_fragment """
@@ -80,12 +74,6 @@ defmodule Absinthe.Type.DirectiveTest do
       assert_result(
         {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}},
         run(@query_fragment, Absinthe.Fixtures.ContactSchema, variables: %{"skipAge" => true})
-      )
-
-      assert_result(
-        {:ok,
-         %{errors: [%{message: ~s(In argument "if": Expected type "Boolean!", found null.)}]}},
-        run(@query_fragment, Absinthe.Fixtures.ContactSchema)
       )
     end
   end
@@ -111,19 +99,6 @@ defmodule Absinthe.Type.DirectiveTest do
       assert_result(
         {:ok, %{data: %{}}},
         run(@query_field, Absinthe.Fixtures.ContactSchema, variables: %{"includePerson" => false})
-      )
-
-      assert_result(
-        {:ok,
-         %{
-           errors: [
-             %{
-               locations: [%{column: 19, line: 2}],
-               message: ~s(In argument "if": Expected type "Boolean!", found null.)
-             }
-           ]
-         }},
-        run(@query_field, Absinthe.Fixtures.ContactSchema)
       )
     end
 
