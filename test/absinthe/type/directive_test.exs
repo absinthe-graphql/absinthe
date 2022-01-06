@@ -28,7 +28,7 @@ defmodule Absinthe.Type.DirectiveTest do
 
   describe "the `@skip` directive" do
     @query_field """
-    query Test($skipPerson: Boolean) {
+    query Test($skipPerson: Boolean!) {
       person @skip(if: $skipPerson) {
         name
       }
@@ -61,7 +61,7 @@ defmodule Absinthe.Type.DirectiveTest do
     end
 
     @query_fragment """
-    query Test($skipAge: Boolean) {
+    query Test($skipAge: Boolean!) {
       person {
         name
         ...Aging @skip(if: $skipAge)
@@ -92,7 +92,7 @@ defmodule Absinthe.Type.DirectiveTest do
 
   describe "the `@include` directive" do
     @query_field """
-    query Test($includePerson: Boolean) {
+    query Test($includePerson: Boolean!) {
       person @include(if: $includePerson) {
         name
       }
@@ -128,7 +128,7 @@ defmodule Absinthe.Type.DirectiveTest do
     end
 
     @query_fragment """
-    query Test($includeAge: Boolean) {
+    query Test($includeAge: Boolean!) {
       person {
         name
         ...Aging @include(if: $includeAge)
