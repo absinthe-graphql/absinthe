@@ -310,6 +310,9 @@ defmodule Absinthe.Middleware do
       [{:ref, Absinthe.Type.BuiltIns.Introspection, _}] ->
         expanded
 
+      [{:ref, Absinthe.Phase.Schema.DeprecatedDirectiveFields, _}] ->
+        expanded
+
       _ ->
         schema.middleware(expanded, field, object)
     end
