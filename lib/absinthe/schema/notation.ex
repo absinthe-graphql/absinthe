@@ -1941,7 +1941,7 @@ defmodule Absinthe.Schema.Notation do
     [scope | _] = Module.get_attribute(env.module, :absinthe_scope_stack)
 
     unless recordable?(placement, scope) do
-      raise Absinthe.Schema.Notation.Error, invalid_message(placement, usage)
+      raise Absinthe.Schema.Notation.Error, invalid_message(placement, usage, scope)
     end
 
     env
@@ -1951,16 +1951,22 @@ defmodule Absinthe.Schema.Notation do
   defp recordable?([toplevel: true], scope), do: scope == :schema
   defp recordable?([toplevel: false], scope), do: scope != :schema
 
-  defp invalid_message([under: under], usage) do
+  defp invalid_message([under: under], usage, scope) do
     allowed = under |> Enum.map(&"`#{&1}`") |> Enum.join(", ")
-    "Invalid schema notation: `#{usage}` must only be used within #{allowed}"
+
+    "Invalid schema notation: `#{usage}` must only be used within #{allowed}. #{used_in(scope)}"
   end
 
-  defp invalid_message([toplevel: true], usage) do
-    "Invalid schema notation: `#{usage}` must only be used toplevel"
+  defp invalid_message([toplevel: true], usage, scope) do
+    "Invalid schema notation: `#{usage}` must only be used toplevel. #{used_in(scope)}"
   end
 
-  defp invalid_message([toplevel: false], usage) do
-    "Invalid schema notation: `#{usage}` must not be used toplevel"
+  defp invalid_message([toplevel: false], usage, scope) do
+    "Invalid schema notation: `#{usage}` must not be used toplevel. #{used_in(scope)}"
+  end
+
+  defp used_in(scope) do
+    scope = Atom.to_string(scope)
+    "Was used in `#{scope}`."
   end
 end
