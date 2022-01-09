@@ -872,7 +872,7 @@ defmodule Absinthe.Schema.Notation do
               ]}
 
   @doc """
-  Defines a or applies directive
+  Defines or applies a directive
 
   ## Defining a directive
   ### Placement
