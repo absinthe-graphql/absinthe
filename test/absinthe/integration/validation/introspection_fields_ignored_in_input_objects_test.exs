@@ -2,7 +2,7 @@ defmodule Elixir.Absinthe.Integration.Validation.IntrospectionFieldsIgnoredInInp
   use Absinthe.Case, async: true
 
   @query """
-  mutation ($input: InputThing) {
+  mutation ($input: InputThing!) {
     thing: updateThing(id: "foo", thing: $input) {
       name
       value

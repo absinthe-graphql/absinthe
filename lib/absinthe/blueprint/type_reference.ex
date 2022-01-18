@@ -29,6 +29,22 @@ defmodule Absinthe.Blueprint.TypeReference do
     unwrap(inner)
   end
 
+  @doc """
+  Get the GraphQL name for a (possibly wrapped) type reference.
+
+  """
+  def name(%__MODULE__.NonNull{of_type: type}) do
+    name(type) <> "!"
+  end
+
+  def name(%__MODULE__.List{of_type: type}) do
+    "[" <> name(type) <> "]"
+  end
+
+  def name(%__MODULE__.Name{name: name}) do
+    name
+  end
+
   def to_type(%__MODULE__.NonNull{of_type: type}, schema) do
     %Absinthe.Type.NonNull{of_type: to_type(type, schema)}
   end
