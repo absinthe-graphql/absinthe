@@ -12,6 +12,7 @@ defmodule Absinthe.Phase.Validation.KnownTypeNames do
   # ```
 
   alias Absinthe.{Blueprint, Phase}
+  alias Absinthe.Phase.Document.Validation.Utils
 
   use Absinthe.Phase
   use Absinthe.Phase.Validation
@@ -33,16 +34,18 @@ defmodule Absinthe.Phase.Validation.KnownTypeNames do
     |> put_error(error(node, name))
   end
 
-  defp handle_node(%Blueprint.Document.VariableDefinition{schema_node: nil} = node, schema) do
+  defp handle_node(%Blueprint.Document.VariableDefinition{} = node, schema) do
     name = Blueprint.TypeReference.unwrap(node.type).name
     inner_schema_type = schema.__absinthe_lookup__(name)
 
     if inner_schema_type do
       node
     else
+      suggestions = suggested_type_names(schema, name)
+
       node
       |> flag_invalid(:bad_type_name)
-      |> put_error(error(node, name))
+      |> put_error(error(node, name, suggestions))
     end
   end
 
@@ -50,12 +53,27 @@ defmodule Absinthe.Phase.Validation.KnownTypeNames do
     node
   end
 
+  defp suggested_type_names(schema, name) do
+    schema
+    |> Absinthe.Schema.referenced_types()
+    |> Enum.map(& &1.name)
+    |> Absinthe.Utils.Suggestion.sort_list(name)
+  end
+
   @spec error(Blueprint.node_t(), String.t()) :: Phase.Error.t()
-  defp error(node, name) do
+  defp error(node, name, suggestions \\ []) do
     %Phase.Error{
       phase: __MODULE__,
-      message: ~s(Unknown type "#{name}".),
+      message: message(name, suggestions),
       locations: [node.source_location]
     }
+  end
+
+  defp message(name, []) do
+    ~s(Unknown type "#{name}".)
+  end
+
+  defp message(name, suggestions) do
+    ~s(Unknown type "#{name}".) <> Utils.MessageSuggestions.suggest_message(suggestions)
   end
 end

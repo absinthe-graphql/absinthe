@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-- Bug Fix: [Validate field names are unique to an object/interface/input object](https://github.com/absinthe-graphql/absinthe/pull/1135)
+- Bug Fix: [Fix check unknown types to also cover wrapped types](https://github.com/absinthe-graphql/absinthe/pull/1138)
+- Bug Fix: [Validate field names are unique to an object, interface or an input object](https://github.com/absinthe-graphql/absinthe/pull/1135)
 - Bug Fix: [Validate variable usage in according to spec](https://github.com/absinthe-graphql/absinthe/pull/1141)
 
 ## 1.6.6
