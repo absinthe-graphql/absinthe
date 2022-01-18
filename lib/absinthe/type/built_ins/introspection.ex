@@ -74,27 +74,6 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         {:ok, args}
       end
 
-    field :on_operation,
-      deprecate: "Check `locations` field for enum value OPERATION",
-      type: :boolean,
-      resolve: fn _, %{source: source} ->
-        {:ok, Enum.any?(source.locations, &Enum.member?([:query, :mutation, :subscription], &1))}
-      end
-
-    field :on_fragment,
-      deprecate: "Check `locations` field for enum value FRAGMENT_SPREAD",
-      type: :boolean,
-      resolve: fn _, %{source: source} ->
-        {:ok, Enum.member?(source.locations, :fragment_spread)}
-      end
-
-    field :on_field,
-      type: :boolean,
-      deprecate: "Check `locations` field for enum value FIELD",
-      resolve: fn _, %{source: source} ->
-        {:ok, Enum.member?(source.locations, :field)}
-      end
-
     field :locations, non_null(list_of(non_null(:__directive_location)))
   end
 

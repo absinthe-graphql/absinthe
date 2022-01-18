@@ -28,7 +28,7 @@ defmodule Absinthe.Schema.NotationTest do
         """
         arg :name, :string
         """,
-        "Invalid schema notation: `arg` must only be used within `directive`, `field`"
+        "Invalid schema notation: `arg` must only be used within `directive`, `field`. Was used in `schema`."
       )
     end
   end
@@ -51,7 +51,7 @@ defmodule Absinthe.Schema.NotationTest do
           end
         end
         """,
-        "Invalid schema notation: `directive` must only be used toplevel"
+        "Invalid schema notation: `directive` must only be used toplevel. Was used in `directive`."
       )
     end
   end
@@ -73,7 +73,7 @@ defmodule Absinthe.Schema.NotationTest do
           end
         end
         """,
-        "Invalid schema notation: `enum` must only be used toplevel"
+        "Invalid schema notation: `enum` must only be used toplevel. Was used in `enum`."
       )
     end
   end
@@ -109,7 +109,7 @@ defmodule Absinthe.Schema.NotationTest do
         """
         field :foo, :string
         """,
-        "Invalid schema notation: `field` must only be used within `input_object`, `interface`, `object`"
+        "Invalid schema notation: `field` must only be used within `input_object`, `interface`, `object`. Was used in `schema`."
       )
     end
   end
@@ -131,7 +131,7 @@ defmodule Absinthe.Schema.NotationTest do
           end
         end
         """,
-        "Invalid schema notation: `input_object` must only be used toplevel"
+        "Invalid schema notation: `input_object` must only be used toplevel. Was used in `input_object`."
       )
     end
   end
@@ -152,7 +152,7 @@ defmodule Absinthe.Schema.NotationTest do
         """
         expand fn _, _ -> :ok end
         """,
-        "Invalid schema notation: `expand` must only be used within `directive`"
+        "Invalid schema notation: `expand` must only be used within `directive`. Was used in `schema`."
       )
     end
 
@@ -164,7 +164,7 @@ defmodule Absinthe.Schema.NotationTest do
           expand fn _, _ -> :ok end
         end
         """,
-        "Invalid schema notation: `expand` must only be used within `directive`"
+        "Invalid schema notation: `expand` must only be used within `directive`. Was used in `object`."
       )
     end
   end
@@ -204,7 +204,7 @@ defmodule Absinthe.Schema.NotationTest do
           interface :foo
         end
         """,
-        "Invalid schema notation: `interface_attribute` must only be used within `object`, `interface`"
+        "Invalid schema notation: `interface_attribute` must only be used within `object`, `interface`. Was used in `input_object`."
       )
     end
   end
@@ -245,7 +245,7 @@ defmodule Absinthe.Schema.NotationTest do
         end
         interfaces [:bar]
         """,
-        "Invalid schema notation: `interfaces` must only be used within `object`, `interface`"
+        "Invalid schema notation: `interfaces` must only be used within `object`, `interface`. Was used in `schema`."
       )
     end
   end
@@ -265,7 +265,7 @@ defmodule Absinthe.Schema.NotationTest do
         """
         is_type_of fn _, _ -> true end
         """,
-        "Invalid schema notation: `is_type_of` must only be used within `object`"
+        "Invalid schema notation: `is_type_of` must only be used within `object`. Was used in `schema`."
       )
     end
 
@@ -277,7 +277,7 @@ defmodule Absinthe.Schema.NotationTest do
           is_type_of fn _, _ -> :bar end
         end
         """,
-        "Invalid schema notation: `is_type_of` must only be used within `object`"
+        "Invalid schema notation: `is_type_of` must only be used within `object`. Was used in `interface`."
       )
     end
   end
@@ -299,7 +299,7 @@ defmodule Absinthe.Schema.NotationTest do
           end
         end
         """,
-        "Invalid schema notation: `object` must only be used toplevel"
+        "Invalid schema notation: `object` must only be used toplevel. Was used in `object`."
       )
     end
 
@@ -348,7 +348,7 @@ defmodule Absinthe.Schema.NotationTest do
         """
         on [:fragment_spread, :mutation]
         """,
-        "Invalid schema notation: `on` must only be used within `directive`"
+        "Invalid schema notation: `on` must only be used within `directive`. Was used in `schema`."
       )
     end
   end
@@ -368,7 +368,7 @@ defmodule Absinthe.Schema.NotationTest do
         """
         parse &(&1)
         """,
-        "Invalid schema notation: `parse` must only be used within `scalar`"
+        "Invalid schema notation: `parse` must only be used within `scalar`. Was used in `schema`."
       )
     end
   end
@@ -390,7 +390,7 @@ defmodule Absinthe.Schema.NotationTest do
         """
         resolve fn _, _ -> {:ok, 1} end
         """,
-        "Invalid schema notation: `resolve` must only be used within `field`"
+        "Invalid schema notation: `resolve` must only be used within `field`. Was used in `schema`."
       )
     end
 
@@ -402,7 +402,7 @@ defmodule Absinthe.Schema.NotationTest do
           resolve fn _, _ -> {:ok, 1} end
         end
         """,
-        "Invalid schema notation: `resolve` must only be used within `field`"
+        "Invalid schema notation: `resolve` must only be used within `field`. Was used in `object`."
       )
     end
   end
@@ -430,7 +430,7 @@ defmodule Absinthe.Schema.NotationTest do
         """
         resolve_type fn _, _ -> :bar end
         """,
-        "Invalid schema notation: `resolve_type` must only be used within `interface`, `union`"
+        "Invalid schema notation: `resolve_type` must only be used within `interface`, `union`. Was used in `schema`."
       )
     end
 
@@ -442,7 +442,7 @@ defmodule Absinthe.Schema.NotationTest do
           resolve_type fn _, _ -> :bar end
         end
         """,
-        "Invalid schema notation: `resolve_type` must only be used within `interface`, `union`"
+        "Invalid schema notation: `resolve_type` must only be used within `interface`, `union`. Was used in `object`."
       )
     end
   end
@@ -464,7 +464,7 @@ defmodule Absinthe.Schema.NotationTest do
           end
         end
         """,
-        "Invalid schema notation: `scalar` must only be used toplevel"
+        "Invalid schema notation: `scalar` must only be used toplevel. Was used in `scalar`."
       )
     end
   end
@@ -484,7 +484,7 @@ defmodule Absinthe.Schema.NotationTest do
         """
         serialize &(&1)
         """,
-        "Invalid schema notation: `serialize` must only be used within `scalar`"
+        "Invalid schema notation: `serialize` must only be used within `scalar`. Was used in `schema`."
       )
     end
   end
@@ -506,7 +506,7 @@ defmodule Absinthe.Schema.NotationTest do
       assert_notation_error(
         "TypesInvalid",
         "types [:foo]",
-        "Invalid schema notation: `types` must only be used within `union`"
+        "Invalid schema notation: `types` must only be used within `union`. Was used in `schema`."
       )
     end
   end
@@ -526,7 +526,7 @@ defmodule Absinthe.Schema.NotationTest do
       assert_notation_error(
         "ValueInvalid",
         "value :b",
-        "Invalid schema notation: `value` must only be used within `enum`"
+        "Invalid schema notation: `value` must only be used within `enum`. Was used in `schema`."
       )
     end
   end
@@ -546,7 +546,7 @@ defmodule Absinthe.Schema.NotationTest do
       assert_notation_error(
         "DescriptionInvalid",
         ~s(description "test"),
-        "Invalid schema notation: `description` must not be used toplevel"
+        "Invalid schema notation: `description` must not be used toplevel. Was used in `schema`."
       )
     end
   end
