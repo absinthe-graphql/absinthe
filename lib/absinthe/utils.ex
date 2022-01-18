@@ -64,6 +64,11 @@ defmodule Absinthe.Utils do
   end
 
   @doc false
+  def placement_docs(placements, name) do
+    placement = Enum.find(placements, &match?({^name, _}, &1))
+    placement_docs([placement])
+  end
+
   def placement_docs([{_, placement} | _]) do
     placement
     |> do_placement_docs

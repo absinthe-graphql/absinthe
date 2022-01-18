@@ -124,6 +124,7 @@ defmodule Absinthe.Pipeline do
 
     [
       Phase.Schema.TypeImports,
+      Phase.Schema.DeprecatedDirectiveFields,
       Phase.Schema.ApplyDeclaration,
       Phase.Schema.Introspection,
       {Phase.Schema.Hydrate, options},

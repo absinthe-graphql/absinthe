@@ -38,4 +38,14 @@ defmodule Absinthe.Blueprint.Input.Value do
   def valid?(%{normalized: %Absinthe.Blueprint.Input.Null{}}), do: true
   def valid?(%{normalized: nil}), do: false
   def valid?(%{normalized: _}), do: true
+
+  def build(value) do
+    %Absinthe.Blueprint.Input.Value{
+      data: value,
+      normalized: nil,
+      raw: %Absinthe.Blueprint.Input.RawValue{
+        content: Absinthe.Blueprint.Input.parse(value)
+      }
+    }
+  end
 end
