@@ -9,7 +9,7 @@ defmodule Absinthe.Phase.Schema.Validation.InputOutputTypesCorrectlyPlaced do
 
   defp handle_schemas(%Blueprint.Schema.SchemaDefinition{} = schema) do
     types = Map.new(schema.type_definitions, &{&1.identifier, &1})
-    schema = Blueprint.prewalk(schema, &validate_type(&1, types))
+    schema = Blueprint.prewalk(schema, &validate_type(&1, types, schema))
     {:halt, schema}
   end
 
@@ -17,8 +17,12 @@ defmodule Absinthe.Phase.Schema.Validation.InputOutputTypesCorrectlyPlaced do
     obj
   end
 
-  defp validate_type(%Blueprint.Schema.InputValueDefinition{} = arg, types) do
-    arg_type = Map.get(types, Blueprint.TypeReference.unwrap(arg.type))
+  defp validate_type(%Blueprint.Schema.InputValueDefinition{} = arg, types, schema) do
+    type =
+      Blueprint.TypeReference.unwrap(arg.type)
+      |> Blueprint.TypeReference.to_type(schema)
+
+    arg_type = Map.get(types, type)
 
     if arg_type && wrong_type?(Blueprint.Schema.InputValueDefinition, arg_type) do
       detail = %{
@@ -33,11 +37,15 @@ defmodule Absinthe.Phase.Schema.Validation.InputOutputTypesCorrectlyPlaced do
     end
   end
 
-  defp validate_type(%struct{fields: fields} = type, types) do
+  defp validate_type(%struct{fields: fields} = type, types, schema) do
     fields =
       Enum.map(fields, fn
         %{type: _} = field ->
-          field_type = Map.get(types, Blueprint.TypeReference.unwrap(field.type))
+          type =
+            Blueprint.TypeReference.unwrap(field.type)
+            |> Blueprint.TypeReference.to_type(schema)
+
+          field_type = Map.get(types, type)
 
           if field_type && wrong_type?(struct, field_type) do
             detail = %{
@@ -59,7 +67,7 @@ defmodule Absinthe.Phase.Schema.Validation.InputOutputTypesCorrectlyPlaced do
     %{type | fields: fields}
   end
 
-  defp validate_type(type, _types) do
+  defp validate_type(type, _types, _schema) do
     type
   end
 
