@@ -1,4 +1,6 @@
 defmodule Absinthe.Phase.Document.Arguments.VariableTypesMatch do
+  @moduledoc false
+
   # Implements: 5.8.5. All Variable Usages are Allowed
   # Specifically, it implements "Variable usages must be compatible with the arguments they are passed to."
   # See relevant counter-example: https://spec.graphql.org/draft/#example-2028e

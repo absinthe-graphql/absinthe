@@ -138,7 +138,7 @@ defmodule Absinthe.Middleware do
   ```
 
   Given a document like:
-  ```
+  ```graphql
   { lookupUser { name }}
   ```
 
