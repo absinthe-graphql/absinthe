@@ -112,7 +112,7 @@ defmodule Absinthe.Resolution do
 
   ## Examples
   Given some query:
-  ```
+  ```graphql
   {users { email }}
   ```
 
@@ -146,7 +146,7 @@ defmodule Absinthe.Resolution do
   ## Example
 
   Given a document like:
-  ```
+  ```graphql
   { user { id name }}
   ```
 
@@ -162,7 +162,7 @@ defmodule Absinthe.Resolution do
   `child_fields` will be `["id", "name"]`.
 
   It correctly handles fragments, so for example if you had the document:
-  ```
+  ```graphql
   {
     user {
       ... on User {

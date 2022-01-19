@@ -1,4 +1,5 @@
 defmodule Absinthe.Phase.Document.Validation.Utils.MessageSuggestions do
+  @moduledoc false
   @suggest 5
 
   @doc """
