@@ -39,7 +39,7 @@ defmodule Absinthe.Schema.ManipulationTest do
                    %{
                      source: source
                    } ->
-          private = source[:__private__] || []
+          private = source.__private__ || []
           meta_items = private[:meta] || []
 
           {:ok, meta_items[:some_string_meta]}
