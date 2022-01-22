@@ -14,12 +14,17 @@ defmodule Absinthe.Schema.Notation do
         object :item do
           field :id, :id
           field :name, :string
+          field :status, :status_enum
+        end
+
+        enum :status_enum do
+          value :current
+          value :discontinued
         end
 
         # ...
 
       end
-
   """
 
   Module.register_attribute(__MODULE__, :placement, accumulate: true)
