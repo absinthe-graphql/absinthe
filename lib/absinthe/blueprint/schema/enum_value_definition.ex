@@ -16,7 +16,8 @@ defmodule Absinthe.Blueprint.Schema.EnumValueDefinition do
     flags: %{},
     module: nil,
     errors: [],
-    __reference__: nil
+    __reference__: nil,
+    __private__: []
   ]
 
   @type t :: %__MODULE__{
