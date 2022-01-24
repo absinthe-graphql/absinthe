@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- Bug Fix: [Add `__private__` field to EnumValueDefinition](https://github.com/absinthe-graphql/absinthe/pull/1148) 
+
 ## 1.7.0
 
 - POTENTIALLY BREAKING Bug Fix: [Validate variable usage in according to spec](https://github.com/absinthe-graphql/absinthe/pull/1141). This could break incoming documents previously considered valid. Skip the `Absinthe.Phase.Document.Arguments.VariableTypesMatch` phase to avoid this check. See `Absinthe.Pipeline` on adjusting the document pipeline.
