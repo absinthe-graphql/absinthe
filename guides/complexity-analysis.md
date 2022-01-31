@@ -205,3 +205,215 @@ This new schema will result in a complexity of 20 if you query
 
 Prefer child_complexity functions over static complexity to avoid
 unexpected complexity calculations.
+
+### Pagination Complexity Calculations
+
+If you implement some pagination library for example [absinthe_relay](https://hex.pm/packages/absinthe_relay), you'll need to ensure complexity analysis works as expected.
+
+Let's take a look at a `absinthe_relay` pagination complexity example:
+
+```query large{
+  account {
+    transactions(first: 1) {
+      edges {
+        node {
+          value {
+            asset {
+              price(currency: ASSET_ID assetId: "QXNzZXQ6Mw==") {
+                value
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+
+By default the complexity will be something like this: `[info] Graphql Query complexity: 8`
+
+Ok, this query complexity is of value 8, what if we ask for 100 transactions, it should be 800 right?
+
+ Query:
+```query large{
+  account {
+    transactions(first: 100) {
+      edges {
+        node {
+          value {
+            asset {
+              price(currency: ASSET_ID assetId: "QXNzZXQ6Mw==") {
+                value
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+The complexity result is: `[info] Graphql Query complexity: 8`
+Even though we fetched 100x more items, the complexity remained the same.
+To address this first issue you must implement a child complexity function on your `account` connection field.
+
+```elixir
+      connection field :transactions, node_type: :account_transaction, paginate: :forward do
+        complexity fn %{first: first}, child_complexity ->
+              first * child_complexity
+        end
+
+        resolve Query.resolve_transactions()
+      end
+```
+
+What is the complexity result for 100 items now? `[info] Graphql Query complexity: 601`
+Much closer! This solves the depth problem, but what about a query that queries the same field on 10 transactions?
+
+new, nefarious query for 10 items:
+
+```
+query large{
+  account {
+    transactions(first: 10) {
+      edges {
+        node {
+          value {
+            asset {
+              price(currency: ASSET_ID assetId: "QXNzZXQ6Mw==") {
+                value
+                  asset {
+                    price(currency: ASSET_ID assetId: "QXNzZXQ6Mw==") {
+                      value
+                        asset {
+                          price(currency: ASSET_ID assetId: "QXNzZXQ6Mw==") {
+                            value
+                              asset {
+                                price(currency: ASSET_ID assetId: "QXNzZXQ6Mw==") {
+                                  value
+                                    asset{
+                                      price(currency: ASSET_ID assetId: "QXNzZXQ6Mw==") {
+                                        value
+                                          asset {
+                                            price(currency: ASSET_ID assetId: "QXNzZXQ6Mw==") {
+                                              value
+                                                asset {
+                                                  price(currency: ASSET_ID assetId: "QXNzZXQ6Mw==") {
+                                                    value
+                                                      asset {
+                                                        price(currency: ASSET_ID assetId: "QXNzZXQ6Mw==") {
+                                                          value
+                                                            asset {
+                                                              price(currency: ASSET_ID assetId: "QXNzZXQ6Mw==") {
+                                                                value
+                                                                  asset {
+                                                                    price(currency: ASSET_ID assetId: "QXNzZXQ6Mw==") {
+                                                                      value
+                                                                        asset {
+                                                                          price(currency: ASSET_ID assetId: "QXNzZXQ6Mw==") {
+                                                                            value
+                                                                              asset {
+                                                                                price(currency: ASSET_ID assetId: "QXNzZXQ6Mw==") {
+                                                                                  value
+                                                                                    asset{
+                                                                                      price(currency: ASSET_ID assetId: "QXNzZXQ6Mw==") {
+                                                                                        value
+                                                                                          asset {
+                                                                                            price(currency: ASSET_ID assetId: "QXNzZXQ6Mw==") {
+                                                                                              value
+                                                                                                asset {
+                                                                                                  price(currency: ASSET_ID assetId: "QXNzZXQ6Mw==") {
+                                                                                                    value
+                                                                                                      asset {
+                                                                                                        price(currency: ASSET_ID assetId: "QXNzZXQ6Mw==") {
+                                                                                                          value
+                                                                                                        }
+                                                                                                      }
+                                                                                                  }
+                                                                                                }
+                                                                                            }
+                                                                                          }
+                                                                                      }
+                                                                                    }
+                                                                                }
+                                                                              }
+                                                                          }
+                                                                        }
+                                                                    }
+                                                                  }
+                                                              }
+                                                            }
+                                                        }
+                                                      }
+                                                  }
+                                                }
+                                            }
+                                          }
+                                      }
+                                    }
+                                }
+                              }
+                          }
+                        }
+                    }
+                  }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Complexity result: `[info] Graphql Query complexity: 511`
+So it's now properly taking into account the extra fields we're asking for.
+
+If you add a static complexity to the cyclic node, you'll essentially never calculate any more complexity and allow nefarious people to execute the previous query with impunity:
+
+same query as before, here's the different asset complexity code:
+
+```elixir
+    object :currency_value do
+      field :value, non_null(:monetary)
+
+      field :asset, non_null(:asset) do
+       complexity(10)
+
+        resolve Query.resolve_asset_by_code()
+      end
+    end
+```
+
+New complexity: `[info] Graphql Query complexity: 131`
+
+That's a 5x reduction in complexity because we set a static complexity.
+If you reduce the query cycles from 16 `value -> asset -> price`, to 8 **you get the same query complexity of 131.**
+
+If you make the mistake of setting a static complexity on any of these fields you'll run into abusable fields like this. Even if you set the static complexity of this field really high, you can still cyclically query it until the server crashes.
+
+Setting a multiplicative child complexity on the abusable node punishes it more harshly than not setting a default complexity:
+
+ ```elixir
+   object :currency_value do
+    field :value, non_null(:monetary)
+
+    field :asset, non_null(:asset) do
+      complexity fn _args, child_complexity ->
+        20 + child_complexity
+      end
+
+      resolve Query.resolve_asset_by_code()
+    end
+  end
+```
+
+New complexity with the same 16 cycle, 10 tx query: `[info] Graphql Query complexity: 3551` which is significantly more punished than the `511` we got with default complexity value of currency value.
+
+So be weary when working with pagination and complexity and ensure you test
+your complexity thoroughly. Otherwise, cyclic nodes and pagination can lead to Denial
+of Service opportunities for nefarious actors.
