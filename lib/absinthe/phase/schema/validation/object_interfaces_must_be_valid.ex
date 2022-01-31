@@ -101,9 +101,7 @@ defmodule Absinthe.Phase.Schema.Validation.ObjectInterfacesMustBeValid do
 
   def explanation(%{object: obj, interface: interface, implemented_by: implemented}) do
     """
-    Type "#{obj}" must implement interface type "#{interface}" because it is implemented by "#{
-      implemented.identifier
-    }".
+    Type "#{obj}" must implement interface type "#{interface}" because it is implemented by "#{implemented.identifier}".
 
     #{@description}
     """

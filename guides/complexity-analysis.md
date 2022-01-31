@@ -105,3 +105,103 @@ But this, at a complexity of `60`, wouldn't:
 If a document's calculated complexity exceeds the configured limit, resolution
 will be skipped and an error will be returned in the result detailing the
 calculated and maximum complexities.
+
+Example Error:
+
+```json
+{
+	"errors": [
+		{
+			"locations": [
+				{
+					"column": 5,
+					"line": 188
+				}
+			],
+			"message": "Field transactions is too complex: complexity is 2400 and maximum is 250"
+		}
+	]
+}
+```
+
+### Complexity Nuance
+
+If you set a static complexity on a field like so:
+
+```elixir
+defmodule MyAppWeb.Schema do
+
+  use Absinthe.Schema
+
+  query do
+    field :people, list_of(:person) do
+      arg :limit, :integer, default_value: 10
+    end
+  end
+
+  object :person do
+    field :name, :string
+    field :age, :integer
+    field :address, non_null(:string) do
+      complexity 10
+      resolve Query.resolve_address()
+    end
+  end
+
+  object :address do
+    field :street, :string
+    field :geolocation, :string do
+      complexity 10
+      resolve Query.resolve_geolocation()
+    end
+  end
+end
+```
+
+The static complexity will prevent any child complexity calculations from happening.
+So if you can query `geolocation` on `address` of complexity 10 on a `person`
+you may think that address `10` + `geolocation` 10 should be complexity
+of 20 but it will be 10 because the static complexity set on `address` overrides
+any child complexity.
+
+To address this, ensure all fields up the object chain have child complexity functions
+
+```elixir
+defmodule MyAppWeb.Schema do
+
+  use Absinthe.Schema
+
+  query do
+    field :people, list_of(:person) do
+      arg :limit, :integer, default_value: 10
+    end
+  end
+
+  object :person do
+    field :name, :string
+    field :age, :integer
+    field :address, non_null(:string) do
+      complexity fn _args_map, child_complexity ->
+        10 + child_complexity
+      end
+      resolve Query.resolve_address()
+    end
+  end
+
+  object :address do
+    field :street, :string
+    field :geolocation, :string do
+      complexity fn _args_map, child_complexity ->
+        10 + child_complexity
+      end
+      resolve Query.resolve_geolocation()
+    end
+  end
+end
+```
+
+This new schema will result in a complexity of 20 if you query
+`person -> address -> geolocation`.
+
+Prefer child_complexity functions over static complexity to avoid
+unexpected complexity calculations.
