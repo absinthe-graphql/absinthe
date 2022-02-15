@@ -69,6 +69,17 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(attrs, [bp], [])
   end
 
+  def struct_to_kind(Blueprint.Schema.DirectiveDefinition), do: "directive"
+  def struct_to_kind(Blueprint.Schema.EnumTypeDefinition), do: "enum type"
+  def struct_to_kind(Blueprint.Schema.EnumValueDefinition), do: "enum value"
+  def struct_to_kind(Blueprint.Schema.FieldDefinition), do: "field"
+  def struct_to_kind(Blueprint.Schema.InputObjectTypeDefinition), do: "input object"
+  def struct_to_kind(Blueprint.Schema.InputValueDefinition), do: "argument"
+  def struct_to_kind(Blueprint.Schema.ObjectTypeDefinition), do: "object"
+  def struct_to_kind(Blueprint.Schema.ScalarTypeDefinition), do: "scalar"
+  def struct_to_kind(Blueprint.Schema.UnionTypeDefinition), do: "union"
+  def struct_to_kind(_), do: "type"
+
   defp build_types([], [bp], buffer) do
     if buffer != [] do
       raise """
