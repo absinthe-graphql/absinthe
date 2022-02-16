@@ -29,7 +29,6 @@ defmodule Absinthe.Schema.Notation.Experimental.SdlExtensionsTest do
     import_sdl """
     type Person {
       name: String
-      age: Int
     }
 
     type Photo {
@@ -39,12 +38,10 @@ defmodule Absinthe.Schema.Notation.Experimental.SdlExtensionsTest do
 
     enum Direction {
       NORTH
-      EAST
     }
 
     input Point {
       x: Float
-      y: Float
     }
 
     union SearchResult = Photo
@@ -72,7 +69,6 @@ defmodule Absinthe.Schema.Notation.Experimental.SdlExtensionsTest do
     extend scalar MyCustomScalar @feature
 
     extend type Photo implements ValuedEntity {
-      description: String
       value: Int
     }
 
@@ -82,7 +78,7 @@ defmodule Absinthe.Schema.Notation.Experimental.SdlExtensionsTest do
     }
 
     extend input Point {
-      z: Float
+      y: Float
     }
     """
 
@@ -101,10 +97,6 @@ defmodule Absinthe.Schema.Notation.Experimental.SdlExtensionsTest do
     object = lookup_compiled_type(ExtendedSchema, :direction)
 
     assert %{
-             east: %Absinthe.Type.Enum.Value{
-               name: "EAST",
-               value: :east
-             },
              north: %Absinthe.Type.Enum.Value{
                name: "NORTH",
                value: :north
@@ -141,10 +133,6 @@ defmodule Absinthe.Schema.Notation.Experimental.SdlExtensionsTest do
                type: :string
              },
              %{
-               name: "description",
-               type: :string
-             },
-             %{
                name: "height",
                type: :integer
              },
@@ -171,10 +159,6 @@ defmodule Absinthe.Schema.Notation.Experimental.SdlExtensionsTest do
              },
              %{
                name: "y",
-               type: :float
-             },
-             %{
-               name: "z",
                type: :float
              }
            ] = Map.values(object.fields)
