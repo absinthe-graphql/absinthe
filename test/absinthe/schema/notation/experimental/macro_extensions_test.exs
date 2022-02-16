@@ -233,7 +233,7 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
 
   test "raises when extend has multiple definitions" do
     schema = """
-    defmodule InvalidKeywordExtend do
+    defmodule MultipleDefinitionExtend do
       use Absinthe.Schema
 
       query do
@@ -264,7 +264,7 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
 
   test "raises when extend has unknown type" do
     schema = """
-    defmodule InvalidKeywordExtend do
+    defmodule UnknownTypeExtend do
       use Absinthe.Schema
 
       query do
