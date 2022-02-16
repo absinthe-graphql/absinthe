@@ -115,7 +115,8 @@ defmodule Absinthe.Blueprint.Schema do
     Schema.InputValueDefinition,
     Schema.InterfaceTypeDefinition,
     Schema.UnionTypeDefinition,
-    Schema.EnumValueDefinition
+    Schema.EnumValueDefinition,
+    Schema.TypeExtensionDefinition
   ]
 
   defp build_types([%module{} = type | rest], stack, buff) when module in @simple_open do
@@ -188,6 +189,26 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(rest, [push(field, :arguments, arg) | stack], buff)
   end
 
+  @extendable_types [
+    Schema.EnumTypeDefinition,
+    Schema.InputObjectTypeDefinition,
+    Schema.InterfaceTypeDefinition,
+    Schema.ObjectTypeDefinition,
+    Schema.ScalarTypeDefinition,
+    Schema.UnionTypeDefinition
+  ]
+  defp build_types(
+         [:close | rest],
+         [
+           %extendable_type{} = def,
+           %Schema.TypeExtensionDefinition{} = extend | stack
+         ],
+         buff
+       )
+       when extendable_type in @extendable_types do
+    build_types(rest, [%{extend | definition: def} | stack], buff)
+  end
+
   defp build_types([:close | rest], [%Schema.FieldDefinition{} = field, obj | stack], buff) do
     field =
       field
@@ -197,6 +218,14 @@ defmodule Absinthe.Blueprint.Schema do
       |> Map.put(:function_ref, {obj.identifier, field.identifier})
 
     build_types(rest, [push(obj, :fields, field) | stack], buff)
+  end
+
+  defp build_types(
+         [:close | rest],
+         [%Schema.TypeExtensionDefinition{} = extension, schema | stack],
+         buff
+       ) do
+    build_types(rest, [push(schema, :type_extensions, extension) | stack], buff)
   end
 
   defp build_types([:close | rest], [%Schema.ObjectTypeDefinition{} = obj, schema | stack], buff) do

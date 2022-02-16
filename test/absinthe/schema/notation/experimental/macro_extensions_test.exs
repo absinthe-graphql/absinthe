@@ -1,0 +1,304 @@
+defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
+  use Absinthe.Case, async: true
+  import ExperimentalNotationHelpers
+
+  @moduletag :experimental
+  @moduletag :sdl
+
+  defmodule WithFeatureDirective do
+    use Absinthe.Schema.Prototype
+
+    directive :feature do
+      arg :name, :string
+      on [:scalar]
+
+      expand(fn _args, node ->
+        %{node | __private__: [feature: true]}
+      end)
+    end
+  end
+
+  defmodule ExtendedSchema do
+    use Absinthe.Schema
+
+    @prototype_schema WithFeatureDirective
+
+    query do
+    end
+
+    object :person do
+      field :name, :string
+    end
+
+    object :photo do
+      field :height, :integer
+    end
+
+    enum :direction do
+      value :north
+    end
+
+    union :search_result do
+      types [:photo]
+    end
+
+    scalar :my_custom_scalar, []
+
+    interface :named_entity do
+      field :name, :string
+    end
+
+    interface :valued_entity do
+      field :value, :integer
+
+      resolve_type fn
+        _, _ -> :photo
+      end
+    end
+
+    input_object :point do
+      field :x, :float
+    end
+
+    extend do
+      enum :direction do
+        value :south
+      end
+    end
+
+    extend do
+      enum :direction do
+        value :west
+      end
+    end
+
+    extend do
+      union :search_result do
+        types [:person]
+      end
+    end
+
+    extend do
+      scalar :my_custom_scalar do
+        directive :feature
+      end
+    end
+
+    extend do
+      interface :named_entity do
+        interface :valued_entity
+        field :nickname, :string
+        field :value, :integer
+      end
+    end
+
+    extend do
+      object :photo do
+        interface :valued_entity
+        field :width, :integer
+        field :value, :integer
+      end
+    end
+
+    extend do
+      input_object :point do
+        field :y, :float
+      end
+    end
+  end
+
+  test "can extend enums" do
+    object = lookup_compiled_type(ExtendedSchema, :direction)
+
+    assert %{
+             north: %Absinthe.Type.Enum.Value{
+               name: "NORTH",
+               value: :north
+             },
+             south: %Absinthe.Type.Enum.Value{
+               name: "SOUTH",
+               value: :south
+             },
+             west: %Absinthe.Type.Enum.Value{
+               name: "WEST",
+               value: :west
+             }
+           } = object.values
+  end
+
+  test "can extend unions" do
+    object = lookup_compiled_type(ExtendedSchema, :search_result)
+
+    assert [:person, :photo] = object.types
+  end
+
+  test "can extend scalars" do
+    object = lookup_compiled_type(ExtendedSchema, :my_custom_scalar)
+
+    assert [{:feature, true}] = object.__private__
+  end
+
+  test "can extend objects" do
+    object = lookup_compiled_type(ExtendedSchema, :photo)
+
+    assert [
+             %{
+               name: "__typename",
+               type: :string
+             },
+             %{
+               name: "height",
+               type: :integer
+             },
+             %{
+               name: "value",
+               type: :integer
+             },
+             %{
+               name: "width",
+               type: :integer
+             }
+           ] = Map.values(object.fields)
+
+    assert [:valued_entity] = object.interfaces
+  end
+
+  test "can extend input objects" do
+    object = lookup_compiled_type(ExtendedSchema, :point)
+
+    assert [
+             %{
+               name: "x",
+               type: :float
+             },
+             %{
+               name: "y",
+               type: :float
+             }
+           ] = Map.values(object.fields)
+  end
+
+  test "can extend interfaces" do
+    object = lookup_compiled_type(ExtendedSchema, :named_entity)
+
+    assert [
+             %{
+               name: "__typename",
+               type: :string
+             },
+             %{
+               name: "name",
+               type: :string
+             },
+             %{
+               name: "nickname",
+               type: :string
+             },
+             %{
+               name: "value",
+               type: :integer
+             }
+           ] = Map.values(object.fields)
+
+    assert [:valued_entity] = object.interfaces
+  end
+
+  test "raises when definition types do not match" do
+    schema = """
+    defmodule KeywordExtend do
+      use Absinthe.Schema
+
+      query do
+      end
+
+      enum :direction do
+        value :north
+        value :east
+      end
+
+      extend do
+        union :direction do
+          types [:west]
+        end
+      end
+    end
+    """
+
+    error = ~r/Type extension type does not match definition type for :direction./
+
+    assert_raise(Absinthe.Schema.Error, error, fn ->
+      Code.eval_string(schema)
+    end)
+  end
+
+  test "raises when extend has multiple definitions" do
+    schema = """
+    defmodule InvalidKeywordExtend do
+      use Absinthe.Schema
+
+      query do
+      end
+
+      enum :direction do
+        value :north
+        value :east
+      end
+
+      extend do
+        enum :direction do
+          value :south
+        end
+        enum :direction do
+          value :west
+        end
+      end
+    end
+    """
+
+    error = ~r/Only one definition allowed in `extend` block./
+
+    assert_raise(Absinthe.Schema.Notation.Error, error, fn ->
+      Code.eval_string(schema, [], __ENV__)
+    end)
+  end
+
+  defmodule ImportedSchema do
+    use Absinthe.Schema.Notation
+
+    extend do
+      enum :direction do
+        value :north
+      end
+    end
+  end
+
+  defmodule ImportingSchema do
+    use Absinthe.Schema
+
+    query do
+    end
+
+    import_types ImportedSchema
+
+    enum :direction do
+      value :south
+    end
+  end
+
+  describe "import type extensions" do
+    test "can extend enums" do
+      object = lookup_compiled_type(ImportingSchema, :direction)
+
+      assert %{
+               north: %Absinthe.Type.Enum.Value{
+                 name: "NORTH",
+                 value: :north
+               },
+               south: %Absinthe.Type.Enum.Value{
+                 name: "SOUTH",
+                 value: :south
+               }
+             } = object.values
+    end
+  end
+end

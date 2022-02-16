@@ -157,7 +157,7 @@ defmodule Absinthe.Schema.Notation do
 
   # OBJECT
 
-  @placement {:object, [toplevel: true]}
+  @placement {:object, [toplevel: true, extend: true]}
   @doc """
   Define an object type.
 
@@ -253,6 +253,38 @@ defmodule Absinthe.Schema.Notation do
     |> record_interfaces!(ifaces)
   end
 
+  @placement {:extend, [toplevel: true]}
+  @doc """
+  Extend a graphql type.
+
+  Extend an existing type with additional fields, values, types and interfaces.
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+
+  ## Examples
+
+  ```
+  object :user do
+    field :name, :string
+    # ...
+  end
+
+  extend do
+    object :user do
+      field :nick_name, :string
+      # ...
+    end
+  end
+  ```
+  """
+  defmacro extend(do: block) do
+    __CALLER__
+    |> recordable!(:extend, @placement[:extend])
+    |> record_extend!(block)
+  end
+
   @placement {:deprecate, [under: [:field]]}
   @doc """
   Mark a field as deprecated
@@ -315,7 +347,7 @@ defmodule Absinthe.Schema.Notation do
 
   # INTERFACES
 
-  @placement {:interface, [toplevel: true]}
+  @placement {:interface, [toplevel: true, extend: true]}
   @doc """
   Define an interface type.
 
@@ -704,7 +736,7 @@ defmodule Absinthe.Schema.Notation do
 
   # SCALARS
 
-  @placement {:scalar, [toplevel: true]}
+  @placement {:scalar, [toplevel: true, extend: true]}
   @doc """
   Define a scalar type
 
@@ -855,7 +887,7 @@ defmodule Absinthe.Schema.Notation do
 
   # DIRECTIVES
 
-  @placement {:directive, [toplevel: true]}
+  @placement {:directive, [toplevel: true, extend: true]}
   @placement {:applied_directive,
               [
                 under: [
@@ -1000,7 +1032,7 @@ defmodule Absinthe.Schema.Notation do
 
   # INPUT OBJECTS
 
-  @placement {:input_object, [toplevel: true]}
+  @placement {:input_object, [toplevel: true, extend: true]}
   @doc """
   Defines an input object
 
@@ -1030,7 +1062,7 @@ defmodule Absinthe.Schema.Notation do
 
   # UNIONS
 
-  @placement {:union, [toplevel: true]}
+  @placement {:union, [toplevel: true, extend: true]}
   @doc """
   Defines a union type
 
@@ -1082,7 +1114,7 @@ defmodule Absinthe.Schema.Notation do
 
   # ENUMS
 
-  @placement {:enum, [toplevel: true]}
+  @placement {:enum, [toplevel: true, extend: true]}
   @doc """
   Defines an enum type
 
@@ -1482,6 +1514,27 @@ defmodule Absinthe.Schema.Notation do
       |> Keyword.update(:description, nil, &wrap_in_unquote/1)
 
     scoped_def(env, Schema.DirectiveDefinition, identifier, attrs, block)
+  end
+
+  def record_extend!(caller, body) do
+    if multiple_definitions?(body) do
+      raise Absinthe.Schema.Notation.Error, "Only one definition allowed in `extend` block."
+    end
+
+    attrs =
+      [module: caller.module]
+      |> put_reference(caller)
+
+    definition = struct!(Schema.TypeExtensionDefinition, attrs)
+
+    put_attr(caller.module, definition)
+
+    push_stack(caller.module, :absinthe_scope_stack, :extend)
+
+    [
+      body,
+      quote(do: unquote(__MODULE__).close_scope())
+    ]
   end
 
   @doc false
@@ -2008,19 +2061,14 @@ defmodule Absinthe.Schema.Notation do
         end)
       end)
 
-    {sdl_directive_definitions, sdl_type_definitions} =
-      Enum.split_with(sdl_definitions, fn
-        %Absinthe.Blueprint.Schema.DirectiveDefinition{} ->
-          true
-
-        _ ->
-          false
-      end)
+    {sdl_directive_definitions, sdl_type_definitions, sdl_type_extensions} =
+      split_definitions(sdl_definitions)
 
     schema =
       schema
       |> Map.update!(:type_definitions, &(sdl_type_definitions ++ &1))
       |> Map.update!(:directive_definitions, &(sdl_directive_definitions ++ &1))
+      |> Map.update!(:type_extensions, &(sdl_type_extensions ++ &1))
 
     blueprint = %{blueprint | schema_definitions: [schema]}
 
@@ -2042,6 +2090,23 @@ defmodule Absinthe.Schema.Notation do
   def lift_functions(node, acc, origin) do
     {node, ast} = functions_for_type(node, origin)
     {node, ast ++ acc}
+  end
+
+  defp split_definitions(definitions) do
+    Enum.reduce(definitions, {[], [], []}, fn definition,
+                                              {directive_definitions, type_definitions,
+                                               type_extensions} ->
+      case definition do
+        %Absinthe.Blueprint.Schema.DirectiveDefinition{} ->
+          {[definition | directive_definitions], type_definitions, type_extensions}
+
+        %Absinthe.Blueprint.Schema.TypeExtensionDefinition{} ->
+          {directive_definitions, type_definitions, [definition | type_extensions]}
+
+        _ ->
+          {directive_definitions, [definition | type_definitions], type_extensions}
+      end
+    end)
   end
 
   defp functions_for_type(%Schema.FieldDefinition{} = type, origin) do
@@ -2163,13 +2228,25 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp recordable?([under: under], scope), do: scope in under
+
+  defp recordable?([toplevel: true, extend: true], scope),
+    do: scope == :schema || scope == :extend
+
   defp recordable?([toplevel: true], scope), do: scope == :schema
   defp recordable?([toplevel: false], scope), do: scope != :schema
+
+  defp multiple_definitions?(block) do
+    match?({:__block__, _, [_ | _]}, block)
+  end
 
   defp invalid_message([under: under], usage, scope) do
     allowed = under |> Enum.map(&"`#{&1}`") |> Enum.join(", ")
 
     "Invalid schema notation: `#{usage}` must only be used within #{allowed}. #{used_in(scope)}"
+  end
+
+  defp invalid_message([toplevel: true, extend: true], usage, scope) do
+    "Invalid schema notation: `#{usage}` must only be used toplevel or in an `extend` block. #{used_in(scope)}"
   end
 
   defp invalid_message([toplevel: true], usage, scope) do

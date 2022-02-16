@@ -24,11 +24,11 @@ defmodule Absinthe.Phase.Schema.TypeImports do
 
   def handle_imports(node), do: node
 
-  defp do_imports([], types, schema) do
-    {types, schema}
+  defp do_imports([], types, type_extensions, schema) do
+    {types, type_extensions, schema}
   end
 
-  defp do_imports([{module, opts} | rest], acc, schema) do
+  defp do_imports([{module, opts} | rest], types_acc, type_extensions_acc, schema) do
     case ensure_compiled(module) do
       {:module, module} ->
         [other_def] = module.__absinthe_blueprint__.schema_definitions
@@ -47,10 +47,22 @@ defmodule Absinthe.Phase.Schema.TypeImports do
               types
           end
 
-        do_imports(other_def.imports ++ rest, types ++ acc, schema)
+        type_extensions = other_def.type_extensions
+
+        do_imports(
+          other_def.imports ++ rest,
+          types ++ types_acc,
+          type_extensions ++ type_extensions_acc,
+          schema
+        )
 
       {:error, reason} ->
-        do_imports(rest, acc, schema |> put_error(error(module, reason)))
+        do_imports(
+          rest,
+          types_acc,
+          type_extensions_acc,
+          schema |> put_error(error(module, reason))
+        )
     end
   end
 
