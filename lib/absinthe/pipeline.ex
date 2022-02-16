@@ -135,6 +135,7 @@ defmodule Absinthe.Pipeline do
       |> Keyword.put_new(:prototype_schema, @default_prototype_schema)
 
     [
+      Phase.Schema.DirectiveImports,
       Phase.Schema.TypeImports,
       Phase.Schema.DeprecatedDirectiveFields,
       Phase.Schema.ApplyDeclaration,

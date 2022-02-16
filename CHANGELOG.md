@@ -1,7 +1,8 @@
 # Changelog
 
 ## Unreleased
-- Bug Fix: [Add `__private__` field to EnumValueDefinition](https://github.com/absinthe-graphql/absinthe/pull/1148) 
+- Bug Fix: [Add `__private__` field to EnumValueDefinition](https://github.com/absinthe-graphql/absinthe/pull/1148)
+- Feature: [Add `import_directives` macro](https://github.com/absinthe-graphql/absinthe/pull/1158)
 
 ## 1.7.0
 
