@@ -14,6 +14,7 @@ locals_without_parens = [
   enum: 2,
   enum: 3,
   expand: 1,
+  extend: 1,
   field: 2,
   field: 3,
   field: 4,
