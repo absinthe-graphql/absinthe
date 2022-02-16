@@ -196,6 +196,7 @@ defmodule Absinthe.Schema.Notation.Experimental.SdlExtensionsTest do
 
       query do
       end
+
       import_sdl "
       enum Direction {
         NORTH
@@ -210,7 +211,49 @@ defmodule Absinthe.Schema.Notation.Experimental.SdlExtensionsTest do
     error = ~r/Type extension type does not match definition type for :direction./
 
     assert_raise(Absinthe.Schema.Error, error, fn ->
-      Code.eval_string(schema)
+      Code.eval_string(schema, [], __ENV__)
     end)
+  end
+
+  defmodule ImportedSchema do
+    use Absinthe.Schema.Notation
+
+    import_sdl """
+    extend enum Direction {
+      NORTH
+    }
+    """
+  end
+
+  defmodule ImportingSchema do
+    use Absinthe.Schema
+
+    query do
+    end
+
+    import_types ImportedSchema
+
+    import_sdl """
+    enum Direction {
+      SOUTH
+    }
+    """
+  end
+
+  describe "import type extensions" do
+    test "can extend enums" do
+      object = lookup_compiled_type(ImportingSchema, :direction)
+
+      assert %{
+               north: %Absinthe.Type.Enum.Value{
+                 name: "NORTH",
+                 value: :north
+               },
+               south: %Absinthe.Type.Enum.Value{
+                 name: "SOUTH",
+                 value: :south
+               }
+             } = object.values
+    end
   end
 end
