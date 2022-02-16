@@ -558,10 +558,8 @@ defmodule Absinthe.Schema.NotationTest do
         value :baz
       end
 
-      extend do
-        enum :foo do
-          value :bar
-        end
+      extend enum :foo do
+        value :bar
       end
       """)
     end
@@ -571,10 +569,8 @@ defmodule Absinthe.Schema.NotationTest do
         "ExtendInvalid",
         """
         enum :foo do
-          extend do
-            enum :bar do
-              value :baz
-            end
+          extend enum :bar do
+            value :baz
           end
         end
         """,

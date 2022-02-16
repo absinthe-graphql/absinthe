@@ -279,7 +279,17 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
-  defmacro extend(do: block) do
+  @extendable_types [
+    :enum,
+    :input_object,
+    :interface,
+    :object,
+    :scalar,
+    :union
+  ]
+  defmacro extend({type, meta, [attr]}, do: block) when type in @extendable_types do
+    block = {type, meta, [attr] ++ [[do: block]]}
+
     __CALLER__
     |> recordable!(:extend, @placement[:extend])
     |> record_extend!(block)
@@ -1517,10 +1527,6 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def record_extend!(caller, body) do
-    if multiple_definitions?(body) do
-      raise Absinthe.Schema.Notation.Error, "Only one definition allowed in `extend` block."
-    end
-
     attrs =
       [module: caller.module]
       |> put_reference(caller)
@@ -2234,10 +2240,6 @@ defmodule Absinthe.Schema.Notation do
 
   defp recordable?([toplevel: true], scope), do: scope == :schema
   defp recordable?([toplevel: false], scope), do: scope != :schema
-
-  defp multiple_definitions?(block) do
-    match?({:__block__, _, [_ | _]}, block)
-  end
 
   defp invalid_message([under: under], usage, scope) do
     allowed = under |> Enum.map(&"`#{&1}`") |> Enum.join(", ")

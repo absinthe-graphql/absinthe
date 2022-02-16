@@ -60,50 +60,36 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
       field :x, :float
     end
 
-    extend do
-      enum :direction do
-        value :south
-      end
+    extend enum(:direction) do
+      value :south
     end
 
-    extend do
-      enum :direction do
-        value :west
-      end
+    extend enum(:direction) do
+      value :west
     end
 
-    extend do
-      union :search_result do
-        types [:person]
-      end
+    extend union(:search_result) do
+      types [:person]
     end
 
-    extend do
-      scalar :my_custom_scalar do
-        directive :feature
-      end
+    extend scalar(:my_custom_scalar) do
+      directive :feature
     end
 
-    extend do
-      interface :named_entity do
-        interface :valued_entity
-        field :nickname, :string
-        field :value, :integer
-      end
+    extend interface :named_entity do
+      interface :valued_entity
+      field :nickname, :string
+      field :value, :integer
     end
 
-    extend do
-      object :photo do
-        interface :valued_entity
-        field :width, :integer
-        field :value, :integer
-      end
+    extend object(:photo) do
+      interface :valued_entity
+      field :width, :integer
+      field :value, :integer
     end
 
-    extend do
-      input_object :point do
-        field :y, :float
-      end
+    extend input_object(:point) do
+      field :y, :float
     end
   end
 
@@ -216,10 +202,8 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
         value :east
       end
 
-      extend do
-        union :direction do
-          types [:west]
-        end
+      extend union :direction do
+        types [:west]
       end
     end
     """
@@ -231,37 +215,6 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
     end)
   end
 
-  test "raises when extend has multiple definitions" do
-    schema = """
-    defmodule MultipleDefinitionExtend do
-      use Absinthe.Schema
-
-      query do
-      end
-
-      enum :direction do
-        value :north
-        value :east
-      end
-
-      extend do
-        enum :direction do
-          value :south
-        end
-        enum :direction do
-          value :west
-        end
-      end
-    end
-    """
-
-    error = ~r/Only one definition allowed in `extend` block./
-
-    assert_raise(Absinthe.Schema.Notation.Error, error, fn ->
-      Code.eval_string(schema, [], __ENV__)
-    end)
-  end
-
   test "raises when extend has unknown type" do
     schema = """
     defmodule UnknownTypeExtend do
@@ -270,10 +223,8 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
       query do
       end
 
-      extend do
-        enum :foo do
-          value :south
-        end
+      extend enum :foo do
+        value :south
       end
     end
     """
@@ -288,10 +239,8 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
   defmodule ImportedSchema do
     use Absinthe.Schema.Notation
 
-    extend do
-      enum :direction do
-        value :north
-      end
+    extend enum(:direction) do
+      value :north
     end
   end
 
