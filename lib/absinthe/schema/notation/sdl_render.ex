@@ -5,11 +5,13 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
   alias Absinthe.Blueprint
 
-  def inspect(term, %{pretty: true, width: width}) do
+  @line_width 120
+
+  def inspect(term, %{pretty: true}) do
     term
     |> render()
     |> concat(line())
-    |> format(width)
+    |> format(@line_width)
     |> to_string
   end
 
