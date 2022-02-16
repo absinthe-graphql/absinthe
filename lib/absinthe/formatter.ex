@@ -23,14 +23,18 @@ defmodule Absinthe.Formatter do
     inputs: ["{mix,.formatter}.exs", "{config,lib,test}/**/*.{ex,exs}", "{lib, priv}/**/*.{gql,graphql}"]
   ]
   ```
+
+  ## Options
+
+    - `:width` - desired max width
   """
 
   def features(_opts) do
     [sigils: [], extensions: [".graphql", ".gql"]]
   end
 
-  def format(contents, _opts \\ []) do
+  def format(contents, opts \\ []) do
     {:ok, blueprint} = Absinthe.Phase.Parse.run(contents, [])
-    inspect(blueprint.input, pretty: true)
+    inspect(blueprint.input, [{:pretty, true} | opts])
   end
 end

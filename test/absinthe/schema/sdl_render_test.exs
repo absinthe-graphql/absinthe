@@ -54,6 +54,7 @@ defmodule Absinthe.Schema.SdlRenderTest do
       defaultListArg(things: [String] = ["ThisThing"]): [String]
       defaultEnumArg(category: Category = NEWS): Category
       defaultNullStringArg(name: String = null): String
+      aVeryLongLineThatExceedsOneHundredAndTwentyCharactersAsWasTheDefault(thereAreMultipleArgsAsWell: [String!]!, hereIsAnother: Boolean!): String!
       animal: Animal
     }
 
@@ -112,8 +113,14 @@ defmodule Absinthe.Schema.SdlRenderTest do
   end
 
   test "Render SDL from blueprint defined with SDL" do
-    assert Absinthe.Schema.to_sdl(SdlTestSchema) ==
-             SdlTestSchema.sdl()
+    sdl_a =
+      SdlTestSchema
+      |> Absinthe.Schema.to_sdl()
+      |> String.replace(~r/[\n ]/, "")
+
+    sdl_b = String.replace(SdlTestSchema.sdl(), ~r/[\n ]/, "")
+
+    assert sdl_a == sdl_b
   end
 
   describe "Render SDL" do
