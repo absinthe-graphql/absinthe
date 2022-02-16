@@ -554,6 +554,10 @@ defmodule Absinthe.Schema.NotationTest do
   describe "extend" do
     test "can be toplevel" do
       assert_no_notation_error("ExtendValid", """
+      enum :foo do
+        value :baz
+      end
+
       extend do
         enum :foo do
           value :bar

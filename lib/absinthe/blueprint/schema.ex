@@ -78,6 +78,7 @@ defmodule Absinthe.Blueprint.Schema do
   def struct_to_kind(Blueprint.Schema.ObjectTypeDefinition), do: "object"
   def struct_to_kind(Blueprint.Schema.ScalarTypeDefinition), do: "scalar"
   def struct_to_kind(Blueprint.Schema.UnionTypeDefinition), do: "union"
+  def struct_to_kind(Blueprint.Schema.TypeExtensionDefinition), do: "type extension"
   def struct_to_kind(_), do: "type"
 
   defp build_types([], [bp], buffer) do

@@ -30,6 +30,11 @@ defmodule Absinthe.Phase.Schema.Validation.ObjectMustImplementInterfaces do
     Blueprint.Schema.InterfaceTypeDefinition
   ]
 
+  # Do not walk type extension definition as they are allowed to be invalid
+  defp validate_objects(%Blueprint.Schema.TypeExtensionDefinition{} = extension, _, _) do
+    {:halt, extension}
+  end
+
   defp validate_objects(%struct{} = object, ifaces, types) when struct in @interface_types do
     Enum.reduce(object.interfaces, object, fn ident, object ->
       case Map.fetch(ifaces, ident) do

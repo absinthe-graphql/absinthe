@@ -92,6 +92,7 @@ defmodule Absinthe.Blueprint.Transform do
       :type_extensions,
       :directives
     ],
+    Blueprint.Schema.TypeExtensionDefinition => [:definition],
     Blueprint.Schema.UnionTypeDefinition => [:directives, :types]
   }
 

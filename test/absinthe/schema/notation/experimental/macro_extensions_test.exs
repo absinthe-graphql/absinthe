@@ -262,6 +262,29 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
     end)
   end
 
+  test "raises when extend has unknown type" do
+    schema = """
+    defmodule InvalidKeywordExtend do
+      use Absinthe.Schema
+
+      query do
+      end
+
+      extend do
+        enum :foo do
+          value :south
+        end
+      end
+    end
+    """
+
+    error = ~r/In type extension the target type :foo is not\ndefined in your schema./
+
+    assert_raise(Absinthe.Schema.Error, error, fn ->
+      Code.eval_string(schema, [], __ENV__)
+    end)
+  end
+
   defmodule ImportedSchema do
     use Absinthe.Schema.Notation
 

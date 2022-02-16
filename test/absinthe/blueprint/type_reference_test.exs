@@ -2,7 +2,6 @@ defmodule Absinthe.Blueprint.TypeReferenceTest do
   use Absinthe.Case, async: true
 
   alias Absinthe.Blueprint
-  @moduletag :f
 
   describe ".unwrap of Name" do
     test "is left intact" do
