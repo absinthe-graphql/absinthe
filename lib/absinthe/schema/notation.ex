@@ -271,8 +271,7 @@ defmodule Absinthe.Schema.Notation do
     # ...
   end
 
-  extend do
-    object :user do
+  extend object :user do
       field :nick_name, :string
       # ...
     end
