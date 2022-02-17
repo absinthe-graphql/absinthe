@@ -3,8 +3,9 @@
 ## Unreleased
 
 - Feature: [Convert SDL Language.\* structs to SDL notation](https://github.com/absinthe-graphql/absinthe/pull/1160)
+- Feature: [Add support for type extensions](https://github.com/absinthe-graphql/absinthe/pull/1157)
 - Bug Fix: [Add `__private__` field to EnumValueDefinition](https://github.com/absinthe-graphql/absinthe/pull/1148)
-- Bug Fix: [Fix bug in Schema.__absinthe_types__(:all) for Persistent Term](https://github.com/absinthe-graphql/absinthe/pull/1161)
+- Bug Fix: [Fix bug in Schema.**absinthe_types**(:all) for Persistent Term](https://github.com/absinthe-graphql/absinthe/pull/1161)
 - Feature: [Add `import_directives` macro](https://github.com/absinthe-graphql/absinthe/pull/1158)
 
 ## 1.7.0
@@ -23,6 +24,7 @@
 
 Originally included the items from 1.7.0, but the spec validation fix was considered
 too impactful for a patch release.
+
 ## 1.6.6
 
 - Feature: [Update telemetry dependency to stable ~> 1.0](https://github.com/absinthe-graphql/absinthe/pull/1097)
