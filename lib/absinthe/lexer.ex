@@ -345,7 +345,9 @@ defmodule Absinthe.Lexer do
 
   defp block_string_value_token(rest, chars, context, _loc, _byte_offset) do
     value = '"""' ++ (chars |> Enum.reverse()) ++ '"""'
-    {rest, [{:block_string_value, context.token_location, value}], Map.delete(context, :token_location)}
+
+    {rest, [{:block_string_value, context.token_location, value}],
+     Map.delete(context, :token_location)}
   end
 
   defp string_value_token(rest, chars, context, _loc, _byte_offset) do
