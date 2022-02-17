@@ -12,17 +12,26 @@ defmodule Absinthe.FormatterTest do
 
   @query """
     query AQuery {
-      aVeryLongLineThatExceedsOneHundredAndTwentyCharactersAsWasTheDefault(thereAreMultipleArgsAsWell: ["A"], hereIsAnother: true) { id name }
+      aQuery(thereAreMultipleArgsAsWell: ["A"], hereIsAnother: true) { id name
+      field(singleArg: OK)
+      multipleArgs(argOne: OK argTwo: OK)
+    }
     }
   """
   test "creates line breaks at 80 width by default" do
     assert Absinthe.Formatter.format(@query) == """
            query AQuery {
-             aVeryLongLineThatExceedsOneHundredAndTwentyCharactersAsWasTheDefault(
-               thereAreMultipleArgsAsWell: ["A"], hereIsAnother: true
+             aQuery(
+               thereAreMultipleArgsAsWell: ["A"]
+               hereIsAnother: true
              ) {
                id
                name
+               field(singleArg: OK)
+               multipleArgs(
+                 argOne: OK
+                 argTwo: OK
+               )
              }
            }
            """

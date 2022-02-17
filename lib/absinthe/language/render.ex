@@ -214,13 +214,22 @@ defmodule Absinthe.Language.Render do
   end
 
   defp arguments(args) do
+    has_multiple_args =
+      case args do
+        [_] -> false
+        [_ | _] -> true
+      end
+
     group(
       glue(
         nest(
-          glue(
-            "(",
-            "",
-            render_list(args, ", ")
+          multiline(
+            glue(
+              "(",
+              "",
+              render_list(args)
+            ),
+            has_multiple_args
           ),
           2,
           :break
@@ -266,6 +275,14 @@ defmodule Absinthe.Language.Render do
         "}"
       )
     )
+  end
+
+  defp multiline(docs, true) do
+    force_unfit(docs)
+  end
+
+  defp multiline(docs, false) do
+    docs
   end
 
   defp render_list(items, separator \\ line()) do
