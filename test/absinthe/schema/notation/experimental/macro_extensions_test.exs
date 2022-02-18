@@ -250,7 +250,7 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
     query do
     end
 
-    import_types ImportedSchema
+    import_type_extensions ImportedSchema
 
     enum :direction do
       value :south

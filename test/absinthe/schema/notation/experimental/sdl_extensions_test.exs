@@ -231,7 +231,7 @@ defmodule Absinthe.Schema.Notation.Experimental.SdlExtensionsTest do
     query do
     end
 
-    import_types ImportedSchema
+    import_type_extensions ImportedSchema
 
     import_sdl """
     enum Direction {
