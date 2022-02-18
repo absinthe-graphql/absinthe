@@ -37,6 +37,10 @@ defmodule Absinthe.Phase.Schema.Validation.TypeNamesAreReserved do
     allow_reserved(node)
   end
 
+  defp validate_reserved(%Blueprint.Schema.TypeExtensionDefinition{} = node) do
+    {:halt, node}
+  end
+
   defp validate_reserved(%struct{name: "__" <> _} = entity) do
     reserved_ok =
       Absinthe.Type.built_in_module?(entity.__reference__.module) ||
