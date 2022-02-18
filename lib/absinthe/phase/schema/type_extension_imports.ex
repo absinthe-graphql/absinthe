@@ -6,21 +6,27 @@ defmodule Absinthe.Phase.Schema.TypeExtensionImports do
 
   alias Absinthe.Blueprint.Schema
 
-  def run(blueprint, _opts) do
-    blueprint = Blueprint.prewalk(blueprint, &handle_imports/1)
+  def run(blueprint, opts) do
+    blueprint = Blueprint.prewalk(blueprint, &handle_imports(&1, opts))
     {:ok, blueprint}
   end
 
-  def handle_imports(%Schema.SchemaDefinition{} = schema) do
+  def handle_imports(%Schema.SchemaDefinition{} = schema, opts) do
+    default_type_extension_imports = Keyword.get(opts, :type_extension_imports, [])
+
     {type_extensions, schema} =
-      do_imports(schema.type_extension_imports, schema.type_extensions, schema)
+      do_imports(
+        default_type_extension_imports ++ schema.type_extension_imports,
+        schema.type_extensions,
+        schema
+      )
 
     schema = %{schema | type_extensions: type_extensions}
 
     {:halt, schema}
   end
 
-  def handle_imports(node), do: node
+  def handle_imports(node, _), do: node
 
   defp do_imports([], type_extensions, schema) do
     {type_extensions, schema}

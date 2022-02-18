@@ -1,30 +1,11 @@
-defmodule Absinthe.Phase.Schema.DeprecatedDirectiveFields do
+defmodule Absinthe.Type.BuiltIns.DeprecatedDirectiveFields do
   @moduledoc false
   # The spec of Oct 2015 has the onOperation, onFragment and onField
   # fields for directives (https://spec.graphql.org/October2015/#sec-Schema-Introspection)
   # See https://github.com/graphql/graphql-spec/pull/152 for the rationale.
   # These fields are deprecated and can be removed in the future.
-  alias Absinthe.Blueprint
 
   use Absinthe.Schema.Notation
-
-  @behaviour Absinthe.Phase
-
-  def run(input, _options \\ []) do
-    blueprint = process(input)
-    {:ok, blueprint}
-  end
-
-  defp process(blueprint = %Blueprint{}) do
-    %{blueprint | schema_definitions: update_schema_defs(blueprint.schema_definitions)}
-  end
-
-  def update_schema_defs(schema_definitions) do
-    for schema_def = %{type_extension_imports: type_extension_imports} <-
-          schema_definitions do
-      %{schema_def | type_extension_imports: [{__MODULE__, []}] ++ type_extension_imports}
-    end
-  end
 
   extend object(:__directive) do
     field :on_operation, :boolean do

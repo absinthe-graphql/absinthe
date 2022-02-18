@@ -6,23 +6,27 @@ defmodule Absinthe.Phase.Schema.TypeImports do
 
   alias Absinthe.Blueprint.Schema
 
-  def run(blueprint, _opts) do
-    blueprint = Blueprint.prewalk(blueprint, &handle_imports/1)
+  def run(blueprint, opts) do
+    blueprint = Blueprint.prewalk(blueprint, &handle_imports(&1, opts))
     {:ok, blueprint}
   end
 
-  @default_imports [
-    {Absinthe.Type.BuiltIns.Scalars, []},
-    {Absinthe.Type.BuiltIns.Introspection, []}
-  ]
-  def handle_imports(%Schema.SchemaDefinition{} = schema) do
+  def handle_imports(%Schema.SchemaDefinition{} = schema, opts) do
+    default_imports = Keyword.get(opts, :type_imports, [])
+
     {types, schema} =
-      do_imports(@default_imports ++ schema.imports, schema.type_definitions, schema)
+      do_imports(
+        default_imports ++ schema.imports,
+        schema.type_definitions,
+        schema
+      )
+
+    schema = %{schema | type_definitions: types}
 
     {:halt, %{schema | type_definitions: types}}
   end
 
-  def handle_imports(node), do: node
+  def handle_imports(node, _), do: node
 
   defp do_imports([], types, schema) do
     {types, schema}

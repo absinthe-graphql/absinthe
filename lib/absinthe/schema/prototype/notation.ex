@@ -34,7 +34,10 @@ defmodule Absinthe.Schema.Prototype.Notation do
       def pipeline(pipeline) do
         pipeline
         |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.Validation.QueryTypeMustBeObject)
-        |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.DeprecatedDirectiveFields)
+        |> Absinthe.Pipeline.replace(
+          Absinthe.Phase.Schema.TypeExtensionImports,
+          {Absinthe.Phase.Schema.TypeExtensionImports, []}
+        )
       end
 
       @doc """

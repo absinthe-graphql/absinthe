@@ -6,18 +6,17 @@ defmodule Absinthe.Phase.Schema.DirectiveImports do
 
   alias Absinthe.Blueprint.Schema
 
-  def run(blueprint, _opts) do
-    blueprint = Blueprint.prewalk(blueprint, &handle_imports/1)
+  def run(blueprint, opts) do
+    blueprint = Blueprint.prewalk(blueprint, &handle_imports(&1, opts))
     {:ok, blueprint}
   end
 
-  @default_imports [
-    {Absinthe.Type.BuiltIns.Directives, []}
-  ]
-  def handle_imports(%Schema.SchemaDefinition{} = schema) do
+  def handle_imports(%Schema.SchemaDefinition{} = schema, opts) do
+    default_imports = Keyword.get(opts, :directive_imports, [])
+
     {directives, schema} =
       do_imports(
-        @default_imports ++ schema.directive_imports,
+        default_imports ++ schema.directive_imports,
         schema.directive_definitions,
         schema
       )
