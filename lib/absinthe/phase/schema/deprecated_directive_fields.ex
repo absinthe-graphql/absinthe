@@ -11,26 +11,22 @@ defmodule Absinthe.Phase.Schema.DeprecatedDirectiveFields do
   @behaviour Absinthe.Phase
 
   def run(input, _options \\ []) do
-    blueprint = Blueprint.prewalk(input, &handle_node/1)
-
+    blueprint = process(input)
     {:ok, blueprint}
   end
 
-  defp handle_node(%Blueprint.Schema.ObjectTypeDefinition{identifier: :__directive} = node) do
-    [types] = __MODULE__.__absinthe_blueprint__().schema_definitions
-
-    new_node = Enum.find(types.type_definitions, &(&1.identifier == :deprecated_directive_fields))
-
-    fields = node.fields ++ new_node.fields
-
-    %{node | fields: fields}
+  defp process(blueprint = %Blueprint{}) do
+    %{blueprint | schema_definitions: update_schema_defs(blueprint.schema_definitions)}
   end
 
-  defp handle_node(node) do
-    node
+  def update_schema_defs(schema_definitions) do
+    for schema_def = %{type_extension_imports: type_extension_imports} <-
+          schema_definitions do
+      %{schema_def | type_extension_imports: [{__MODULE__, []}] ++ type_extension_imports}
+    end
   end
 
-  object :deprecated_directive_fields do
+  extend object(:__directive) do
     field :on_operation, :boolean do
       deprecate "Check `locations` field for enum value OPERATION"
 

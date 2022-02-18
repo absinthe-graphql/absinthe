@@ -11,18 +11,9 @@ defmodule Absinthe.Phase.Schema.TypeExtensionImports do
     {:ok, blueprint}
   end
 
-  @default_imports [
-    # {Absinthe.Type.BuiltIns.Scalars, []},
-    # {Absinthe.Type.BuiltIns.Directives, []},
-    # {Absinthe.Type.BuiltIns.Introspection, []}
-  ]
   def handle_imports(%Schema.SchemaDefinition{} = schema) do
     {type_extensions, schema} =
-      do_imports(
-        @default_imports ++ schema.type_extension_imports,
-        schema.type_extensions,
-        schema
-      )
+      do_imports(schema.type_extension_imports, schema.type_extensions, schema)
 
     schema = %{schema | type_extensions: type_extensions}
 
