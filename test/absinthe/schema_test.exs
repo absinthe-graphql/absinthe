@@ -352,6 +352,12 @@ defmodule Absinthe.SchemaTest do
       end
     end
 
+    directive :foo do
+      meta :is_directive, true
+
+      on :field
+    end
+
     input_object :input_foo do
       meta :is_input, true
 
@@ -423,6 +429,12 @@ defmodule Absinthe.SchemaTest do
       color = Schema.lookup_type(MetadataSchema, :color)
       assert %{__private__: [meta: [rgb_only: true]]} = color
       assert Type.meta(color, :rgb_only) == true
+    end
+
+    test "sets directive metadata" do
+      directive = Schema.lookup_directive(MetadataSchema, :foo)
+      assert %{__private__: [meta: [is_directive: true]]} = directive
+      assert Type.meta(directive, :is_directive) == true
     end
 
     test "sets scalar metadata" do

@@ -817,6 +817,7 @@ defmodule Absinthe.Schema.Notation do
   @placement {:private,
               [
                 under: [
+                  :directive,
                   :enum,
                   :extend,
                   :field,
@@ -837,6 +838,7 @@ defmodule Absinthe.Schema.Notation do
   @placement {:meta,
               [
                 under: [
+                  :directive,
                   :enum,
                   :extend,
                   :field,
