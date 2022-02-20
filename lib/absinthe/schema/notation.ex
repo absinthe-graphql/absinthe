@@ -286,12 +286,23 @@ defmodule Absinthe.Schema.Notation do
     :scalar,
     :union
   ]
+  defmacro extend({type, meta, [attr]}, attrs, do: block)
+           when type in @extendable_types and is_list(attrs) do
+    block = {type, meta, [attr] ++ [[do: block]]}
+
+    {attrs, extend_block} = handle_extend_attrs(attrs, __CALLER__)
+
+    __CALLER__
+    |> recordable!(:extend, @placement[:extend])
+    |> record_extend!(attrs, block, extend_block)
+  end
+
   defmacro extend({type, meta, [attr]}, do: block) when type in @extendable_types do
     block = {type, meta, [attr] ++ [[do: block]]}
 
     __CALLER__
     |> recordable!(:extend, @placement[:extend])
-    |> record_extend!(block)
+    |> record_extend!([], block, [])
   end
 
   @placement {:deprecate, [under: [:field]]}
@@ -804,7 +815,18 @@ defmodule Absinthe.Schema.Notation do
   end
 
   @placement {:private,
-              [under: [:field, :object, :input_object, :enum, :scalar, :interface, :union]]}
+              [
+                under: [
+                  :enum,
+                  :extend,
+                  :field,
+                  :input_object,
+                  :interface,
+                  :object,
+                  :scalar,
+                  :union
+                ]
+              ]}
   @doc false
   defmacro private(owner, key, value) do
     __CALLER__
@@ -813,7 +835,18 @@ defmodule Absinthe.Schema.Notation do
   end
 
   @placement {:meta,
-              [under: [:field, :object, :input_object, :enum, :scalar, :interface, :union]]}
+              [
+                under: [
+                  :enum,
+                  :extend,
+                  :field,
+                  :input_object,
+                  :interface,
+                  :object,
+                  :scalar,
+                  :union
+                ]
+              ]}
   @doc """
   Defines a metadata key/value pair for a custom type.
 
@@ -1553,9 +1586,10 @@ defmodule Absinthe.Schema.Notation do
     scoped_def(env, Schema.DirectiveDefinition, identifier, attrs, block)
   end
 
-  def record_extend!(caller, body) do
+  def record_extend!(caller, attrs, type_block, extend_block) do
     attrs =
-      [module: caller.module]
+      attrs
+      |> Keyword.put(:module, caller.module)
       |> put_reference(caller)
 
     definition = struct!(Schema.TypeExtensionDefinition, attrs)
@@ -1565,9 +1599,33 @@ defmodule Absinthe.Schema.Notation do
     push_stack(caller.module, :absinthe_scope_stack, :extend)
 
     [
-      body,
+      extend_block,
+      type_block,
       quote(do: unquote(__MODULE__).close_scope())
     ]
+  end
+
+  defp handle_extend_attrs(attrs, caller) do
+    block =
+      case Keyword.get(attrs, :meta) do
+        nil ->
+          []
+
+        meta ->
+          meta_ast =
+            quote do
+              meta unquote(meta)
+            end
+
+          [meta_ast, []]
+      end
+
+    attrs =
+      attrs
+      |> expand_ast(caller)
+      |> Keyword.delete(:meta)
+
+    {attrs, block}
   end
 
   @doc false

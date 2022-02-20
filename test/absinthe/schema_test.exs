@@ -362,7 +362,6 @@ defmodule Absinthe.SchemaTest do
 
     enum :color do
       meta :rgb_only, true
-      value :red
       value :blue
       value :green
     end
@@ -383,6 +382,10 @@ defmodule Absinthe.SchemaTest do
     union :result do
       types [:foo]
       meta :is_union, true
+    end
+
+    extend enum(:color), meta: [is_extend: true] do
+      value :red
     end
   end
 
@@ -444,6 +447,16 @@ defmodule Absinthe.SchemaTest do
       result = Schema.lookup_type(MetadataSchema, :result)
       assert %{__private__: [meta: [is_union: true]]} = result
       assert Type.meta(result, :is_union) == true
+    end
+
+    test "sets extend metadata" do
+      [schema_def] = MetadataSchema.__absinthe_blueprint__().schema_definitions
+
+      type_extension =
+        Enum.find(schema_def.type_extensions, &(&1.definition.identifier == :color))
+
+      assert %{__private__: [meta: [is_extend: true]]} = type_extension
+      assert Type.meta(type_extension, :is_extend) == true
     end
   end
 end
