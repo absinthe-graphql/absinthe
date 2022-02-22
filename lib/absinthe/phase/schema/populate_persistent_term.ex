@@ -10,7 +10,7 @@ if Code.ensure_loaded?(:persistent_term) do
       type_list =
         for %{identifier: identifier} = type <- schema.type_definitions,
             into: %{},
-            do: {identifier, type.__reference__}
+            do: {identifier, type.name}
 
       types_map =
         schema.type_artifacts
