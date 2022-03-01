@@ -48,12 +48,51 @@ defmodule Absinthe.TypeTest do
     end
   end
 
+  defmodule RuntimeGeneratedSchema do
+    use Absinthe.Schema
+
+    query do
+    end
+
+    def __absinthe_types__() do
+      Map.merge(BasicSchema.__absinthe_types__(), string_type())
+    end
+
+    def __absinthe_type__(:query) do
+      %Absinthe.Type.Object{
+        description: "Runtime generated schema",
+        fields: Absinthe.Schema.lookup_type(BasicSchema, :query).fields,
+        identifier: :query,
+        interfaces: [],
+        is_type_of: nil,
+        name: "RootQueryType"
+      }
+    end
+    def __absinthe_type__("item_string"), do: string_type()
+    def __absinthe_type__(type), do: BasicSchema.__absinthe_type__(type)
+
+    defp string_type() do
+      %Absinthe.Type.Object{
+        description: "Item Type defined as string",
+        fields: Absinthe.Schema.lookup_type(BasicSchema, :item).fields,
+        identifier: "item_string",
+        interfaces: [],
+        is_type_of: nil,
+        name: "ItemString"
+      }
+    end
+  end
+
   test "definition with custom name" do
     assert %Type.Object{name: "NonFictionBook"} = BasicSchema.__absinthe_type__(:book)
   end
 
   test "that uses a name derived from the identifier" do
     assert %Type.Object{name: "Item"} = BasicSchema.__absinthe_type__(:item)
+  end
+
+  test "definition with string identifier" do
+    assert %Type.Object{name: "ItemString"} = RuntimeGeneratedSchema.__absinthe_type__("item_string")
   end
 
   test "root query type definition" do

@@ -236,7 +236,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       resolve: fn _, %{schema: schema, source: source} ->
         result =
           case source.type do
-            type when is_atom(type) ->
+            type when is_atom(type) or is_binary(type) ->
               Absinthe.Schema.lookup_type(schema, source.type)
 
             type ->
