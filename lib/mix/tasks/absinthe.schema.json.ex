@@ -80,6 +80,11 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
 
     opts = parse_options(argv)
 
+    # Start Absinthe.Schema if using persistent term provider
+    if opts.schema.__absinthe_schema_provider__() == Absinthe.Schema.PersistentTerm do
+      Supervisor.start_link([{Absinthe.Schema, opts.schema}], strategy: :one_for_one)
+    end
+
     case generate_schema(opts) do
       {:ok, content} -> write_schema(content, opts.filename)
       {:error, error} -> raise error
