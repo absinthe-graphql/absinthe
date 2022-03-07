@@ -174,7 +174,12 @@ defmodule Mix.Tasks.Absinthe.Schema.SdlTest do
       assert schema =~ "type Robot implements Being"
     end
 
-    @tag :tmp_dir
+    if Version.compare(System.version(), "1.11.0") == :lt do
+      setup :tmp_dir_fallback
+    else
+      @tag :tmp_dir
+    end
+
     test "generates an SDL file", %{tmp_dir: tmp_dir} do
       path = Path.join(tmp_dir, "schema.sdl")
 
@@ -184,7 +189,12 @@ defmodule Mix.Tasks.Absinthe.Schema.SdlTest do
       assert File.exists?(path)
     end
 
-    @tag :tmp_dir
+    if Version.compare(System.version(), "1.11.0") == :lt do
+      setup :tmp_dir_fallback
+    else
+      @tag :tmp_dir
+    end
+
     test "generates an SDL file for a persistent term schema provider", %{tmp_dir: tmp_dir} do
       path = Path.join(tmp_dir, "schema.sdl")
 
@@ -193,5 +203,12 @@ defmodule Mix.Tasks.Absinthe.Schema.SdlTest do
 
       assert File.exists?(path)
     end
+  end
+
+  defp tmp_dir_fallback(_) do
+    path = Path.join("tmp", "#{__MODULE__}")
+    File.mkdir_p!(path)
+    on_exit(fn -> File.rm_rf!(path) end)
+    [tmp_dir: path]
   end
 end
