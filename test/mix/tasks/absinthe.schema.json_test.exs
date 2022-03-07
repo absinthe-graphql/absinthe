@@ -17,6 +17,22 @@ defmodule Mix.Tasks.Absinthe.Schema.JsonTest do
     end
   end
 
+  defmodule PersistentTermTestSchema do
+    use Absinthe.Schema
+
+    @schema_provider Absinthe.Schema.PersistentTerm
+
+    query do
+      field :item, :item
+    end
+
+    object :item do
+      description "A Basic Type"
+      field :id, :id
+      field :name, :string
+    end
+  end
+
   defmodule TestEncoder do
     def encode!(_map, opts) do
       pretty_flag = Keyword.get(opts, :pretty, false)
@@ -27,6 +43,12 @@ defmodule Mix.Tasks.Absinthe.Schema.JsonTest do
 
   @test_schema "Mix.Tasks.Absinthe.Schema.JsonTest.TestSchema"
   @test_encoder "Mix.Tasks.Absinthe.Schema.JsonTest.TestEncoder"
+
+  setup_all do
+    shell = Mix.shell()
+    Mix.shell(Mix.Shell.Quiet)
+    on_exit(fn -> Mix.shell(shell) end)
+  end
 
   describe "absinthe.schema.json" do
     test "parses options" do
@@ -71,6 +93,26 @@ defmodule Mix.Tasks.Absinthe.Schema.JsonTest do
 
       assert pretty_content == "test-encoder-pretty"
       assert ugly_content == "test-encoder-ugly"
+    end
+
+    @tag :tmp_dir
+    test "generates a JSON file", %{tmp_dir: tmp_dir} do
+      path = Path.join(tmp_dir, "schema.json")
+
+      argv = ["--schema", @test_schema, "--json-codec", @test_encoder, path]
+      assert Task.run(argv)
+
+      assert File.exists?(path)
+    end
+
+    @tag :tmp_dir
+    test "generates a JSON file for a persistent term schema provider", %{tmp_dir: tmp_dir} do
+      path = Path.join(tmp_dir, "schema.json")
+
+      argv = ["--schema", "#{PersistentTermTestSchema}", "--json-codec", @test_encoder, path]
+      assert Task.run(argv)
+
+      assert File.exists?(path)
     end
   end
 end
