@@ -31,7 +31,7 @@ defmodule Absinthe.Schema.TypeSystemDirectiveTest do
     end
   end
 
-  defmodule TypeSystemDirectivesSchema do
+  defmodule TypeSystemDirectivesSdlSchema do
     use Absinthe.Schema
 
     @prototype_schema WithTypeSystemDirective
@@ -91,8 +91,137 @@ defmodule Absinthe.Schema.TypeSystemDirectiveTest do
     def resolve_type(_), do: false
   end
 
-  test "Render SDL with Type System Directives applied" do
-    assert Absinthe.Schema.to_sdl(TypeSystemDirectivesSchema) ==
-             TypeSystemDirectivesSchema.sdl()
+  defmodule TypeSystemDirectivesMacroSchema do
+    use Absinthe.Schema
+
+    @prototype_schema WithTypeSystemDirective
+
+    query do
+      field :post, :post do
+        directive :feature, name: ":field_definition"
+      end
+
+      field :sweet, :sweet_scalar
+      field :which, :category
+      field :pet, :dog
+
+      field :search, :search_result do
+        arg :filter, :search_filter, directives: [{:feature, name: ":argument_definition"}]
+        directive :feature, name: ":argument_definition"
+      end
+    end
+
+    object :post do
+      directive :feature, name: ":object", number: 3
+
+      field :name, :string do
+        deprecate "Bye"
+      end
+    end
+
+    scalar :sweet_scalar do
+      directive :feature, name: ":scalar"
+      parse &Function.identity/1
+      serialize &Function.identity/1
+    end
+
+    enum :category do
+      directive :feature, name: ":enum"
+      value :this
+      value :that, directives: [feature: [name: ":enum_value"]]
+      value :the_other, directives: [deprecated: [reason: "It's old"]]
+    end
+
+    interface :animal do
+      directive :feature, name: ":interface"
+
+      field :leg_count, non_null(:integer) do
+        directive :feature,
+          name: """
+          Multiline here?
+          Second line
+          """
+      end
+    end
+
+    object :dog do
+      is_type_of fn _ -> true end
+      interface :animal
+      field :leg_count, non_null(:integer)
+      field :name, non_null(:string)
+    end
+
+    input_object :search_filter do
+      directive :feature, name: ":input_object"
+
+      field :query, :string, default_value: "default" do
+        directive :feature, name: ":input_field_definition"
+      end
+    end
+
+    union :search_result do
+      directive :feature, name: ":union"
+      types [:dog, :post]
+
+      resolve_type fn %{type: type}, _ -> type end
+    end
+  end
+
+  describe "with SDL schema" do
+    test "Render SDL with Type System Directives applied" do
+      assert Absinthe.Schema.to_sdl(TypeSystemDirectivesSdlSchema) ==
+               TypeSystemDirectivesSdlSchema.sdl()
+    end
+  end
+
+  @macro_schema_sdl """
+  "Represents a schema"
+  schema {
+    query: RootQueryType
+  }
+
+  interface Animal @feature(name: ":interface") {
+    legCount: Int! @feature(name: \"\"\"
+      Multiline here?
+      Second line
+    \"\"\")
+  }
+
+  input SearchFilter @feature(name: ":input_object") {
+    query: String @feature(name: ":input_field_definition")
+  }
+
+  type Post @feature(name: ":object", number: 3) {
+    name: String @deprecated(reason: "Bye")
+  }
+
+  scalar SweetScalar @feature(name: ":scalar")
+
+  type RootQueryType {
+    post: Post @feature(name: ":field_definition")
+    sweet: SweetScalar
+    which: Category
+    pet: Dog
+    search(filter: SearchFilter @feature(name: ":argument_definition")): SearchResult @feature(name: ":argument_definition")
+  }
+
+  type Dog implements Animal {
+    legCount: Int!
+    name: String!
+  }
+
+  enum Category @feature(name: ":enum") {
+    THIS
+    THAT @feature(name: ":enum_value")
+    THE_OTHER @deprecated(reason: "It's old")
+  }
+
+  union SearchResult @feature(name: ":union") = Dog | Post
+  """
+  describe "with macro schema" do
+    test "Render SDL with Type System Directives applied" do
+      assert Absinthe.Schema.to_sdl(TypeSystemDirectivesMacroSchema) ==
+               @macro_schema_sdl
+    end
   end
 end

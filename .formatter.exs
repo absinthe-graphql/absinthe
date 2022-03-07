@@ -8,6 +8,8 @@ locals_without_parens = [
   config: 1,
   deprecate: 1,
   description: 1,
+  directive: 1,
+  directive: 2,
   directive: 3,
   enum: 2,
   enum: 3,

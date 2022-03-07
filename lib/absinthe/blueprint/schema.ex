@@ -129,6 +129,11 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(rest, [field | stack], buff)
   end
 
+  defp build_types([{:directive, trigger} | rest], [field | stack], buff) do
+    field = Map.update!(field, :directives, &[trigger | &1])
+    build_types(rest, [field | stack], buff)
+  end
+
   defp build_types([{:trigger, trigger} | rest], [field | stack], buff) do
     field = Map.update!(field, :triggers, &[trigger | &1])
     build_types(rest, [field | stack], buff)

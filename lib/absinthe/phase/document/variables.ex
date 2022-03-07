@@ -10,7 +10,7 @@ defmodule Absinthe.Phase.Document.Variables do
   #
   # Given a GraphQL document that looks like:
   #
-  # ```
+  # ```graphql
   # query Item($id: ID!, $text = String = "Another") {
   #   item(id: $id, category: "Things") {
   #     name

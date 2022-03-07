@@ -10,7 +10,7 @@ defmodule Absinthe.Adapter.LanguageConventions do
 
   For example, this document:
 
-  ```
+  ```graphql
   {
     myUser: createUser(userId: 2) {
       firstName

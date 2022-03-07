@@ -82,14 +82,27 @@ defmodule Absinthe.Phase.ParseTest do
   test "handle parse error when column not available" do
     assert {:error, bp} = Absinthe.Phase.Parse.run(@graphql, jump_phases: false)
 
-    assert [
-             %Absinthe.Phase.Error{
-               extra: %{},
-               locations: [%{column: 0, line: 4}],
-               message: "syntax error before: ",
-               phase: Absinthe.Phase.Parse
-             }
-           ] == bp.execution.validation_errors
+    otp = System.otp_release() |> Integer.parse() |> elem(0)
+
+    if otp >= 24 do
+      assert [
+               %Absinthe.Phase.Error{
+                 extra: %{},
+                 locations: [%{column: 3, line: 4}],
+                 message: "syntax error before: ",
+                 phase: Absinthe.Phase.Parse
+               }
+             ] == bp.execution.validation_errors
+    else
+      assert [
+               %Absinthe.Phase.Error{
+                 extra: %{},
+                 locations: [%{column: 0, line: 4}],
+                 message: "syntax error before: ",
+                 phase: Absinthe.Phase.Parse
+               }
+             ] == bp.execution.validation_errors
+    end
   end
 
   @reserved ~w(query mutation subscription fragment on implements interface union scalar enum input extend)

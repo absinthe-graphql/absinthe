@@ -14,47 +14,58 @@ jobs:
     strategy:
       matrix:
         elixir:
-          - '1.10'
-          - '1.11'
+          - "1.10"
+          - "1.11"
+          - "1.12"
+          - "1.13"
         otp:
-          - '22'
-          - '23'
+          - "22"
+          - "23"
+          - "24"
+        exclude:
+          - elixir: "1.10"
+            otp: "24"
+        include:
+          - elixir: "1.13"
+            otp: "24"
+            format: true
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: Set up Elixir
-      uses: erlef/setup-elixir@v1
-      with:
-        elixir-version: ${{ matrix.elixir }}
-        otp-version: ${{ matrix.otp }}
+      - name: Set up Elixir
+        uses: erlef/setup-elixir@v1
+        with:
+          elixir-version: ${{ matrix.elixir }}
+          otp-version: ${{ matrix.otp }}
 
-    - name: Restore deps cache
-      uses: actions/cache@v2
-      with:
-        path: |
-          deps
-          _build
-        key: deps-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}-${{ github.sha }}
-        restore-keys: |
-          deps-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
-          deps-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}
+      - name: Restore deps cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            deps
+            _build
+          key: deps-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}-${{ github.sha }}
+          restore-keys: |
+            deps-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+            deps-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}
 
-    - name: Install package dependencies
-      run: mix deps.get
+      - name: Install package dependencies
+        run: mix deps.get
 
-    - name: Check Formatting
-      run: mix format --check-formatted
+      - name: Check Formatting
+        run: mix format --check-formatted
+        if: ${{ matrix.format }}
 
-    - name: Run unit tests
-      run: |
-        mix clean
-        mix test
+      - name: Run unit tests
+        run: |
+          mix clean
+          mix test
 
-    - name: Run unit tests with persistent_term backend
-      run: |
-        mix clean
-        mix test
-      env:
-        SCHEMA_PROVIDER: persistent_term
+      - name: Run unit tests with persistent_term backend
+        run: |
+          mix clean
+          mix test
+        env:
+          SCHEMA_PROVIDER: persistent_term

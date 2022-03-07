@@ -86,8 +86,6 @@ defmodule Absinthe.Type.Interface do
   def resolve_type(type, obj, env, opts \\ [lookup: true])
 
   def resolve_type(interface, obj, %{schema: schema} = env, opts) do
-    implementors = Schema.implementors(schema, interface.identifier)
-
     if resolver = Type.function(interface, :resolve_type) do
       case resolver.(obj, env) do
         nil ->
@@ -102,7 +100,8 @@ defmodule Absinthe.Type.Interface do
       end
     else
       type_name =
-        Enum.find(implementors, fn type ->
+        Schema.implementors(schema, interface.identifier)
+        |> Enum.find(fn type ->
           Absinthe.Type.function(type, :is_type_of).(obj)
         end)
 

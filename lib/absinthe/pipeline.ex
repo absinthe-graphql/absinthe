@@ -4,6 +4,12 @@ defmodule Absinthe.Pipeline do
 
   A pipeline is merely a list of phases. This module contains functions for building,
   modifying, and executing pipelines of phases.
+
+  Pipelines are used to build, validate and manipulate GraphQL documents or schema's.
+
+  * See [`Absinthe.Plug`](https://hexdocs.pm/absinthe_plug/Absinthe.Plug.html) on adjusting the document pipeline for GraphQL over http requests.
+  * See [`Absinthe.Phoenix`](https://hexdocs.pm/absinthe_phoenix/) on adjusting the document pipeline for GraphQL over Phoenix channels.
+  * See `Absinthe.Schema` on adjusting the schema pipeline for schema manipulation.
   """
 
   alias Absinthe.Phase
@@ -38,6 +44,9 @@ defmodule Absinthe.Pipeline do
 
   @spec for_document(Absinthe.Schema.t()) :: t
   @spec for_document(Absinthe.Schema.t(), Keyword.t()) :: t
+  @doc """
+  The default document pipeline
+  """
   def for_document(schema, options \\ []) do
     options = options(Keyword.put(options, :schema, schema))
 
@@ -115,6 +124,9 @@ defmodule Absinthe.Pipeline do
 
   @spec for_schema(nil | Absinthe.Schema.t()) :: t
   @spec for_schema(nil | Absinthe.Schema.t(), Keyword.t()) :: t
+  @doc """
+  The default schema pipeline
+  """
   def for_schema(schema, options \\ []) do
     options =
       options
@@ -124,6 +136,7 @@ defmodule Absinthe.Pipeline do
 
     [
       Phase.Schema.TypeImports,
+      Phase.Schema.DeprecatedDirectiveFields,
       Phase.Schema.ApplyDeclaration,
       Phase.Schema.Introspection,
       {Phase.Schema.Hydrate, options},
@@ -151,6 +164,7 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.Validation.NoInterfaceCyles,
       Phase.Schema.Validation.QueryTypeMustBeObject,
       Phase.Schema.Validation.NamesMustBeValid,
+      Phase.Schema.Validation.UniqueFieldNames,
       Phase.Schema.RegisterTriggers,
       Phase.Schema.MarkReferenced,
       Phase.Schema.ReformatDescriptions,

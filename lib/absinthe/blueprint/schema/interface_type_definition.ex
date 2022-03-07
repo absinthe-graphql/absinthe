@@ -49,10 +49,8 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
     }
   end
 
-  @interface_types [Schema.ObjectTypeDefinition, Schema.InterfaceTypeDefinition]
-
   def find_implementors(iface, type_defs) do
-    for %struct{} = obj when struct in @interface_types <- type_defs,
+    for %Schema.ObjectTypeDefinition{} = obj <- type_defs,
         iface.identifier in obj.interfaces,
         do: obj.identifier
   end

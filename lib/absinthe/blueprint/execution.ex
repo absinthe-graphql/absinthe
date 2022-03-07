@@ -6,7 +6,7 @@ defmodule Absinthe.Blueprint.Execution do
   drive a document's execution.
 
   Here's how the execution flow works. Given a document like:
-  ```
+  ```graphql
   {
     posts {
       title

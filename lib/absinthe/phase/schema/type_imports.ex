@@ -71,6 +71,13 @@ defmodule Absinthe.Phase.Schema.TypeImports do
     else
       Code.ensure_compiled(module)
     end
+  catch
+    # Code.ensure_compiled! in Elixir >1.12 raises an ArgumentError if it is unable to find the module with message similar to
+    # "could not load module <module> due to reason <reason>"
+    # where reason is an atom :embedded | :badfile | :nofile | :on_load_failure | :unavailable
+    _, %ArgumentError{message: message} ->
+      reason = message |> String.split(":") |> List.last()
+      {:error, reason}
   end
 
   # Generate an error when loading module fails

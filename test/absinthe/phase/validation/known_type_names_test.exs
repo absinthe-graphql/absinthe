@@ -7,24 +7,26 @@ defmodule Absinthe.Phase.Validation.KnownTypeNamesTest do
 
   alias Absinthe.Blueprint
 
-  def unknown_type(:variable_definition, name, line) do
+  def unknown_type(type, name, line, custom_error_message \\ nil)
+
+  def unknown_type(:variable_definition, name, line, custom_error_message) do
     bad_value(
       Blueprint.Document.VariableDefinition,
-      error_message(name),
+      custom_error_message || error_message(name),
       line,
       &(Blueprint.TypeReference.unwrap(&1.type).name == name)
     )
   end
 
-  def unknown_type(:named_type_condition, name, line) do
+  def unknown_type(:named_type_condition, name, line, _) do
     unknown_type_condition(Blueprint.Document.Fragment.Named, name, line)
   end
 
-  def unknown_type(:spread_type_condition, name, line) do
+  def unknown_type(:spread_type_condition, name, line, _) do
     unknown_type_condition(Blueprint.Document.Fragment.Spread, name, line)
   end
 
-  def unknown_type(:inline_type_condition, name, line) do
+  def unknown_type(:inline_type_condition, name, line, _) do
     unknown_type_condition(Blueprint.Document.Fragment.Inline, name, line)
   end
 
@@ -61,7 +63,7 @@ defmodule Absinthe.Phase.Validation.KnownTypeNamesTest do
     test "unknown type names are invalid" do
       assert_fails_validation(
         """
-        query Foo($var: JumbledUpLetters) {
+        query Foo($var: JumbledUpLetters, $foo: Boolen!, $bar: [Bar!]) {
           user(id: 4) {
             name
             pets { ... on Badger { name }, ...PetFields }
@@ -74,6 +76,13 @@ defmodule Absinthe.Phase.Validation.KnownTypeNamesTest do
         [],
         [
           unknown_type(:variable_definition, "JumbledUpLetters", 1),
+          unknown_type(
+            :variable_definition,
+            "Boolen",
+            1,
+            ~s(Unknown type "Boolen". Did you mean "Alien" or "Boolean"?)
+          ),
+          unknown_type(:variable_definition, "Bar", 1),
           unknown_type(:inline_type_condition, "Badger", 4),
           unknown_type(:named_type_condition, "Peettt", 7)
         ]

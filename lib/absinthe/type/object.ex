@@ -31,7 +31,7 @@ defmodule Absinthe.Type.Object do
   Given we have a query that supports getting a person by name
   (see `Absinthe.Schema`), and a query document like the following:
 
-  ```
+  ```graphql
   {
     person(name: "Joe") {
       name

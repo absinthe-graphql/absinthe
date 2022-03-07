@@ -138,7 +138,7 @@ defmodule Absinthe.Middleware do
   ```
 
   Given a document like:
-  ```
+  ```graphql
   { lookupUser { name }}
   ```
 
@@ -308,6 +308,9 @@ defmodule Absinthe.Middleware do
         expanded
 
       [{:ref, Absinthe.Type.BuiltIns.Introspection, _}] ->
+        expanded
+
+      [{:ref, Absinthe.Phase.Schema.DeprecatedDirectiveFields, _}] ->
         expanded
 
       _ ->
