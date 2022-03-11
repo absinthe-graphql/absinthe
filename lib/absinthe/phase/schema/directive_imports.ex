@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Schema.TypeImports do
+defmodule Absinthe.Phase.Schema.DirectiveImports do
   @moduledoc false
 
   use Absinthe.Phase
@@ -12,14 +12,17 @@ defmodule Absinthe.Phase.Schema.TypeImports do
   end
 
   @default_imports [
-    {Absinthe.Type.BuiltIns.Scalars, []},
-    {Absinthe.Type.BuiltIns.Introspection, []}
+    {Absinthe.Type.BuiltIns.Directives, []}
   ]
   def handle_imports(%Schema.SchemaDefinition{} = schema) do
-    {types, schema} =
-      do_imports(@default_imports ++ schema.imports, schema.type_definitions, schema)
+    {directives, schema} =
+      do_imports(
+        @default_imports ++ schema.directive_imports,
+        schema.directive_definitions,
+        schema
+      )
 
-    {:halt, %{schema | type_definitions: types}}
+    {:halt, %{schema | directive_definitions: directives}}
   end
 
   def handle_imports(node), do: node
@@ -33,10 +36,9 @@ defmodule Absinthe.Phase.Schema.TypeImports do
       {:module, module} ->
         [other_def] = module.__absinthe_blueprint__.schema_definitions
 
-        rejections =
-          MapSet.new([:query, :mutation, :subscription] ++ Keyword.get(opts, :except, []))
+        rejections = MapSet.new(Keyword.get(opts, :except, []))
 
-        types = Enum.reject(other_def.type_definitions, &(&1.identifier in rejections))
+        types = Enum.reject(other_def.directive_definitions, &(&1.identifier in rejections))
 
         types =
           case Keyword.fetch(opts, :only) do
@@ -47,7 +49,7 @@ defmodule Absinthe.Phase.Schema.TypeImports do
               types
           end
 
-        do_imports(other_def.imports ++ rest, types ++ acc, schema)
+        do_imports(other_def.directive_imports ++ rest, types ++ acc, schema)
 
       {:error, reason} ->
         do_imports(rest, acc, schema |> put_error(error(module, reason)))
@@ -67,13 +69,6 @@ defmodule Absinthe.Phase.Schema.TypeImports do
     else
       Code.ensure_compiled(module)
     end
-  catch
-    # Code.ensure_compiled! in Elixir >1.12 raises an ArgumentError if it is unable to find the module with message similar to
-    # "could not load module <module> due to reason <reason>"
-    # where reason is an atom :embedded | :badfile | :nofile | :on_load_failure | :unavailable
-    _, %ArgumentError{message: message} ->
-      reason = message |> String.split(":") |> List.last()
-      {:error, reason}
   end
 
   # Generate an error when loading module fails

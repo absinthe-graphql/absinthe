@@ -1316,6 +1316,35 @@ defmodule Absinthe.Schema.Notation do
     |> do_import_types(env, opts)
   end
 
+  @placement {:import_directives, [toplevel: true]}
+  @doc """
+  Import directives from another module
+
+  To selectively import directives you can use the `:only` and `:except` opts.
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+
+  ## Examples
+  ```
+  import_directives MyApp.Schema.Directives
+
+  import_directives MyApp.Schema.Directives.{DirectivesA, DirectivesB}
+
+  import_directives MyApp.Schema.Directives, only: [:foo]
+
+  import_directives MyApp.Schema.Directives, except: [:bar]
+  ```
+  """
+  defmacro import_directives(type_module_ast, opts \\ []) do
+    env = __CALLER__
+
+    type_module_ast
+    |> Macro.expand(env)
+    |> do_import_directives(env, opts)
+  end
+
   @placement {:import_sdl, [toplevel: true]}
   @type import_sdl_option :: {:path, String.t() | Macro.t()}
   @doc """
@@ -1815,6 +1844,51 @@ defmodule Absinthe.Schema.Notation do
     []
   end
 
+  defp do_import_directives({{:., _, [{:__MODULE__, _, _}, :{}]}, _, modules_ast_list}, env, opts) do
+    for {_, _, leaf} <- modules_ast_list do
+      type_module = Module.concat([env.module | leaf])
+
+      do_import_directives(type_module, env, opts)
+    end
+  end
+
+  defp do_import_directives(
+         {{:., _, [{:__aliases__, _, [{:__MODULE__, _, _} | tail]}, :{}]}, _, modules_ast_list},
+         env,
+         opts
+       ) do
+    root_module = Module.concat([env.module | tail])
+
+    for {_, _, leaf} <- modules_ast_list do
+      type_module = Module.concat([root_module | leaf])
+
+      do_import_directives(type_module, env, opts)
+    end
+  end
+
+  defp do_import_directives(
+         {{:., _, [{:__aliases__, _, root}, :{}]}, _, modules_ast_list},
+         env,
+         opts
+       ) do
+    root_module = Module.concat(root)
+    root_module_with_alias = Keyword.get(env.aliases, root_module, root_module)
+
+    for {_, _, leaf} <- modules_ast_list do
+      type_module = Module.concat([root_module_with_alias | leaf])
+
+      do_import_directives(type_module, env, opts)
+    end
+  end
+
+  defp do_import_directives(module, env, opts) do
+    Module.put_attribute(env.module, :__absinthe_directive_imports__, [
+      {module, opts} | Module.get_attribute(env.module, :__absinthe_directive_imports__) || []
+    ])
+
+    []
+  end
+
   @spec do_import_sdl(Macro.Env.t(), nil | String.t() | Macro.t(), [import_sdl_option()]) ::
           Macro.t()
   defp do_import_sdl(env, nil, opts) do
@@ -1894,8 +1968,17 @@ defmodule Absinthe.Schema.Notation do
         other -> other
       end)
 
+    directive_imports =
+      (Module.get_attribute(env.module, :__absinthe_directive_imports__) || [])
+      |> Enum.uniq()
+      |> Enum.map(fn
+        module when is_atom(module) -> {module, []}
+        other -> other
+      end)
+
     schema_def = %Schema.SchemaDefinition{
       imports: imports,
+      directive_imports: directive_imports,
       module: env.module,
       __reference__: %{
         location: %{file: env.file, line: 0}

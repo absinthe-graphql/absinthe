@@ -16,6 +16,7 @@ defmodule Absinthe.Blueprint.Schema.SchemaDefinition do
             schema_declaration: nil,
             flags: %{},
             imports: [],
+            directive_imports: [],
             errors: [],
             __private__: [],
             __reference__: nil

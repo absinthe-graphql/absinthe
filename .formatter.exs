@@ -17,6 +17,8 @@ locals_without_parens = [
   field: 2,
   field: 3,
   field: 4,
+  import_directives: 1,
+  import_directives: 2,
   import_fields: 2,
   import_fields: 1,
   import_types: 1,
