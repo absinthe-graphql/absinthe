@@ -2172,8 +2172,8 @@ defmodule Absinthe.Schema.Notation do
         other -> other
       end)
 
-    type_extensions_imports =
-      (Module.get_attribute(env.module, :__absinthe_type_extensions_imports__) || [])
+    type_extension_imports =
+      (Module.get_attribute(env.module, :__absinthe_type_extension_imports__) || [])
       |> Enum.uniq()
       |> Enum.map(fn
         module when is_atom(module) -> {module, []}

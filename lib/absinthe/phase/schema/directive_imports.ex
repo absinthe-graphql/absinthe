@@ -24,7 +24,7 @@ defmodule Absinthe.Phase.Schema.DirectiveImports do
     {:halt, %{schema | directive_definitions: directives}}
   end
 
-  def handle_imports(node), do: node
+  def handle_imports(node, _opts), do: node
 
   defp do_imports([], types, schema) do
     {types, schema}
