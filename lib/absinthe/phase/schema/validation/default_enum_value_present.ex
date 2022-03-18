@@ -31,13 +31,12 @@ defmodule Absinthe.Phase.Schema.Validation.DefaultEnumValuePresent do
     case Map.fetch(enums, type) do
       {:ok, enum} ->
         values =
-          case enum.values do
-            [%Schema.EnumValueDefinition{} | _] ->
-              Enum.map(enum.values, & &1.value)
-
-            [list] ->
-              list
-          end
+          enum.values
+          |> List.flatten()
+          |> Enum.map(fn
+            %Schema.EnumValueDefinition{value: value} -> value
+            raw_value -> raw_value
+          end)
 
         value_list = Enum.map(values, &"\n * #{inspect(&1)}")
 
