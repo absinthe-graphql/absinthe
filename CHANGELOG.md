@@ -5,6 +5,7 @@
 - Feature: [Convert SDL Language.\* structs to SDL notation](https://github.com/absinthe-graphql/absinthe/pull/1160)
 - Bug Fix: [Add `__private__` field to EnumValueDefinition](https://github.com/absinthe-graphql/absinthe/pull/1148)
 - Bug Fix: [Fix bug in Schema.__absinthe_types__(:all) for Persistent Term](https://github.com/absinthe-graphql/absinthe/pull/1161)
+- Feature: [Add `import_directives` macro](https://github.com/absinthe-graphql/absinthe/pull/1158)
 
 ## 1.7.0
 
