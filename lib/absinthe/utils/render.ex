@@ -3,6 +3,14 @@ defmodule Absinthe.Utils.Render do
 
   import Inspect.Algebra
 
+  def multiline(docs, true) do
+    force_unfit(docs)
+  end
+
+  def multiline(docs, false) do
+    docs
+  end
+
   def join(docs, joiner) do
     fold_doc(docs, fn doc, acc ->
       concat([doc, concat(List.wrap(joiner)), acc])

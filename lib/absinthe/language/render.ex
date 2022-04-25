@@ -135,8 +135,180 @@ defmodule Absinthe.Language.Render do
     |> block(render_list(fragment.selection_set.selections))
   end
 
+  # Schema
+  defp render(%Absinthe.Language.SchemaDeclaration{} = schema) do
+    block(
+      concat([
+        "schema",
+        directives(schema.directives)
+      ]),
+      render_list(schema.fields)
+    )
+    |> description(schema.description)
+  end
+
+  defp render(%Absinthe.Language.FieldDefinition{} = field) do
+    concat([
+      field.name,
+      arguments(field.arguments),
+      ": ",
+      render(field.type),
+      directives(field.directives)
+    ])
+    |> description(field.description)
+  end
+
+  defp render(%Absinthe.Language.ScalarTypeDefinition{} = scalar_type) do
+    concat([
+      "scalar ",
+      string(scalar_type.name),
+      directives(scalar_type.directives)
+    ])
+    |> description(scalar_type.description)
+  end
+
+  defp render(%Absinthe.Language.InputValueDefinition{} = input_value) do
+    concat([
+      input_value.name,
+      ": ",
+      render(input_value.type),
+      default_value(input_value),
+      directives(input_value.directives)
+    ])
+    |> description(input_value.description)
+  end
+
+  defp render(%Absinthe.Language.InterfaceTypeDefinition{} = interface_type) do
+    block(
+      concat([
+        "interface ",
+        string(interface_type.name),
+        implements(interface_type),
+        directives(interface_type.directives)
+      ]),
+      render_list(interface_type.fields)
+    )
+    |> description(interface_type.description)
+  end
+
+  defp render(%Absinthe.Language.UnionTypeDefinition{} = union_type) do
+    case Enum.map(union_type.types, &render/1) do
+      [] ->
+        concat([
+          "union ",
+          string(union_type.name),
+          directives(union_type.directives)
+        ])
+
+      types ->
+        concat([
+          "union ",
+          string(union_type.name),
+          directives(union_type.directives),
+          " = ",
+          join(types, " | ")
+        ])
+    end
+    |> description(union_type.description)
+  end
+
+  defp render(%Absinthe.Language.ObjectTypeDefinition{} = object_type) do
+    block(
+      concat([
+        "type ",
+        string(object_type.name),
+        implements(object_type),
+        directives(object_type.directives)
+      ]),
+      render_list(object_type.fields)
+    )
+    |> description(object_type.description)
+  end
+
+  defp render(%Absinthe.Language.InputObjectTypeDefinition{} = input_object_type) do
+    block(
+      concat([
+        "input ",
+        string(input_object_type.name),
+        directives(input_object_type.directives)
+      ]),
+      render_list(input_object_type.fields)
+    )
+    |> description(input_object_type.description)
+  end
+
+  defp render(%Absinthe.Language.DirectiveDefinition{} = directive) do
+    locations = directive.locations |> Enum.map(&String.upcase(to_string(&1)))
+
+    concat([
+      "directive ",
+      "@",
+      string(directive.name),
+      arguments(directive.arguments),
+      repeatable(directive.repeatable),
+      " on ",
+      join(locations, " | ")
+    ])
+    |> description(directive.description)
+  end
+
+  defp render(%Absinthe.Language.EnumTypeDefinition{} = enum_type) do
+    block(
+      concat([
+        "enum ",
+        string(enum_type.name),
+        directives(enum_type.directives)
+      ]),
+      render_list(List.flatten(enum_type.values))
+    )
+    |> description(enum_type.description)
+  end
+
+  defp render(%Absinthe.Language.EnumValueDefinition{} = enum_value) do
+    concat([
+      string(enum_value.value),
+      directives(enum_value.directives)
+    ])
+    |> description(enum_value.description)
+  end
+
+  defp render(%Absinthe.Language.TypeExtensionDefinition{} = extension) do
+    concat(
+      "extend ",
+      render(extension.definition)
+    )
+  end
+
   defp render(%{value: value}) do
     to_string(value)
+  end
+
+  defp implements(%{interfaces: []}) do
+    empty()
+  end
+
+  defp implements(interface) do
+    interface_names = Enum.map(interface.interfaces, & &1.name)
+
+    concat([
+      " implements ",
+      join(interface_names, " & ")
+    ])
+  end
+
+  defp repeatable(true), do: " repeatable"
+  defp repeatable(_), do: empty()
+
+  defp description(docs, nil) do
+    docs
+  end
+
+  defp description(docs, description) do
+    concat([
+      render_string_value(description, 0),
+      line(),
+      docs
+    ])
   end
 
   defp operation_definition(%{name: nil} = op) do
@@ -216,13 +388,18 @@ defmodule Absinthe.Language.Render do
   end
 
   defp arguments(args) do
+    any_descriptions? = Enum.any?(args, &(Map.has_key?(&1, :description) && &1.description))
+
     group(
       glue(
         nest(
-          glue(
-            "(",
-            "",
-            render_list(args, ", ")
+          multiline(
+            glue(
+              "(",
+              "",
+              render_list(args, ", ")
+            ),
+            any_descriptions?
           ),
           2,
           :break
@@ -271,9 +448,17 @@ defmodule Absinthe.Language.Render do
   end
 
   defp render_list(items, separator \\ line()) do
+    splitter =
+      items
+      |> Enum.any?(&(Map.get(&1, :description) not in ["", nil]))
+      |> case do
+        true -> [nest(line(), :reset), line()]
+        false -> [separator]
+      end
+
     List.foldr(items, :doc_nil, fn
       item, :doc_nil -> render(item)
-      item, acc -> concat([render(item)] ++ [separator] ++ [acc])
+      item, acc -> concat([render(item)] ++ splitter ++ [acc])
     end)
   end
 end

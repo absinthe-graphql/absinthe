@@ -453,14 +453,6 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
   # Algebra Helpers
 
-  defp multiline(docs, true) do
-    force_unfit(docs)
-  end
-
-  defp multiline(docs, false) do
-    docs
-  end
-
   defp block(kind, name, docs) do
     glue(
       kind,
