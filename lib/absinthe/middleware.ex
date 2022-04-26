@@ -310,7 +310,7 @@ defmodule Absinthe.Middleware do
       [{:ref, Absinthe.Type.BuiltIns.Introspection, _}] ->
         expanded
 
-      [{:ref, Absinthe.Phase.Schema.DeprecatedDirectiveFields, _}] ->
+      [{:ref, Absinthe.Type.BuiltIns.DeprecatedDirectiveFields, _}] ->
         expanded
 
       _ ->

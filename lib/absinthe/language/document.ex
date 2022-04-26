@@ -54,7 +54,8 @@ defmodule Absinthe.Language.Document do
       Language.InterfaceTypeDefinition,
       Language.ObjectTypeDefinition,
       Language.ScalarTypeDefinition,
-      Language.UnionTypeDefinition
+      Language.UnionTypeDefinition,
+      Language.TypeExtensionDefinition
     ]
     @directives [
       Language.DirectiveDefinition

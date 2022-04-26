@@ -352,6 +352,12 @@ defmodule Absinthe.SchemaTest do
       end
     end
 
+    directive :foo do
+      meta :is_directive, true
+
+      on :field
+    end
+
     input_object :input_foo do
       meta :is_input, true
 
@@ -362,7 +368,6 @@ defmodule Absinthe.SchemaTest do
 
     enum :color do
       meta :rgb_only, true
-      value :red
       value :blue
       value :green
     end
@@ -383,6 +388,10 @@ defmodule Absinthe.SchemaTest do
     union :result do
       types [:foo]
       meta :is_union, true
+    end
+
+    extend enum(:color), meta: [is_extend: true] do
+      value :red
     end
   end
 
@@ -422,6 +431,12 @@ defmodule Absinthe.SchemaTest do
       assert Type.meta(color, :rgb_only) == true
     end
 
+    test "sets directive metadata" do
+      directive = Schema.lookup_directive(MetadataSchema, :foo)
+      assert %{__private__: [meta: [is_directive: true]]} = directive
+      assert Type.meta(directive, :is_directive) == true
+    end
+
     test "sets scalar metadata" do
       my_scalar = Schema.lookup_type(MetadataSchema, :my_scalar)
       assert %{__private__: [meta: [is_scalar: true]]} = my_scalar
@@ -444,6 +459,16 @@ defmodule Absinthe.SchemaTest do
       result = Schema.lookup_type(MetadataSchema, :result)
       assert %{__private__: [meta: [is_union: true]]} = result
       assert Type.meta(result, :is_union) == true
+    end
+
+    test "sets extend metadata" do
+      [schema_def] = MetadataSchema.__absinthe_blueprint__().schema_definitions
+
+      type_extension =
+        Enum.find(schema_def.type_extensions, &(&1.definition.identifier == :color))
+
+      assert %{__private__: [meta: [is_extend: true]]} = type_extension
+      assert Type.meta(type_extension, :is_extend) == true
     end
   end
 end

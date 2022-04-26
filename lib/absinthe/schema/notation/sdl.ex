@@ -60,6 +60,11 @@ defmodule Absinthe.Schema.Notation.SDL do
     |> do_put_ref(ref, opts)
   end
 
+  defp put_ref(%{definition: definition} = node, ref, opts) do
+    %{node | definition: put_ref(definition, ref, opts)}
+    |> do_put_ref(ref, opts)
+  end
+
   defp put_ref(%{directives: directives} = node, ref, opts) do
     %{node | directives: Enum.map(directives, &put_ref(&1, ref, opts))}
     |> do_put_ref(ref, opts)

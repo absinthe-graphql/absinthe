@@ -51,7 +51,7 @@ defmodule Absinthe.Schema.NotationTest do
           end
         end
         """,
-        "Invalid schema notation: `directive` must only be used toplevel. Was used in `directive`."
+        "Invalid schema notation: `directive` must only be used toplevel or in an `extend` block. Was used in `directive`."
       )
     end
   end
@@ -73,7 +73,7 @@ defmodule Absinthe.Schema.NotationTest do
           end
         end
         """,
-        "Invalid schema notation: `enum` must only be used toplevel. Was used in `enum`."
+        "Invalid schema notation: `enum` must only be used toplevel or in an `extend` block. Was used in `enum`."
       )
     end
   end
@@ -131,7 +131,7 @@ defmodule Absinthe.Schema.NotationTest do
           end
         end
         """,
-        "Invalid schema notation: `input_object` must only be used toplevel. Was used in `input_object`."
+        "Invalid schema notation: `input_object` must only be used toplevel or in an `extend` block. Was used in `input_object`."
       )
     end
   end
@@ -299,7 +299,7 @@ defmodule Absinthe.Schema.NotationTest do
           end
         end
         """,
-        "Invalid schema notation: `object` must only be used toplevel. Was used in `object`."
+        "Invalid schema notation: `object` must only be used toplevel or in an `extend` block. Was used in `object`."
       )
     end
 
@@ -464,7 +464,7 @@ defmodule Absinthe.Schema.NotationTest do
           end
         end
         """,
-        "Invalid schema notation: `scalar` must only be used toplevel. Was used in `scalar`."
+        "Invalid schema notation: `scalar` must only be used toplevel or in an `extend` block. Was used in `scalar`."
       )
     end
   end
@@ -547,6 +547,34 @@ defmodule Absinthe.Schema.NotationTest do
         "DescriptionInvalid",
         ~s(description "test"),
         "Invalid schema notation: `description` must not be used toplevel. Was used in `schema`."
+      )
+    end
+  end
+
+  describe "extend" do
+    test "can be toplevel" do
+      assert_no_notation_error("ExtendValid", """
+      enum :foo do
+        value :baz
+      end
+
+      extend enum :foo do
+        value :bar
+      end
+      """)
+    end
+
+    test "cannot be non-toplevel" do
+      assert_notation_error(
+        "ExtendInvalid",
+        """
+        enum :foo do
+          extend enum :bar do
+            value :baz
+          end
+        end
+        """,
+        "Invalid schema notation: `extend` must only be used toplevel. Was used in `enum`."
       )
     end
   end

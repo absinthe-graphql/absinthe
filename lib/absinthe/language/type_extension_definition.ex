@@ -12,14 +12,14 @@ defmodule Absinthe.Language.TypeExtensionDefinition do
         }
 
   defimpl Blueprint.Draft do
-    def convert(node, _doc) do
-      raise Absinthe.Schema.Notation.Error,
-            """
-            \n
-            SDL Compilation failed:
-            -----------------------
-            Keyword `extend` is not yet supported (#{inspect(node.loc)})
-            """
+    def convert(node, doc) do
+      %Absinthe.Blueprint.Schema.TypeExtensionDefinition{
+        definition: Blueprint.Draft.convert(node.definition, doc),
+        source_location: source_location(node)
+      }
     end
+
+    defp source_location(%{loc: nil}), do: nil
+    defp source_location(%{loc: loc}), do: Blueprint.SourceLocation.at(loc)
   end
 end

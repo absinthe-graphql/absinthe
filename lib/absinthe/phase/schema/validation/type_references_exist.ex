@@ -49,6 +49,10 @@ defmodule Absinthe.Phase.Schema.Validation.TypeReferencesExist do
     check_types(union, :types, &check_or_error(&2, &1, types))
   end
 
+  def validate_types(%Blueprint.Schema.TypeExtensionDefinition{} = extension, types) do
+    check_or_error(extension, extension.definition.identifier, types)
+  end
+
   @no_types [
     Blueprint.Schema.DirectiveDefinition,
     Blueprint.Schema.EnumTypeDefinition,
@@ -104,16 +108,30 @@ defmodule Absinthe.Phase.Schema.Validation.TypeReferencesExist do
   end
 
   defp error(thing, type) do
-    artifact_name = String.capitalize(thing.name)
-
     %Absinthe.Phase.Error{
-      message: """
-      In #{artifact_name}, #{inspect(type)} is not defined in your schema.
-
-      Types must exist if referenced.
-      """,
+      message: message(thing, type),
       locations: [thing.__reference__.location],
       phase: __MODULE__
     }
+  end
+
+  defp message(%Blueprint.Schema.TypeExtensionDefinition{}, type) do
+    """
+    In type extension the target type #{inspect(type)} is not
+    defined in your schema.
+
+    Types must exist if referenced.
+    """
+  end
+
+  defp message(thing, type) do
+    kind = Absinthe.Blueprint.Schema.struct_to_kind(thing.__struct__)
+    artifact_name = String.capitalize(thing.name)
+
+    """
+    In #{kind} #{artifact_name}, #{inspect(type)} is not defined in your schema.
+
+    Types must exist if referenced.
+    """
   end
 end

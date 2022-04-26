@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Schema.TypeImports do
+defmodule Absinthe.Phase.Schema.TypeExtensionImports do
   @moduledoc false
 
   use Absinthe.Phase
@@ -12,55 +12,55 @@ defmodule Absinthe.Phase.Schema.TypeImports do
   end
 
   def handle_imports(%Schema.SchemaDefinition{} = schema, opts) do
-    default_imports = Keyword.get(opts, :type_imports, [])
+    default_type_extension_imports = Keyword.get(opts, :type_extension_imports, [])
 
-    {types, schema} =
+    {type_extensions, schema} =
       do_imports(
-        default_imports ++ schema.imports,
-        schema.type_definitions,
+        default_type_extension_imports ++ schema.type_extension_imports,
+        schema.type_extensions,
         schema
       )
 
-    schema = %{schema | type_definitions: types}
+    schema = %{schema | type_extensions: type_extensions}
 
-    {:halt, %{schema | type_definitions: types}}
+    {:halt, schema}
   end
 
   def handle_imports(node, _), do: node
 
-  defp do_imports([], types, schema) do
-    {types, schema}
+  defp do_imports([], type_extensions, schema) do
+    {type_extensions, schema}
   end
 
-  defp do_imports([{module, opts} | rest], types_acc, schema) do
+  defp do_imports([{module, opts} | rest], type_extensions_acc, schema) do
     case ensure_compiled(module) do
       {:module, module} ->
         [other_def] = module.__absinthe_blueprint__.schema_definitions
 
-        rejections =
-          MapSet.new([:query, :mutation, :subscription] ++ Keyword.get(opts, :except, []))
+        rejections = Keyword.get(opts, :except, []) |> MapSet.new()
 
-        types = Enum.reject(other_def.type_definitions, &(&1.identifier in rejections))
+        type_extensions =
+          Enum.reject(other_def.type_extensions, &(&1.definition.identifier in rejections))
 
-        types =
+        type_extensions =
           case Keyword.fetch(opts, :only) do
             {:ok, selections} ->
-              Enum.filter(types, &(&1.identifier in selections))
+              Enum.filter(type_extensions, &(&1.definition.identifier in selections))
 
             _ ->
-              types
+              type_extensions
           end
 
         do_imports(
-          other_def.imports ++ rest,
-          types ++ types_acc,
+          other_def.type_extension_imports ++ rest,
+          type_extensions ++ type_extensions_acc,
           schema
         )
 
       {:error, reason} ->
         do_imports(
           rest,
-          types_acc,
+          type_extensions_acc,
           schema |> put_error(error(module, reason))
         )
     end
