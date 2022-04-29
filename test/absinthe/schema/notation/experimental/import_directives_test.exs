@@ -49,7 +49,6 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportDirectivesTest do
     import_directives Source, except: [:one, :two]
   end
 
-  @tag :skip
   describe "import_directives" do
     test "without options" do
       assert [{Source, []}] == imports(WithoutOptions)
