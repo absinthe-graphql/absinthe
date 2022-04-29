@@ -11,7 +11,7 @@ defmodule Absinthe.SchemaTest do
       use Absinthe.Schema
 
       query do
-        # Query type must exist
+        field :foo, :string
       end
 
       object :person do
@@ -396,7 +396,7 @@ defmodule Absinthe.SchemaTest do
     use Absinthe.Schema
 
     query do
-      # Query type must exist
+      field :foo, :string
     end
 
     object :foo, meta: [foo: "bar"] do

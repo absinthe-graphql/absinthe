@@ -10,6 +10,7 @@ defmodule Absinthe.Fixtures.Enums do
     end
 
     query do
+      field :foo, :string
     end
 
     def test_function(arg1) do
@@ -46,6 +47,7 @@ defmodule Absinthe.Fixtures.Enums do
     end
 
     query do
+      field :foo, :string
     end
 
     enum :normal_string, description: "string" do
@@ -90,6 +92,7 @@ defmodule Absinthe.Fixtures.Enums do
     end
 
     query do
+      field :foo, :string
     end
 
     def test_function(arg1) do
@@ -144,6 +147,7 @@ defmodule Absinthe.Fixtures.Enums do
     end
 
     query do
+      field :foo, :string
     end
 
     def test_function(arg1) do

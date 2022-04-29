@@ -16,6 +16,11 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.FullTest do
     use Absinthe.Schema
 
     query do
+      field :foo, :string
+    end
+
+    def middleware(middleware, %{identifier: :foo}, _) do
+      middleware
     end
 
     def middleware(_, _, _) do

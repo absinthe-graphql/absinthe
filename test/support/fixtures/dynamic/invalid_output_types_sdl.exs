@@ -2,9 +2,13 @@ defmodule Absinthe.Fixtures.InvalidInputTypesSdlSchema do
   use Absinthe.Schema
 
   import_sdl """
-    type User
+    type User {
+      name: String
+    }
 
-    input Input
+    input Input {
+      foo: String
+    }
 
     type BadObject {
       blah: Input

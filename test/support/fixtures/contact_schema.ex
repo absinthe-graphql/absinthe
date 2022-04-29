@@ -66,6 +66,7 @@ defmodule Absinthe.Fixtures.ContactSchema do
   end
 
   subscription do
+    field :contact_added, :person
   end
 
   input_object :profile_input do

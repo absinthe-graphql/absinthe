@@ -20,7 +20,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
         use Absinthe.Schema
 
         query do
-          # Query type must exist
+          field :foo, :string
         end
 
         object :foo do
@@ -41,7 +41,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
         use Absinthe.Schema
 
         query do
-          # Query type must exist
+          field :foo, :string
         end
 
         input_object :foo do
@@ -64,7 +64,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
         use Absinthe.Schema
 
         query do
-          # Query type must exist
+          field :foo, :string
         end
 
         object :cool_fields do
@@ -92,7 +92,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
         use Absinthe.Schema
 
         query do
-          # Query type must exist
+          field :foo, :string
         end
 
         object :foo do
@@ -211,7 +211,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
         use Absinthe.Schema
 
         query do
-          # Query type must exist
+          field :foo, :string
         end
 
         object :foo do
@@ -223,7 +223,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
         use Absinthe.Schema
 
         query do
-          # Query type must exist
+          field :foo, :string
         end
 
         object :bar do
@@ -235,7 +235,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
         use Absinthe.Schema
 
         query do
-          # Query type must exist
+          field :foo, :string
         end
 
         import_types Source1

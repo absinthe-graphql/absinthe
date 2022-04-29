@@ -134,6 +134,7 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfacesTest do
     def resolve_type(_), do: false
 
     query do
+      field :foo, :string
     end
   end
 
@@ -175,6 +176,7 @@ defmodule Absinthe.Schema.Rule.ObjectMustImplementInterfacesTest do
     """
 
     query do
+      field :foo, :string
     end
 
     def hydrate(%{identifier: :pet}, _) do

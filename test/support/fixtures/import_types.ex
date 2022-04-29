@@ -207,6 +207,7 @@ defmodule Absinthe.Fixtures.ImportTypes do
     import_types(SchemaWithFunctionEvaluationImports)
 
     query do
+      field :foo, :string
     end
   end
 end

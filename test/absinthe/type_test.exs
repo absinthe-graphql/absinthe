@@ -68,14 +68,16 @@ defmodule Absinthe.TypeTest do
     use Absinthe.Schema
 
     query do
-      # Query type must exist
+      field :foo, :string
     end
 
     object :with_meta do
       meta :foo, "bar"
+      field :foo, :string
     end
 
     object :without_meta do
+      field :foo, :string
     end
   end
 

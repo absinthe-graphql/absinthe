@@ -23,6 +23,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportTypeExtensionsTest do
     use Absinthe.Schema
 
     query do
+      field :foo, :string
     end
 
     object :one do
@@ -41,6 +42,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportTypeExtensionsTest do
     use Absinthe.Schema
 
     query do
+      field :foo, :string
     end
 
     object :one do
@@ -50,6 +52,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportTypeExtensionsTest do
     end
 
     object :three do
+      field :foo, :string
     end
 
     import_type_extensions Source, only: [:one, :two]
@@ -59,12 +62,15 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportTypeExtensionsTest do
     use Absinthe.Schema
 
     query do
+      field :foo, :string
     end
 
     object :one do
+      field :foo, :string
     end
 
     object :two do
+      field :foo, :string
     end
 
     object :three do
@@ -87,14 +93,14 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportTypeExtensionsTest do
 
       assert [%{identifier: :one}] = fields(UsingOnlyOption, :one)
       assert [%{identifier: :two}] = fields(UsingOnlyOption, :two)
-      assert [] = fields(UsingOnlyOption, :three)
+      assert [%{identifier: :foo}] = fields(UsingOnlyOption, :three)
     end
 
     test "with :except" do
       assert [{Source, except: [:one, :two]}] == imports(UsingExceptOption)
 
-      assert [] = fields(UsingExceptOption, :one)
-      assert [] = fields(UsingExceptOption, :two)
+      assert [%{identifier: :foo}] = fields(UsingExceptOption, :one)
+      assert [%{identifier: :foo}] = fields(UsingExceptOption, :two)
       assert [%{identifier: :three}] = fields(UsingExceptOption, :three)
     end
   end

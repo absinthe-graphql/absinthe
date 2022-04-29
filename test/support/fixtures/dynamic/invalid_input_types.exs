@@ -2,6 +2,7 @@ defmodule Absinthe.Fixtures.InvalidOutputTypesSchema do
   use Absinthe.Schema
 
   object :user do
+    field :name, :string
   end
 
   input_object :foo do

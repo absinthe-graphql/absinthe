@@ -23,6 +23,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportDirectivesTest do
     use Absinthe.Schema
 
     query do
+      field :foo, :string
     end
 
     import_directives Source
@@ -32,6 +33,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportDirectivesTest do
     use Absinthe.Schema
 
     query do
+      field :foo, :string
     end
 
     import_directives Source, only: [:one, :two]
@@ -41,6 +43,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportDirectivesTest do
     use Absinthe.Schema
 
     query do
+      field :foo, :string
     end
 
     import_directives Source, except: [:one, :two]

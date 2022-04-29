@@ -7,12 +7,15 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportTypesTest do
     use Absinthe.Schema.Notation
 
     object :one do
+      field :foo, :string
     end
 
     object :two do
+      field :foo, :string
     end
 
     object :three do
+      field :foo, :string
     end
   end
 
@@ -20,6 +23,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportTypesTest do
     use Absinthe.Schema
 
     query do
+      field :foo, :string
     end
 
     import_types Source
@@ -29,6 +33,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportTypesTest do
     use Absinthe.Schema
 
     query do
+      field :foo, :string
     end
 
     import_types(Source, only: [:one, :two])
@@ -38,6 +43,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportTypesTest do
     use Absinthe.Schema
 
     query do
+      field :foo, :string
     end
 
     import_types(Source, except: [:one, :two])

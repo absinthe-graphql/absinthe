@@ -163,6 +163,7 @@ defmodule Absinthe.Schema.NotationTest do
     test "can be toplevel" do
       assert_no_notation_error("InputObjectValid", """
       input_object :foo do
+        field :foo, :string
       end
       """)
     end
@@ -299,6 +300,7 @@ defmodule Absinthe.Schema.NotationTest do
     test "can be under object as an attribute" do
       assert_no_notation_error("IsTypeOfValid", """
       object :bar do
+        field :foo, :string
         is_type_of fn _, _ -> true end
       end
       """)
@@ -331,6 +333,7 @@ defmodule Absinthe.Schema.NotationTest do
     test "can be toplevel" do
       assert_no_notation_error("ObjectValid", """
       object :foo do
+        field :foo, :string
       end
       """)
     end
@@ -427,6 +430,7 @@ defmodule Absinthe.Schema.NotationTest do
     test "can be under interface as an attribute" do
       assert_no_notation_error("ResolveTypeValidInterface", """
       interface :bar do
+        field :foo, :string
         resolve_type fn _, _ -> :baz end
       end
       """)
@@ -509,8 +513,10 @@ defmodule Absinthe.Schema.NotationTest do
     test "can be under union as an attribute" do
       assert_no_notation_error("TypesValid", """
       object :audi do
+        field :foo, :string
       end
       object :volvo do
+        field :foo, :string
       end
       union :brand do
         types [:audi, :volvo]
@@ -554,6 +560,7 @@ defmodule Absinthe.Schema.NotationTest do
         description \"""
         Here's a description
         \"""
+        field :foo, :string
       end
       """)
     end
@@ -665,7 +672,7 @@ defmodule Absinthe.Schema.NotationTest do
         @prototype_schema WithFeatureDirective
 
         query do
-          #Query type must exist
+          field :foo, :string
         end
 
         #{text}
@@ -683,7 +690,7 @@ defmodule Absinthe.Schema.NotationTest do
              @prototype_schema WithFeatureDirective
 
              query do
-               #Query type must exist
+               field :foo, :string
              end
 
              #{text}

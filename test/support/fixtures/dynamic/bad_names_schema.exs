@@ -2,7 +2,7 @@ defmodule Absinthe.TestSupport.Schema.BadNamesSchema do
   use Absinthe.Schema
 
   object :car, name: "bad object name" do
-    # ...
+    field :foo, :string
   end
 
   input_object :contact_input, name: "bad input name" do

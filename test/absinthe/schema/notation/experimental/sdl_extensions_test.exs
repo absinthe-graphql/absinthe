@@ -24,6 +24,7 @@ defmodule Absinthe.Schema.Notation.Experimental.SdlExtensionsTest do
     @prototype_schema WithFeatureDirective
 
     query do
+      field :foo, :string
     end
 
     import_sdl """
@@ -246,6 +247,7 @@ defmodule Absinthe.Schema.Notation.Experimental.SdlExtensionsTest do
     use Absinthe.Schema
 
     query do
+      field :foo, :string
     end
 
     import_type_extensions ImportedSchema

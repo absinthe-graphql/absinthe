@@ -9,5 +9,6 @@ defmodule Absinthe.TestSupport.Schema.BadDirectivesSchema do
   end
 
   query do
+    field :foo, :string
   end
 end
