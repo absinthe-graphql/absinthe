@@ -37,11 +37,14 @@ defmodule Absinthe.Pipeline do
     case result do
       {:ok, blueprint, phases} when rest == [] ->
         {:ok, blueprint, phases}
+
       {:ok, blueprint, phases} ->
         bp_result = Map.put(blueprint.result, :continuation, rest)
         blueprint = Map.put(blueprint, :result, bp_result)
         {:ok, blueprint, phases}
-      error -> error
+
+      error ->
+        error
     end
   end
 
@@ -132,6 +135,7 @@ defmodule Absinthe.Pipeline do
       # Execution
       {Phase.Subscription.SubscribeSelf, options},
       {Phase.Document.Execution.Resolution, options},
+      Phase.Subscription.GetOrdinal,
       # Format Result
       Phase.Document.Result,
       {Phase.Telemetry, Keyword.put(options, :event, [:execute, :operation, :stop])}

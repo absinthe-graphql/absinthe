@@ -44,12 +44,15 @@ defmodule Absinthe do
           %{message: String.t()}
           | %{message: String.t(), locations: [%{line: pos_integer, column: integer}]}
 
-  @type continuation_t :: nil | [Continuation.t()]
+  @type continuation_t :: nil | [Absinthe.Blueprint.Continuation.t()]
 
   @type result_t ::
-          %{required(:data) => nil | result_selection_t,
+          %{
+            required(:data) => nil | result_selection_t,
+            optional(:ordinal) => term(),
             optional(:continuation) => continuation_t,
-            optional(:errors) => [result_error_t]}
+            optional(:errors) => [result_error_t]
+          }
           | %{errors: [result_error_t]}
 
   @type pipeline_modifier_fun :: (Absinthe.Pipeline.t(), Keyword.t() -> Absinthe.Pipeline.t())
@@ -121,7 +124,7 @@ defmodule Absinthe do
     |> build_result()
   end
 
-  @spec continue([Continuation.t()]) :: run_result()
+  @spec continue([Absinthe.Blueprint.Continuation.t()]) :: run_result()
   def continue(continuation) do
     continuation
     |> Absinthe.Pipeline.continue()

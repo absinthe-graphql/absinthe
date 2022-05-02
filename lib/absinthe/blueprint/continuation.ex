@@ -12,8 +12,7 @@ defmodule Absinthe.Blueprint.Continuation do
   ]
 
   @type t :: %__MODULE__{
-    phase_input: Pipeline.data_t,
-    pipeline: Pipeline.t()
-  }
-
+          phase_input: Pipeline.data_t(),
+          pipeline: Pipeline.t()
+        }
 end

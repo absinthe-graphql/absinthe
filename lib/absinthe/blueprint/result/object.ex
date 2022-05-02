@@ -20,6 +20,6 @@ defmodule Absinthe.Blueprint.Result.Object do
           errors: [Phase.Error.t()],
           flags: Blueprint.flags_t(),
           extensions: %{any => any},
-          continuations: [Continuation.t()]
+          continuations: [Blueprint.Continuation.t()]
         }
 end
