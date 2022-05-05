@@ -13,6 +13,8 @@ handler function to any of the following event names:
 - `[:absinthe, :resolve, :field, :stop]` when field resolution finishes
 - `[:absinthe, :middleware, :batch, :start]` when the batch processing starts
 - `[:absinthe, :middleware, :batch, :stop]` when the batch processing finishes
+- `[:absinthe, :middleware, :batch, :post, :start]` when the post batch resolution starts
+- `[:absinthe, :middleware, :batch, :post, :stop]` when the post batch resolution finishes
 
 Telemetry handlers are called with `measurements` and `metadata`. For details on
 what is passed, checkout `Absinthe.Phase.Telemetry`, `Absinthe.Middleware.Telemetry`,
