@@ -9,7 +9,7 @@ defmodule Absinthe.Phase.Init do
   def run(input, _options \\ []) do
     {:record_phases, make_blueprint(input),
      fn bp, phases ->
-       %{bp | initial_phases: phases}
+       %{bp | initial_phases: phases, source: bp.input}
      end}
   end
 

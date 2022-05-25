@@ -22,6 +22,16 @@ defmodule Absinthe.Phase.Document.Validation.Result do
     errors = :lists.reverse(errors)
     result = put_in(input.execution.validation_errors, errors)
 
+    with %{id: id, start_time_mono: start_time_mono} <- result.telemetry do
+      end_time_mono = System.monotonic_time()
+
+      :telemetry.execute(
+        [:absinthe, :validate, :stop],
+        %{duration: end_time_mono - start_time_mono},
+        %{telemetry_span_context: id, blueprint: result}
+      )
+    end
+
     case {errors, jump} do
       {[], _} ->
         {:ok, result}

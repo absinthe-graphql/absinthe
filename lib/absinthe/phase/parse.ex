@@ -12,17 +12,22 @@ defmodule Absinthe.Phase.Parse do
   def run(input, options \\ [])
 
   def run(%Absinthe.Blueprint{} = blueprint, options) do
-    options = Map.new(options)
+    :telemetry.span([:absinthe, :parse], %{}, fn ->
+      options = Map.new(options)
 
-    case parse(blueprint.input) do
-      {:ok, value} ->
-        {:ok, %{blueprint | input: value}}
+      result =
+        case parse(blueprint.input) do
+          {:ok, value} ->
+            {:ok, %{blueprint | input: value}}
 
-      {:error, error} ->
-        blueprint
-        |> add_validation_error(error)
-        |> handle_error(options)
-    end
+          {:error, error} ->
+            blueprint
+            |> add_validation_error(error)
+            |> handle_error(options)
+        end
+
+      {result, %{}}
+    end)
   end
 
   def run(input, options) do
