@@ -195,12 +195,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defmacro object(identifier, attrs, do: block) do
-    block =
-      for {identifier, args} <- build_directives(attrs) do
-        quote do
-          directive(unquote(identifier), unquote(args))
-        end
-      end ++ block
+    block = block_from_directive_attrs(attrs, block)
 
     {attrs, block} =
       case Keyword.pop(attrs, :meta) do
@@ -439,12 +434,7 @@ defmodule Absinthe.Schema.Notation do
         end
       end
 
-    block =
-      for {identifier, args} <- build_directives(attrs) do
-        quote do
-          directive(unquote(identifier), unquote(args))
-        end
-      end ++ block
+    block = block_from_directive_attrs(attrs, block)
 
     block =
       case Keyword.get(attrs, :meta) do
@@ -1539,12 +1529,7 @@ defmodule Absinthe.Schema.Notation do
   defp reason(msg), do: raise(ArgumentError, "Invalid reason: #{msg}")
 
   def handle_arg_attrs(identifier, type, raw_attrs) do
-    block =
-      for {identifier, args} <- build_directives(raw_attrs) do
-        quote do
-          directive(unquote(identifier), unquote(args))
-        end
-      end
+    block = block_from_directive_attrs(raw_attrs)
 
     attrs =
       raw_attrs
@@ -1731,12 +1716,7 @@ defmodule Absinthe.Schema.Notation do
   def handle_enum_value_attrs(identifier, raw_attrs, env) do
     value = Keyword.get(raw_attrs, :as, identifier)
 
-    block =
-      for {identifier, args} <- build_directives(raw_attrs) do
-        quote do
-          directive(unquote(identifier), unquote(args))
-        end
-      end
+    block = block_from_directive_attrs(raw_attrs)
 
     attrs =
       raw_attrs
@@ -2242,6 +2222,24 @@ defmodule Absinthe.Schema.Notation do
   def lift_functions(node, acc, origin) do
     {node, ast} = functions_for_type(node, origin)
     {node, ast ++ acc}
+  end
+
+  defp block_from_directive_attrs(attrs, block \\ []) do
+    block =
+      for {identifier, args} <- build_directives(attrs) do
+        quote do
+          directive(unquote(identifier), unquote(args))
+        end
+      end ++ block
+
+    block =
+      for directive_name <- build_directives(attrs), is_atom(directive_name) do
+        quote do
+          directive(unquote(directive_name), [])
+        end
+      end ++ block
+
+    block
   end
 
   defp split_definitions(definitions) do
