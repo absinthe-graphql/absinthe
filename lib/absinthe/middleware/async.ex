@@ -53,7 +53,10 @@ defmodule Absinthe.Middleware.Async do
   def call(%{state: :unresolved} = res, {fun, opts}) when is_function(fun) do
     task =
       Task.async(fn ->
-        :telemetry.span([:absinthe, :middleware, :async, :task], %{}, fn -> {fun.(), %{}} end)
+        :telemetry.span([:absinthe, :middleware, :async, :task], %{}, fn ->
+          result = fun.()
+          {result, %{result: result}}
+        end)
       end)
 
     call(res, {task, opts})
