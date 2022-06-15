@@ -106,9 +106,6 @@ defmodule Absinthe.Middleware.BatchTest do
       "organization" => %{"id" => 1}
     }
 
-    # events may run on separate processes
-    pid = self()
-
     :ok =
       :telemetry.attach_many(
         "#{test}",
@@ -118,16 +115,15 @@ defmodule Absinthe.Middleware.BatchTest do
           [:absinthe, :middleware, :batch, :post, :start],
           [:absinthe, :middleware, :batch, :post, :stop]
         ],
-        fn name, measurements, metadata, _ ->
-          send(pid, {:telemetry_event, name, measurements, metadata})
-        end,
-        nil
+        &__MODULE__.capture_telemetry_event/4,
+        _config = %{pid: self()}
       )
 
     assert {:ok, %{data: data}} = Absinthe.run(doc, Schema)
     assert expected_data == data
 
-    assert_receive {:telemetry_event, [:absinthe, :middleware, :batch, :start], %{system_time: _},
+    assert_receive {:telemetry_event, [:absinthe, :middleware, :batch, :start],
+                    %{system_time: _, monotonic_time: _},
                     %{
                       id: _,
                       telemetry_span_context: _,
@@ -136,7 +132,8 @@ defmodule Absinthe.Middleware.BatchTest do
                       batch_data: _
                     }}
 
-    assert_receive {:telemetry_event, [:absinthe, :middleware, :batch, :stop], %{duration: _},
+    assert_receive {:telemetry_event, [:absinthe, :middleware, :batch, :stop],
+                    %{duration: _, monotonic_time: _},
                     %{
                       id: _,
                       telemetry_span_context: _,
@@ -147,7 +144,7 @@ defmodule Absinthe.Middleware.BatchTest do
                     }}
 
     assert_receive {:telemetry_event, [:absinthe, :middleware, :batch, :post, :start],
-                    %{system_time: _},
+                    %{system_time: _, monotonic_time: _},
                     %{
                       telemetry_span_context: _,
                       post_batch_fun: _,
@@ -156,10 +153,14 @@ defmodule Absinthe.Middleware.BatchTest do
                     }}
 
     assert_receive {:telemetry_event, [:absinthe, :middleware, :batch, :post, :stop],
-                    %{duration: _},
+                    %{duration: _, monotonic_time: _},
                     %{
                       telemetry_span_context: _,
                       result: _
                     }}
+  end
+
+  def capture_telemetry_event(name, measurements, metadata, %{pid: pid} = _config) do
+    send(pid, {:telemetry_event, name, measurements, metadata})
   end
 end

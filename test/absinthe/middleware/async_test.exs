@@ -80,8 +80,6 @@ defmodule Absinthe.Middleware.AsyncTest do
     {asyncThing}
     """
 
-    pid = self()
-
     :ok =
       :telemetry.attach_many(
         "#{test}",
@@ -89,25 +87,23 @@ defmodule Absinthe.Middleware.AsyncTest do
           [:absinthe, :middleware, :async, :task, :start],
           [:absinthe, :middleware, :async, :task, :stop]
         ],
-        fn name, measurements, metadata, _config ->
-          send(pid, {:telemetry_event, name, measurements, metadata})
-        end,
-        _config = %{}
+        &__MODULE__.capture_telemetry_event/4,
+        _config = %{pid: self()}
       )
 
     assert {:ok, %{data: %{"asyncThing" => "we async now"}}} == Absinthe.run(doc, Schema)
 
     assert_receive {:telemetry_event, [:absinthe, :middleware, :async, :task, :start],
-                    %{system_time: _}, %{}}
+                    %{system_time: _, monotonic_time: _}, %{}}
 
     assert_receive {:telemetry_event, [:absinthe, :middleware, :async, :task, :stop],
-                    %{duration: _}, %{}}
+                    %{duration: _, monotonic_time: _}, %{result: _}}
 
     assert_receive {:telemetry_event, [:absinthe, :middleware, :async, :task, :start],
-                    %{system_time: _}, %{}}
+                    %{system_time: _, monotonic_time: _}, %{}}
 
     assert_receive {:telemetry_event, [:absinthe, :middleware, :async, :task, :stop],
-                    %{duration: _}, %{}}
+                    %{duration: _, monotonic_time: _}, %{result: _}}
   end
 
   test "can resolve a field using a cooler but probably confusing to some people helper" do
@@ -124,5 +120,9 @@ defmodule Absinthe.Middleware.AsyncTest do
     """
 
     assert {:ok, %{data: %{"returnsNil" => nil}}} == Absinthe.run(doc, Schema)
+  end
+
+  def capture_telemetry_event(name, measurements, metadata, %{pid: pid} = _config) do
+    send(pid, {:telemetry_event, name, measurements, metadata})
   end
 end
