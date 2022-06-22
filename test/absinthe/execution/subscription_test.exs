@@ -976,6 +976,23 @@ defmodule Absinthe.Execution.SubscriptionTest do
              Absinthe.continue(continuation)
   end
 
+  test "continuation with no extra data" do
+    client_id = "abc"
+
+    assert {:more, %{"subscribed" => _topic, continuation: continuation}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{
+                 "primeData" => [],
+                 "clientId" => client_id
+               },
+               context: %{prime_id: "test_prime_id"}
+             )
+
+    assert :no_more_results == Absinthe.continue(continuation)
+  end
+
   @query """
   subscription ($clientId: ID!) {
     ordinal(clientId: $clientId) {

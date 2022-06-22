@@ -105,6 +105,7 @@ defmodule Absinthe do
         ]
 
   @type run_result :: {:ok, result_t} | {:more, result_t} | {:error, String.t()}
+  @type continue_result :: run_result | :no_more_results
 
   @spec run(
           binary | Absinthe.Language.Source.t() | Absinthe.Language.Document.t(),
@@ -124,7 +125,7 @@ defmodule Absinthe do
     |> build_result()
   end
 
-  @spec continue([Absinthe.Blueprint.Continuation.t()]) :: run_result()
+  @spec continue([Absinthe.Blueprint.Continuation.t()]) :: continue_result
   def continue(continuation) do
     continuation
     |> Absinthe.Pipeline.continue()
@@ -133,6 +134,9 @@ defmodule Absinthe do
 
   defp build_result(output) do
     case output do
+      {:ok, %{result: :no_more_results}, _phases} ->
+        :no_more_results
+
       {:ok, %{result: %{continuation: c} = result}, _phases} when c != [] ->
         {:more, result}
 

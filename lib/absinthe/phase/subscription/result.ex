@@ -19,7 +19,7 @@ defmodule Absinthe.Phase.Subscription.Result do
         {:ok, put_in(blueprint.result, result)}
 
       prime_fun when is_function(prime_fun, 1) ->
-        do_prime(prime_fun, result, blueprint, options)
+        stash_prime(prime_fun, result, blueprint, options)
 
       val ->
         raise """
@@ -30,28 +30,18 @@ defmodule Absinthe.Phase.Subscription.Result do
     end
   end
 
-  def do_prime(prime_fun, base_result, blueprint, options) do
-    {:ok, prime_results} = prime_fun.(blueprint.execution)
+  def stash_prime(prime_fun, base_result, blueprint, options) do
+    continuation = %Continuation{
+      phase_input: blueprint,
+      pipeline: [
+        {Phase.Subscription.Prime, [prime_fun: prime_fun, resolution_options: options]},
+        {Phase.Document.Execution.Resolution, options},
+        Phase.Subscription.GetOrdinal,
+        Phase.Document.Result
+      ]
+    }
 
-    result =
-      if prime_results != [] do
-        continuations =
-          Enum.map(prime_results, fn cr ->
-            %Continuation{
-              phase_input: blueprint,
-              pipeline: [
-                {Phase.Subscription.Prime, [prime_result: cr]},
-                {Phase.Document.Execution.Resolution, options},
-                Phase.Subscription.GetOrdinal,
-                Phase.Document.Result
-              ]
-            }
-          end)
-
-        Map.put(base_result, :continuation, continuations)
-      else
-        base_result
-      end
+    result = Map.put(base_result, :continuation, [continuation])
 
     {:ok, put_in(blueprint.result, result)}
   end

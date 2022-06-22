@@ -19,6 +19,8 @@ defmodule Absinthe.Pipeline do
 
   @type run_result_t :: {:ok, data_t, [Phase.t()]} | {:error, String.t() | {:http_method, String.t()}, [Phase.t()]}
 
+  @type continue_result_t :: run_result_t | :no_more_results
+
   @type phase_config_t :: Phase.t() | {Phase.t(), Keyword.t()}
 
   @type t :: [phase_config_t | [phase_config_t]]
@@ -30,7 +32,7 @@ defmodule Absinthe.Pipeline do
     |> run_phase(input)
   end
 
-  @spec continue([Continuation.t()]) :: run_result_t
+  @spec continue([Continuation.t()]) :: continue_result_t
   def continue([continuation | rest]) do
     result = run_phase(continuation.pipeline, continuation.phase_input)
 
@@ -41,7 +43,7 @@ defmodule Absinthe.Pipeline do
       {:ok, blueprint, phases} ->
         bp_result = Map.put(blueprint.result, :continuation, rest)
         blueprint = Map.put(blueprint, :result, bp_result)
-        {:ok, blueprint, phases}
+        {:more, blueprint, phases}
 
       error ->
         error
