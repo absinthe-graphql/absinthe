@@ -26,6 +26,9 @@ defmodule Absinthe.Subscription.Local do
           {topic, doc} <- get_docs(pubsub, field, mutation_result, key_strategy) do
         {topic, key_strategy, doc}
       end
+      |> Enum.dedup_by(fn {topic, key_strategy, _} ->
+        "#{topic}_#{:erlang.phash2(key_strategy)}"
+      end)
 
     run_docset(pubsub, docs_and_topics, mutation_result)
 
