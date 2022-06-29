@@ -302,35 +302,6 @@ defmodule Absinthe.Schema.NotationTest do
         "Invalid schema notation: `object` must only be used toplevel or in an `extend` block. Was used in `object`."
       )
     end
-
-    test "cannot use reserved identifiers" do
-      assert_notation_error(
-        "ReservedIdentifierSubscription",
-        """
-        object :subscription do
-        end
-        """,
-        "Invalid schema notation: cannot create an `object` with reserved identifier `subscription`"
-      )
-
-      assert_notation_error(
-        "ReservedIdentifierQuery",
-        """
-        object :query do
-        end
-        """,
-        "Invalid schema notation: cannot create an `object` with reserved identifier `query`"
-      )
-
-      assert_notation_error(
-        "ReservedIdentifierMutation",
-        """
-        object :mutation do
-        end
-        """,
-        "Invalid schema notation: cannot create an `object` with reserved identifier `mutation`"
-      )
-    end
   end
 
   describe "on" do
