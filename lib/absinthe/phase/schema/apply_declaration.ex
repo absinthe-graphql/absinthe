@@ -142,7 +142,6 @@ defmodule Absinthe.Phase.Schema.ApplyDeclaration do
     %Blueprint.Schema.SchemaDeclaration{
       module: __MODULE__,
       __reference__: Absinthe.Schema.Notation.build_reference(__ENV__),
-      # description: "Represents a schema",
       field_definitions: field_definitions
     }
   end
