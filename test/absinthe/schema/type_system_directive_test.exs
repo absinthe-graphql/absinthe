@@ -100,6 +100,10 @@ defmodule Absinthe.Schema.TypeSystemDirectiveTest do
 
     @prototype_schema WithTypeSystemDirective
 
+    extend schema do
+      directive :feature, name: ":schema"
+    end
+
     query do
       field :post, :post do
         directive :feature, name: ":field_definition"

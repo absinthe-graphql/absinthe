@@ -300,6 +300,41 @@ defmodule Absinthe.Schema.Notation do
     |> record_extend!([], block, [])
   end
 
+  defmacro extend({:schema, meta, _}, do: block) do
+    block = {:schema, meta, [] ++ [[do: block]]}
+
+    __CALLER__
+    |> recordable!(:extend, @placement[:extend])
+    |> record_extend!([], block, [])
+  end
+
+  @placement {:schema, [toplevel: false, extend: true]}
+  @doc """
+  Declare a schema
+
+  Can only be used when extending a schema.
+
+  See also `extend/2`.
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+
+  ## Examples
+
+  ```
+  extend schema do
+    directive :feature
+    # ...
+  end
+  ```
+  """
+  defmacro schema(do: block) do
+    __CALLER__
+    |> recordable!(:schema, @placement[:schema])
+    |> record_schema!(block)
+  end
+
   @placement {:deprecate, [under: [:field]]}
   @doc """
   Mark a field as deprecated
@@ -932,6 +967,7 @@ defmodule Absinthe.Schema.Notation do
                   :interface,
                   :object,
                   :scalar,
+                  :schema,
                   :union,
                   :value
                 ]
@@ -1588,6 +1624,25 @@ defmodule Absinthe.Schema.Notation do
     [
       extend_block,
       type_block,
+      quote(do: unquote(__MODULE__).close_scope())
+    ]
+  end
+
+  def record_schema!(env, block) do
+    attrs =
+      []
+      |> Keyword.put(:module, env.module)
+      |> put_reference(env)
+
+    definition = struct!(Schema.SchemaDeclaration, attrs)
+
+    ref = put_attr(env.module, definition)
+
+    push_stack(env.module, :absinthe_scope_stack, :schema)
+
+    [
+      get_desc(ref),
+      block,
       quote(do: unquote(__MODULE__).close_scope())
     ]
   end
@@ -2382,6 +2437,9 @@ defmodule Absinthe.Schema.Notation do
   defp recordable?([toplevel: true, extend: true], scope),
     do: scope == :schema || scope == :extend
 
+  defp recordable?([toplevel: false, extend: true], scope),
+    do: scope == :extend
+
   defp recordable?([toplevel: true], scope), do: scope == :schema
   defp recordable?([toplevel: false], scope), do: scope != :schema
 
@@ -2401,6 +2459,10 @@ defmodule Absinthe.Schema.Notation do
 
   defp invalid_message([toplevel: false], usage, scope) do
     "Invalid schema notation: `#{usage}` must not be used toplevel. #{used_in(scope)}"
+  end
+
+  defp invalid_message([toplevel: false, extend: true], usage, _scope) do
+    "Invalid schema notation: `#{usage}` must not be used toplevel. It can only be used in an `extend` block."
   end
 
   defp used_in(scope) do

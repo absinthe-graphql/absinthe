@@ -92,6 +92,12 @@ defmodule Absinthe.Utils do
     """
   end
 
+  defp do_placement_docs(toplevel: false, extend: true) do
+    """
+    Not allowed to be top level. Only in an `extend` block.
+    """
+  end
+
   defp do_placement_docs(under: under) when is_list(under) do
     under =
       under

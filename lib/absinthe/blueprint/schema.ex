@@ -117,7 +117,8 @@ defmodule Absinthe.Blueprint.Schema do
     Schema.InterfaceTypeDefinition,
     Schema.UnionTypeDefinition,
     Schema.EnumValueDefinition,
-    Schema.TypeExtensionDefinition
+    Schema.TypeExtensionDefinition,
+    Schema.SchemaDeclaration
   ]
 
   defp build_types([%module{} = type | rest], stack, buff) when module in @simple_open do
@@ -196,6 +197,7 @@ defmodule Absinthe.Blueprint.Schema do
     Schema.InterfaceTypeDefinition,
     Schema.ObjectTypeDefinition,
     Schema.ScalarTypeDefinition,
+    Schema.SchemaDeclaration,
     Schema.UnionTypeDefinition
   ]
   defp build_types(
