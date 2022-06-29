@@ -206,6 +206,32 @@ defmodule Absinthe.SchemaTest do
     end
   end
 
+  defmodule RootsSchemaDeclaration do
+    use Absinthe.Schema
+
+    schema do
+      description "Custom schema declaration"
+      field :query, :query
+      field :subscription, :subscription
+    end
+
+    query do
+      field :name,
+        type: :string,
+        args: [
+          family_name: [type: :boolean]
+        ]
+    end
+
+    mutation name: "MyRootMutation" do
+      field :name, :string
+    end
+
+    subscription name: "RootSubscriptionTypeThing" do
+      field :name, :string
+    end
+  end
+
   describe "referenced_types" do
     test "does not contain introspection types" do
       assert !Enum.any?(
@@ -276,6 +302,40 @@ defmodule Absinthe.SchemaTest do
 
     test "supports subscriptions" do
       assert "RootSubscriptionTypeThing" == Schema.lookup_type(RootsSchema, :subscription).name
+    end
+  end
+
+  describe "root fields with custom declaration" do
+    test "custom description" do
+      assert "Custom schema declaration" =
+               Schema.schema_declaration(RootsSchemaDeclaration).description
+    end
+
+    test "it skips the mutation type" do
+      assert [%{name: "subscription"}, %{name: "query"}] =
+               Schema.schema_declaration(RootsSchemaDeclaration).field_definitions
+    end
+
+    test "macro declaration sdl" do
+      assert """
+             "Custom schema declaration"
+             schema {
+               subscription: RootSubscriptionTypeThing
+               query: RootQueryType
+             }
+
+             type RootSubscriptionTypeThing {
+               name: String
+             }
+
+             type MyRootMutation {
+               name: String
+             }
+
+             type RootQueryType {
+               name(familyName: Boolean): String
+             }
+             """ == Schema.to_sdl(RootsSchemaDeclaration)
     end
   end
 

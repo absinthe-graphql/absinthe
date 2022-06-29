@@ -308,13 +308,12 @@ defmodule Absinthe.Schema.Notation do
     |> record_extend!([], block, [])
   end
 
-  @placement {:schema, [toplevel: false, extend: true]}
+  @placement {:schema, [toplevel: true, extend: true]}
   @doc """
   Declare a schema
 
-  Can only be used when extending a schema.
-
-  See also `extend/2`.
+  Optional declaration of the schema. Useful if you want to add directives
+  to your schema declaration
 
   ## Placement
 
@@ -323,8 +322,9 @@ defmodule Absinthe.Schema.Notation do
   ## Examples
 
   ```
-  extend schema do
+  schema do
     directive :feature
+    field :query, :query
     # ...
   end
   ```
@@ -512,7 +512,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   # FIELDS
-  @placement {:field, [under: [:input_object, :interface, :object]]}
+  @placement {:field, [under: [:input_object, :interface, :object, :schema_declaration]]}
   @doc """
   Defines a GraphQL field
 
@@ -967,7 +967,7 @@ defmodule Absinthe.Schema.Notation do
                   :interface,
                   :object,
                   :scalar,
-                  :schema,
+                  :schema_declaration,
                   :union,
                   :value
                 ]
@@ -1638,7 +1638,7 @@ defmodule Absinthe.Schema.Notation do
 
     ref = put_attr(env.module, definition)
 
-    push_stack(env.module, :absinthe_scope_stack, :schema)
+    push_stack(env.module, :absinthe_scope_stack, :schema_declaration)
 
     [
       get_desc(ref),
@@ -2459,10 +2459,6 @@ defmodule Absinthe.Schema.Notation do
 
   defp invalid_message([toplevel: false], usage, scope) do
     "Invalid schema notation: `#{usage}` must not be used toplevel. #{used_in(scope)}"
-  end
-
-  defp invalid_message([toplevel: false, extend: true], usage, _scope) do
-    "Invalid schema notation: `#{usage}` must not be used toplevel. It can only be used in an `extend` block."
   end
 
   defp used_in(scope) do

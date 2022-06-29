@@ -109,7 +109,7 @@ defmodule Absinthe.Schema.NotationTest do
         """
         field :foo, :string
         """,
-        "Invalid schema notation: `field` must only be used within `input_object`, `interface`, `object`. Was used in `schema`."
+        "Invalid schema notation: `field` must only be used within `input_object`, `interface`, `object`, `schema_declaration`. Was used in `schema`."
       )
     end
   end
@@ -581,22 +581,23 @@ defmodule Absinthe.Schema.NotationTest do
 
   describe "schema" do
     test "can be used in extend block" do
-      assert_no_notation_error("SchemaValid", """
+      assert_no_notation_error("ExtendSchemaValid", """
       extend schema do
         directive :feature
+        field :query, :query
       end
       """)
     end
 
-    test "cannot be toplevel" do
-      assert_notation_error(
-        "SchemaInvalid",
+    test "can be toplevel" do
+      assert_no_notation_error(
+        "SchemaValid",
         """
         schema do
           directive :feature
+          field :query, :query
         end
-        """,
-        "Invalid schema notation: `schema` must not be used toplevel. It can only be used in an `extend` block."
+        """
       )
     end
   end
@@ -645,6 +646,8 @@ defmodule Absinthe.Schema.NotationTest do
       defmodule MyTestSchema.#{name} do
         use Absinthe.Schema
 
+        @prototype_schema WithFeatureDirective
+
         query do
           #Query type must exist
         end
@@ -652,7 +655,7 @@ defmodule Absinthe.Schema.NotationTest do
         #{text}
       end
       """
-      |> Code.eval_string()
+      |> Code.eval_string([], __ENV__)
     end)
   end
 
