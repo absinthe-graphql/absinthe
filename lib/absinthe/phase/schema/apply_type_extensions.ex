@@ -140,7 +140,12 @@ defmodule Absinthe.Phase.Schema.ApplyTypeExtensions do
          %Schema.SchemaDeclaration{} = definition
        ) do
     {extension,
-     %{definition | directives: definition.directives ++ extension.definition.directives}}
+     %{
+       definition
+       | field_definitions:
+           definition.field_definitions ++ extension.definition.field_definitions,
+         directives: definition.directives ++ extension.definition.directives
+     }}
   end
 
   defp apply_extension(

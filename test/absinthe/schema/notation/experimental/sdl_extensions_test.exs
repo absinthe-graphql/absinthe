@@ -36,6 +36,10 @@ defmodule Absinthe.Schema.Notation.Experimental.SdlExtensionsTest do
       width: Int
     }
 
+    type MyMutationRootType {
+      name: String
+    }
+
     enum Direction {
       NORTH
     }
@@ -56,7 +60,9 @@ defmodule Absinthe.Schema.Notation.Experimental.SdlExtensionsTest do
       value: Int
     }
 
-    extend schema @feature
+    extend schema @feature {
+      mutation: MyMutationRootType
+    }
 
     extend enum Direction {
       SOUTH
@@ -99,6 +105,9 @@ defmodule Absinthe.Schema.Notation.Experimental.SdlExtensionsTest do
     schema_declaration = ExtendedSchema.__absinthe_schema_declaration__()
 
     assert [%{name: "feature"}] = schema_declaration.directives
+
+    assert [%{name: "query"}, %{name: "mutation", type: %{name: "MyMutationRootType"}}] =
+             schema_declaration.field_definitions
   end
 
   test "can extend enums" do
