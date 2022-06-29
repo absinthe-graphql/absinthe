@@ -10,7 +10,7 @@ defmodule Absinthe.Schema.Notation.Experimental.SdlExtensionsTest do
 
     directive :feature do
       arg :name, :string
-      on [:scalar]
+      on [:scalar, :schema]
 
       expand(fn _args, node ->
         %{node | __private__: [feature: true]}
@@ -56,6 +56,8 @@ defmodule Absinthe.Schema.Notation.Experimental.SdlExtensionsTest do
       value: Int
     }
 
+    extend schema @feature
+
     extend enum Direction {
       SOUTH
     }
@@ -91,6 +93,12 @@ defmodule Absinthe.Schema.Notation.Experimental.SdlExtensionsTest do
     end
 
     def valued_entity_resolve_type(_, _), do: :photo
+  end
+
+  test "can extend schema" do
+    schema_declaration = ExtendedSchema.__absinthe_schema_declaration__()
+
+    assert [%{name: "feature"}] = schema_declaration.directives
   end
 
   test "can extend enums" do
