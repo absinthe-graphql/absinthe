@@ -92,6 +92,11 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
       field :value, :integer
     end
 
+    extend object(:query) do
+      field :width, :integer
+      field :value, :integer
+    end
+
     extend input_object(:point) do
       field :y, :float
     end
@@ -158,6 +163,33 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
            ] = Map.values(object.fields)
 
     assert [:valued_entity] = object.interfaces
+  end
+
+  test "can extend root objects" do
+    object = lookup_compiled_type(ExtendedSchema, :query)
+
+    assert [
+             %{
+               name: "__schema",
+               type: :__schema
+             },
+             %{
+               name: "__type",
+               type: :__type
+             },
+             %{
+               name: "__typename",
+               type: :string
+             },
+             %{
+               name: "value",
+               type: :integer
+             },
+             %{
+               name: "width",
+               type: :integer
+             }
+           ] = Map.values(object.fields)
   end
 
   test "can extend input objects" do
