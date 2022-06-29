@@ -240,7 +240,6 @@ defmodule Absinthe.Schema.SdlRenderTest do
   test "Render SDL from blueprint defined with macros" do
     assert Absinthe.Schema.to_sdl(MacroTestSchema) ==
              """
-             "Represents a schema"
              schema {
                query: RootQueryType
              }

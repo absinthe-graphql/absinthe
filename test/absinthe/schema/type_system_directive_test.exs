@@ -179,8 +179,7 @@ defmodule Absinthe.Schema.TypeSystemDirectiveTest do
   end
 
   @macro_schema_sdl """
-  "Represents a schema"
-  schema {
+  schema @feature(name: ":schema") {
     query: RootQueryType
   }
 

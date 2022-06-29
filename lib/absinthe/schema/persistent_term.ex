@@ -89,6 +89,12 @@ if Code.ensure_loaded?(:persistent_term) do
       |> Map.fetch!(:__absinthe_interface_implementors__)
     end
 
+    def __absinthe_schema_declaration__(schema_mod) do
+      schema_mod
+      |> get()
+      |> Map.fetch!(:__absinthe_schema_declaration__)
+    end
+
     @dialyzer {:nowarn_function, [get: 1]}
     defp get(schema) do
       :persistent_term.get({__MODULE__, schema})
@@ -109,5 +115,6 @@ else
     def __absinthe_directives__(_), do: raise(@error)
     def __absinthe_interface_implementors__(_), do: raise(@error)
     def __absinthe_prototype_schema__(), do: raise(@error)
+    def __absinthe_schema_declaration__(_), do: raise(@error)
   end
 end
