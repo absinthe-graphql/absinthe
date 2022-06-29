@@ -126,6 +126,16 @@ defmodule Absinthe.Phase.Schema.ApplyTypeExtensions do
   end
 
   defp apply_extension(
+         %Schema.TypeExtensionDefinition{
+           definition: %Schema.SchemaDeclaration{}
+         } = extension,
+         %Schema.SchemaDeclaration{} = definition
+       ) do
+    {extension,
+     %{definition | directives: definition.directives ++ extension.definition.directives}}
+  end
+
+  defp apply_extension(
          %{definition: %{identifier: identifier} = extension},
          %{identifier: identifier} = definition
        ) do
