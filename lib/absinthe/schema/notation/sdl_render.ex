@@ -42,17 +42,13 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       directive_definitions
       |> Enum.reject(&(&1.module in @skip_modules))
 
-    all_type_definitions =
-      type_definitions
-      |> Enum.reject(&(&1.__struct__ == Blueprint.Schema.SchemaDeclaration))
-
     types_to_render =
-      all_type_definitions
+      type_definitions
       |> Enum.reject(&(&1.module in @skip_modules))
       |> Enum.filter(& &1.__private__[:__absinthe_referenced__])
 
     ([schema_declaration] ++ directive_definitions ++ types_to_render)
-    |> Enum.map(&render(&1, all_type_definitions))
+    |> Enum.map(&render(&1, type_definitions))
     |> Enum.reject(&(&1 == empty()))
     |> join([line(), line()])
   end
