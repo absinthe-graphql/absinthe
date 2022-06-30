@@ -7,6 +7,7 @@
 - Bug Fix: [Add `__private__` field to EnumValueDefinition](https://github.com/absinthe-graphql/absinthe/pull/1148)
 - Bug Fix: [Fix bug in Schema.**absinthe_types**(:all) for Persistent Term](https://github.com/absinthe-graphql/absinthe/pull/1161)
 - Feature: [Add `import_directives` macro](https://github.com/absinthe-graphql/absinthe/pull/1158)
+- Feature: [Support type extensions on schema declarations](https://github.com/absinthe-graphql/absinthe/pull/1176)
 
 ## 1.7.0
 
