@@ -14,6 +14,8 @@ defmodule Absinthe.Schema.Prototype.Notation do
       directive :deprecated do
         arg :reason, :string
 
+        repeatable false
+
         on [
           :field_definition,
           :input_field_definition,
