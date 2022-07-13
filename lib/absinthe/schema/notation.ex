@@ -1769,6 +1769,7 @@ defmodule Absinthe.Schema.Notation do
       |> build_directive_arguments(env)
       |> Keyword.put(:name, name)
       |> put_reference(env)
+      |> Keyword.put(:source_location, Absinthe.Blueprint.SourceLocation.at(env.line, 0))
 
     directive = struct!(Absinthe.Blueprint.Directive, attrs)
     put_attr(env.module, {:directive, directive})
