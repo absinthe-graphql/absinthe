@@ -330,7 +330,7 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
-  defmacro deprecate(msg) do
+  defmacro deprecate(msg \\ nil) do
     __CALLER__
     |> recordable!(:deprecate, @placement[:deprecate])
     |> record_deprecate!(msg)
