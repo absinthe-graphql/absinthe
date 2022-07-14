@@ -147,7 +147,19 @@ defmodule Absinthe.Middleware.Batch do
     end)
     |> Map.new(fn {batch_opts, task, start_time_mono, metadata} ->
       timeout = Keyword.get(batch_opts, :timeout, 5_000)
-      result = Task.await(task, timeout)
+
+      result =
+        try do
+          Task.await(task, timeout)
+        catch
+          :exit, {:timeout, {Task, :await, _}} ->
+            raise """
+            Batch resolver timed out after #{timeout} ms.
+            Batch fun: #{inspect(metadata.batch_fun)}
+            Batch data: #{inspect(metadata.batch_data)}
+            Batch opts: #{inspect(metadata.batch_opts)}
+            """
+        end
 
       end_time_mono = System.monotonic_time()
       duration = end_time_mono - start_time_mono

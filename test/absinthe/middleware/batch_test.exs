@@ -36,6 +36,17 @@ defmodule Absinthe.Middleware.BatchTest do
           end)
         end
       end
+
+      field :slow_field, :integer do
+        resolve fn user, _, _ ->
+          batch(
+            {__MODULE__, :slow_field_by_user_id},
+            user.id,
+            fn batch -> {:ok, Map.get(batch, user.id)} end,
+            timeout: 1
+          )
+        end
+      end
     end
 
     query do
@@ -68,6 +79,11 @@ defmodule Absinthe.Middleware.BatchTest do
 
     def otel_ctx(_, _) do
       OpenTelemetry.Ctx.get_value("stored_value", nil)
+    end
+
+    def slow_field_by_user_id(_, ids) do
+      :timer.sleep(5000)
+      ids |> Enum.with_index() |> Map.new()
     end
   end
 
@@ -149,5 +165,26 @@ defmodule Absinthe.Middleware.BatchTest do
     OpenTelemetry.Ctx.set_value("stored_value", "some_value")
 
     assert {:ok, %{data: %{"ctx" => "some_value"}}} == Absinthe.run(doc, Schema)
+  end
+
+  test "raises when batched resolver times out" do
+    doc = """
+    {
+      users {
+        slowField
+      }
+    }
+    """
+
+    assert_raise(
+      RuntimeError,
+      """
+      Batch resolver timed out after 1 ms.
+      Batch fun: {Absinthe.Middleware.BatchTest.Schema, :slow_field_by_user_id}
+      Batch data: [3, 2, 1]
+      Batch opts: [timeout: 1]
+      """,
+      fn -> Absinthe.run(doc, Schema) end
+    )
   end
 end
