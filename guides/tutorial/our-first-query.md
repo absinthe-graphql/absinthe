@@ -43,7 +43,7 @@ end
 > custom type name as a `:name` option to the `object` macro.
 
 If you're curious what the type `:id` is used by the `:id` field, see
-the [GraphQL spec](https://facebook.github.io/graphql/#sec-ID). It's
+the [GraphQL spec](https://spec.graphql.org/October2021/#sec-ID). It's
 an opaque value, and in our case is just the regular Ecto id, but
 serialized as a string.
 
