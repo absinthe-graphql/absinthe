@@ -109,7 +109,7 @@ defmodule Absinthe.Schema.NotationTest do
         """
         field :foo, :string
         """,
-        "Invalid schema notation: `field` must only be used within `input_object`, `interface`, `object`. Was used in `schema`."
+        "Invalid schema notation: `field` must only be used within `input_object`, `interface`, `object`, `schema_declaration`. Was used in `schema`."
       )
     end
   end
@@ -300,35 +300,6 @@ defmodule Absinthe.Schema.NotationTest do
         end
         """,
         "Invalid schema notation: `object` must only be used toplevel or in an `extend` block. Was used in `object`."
-      )
-    end
-
-    test "cannot use reserved identifiers" do
-      assert_notation_error(
-        "ReservedIdentifierSubscription",
-        """
-        object :subscription do
-        end
-        """,
-        "Invalid schema notation: cannot create an `object` with reserved identifier `subscription`"
-      )
-
-      assert_notation_error(
-        "ReservedIdentifierQuery",
-        """
-        object :query do
-        end
-        """,
-        "Invalid schema notation: cannot create an `object` with reserved identifier `query`"
-      )
-
-      assert_notation_error(
-        "ReservedIdentifierMutation",
-        """
-        object :mutation do
-        end
-        """,
-        "Invalid schema notation: cannot create an `object` with reserved identifier `mutation`"
       )
     end
   end
@@ -579,6 +550,29 @@ defmodule Absinthe.Schema.NotationTest do
     end
   end
 
+  describe "schema" do
+    test "can be used in extend block" do
+      assert_no_notation_error("ExtendSchemaValid", """
+      extend schema do
+        directive :feature
+        field :query, :query
+      end
+      """)
+    end
+
+    test "can be toplevel" do
+      assert_no_notation_error(
+        "SchemaValid",
+        """
+        schema do
+          directive :feature
+          field :query, :query
+        end
+        """
+      )
+    end
+  end
+
   test "No nested non_null" do
     assert_notation_error(
       "NestedNonNull",
@@ -589,6 +583,19 @@ defmodule Absinthe.Schema.NotationTest do
       """,
       "Invalid schema notation: `non_null` must not be nested"
     )
+  end
+
+  defmodule WithFeatureDirective do
+    use Absinthe.Schema.Prototype
+
+    directive :feature do
+      arg :name, :string
+      on [:scalar, :schema]
+
+      expand(fn _args, node ->
+        %{node | __private__: [feature: true]}
+      end)
+    end
   end
 
   @doc """
@@ -610,6 +617,8 @@ defmodule Absinthe.Schema.NotationTest do
       defmodule MyTestSchema.#{name} do
         use Absinthe.Schema
 
+        @prototype_schema WithFeatureDirective
+
         query do
           #Query type must exist
         end
@@ -617,7 +626,7 @@ defmodule Absinthe.Schema.NotationTest do
         #{text}
       end
       """
-      |> Code.eval_string()
+      |> Code.eval_string([], __ENV__)
     end)
   end
 
@@ -626,6 +635,8 @@ defmodule Absinthe.Schema.NotationTest do
            defmodule MyTestSchema.#{name} do
              use Absinthe.Schema
 
+             @prototype_schema WithFeatureDirective
+
              query do
                #Query type must exist
              end
@@ -633,6 +644,6 @@ defmodule Absinthe.Schema.NotationTest do
              #{text}
            end
            """
-           |> Code.eval_string()
+           |> Code.eval_string([], __ENV__)
   end
 end

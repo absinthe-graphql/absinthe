@@ -117,7 +117,8 @@ defmodule Absinthe.Blueprint.Schema do
     Schema.InterfaceTypeDefinition,
     Schema.UnionTypeDefinition,
     Schema.EnumValueDefinition,
-    Schema.TypeExtensionDefinition
+    Schema.TypeExtensionDefinition,
+    Schema.SchemaDeclaration
   ]
 
   defp build_types([%module{} = type | rest], stack, buff) when module in @simple_open do
@@ -196,6 +197,7 @@ defmodule Absinthe.Blueprint.Schema do
     Schema.InterfaceTypeDefinition,
     Schema.ObjectTypeDefinition,
     Schema.ScalarTypeDefinition,
+    Schema.SchemaDeclaration,
     Schema.UnionTypeDefinition
   ]
   defp build_types(
@@ -208,6 +210,14 @@ defmodule Absinthe.Blueprint.Schema do
        )
        when extendable_type in @extendable_types do
     build_types(rest, [%{extend | definition: def} | stack], buff)
+  end
+
+  defp build_types(
+         [:close | rest],
+         [%Schema.FieldDefinition{} = field, %Schema.SchemaDeclaration{} = declaration | stack],
+         buff
+       ) do
+    build_types(rest, [push(declaration, :field_definitions, field) | stack], buff)
   end
 
   defp build_types([:close | rest], [%Schema.FieldDefinition{} = field, obj | stack], buff) do
@@ -268,6 +278,17 @@ defmodule Absinthe.Blueprint.Schema do
 
   defp build_types([:close | rest], [%Schema.ScalarTypeDefinition{} = type, schema | stack], buff) do
     schema = push(schema, :type_definitions, type)
+    build_types(rest, [schema | stack], buff)
+  end
+
+  defp build_types(
+         [:close | rest],
+         [%Schema.SchemaDeclaration{} = schema_declaration, schema | stack],
+         buff
+       ) do
+    # The declaration is pushed into the :type_definitions instead of the :schema_declaration
+    # as it will be split off later in the ApplyDeclaration phase
+    schema = push(schema, :type_definitions, schema_declaration)
     build_types(rest, [schema | stack], buff)
   end
 

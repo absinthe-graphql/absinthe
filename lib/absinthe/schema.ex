@@ -329,6 +329,10 @@ defmodule Absinthe.Schema do
         @schema_provider.__absinthe_interface_implementors__(__MODULE__)
       end
 
+      def __absinthe_schema_declaration__() do
+        @schema_provider.__absinthe_schema_declaration__(__MODULE__)
+      end
+
       def __absinthe_prototype_schema__() do
         @prototype_schema
       end
@@ -545,6 +549,10 @@ defmodule Absinthe.Schema do
       true ->
         type
     end
+  end
+
+  def schema_declaration(schema) do
+    schema.__absinthe_schema_declaration__()
   end
 
   @doc """
