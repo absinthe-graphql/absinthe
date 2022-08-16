@@ -955,7 +955,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
     client_id = "abc"
     prime_data = ["name1", "name2"]
 
-    assert {:more, %{"subscribed" => _topic, continuation: continuation}} =
+    assert {:more, %{"subscribed" => _topic, continuations: continuations}} =
              run_subscription(
                @query,
                Schema,
@@ -969,17 +969,17 @@ defmodule Absinthe.Execution.SubscriptionTest do
     assert {:more,
             %{
               data: %{"prime" => %{"id" => "test_prime_id", "name" => "name1"}},
-              continuation: continuation
-            }} = Absinthe.continue(continuation)
+              continuations: continuations
+            }} = Absinthe.continue(continuations)
 
     assert {:ok, %{data: %{"prime" => %{"id" => "test_prime_id", "name" => "name2"}}}} =
-             Absinthe.continue(continuation)
+             Absinthe.continue(continuations)
   end
 
   test "continuation with no extra data" do
     client_id = "abc"
 
-    assert {:more, %{"subscribed" => _topic, continuation: continuation}} =
+    assert {:more, %{"subscribed" => _topic, continuations: continuations}} =
              run_subscription(
                @query,
                Schema,
@@ -990,7 +990,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
                context: %{prime_id: "test_prime_id"}
              )
 
-    assert :no_more_results == Absinthe.continue(continuation)
+    assert :no_more_results == Absinthe.continue(continuations)
   end
 
   @query """
@@ -1033,7 +1033,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
   test "subscription with both priming and ordinals" do
     client_id = "abc"
 
-    assert {:more, %{"subscribed" => _topic, continuation: continuation}} =
+    assert {:more, %{"subscribed" => _topic, continuations: continuations}} =
              run_subscription(
                @query,
                Schema,
@@ -1046,11 +1046,11 @@ defmodule Absinthe.Execution.SubscriptionTest do
             %{
               data: %{"primeOrdinal" => %{"name" => "first_user"}},
               ordinal: 1,
-              continuation: continuation
-            }} = Absinthe.continue(continuation)
+              continuations: continuations
+            }} = Absinthe.continue(continuations)
 
     assert {:ok, %{data: %{"primeOrdinal" => %{"name" => "second_user"}}, ordinal: 2}} =
-             Absinthe.continue(continuation)
+             Absinthe.continue(continuations)
   end
 
   def run_subscription(query, schema, opts \\ []) do

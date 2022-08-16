@@ -41,6 +41,6 @@ defmodule Absinthe.Phase.Subscription.Prime do
         }
       )
 
-    put_in(blueprint.result, %{continuation: continuations})
+    put_in(blueprint.result, %{continuations: continuations})
   end
 end

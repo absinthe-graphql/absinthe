@@ -160,7 +160,7 @@ defmodule Absinthe.Phase.Document.Result do
   defp format_location(_), do: []
 
   defp maybe_add_continuations(result, %{continuations: continuations}) when continuations != [],
-    do: Map.put(result, :continuation, continuations)
+    do: Map.put(result, :continuations, continuations)
 
   defp maybe_add_continuations(result, _), do: result
 end

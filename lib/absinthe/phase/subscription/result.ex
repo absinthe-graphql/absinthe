@@ -41,7 +41,7 @@ defmodule Absinthe.Phase.Subscription.Result do
       ]
     }
 
-    result = Map.put(base_result, :continuation, [continuation])
+    result = Map.put(base_result, :continuations, [continuation])
 
     {:ok, put_in(blueprint.result, result)}
   end

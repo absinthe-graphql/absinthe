@@ -44,13 +44,13 @@ defmodule Absinthe do
           %{message: String.t()}
           | %{message: String.t(), locations: [%{line: pos_integer, column: integer}]}
 
-  @type continuation_t :: nil | [Absinthe.Blueprint.Continuation.t()]
+  @type continuations_t :: nil | [Absinthe.Blueprint.Continuation.t()]
 
   @type result_t ::
           %{
             required(:data) => nil | result_selection_t,
             optional(:ordinal) => term(),
-            optional(:continuation) => continuation_t,
+            optional(:continuation) => continuations_t,
             optional(:errors) => [result_error_t]
           }
           | %{errors: [result_error_t]}
@@ -126,8 +126,8 @@ defmodule Absinthe do
   end
 
   @spec continue([Absinthe.Blueprint.Continuation.t()]) :: continue_result
-  def continue(continuation) do
-    continuation
+  def continue(continuations) do
+    continuations
     |> Absinthe.Pipeline.continue()
     |> build_result()
   end
@@ -137,7 +137,7 @@ defmodule Absinthe do
       {:ok, %{result: :no_more_results}, _phases} ->
         :no_more_results
 
-      {:ok, %{result: %{continuation: c} = result}, _phases} when c != [] ->
+      {:ok, %{result: %{continuations: c} = result}, _phases} when c != [] ->
         {:more, result}
 
       {:ok, %{result: result}, _phases} ->

@@ -39,7 +39,7 @@ defmodule Absinthe.Pipeline do
         {:ok, blueprint, phases}
 
       {:ok, blueprint, phases} ->
-        bp_result = Map.put(blueprint.result, :continuation, rest)
+        bp_result = Map.put(blueprint.result, :continuations, rest)
         blueprint = Map.put(blueprint, :result, bp_result)
         {:ok, blueprint, phases}
 
