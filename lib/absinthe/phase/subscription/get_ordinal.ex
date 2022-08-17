@@ -9,34 +9,22 @@ defmodule Absinthe.Phase.Subscription.GetOrdinal do
 
   @spec run(any, Keyword.t()) :: {:ok, Blueprint.t()}
   def run(blueprint, _options \\ []) do
-    op = Blueprint.current_operation(blueprint)
-
-    if op.type == :subscription do
-      {:ok,
-       %{blueprint | result: Map.put(blueprint.result, :ordinal, get_ordinal(op, blueprint))}}
+    with %{type: :subscription, selections: [field]} <- Blueprint.current_operation(blueprint),
+         {:ok, config} = SubscribeSelf.get_config(field, blueprint.execution.context, blueprint),
+         ordinal_fun when is_function(ordinal_fun, 1) <- config[:ordinal] do
+      result = ordinal_fun.(blueprint.execution.root_value)
+      {:ok, %{blueprint | result: Map.put(blueprint.result, :ordinal, result)}}
     else
-      {:ok, blueprint}
-    end
-  end
-
-  defp get_ordinal(op, blueprint) do
-    %{selections: [field]} = op
-    {:ok, config} = SubscribeSelf.get_config(field, blueprint.execution.context, blueprint)
-
-    case config[:ordinal] do
-      nil ->
-        nil
-
-      fun when is_function(fun, 1) ->
-        fun.(blueprint.execution.root_value)
-
-      _fun ->
+      f when is_function(f) ->
         IO.write(
           :stderr,
           "Ordinal function must be 1-arity"
         )
 
-        nil
+        {:ok, blueprint}
+
+      _ ->
+        {:ok, blueprint}
     end
   end
 end
