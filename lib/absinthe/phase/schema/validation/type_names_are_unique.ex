@@ -35,6 +35,11 @@ defmodule Absinthe.Phase.Schema.Validation.TypeNamesAreUnique do
     obj
   end
 
+  # We do not need to validate type extension names
+  defp validate_types(%Blueprint.Schema.TypeExtensionDefinition{} = object, _types, _key) do
+    {:halt, object}
+  end
+
   @types [
     Blueprint.Schema.DirectiveDefinition,
     Blueprint.Schema.EnumTypeDefinition,

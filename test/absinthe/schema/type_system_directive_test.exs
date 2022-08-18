@@ -8,6 +8,10 @@ defmodule Absinthe.Schema.TypeSystemDirectiveTest do
       field :str, :string
     end
 
+    directive :external do
+      on [:field_definition]
+    end
+
     directive :feature do
       arg :name, non_null(:string)
       arg :number, :integer
@@ -53,7 +57,7 @@ defmodule Absinthe.Schema.TypeSystemDirectiveTest do
     }
 
     type Post @feature(name: ":object", number: 3, complex: {str: "foo"}) {
-      name: String @deprecated(reason: "Bye")
+      name: String @deprecated(reason: "Bye") @external
     }
 
     scalar SweetScalar @feature(name: ":scalar")
@@ -95,6 +99,11 @@ defmodule Absinthe.Schema.TypeSystemDirectiveTest do
     use Absinthe.Schema
 
     @prototype_schema WithTypeSystemDirective
+
+    schema do
+      directive :feature, name: ":schema"
+      field :query, :query
+    end
 
     query do
       field :post, :post do
@@ -148,7 +157,7 @@ defmodule Absinthe.Schema.TypeSystemDirectiveTest do
       is_type_of fn _ -> true end
       interface :animal
       field :leg_count, non_null(:integer)
-      field :name, non_null(:string)
+      field :name, non_null(:string), directives: [:external]
     end
 
     input_object :search_filter do
@@ -175,8 +184,7 @@ defmodule Absinthe.Schema.TypeSystemDirectiveTest do
   end
 
   @macro_schema_sdl """
-  "Represents a schema"
-  schema {
+  schema @feature(name: ":schema") {
     query: RootQueryType
   }
 
@@ -207,7 +215,7 @@ defmodule Absinthe.Schema.TypeSystemDirectiveTest do
 
   type Dog implements Animal {
     legCount: Int!
-    name: String!
+    name: String! @external
   }
 
   enum Category @feature(name: ":enum") {

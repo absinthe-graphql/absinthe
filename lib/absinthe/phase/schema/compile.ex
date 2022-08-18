@@ -64,6 +64,10 @@ defmodule Absinthe.Phase.Schema.Compile do
           unquote(Macro.escape(prototype_schema))
         end
 
+        def __absinthe_schema_declaration__() do
+          unquote(Macro.escape(schema.schema_declaration))
+        end
+
         unquote_splicing(metadata)
       end
 

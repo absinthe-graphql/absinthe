@@ -149,8 +149,9 @@ defmodule Absinthe.Middleware.Batch do
       timeout = Keyword.get(batch_opts, :timeout, 5_000)
       result = Task.await(task, timeout)
 
-      duration = System.monotonic_time() - start_time_mono
-      emit_stop_event(duration, metadata, result)
+      end_time_mono = System.monotonic_time()
+      duration = end_time_mono - start_time_mono
+      emit_stop_event(duration, end_time_mono, metadata, result)
 
       result
     end)
@@ -178,10 +179,10 @@ defmodule Absinthe.Middleware.Batch do
     metadata
   end
 
-  defp emit_stop_event(duration, metadata, result) do
+  defp emit_stop_event(duration, end_time_mono, metadata, result) do
     :telemetry.execute(
       @batch_stop,
-      %{duration: duration},
+      %{duration: duration, end_time_mono: end_time_mono},
       Map.put(metadata, :result, result)
     )
   end

@@ -120,6 +120,21 @@ defmodule Absinthe.Pipeline do
     ]
   end
 
+  def default_schema_options() do
+    [
+      type_imports: [
+        {Absinthe.Type.BuiltIns.Scalars, []},
+        {Absinthe.Type.BuiltIns.Introspection, []}
+      ],
+      directive_imports: [
+        {Absinthe.Type.BuiltIns.Directives, []}
+      ],
+      type_extension_imports: [
+        {Absinthe.Type.BuiltIns.DeprecatedDirectiveFields, []}
+      ]
+    ]
+  end
+
   @default_prototype_schema Absinthe.Schema.Prototype
 
   @spec for_schema(nil | Absinthe.Schema.t()) :: t
@@ -129,15 +144,18 @@ defmodule Absinthe.Pipeline do
   """
   def for_schema(schema, options \\ []) do
     options =
-      options
+      default_schema_options()
+      |> Keyword.merge(options)
       |> Enum.reject(fn {_, v} -> is_nil(v) end)
       |> Keyword.put(:schema, schema)
       |> Keyword.put_new(:prototype_schema, @default_prototype_schema)
 
     [
-      Phase.Schema.TypeImports,
-      Phase.Schema.DeprecatedDirectiveFields,
+      {Phase.Schema.DirectiveImports, options},
+      {Phase.Schema.TypeImports, options},
+      {Phase.Schema.TypeExtensionImports, options},
       Phase.Schema.ApplyDeclaration,
+      Phase.Schema.ApplyTypeExtensions,
       Phase.Schema.Introspection,
       {Phase.Schema.Hydrate, options},
       Phase.Schema.Arguments.Normalize,

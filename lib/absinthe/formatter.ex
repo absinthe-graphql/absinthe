@@ -20,7 +20,7 @@ defmodule Absinthe.Formatter do
     # Define the desired plugins
     plugins: [Absinthe.Formatter],
     # Remember to update the inputs list to include the new extensions
-    inputs: ["{mix,.formatter}.exs", "{config,lib,test}/**/*.{ex,exs}", "{lib, priv}/**/*.{gql,graphql}"]
+    inputs: ["{mix,.formatter}.exs", "{config,lib,test}/**/*.{ex,exs}", "{lib,priv}/**/*.{gql,graphql}"]
   ]
   ```
   """

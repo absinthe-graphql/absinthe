@@ -157,7 +157,7 @@ defmodule Absinthe.Schema.Notation do
 
   # OBJECT
 
-  @placement {:object, [toplevel: true]}
+  @placement {:object, [toplevel: true, extend: true]}
   @doc """
   Define an object type.
 
@@ -185,22 +185,10 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
-  @reserved_identifiers ~w(query mutation subscription)a
   defmacro object(identifier, attrs \\ [], block)
 
-  defmacro object(identifier, _attrs, _block) when identifier in @reserved_identifiers do
-    raise Absinthe.Schema.Notation.Error,
-          "Invalid schema notation: cannot create an `object` " <>
-            "with reserved identifier `#{identifier}`"
-  end
-
   defmacro object(identifier, attrs, do: block) do
-    block =
-      for {identifier, args} <- build_directives(attrs) do
-        quote do
-          directive(unquote(identifier), unquote(args))
-        end
-      end ++ block
+    block = block_from_directive_attrs(attrs, block)
 
     {attrs, block} =
       case Keyword.pop(attrs, :meta) do
@@ -251,6 +239,93 @@ defmodule Absinthe.Schema.Notation do
     __CALLER__
     |> recordable!(:interfaces, @placement[:interfaces])
     |> record_interfaces!(ifaces)
+  end
+
+  @placement {:extend, [toplevel: true]}
+  @doc """
+  Extend a graphql type.
+
+  Extend an existing type with additional fields, values, types and interfaces.
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+
+  ## Examples
+
+  ```
+  object :user do
+    field :name, :string
+    # ...
+  end
+
+  extend object :user do
+      field :nick_name, :string
+      # ...
+    end
+  end
+  ```
+  """
+  @extendable_types [
+    :enum,
+    :input_object,
+    :interface,
+    :object,
+    :scalar,
+    :union
+  ]
+  defmacro extend({type, meta, [attr]}, attrs, do: block)
+           when type in @extendable_types and is_list(attrs) do
+    block = {type, meta, [attr] ++ [[do: block]]}
+
+    {attrs, extend_block} = handle_extend_attrs(attrs, __CALLER__)
+
+    __CALLER__
+    |> recordable!(:extend, @placement[:extend])
+    |> record_extend!(attrs, block, extend_block)
+  end
+
+  defmacro extend({type, meta, [attr]}, do: block) when type in @extendable_types do
+    block = {type, meta, [attr] ++ [[do: block]]}
+
+    __CALLER__
+    |> recordable!(:extend, @placement[:extend])
+    |> record_extend!([], block, [])
+  end
+
+  defmacro extend({:schema, meta, _}, do: block) do
+    block = {:schema, meta, [] ++ [[do: block]]}
+
+    __CALLER__
+    |> recordable!(:extend, @placement[:extend])
+    |> record_extend!([], block, [])
+  end
+
+  @placement {:schema, [toplevel: true, extend: true]}
+  @doc """
+  Declare a schema
+
+  Optional declaration of the schema. Useful if you want to add directives
+  to your schema declaration
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
+
+  ## Examples
+
+  ```
+  schema do
+    directive :feature
+    field :query, :query
+    # ...
+  end
+  ```
+  """
+  defmacro schema(do: block) do
+    __CALLER__
+    |> recordable!(:schema, @placement[:schema])
+    |> record_schema!(block)
   end
 
   @placement {:deprecate, [under: [:field]]}
@@ -315,7 +390,7 @@ defmodule Absinthe.Schema.Notation do
 
   # INTERFACES
 
-  @placement {:interface, [toplevel: true]}
+  @placement {:interface, [toplevel: true, extend: true]}
   @doc """
   Define an interface type.
 
@@ -387,12 +462,7 @@ defmodule Absinthe.Schema.Notation do
         end
       end
 
-    block =
-      for {identifier, args} <- build_directives(attrs) do
-        quote do
-          directive(unquote(identifier), unquote(args))
-        end
-      end ++ block
+    block = block_from_directive_attrs(attrs, block)
 
     block =
       case Keyword.get(attrs, :meta) do
@@ -435,7 +505,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   # FIELDS
-  @placement {:field, [under: [:input_object, :interface, :object]]}
+  @placement {:field, [under: [:input_object, :interface, :object, :schema_declaration]]}
   @doc """
   Defines a GraphQL field
 
@@ -704,7 +774,7 @@ defmodule Absinthe.Schema.Notation do
 
   # SCALARS
 
-  @placement {:scalar, [toplevel: true]}
+  @placement {:scalar, [toplevel: true, extend: true]}
   @doc """
   Define a scalar type
 
@@ -763,7 +833,19 @@ defmodule Absinthe.Schema.Notation do
   end
 
   @placement {:private,
-              [under: [:field, :object, :input_object, :enum, :scalar, :interface, :union]]}
+              [
+                under: [
+                  :directive,
+                  :enum,
+                  :extend,
+                  :field,
+                  :input_object,
+                  :interface,
+                  :object,
+                  :scalar,
+                  :union
+                ]
+              ]}
   @doc false
   defmacro private(owner, key, value) do
     __CALLER__
@@ -772,7 +854,19 @@ defmodule Absinthe.Schema.Notation do
   end
 
   @placement {:meta,
-              [under: [:field, :object, :input_object, :enum, :scalar, :interface, :union]]}
+              [
+                under: [
+                  :directive,
+                  :enum,
+                  :extend,
+                  :field,
+                  :input_object,
+                  :interface,
+                  :object,
+                  :scalar,
+                  :union
+                ]
+              ]}
   @doc """
   Defines a metadata key/value pair for a custom type.
 
@@ -855,7 +949,7 @@ defmodule Absinthe.Schema.Notation do
 
   # DIRECTIVES
 
-  @placement {:directive, [toplevel: true]}
+  @placement {:directive, [toplevel: true, extend: true]}
   @placement {:applied_directive,
               [
                 under: [
@@ -866,6 +960,7 @@ defmodule Absinthe.Schema.Notation do
                   :interface,
                   :object,
                   :scalar,
+                  :schema_declaration,
                   :union,
                   :value
                 ]
@@ -1000,7 +1095,7 @@ defmodule Absinthe.Schema.Notation do
 
   # INPUT OBJECTS
 
-  @placement {:input_object, [toplevel: true]}
+  @placement {:input_object, [toplevel: true, extend: true]}
   @doc """
   Defines an input object
 
@@ -1030,7 +1125,7 @@ defmodule Absinthe.Schema.Notation do
 
   # UNIONS
 
-  @placement {:union, [toplevel: true]}
+  @placement {:union, [toplevel: true, extend: true]}
   @doc """
   Defines a union type
 
@@ -1082,7 +1177,7 @@ defmodule Absinthe.Schema.Notation do
 
   # ENUMS
 
-  @placement {:enum, [toplevel: true]}
+  @placement {:enum, [toplevel: true, extend: true]}
   @doc """
   Defines an enum type
 
@@ -1316,6 +1411,63 @@ defmodule Absinthe.Schema.Notation do
     |> do_import_types(env, opts)
   end
 
+  @placement {:import_directives, [toplevel: true]}
+  @doc """
+  Import directives from another module
+
+  To selectively import directives you can use the `:only` and `:except` opts.
+
+  ## Placement
+  #{Utils.placement_docs(@placement)}
+
+  ## Examples
+  ```
+  import_directives MyApp.Schema.Directives
+
+  import_directives MyApp.Schema.Directives.{DirectivesA, DirectivesB}
+
+  import_directives MyApp.Schema.Directives, only: [:foo]
+
+  import_directives MyApp.Schema.Directives, except: [:bar]
+  ```
+  """
+
+  defmacro import_directives(type_module_ast, opts \\ []) do
+    env = __CALLER__
+
+    type_module_ast
+    |> Macro.expand(env)
+    |> do_import_directives(env, opts)
+  end
+
+  @placement {:import_type_extensions, [toplevel: true]}
+  @doc """
+  Import type_extensions from another module
+
+  To selectively import type_extensions you can use the `:only` and `:except` opts.
+
+  ## Placement
+  #{Utils.placement_docs(@placement)}
+
+  ## Examples
+  ```
+  import_type_extensions MyApp.Schema.TypeExtensions
+
+  import_type_extensions MyApp.Schema.TypeExtensions.{TypeExtensionsA, TypeExtensionsB}
+
+  import_type_extensions MyApp.Schema.TypeExtensions, only: [:foo]
+
+  import_type_extensions MyApp.Schema.TypeExtensions, except: [:bar]
+  ```
+  """
+  defmacro import_type_extensions(type_module_ast, opts \\ []) do
+    env = __CALLER__
+
+    type_module_ast
+    |> Macro.expand(env)
+    |> do_import_type_extensions(env, opts)
+  end
+
   @placement {:import_sdl, [toplevel: true]}
   @type import_sdl_option :: {:path, String.t() | Macro.t()}
   @doc """
@@ -1406,12 +1558,7 @@ defmodule Absinthe.Schema.Notation do
   defp reason(msg), do: raise(ArgumentError, "Invalid reason: #{msg}")
 
   def handle_arg_attrs(identifier, type, raw_attrs) do
-    block =
-      for {identifier, args} <- build_directives(raw_attrs) do
-        quote do
-          directive(unquote(identifier), unquote(args))
-        end
-      end
+    block = block_from_directive_attrs(raw_attrs)
 
     attrs =
       raw_attrs
@@ -1453,6 +1600,67 @@ defmodule Absinthe.Schema.Notation do
       |> Keyword.update(:description, nil, &wrap_in_unquote/1)
 
     scoped_def(env, Schema.DirectiveDefinition, identifier, attrs, block)
+  end
+
+  def record_extend!(caller, attrs, type_block, extend_block) do
+    attrs =
+      attrs
+      |> Keyword.put(:module, caller.module)
+      |> put_reference(caller)
+
+    definition = struct!(Schema.TypeExtensionDefinition, attrs)
+
+    put_attr(caller.module, definition)
+
+    push_stack(caller.module, :absinthe_scope_stack, :extend)
+
+    [
+      extend_block,
+      type_block,
+      quote(do: unquote(__MODULE__).close_scope())
+    ]
+  end
+
+  def record_schema!(env, block) do
+    attrs =
+      []
+      |> Keyword.put(:module, env.module)
+      |> put_reference(env)
+
+    definition = struct!(Schema.SchemaDeclaration, attrs)
+
+    ref = put_attr(env.module, definition)
+
+    push_stack(env.module, :absinthe_scope_stack, :schema_declaration)
+
+    [
+      get_desc(ref),
+      block,
+      quote(do: unquote(__MODULE__).close_scope())
+    ]
+  end
+
+  defp handle_extend_attrs(attrs, caller) do
+    block =
+      case Keyword.get(attrs, :meta) do
+        nil ->
+          []
+
+        meta ->
+          meta_ast =
+            quote do
+              meta unquote(meta)
+            end
+
+          [meta_ast, []]
+      end
+
+    attrs =
+      attrs
+      |> expand_ast(caller)
+      |> Keyword.delete(:meta)
+
+    {attrs, block}
   end
 
   @doc false
@@ -1556,12 +1764,7 @@ defmodule Absinthe.Schema.Notation do
   def handle_enum_value_attrs(identifier, raw_attrs, env) do
     value = Keyword.get(raw_attrs, :as, identifier)
 
-    block =
-      for {identifier, args} <- build_directives(raw_attrs) do
-        quote do
-          directive(unquote(identifier), unquote(args))
-        end
-      end
+    block = block_from_directive_attrs(raw_attrs)
 
     attrs =
       raw_attrs
@@ -1815,6 +2018,101 @@ defmodule Absinthe.Schema.Notation do
     []
   end
 
+  defp do_import_directives({{:., _, [{:__MODULE__, _, _}, :{}]}, _, modules_ast_list}, env, opts) do
+    for {_, _, leaf} <- modules_ast_list do
+      type_module = Module.concat([env.module | leaf])
+
+      do_import_directives(type_module, env, opts)
+    end
+  end
+
+  defp do_import_directives(
+         {{:., _, [{:__aliases__, _, [{:__MODULE__, _, _} | tail]}, :{}]}, _, modules_ast_list},
+         env,
+         opts
+       ) do
+    root_module = Module.concat([env.module | tail])
+
+    for {_, _, leaf} <- modules_ast_list do
+      type_module = Module.concat([root_module | leaf])
+
+      do_import_directives(type_module, env, opts)
+    end
+  end
+
+  defp do_import_directives(
+         {{:., _, [{:__aliases__, _, root}, :{}]}, _, modules_ast_list},
+         env,
+         opts
+       ) do
+    root_module = Module.concat(root)
+    root_module_with_alias = Keyword.get(env.aliases, root_module, root_module)
+
+    for {_, _, leaf} <- modules_ast_list do
+      type_module = Module.concat([root_module_with_alias | leaf])
+
+      do_import_directives(type_module, env, opts)
+    end
+  end
+
+  defp do_import_directives(module, env, opts) do
+    Module.put_attribute(env.module, :__absinthe_directive_imports__, [
+      {module, opts} | Module.get_attribute(env.module, :__absinthe_directive_imports__) || []
+    ])
+
+    []
+  end
+
+  defp do_import_type_extensions(
+         {{:., _, [{:__MODULE__, _, _}, :{}]}, _, modules_ast_list},
+         env,
+         opts
+       ) do
+    for {_, _, leaf} <- modules_ast_list do
+      type_module = Module.concat([env.module | leaf])
+
+      do_import_type_extensions(type_module, env, opts)
+    end
+  end
+
+  defp do_import_type_extensions(
+         {{:., _, [{:__aliases__, _, [{:__MODULE__, _, _} | tail]}, :{}]}, _, modules_ast_list},
+         env,
+         opts
+       ) do
+    root_module = Module.concat([env.module | tail])
+
+    for {_, _, leaf} <- modules_ast_list do
+      type_module = Module.concat([root_module | leaf])
+
+      do_import_type_extensions(type_module, env, opts)
+    end
+  end
+
+  defp do_import_type_extensions(
+         {{:., _, [{:__aliases__, _, root}, :{}]}, _, modules_ast_list},
+         env,
+         opts
+       ) do
+    root_module = Module.concat(root)
+    root_module_with_alias = Keyword.get(env.aliases, root_module, root_module)
+
+    for {_, _, leaf} <- modules_ast_list do
+      type_module = Module.concat([root_module_with_alias | leaf])
+
+      do_import_type_extensions(type_module, env, opts)
+    end
+  end
+
+  defp do_import_type_extensions(module, env, opts) do
+    Module.put_attribute(env.module, :__absinthe_type_extension_imports__, [
+      {module, opts}
+      | Module.get_attribute(env.module, :__absinthe_type_extension_imports__) || []
+    ])
+
+    []
+  end
+
   @spec do_import_sdl(Macro.Env.t(), nil | String.t() | Macro.t(), [import_sdl_option()]) ::
           Macro.t()
   defp do_import_sdl(env, nil, opts) do
@@ -1894,9 +2192,27 @@ defmodule Absinthe.Schema.Notation do
         other -> other
       end)
 
+    directive_imports =
+      (Module.get_attribute(env.module, :__absinthe_directive_imports__) || [])
+      |> Enum.uniq()
+      |> Enum.map(fn
+        module when is_atom(module) -> {module, []}
+        other -> other
+      end)
+
+    type_extension_imports =
+      (Module.get_attribute(env.module, :__absinthe_type_extension_imports__) || [])
+      |> Enum.uniq()
+      |> Enum.map(fn
+        module when is_atom(module) -> {module, []}
+        other -> other
+      end)
+
     schema_def = %Schema.SchemaDefinition{
       imports: imports,
+      directive_imports: directive_imports,
       module: env.module,
+      type_extension_imports: type_extension_imports,
       __reference__: %{
         location: %{file: env.file, line: 0}
       }
@@ -1925,19 +2241,14 @@ defmodule Absinthe.Schema.Notation do
         end)
       end)
 
-    {sdl_directive_definitions, sdl_type_definitions} =
-      Enum.split_with(sdl_definitions, fn
-        %Absinthe.Blueprint.Schema.DirectiveDefinition{} ->
-          true
-
-        _ ->
-          false
-      end)
+    {sdl_directive_definitions, sdl_type_definitions, sdl_type_extensions} =
+      split_definitions(sdl_definitions)
 
     schema =
       schema
       |> Map.update!(:type_definitions, &(sdl_type_definitions ++ &1))
       |> Map.update!(:directive_definitions, &(sdl_directive_definitions ++ &1))
+      |> Map.update!(:type_extensions, &(sdl_type_extensions ++ &1))
 
     blueprint = %{blueprint | schema_definitions: [schema]}
 
@@ -1959,6 +2270,41 @@ defmodule Absinthe.Schema.Notation do
   def lift_functions(node, acc, origin) do
     {node, ast} = functions_for_type(node, origin)
     {node, ast ++ acc}
+  end
+
+  defp block_from_directive_attrs(attrs, block \\ []) do
+    block =
+      for {identifier, args} <- build_directives(attrs) do
+        quote do
+          directive(unquote(identifier), unquote(args))
+        end
+      end ++ block
+
+    block =
+      for directive_name <- build_directives(attrs), is_atom(directive_name) do
+        quote do
+          directive(unquote(directive_name), [])
+        end
+      end ++ block
+
+    block
+  end
+
+  defp split_definitions(definitions) do
+    Enum.reduce(definitions, {[], [], []}, fn definition,
+                                              {directive_definitions, type_definitions,
+                                               type_extensions} ->
+      case definition do
+        %Absinthe.Blueprint.Schema.DirectiveDefinition{} ->
+          {[definition | directive_definitions], type_definitions, type_extensions}
+
+        %Absinthe.Blueprint.Schema.TypeExtensionDefinition{} ->
+          {directive_definitions, type_definitions, [definition | type_extensions]}
+
+        _ ->
+          {directive_definitions, [definition | type_definitions], type_extensions}
+      end
+    end)
   end
 
   defp functions_for_type(%Schema.FieldDefinition{} = type, origin) do
@@ -2080,6 +2426,13 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp recordable?([under: under], scope), do: scope in under
+
+  defp recordable?([toplevel: true, extend: true], scope),
+    do: scope == :schema || scope == :extend
+
+  defp recordable?([toplevel: false, extend: true], scope),
+    do: scope == :extend
+
   defp recordable?([toplevel: true], scope), do: scope == :schema
   defp recordable?([toplevel: false], scope), do: scope != :schema
 
@@ -2087,6 +2440,10 @@ defmodule Absinthe.Schema.Notation do
     allowed = under |> Enum.map(&"`#{&1}`") |> Enum.join(", ")
 
     "Invalid schema notation: `#{usage}` must only be used within #{allowed}. #{used_in(scope)}"
+  end
+
+  defp invalid_message([toplevel: true, extend: true], usage, scope) do
+    "Invalid schema notation: `#{usage}` must only be used toplevel or in an `extend` block. #{used_in(scope)}"
   end
 
   defp invalid_message([toplevel: true], usage, scope) do

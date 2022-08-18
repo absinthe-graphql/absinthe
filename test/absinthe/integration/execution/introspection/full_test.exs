@@ -5,7 +5,6 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.FullTest do
     result = Absinthe.Schema.introspect(Absinthe.Fixtures.ContactSchema)
     {:ok, %{data: %{"__schema" => schema}}} = result
 
-    assert schema["description"] == "Represents a schema"
     assert schema["queryType"]
     assert schema["mutationType"]
     assert schema["subscriptionType"]

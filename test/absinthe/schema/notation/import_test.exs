@@ -131,7 +131,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
                   extra: %{},
                   locations: [_],
                   message:
-                    "In Bar, :asdf is not defined in your schema.\n\nTypes must exist if referenced.\n",
+                    "In object Bar, :asdf is not defined in your schema.\n\nTypes must exist if referenced.\n",
                   path: [],
                   phase: Absinthe.Phase.Schema.Validation.TypeReferencesExist
                 }
