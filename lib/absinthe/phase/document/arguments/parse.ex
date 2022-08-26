@@ -26,6 +26,10 @@ defmodule Absinthe.Phase.Document.Arguments.Parse do
 
       {:error, flag} ->
         %{node | normalized: normalized |> flag_invalid(flag)}
+
+      {:error, flag, reason} ->
+        normalized = normalized |> flag_invalid(flag, reason)
+        %{node | normalized: normalized}
     end
   end
 
@@ -41,6 +45,9 @@ defmodule Absinthe.Phase.Document.Arguments.Parse do
       :error ->
         {:error, :bad_parse}
 
+      {:error, reason} ->
+        {:error, :bad_parse, reason}
+
       {:ok, val} ->
         {:ok, val}
     end
@@ -54,6 +61,9 @@ defmodule Absinthe.Phase.Document.Arguments.Parse do
     case Type.Scalar.parse(schema_node, normalized, context) do
       :error ->
         {:error, :bad_parse}
+
+      {:error, reason} ->
+        {:error, :bad_parse, reason}
 
       {:ok, val} ->
         {:ok, val}
