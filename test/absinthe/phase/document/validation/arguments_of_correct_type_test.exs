@@ -1002,6 +1002,33 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
         ]
       )
     end
+
+    @tag :o
+    test "Invalid scalar input on mutation, no suggestion, custom error" do
+      assert_fails_validation(
+        """
+        mutation($scalarInput: CustomScalarError!) {
+          createCat(customScalarErrorInput: $scalarInput)
+        }
+        """,
+        [
+          variables: %{
+            "scalarInput" => "Custom error output"
+          }
+        ],
+        [
+          bad_argument(
+            "customScalarErrorInput",
+            "CustomScalar",
+            ~s($scalarInput),
+            2,
+            [
+              "Custom error output"
+            ]
+          )
+        ]
+      )
+    end
   end
 
   describe "Directive arguments" do

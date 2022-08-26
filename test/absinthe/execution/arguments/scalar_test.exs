@@ -36,6 +36,46 @@ defmodule Absinthe.Execution.Arguments.ScalarTest do
     )
   end
 
+  describe "custom scalar parsing errors" do
+    @graphql """
+    query {
+      customScalarError(simpleScalar: "bogus")
+    }
+    """
+
+    test "scalar returns custom parse error in argument input" do
+      assert_error_message(
+        "Argument \"simpleScalar\" has invalid value \"bogus\".\nCustom error 1",
+        run(@graphql, @schema)
+      )
+    end
+
+    @graphql """
+    query {
+      customScalarError(listOfScalar: ["ok", "bogus"])
+    }
+    """
+
+    test "scalar returns custom parse error in list input" do
+      assert_error_message(
+        "Argument \"listOfScalar\" has invalid value [\"ok\", \"bogus\"].\nIn element #2: Expected type \"CustomScalarError\", found \"bogus\".\nCustom error 1",
+        run(@graphql, @schema)
+      )
+    end
+
+    @graphql """
+    query {
+      customScalarError(complexScalarInput: {scalar: "bogus"})
+    }
+    """
+    test "scalar returns custom parse error in complex input" do
+      assert_error_message(
+        "Argument \"complexScalarInput\" has invalid value {scalar: \"bogus\"}.\nIn field \"scalar\": Expected type \"CustomScalarError\", found \"bogus\".\nCustom error 1",
+        run(@graphql, @schema)
+      )
+    end
+  end
+
   @graphql """
   query ($scalarVar: InputNameRaising) {
     raisingThing(name: $scalarVar)

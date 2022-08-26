@@ -35,6 +35,22 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
     end
   end
 
+  scalar :custom_scalar_error do
+    serialize &to_string/1
+
+    parse fn
+      %{value: "ok"} ->
+        {:ok, "ok"}
+
+      _error ->
+        {:error, "Custom error 1"}
+    end
+  end
+
+  input_object :complex_scalar_input do
+    field :scalar, :custom_scalar_error
+  end
+
   input_object :boolean_input_object do
     field :flag, :boolean
   end
@@ -174,6 +190,12 @@ defmodule Absinthe.Fixtures.ArgumentsSchema do
 
     field :raising_thing, :string do
       arg :name, :input_name_raising
+    end
+
+    field :custom_scalar_error, :string do
+      arg :simple_scalar, :custom_scalar_error
+      arg :list_of_scalar, list_of(:custom_scalar_error)
+      arg :complex_scalar_input, :complex_scalar_input
     end
   end
 end
