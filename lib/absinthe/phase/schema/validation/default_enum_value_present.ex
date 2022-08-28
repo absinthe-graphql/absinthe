@@ -15,20 +15,21 @@ defmodule Absinthe.Phase.Schema.Validation.DefaultEnumValuePresent do
       |> Enum.filter(&match?(%Schema.EnumTypeDefinition{}, &1))
       |> Map.new(&{&1.identifier, &1})
 
-    schema = Blueprint.prewalk(schema, &validate_defaults(&1, enums))
+    schema = Blueprint.prewalk(schema, &validate_defaults(&1, enums, schema))
     {:halt, schema}
   end
 
   def validate_schema(node), do: node
 
-  def validate_defaults(%{default_value: nil} = node, _) do
+  def validate_defaults(%{default_value: nil} = node, _, _) do
     node
   end
 
-  def validate_defaults(%{default_value: default_value, type: type} = node, enums) do
-    type = Blueprint.TypeReference.unwrap(type)
+  def validate_defaults(%{default_value: default_value, type: type} = node, enums, schema) do
+    type_identifier =
+      Blueprint.TypeReference.unwrap(type) |> Blueprint.TypeReference.to_type(schema)
 
-    case Map.fetch(enums, type) do
+    case Map.fetch(enums, type_identifier) do
       {:ok, enum} ->
         values = Enum.map(enum.values, & &1.value)
         value_list = Enum.map(values, &"\n * #{inspect(&1)}")
@@ -52,7 +53,7 @@ defmodule Absinthe.Phase.Schema.Validation.DefaultEnumValuePresent do
     end
   end
 
-  def validate_defaults(node, _) do
+  def validate_defaults(node, _, _) do
     node
   end
 
