@@ -4,6 +4,7 @@
 
 - Feature: [Convert SDL Language.\* structs to SDL notation](https://github.com/absinthe-graphql/absinthe/pull/1160)
 - Feature: [Add support for type extensions](https://github.com/absinthe-graphql/absinthe/pull/1157)
+- Bug Fix: [Add type system directives to introspection results](https://github.com/absinthe-graphql/absinthe/pull/1189)
 - Bug Fix: [Add `__private__` field to EnumValueDefinition](https://github.com/absinthe-graphql/absinthe/pull/1148)
 - Bug Fix: [Fix bug in Schema.**absinthe_types**(:all) for Persistent Term](https://github.com/absinthe-graphql/absinthe/pull/1161)
 - Feature: [Add `import_directives` macro](https://github.com/absinthe-graphql/absinthe/pull/1158)
