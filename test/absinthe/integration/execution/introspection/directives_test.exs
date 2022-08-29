@@ -25,6 +25,22 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.DirectivesTest do
                   "directives" => [
                     %{
                       "args" => [
+                        %{"name" => "reason", "type" => %{"kind" => "SCALAR", "ofType" => nil}}
+                      ],
+                      "isRepeatable" => false,
+                      "locations" => [
+                        "ARGUMENT_DEFINITION",
+                        "ENUM_VALUE",
+                        "FIELD_DEFINITION",
+                        "INPUT_FIELD_DEFINITION"
+                      ],
+                      "name" => "deprecated",
+                      "onField" => false,
+                      "onFragment" => false,
+                      "onOperation" => false
+                    },
+                    %{
+                      "args" => [
                         %{
                           "name" => "if",
                           "type" => %{

@@ -5,9 +5,13 @@ defmodule Absinthe.Phase.Schema.Build do
     %{schema_definitions: [schema]} = blueprint
 
     types = build_types(blueprint)
-    directives = build_directives(blueprint)
+    directive_artifacts = build_directives(blueprint)
 
-    schema = %{schema | type_artifacts: types, directive_artifacts: directives}
+    schema = %{
+      schema
+      | type_artifacts: types,
+        directive_artifacts: schema.directive_artifacts ++ directive_artifacts
+    }
 
     blueprint = %{blueprint | schema_definitions: [schema]}
 

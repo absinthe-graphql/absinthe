@@ -24,7 +24,7 @@ if Code.ensure_loaded?(:persistent_term) do
             do: {type_def.identifier, type_def.name}
 
       directive_list =
-        Map.new(schema.directive_definitions, fn type_def ->
+        Map.new(schema.directive_artifacts, fn type_def ->
           {type_def.identifier, type_def.name}
         end)
 
