@@ -1,6 +1,51 @@
 defmodule Absinthe.Schema.NotationTest do
   use Absinthe.Case, async: true
 
+  describe "query" do
+    test "cannot be non-toplevel" do
+      assert_notation_error(
+        "QueryInvalid",
+        """
+        query do
+          mutation do
+          end
+        end
+        """,
+        "Invalid schema notation: `mutation` must only be used toplevel or in an `extend` block. Was used in `object`."
+      )
+    end
+  end
+
+  describe "subscription" do
+    test "cannot be non-toplevel" do
+      assert_notation_error(
+        "SubscriptionInvalid",
+        """
+        subscription do
+          subscription do
+          end
+        end
+        """,
+        "Invalid schema notation: `subscription` must only be used toplevel or in an `extend` block. Was used in `object`."
+      )
+    end
+  end
+
+  describe "mutation" do
+    test "cannot be non-toplevel" do
+      assert_notation_error(
+        "MutationInvalid",
+        """
+        mutation do
+          mutation do
+          end
+        end
+        """,
+        "Invalid schema notation: `mutation` must only be used toplevel or in an `extend` block. Was used in `object`."
+      )
+    end
+  end
+
   describe "arg" do
     test "can be under field as an attribute" do
       assert_no_notation_error("ArgFieldValid", """
