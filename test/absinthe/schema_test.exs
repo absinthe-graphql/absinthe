@@ -328,10 +328,6 @@ defmodule Absinthe.SchemaTest do
                name: String
              }
 
-             type MyRootMutation {
-               name: String
-             }
-
              type RootQueryType {
                name(familyName: Boolean): String
              }
