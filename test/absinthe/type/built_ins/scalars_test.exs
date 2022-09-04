@@ -3,31 +3,6 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
 
   alias Absinthe.Type
 
-  setup_all do
-    prevous_compiler_options = Code.compiler_options()
-
-    previous_use_spec_compliant_int_scalar =
-      Application.get_env(
-        :absinthe,
-        :use_spec_compliant_int_scalar,
-        :not_configured
-      )
-
-    on_exit(fn ->
-      if previous_use_spec_compliant_int_scalar != :not_configured do
-        Application.put_env(
-          :absinthe,
-          :use_spec_compliant_int_scalar,
-          previous_use_spec_compliant_int_scalar
-        )
-      end
-
-      recompile(Absinthe.Type.BuiltIns.Scalars)
-      Code.compiler_options(prevous_compiler_options)
-      :ok
-    end)
-  end
-
   defmodule TestSchema do
     use Absinthe.Schema
 
@@ -35,9 +10,6 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
       # Query type must exist
     end
   end
-
-  @max_graphql_int 2_147_483_647
-  @min_graphql_int -2_147_483_648
 
   @max_ieee_int 9_007_199_254_740_991
   @min_ieee_int -9_007_199_254_740_991
@@ -64,8 +36,7 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
   end
 
   describe ":integer" do
-    test "can serilize a valid integer using default IEEE 754 Int config" do
-      Application.delete_env(:absinthe, :use_spec_compliant_int_scalar)
+    test "can serilize a valid integer using default non standard Int (IEEE 754)" do
       recompile(Absinthe.Type.BuiltIns.Scalars)
 
       assert -1 == serialize(:integer, -1)
@@ -75,30 +46,7 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
       assert @min_ieee_int == serialize(:integer, @min_ieee_int)
     end
 
-    test "can serilize a valid integer using explicitly defined IEEE 754 Int config" do
-      Application.put_env(:absinthe, :use_spec_compliant_int_scalar, false)
-      recompile(Absinthe.Type.BuiltIns.Scalars)
-
-      assert -1 == serialize(:integer, -1)
-      assert 0 == serialize(:integer, 0)
-      assert 1 == serialize(:integer, 1)
-      assert @max_ieee_int == serialize(:integer, @max_ieee_int)
-      assert @min_ieee_int == serialize(:integer, @min_ieee_int)
-    end
-
-    test "can serilize a valid integer using GraphQl compliant Int config" do
-      Application.put_env(:absinthe, :use_spec_compliant_int_scalar, true)
-      recompile(Absinthe.Type.BuiltIns.Scalars)
-
-      assert -1 == serialize(:integer, -1)
-      assert 0 == serialize(:integer, 0)
-      assert 1 == serialize(:integer, 1)
-      assert @max_graphql_int == serialize(:integer, @max_graphql_int)
-      assert @min_graphql_int == serialize(:integer, @min_graphql_int)
-    end
-
-    test "cannot serilize an integer outside boundaries using default IEEE 754 Int config" do
-      Application.delete_env(:absinthe, :use_spec_compliant_int_scalar)
+    test "cannot serilize an integer outside boundaries using default non standard Int (IEEE 754)" do
       recompile(Absinthe.Type.BuiltIns.Scalars)
 
       assert_raise Absinthe.SerializationError, fn ->
@@ -110,34 +58,7 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
       end
     end
 
-    test "cannot serilize an integer outside boundaries using explicitly defined IEEE 754 Int config" do
-      Application.put_env(:absinthe, :use_spec_compliant_int_scalar, false)
-      recompile(Absinthe.Type.BuiltIns.Scalars)
-
-      assert_raise Absinthe.SerializationError, fn ->
-        serialize(:integer, @max_ieee_int + 1)
-      end
-
-      assert_raise Absinthe.SerializationError, fn ->
-        serialize(:integer, @min_ieee_int - 1)
-      end
-    end
-
-    test "cannot serilize an integer outside boundaries using GraphQl compliant Int config" do
-      Application.put_env(:absinthe, :use_spec_compliant_int_scalar, true)
-      recompile(Absinthe.Type.BuiltIns.Scalars)
-
-      assert_raise Absinthe.SerializationError, fn ->
-        serialize(:integer, @max_graphql_int + 1)
-      end
-
-      assert_raise Absinthe.SerializationError, fn ->
-        serialize(:integer, @min_graphql_int - 1)
-      end
-    end
-
-    test "can parse integer using default IEEE 754 Int config" do
-      Application.delete_env(:absinthe, :use_spec_compliant_int_scalar)
+    test "can parse integer using default non standard Int (IEEE 754)" do
       recompile(Absinthe.Type.BuiltIns.Scalars)
 
       assert {:ok, 0} == parse(:integer, 0)
@@ -147,50 +68,11 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
       assert {:ok, @min_ieee_int} == parse(:integer, @min_ieee_int)
     end
 
-    test "cannot parse integer outside boundaries using default IEEE 754 Int config" do
-      Application.delete_env(:absinthe, :use_spec_compliant_int_scalar)
+    test "cannot parse integer outside boundaries using default non standard Int (IEEE 754)" do
       recompile(Absinthe.Type.BuiltIns.Scalars)
 
       assert :error == parse(:integer, @max_ieee_int + 1)
       assert :error == parse(:integer, @min_ieee_int - 1)
-    end
-
-    test "can parse integer using explicitly defined IEEE 754 Int config" do
-      Application.put_env(:absinthe, :use_spec_compliant_int_scalar, false)
-      recompile(Absinthe.Type.BuiltIns.Scalars)
-
-      assert {:ok, 0} == parse(:integer, 0)
-      assert {:ok, 1} == parse(:integer, 1)
-      assert {:ok, -1} == parse(:integer, -1)
-      assert {:ok, @max_ieee_int} == parse(:integer, @max_ieee_int)
-      assert {:ok, @min_ieee_int} == parse(:integer, @min_ieee_int)
-    end
-
-    test "cannot parse integer outside boundaries using explicitly defined IEEE 754 Int config" do
-      Application.put_env(:absinthe, :use_spec_compliant_int_scalar, false)
-      recompile(Absinthe.Type.BuiltIns.Scalars)
-
-      assert :error == parse(:integer, @max_ieee_int + 1)
-      assert :error == parse(:integer, @min_ieee_int - 1)
-    end
-
-    test "can parse integer using GraphQl compliant Int config" do
-      Application.put_env(:absinthe, :use_spec_compliant_int_scalar, true)
-      recompile(Absinthe.Type.BuiltIns.Scalars)
-
-      assert {:ok, 0} == parse(:integer, 0)
-      assert {:ok, 1} == parse(:integer, 1)
-      assert {:ok, -1} == parse(:integer, -1)
-      assert {:ok, @max_graphql_int} == parse(:integer, @max_graphql_int)
-      assert {:ok, @min_graphql_int} == parse(:integer, @min_graphql_int)
-    end
-
-    test "cannot parse integer outside boundaries using GraphQl compliant Int config" do
-      Application.put_env(:absinthe, :use_spec_compliant_int_scalar, true)
-      recompile(Absinthe.Type.BuiltIns.Scalars)
-
-      assert :error == parse(:integer, @max_graphql_int + 1)
-      assert :error == parse(:integer, @min_graphql_int - 1)
     end
   end
 
