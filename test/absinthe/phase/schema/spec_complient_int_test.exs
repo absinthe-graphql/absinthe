@@ -1,7 +1,7 @@
 defmodule Absinthe.Phase.Schema.SpecCompliantInt.Test do
   use Absinthe.Case, async: true
 
-  defmodule SchemaWithSpecComplientIntPipelineModifier do
+  defmodule SchemaWithSpecCompliantIntPipelineModifier do
     use Absinthe.Schema
 
     @pipeline_modifier Absinthe.Phase.Schema.SpecCompliantInt
@@ -17,7 +17,7 @@ defmodule Absinthe.Phase.Schema.SpecCompliantInt.Test do
     end
   end
 
-  defmodule SchemaWithSpecComplientOption do
+  defmodule SchemaWithSpecCompliantOption do
     use Absinthe.Schema, use_spec_compliant_int_scalar: true
 
     query do
@@ -74,37 +74,37 @@ defmodule Absinthe.Phase.Schema.SpecCompliantInt.Test do
 
   describe "overriding built-in Int type with SpecCompliantInt (pipeline modifier)" do
     test "minimum valid int" do
-      assert_int_valid(SchemaWithSpecComplientIntPipelineModifier, @min_int)
+      assert_int_valid(SchemaWithSpecCompliantIntPipelineModifier, @min_int)
     end
 
     test "maximum valid int" do
-      assert_int_valid(SchemaWithSpecComplientIntPipelineModifier, @max_int)
+      assert_int_valid(SchemaWithSpecCompliantIntPipelineModifier, @max_int)
     end
 
     test "value outside lower bound" do
-      assert_int_invalid(SchemaWithSpecComplientIntPipelineModifier, @min_int - 1)
+      assert_int_invalid(SchemaWithSpecCompliantIntPipelineModifier, @min_int - 1)
     end
 
     test "value outside upper bound" do
-      assert_int_invalid(SchemaWithSpecComplientIntPipelineModifier, @max_int + 1)
+      assert_int_invalid(SchemaWithSpecCompliantIntPipelineModifier, @max_int + 1)
     end
   end
 
   describe "overriding built-in Int type with SpecCompliantInt (Schema option)" do
     test "minimum valid int" do
-      assert_int_valid(SchemaWithSpecComplientOption, @min_int)
+      assert_int_valid(SchemaWithSpecCompliantOption, @min_int)
     end
 
     test "maximum valid int" do
-      assert_int_valid(SchemaWithSpecComplientOption, @max_int)
+      assert_int_valid(SchemaWithSpecCompliantOption, @max_int)
     end
 
     test "value outside lower bound" do
-      assert_int_invalid(SchemaWithSpecComplientOption, @min_int - 1)
+      assert_int_invalid(SchemaWithSpecCompliantOption, @min_int - 1)
     end
 
     test "value outside upper bound" do
-      assert_int_invalid(SchemaWithSpecComplientOption, @max_int + 1)
+      assert_int_invalid(SchemaWithSpecCompliantOption, @max_int + 1)
     end
   end
 end
