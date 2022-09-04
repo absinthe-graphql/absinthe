@@ -102,6 +102,17 @@ defmodule Absinthe.Schema do
 
     Module.register_attribute(__CALLER__.module, :prototype_schema, persist: true)
 
+    {use_spec_compliant_int_scalar, opts} =
+      Keyword.pop(opts, :use_spec_compliant_int_scalar, false)
+
+    if use_spec_compliant_int_scalar do
+      Module.put_attribute(
+        __CALLER__.module,
+        :pipeline_modifier,
+        Absinthe.Phase.Schema.SpecCompliantInt
+      )
+    end
+
     quote do
       use Absinthe.Schema.Notation, unquote(opts)
       import unquote(__MODULE__), only: :macros

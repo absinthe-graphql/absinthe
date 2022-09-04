@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Bug Fix: Adds **optional fix** for non compliant built-in scalar Int type. Add `@pipeline_modifier Absinthe.Phase.Schema.SpecCompliantInt` to your schema to use the fixed Int type. It is also advisable to upgrade for custom types if you are leveraging the use of integers outside the GraphQl standard.
+- Bug Fix: Adds **optional fix** for non compliant built-in scalar Int type. Add `use_spec_compliant_int_scalar: true` to your schema options to use the fixed Int type. It is also advisable to upgrade for custom types if you are leveraging the use of integers outside the GraphQl standard.
 
 - Feature: [Convert SDL Language.\* structs to SDL notation](https://github.com/absinthe-graphql/absinthe/pull/1160)
 - Feature: [Add support for type extensions](https://github.com/absinthe-graphql/absinthe/pull/1157)
