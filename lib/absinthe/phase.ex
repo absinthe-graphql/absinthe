@@ -25,14 +25,21 @@ defmodule Absinthe.Phase do
       @behaviour Phase
       import(unquote(__MODULE__))
 
-      @spec flag_invalid(Blueprint.node_t()) :: Blueprint.node_t()
+      @spec flag_invalid(node :: Blueprint.node_t()) :: Blueprint.node_t()
       def flag_invalid(%{flags: _} = node) do
         Absinthe.Blueprint.put_flag(node, :invalid, __MODULE__)
       end
 
-      @spec flag_invalid(Blueprint.node_t(), atom) :: Blueprint.node_t()
+      @spec flag_invalid(node :: Blueprint.node_t(), flag :: atom) :: Blueprint.node_t()
       def flag_invalid(%{flags: _} = node, flag) do
         flagging = %{:invalid => __MODULE__, flag => __MODULE__}
+        update_in(node.flags, &Map.merge(&1, flagging))
+      end
+
+      @spec flag_invalid(node :: Blueprint.node_t(), flag :: atom, reason :: String.t()) ::
+              Blueprint.node_t()
+      def flag_invalid(%{flags: _} = node, flag, reason) do
+        flagging = %{:invalid => {__MODULE__, reason}, flag => __MODULE__}
         update_in(node.flags, &Map.merge(&1, flagging))
       end
 
