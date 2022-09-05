@@ -2,8 +2,8 @@
 
 ## Unreleased
 
-- Bug Fix: Adds **optional fix** for non compliant built-in scalar Int type. Add `use_spec_compliant_int_scalar: true` to your schema options to use the fixed Int type. It is also advisable to upgrade for custom types if you are leveraging the use of integers outside the GraphQl standard.
-
+- Bug Fix: Adds **optional fix** for non compliant built-in scalar Int type. Add `use_spec_compliant_int_scalar: true` to your schema options to use the fixed Int type. It is also advisable to upgrade for custom types if you are leveraging the use of integers outside the GraphQl standard. [#1131](https://github.com/absinthe-graphql/absinthe/pull/1131).
+- Feature: [Support error tuples when scalar parsing fails](https://github.com/absinthe-graphql/absinthe/pull/1187)
 - Feature: [Convert SDL Language.\* structs to SDL notation](https://github.com/absinthe-graphql/absinthe/pull/1160)
 - Feature: [Add support for type extensions](https://github.com/absinthe-graphql/absinthe/pull/1157)
 - Bug Fix: [Add `__private__` field to EnumValueDefinition](https://github.com/absinthe-graphql/absinthe/pull/1148)
