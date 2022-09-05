@@ -15,7 +15,7 @@ defmodule Absinthe.Type.BuiltIns.SpecCompliantInt do
   end
 
   @min_int trunc(:math.pow(-2, 31))
-  @max_int 2 ** 31 - 1
+  @max_int trunc(:math.pow(2, 31)) -1
 
   def serialize_int(value) when is_integer(value) and value >= @min_int and value <= @max_int do
     value
