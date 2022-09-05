@@ -14,17 +14,6 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
   @max_ieee_int 9_007_199_254_740_991
   @min_ieee_int -9_007_199_254_740_991
 
-  defp recompile(module) do
-    Code.compiler_options(ignore_module_conflict: true)
-
-    [{module, _binary}] =
-      module.module_info(:compile)[:source]
-      |> List.to_string()
-      |> Code.compile_file()
-
-    {:recompiled, module}
-  end
-
   defp serialize(type, value) do
     TestSchema.__absinthe_type__(type)
     |> Type.Scalar.serialize(value)
@@ -36,9 +25,7 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
   end
 
   describe ":integer" do
-    test "can serilize a valid integer using default non standard Int (IEEE 754)" do
-      recompile(Absinthe.Type.BuiltIns.Scalars)
-
+    test "can serialize a valid integer using default non standard Int (IEEE 754)" do
       assert -1 == serialize(:integer, -1)
       assert 0 == serialize(:integer, 0)
       assert 1 == serialize(:integer, 1)
@@ -46,9 +33,7 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
       assert @min_ieee_int == serialize(:integer, @min_ieee_int)
     end
 
-    test "cannot serilize an integer outside boundaries using default non standard Int (IEEE 754)" do
-      recompile(Absinthe.Type.BuiltIns.Scalars)
-
+    test "cannot serialize an integer outside boundaries using default non standard Int (IEEE 754)" do
       assert_raise Absinthe.SerializationError, fn ->
         serialize(:integer, @max_ieee_int + 1)
       end
@@ -59,8 +44,6 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
     end
 
     test "can parse integer using default non standard Int (IEEE 754)" do
-      recompile(Absinthe.Type.BuiltIns.Scalars)
-
       assert {:ok, 0} == parse(:integer, 0)
       assert {:ok, 1} == parse(:integer, 1)
       assert {:ok, -1} == parse(:integer, -1)
@@ -69,8 +52,6 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
     end
 
     test "cannot parse integer outside boundaries using default non standard Int (IEEE 754)" do
-      recompile(Absinthe.Type.BuiltIns.Scalars)
-
       assert :error == parse(:integer, @max_ieee_int + 1)
       assert :error == parse(:integer, @min_ieee_int - 1)
     end
