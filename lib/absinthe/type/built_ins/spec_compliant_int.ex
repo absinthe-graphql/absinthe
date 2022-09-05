@@ -14,7 +14,7 @@ defmodule Absinthe.Type.BuiltIns.SpecCompliantInt do
     parse parse_with([Absinthe.Blueprint.Input.Integer], &parse_int/1)
   end
 
-  @min_int -2 ** 31
+  @min_int trunc(:math.pow(-2, 31))
   @max_int 2 ** 31 - 1
 
   def serialize_int(value) when is_integer(value) and value >= @min_int and value <= @max_int do
