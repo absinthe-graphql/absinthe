@@ -57,7 +57,8 @@ defmodule Absinthe.Phase.Schema.SpecCompliantInt.Test do
              %{
                errors: [
                  %{
-                   message: "Argument \"input\" has invalid value $input.",
+                   message:
+                     "Argument \"input\" has invalid value $input.\nExpected an integer from `-2^31` to `2^31 - 1` (inclusive)",
                    locations: [%{column: 30, line: 1}]
                  }
                ]

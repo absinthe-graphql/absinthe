@@ -14,8 +14,8 @@ defmodule Absinthe.Type.BuiltIns.SpecCompliantInt do
     parse parse_with([Absinthe.Blueprint.Input.Integer], &parse_int/1)
   end
 
-  @min_int trunc(:math.pow(-2, 31))
-  @max_int trunc(:math.pow(2, 31)) - 1
+  @min_int -2_147_483_648
+  @max_int 2_147_483_647
 
   def serialize_int(value) when is_integer(value) and value >= @min_int and value <= @max_int do
     value
@@ -26,7 +26,7 @@ defmodule Absinthe.Type.BuiltIns.SpecCompliantInt do
   end
 
   defp parse_int(_) do
-    :error
+    {:error, "Expected an integer from `-2^31` to `2^31 - 1` (inclusive)"}
   end
 
   # Parse, supporting pulling values out of blueprint Input nodes
