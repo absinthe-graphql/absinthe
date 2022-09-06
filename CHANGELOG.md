@@ -27,6 +27,7 @@
 - Bug Fix: [Deduplicate directives when building schema](https://github.com/absinthe-graphql/absinthe/pull/1242)
 
 ## 1.7.1
+
 - Breaking Bugfix: [Validate repeatable directives on schemas](https://github.com/absinthe-graphql/absinthe/pull/1179)
 - Breaking Bugfix: [Add "Objects must define fields" schema validation](https://github.com/absinthe-graphql/absinthe/pull/1167)
 - Bug Fix: [Validate field identifier uniqueness](https://github.com/absinthe-graphql/absinthe/pull/1200)
@@ -46,6 +47,7 @@
 - Bug Fix: [Prevent DDOS attacks with long queries](https://github.com/absinthe-graphql/absinthe/pull/1220)
 - Feature: [pipeline_modifier option to Absinthe.run/3](https://github.com/absinthe-graphql/absinthe/pull/1221)
 - Bug Fix: [Add end_time_mono to telemetry :stop events](https://github.com/absinthe-graphql/absinthe/pull/1174)
+- BugFix: [Improved error when batches fail timeouts](https://github.com/absinthe-graphql/absinthe/pull/1180)
 
 ## 1.7.0
 
