@@ -2,6 +2,16 @@ defmodule Absinthe.Fixtures.ColorSchema do
   use Absinthe.Schema
   use Absinthe.Fixture
 
+  defmodule WithTypeSystemDirective do
+    use Absinthe.Schema.Prototype
+
+    directive :external do
+      on [:field_definition]
+    end
+  end
+
+  @prototype_schema WithTypeSystemDirective
+
   @names %{
     r: "RED",
     g: "GREEN",

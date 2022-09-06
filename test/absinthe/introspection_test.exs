@@ -30,6 +30,30 @@ defmodule Absinthe.IntrospectionTest do
                     "directives" => [
                       %{
                         "description" =>
+                          "Marks an element of a GraphQL schema as no longer supported.",
+                        "isRepeatable" => false,
+                        "locations" => [
+                          "ARGUMENT_DEFINITION",
+                          "ENUM_VALUE",
+                          "FIELD_DEFINITION",
+                          "INPUT_FIELD_DEFINITION"
+                        ],
+                        "name" => "deprecated",
+                        "onField" => false,
+                        "onFragment" => false,
+                        "onOperation" => false
+                      },
+                      %{
+                        "description" => nil,
+                        "isRepeatable" => false,
+                        "locations" => ["FIELD_DEFINITION"],
+                        "name" => "external",
+                        "onField" => false,
+                        "onFragment" => false,
+                        "onOperation" => false
+                      },
+                      %{
+                        "description" =>
                           "Directs the executor to include this field or fragment only when the `if` argument is true.",
                         "isRepeatable" => false,
                         "locations" => ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"],

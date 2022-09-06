@@ -12,6 +12,7 @@ defmodule Absinthe.Schema.Prototype.Notation do
       @pipeline_modifier __MODULE__
 
       directive :deprecated do
+        description "Marks an element of a GraphQL schema as no longer supported."
         arg :reason, :string
 
         on [
@@ -34,6 +35,7 @@ defmodule Absinthe.Schema.Prototype.Notation do
       def pipeline(pipeline) do
         pipeline
         |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.Validation.QueryTypeMustBeObject)
+        |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.ImportPrototypeDirectives)
         |> Absinthe.Pipeline.replace(
           Absinthe.Phase.Schema.TypeExtensionImports,
           {Absinthe.Phase.Schema.TypeExtensionImports, []}
