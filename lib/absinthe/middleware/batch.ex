@@ -120,8 +120,23 @@ defmodule Absinthe.Middleware.Batch do
       |> Map.fetch!(:output)
       |> Map.fetch!(batch_key)
 
+    result =
+      :telemetry.span(
+        [:absinthe, :middleware, :batch, :post],
+        %{
+          resolution: res,
+          post_batch_fun: post_batch_fun,
+          batch_key: batch_key,
+          batch_results: batch_data_for_fun
+        },
+        fn ->
+          result = post_batch_fun.(batch_data_for_fun)
+          {result, %{result: result}}
+        end
+      )
+
     res
-    |> Absinthe.Resolution.put_result(post_batch_fun.(batch_data_for_fun))
+    |> Absinthe.Resolution.put_result(result)
   end
 
   def after_resolution(exec) do
@@ -133,58 +148,28 @@ defmodule Absinthe.Middleware.Batch do
     input
     |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
     |> Enum.map(fn {{batch_fun, batch_opts}, batch_data} ->
-      system_time = System.system_time()
-      start_time_mono = System.monotonic_time()
-
       task =
         Task.async(fn ->
-          {batch_fun, call_batch_fun(batch_fun, batch_data)}
+          start_metadata = %{
+            id: :erlang.unique_integer(),
+            batch_fun: batch_fun,
+            batch_opts: batch_opts,
+            batch_data: batch_data
+          }
+
+          :telemetry.span([:absinthe, :middleware, :batch], start_metadata, fn ->
+            result = call_batch_fun(batch_fun, batch_data)
+            {{batch_fun, result}, Map.merge(start_metadata, %{result: result})}
+          end)
         end)
 
-      metadata = emit_start_event(system_time, batch_fun, batch_opts, batch_data)
-
-      {batch_opts, task, start_time_mono, metadata}
+      {batch_opts, task}
     end)
-    |> Map.new(fn {batch_opts, task, start_time_mono, metadata} ->
+    |> Map.new(fn {batch_opts, task} ->
       timeout = Keyword.get(batch_opts, :timeout, 5_000)
-      result = Task.await(task, timeout)
 
-      end_time_mono = System.monotonic_time()
-      duration = end_time_mono - start_time_mono
-      emit_stop_event(duration, end_time_mono, metadata, result)
-
-      result
+      Task.await(task, timeout)
     end)
-  end
-
-  @batch_start [:absinthe, :middleware, :batch, :start]
-  @batch_stop [:absinthe, :middleware, :batch, :stop]
-  defp emit_start_event(system_time, batch_fun, batch_opts, batch_data) do
-    id = :erlang.unique_integer()
-
-    metadata = %{
-      id: id,
-      telemetry_span_context: id,
-      batch_fun: batch_fun,
-      batch_opts: batch_opts,
-      batch_data: batch_data
-    }
-
-    :telemetry.execute(
-      @batch_start,
-      %{system_time: system_time},
-      metadata
-    )
-
-    metadata
-  end
-
-  defp emit_stop_event(duration, end_time_mono, metadata, result) do
-    :telemetry.execute(
-      @batch_stop,
-      %{duration: duration, end_time_mono: end_time_mono},
-      Map.put(metadata, :result, result)
-    )
   end
 
   defp call_batch_fun({module, fun}, batch_data) do
