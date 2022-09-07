@@ -5,12 +5,12 @@ defmodule Absinthe.Phase.Document.Validation.KnownDirectivesTest do
     phase: @phase,
     async: true
 
-  alias Absinthe.{Blueprint}
+  alias Absinthe.Blueprint
 
   def unknown_directive(name, line) do
     bad_value(
       Blueprint.Directive,
-      "Unknown directive `#{name}'.",
+      "Unknown directive `#{name}`.",
       line,
       name: name
     )
@@ -19,7 +19,7 @@ defmodule Absinthe.Phase.Document.Validation.KnownDirectivesTest do
   def misplaced_directive(name, placement, line) do
     bad_value(
       Blueprint.Directive,
-      "Directive `#{name}' may not be used on #{placement}.",
+      "Directive `#{name}` may not be used on #{placement}.",
       line,
       name: name
     )
