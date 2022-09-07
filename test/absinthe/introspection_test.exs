@@ -71,6 +71,16 @@ defmodule Absinthe.IntrospectionTest do
                         "onField" => true,
                         "onFragment" => true,
                         "onOperation" => false
+                      },
+                      %{
+                        "description" =>
+                          "Exposes a URL that specifies the behavior of this scalar.",
+                        "isRepeatable" => false,
+                        "locations" => ["SCALAR"],
+                        "name" => "specifiedBy",
+                        "onField" => false,
+                        "onFragment" => false,
+                        "onOperation" => false
                       }
                     ]
                   }
