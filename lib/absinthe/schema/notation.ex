@@ -1600,7 +1600,7 @@ defmodule Absinthe.Schema.Notation do
     attrs =
       attrs
       |> Keyword.put(:identifier, identifier)
-      |> Keyword.put_new(:name, to_string(identifier))
+      |> Keyword.put_new(:name, default_name(Schema.DirectiveDefinition, identifier))
       |> Keyword.update(:description, nil, &wrap_in_unquote/1)
 
     scoped_def(env, Schema.DirectiveDefinition, identifier, attrs, block)
@@ -1975,6 +1975,11 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp default_name(Schema.FieldDefinition, identifier) do
+    identifier
+    |> Atom.to_string()
+  end
+
+  defp default_name(Schema.DirectiveDefinition, identifier) do
     identifier
     |> Atom.to_string()
   end
