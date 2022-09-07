@@ -15,6 +15,8 @@ defmodule Absinthe.Schema.Prototype.Notation do
         description "Marks an element of a GraphQL schema as no longer supported."
         arg :reason, :string
 
+        repeatable false
+
         on [
           :field_definition,
           :input_field_definition,

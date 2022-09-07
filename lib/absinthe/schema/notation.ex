@@ -358,7 +358,7 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
-  defmacro deprecate(msg) do
+  defmacro deprecate(msg \\ nil) do
     __CALLER__
     |> recordable!(:deprecate, @placement[:deprecate])
     |> record_deprecate!(msg)
@@ -1817,6 +1817,7 @@ defmodule Absinthe.Schema.Notation do
       |> build_directive_arguments(env)
       |> Keyword.put(:name, name)
       |> put_reference(env)
+      |> Keyword.put(:source_location, Absinthe.Blueprint.SourceLocation.at(env.line, 0))
 
     directive = struct!(Absinthe.Blueprint.Directive, attrs)
     put_attr(env.module, {:directive, directive})

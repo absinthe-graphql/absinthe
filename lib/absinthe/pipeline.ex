@@ -170,6 +170,7 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.FieldImports,
       Phase.Schema.Validation.KnownDirectives,
       Phase.Document.Validation.KnownArgumentNames,
+      Phase.Document.Validation.RepeatableDirectives,
       {Phase.Schema.Arguments.Parse, options},
       Phase.Schema.Arguments.Data,
       Phase.Schema.Directives,
