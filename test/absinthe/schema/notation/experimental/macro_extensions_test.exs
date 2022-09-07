@@ -10,7 +10,7 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
 
     directive :feature do
       arg :name, :string
-      on [:scalar]
+      on [:scalar, :schema]
 
       expand(fn _args, node ->
         %{node | __private__: [feature: true]}
@@ -24,6 +24,10 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
     @prototype_schema WithFeatureDirective
 
     query do
+    end
+
+    extend schema do
+      directive :feature
     end
 
     object :person do
@@ -88,9 +92,21 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
       field :value, :integer
     end
 
+    extend object(:query) do
+      field :width, :integer
+      field :value, :integer
+    end
+
     extend input_object(:point) do
       field :y, :float
     end
+  end
+
+  test "can extend schema" do
+    schema_declaration = ExtendedSchema.__absinthe_schema_declaration__()
+
+    assert [%{name: "feature"}] = schema_declaration.directives
+    assert [feature: true] == schema_declaration.__private__
   end
 
   test "can extend enums" do
@@ -147,6 +163,33 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
            ] = Map.values(object.fields)
 
     assert [:valued_entity] = object.interfaces
+  end
+
+  test "can extend root objects" do
+    object = lookup_compiled_type(ExtendedSchema, :query)
+
+    assert [
+             %{
+               name: "__schema",
+               type: :__schema
+             },
+             %{
+               name: "__type",
+               type: :__type
+             },
+             %{
+               name: "__typename",
+               type: :string
+             },
+             %{
+               name: "value",
+               type: :integer
+             },
+             %{
+               name: "width",
+               type: :integer
+             }
+           ] = Map.values(object.fields)
   end
 
   test "can extend input objects" do

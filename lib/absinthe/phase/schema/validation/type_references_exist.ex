@@ -50,7 +50,13 @@ defmodule Absinthe.Phase.Schema.Validation.TypeReferencesExist do
   end
 
   def validate_types(%Blueprint.Schema.TypeExtensionDefinition{} = extension, types) do
-    check_or_error(extension, extension.definition.identifier, types)
+    case extension.definition do
+      %Blueprint.Schema.SchemaDeclaration{} = declaration ->
+        declaration
+
+      definition ->
+        check_or_error(extension, definition.identifier, types)
+    end
   end
 
   @no_types [
@@ -61,6 +67,7 @@ defmodule Absinthe.Phase.Schema.Validation.TypeReferencesExist do
     Blueprint.Schema.ObjectTypeDefinition,
     Blueprint.Schema.ScalarTypeDefinition,
     Blueprint.Schema.SchemaDefinition,
+    Blueprint.Schema.SchemaDeclaration,
     Blueprint.TypeReference.NonNull,
     Blueprint.TypeReference.ListOf,
     Absinthe.Blueprint.TypeReference.Name

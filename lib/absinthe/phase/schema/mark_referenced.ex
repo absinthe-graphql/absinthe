@@ -9,13 +9,16 @@ defmodule Absinthe.Phase.Schema.MarkReferenced do
     %{schema_definitions: [schema]} = blueprint
 
     schema =
-      Map.update!(schema, :type_definitions, &mark_referenced(&1, schema.directive_definitions))
+      Map.update!(
+        schema,
+        :type_definitions,
+        &mark_referenced(&1, schema.directive_definitions, schema.schema_declaration)
+      )
 
     {:ok, %{blueprint | schema_definitions: [schema]}}
   end
 
-  @roots [:query, :mutation, :subscription]
-  defp mark_referenced(type_defs, directive_defs) do
+  defp mark_referenced(type_defs, directive_defs, schema_declaration) do
     types_by_ref =
       Enum.reduce(type_defs, %{}, fn type_def, acc ->
         acc
@@ -24,8 +27,8 @@ defmodule Absinthe.Phase.Schema.MarkReferenced do
       end)
 
     referenced_type_ids =
-      @roots
-      |> Enum.map(&Map.get(types_by_ref, &1))
+      schema_declaration.field_definitions
+      |> Enum.map(&Map.get(types_by_ref, &1.identifier))
       |> Enum.reject(&is_nil/1)
       |> Enum.concat(directive_defs)
       |> Enum.reduce(MapSet.new(), &referenced_types(&1, types_by_ref, &2))

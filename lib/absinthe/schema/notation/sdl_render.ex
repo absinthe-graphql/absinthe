@@ -38,30 +38,17 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       ]
     } = bp
 
-    schema_declaration =
-      schema_declaration ||
-        %{
-          query: Enum.find(type_definitions, &(&1.identifier == :query)),
-          mutation: Enum.find(type_definitions, &(&1.identifier == :mutation)),
-          subscription: Enum.find(type_definitions, &(&1.identifier == :subscription)),
-          description: Enum.find(type_definitions, &(&1.identifier == :__schema)).description
-        }
-
     directive_definitions =
       directive_definitions
       |> Enum.reject(&(&1.module in @skip_modules))
 
-    all_type_definitions =
-      type_definitions
-      |> Enum.reject(&(&1.__struct__ == Blueprint.Schema.SchemaDeclaration))
-
     types_to_render =
-      all_type_definitions
+      type_definitions
       |> Enum.reject(&(&1.module in @skip_modules))
       |> Enum.filter(& &1.__private__[:__absinthe_referenced__])
 
     ([schema_declaration] ++ directive_definitions ++ types_to_render)
-    |> Enum.map(&render(&1, all_type_definitions))
+    |> Enum.map(&render(&1, type_definitions))
     |> Enum.reject(&(&1 == empty()))
     |> join([line(), line()])
   end
@@ -75,31 +62,6 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       render_list(schema.field_definitions, type_definitions)
     )
     |> description(schema.description)
-  end
-
-  defp render(
-         %{
-           query: query_type,
-           mutation: mutation_type,
-           subscription: subscription_type,
-           description: description
-         },
-         _type_definitions
-       ) do
-    schema_type_docs =
-      [
-        query_type && concat("query: ", string(query_type.name)),
-        mutation_type && concat("mutation: ", string(mutation_type.name)),
-        subscription_type && concat("subscription: ", string(subscription_type.name))
-      ]
-      |> Enum.reject(&is_nil/1)
-      |> join([line()])
-
-    block(
-      "schema",
-      schema_type_docs
-    )
-    |> description(description)
   end
 
   @adapter Absinthe.Adapter.LanguageConventions

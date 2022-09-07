@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Last Updated](https://img.shields.io/github/last-commit/absinthe-graphql/absinthe.svg)](https://github.com/absinthe-graphql/absinthe/commits/master)
 
-[GraphQL](https://facebook.github.io/graphql/) implementation for Elixir.
+[GraphQL](https://github.com/graphql-elixir/graphql) implementation for Elixir.
 
 Goals:
 
@@ -61,7 +61,7 @@ We care about support for third-party frameworks, both on the back and
 front end.
 
 So far, we include specialized support for Phoenix and Plug on the backend,
-and [Relay](https://facebook.github.io/relay/) on the frontend.
+and [Relay](https://relay.dev/) on the frontend.
 
 Of course we work out of the box with other frontend frameworks and GraphQL
 clients, too.

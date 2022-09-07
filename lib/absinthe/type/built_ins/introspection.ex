@@ -8,7 +8,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
 
     field :description, :string do
       resolve(fn _, %{schema: schema} ->
-        {:ok, Absinthe.Schema.lookup_type(schema, :__schema).description}
+        {:ok, Absinthe.Schema.schema_declaration(schema).description}
       end)
     end
 

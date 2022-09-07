@@ -109,7 +109,7 @@ defmodule Absinthe.Execution.Arguments.ListTest do
   }
   """
   test "it will coerce a non list item if it's of the right type" do
-    # per https://facebook.github.io/graphql/#sec-Lists
+    # per https://spec.graphql.org/October2021/#sec-List
     assert_data(%{"numbers" => [1]}, run(@graphql, @schema))
   end
 

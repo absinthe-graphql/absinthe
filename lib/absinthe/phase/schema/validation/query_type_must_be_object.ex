@@ -46,13 +46,16 @@ defmodule Absinthe.Phase.Schema.Validation.QueryTypeMustBeObject do
   --------------------------------------
   From the graqhql schema specification
 
-  A GraphQL schema includes types, indicating where query and mutation
-  operations start. This provides the initial entry points into the type system.
-  The query type must always be provided, and is an Object base type. The
-  mutation type is optional; if it is null, that means the system does not
-  support mutations. If it is provided, it must be an object base type.
+  A schema defines the initial root operation type for each kind of operation
+  it supports: query, mutation, and subscription; this determines the place in
+  the type system where those operations begin.
 
-  Reference: https://facebook.github.io/graphql/#sec-Initial-types
+  The query root operation type must be provided and must be an Object type.
+
+  The mutation root operation type is optional; if it is not provided, the service
+  does not support mutations. If it is provided, it must be an Object type.
+
+  Reference: https://spec.graphql.org/October2021/#sec-Root-Operation-Types
   """
 
   def explanation(_value) do

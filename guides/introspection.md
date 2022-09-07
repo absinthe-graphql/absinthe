@@ -1,7 +1,7 @@
 # Schema Introspection
 
 You can introspect your schema using `__schema`, `__type`, and `__typename`,
-as [described in the specification](https://facebook.github.io/graphql/#sec-Introspection).
+as [described in the specification](https://spec.graphql.org/October2021/#sec-Introspection).
 
 ### Examples
 
@@ -89,7 +89,7 @@ Getting the name of the fields for a named type:
 ```
 
 Note that you may have to nest several depths of `type`/`ofType`, as
-type information includes any wrapping layers of [List](https://facebook.github.io/graphql/#sec-List) and/or [NonNull](https://facebook.github.io/graphql/#sec-Non-null).
+type information includes any wrapping layers of [List](https://spec.graphql.org/October2021/#sec-List) and/or [NonNull](https://spec.graphql.org/October2021/#sec-Non-Null).
 
 ## Using GraphiQL
 

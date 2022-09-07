@@ -154,8 +154,8 @@ defmodule Absinthe.Pipeline do
       {Phase.Schema.DirectiveImports, options},
       {Phase.Schema.TypeImports, options},
       {Phase.Schema.TypeExtensionImports, options},
-      Phase.Schema.ApplyTypeExtensions,
       Phase.Schema.ApplyDeclaration,
+      Phase.Schema.ApplyTypeExtensions,
       Phase.Schema.Introspection,
       {Phase.Schema.Hydrate, options},
       Phase.Schema.Arguments.Normalize,
@@ -189,6 +189,7 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.ReformatDescriptions,
       # This phase is run again now after additional validations
       {Phase.Schema.Validation.Result, pass: :final},
+      Phase.Schema.ImportPrototypeDirectives,
       Phase.Schema.Build,
       Phase.Schema.InlineFunctions,
       {Phase.Schema.Compile, options}

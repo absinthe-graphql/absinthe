@@ -92,6 +92,8 @@ defmodule Absinthe.Schema do
   ```
   """
 
+  Module.register_attribute(__MODULE__, :placement, accumulate: true)
+
   defmacro __using__(opts) do
     Module.register_attribute(__CALLER__.module, :pipeline_modifier,
       accumulate: true,
@@ -99,6 +101,17 @@ defmodule Absinthe.Schema do
     )
 
     Module.register_attribute(__CALLER__.module, :prototype_schema, persist: true)
+
+    {use_spec_compliant_int_scalar, opts} =
+      Keyword.pop(opts, :use_spec_compliant_int_scalar, false)
+
+    if use_spec_compliant_int_scalar do
+      Module.put_attribute(
+        __CALLER__.module,
+        :pipeline_modifier,
+        Absinthe.Phase.Schema.SpecCompliantInt
+      )
+    end
 
     quote do
       use Absinthe.Schema.Notation, unquote(opts)
@@ -151,6 +164,7 @@ defmodule Absinthe.Schema do
   @object_type Absinthe.Blueprint.Schema.ObjectTypeDefinition
 
   @default_query_name "RootQueryType"
+  @placement {:query, [toplevel: true, extend: true]}
   @doc """
   Defines a root Query object
   """
@@ -163,10 +177,13 @@ defmodule Absinthe.Schema do
       raw_attrs
       |> Keyword.put_new(:name, @default_query_name)
 
-    Absinthe.Schema.Notation.record!(env, @object_type, :query, attrs, block)
+    env
+    |> Absinthe.Schema.Notation.recordable!(:query, @placement[:query])
+    |> Absinthe.Schema.Notation.record!(@object_type, :query, attrs, block)
   end
 
   @default_mutation_name "RootMutationType"
+  @placement {:mutation, [toplevel: true, extend: true]}
   @doc """
   Defines a root Mutation object
 
@@ -190,10 +207,13 @@ defmodule Absinthe.Schema do
       raw_attrs
       |> Keyword.put_new(:name, @default_mutation_name)
 
-    Absinthe.Schema.Notation.record!(env, @object_type, :mutation, attrs, block)
+    env
+    |> Absinthe.Schema.Notation.recordable!(:mutation, @placement[:mutation])
+    |> Absinthe.Schema.Notation.record!(@object_type, :mutation, attrs, block)
   end
 
   @default_subscription_name "RootSubscriptionType"
+  @placement {:subscription, [toplevel: true, extend: true]}
   @doc """
   Defines a root Subscription object
 
@@ -291,7 +311,9 @@ defmodule Absinthe.Schema do
       raw_attrs
       |> Keyword.put_new(:name, @default_subscription_name)
 
-    Absinthe.Schema.Notation.record!(env, @object_type, :subscription, attrs, block)
+    env
+    |> Absinthe.Schema.Notation.recordable!(:subscription, @placement[:subscription])
+    |> Absinthe.Schema.Notation.record!(@object_type, :subscription, attrs, block)
   end
 
   defmacro __before_compile__(_) do
@@ -327,6 +349,10 @@ defmodule Absinthe.Schema do
 
       def __absinthe_interface_implementors__() do
         @schema_provider.__absinthe_interface_implementors__(__MODULE__)
+      end
+
+      def __absinthe_schema_declaration__() do
+        @schema_provider.__absinthe_schema_declaration__(__MODULE__)
       end
 
       def __absinthe_prototype_schema__() do
@@ -545,6 +571,10 @@ defmodule Absinthe.Schema do
       true ->
         type
     end
+  end
+
+  def schema_declaration(schema) do
+    schema.__absinthe_schema_declaration__()
   end
 
   @doc """
