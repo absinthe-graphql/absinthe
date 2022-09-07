@@ -34,6 +34,17 @@ defmodule Absinthe.Schema.Prototype.Notation do
         expand &__MODULE__.expand_deprecate/2
       end
 
+      directive :specified_by do
+        description "Exposes a URL that specifies the behavior of this scalar."
+
+        repeatable false
+
+        arg :url, non_null(:string),
+          description: "The URL that specifies the behavior of this scalar."
+
+        on [:scalar]
+      end
+
       def pipeline(pipeline) do
         pipeline
         |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.Validation.QueryTypeMustBeObject)
