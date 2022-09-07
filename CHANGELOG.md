@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Bug Fix: [Validate type references for invalid wrapped types](https://github.com/absinthe-graphql/absinthe/pull/1195)
+- Feature: [Add `specifiedBy` type system directive](https://github.com/absinthe-graphql/absinthe/pull/1193)
 - Breaking Bugfix: [Validate repeatable directives on schemas](https://github.com/absinthe-graphql/absinthe/pull/1179)
 - Bug Fix: Adds **optional fix** for non compliant built-in scalar Int type. `use Absinthe.Schema, use_spec_compliant_int_scalar: true` in your schema to use the fixed Int type. It is also advisable to upgrade for custom types if you are leveraging the use of integers outside the GraphQl standard. [#1131](https://github.com/absinthe-graphql/absinthe/pull/1131).
 - Feature: [Support error tuples when scalar parsing fails](https://github.com/absinthe-graphql/absinthe/pull/1187)
