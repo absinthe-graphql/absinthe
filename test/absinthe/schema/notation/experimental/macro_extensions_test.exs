@@ -24,6 +24,7 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
     @prototype_schema WithFeatureDirective
 
     query do
+      field :foo, :string
     end
 
     extend schema do
@@ -182,6 +183,10 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
                type: :string
              },
              %{
+               name: "foo",
+               type: :string
+             },
+             %{
                name: "value",
                type: :integer
              },
@@ -291,6 +296,7 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
     use Absinthe.Schema
 
     query do
+      field :foo, :string
     end
 
     import_type_extensions ImportedSchema

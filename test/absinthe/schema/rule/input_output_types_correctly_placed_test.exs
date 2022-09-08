@@ -14,7 +14,7 @@ defmodule Absinthe.Schema.Rule.InputOutputTypesCorrectlyPlacedTest do
           locations: [
             %{
               file: "test/support/fixtures/dynamic/invalid_output_types.exs",
-              line: 11
+              line: 13
             }
           ],
           phase: Absinthe.Phase.Schema.Validation.InputOutputTypesCorrectlyPlaced
@@ -28,7 +28,7 @@ defmodule Absinthe.Schema.Rule.InputOutputTypesCorrectlyPlacedTest do
           locations: [
             %{
               file: "test/support/fixtures/dynamic/invalid_output_types.exs",
-              line: 16
+              line: 18
             }
           ],
           phase: Absinthe.Phase.Schema.Validation.InputOutputTypesCorrectlyPlaced
@@ -48,7 +48,7 @@ defmodule Absinthe.Schema.Rule.InputOutputTypesCorrectlyPlacedTest do
           locations: [
             %{
               file: "test/support/fixtures/dynamic/invalid_input_types.exs",
-              line: 8
+              line: 9
             }
           ],
           phase: Absinthe.Phase.Schema.Validation.InputOutputTypesCorrectlyPlaced

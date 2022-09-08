@@ -8,7 +8,7 @@ defmodule Absinthe.Subscription.PipelineSerializerTest do
     use Absinthe.Schema
 
     query do
-      # Query type must exist
+      field :foo, :string
     end
   end
 

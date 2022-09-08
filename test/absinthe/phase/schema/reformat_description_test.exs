@@ -5,7 +5,7 @@ defmodule Absinthe.Phase.Schema.ReformatDescriptionTest do
     use Absinthe.Schema
 
     query do
-      # Must exist
+      field :foo, :string
     end
 
     object :via_macro do

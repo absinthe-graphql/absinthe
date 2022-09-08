@@ -11,6 +11,7 @@
 - Bug Fix: [Add `__private__` field to EnumValueDefinition](https://github.com/absinthe-graphql/absinthe/pull/1148)
 - Bug Fix: [Fix bug in Schema.**absinthe_types**(:all) for Persistent Term](https://github.com/absinthe-graphql/absinthe/pull/1161)
 - Bug Fix: [Fix default enum value check for SDL schema's](https://github.com/absinthe-graphql/absinthe/pull/1188)
+- Bug Fix: [Add "Objects must define fields" schema validation](https://github.com/absinthe-graphql/absinthe/pull/1167)
 - Feature: [Add `import_directives` macro](https://github.com/absinthe-graphql/absinthe/pull/1158)
 - Feature: [Support type extensions on schema declarations](https://github.com/absinthe-graphql/absinthe/pull/1176)
 - Bug Fix: [Root objects are marked as referenced correctly](https://github.com/absinthe-graphql/absinthe/pull/1186)

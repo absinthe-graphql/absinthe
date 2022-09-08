@@ -8,7 +8,7 @@ defmodule Absinthe.Type.ObjectTest do
     use Absinthe.Fixture
 
     query do
-      # Must exist
+      field :foo, :string
     end
 
     @desc "A person"

@@ -24,5 +24,6 @@ defmodule Absinthe.Fixtures.InvalidInterfaceTypes do
   end
 
   query do
+    field :foo, :string
   end
 end

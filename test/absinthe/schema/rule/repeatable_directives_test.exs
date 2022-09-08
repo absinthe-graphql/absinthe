@@ -64,6 +64,7 @@ defmodule Absinthe.Schema.Rule.RepeatedDirectivesTest do
     @prototype_schema WithFeatureDirective
 
     query do
+      field :foo, :string
     end
 
     object :dog do
@@ -85,6 +86,7 @@ defmodule Absinthe.Schema.Rule.RepeatedDirectivesTest do
     @prototype_schema WithFeatureDirective
 
     query do
+      field :foo, :string
     end
 
     import_sdl ~s"""

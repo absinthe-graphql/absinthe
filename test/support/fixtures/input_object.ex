@@ -10,32 +10,41 @@ defmodule Absinthe.Fixtures.InputObject do
     end
 
     query do
+      field :foo, :string
     end
 
     input_object :normal_string, description: "string" do
+      field :foo, :string
     end
 
     input_object :local_function_call, description: test_function("red") do
+      field :foo, :string
     end
 
     input_object :function_call_using_absolute_path_to_current_module,
       description: Absinthe.Fixtures.InputObject.TestSchemaDescriptionKeyword.test_function("red") do
+      field :foo, :string
     end
 
     input_object :standard_library_function, description: String.replace("red", "e", "a") do
+      field :foo, :string
     end
 
     input_object :function_in_nested_module, description: NestedModule.nested_function("hello") do
+      field :foo, :string
     end
 
     input_object :external_module_function_call,
       description: Absinthe.Fixtures.FunctionEvaluationHelpers.external_function("hello") do
+      field :foo, :string
     end
 
     input_object :module_attribute_string_concat, description: "hello " <> @module_attribute do
+      field :foo, :string
     end
 
     input_object :interpolation_of_module_attribute, description: "hello #{@module_attribute}" do
+      field :foo, :string
     end
 
     def test_function(arg1) do
@@ -54,6 +63,7 @@ defmodule Absinthe.Fixtures.InputObject do
     end
 
     query do
+      field :foo, :string
     end
 
     def test_function(arg1) do
@@ -62,6 +72,7 @@ defmodule Absinthe.Fixtures.InputObject do
 
     @desc "string"
     input_object :normal_string do
+      field :foo, :string
     end
 
     # These tests do not work as test_function is not available at compile time, and the
@@ -78,22 +89,27 @@ defmodule Absinthe.Fixtures.InputObject do
 
     @desc String.replace("red", "e", "a")
     input_object :standard_library_function do
+      field :foo, :string
     end
 
     @desc NestedModule.nested_function("hello")
     input_object :function_in_nested_module do
+      field :foo, :string
     end
 
     @desc Absinthe.Fixtures.FunctionEvaluationHelpers.external_function("hello")
     input_object :external_module_function_call do
+      field :foo, :string
     end
 
     @desc "hello " <> @module_attribute
     input_object :module_attribute_string_concat do
+      field :foo, :string
     end
 
     @desc "hello #{@module_attribute}"
     input_object :interpolation_of_module_attribute do
+      field :foo, :string
     end
   end
 
@@ -108,6 +124,7 @@ defmodule Absinthe.Fixtures.InputObject do
     end
 
     query do
+      field :foo, :string
     end
 
     def test_function(arg1) do
@@ -116,34 +133,42 @@ defmodule Absinthe.Fixtures.InputObject do
 
     input_object :normal_string do
       description "string"
+      field :foo, :string
     end
 
     input_object :local_function_call do
       description test_function("red")
+      field :foo, :string
     end
 
     input_object :function_call_using_absolute_path_to_current_module do
       description Absinthe.Fixtures.InputObject.TestSchemaDescriptionMacro.test_function("red")
+      field :foo, :string
     end
 
     input_object :standard_library_function do
       description String.replace("red", "e", "a")
+      field :foo, :string
     end
 
     input_object :function_in_nested_module do
       description NestedModule.nested_function("hello")
+      field :foo, :string
     end
 
     input_object :external_module_function_call do
       description Absinthe.Fixtures.FunctionEvaluationHelpers.external_function("hello")
+      field :foo, :string
     end
 
     input_object :module_attribute_string_concat do
       description "hello " <> @module_attribute
+      field :foo, :string
     end
 
     input_object :interpolation_of_module_attribute do
       description "hello #{@module_attribute}"
+      field :foo, :string
     end
   end
 
@@ -158,6 +183,7 @@ defmodule Absinthe.Fixtures.InputObject do
     end
 
     query do
+      field :foo, :string
     end
 
     def test_function(arg1) do
