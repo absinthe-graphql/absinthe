@@ -36,7 +36,10 @@ defmodule Absinthe.Language.InterfaceTypeDefinition do
     defp interfaces(interfaces, doc) do
       interfaces
       |> Absinthe.Blueprint.Draft.convert(doc)
-      |> Enum.map(&(&1.name |> Macro.underscore() |> String.to_atom()))
+      |> Enum.map(fn interface ->
+        id = interface.name |> Macro.underscore() |> String.to_atom()
+        %Absinthe.Blueprint.TypeReference.Identifier{id: id}
+      end)
     end
 
     defp source_location(%{loc: nil}), do: nil

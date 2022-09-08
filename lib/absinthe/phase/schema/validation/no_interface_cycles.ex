@@ -42,7 +42,7 @@ defmodule Absinthe.Phase.Schema.Validation.NoInterfaceCyles do
   defp vertex(%Schema.InterfaceTypeDefinition{} = implementor, graph) do
     :digraph.add_vertex(graph, implementor.identifier)
 
-    for interface <- implementor.interfaces do
+    for interface <- Enum.map(implementor.interfaces, & &1.id) do
       edge(implementor, interface, graph)
     end
 

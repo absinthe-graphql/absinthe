@@ -329,11 +329,18 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     interface_names =
       case interface do
         %{interface_blueprints: [], interfaces: identifiers} ->
-          Enum.map(identifiers, fn identifier ->
-            Enum.find_value(type_definitions, fn
-              %{identifier: ^identifier, name: name} -> name
-              _ -> nil
-            end)
+          Enum.map(identifiers, fn
+            %{id: identifier} ->
+              Enum.find_value(type_definitions, fn
+                %{identifier: ^identifier, name: name} -> name
+                _ -> nil
+              end)
+
+            identifier ->
+              Enum.find_value(type_definitions, fn
+                %{identifier: ^identifier, name: name} -> name
+                _ -> nil
+              end)
           end)
 
         %{interface_blueprints: blueprints} ->

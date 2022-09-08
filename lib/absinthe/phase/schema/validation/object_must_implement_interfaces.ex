@@ -36,7 +36,8 @@ defmodule Absinthe.Phase.Schema.Validation.ObjectMustImplementInterfaces do
   end
 
   defp validate_objects(%struct{} = object, ifaces, types) when struct in @interface_types do
-    Enum.reduce(object.interfaces, object, fn ident, object ->
+    # Enum.map(object.interfaces, & &1.id)
+    Enum.reduce(object.interfaces, object, fn %{id: ident}, object ->
       case Map.fetch(ifaces, ident) do
         {:ok, iface} -> validate_object(object, iface, types)
         _ -> object
@@ -162,6 +163,7 @@ defmodule Absinthe.Phase.Schema.Validation.ObjectMustImplementInterfaces do
          types
        ) do
     %{interfaces: field_type_interfaces} = Map.get(types, field_type)
+    field_type_interfaces = Enum.map(field_type_interfaces, & &1.id)
     (interface_ident in field_type_interfaces && :ok) || {:error, field_ident}
   end
 

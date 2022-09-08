@@ -1710,9 +1710,10 @@ defmodule Absinthe.Schema.Notation do
 
   @doc false
   # Record an implemented interface in the current scope
-  def record_interface!(env, type) do
-    type = expand_ast(type, env)
-    put_attr(env.module, {:interface, type})
+  def record_interface!(env, identifier) do
+    identifier = expand_ast(identifier, env)
+    identifier = %Absinthe.Blueprint.TypeReference.Identifier{id: identifier}
+    put_attr(env.module, {:interface, identifier})
   end
 
   @doc false
