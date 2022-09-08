@@ -183,6 +183,10 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
                type: :string
              },
              %{
+               name: "foo",
+               type: :string
+             },
+             %{
                name: "value",
                type: :integer
              },
