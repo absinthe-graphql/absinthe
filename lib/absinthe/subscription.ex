@@ -74,6 +74,8 @@ defmodule Absinthe.Subscription do
           term,
           Absinthe.Resolution.t() | [subscription_field_spec]
         ) :: :ok
+  def publish(_pubsub, _mutation_result, []), do: :ok
+
   def publish(pubsub, mutation_result, %Absinthe.Resolution{} = info) do
     subscribed_fields = get_subscription_fields(info)
     publish(pubsub, mutation_result, subscribed_fields)
