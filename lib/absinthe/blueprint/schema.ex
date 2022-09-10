@@ -160,6 +160,11 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(rest, [obj | stack], buff)
   end
 
+  defp build_types([{:type, type} | rest], [obj | stack], buff) do
+    obj = Map.update!(obj, :types, &[type | &1])
+    build_types(rest, [obj | stack], buff)
+  end
+
   defp build_types([{:__private__, private} | rest], [entity | stack], buff) do
     entity = Map.update!(entity, :__private__, &update_private(&1, private))
     build_types(rest, [entity | stack], buff)
@@ -265,6 +270,7 @@ defmodule Absinthe.Blueprint.Schema do
   end
 
   defp build_types([:close | rest], [%Schema.UnionTypeDefinition{} = union, schema | stack], buff) do
+    union = Map.update!(union, :types, &Enum.reverse/1)
     build_types(rest, [push(schema, :type_definitions, union) | stack], buff)
   end
 

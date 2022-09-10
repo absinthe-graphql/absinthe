@@ -1706,11 +1706,9 @@ defmodule Absinthe.Schema.Notation do
 
   @doc false
   # Record an implemented interface in the current scope
-  def record_interface!(env, identifier) do
-    put_attr(env.module, {:interface, identifier})
-    # Scope.put_attribute(env.module, :interfaces, identifier, accumulate: true)
-    # Scope.recorded!(env.module, :attr, :interface)
-    # :ok
+  def record_interface!(env, type) do
+    type = expand_ast(type, env)
+    put_attr(env.module, {:interface, type})
   end
 
   @doc false
@@ -1730,7 +1728,12 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record a list of member types for a union in the current scope
   def record_types!(env, types) do
-    put_attr(env.module, {:types, types})
+    Enum.each(types, &record_type!(env, &1))
+  end
+
+  defp record_type!(env, type) do
+    type = expand_ast(type, env)
+    put_attr(env.module, {:type, type})
   end
 
   @doc false
