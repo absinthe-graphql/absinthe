@@ -8,7 +8,7 @@ defmodule Absinthe.Schema do
   Build GraphQL Schemas
 
   ## Custom Schema Manipulation (in progress)
-  In Absinthe 1.5 schemas are built using the same process by which queries are
+  In Absinthe 1.5 and up schemas are built using the same process by which queries are
   executed. All the macros in this module and in `Notation` build up an intermediary tree of structs in the
   `%Absinthe.Blueprint{}` namespace, which we generally call "Blueprint structs".
 
@@ -495,7 +495,7 @@ defmodule Absinthe.Schema do
   Used to hydrate the schema with dynamic attributes.
 
   While this is normally used to add resolvers, etc, to schemas
-  defined using `import_sdl/1` and `import_sdl2`, it can also be
+  defined using `import_sdl/1` and `import_sdl/2`, it can also be
   used in schemas defined using other macros.
 
   The function is passed the blueprint definition node as the first

@@ -206,20 +206,6 @@ defmodule Absinthe.Middleware do
   INSIDE the middleware, we would compute the camelized string 1000 times. By
   doing it in the `def middleware` callback we do it just once.
 
-  ### Changes Since 1.3
-
-  In Absinthe 1.3, fields without any `middleware/2` or `resolve/1` calls would
-  show up with an empty list `[]` as its middleware in the `middleware/3`
-  function. If no middleware was applied in the function and it also returned `[]`,
-  THEN Absinthe would apply the default.
-
-  This made it very easy to accidentally break your schema if you weren't
-  particularly careful with your pattern matching. Now the defaults are applied
-  FIRST by absinthe, and THEN passed to `middleware/3`. Consequently, the
-  middleware list argument should always have at least one value. This is also
-  why there is now the `replace_default/4` function, because it handles telling
-  the difference between a field with a resolver and a field with the default.
-
   ### Object Wide Authentication
 
   Let's use our authentication middleware from earlier, and place it on every

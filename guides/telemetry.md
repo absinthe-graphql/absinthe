@@ -1,6 +1,6 @@
 # Telemetry
 
-Absinthe 1.5 uses `telemetry` to instrument its activity.
+Absinthe 1.5 and up uses `telemetry` to instrument its activity.
 
 Call `:telemetry.attach/4` or `:telemetry.attach_many/4` to attach your
 handler function to any of the following event names:

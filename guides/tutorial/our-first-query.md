@@ -71,9 +71,10 @@ defmodule BlogWeb.Schema do
 end
 ```
 
+> #### More information {: .info}
+>
 > For more information on the macros available to build a schema, see
-> their definitions in `Absinthe.Schema` and
-> `Absinthe.Schema.Notation`.
+> their definitions in `Absinthe.Schema` and `Absinthe.Schema.Notation`.
 
 This uses a resolver module we've created (again, to match the Phoenix context naming)
 at `blog_web/resolvers/content.ex`:
@@ -103,6 +104,8 @@ requested field. Our resolver calls out to the `Blog.Content` module,
 which is where all the domain logic for posts lives, invoking its
 `list_posts/0` function, then returns the posts in an `:ok` tuple.
 
+> #### Note {: .info}
+>
 > Resolvers can return a wide variety of results, to include errors and configuration
 > for [advanced plugins](middleware-and-plugins.md) that further process the data.
 >
@@ -137,11 +140,11 @@ defmodule BlogWeb.Router do
 end
 ```
 
-In addition to our API, we've wired in a handy GraphiQL user interface to play with it. Absinthe integrates both the classic [GraphiQL](https://github.com/graphql/graphiql) and  more advanced [GraphiQL Workspace](https://github.com/OlegIlyenko/graphiql-workspace) interfaces as part of the [absinthe_plug](https://hex.pm/packages/absinthe_plug) package.
+In addition to our API, we've wired in a handy GraphiQL user interface to play with it. Absinthe integrates both the classic [GraphiQL](https://github.com/graphql/graphiql) and more advanced [GraphiQL Workspace](https://github.com/OlegIlyenko/graphiql-workspace) interfaces as part of the [absinthe_plug](https://hex.pm/packages/absinthe_plug) package.
 
 Now let's check to make sure everything is working. Start the server:
 
-``` shell
+```shell
 $ mix phx.server
 ```
 
@@ -149,11 +152,11 @@ Absinthe does a number of sanity checks during compilation, so if you misspell a
 
 Once it's up-and-running, take a look at [http://localhost:4000/api/graphiql](http://localhost:4000/api/graphiql):
 
-<img style="box-shadow: 0 0 6px #ccc;" src="/guides/assets/tutorial/graphiql_blank.png" alt=""/>
+<img style="box-shadow: 0 0 6px #ccc;" src="assets/tutorial/graphiql_blank.png" alt=""/>
 
 Make sure that the `URL` is pointing to the correct place and press the play button. If everything goes according to plan, you should see something like this:
 
-<img style="box-shadow: 0 0 6px #ccc;" src="/guides/assets/tutorial/graphiql.png" alt=""/>
+<img style="box-shadow: 0 0 6px #ccc;" src="assets/tutorial/graphiql.png" alt=""/>
 
 ## Next Step
 
