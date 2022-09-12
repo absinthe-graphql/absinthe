@@ -45,6 +45,10 @@ defmodule Absinthe.Blueprint.TypeReference do
     name
   end
 
+  def name(name) do
+    name |> to_string() |> String.capitalize()
+  end
+
   def to_type(%__MODULE__.NonNull{of_type: type}, schema) do
     %Absinthe.Type.NonNull{of_type: to_type(type, schema)}
   end

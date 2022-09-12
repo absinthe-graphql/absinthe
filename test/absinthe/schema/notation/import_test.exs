@@ -106,6 +106,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
 
         object :baz do
           import_fields :bar
+
           field :age, :integer
         end
       end
