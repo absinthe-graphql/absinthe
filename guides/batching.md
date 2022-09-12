@@ -198,10 +198,3 @@ end
 That's it! If you run a GraphQL query that hits that field, it will be loaded efficiently without N+1.
 
 See the documentation for [Dataloader](dataloader.md) for more information.
-
-### Deprecated in v1.4: Batching with Absinthe.Ecto
-
-The batching helper functions present
-in [absinthe_ecto](https://github.com/absinthe-graphql/absinthe_ecto)
-provided some early support for making it easy to get data from Ecto. These batching features are considered *DEPRECATED* in favor of
-Dataloader, described above. If you're on 1.4 or earlier absinthe version feel free to check the documentation about [`absinthe_ecto` basic usage](https://hexdocs.pm/absinthe_ecto/Absinthe.Ecto.html#module-basic-usage).

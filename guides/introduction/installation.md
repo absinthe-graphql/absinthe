@@ -2,11 +2,11 @@
 
 To install Absinthe, just add an entry to your `mix.exs`:
 
-``` elixir
+```elixir
 def deps do
   [
     # ...
-    {:absinthe, "~> 1.5"}
+    {:absinthe, "~> 1.7"}
   ]
 end
 ```
@@ -19,11 +19,11 @@ Because the Absinthe project is made up of a large number of related packages to
 
 Don't forget you can use the [:override](https://hexdocs.pm/mix/Mix.Tasks.Deps.html#module-dependency-definition-options) option for your Mix dependencies if you'd like to ensure a specific package is at a specific version number. For example, If you wanted to try a new version of Absinthe without updating something that depends on it (which is locked to an older version):
 
-``` elixir
+```elixir
 def deps do
   [
     # ...
-    {:absinthe, "~> 1.5", override: true}
+    {:absinthe, "~> 1.7", override: true}
   ]
 end
 ```

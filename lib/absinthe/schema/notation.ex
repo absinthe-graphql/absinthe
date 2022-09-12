@@ -243,7 +243,7 @@ defmodule Absinthe.Schema.Notation do
 
   @placement {:extend, [toplevel: true]}
   @doc """
-  Extend a graphql type.
+  Extend a GraphQL type.
 
   Extend an existing type with additional fields, values, types and interfaces.
 
@@ -364,6 +364,7 @@ defmodule Absinthe.Schema.Notation do
     |> record_deprecate!(msg)
   end
 
+  @placement {:interface_attribute, [under: [:object, :interface]]}
   @doc """
   Declare an implemented interface for an object.
 
@@ -371,6 +372,10 @@ defmodule Absinthe.Schema.Notation do
 
   See also `interfaces/1`, which can be used for multiple interfaces,
   and `interface/3`, used to define interfaces themselves.
+
+  ## Placement
+
+  #{Utils.placement_docs(@placement)}
 
   ## Examples
 
@@ -381,7 +386,6 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
-  @placement {:interface_attribute, [under: [:object, :interface]]}
   defmacro interface(identifier) do
     __CALLER__
     |> recordable!(:interface_attribute, @placement[:interface_attribute])

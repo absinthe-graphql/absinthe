@@ -1,4 +1,5 @@
 defmodule Absinthe.Blueprint.Schema.TypeExtensionDefinition do
+  @moduledoc false
   defstruct definition: nil,
             module: nil,
             source_location: nil,

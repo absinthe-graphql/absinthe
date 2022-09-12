@@ -53,7 +53,7 @@ We've already defined the `:post` type, but let's go ahead and add an
 `:author` field that points back to our `:user` type. In
 `blog_web/schema/content_types.ex`:
 
-``` elixir
+```elixir
 object :post do
 
   # post fields we defined earlier...
@@ -176,7 +176,7 @@ end
 To make the `:naive_datetime` type available, add an `import_types` line to
 your `blog_web/schema.ex`:
 
-``` elixir
+```elixir
 import_types Absinthe.Type.Custom
 ```
 
@@ -232,7 +232,7 @@ first argument to a resolver to match the parent object of a field. In
 this case, that parent object would be a `Blog.Accounts.User` Ecto
 schema:
 
-``` elixir
+```elixir
 # Add this:
 def list_posts(%Blog.Accounts.User{} = author, args, _resolution) do
   {:ok, Blog.Content.list_posts(author, args)}
@@ -249,6 +249,8 @@ and date (if it's provided; the `:date` argument is optional). The
 resolver, just as when it's used for the top level query `:posts`,
 returns the posts in an `:ok` tuple.
 
+> #### Tip {: .tip}
+>
 > Check out the full implementation of logic for
 > `Blog.Content.list_posts/3`--and some simple seed data--in
 > the
@@ -261,7 +263,7 @@ with the query.
 
 It should look something like this:
 
-<img style="box-shadow: 0 0 6px #ccc;" src="/guides/assets/tutorial/graphiql_user_posts.png" alt=""/>
+<img style="box-shadow: 0 0 6px #ccc;" src="assets/tutorial/graphiql_user_posts.png" alt=""/>
 
 ## Next Step
 

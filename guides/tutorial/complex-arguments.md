@@ -10,7 +10,11 @@ Support creation of a user with their email address:
 
 ```graphql
 mutation CreateEmailUser {
-  createUser(contact: {type: EMAIL, value: "foo@bar.com"}, name: "Jane", password: "hunter1") {
+  createUser(
+    contact: { type: EMAIL, value: "foo@bar.com" }
+    name: "Jane"
+    password: "hunter1"
+  ) {
     id
     contacts {
       type
@@ -24,7 +28,11 @@ And by using their phone number:
 
 ```graphql
 mutation CreatePhoneUser {
-  createUser(contact: {type: PHONE, value: "+1 123 5551212"}, name: "Joe", password: "hunter2") {
+  createUser(
+    contact: { type: PHONE, value: "+1 123 5551212" }
+    name: "Joe"
+    password: "hunter2"
+  ) {
     id
     contacts {
       type
@@ -55,6 +63,8 @@ We're using the `:as` option here to make sure the parsed enum is represented by
 when it's passed to our controllers; this is to ease integration with our Ecto schema
 (by default, the enum values are passed as atoms).
 
+> #### Note {: .neutral}
+>
 > The standard convention for representing incoming enum values in
 > GraphQL documents are in all caps. For instance, given our settings
 > here, the accepted values would be `PHONE` and `EMAIL` (without
@@ -82,7 +92,9 @@ end
 Note that we name this type `:contact_input`. Input object types have
 their own names, and the `_input` suffix is common.
 
-> Important: It's very important to remember that only input
+> #### Important {: .tip}
+>
+> It's very important to remember that only input
 > types---basically scalars and input objects---can be used to model
 > input.
 
@@ -130,6 +142,8 @@ account with `:admin` set to `true`) can create a user.
 
 Everyone else gets an `"Access denied"` error for this field.
 
+> #### Note {: .neutral}
+>
 > To see the Ecto-related implementation of the
 > `Blog.Accounts.create_user/1` function and the (stubbed) authentication logic we're
 > using for this example, see the [absinthe_tutorial](https://github.com/absinthe-graphql/absinthe_tutorial)
@@ -137,8 +151,10 @@ Everyone else gets an `"Access denied"` error for this field.
 
 Here's our mutation in action in GraphiQL.
 
-<img style="box-shadow: 0 0 6px #ccc;" src="/guides/assets/tutorial/graphiql_create_user.png" alt=""/>
+<img style="box-shadow: 0 0 6px #ccc;" src="assets/tutorial/graphiql_create_user.png" alt=""/>
 
+> #### Note {: .neutral}
+>
 > Note we're sending a `Authorization` header to authenticate, which a
 > plug is handling. Make sure to read the
 > related [guide](context-and-authentication.md) for more
