@@ -324,12 +324,12 @@ defmodule Absinthe.SchemaTest do
                query: RootQueryType
              }
 
-             type RootSubscriptionTypeThing {
-               name: String
-             }
-
              type RootQueryType {
                name(familyName: Boolean): String
+             }
+
+             type RootSubscriptionTypeThing {
+               name: String
              }
              """ == Schema.to_sdl(RootsSchemaDeclaration)
     end
@@ -356,7 +356,18 @@ defmodule Absinthe.SchemaTest do
   describe "to_sdl/1" do
     test "return schema sdl" do
       assert Schema.to_sdl(SourceSchema) == """
-             schema {\n  query: RootQueryType\n}\n\ntype Foo {\n  name: String\n}\n\n\"can describe query\"\ntype RootQueryType {\n  foo: Foo\n}
+             schema {
+               query: RootQueryType
+             }
+
+             \"can describe query\"
+             type RootQueryType {
+               foo: Foo
+             }
+
+             type Foo {
+               name: String
+             }
              """
     end
   end
