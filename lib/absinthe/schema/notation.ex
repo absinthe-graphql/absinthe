@@ -502,19 +502,23 @@ defmodule Absinthe.Schema.Notation do
       |> Keyword.delete(:directives)
       |> Keyword.delete(:args)
       |> Keyword.delete(:meta)
-      |> Keyword.update(:type, nil, &handle_type/1)
+      |> Keyword.update(:type, nil, &wrap_type/1)
       |> Keyword.update(:description, nil, &wrap_in_unquote/1)
       |> Keyword.update(:default_value, nil, &wrap_in_unquote/1)
 
     {attrs, block}
   end
 
-  defp handle_type(type) when is_atom(type) do
+  defp wrap_type(type) when is_atom(type) do
     %Absinthe.Blueprint.TypeReference.Identifier{id: type}
   end
 
-  defp handle_type(%{of_type: type} = type_reference) do
-    %{type_reference | of_type: handle_type(type)}
+  defp wrap_type(%{of_type: type} = type_reference) do
+    %{type_reference | of_type: wrap_type(type)}
+  end
+
+  defp wrap_type(%Absinthe.Blueprint.TypeReference.Identifier{} = type) do
+    type
   end
 
   # FIELDS
@@ -1327,7 +1331,8 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defmacro non_null(type) do
-    %Absinthe.Blueprint.TypeReference.NonNull{of_type: expand_ast(type, __CALLER__)}
+    type = type |> expand_ast(__CALLER__) |> build_identifier()
+    %Absinthe.Blueprint.TypeReference.NonNull{of_type: type}
   end
 
   @doc """
@@ -1336,7 +1341,8 @@ defmodule Absinthe.Schema.Notation do
   See `field/3` for examples
   """
   defmacro list_of(type) do
-    %Absinthe.Blueprint.TypeReference.List{of_type: expand_ast(type, __CALLER__)}
+    type = type |> expand_ast(__CALLER__) |> build_identifier()
+    %Absinthe.Blueprint.TypeReference.List{of_type: type}
   end
 
   @placement {:import_fields, [under: [:input_object, :interface, :object]]}
@@ -1579,7 +1585,7 @@ defmodule Absinthe.Schema.Notation do
       |> Keyword.put_new(:name, to_string(identifier))
       |> Keyword.delete(:directives)
       |> Keyword.delete(:deprecate)
-      |> Keyword.update(:type, nil, &handle_type/1)
+      |> Keyword.update(:type, nil, &wrap_type/1)
       |> Keyword.update(:description, nil, &wrap_in_unquote/1)
       |> Keyword.update(:default_value, nil, &wrap_in_unquote/1)
 
@@ -1721,8 +1727,8 @@ defmodule Absinthe.Schema.Notation do
   @doc false
   # Record an implemented interface in the current scope
   def record_interface!(env, type) do
-    type = expand_ast(type, env)
-    type = %Absinthe.Blueprint.TypeReference.Identifier{id: type}
+    type = type |> expand_ast(env) |> build_identifier
+
     put_attr(env.module, {:interface, type})
   end
 
@@ -1747,8 +1753,8 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def record_type!(env, type) do
-    type = expand_ast(type, env)
-    type = %Absinthe.Blueprint.TypeReference.Identifier{id: type}
+    type = type |> expand_ast(env) |> build_identifier()
+
     put_attr(env.module, {:type, type})
   end
 
@@ -1927,6 +1933,18 @@ defmodule Absinthe.Schema.Notation do
         line: env.line
       }
     }
+  end
+
+  def build_identifier(%wrapper{} = type)
+      when wrapper in [
+             Absinthe.Blueprint.TypeReference.NonNull,
+             Absinthe.Blueprint.TypeReference.List
+           ] do
+    type
+  end
+
+  def build_identifier(type) when is_atom(type) or is_binary(type) do
+    %Absinthe.Blueprint.TypeReference.Identifier{id: type}
   end
 
   @scope_map %{

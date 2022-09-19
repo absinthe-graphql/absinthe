@@ -1003,7 +1003,6 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
       )
     end
 
-    @tag :o
     test "Invalid scalar input on mutation, no suggestion, custom error" do
       assert_fails_validation(
         """
