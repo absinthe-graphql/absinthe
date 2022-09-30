@@ -1,6 +1,6 @@
 defmodule Absinthe.Adapter.Underscore do
   @moduledoc """
-  Underscores external input and leaves external input alone. Unlike the
+  Underscores internal input and leaves external input alone. Unlike the
   `Absinthe.Adapter.Passthrough` this does not break introspection (because
   introspection relies on underscoring incoming introspection queries which we
   still do).
