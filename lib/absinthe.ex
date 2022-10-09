@@ -3,7 +3,7 @@ defmodule Absinthe do
   Documentation for the Absinthe package, a toolkit for building GraphQL
   APIs with Elixir.
 
-  For usage information, see [the documentation](http://hexdocs.pm/absinthe), which
+  For usage information, see [the documentation](https://hexdocs.pm/absinthe), which
   includes guides, API information for important modules, and links to useful resources.
   """
 

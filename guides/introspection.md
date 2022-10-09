@@ -121,7 +121,7 @@ end
 ```
 
 If you'd prefer to use a desktop application, we recommend using the pre-built
-[Electron](http://electron.atom.io)-based wrapper application,
+[Electron](https://electron.atom.io)-based wrapper application,
 [GraphiQL.app](https://github.com/skevy/graphiql-app).
 
 ### GraphQL Hub

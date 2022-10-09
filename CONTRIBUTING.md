@@ -39,4 +39,4 @@ Some things that will increase the chance that your pull request is accepted:
 
 Thanks again for helping!
 
-[commit]: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
+[commit]: https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html

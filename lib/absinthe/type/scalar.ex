@@ -19,7 +19,7 @@ defmodule Absinthe.Type.Scalar do
 
   ## Examples
 
-  Supporting a time format in ISOz format, using [Timex](http://hexdocs.pm/timex):
+  Supporting a time format in ISOz format, using [Timex](https://hexdocs.pm/timex):
 
   ```
   scalar :time do
