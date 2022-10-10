@@ -89,7 +89,7 @@ end
 ```
 
 Phoenix generates the `MyAppWeb.ConnCase` test helper module. This supplies the
-`conn` variable containing the request and response.  It also has helper functions 
+`conn` variable containing the request and response. It also has helper functions 
 such as [`post/3`](https://hexdocs.pm/phoenix/Phoenix.ConnTest.html#post/3)
 and [`json_response/2`](https://hexdocs.pm/phoenix/Phoenix.ConnTest.html#json_response/2).
 
