@@ -19,13 +19,13 @@ defmodule Absinthe.Type.Scalar do
 
   ## Examples
 
-  Supporting a time format in ISOz format, using [Timex](https://hexdocs.pm/timex):
+  Supporting datetime in the ISO8601 format for UTC only, using [Timex](https://hexdocs.pm/timex):
 
   ```
-  scalar :time do
-    description "Time (in ISOz format)"
-    parse &Timex.DateFormat.parse(&1, "{ISOz}")
-    serialize &Timex.DateFormat.format!(&1, "{ISOz}")
+  scalar :isoz_datetime do
+    description "UTC only ISO8601 date time"
+    parse &Timex.parse(&1, "{ISO:Extended:Z}")
+    serialize &Timex.format!(&1, "{ISO:Extended:Z}")
   end
   ```
   """
