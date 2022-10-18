@@ -17,15 +17,23 @@ defmodule Absinthe.Type.Scalar do
   * `:integer` - Represents non-fractional signed whole numeric value. **By default it is not compliant with the GraphQl Specification**, it can represent values between `-(2^53 - 1)` and `2^53 - 1` as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754). To use the [GraphQl compliant Int](https://spec.graphql.org/October2021/#sec-Int), representing values between `-2^31` and `2^31 - 1`, in your schema `use Absinthe.Schema, use_spec_compliant_int_scalar: true`.
   * `:string` - Represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text. See the [GraphQL Specification](https://www.graphql.org/learn/schema/#scalar-types).
 
-  ## Examples
 
-  Supporting a time format in ISOz format, using [Timex](http://hexdocs.pm/timex):
+  ## Built-in custom types
+
+  Note that absinthe includes a few generic extra scalar types in `Absinthe.Type.Custom`,
+  these are not part of the GraphQL spec thus they must be explicitly imported.
+  Consider using them before implementing a custom type.
+
+
+  ## Example
+
+  Supporting ISO8601 week date format, using [Timex](https://hexdocs.pm/timex):
 
   ```
-  scalar :time do
-    description "Time (in ISOz format)"
-    parse &Timex.DateFormat.parse(&1, "{ISOz}")
-    serialize &Timex.DateFormat.format!(&1, "{ISOz}")
+  scalar :iso_week_date do
+    description "ISO8601 week date (ex: 2022-W42-2)"
+    parse &Timex.parse(&1, "{YYYY}-W{Wiso}-{WDmon}")
+    serialize &Timex.format!(&1, "{YYYY}-W{Wiso}-{WDmon}")
   end
   ```
   """

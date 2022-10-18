@@ -7,7 +7,7 @@ defmodule Absinthe.Type.BuiltIns.SpecCompliantInt do
     description """
     The `Int` scalar type represents non-fractional signed whole numeric
     values between `-2^31` and `2^31 - 1`, as outlined in the
-    [GraphQl spec](ttps://spec.graphql.org/October2021/#sec-Int).
+    [GraphQl spec](https://spec.graphql.org/October2021/#sec-Int).
     """
 
     serialize &__MODULE__.serialize_int/1

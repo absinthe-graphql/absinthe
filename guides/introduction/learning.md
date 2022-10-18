@@ -8,7 +8,7 @@ The following are some Absinthe-specific educational resources that are availabl
 
 ## Online Resources
 
-* [Website](http://absinthe-graphql.org) (mostly just links elsewhere)
+* [Website](https://absinthe-graphql.org) (mostly just links elsewhere)
 * [Documentation](https://hexdocs.pm/absinthe) (current stable release)
 * [How to GraphQL (with Absinthe)](https://www.howtographql.com/graphql-elixir/0-introduction/)
 
@@ -21,4 +21,4 @@ The following are some Absinthe-specific educational resources that are availabl
 
 There's a ton of GraphQL resources on the web.
 
-The [official website](http://graphql.org/) and [How to GraphQL](https://www.howtographql.com) are good places to start.
+The [official website](https://graphql.org/) and [How to GraphQL](https://www.howtographql.com) are good places to start.
