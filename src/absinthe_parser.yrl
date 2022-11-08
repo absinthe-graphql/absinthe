@@ -178,6 +178,7 @@ ValueConst -> ObjectValueConst :   build_ast_node('ObjectValue',  #{'fields' => 
 
 EnumValue -> Name : extract_binary('$1').
 
+ListValueConst -> '[' ']' : [].
 ListValueConst -> '[' ValuesConst ']' : '$2'.
 ValuesConst -> ValueConst : ['$1'].
 ValuesConst -> ValueConst ValuesConst : ['$1'|'$2'].

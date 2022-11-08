@@ -4,6 +4,18 @@ defmodule Absinthe.Phase.Parse.ConstUsageTest do
   @moduletag :parser
 
   describe "composed constants" do
+    test "list in a constant location can be empty " do
+      result =
+        """
+          schema @feature(name: []){
+            query: Query
+          }
+        """
+        |> run
+
+      assert {:ok, _} = result
+    end
+
     test "list in a constant location cannot contain variables " do
       result =
         """
@@ -181,7 +193,9 @@ defmodule Absinthe.Phase.Parse.ConstUsageTest do
   end
 
   def run(input) do
-    {:error, blueprint} = Absinthe.Phase.Parse.run(input)
-    {:error, blueprint.execution.validation_errors}
+    case Absinthe.Phase.Parse.run(input) do
+      {:error, blueprint} -> {:error, blueprint.execution.validation_errors}
+      {:ok, blueprint} -> {:ok, blueprint}
+    end
   end
 end
