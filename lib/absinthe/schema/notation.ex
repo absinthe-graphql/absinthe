@@ -301,33 +301,6 @@ defmodule Absinthe.Schema.Notation do
     |> record_extend!([], block, [])
   end
 
-  @placement {:schema, [toplevel: true, extend: true]}
-  @doc """
-  Declare a schema
-
-  Optional declaration of the schema. Useful if you want to add directives
-  to your schema declaration
-
-  ## Placement
-
-  #{Utils.placement_docs(@placement)}
-
-  ## Examples
-
-  ```
-  schema do
-    directive :feature
-    field :query, :query
-    # ...
-  end
-  ```
-  """
-  defmacro schema(do: block) do
-    __CALLER__
-    |> recordable!(:schema, @placement[:schema])
-    |> record_schema!(block)
-  end
-
   @placement {:deprecate, [under: [:field]]}
   @doc """
   Mark a field as deprecated
@@ -1382,94 +1355,25 @@ defmodule Absinthe.Schema.Notation do
     put_attr(__CALLER__.module, {:import_fields, {source_criteria, opts}})
   end
 
-  @placement {:import_types, [toplevel: true]}
-  @doc """
-  Import types from another module
-
-  Very frequently your schema module will simply have the `query` and `mutation`
-  blocks, and you'll want to break out your other types into other modules. This
-  macro imports those types for use the current module.
-
-  To selectively import types you can use the `:only` and `:except` opts.
-
-  ## Placement
-
-  #{Utils.placement_docs(@placement)}
-
-  ## Examples
-  ```
-  import_types MyApp.Schema.Types
-
-  import_types MyApp.Schema.Types.{TypesA, TypesB}
-
-  import_types MyApp.Schema.Types, only: [:foo]
-
-  import_types MyApp.Schema.Types, except: [:bar]
-  ```
-  """
-  defmacro import_types(type_module_ast, opts \\ []) do
-    env = __CALLER__
-
-    type_module_ast
-    |> Macro.expand(env)
-    |> do_import_types(env, opts)
+  @doc false
+  defmacro import_types(_type_module_ast, _opts \\ []) do
+    raise Absinthe.Schema.Notation.Error,
+          "Cannot use `import_types` outside of a schema module. " <>
+            "Make sure you are using `use Absinthe.Schema`"
   end
 
-  @placement {:import_directives, [toplevel: true]}
-  @doc """
-  Import directives from another module
-
-  To selectively import directives you can use the `:only` and `:except` opts.
-
-  ## Placement
-  #{Utils.placement_docs(@placement)}
-
-  ## Examples
-  ```
-  import_directives MyApp.Schema.Directives
-
-  import_directives MyApp.Schema.Directives.{DirectivesA, DirectivesB}
-
-  import_directives MyApp.Schema.Directives, only: [:foo]
-
-  import_directives MyApp.Schema.Directives, except: [:bar]
-  ```
-  """
-
-  defmacro import_directives(type_module_ast, opts \\ []) do
-    env = __CALLER__
-
-    type_module_ast
-    |> Macro.expand(env)
-    |> do_import_directives(env, opts)
+  @doc false
+  defmacro import_directives(_type_module_ast, _opts \\ []) do
+    raise Absinthe.Schema.Notation.Error,
+          "Cannot use `import_directives` outside of a schema module. " <>
+            "Make sure you are using `use Absinthe.Schema`"
   end
 
-  @placement {:import_type_extensions, [toplevel: true]}
-  @doc """
-  Import type_extensions from another module
-
-  To selectively import type_extensions you can use the `:only` and `:except` opts.
-
-  ## Placement
-  #{Utils.placement_docs(@placement)}
-
-  ## Examples
-  ```
-  import_type_extensions MyApp.Schema.TypeExtensions
-
-  import_type_extensions MyApp.Schema.TypeExtensions.{TypeExtensionsA, TypeExtensionsB}
-
-  import_type_extensions MyApp.Schema.TypeExtensions, only: [:foo]
-
-  import_type_extensions MyApp.Schema.TypeExtensions, except: [:bar]
-  ```
-  """
-  defmacro import_type_extensions(type_module_ast, opts \\ []) do
-    env = __CALLER__
-
-    type_module_ast
-    |> Macro.expand(env)
-    |> do_import_type_extensions(env, opts)
+  @doc false
+  defmacro import_type_extensions(_type_module_ast, _opts \\ []) do
+    raise Absinthe.Schema.Notation.Error,
+          "Cannot use `import_type_extensions` outside of a schema module. " <>
+            "Make sure you are using `use Absinthe.Schema`"
   end
 
   @placement {:import_sdl, [toplevel: true]}
@@ -1983,142 +1887,6 @@ defmodule Absinthe.Schema.Notation do
     identifier
     |> Atom.to_string()
     |> Absinthe.Utils.camelize()
-  end
-
-  defp do_import_types({{:., _, [{:__MODULE__, _, _}, :{}]}, _, modules_ast_list}, env, opts) do
-    for {_, _, leaf} <- modules_ast_list do
-      type_module = Module.concat([env.module | leaf])
-
-      do_import_types(type_module, env, opts)
-    end
-  end
-
-  defp do_import_types(
-         {{:., _, [{:__aliases__, _, [{:__MODULE__, _, _} | tail]}, :{}]}, _, modules_ast_list},
-         env,
-         opts
-       ) do
-    root_module = Module.concat([env.module | tail])
-
-    for {_, _, leaf} <- modules_ast_list do
-      type_module = Module.concat([root_module | leaf])
-
-      do_import_types(type_module, env, opts)
-    end
-  end
-
-  defp do_import_types({{:., _, [{:__aliases__, _, root}, :{}]}, _, modules_ast_list}, env, opts) do
-    root_module = Module.concat(root)
-    root_module_with_alias = Keyword.get(env.aliases, root_module, root_module)
-
-    for {_, _, leaf} <- modules_ast_list do
-      type_module = Module.concat([root_module_with_alias | leaf])
-
-      do_import_types(type_module, env, opts)
-    end
-  end
-
-  defp do_import_types(module, env, opts) do
-    Module.put_attribute(env.module, :__absinthe_type_imports__, [
-      {module, opts} | Module.get_attribute(env.module, :__absinthe_type_imports__) || []
-    ])
-
-    []
-  end
-
-  defp do_import_directives({{:., _, [{:__MODULE__, _, _}, :{}]}, _, modules_ast_list}, env, opts) do
-    for {_, _, leaf} <- modules_ast_list do
-      type_module = Module.concat([env.module | leaf])
-
-      do_import_directives(type_module, env, opts)
-    end
-  end
-
-  defp do_import_directives(
-         {{:., _, [{:__aliases__, _, [{:__MODULE__, _, _} | tail]}, :{}]}, _, modules_ast_list},
-         env,
-         opts
-       ) do
-    root_module = Module.concat([env.module | tail])
-
-    for {_, _, leaf} <- modules_ast_list do
-      type_module = Module.concat([root_module | leaf])
-
-      do_import_directives(type_module, env, opts)
-    end
-  end
-
-  defp do_import_directives(
-         {{:., _, [{:__aliases__, _, root}, :{}]}, _, modules_ast_list},
-         env,
-         opts
-       ) do
-    root_module = Module.concat(root)
-    root_module_with_alias = Keyword.get(env.aliases, root_module, root_module)
-
-    for {_, _, leaf} <- modules_ast_list do
-      type_module = Module.concat([root_module_with_alias | leaf])
-
-      do_import_directives(type_module, env, opts)
-    end
-  end
-
-  defp do_import_directives(module, env, opts) do
-    Module.put_attribute(env.module, :__absinthe_directive_imports__, [
-      {module, opts} | Module.get_attribute(env.module, :__absinthe_directive_imports__) || []
-    ])
-
-    []
-  end
-
-  defp do_import_type_extensions(
-         {{:., _, [{:__MODULE__, _, _}, :{}]}, _, modules_ast_list},
-         env,
-         opts
-       ) do
-    for {_, _, leaf} <- modules_ast_list do
-      type_module = Module.concat([env.module | leaf])
-
-      do_import_type_extensions(type_module, env, opts)
-    end
-  end
-
-  defp do_import_type_extensions(
-         {{:., _, [{:__aliases__, _, [{:__MODULE__, _, _} | tail]}, :{}]}, _, modules_ast_list},
-         env,
-         opts
-       ) do
-    root_module = Module.concat([env.module | tail])
-
-    for {_, _, leaf} <- modules_ast_list do
-      type_module = Module.concat([root_module | leaf])
-
-      do_import_type_extensions(type_module, env, opts)
-    end
-  end
-
-  defp do_import_type_extensions(
-         {{:., _, [{:__aliases__, _, root}, :{}]}, _, modules_ast_list},
-         env,
-         opts
-       ) do
-    root_module = Module.concat(root)
-    root_module_with_alias = Keyword.get(env.aliases, root_module, root_module)
-
-    for {_, _, leaf} <- modules_ast_list do
-      type_module = Module.concat([root_module_with_alias | leaf])
-
-      do_import_type_extensions(type_module, env, opts)
-    end
-  end
-
-  defp do_import_type_extensions(module, env, opts) do
-    Module.put_attribute(env.module, :__absinthe_type_extension_imports__, [
-      {module, opts}
-      | Module.get_attribute(env.module, :__absinthe_type_extension_imports__) || []
-    ])
-
-    []
   end
 
   @spec do_import_sdl(Macro.Env.t(), nil | String.t() | Macro.t(), [import_sdl_option()]) ::

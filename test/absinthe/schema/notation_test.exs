@@ -637,6 +637,56 @@ defmodule Absinthe.Schema.NotationTest do
     )
   end
 
+  describe "imports" do
+    test "Cannot use import_types in Absinthe.Schema.Notation module" do
+      message =
+        "Cannot use `import_types` outside of a schema module. Make sure you are using `use Absinthe.Schema`"
+
+      assert_raise(Absinthe.Schema.Notation.Error, message, fn ->
+        """
+        defmodule MyTestSchema.ImportTypesError do
+          use Absinthe.Schema.Notation
+
+          import_types Foo
+        end
+        """
+        |> Code.eval_string([], __ENV__)
+      end)
+    end
+
+    test "Cannot use import_directives in Absinthe.Schema.Notation module" do
+      message =
+        "Cannot use `import_directives` outside of a schema module. Make sure you are using `use Absinthe.Schema`"
+
+      assert_raise(Absinthe.Schema.Notation.Error, message, fn ->
+        """
+        defmodule MyTestSchema.ImportTypesError do
+          use Absinthe.Schema.Notation
+
+          import_directives Foo
+        end
+        """
+        |> Code.eval_string([], __ENV__)
+      end)
+    end
+
+    test "Cannot use import_type_extensions in Absinthe.Schema.Notation module" do
+      message =
+        "Cannot use `import_type_extensions` outside of a schema module. Make sure you are using `use Absinthe.Schema`"
+
+      assert_raise(Absinthe.Schema.Notation.Error, message, fn ->
+        """
+        defmodule MyTestSchema.ImportTypesError do
+          use Absinthe.Schema.Notation
+
+          import_type_extensions Foo
+        end
+        """
+        |> Code.eval_string([], __ENV__)
+      end)
+    end
+  end
+
   defmodule WithFeatureDirective do
     use Absinthe.Schema.Prototype
 

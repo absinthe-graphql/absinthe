@@ -26,7 +26,10 @@ defmodule Absinthe.Mixfile do
         formatters: ["html", "epub"],
         groups_for_modules: groups_for_modules(),
         extras: extras(),
-        groups_for_extras: groups_for_extras()
+        groups_for_extras: groups_for_extras(),
+        groups_for_functions: [
+          Notation: &(&1[:group] == :notation)
+        ]
       ],
       deps: deps(),
       dialyzer: [
