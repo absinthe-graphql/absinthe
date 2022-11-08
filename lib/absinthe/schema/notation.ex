@@ -95,6 +95,7 @@ defmodule Absinthe.Schema.Notation do
 
   See `Absinthe.Schema.subscription/1` for details
   """
+  @doc group: :notation
   defmacro config(config_fun) do
     __CALLER__
     |> recordable!(:config, @placement[:config])
@@ -149,6 +150,7 @@ defmodule Absinthe.Schema.Notation do
 
   See the `Absinthe.Schema.subscription/2` macro docs for additional details
   """
+  @doc group: :notation
   defmacro trigger(mutations, attrs) do
     __CALLER__
     |> recordable!(:trigger, @placement[:trigger])
@@ -185,6 +187,7 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
+  @doc group: :notation
   defmacro object(identifier, attrs \\ [], block)
 
   defmacro object(identifier, attrs, do: block) do
@@ -235,6 +238,7 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
+  @doc group: :notation
   defmacro interfaces(ifaces) when is_list(ifaces) do
     __CALLER__
     |> recordable!(:interfaces, @placement[:interfaces])
@@ -274,6 +278,7 @@ defmodule Absinthe.Schema.Notation do
     :scalar,
     :union
   ]
+  @doc group: :notation
   defmacro extend({type, meta, [attr]}, attrs, do: block)
            when type in @extendable_types and is_list(attrs) do
     block = {type, meta, [attr] ++ [[do: block]]}
@@ -293,6 +298,7 @@ defmodule Absinthe.Schema.Notation do
     |> record_extend!([], block, [])
   end
 
+  @doc group: :notation
   defmacro extend({:schema, meta, _}, do: block) do
     block = {:schema, meta, [] ++ [[do: block]]}
 
@@ -331,6 +337,7 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
+  @doc group: :notation
   defmacro deprecate(msg \\ nil) do
     __CALLER__
     |> recordable!(:deprecate, @placement[:deprecate])
@@ -359,6 +366,7 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
+  @doc group: :notation
   defmacro interface(identifier) do
     __CALLER__
     |> recordable!(:interface_attribute, @placement[:interface_attribute])
@@ -393,6 +401,7 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
+  @doc group: :notation
   defmacro interface(identifier, attrs \\ [], do: block) do
     __CALLER__
     |> recordable!(:interface, @placement[:interface])
@@ -425,6 +434,7 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
+  @doc group: :notation
   defmacro resolve_type(func_ast) do
     __CALLER__
     |> recordable!(:resolve_type, @placement[:resolve_type])
@@ -488,7 +498,7 @@ defmodule Absinthe.Schema.Notation do
 
   See `field/4`
   """
-
+  @doc group: :notation
   defmacro field(identifier, attrs) when is_list(attrs) do
     {attrs, block} = handle_field_attrs(attrs, __CALLER__)
 
@@ -510,6 +520,7 @@ defmodule Absinthe.Schema.Notation do
 
   See `field/4`
   """
+  @doc group: :notation
   defmacro field(identifier, attrs, do: block) when is_list(attrs) do
     {attrs, more_block} = handle_field_attrs(attrs, __CALLER__)
     block = more_block ++ List.wrap(block)
@@ -556,6 +567,7 @@ defmodule Absinthe.Schema.Notation do
   field :location, type: :location
   ```
   """
+  @doc group: :notation
   defmacro field(identifier, type, attrs, do: block) do
     attrs = Keyword.put(attrs, :type, type)
     {attrs, more_block} = handle_field_attrs(attrs, __CALLER__)
@@ -637,6 +649,7 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
+  @doc group: :notation
   defmacro resolve(func_ast) do
     __CALLER__
     |> recordable!(:resolve, @placement[:resolve])
@@ -675,6 +688,7 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
+  @doc group: :notation
   defmacro complexity(func_ast) do
     __CALLER__
     |> recordable!(:complexity, @placement[:complexity])
@@ -682,6 +696,7 @@ defmodule Absinthe.Schema.Notation do
   end
 
   @placement {:middleware, [under: [:field]]}
+  @doc group: :notation
   defmacro middleware(new_middleware, opts \\ []) do
     __CALLER__
     |> recordable!(:middleware, @placement[:middleware])
@@ -695,6 +710,7 @@ defmodule Absinthe.Schema.Notation do
 
   #{Utils.placement_docs(@placement)}
   """
+  @doc group: :notation
   defmacro is_type_of(func_ast) do
     __CALLER__
     |> recordable!(:is_type_of, @placement[:is_type_of])
@@ -720,6 +736,7 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
+  @doc group: :notation
   defmacro arg(identifier, type, attrs) do
     {attrs, block} = handle_arg_attrs(identifier, type, attrs)
 
@@ -733,6 +750,7 @@ defmodule Absinthe.Schema.Notation do
 
   See `arg/3`
   """
+  @doc group: :notation
   defmacro arg(identifier, attrs) when is_list(attrs) do
     {attrs, block} = handle_arg_attrs(identifier, nil, attrs)
 
@@ -769,6 +787,7 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
+  @doc group: :notation
   defmacro scalar(identifier, attrs, do: block) do
     __CALLER__
     |> recordable!(:scalar, @placement[:scalar])
@@ -780,6 +799,7 @@ defmodule Absinthe.Schema.Notation do
 
   See `scalar/3`
   """
+  @doc group: :notation
   defmacro scalar(identifier, do: block) do
     __CALLER__
     |> recordable!(:scalar, @placement[:scalar])
@@ -803,6 +823,7 @@ defmodule Absinthe.Schema.Notation do
 
   #{Utils.placement_docs(@placement)}
   """
+  @doc group: :notation
   defmacro serialize(func_ast) do
     __CALLER__
     |> recordable!(:serialize, @placement[:serialize])
@@ -824,6 +845,7 @@ defmodule Absinthe.Schema.Notation do
                 ]
               ]}
   @doc false
+  @doc group: :notation
   defmacro private(owner, key, value) do
     __CALLER__
     |> recordable!(:private, @placement[:private])
@@ -859,6 +881,7 @@ defmodule Absinthe.Schema.Notation do
 
   #{Utils.placement_docs(@placement)}
   """
+  @doc group: :notation
   defmacro meta(key, value) do
     __CALLER__
     |> recordable!(:meta, @placement[:meta])
@@ -899,6 +922,7 @@ defmodule Absinthe.Schema.Notation do
 
   #{Utils.placement_docs(@placement)}
   """
+  @doc group: :notation
   defmacro meta(keyword_list) do
     __CALLER__
     |> recordable!(:meta, @placement[:meta])
@@ -918,6 +942,7 @@ defmodule Absinthe.Schema.Notation do
 
   #{Utils.placement_docs(@placement)}
   """
+  @doc group: :notation
   defmacro parse(func_ast) do
     __CALLER__
     |> recordable!(:parse, @placement[:parse])
@@ -999,12 +1024,14 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
+  @doc group: :notation
   defmacro directive(identifier, attrs, do: block) when is_list(attrs) when not is_nil(block) do
     __CALLER__
     |> recordable!(:directive, @placement[:directive])
     |> record_directive!(identifier, attrs, block)
   end
 
+  @doc group: :notation
   defmacro directive(identifier, do: block) when not is_nil(block) do
     __CALLER__
     |> recordable!(:directive, @placement[:directive])
@@ -1017,6 +1044,7 @@ defmodule Absinthe.Schema.Notation do
     |> record_applied_directive!(identifier, attrs)
   end
 
+  @doc group: :notation
   defmacro directive(identifier) do
     __CALLER__
     |> recordable!(:directive, @placement[:applied_directive])
@@ -1033,6 +1061,7 @@ defmodule Absinthe.Schema.Notation do
 
   #{Utils.placement_docs(@placement)}
   """
+  @doc group: :notation
   defmacro on(ast_node) do
     __CALLER__
     |> recordable!(:on, @placement[:on])
@@ -1047,6 +1076,7 @@ defmodule Absinthe.Schema.Notation do
 
   #{Utils.placement_docs(@placement)}
   """
+  @doc group: :notation
   defmacro expand(func_ast) do
     __CALLER__
     |> recordable!(:expand, @placement[:expand])
@@ -1064,6 +1094,7 @@ defmodule Absinthe.Schema.Notation do
 
   #{Utils.placement_docs(@placement)}
   """
+  @doc group: :notation
   defmacro repeatable(bool) do
     __CALLER__
     |> recordable!(:repeatable, @placement[:repeatable])
@@ -1089,6 +1120,7 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
+  @doc group: :notation
   defmacro input_object(identifier, attrs \\ [], do: block) do
     __CALLER__
     |> recordable!(:input_object, @placement[:input_object])
@@ -1125,6 +1157,7 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
+  @doc group: :notation
   defmacro union(identifier, attrs \\ [], do: block) do
     __CALLER__
     |> recordable!(:union, @placement[:union])
@@ -1146,6 +1179,7 @@ defmodule Absinthe.Schema.Notation do
 
   #{Utils.placement_docs(@placement)}
   """
+  @doc group: :notation
   defmacro types(types) do
     __CALLER__
     |> recordable!(:types, @placement[:types])
@@ -1205,6 +1239,7 @@ defmodule Absinthe.Schema.Notation do
   ```
 
   """
+  @doc group: :notation
   defmacro enum(identifier, attrs, do: block) do
     attrs = handle_enum_attrs(attrs, __CALLER__)
 
@@ -1218,6 +1253,7 @@ defmodule Absinthe.Schema.Notation do
 
   See `enum/3`
   """
+  @doc group: :notation
   defmacro enum(identifier, do: block) do
     __CALLER__
     |> recordable!(:enum, @placement[:enum])
@@ -1249,6 +1285,7 @@ defmodule Absinthe.Schema.Notation do
 
   #{Utils.placement_docs(@placement)}
   """
+  @doc group: :notation
   defmacro value(identifier, raw_attrs \\ []) do
     attrs = expand_ast(raw_attrs, __CALLER__)
 
@@ -1272,6 +1309,7 @@ defmodule Absinthe.Schema.Notation do
 
   #{Utils.placement_docs(@placement)}
   """
+  @doc group: :notation
   defmacro description(text) do
     __CALLER__
     |> recordable!(:description, @placement[:description])
@@ -1284,7 +1322,7 @@ defmodule Absinthe.Schema.Notation do
 
   See `field/3` for examples
   """
-
+  @doc group: :notation
   defmacro non_null({:non_null, _, _}) do
     raise Absinthe.Schema.Notation.Error,
           "Invalid schema notation: `non_null` must not be nested"
@@ -1299,6 +1337,7 @@ defmodule Absinthe.Schema.Notation do
 
   See `field/3` for examples
   """
+  @doc group: :notation
   defmacro list_of(type) do
     %Absinthe.Blueprint.TypeReference.List{of_type: expand_ast(type, __CALLER__)}
   end
@@ -1349,6 +1388,7 @@ defmodule Absinthe.Schema.Notation do
   end
   ```
   """
+  @doc group: :notation
   defmacro import_fields(source_criteria, opts \\ []) do
     source_criteria = expand_ast(source_criteria, __CALLER__)
 
@@ -1413,17 +1453,20 @@ defmodule Absinthe.Schema.Notation do
   TODO: Example for dynamic loading during init
   """
   @spec import_sdl([import_sdl_option(), ...]) :: Macro.t()
+  @doc group: :notation
   defmacro import_sdl(opts) when is_list(opts) do
     __CALLER__
     |> do_import_sdl(nil, opts)
   end
 
   @spec import_sdl(String.t() | Macro.t(), [import_sdl_option()]) :: Macro.t()
+  @doc group: :notation
   defmacro import_sdl(sdl, opts \\ []) do
     __CALLER__
     |> do_import_sdl(sdl, opts)
   end
 
+  @doc group: :notation
   defmacro values(values) do
     __CALLER__
     |> record_values!(values)
