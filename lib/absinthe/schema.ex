@@ -180,6 +180,19 @@ defmodule Absinthe.Schema do
   @placement {:query, [toplevel: true, extend: true]}
   @doc """
   Defines a root Query object
+
+  ## Options
+    * `:name` - The name of the root query type. Defaults to `#{@default_query_name}`
+
+  ## Example
+
+  ```elixir
+  query do
+    field :posts, list_of(:post) do
+      resolve &Resolvers.Content.list_posts/3
+    end
+  end
+  ```
   """
   @doc group: :notation
   defmacro query(raw_attrs \\ [name: @default_query_name], do: block) do
@@ -201,7 +214,12 @@ defmodule Absinthe.Schema do
   @doc """
   Defines a root Mutation object
 
-  ```
+  ## Options
+    * `:name` - The name of the root mutation type. Defaults to `#{@default_mutation_name}`
+
+  ## Example
+
+  ```elixir
   mutation do
     field :create_user, :user do
       arg :name, non_null(:string)
@@ -270,7 +288,7 @@ defmodule Absinthe.Schema do
   In your schema you articulate the interests of a subscription via the `config`
   macro:
 
-  ```
+  ```elixir
   subscription do
     field :new_users, :user do
       arg :account_id, non_null(:id)
@@ -284,7 +302,7 @@ defmodule Absinthe.Schema do
   The topic can be any term. You can broadcast a value manually to this subscription
   by doing
 
-  ```
+  ```elixir
   Absinthe.Subscription.publish(pubsub, user, [new_users: user.account_id])
   ```
 
@@ -292,7 +310,7 @@ defmodule Absinthe.Schema do
   for one or more subscriptions, so Absinthe provides some macros to help with
   that too.
 
-  ```
+  ```elixir
   subscription do
     field :new_users, :user do
       arg :account_id, non_null(:id)
@@ -316,6 +334,10 @@ defmodule Absinthe.Schema do
   Note that a subscription field can have `trigger` as many trigger blocks as you
   need, in the event that different groups of mutations return different results
   that require different topic functions.
+
+  ## Options
+    * `:name` - The name of the root subscription type. Defaults to `#{@default_subscription_name}`
+
   """
   @doc group: :notation
   defmacro subscription(raw_attrs \\ [name: @default_subscription_name], do: block) do
