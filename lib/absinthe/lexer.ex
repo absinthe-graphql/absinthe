@@ -241,7 +241,7 @@ defmodule Absinthe.Lexer do
   end
 
   defp check_limit_and_process_tokens(tokens, options, lines) do
-    limit = Map.get(options, :token_limit, 2000)
+    limit = Map.get(options, :token_limit, 15_000)
     if Enum.count(tokens) > limit do
       {:error, :exceeded_token_limit}
     else
