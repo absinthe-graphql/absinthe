@@ -1,7 +1,18 @@
-# Complexity Analysis
+# Complexity Analysis and Token Limits
 
 A misbehaving client might send a very complex GraphQL query that would require
-considerable resources to handle. In order to protect against this scenario, the
+considerable resources to handle. There are two variations of this problem:
+
+- Complex queries that overwhelm resolution resources
+- Long, invalid queries that could take considerable resources to parse, even if 
+the response is only validation errors.
+
+Either of these could be a vector for a denial-of-service attack in any GraphQL 
+service. Absinthe includes mechanisms to protect services each of these.
+
+## Complexity Analysis
+
+In order to protect against queries that could overwhel scenario, the
 complexity of a query can be estimated before it is resolved and limited to a
 specified maximum.
 
@@ -105,3 +116,12 @@ But this, at a complexity of `60`, wouldn't:
 If a document's calculated complexity exceeds the configured limit, resolution
 will be skipped and an error will be returned in the result detailing the
 calculated and maximum complexities.
+
+## Token Limits
+
+To protect a service from invalid queries that could take considerable resources to parse, 
+Absinthe includes a maximum limit on tokens in the GraphQL request document. If the lexer
+encounters more tokens than this, it will stop the parse phase and return a phase error 
+with the message `"Token limit exceeded"`. This limit is 10,000 by default and can be
+overridden by providing the option `token_limit` to `Absinthe.run`. `token_limit` could
+be an integer or `:infinity` for no limit.
