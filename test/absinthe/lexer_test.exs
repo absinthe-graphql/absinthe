@@ -94,4 +94,19 @@ defmodule Absinthe.LexerTest do
               {:"}", {7, 1}}
             ]} == Absinthe.Lexer.tokenize(@query)
   end
+
+  test "document with tokens exceeding limit" do
+    assert {:error, :exceeded_token_limit} == Absinthe.Lexer.tokenize(too_long_query())
+  end
+
+  defp too_long_query do
+    Enum.to_list(for n <- 1..10000, do: "test#{n}")
+    |> deep_query()
+  end
+
+  defp deep_query([]), do: ""
+  defp deep_query([field | rest]) do
+    "{ #{field} #{deep_query(rest)} }"
+  end
+
 end

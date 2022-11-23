@@ -14,7 +14,7 @@ defmodule Absinthe.Phase.Parse do
   def run(%Absinthe.Blueprint{} = blueprint, options) do
     options = Map.new(options)
 
-    case parse(blueprint.input) do
+    case parse(blueprint.input, options) do
       {:ok, value} ->
         {:ok, %{blueprint | input: value}}
 
@@ -44,11 +44,14 @@ defmodule Absinthe.Phase.Parse do
     {:error, blueprint}
   end
 
-  @spec tokenize(binary) :: {:ok, [tuple]} | {:error, String.t()}
-  def tokenize(input) do
-    case Absinthe.Lexer.tokenize(input) do
+  @spec tokenize(binary, Map.t()) :: {:ok, [tuple]} | {:error, String.t()}
+  def tokenize(input, options \\ %{}) do
+    case Absinthe.Lexer.tokenize(input, options) do
       {:error, rest, loc} ->
         {:error, format_raw_parse_error({:lexer, rest, loc})}
+
+      {:error, :exceeded_token_limit} ->
+        {:error, %Phase.Error{message: "Token limit exceeded", phase: __MODULE__}}
 
       other ->
         other
@@ -57,15 +60,15 @@ defmodule Absinthe.Phase.Parse do
 
   # This is because Dialyzer is telling us tokenizing can never fail,
   # but we know it's possible.
-  @dialyzer {:no_match, parse: 1}
-  @spec parse(binary | Language.Source.t()) :: {:ok, Language.Document.t()} | {:error, tuple}
-  defp parse(input) when is_binary(input) do
-    parse(%Language.Source{body: input})
+  @dialyzer {:no_match, parse: 2}
+  @spec parse(binary | Language.Source.t(), Map.t()) :: {:ok, Language.Document.t()} | {:error, tuple}
+  defp parse(input, options) when is_binary(input) do
+    parse(%Language.Source{body: input}, options)
   end
 
-  defp parse(input) do
+  defp parse(input, options) do
     try do
-      case tokenize(input.body) do
+      case tokenize(input.body, options) do
         {:ok, []} ->
           {:ok, %Language.Document{}}
 
