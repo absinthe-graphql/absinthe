@@ -122,6 +122,6 @@ calculated and maximum complexities.
 To protect a service from invalid queries that could take considerable resources to parse, 
 Absinthe includes a maximum limit on tokens in the GraphQL request document. If the lexer
 encounters more tokens than this, it will stop the parse phase and return a phase error 
-with the message `"Token limit exceeded"`. This limit is 10,000 by default and can be
+with the message `"Token limit exceeded"`. This limit is 15,000 by default and can be
 overridden by providing the option `token_limit` to `Absinthe.run`. `token_limit` could
 be an integer or `:infinity` for no limit.
