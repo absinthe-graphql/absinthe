@@ -1,11 +1,12 @@
-# Complexity Analysis and Token Limits
+# Safety Limits
 
 A misbehaving client might send a very complex GraphQL query that would require
 considerable resources to handle. There are two variations of this problem:
 
-- Complex queries that overwhelm resolution resources
-- Long, invalid queries that could take considerable resources to parse, even if 
-the response is only validation errors.
+- Complex queries that overwhelm resolution resources.
+- Extremely long queries that could take considerable resources to parse. 
+(For example, an attacker could craft a long query including thousands of 
+undefined fields or directives.)
 
 Either of these could be a vector for a denial-of-service attack in any GraphQL 
 service. Absinthe includes mechanisms to protect services each of these.
