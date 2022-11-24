@@ -12,8 +12,6 @@ defmodule Absinthe.Phase.Parse do
   def run(input, options \\ [])
 
   def run(%Absinthe.Blueprint{} = blueprint, options) do
-    options = Map.new(options)
-
     case parse(blueprint.input, options) do
       {:ok, value} ->
         {:ok, %{blueprint | input: value}}
@@ -21,7 +19,7 @@ defmodule Absinthe.Phase.Parse do
       {:error, error} ->
         blueprint
         |> add_validation_error(error)
-        |> handle_error(options)
+        |> handle_error(Map.new(options))
     end
   end
 
@@ -44,8 +42,8 @@ defmodule Absinthe.Phase.Parse do
     {:error, blueprint}
   end
 
-  @spec tokenize(binary, Map.t()) :: {:ok, [tuple]} | {:error, String.t()}
-  def tokenize(input, options \\ %{}) do
+  @spec tokenize(binary, Keyword.t()) :: {:ok, [tuple]} | {:error, String.t()}
+  def tokenize(input, options \\ []) do
     case Absinthe.Lexer.tokenize(input, options) do
       {:error, rest, loc} ->
         {:error, format_raw_parse_error({:lexer, rest, loc})}

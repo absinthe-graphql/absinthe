@@ -227,8 +227,8 @@ defmodule Absinthe.Lexer do
     {:cont, context}
   end
 
-  @spec tokenize(binary(), Map.t()) :: {:ok, [any()]} | {:error, binary(), {integer(), non_neg_integer()}}
-  def tokenize(input, options \\ %{}) do
+  @spec tokenize(binary(), Keyword.t()) :: {:ok, [any()]} | {:error, binary(), {integer(), non_neg_integer()}}
+  def tokenize(input, options \\ []) do
     lines = String.split(input, ~r/\r?\n/)
 
     case do_tokenize(input) do
@@ -241,8 +241,8 @@ defmodule Absinthe.Lexer do
   end
 
   defp check_limit_and_process_tokens(tokens, options, lines) do
-    limit = Map.get(options, :token_limit, 15_000)
-    if Enum.count(tokens) > limit do
+    limit = Keyword.get(options, :token_limit, 15_000)
+    if length(tokens) > limit do
       {:error, :exceeded_token_limit}
     else
       tokens = Enum.map(tokens, &convert_token_column(&1, lines))
