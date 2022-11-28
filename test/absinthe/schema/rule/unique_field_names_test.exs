@@ -1,7 +1,21 @@
 defmodule Absinthe.Schema.Rule.UniqueFieldNamesTest do
   use Absinthe.Case, async: true
 
-  @duplicate_object_fields ~S(
+  @duplicate_object_fields_macro ~S(
+    defmodule DuplicateObjectFields do
+      use Absinthe.Schema
+
+      query do
+      end
+
+      object :dog do
+        field :name, :string
+        field :name, :integer, name: "dogName"
+      end
+    end
+    )
+
+  @duplicate_object_fields_sdl ~S(
   defmodule DuplicateObjectFields do
     use Absinthe.Schema
 
@@ -49,11 +63,19 @@ defmodule Absinthe.Schema.Rule.UniqueFieldNamesTest do
   end
   )
 
+  test "errors on non unique object field identifier" do
+    error = ~r/The field identifier :name is not unique in type \"Dog\"./
+
+    assert_raise(Absinthe.Schema.Error, error, fn ->
+      Code.eval_string(@duplicate_object_fields_macro)
+    end)
+  end
+
   test "errors on non unique object field names" do
     error = ~r/The field \"name\" is not unique in type \"Dog\"./
 
     assert_raise(Absinthe.Schema.Error, error, fn ->
-      Code.eval_string(@duplicate_object_fields)
+      Code.eval_string(@duplicate_object_fields_sdl)
     end)
   end
 
