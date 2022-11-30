@@ -13,7 +13,7 @@ service. Absinthe includes mechanisms to protect services each of these.
 
 ## Complexity Analysis
 
-In order to protect against queries that could overwhel scenario, the
+To protect against queries that could overwhelm available resources, the
 complexity of a query can be estimated before it is resolved and limited to a
 specified maximum.
 
