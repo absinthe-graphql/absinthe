@@ -227,13 +227,15 @@ defmodule Absinthe.Lexer do
     {:cont, context}
   end
 
-  @spec tokenize(binary(), Keyword.t()) :: {:ok, [any()]} | {:error, binary(), {integer(), non_neg_integer()}}
+  @spec tokenize(binary(), Keyword.t()) ::
+          {:ok, [any()]} | {:error, binary(), {integer(), non_neg_integer()}}
   def tokenize(input, options \\ []) do
     lines = String.split(input, ~r/\r?\n/)
 
     case do_tokenize(input) do
       {:ok, tokens, "", _, _, _} ->
         check_limit_and_process_tokens(tokens, options, lines)
+
       {:ok, _, rest, _, {line, line_offset}, byte_offset} ->
         byte_column = byte_offset - line_offset + 1
         {:error, rest, byte_loc_to_char_loc({line, byte_column}, lines)}
@@ -242,6 +244,7 @@ defmodule Absinthe.Lexer do
 
   defp check_limit_and_process_tokens(tokens, options, lines) do
     limit = Keyword.get(options, :token_limit, 15_000)
+
     if length(tokens) > limit do
       {:error, :exceeded_token_limit}
     else

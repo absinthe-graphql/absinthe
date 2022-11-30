@@ -105,8 +105,8 @@ defmodule Absinthe.LexerTest do
   end
 
   defp deep_query([]), do: ""
+
   defp deep_query([field | rest]) do
     "{ #{field} #{deep_query(rest)} }"
   end
-
 end
