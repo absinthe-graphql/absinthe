@@ -35,7 +35,8 @@ defmodule Absinthe.Subscription do
   @doc """
   Add Absinthe.Subscription to your process tree.
   """
-  defdelegate start_link(opts), to: Subscription.Supervisor
+  @spec start_link(atom() | [opt()]) :: Supervisor.on_start()
+  defdelegate start_link(opts_or_pubsub), to: Subscription.Supervisor
 
   @type opt() ::
           {:pubsub, atom()} | {:compress_registry?, boolean()} | {:pool_size, pos_integer()}

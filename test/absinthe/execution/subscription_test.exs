@@ -146,7 +146,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
 
   setup_all do
     {:ok, _} = PubSub.start_link()
-    {:ok, _} = Absinthe.Subscription.start_link(pubsub: PubSub)
+    {:ok, _} = Absinthe.Subscription.start_link(PubSub)
     :ok
   end
 

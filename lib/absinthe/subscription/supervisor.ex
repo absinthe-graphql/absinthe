@@ -3,7 +3,15 @@ defmodule Absinthe.Subscription.Supervisor do
 
   use Supervisor
 
-  def start_link(opts) do
+  @spec start_link(atom() | [Absinthe.Subscription.opt()]) :: Supervisor.on_start()
+  def start_link(pubsub) when is_atom(pubsub) do
+    # start_link/1 used to take a single argument - the pub-sub - so in order
+    # to maintain compatibility for existing users of the library we still
+    # accept this argument and transform it into a keyword list.
+    start_link(pubsub: pubsub)
+  end
+
+  def start_link(opts) when is_list(opts) do
     pubsub =
       case Keyword.fetch!(opts, :pubsub) do
         [module] when is_atom(module) ->
