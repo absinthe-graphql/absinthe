@@ -42,7 +42,6 @@ defmodule Absinthe.Lexer do
   comment =
     string("#")
     |> repeat_while(any_unicode, {:not_line_terminator, []})
-    |> post_traverse({:check_token_limit, []})
 
   # Comma :: ,
   comma = ascii_char([?,])
@@ -271,7 +270,6 @@ defmodule Absinthe.Lexer do
     repeat(
       choice([
         ignore(ignored),
-        comment,
         punctuator,
         block_string_value,
         string_value,
@@ -400,15 +398,6 @@ defmodule Absinthe.Lexer do
     token_atom = value |> List.to_atom()
 
     {rest, [{token_atom, line_and_column(loc, byte_offset, length(value))}], context}
-  end
-
-  defp check_token_limit(_, _, %{token_count: count, token_limit: limit} = _context, _, _)
-       when count >= limit,
-       do: {:error, :stopped_at_token_limit}
-
-  defp check_token_limit(rest, chars, context, _loc, _byte_offset) do
-    context = Map.update(context, :token_count, 1, &(&1 + 1))
-    {rest, [chars], context}
   end
 
   def line_and_column({line, line_offset}, byte_offset, column_correction) do
