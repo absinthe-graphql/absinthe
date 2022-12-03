@@ -42,6 +42,7 @@ defmodule Absinthe.Lexer do
   comment =
     string("#")
     |> repeat_while(any_unicode, {:not_line_terminator, []})
+    |> post_traverse({:check_token_limit, []})
 
   # Comma :: ,
   comma = ascii_char([?,])
@@ -232,24 +233,19 @@ defmodule Absinthe.Lexer do
   def tokenize(input, options \\ []) do
     lines = String.split(input, ~r/\r?\n/)
 
-    case do_tokenize(input) do
+    tokenize_opts = [context: %{token_limit: Keyword.get(options, :token_limit, 15_000)}]
+
+    case do_tokenize(input, tokenize_opts) do
+      {:error, :stopped_at_token_limit, _, _, _, _} ->
+        {:error, :exceeded_token_limit}
+
       {:ok, tokens, "", _, _, _} ->
-        check_limit_and_process_tokens(tokens, options, lines)
+        tokens = Enum.map(tokens, &convert_token_column(&1, lines))
+        {:ok, tokens}
 
       {:ok, _, rest, _, {line, line_offset}, byte_offset} ->
         byte_column = byte_offset - line_offset + 1
         {:error, rest, byte_loc_to_char_loc({line, byte_column}, lines)}
-    end
-  end
-
-  defp check_limit_and_process_tokens(tokens, options, lines) do
-    limit = Keyword.get(options, :token_limit, 15_000)
-
-    if length(tokens) > limit do
-      {:error, :exceeded_token_limit}
-    else
-      tokens = Enum.map(tokens, &convert_token_column(&1, lines))
-      {:ok, tokens}
     end
   end
 
@@ -321,7 +317,19 @@ defmodule Absinthe.Lexer do
     union
   ) |> Enum.map(&String.to_charlist/1)
 
+  defp boolean_value_or_name_or_reserved_word(
+         _,
+         _,
+         %{token_count: count, token_limit: limit} = _context,
+         _,
+         _
+       )
+       when count >= limit do
+    {:error, :stopped_at_token_limit}
+  end
+
   defp boolean_value_or_name_or_reserved_word(rest, chars, context, loc, byte_offset) do
+    context = Map.update(context, :token_count, 1, &(&1 + 1))
     value = chars |> Enum.reverse()
     do_boolean_value_or_name_or_reserved_word(rest, value, context, loc, byte_offset)
   end
@@ -341,7 +349,12 @@ defmodule Absinthe.Lexer do
     {rest, [{:name, line_and_column(loc, byte_offset, length(value)), value}], context}
   end
 
+  defp labeled_token(_, _, %{token_count: count, token_limit: limit} = _context, _, _)
+       when count >= limit,
+       do: {:error, :stopped_at_token_limit}
+
   defp labeled_token(rest, chars, context, loc, byte_offset, token_name) do
+    context = Map.update(context, :token_count, 1, &(&1 + 1))
     value = chars |> Enum.reverse()
     {rest, [{token_name, line_and_column(loc, byte_offset, length(value)), value}], context}
   end
@@ -354,22 +367,48 @@ defmodule Absinthe.Lexer do
     {rest, [], Map.put(context, :token_location, line_and_column(loc, byte_offset, 3))}
   end
 
+  defp block_string_value_token(_, _, %{token_count: count, token_limit: limit} = _context, _, _)
+       when count >= limit,
+       do: {:error, :stopped_at_token_limit}
+
   defp block_string_value_token(rest, chars, context, _loc, _byte_offset) do
+    context = Map.update(context, :token_count, 1, &(&1 + 1))
     value = '"""' ++ (chars |> Enum.reverse()) ++ '"""'
 
     {rest, [{:block_string_value, context.token_location, value}],
      Map.delete(context, :token_location)}
   end
 
+  defp string_value_token(_, _, %{token_count: count, token_limit: limit} = _context, _, _)
+       when count >= limit,
+       do: {:error, :stopped_at_token_limit}
+
   defp string_value_token(rest, chars, context, _loc, _byte_offset) do
+    context = Map.update(context, :token_count, 1, &(&1 + 1))
     value = '"' ++ tl(chars |> Enum.reverse()) ++ '"'
     {rest, [{:string_value, context.token_location, value}], Map.delete(context, :token_location)}
   end
 
+  defp atom_token(_, _, %{token_count: count, token_limit: limit} = _context, _, _)
+       when count >= limit do
+    {:error, :stopped_at_token_limit}
+  end
+
   defp atom_token(rest, chars, context, loc, byte_offset) do
+    context = Map.update(context, :token_count, 1, &(&1 + 1))
     value = chars |> Enum.reverse()
     token_atom = value |> List.to_atom()
+
     {rest, [{token_atom, line_and_column(loc, byte_offset, length(value))}], context}
+  end
+
+  defp check_token_limit(_, _, %{token_count: count, token_limit: limit} = _context, _, _)
+       when count >= limit,
+       do: {:error, :stopped_at_token_limit}
+
+  defp check_token_limit(rest, chars, context, _loc, _byte_offset) do
+    context = Map.update(context, :token_count, 1, &(&1 + 1))
+    {rest, [chars], context}
   end
 
   def line_and_column({line, line_offset}, byte_offset, column_correction) do
