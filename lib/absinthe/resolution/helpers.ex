@@ -132,7 +132,9 @@ defmodule Absinthe.Resolution.Helpers do
     @type dataloader_opt ::
             {:args, map}
             | {:use_parent, true | false}
-            | {:callback, (map(), map(), map() -> any())}
+            | {:callback,
+               (map(), map(), map() -> any())
+               | (map(), map(), map(), Absinthe.Resolution.t() -> any())}
 
     @doc """
     Resolve a field with a dataloader source.
@@ -200,7 +202,7 @@ defmodule Absinthe.Resolution.Helpers do
     def dataloader(source, opts) when is_list(opts) do
       fn parent, args, %{context: %{loader: loader}} = res ->
         resource = res.definition.schema_node.identifier
-        do_dataloader(loader, source, {resource, args}, parent, opts)
+        do_dataloader(loader, source, {resource, args}, parent, res, opts)
       end
     end
 
@@ -270,7 +272,8 @@ defmodule Absinthe.Resolution.Helpers do
     in the event of a conflict, the resolver arguments win.
     - `:callback` default: return result wrapped in ok or error tuple.
     Callback that is run with result of dataloader. It receives the result as
-    the first argument, and the parent and args as second and third. Can be used
+    the first argument, and the parent and args as second and third.
+    Optionally can receive resolution as the fourth argument. Can be used
     to e.g. compute fields on the return value of the loader. Should return an
     ok or error tuple.
     - `:use_parent` default: `false`. This option affects whether or not the `dataloader/2`
@@ -310,13 +313,13 @@ defmodule Absinthe.Resolution.Helpers do
             %{batch: batch, item: item} -> {batch, item}
           end
 
-        do_dataloader(loader, source, batch_key, parent, opts)
+        do_dataloader(loader, source, batch_key, parent, res, opts)
       end
     end
 
     def dataloader(source, resource, opts) do
-      fn parent, args, %{context: %{loader: loader}} ->
-        do_dataloader(loader, source, {resource, args}, parent, opts)
+      fn parent, args, %{context: %{loader: loader}} = res ->
+        do_dataloader(loader, source, {resource, args}, parent, res, opts)
       end
     end
 
@@ -337,7 +340,7 @@ defmodule Absinthe.Resolution.Helpers do
 
     defp use_parent(loader, _source, _batch_key, _parent, _opts), do: loader
 
-    defp do_dataloader(loader, source, batch_key, parent, opts) do
+    defp do_dataloader(loader, source, batch_key, parent, res, opts) do
       args_from_opts = Keyword.get(opts, :args, %{})
 
       {batch_key, args} =
@@ -357,9 +360,19 @@ defmodule Absinthe.Resolution.Helpers do
       |> on_load(fn loader ->
         callback = Keyword.get(opts, :callback, default_callback(loader))
 
-        loader
-        |> Dataloader.get(source, batch_key, parent)
-        |> callback.(parent, args)
+        item = Dataloader.get(loader, source, batch_key, parent)
+
+        case callback do
+          callback when is_function(callback, 3) ->
+            callback.(item, parent, args)
+
+          callback when is_function(callback, 4) ->
+            callback.(item, parent, args, res)
+
+          callback ->
+            raise ArgumentError,
+                  "Callback must be a function with arity either 3 or 4, got: #{inspect(callback)}"
+        end
       end)
     end
 
