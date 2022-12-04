@@ -7,7 +7,9 @@ defmodule Absinthe.Execution.SubscriptionTest do
     @behaviour Absinthe.Subscription.Pubsub
 
     def start_link() do
-      Registry.start_link(keys: :unique, name: __MODULE__)
+      # Pubsub is implemented using a registry but we allow for duplicate keys
+      # as shown here https://github.com/absinthe-graphql/absinthe/blob/v1.7.0/lib/absinthe/subscription/supervisor.ex#L23-L31
+      Registry.start_link(keys: :duplicate, name: __MODULE__)
     end
 
     def node_name() do
@@ -130,6 +132,10 @@ defmodule Absinthe.Execution.SubscriptionTest do
           %{type: :subscription, name: op_name} = Absinthe.Blueprint.current_operation(document)
           {:ok, topic: "*", context_id: "*", document_id: op_name}
         end
+      end
+
+      field :global_context, :string do
+        config fn _, _ -> {:ok, topic: "*", context_id: "global"} end
       end
     end
 
@@ -443,6 +449,51 @@ defmodule Absinthe.Execution.SubscriptionTest do
     # we should get this twice since the different contexts prevent batching.
     assert_receive(:batch_get_group)
     assert_receive(:batch_get_group)
+  end
+
+  @subscription """
+    subscription globalContext {
+      globalContext
+    }
+  """
+  test "it de-duplicates pushes when global context and topic are constant" do
+    subscription_docs =
+      for _i <- 1..5 do
+        {:ok, subscription_doc} =
+          run_subscription(
+            @subscription,
+            Schema,
+            variables: %{},
+            context: %{pubsub: PubSub}
+          )
+
+        subscription_doc
+      end
+
+    # same subscription doc for all subs
+    assert [subscription_doc] = Enum.dedup(subscription_docs)
+
+    Absinthe.Subscription.publish(
+      PubSub,
+      "SomeMessage",
+      global_context: "*"
+    )
+
+    # Since we have 5 connections opened and 5 subscriptions
+    subscription_id = subscription_doc["subscribed"]
+
+    for _i <- 1..5 do
+      assert_receive(
+        {:broadcast,
+         %{
+           event: "subscription:data",
+           result: %{data: %{"globalContext" => "SomeMessage"}},
+           topic: ^subscription_id
+         }}
+      )
+    end
+
+    refute_receive(:broadcast)
   end
 
   describe "subscription_ids" do
