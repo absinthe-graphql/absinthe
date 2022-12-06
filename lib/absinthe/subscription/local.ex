@@ -53,7 +53,7 @@ defmodule Absinthe.Subscription.Local do
         pipeline = [
           pipeline,
           [
-            Absinthe.Phase.Document.Result,
+            result_phase(doc),
             {Absinthe.Phase.Telemetry, event: [:subscription, :publish, :stop]}
           ]
         ]
@@ -89,5 +89,23 @@ defmodule Absinthe.Subscription.Local do
     |> List.wrap()
     |> Enum.map(&to_string/1)
     |> Enum.flat_map(&Absinthe.Subscription.get(pubsub, {field, &1}))
+  end
+
+  defp result_phase(doc) do
+    # use the configured result phase from the initial pipeline
+    # this will allow the result of the subscription data to match
+    # the output of query/mutation. An example of result phase is
+    # Absinthe.Phoenix.Controller.Result where the output will have
+    # atom keys and allow struct to be returned
+
+    doc.initial_phases
+    |> Pipeline.from(Phase.Blueprint)
+    |> case do
+      [{Phase.Blueprint, opts} | _] ->
+        Keyword.get(opts, :result_phase, Phase.Document.Result)
+
+      _ ->
+        Phase.Document.Result
+    end
   end
 end
