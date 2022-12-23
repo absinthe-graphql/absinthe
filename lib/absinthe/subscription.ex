@@ -78,6 +78,8 @@ defmodule Absinthe.Subscription do
 
   @type subscription_field_spec :: {atom, term | (term -> term)}
 
+  @default_docset_runner Absinthe.Subscription.DocSetRunner.Simple
+
   @doc """
   Publish a mutation
 
@@ -103,18 +105,26 @@ defmodule Absinthe.Subscription do
   @spec publish(
           Absinthe.Subscription.Pubsub.t(),
           term,
-          Absinthe.Resolution.t() | [subscription_field_spec]
+          Absinthe.Resolution.t() | [subscription_field_spec],
+          module
         ) :: :ok
-  def publish(_pubsub, _mutation_result, []), do: :ok
+  def publish(
+        _pubsub,
+        _mutation_result,
+        _subscribed_fields,
+        opts \\ [docset_runner: @default_docset_runner]
+      )
 
-  def publish(pubsub, mutation_result, %Absinthe.Resolution{} = info) do
+  def publish(_pubsub, _mutation_result, [], _opts), do: :ok
+
+  def publish(pubsub, mutation_result, %Absinthe.Resolution{} = info, opts) do
     subscribed_fields = get_subscription_fields(info)
-    publish(pubsub, mutation_result, subscribed_fields)
+    publish(pubsub, mutation_result, subscribed_fields, opts)
   end
 
-  def publish(pubsub, mutation_result, subscribed_fields) do
+  def publish(pubsub, mutation_result, subscribed_fields, opts) do
     _ = publish_remote(pubsub, mutation_result, subscribed_fields)
-    _ = Subscription.Local.publish_mutation(pubsub, mutation_result, subscribed_fields)
+    _ = Subscription.Local.publish_mutation(pubsub, mutation_result, subscribed_fields, opts)
     :ok
   end
 
@@ -203,8 +213,9 @@ defmodule Absinthe.Subscription do
   ## Middleware callback
   @doc false
   def call(%{state: :resolved, errors: [], value: value} = res, _) do
-    with {:ok, pubsub} <- extract_pubsub(res.context) do
-      __MODULE__.publish(pubsub, value, res)
+    with {:ok, pubsub} <- extract_pubsub(res.context),
+         {:ok, docset_runner} <- extract_docset_runner(res.context) do
+      __MODULE__.publish(pubsub, value, res, docset_runner: docset_runner)
     end
 
     res
@@ -225,5 +236,13 @@ defmodule Absinthe.Subscription do
   @doc false
   def add_middleware(middleware) do
     middleware ++ [{__MODULE__, []}]
+  end
+
+  defp extract_docset_runner(context) do
+    with {:ok, docset_runner} <- Map.fetch(context, :docset_runner) do
+      {:ok, docset_runner}
+    else
+      _ -> {:ok, @default_docset_runner}
+    end
   end
 end
