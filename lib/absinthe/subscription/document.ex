@@ -8,13 +8,13 @@ defmodule Absinthe.Subscription.Document do
   defstruct [:topic, :key_strategy, :field, :initial_phases, :source, __private__: []]
 
   @type t :: %__MODULE__{
-    topic: atom(),
-    field: atom(),
-    key_strategy: term | (term -> term),
-    initial_phases: [Phase.t()],
-    source: String.t(),
-    __private__: Keyword.t()
-  }
+          topic: atom(),
+          field: atom(),
+          key_strategy: term | (term -> term),
+          initial_phases: [Phase.t()],
+          source: String.t(),
+          __private__: Keyword.t()
+        }
 
   @doc false
   def pipeline(document, options) do
