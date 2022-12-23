@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Feature: [Configurable docset runner for subscription documents](https://github.com/absinthe-graphql/absinthe/pull/1218)
 - Bug Fix: [Validate field identifier uniqueness](https://github.com/absinthe-graphql/absinthe/pull/1200)
 - Bug Fix: [Validate type references for invalid wrapped types](https://github.com/absinthe-graphql/absinthe/pull/1195)
 - Breaking Bugfix: [Validate repeatable directives on schemas](https://github.com/absinthe-graphql/absinthe/pull/1179)
