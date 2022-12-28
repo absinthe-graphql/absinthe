@@ -233,7 +233,7 @@ defmodule Absinthe.Lexer do
 
     case do_tokenize(input) do
       {:ok, tokens, "", _, _, _} ->
-        tokens = Enum.map(tokens, &convert_token_column(&1, lines))
+        tokens = optimized_map_token_column(tokens, lines)
         {:ok, tokens}
 
       {:ok, _, rest, _, {line, line_offset}, byte_offset} ->
@@ -242,12 +242,92 @@ defmodule Absinthe.Lexer do
     end
   end
 
-  defp convert_token_column({ident, loc, data}, lines) do
-    {ident, byte_loc_to_char_loc(loc, lines), data}
+  defp optimized_map_token_column(tokens, [first_line | remaining_lines]) do
+    IO.inspect(tokens, label: "tokens")
+
+    # lines and chars are 1 indexed not 0 indexed
+    do_optimized_map_token_column(
+      [],
+      tokens,
+      1,
+      first_line,
+      remaining_lines,
+      1,
+      1
+    )
   end
 
-  defp convert_token_column({ident, loc}, lines) do
-    {ident, byte_loc_to_char_loc(loc, lines)}
+  defp do_optimized_map_token_column(results, [] = _tokens, _, _, _, _, _), do: results
+
+  defp do_optimized_map_token_column(
+         results,
+         [current_token | rest_tokens],
+         line_num,
+         line_part,
+         remaining_lines,
+         char_offset,
+         byte_offset
+       ) do
+    # extract byte loc
+    {token_line_num, token_byte_col} =
+      case current_token do
+        {_, byte_location, _} -> byte_location
+        {_, byte_location} -> byte_location
+      end
+      |> IO.inspect(label: "token")
+
+    # update the current line cursor if we need to move to the next line
+    {current_line_num, current_line, remaining_lines, char_offset, byte_offset} =
+      cond do
+        token_line_num > line_num ->
+          adjust_lines_cursor(remaining_lines, token_line_num, line_num)
+          |> IO.inspect(label: "gt")
+
+        token_line_num == line_num ->
+          {line_num, line_part, remaining_lines, char_offset, byte_offset}
+          |> IO.inspect(label: "eq")
+      end
+
+    adjusted_byte_col = token_byte_col - byte_offset
+    partial_byte_prefix = binary_part(current_line, 0, adjusted_byte_col)
+    char_col = String.length(partial_byte_prefix) + char_offset
+
+    # byte_size is constant time!! https://hexdocs.pm/elixir/1.12/Kernel.html#byte_size/1
+    next_line_part =
+      binary_part(current_line, adjusted_byte_col, byte_size(current_line) - adjusted_byte_col)
+
+    next_byte_offset = token_byte_col
+    next_char_offset = char_col
+
+    result =
+      case current_token do
+        {ident, _, data} -> {ident, {token_line_num, char_col}, data}
+        {ident, _} -> {ident, {token_line_num, char_col}}
+      end
+
+    results = results ++ [result]
+
+    IO.inspect("---")
+
+    do_optimized_map_token_column(
+      results,
+      rest_tokens,
+      current_line_num,
+      next_line_part,
+      remaining_lines,
+      next_char_offset,
+      next_byte_offset
+    )
+  end
+
+  # refactor inline?
+  defp adjust_lines_cursor(lines, desired_line_num, current_line_num) do
+    IO.inspect(lines, label: "lines")
+    IO.inspect(desired_line_num, label: "desired")
+    IO.inspect(current_line_num, label: "current")
+    {_discarded, next_lines} = Enum.split(lines, desired_line_num - current_line_num - 1)
+    [current_line | remaining_lines] = next_lines
+    {desired_line_num, current_line, remaining_lines, 1, 1}
   end
 
   defp byte_loc_to_char_loc({line, byte_col}, lines) do
