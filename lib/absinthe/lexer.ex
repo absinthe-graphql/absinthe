@@ -243,7 +243,7 @@ defmodule Absinthe.Lexer do
   end
 
   defp optimized_map_token_column(tokens, [first_line | remaining_lines]) do
-    IO.inspect(tokens, label: "tokens")
+    # IO.inspect(tokens, label: "tokens")
 
     # lines and chars are 1 indexed not 0 indexed
     do_optimized_map_token_column(
