@@ -274,18 +274,20 @@ defmodule Absinthe.Lexer do
         {_, byte_location, _} -> byte_location
         {_, byte_location} -> byte_location
       end
-      |> IO.inspect(label: "token")
+
+    # |> IO.inspect(label: "token")
 
     # update the current line cursor if we need to move to the next line
     {current_line_num, current_line, remaining_lines, char_offset, byte_offset} =
       cond do
         token_line_num > line_num ->
           adjust_lines_cursor(remaining_lines, token_line_num, line_num)
-          |> IO.inspect(label: "gt")
+
+        # |> IO.inspect(label: "gt")
 
         token_line_num == line_num ->
           {line_num, line_part, remaining_lines, char_offset, byte_offset}
-          |> IO.inspect(label: "eq")
+          # |> IO.inspect(label: "eq")
       end
 
     adjusted_byte_col = token_byte_col - byte_offset
@@ -307,7 +309,7 @@ defmodule Absinthe.Lexer do
 
     results = results ++ [result]
 
-    IO.inspect("---")
+    # IO.inspect("---")
 
     do_optimized_map_token_column(
       results,
@@ -322,9 +324,9 @@ defmodule Absinthe.Lexer do
 
   # refactor inline?
   defp adjust_lines_cursor(lines, desired_line_num, current_line_num) do
-    IO.inspect(lines, label: "lines")
-    IO.inspect(desired_line_num, label: "desired")
-    IO.inspect(current_line_num, label: "current")
+    # IO.inspect(lines, label: "lines")
+    # IO.inspect(desired_line_num, label: "desired")
+    # IO.inspect(current_line_num, label: "current")
     {_discarded, next_lines} = Enum.split(lines, desired_line_num - current_line_num - 1)
     [current_line | remaining_lines] = next_lines
     {desired_line_num, current_line, remaining_lines, 1, 1}
