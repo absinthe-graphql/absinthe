@@ -247,9 +247,10 @@ defmodule Absinthe.Lexer do
   end
 
   defp optimized_map_token_column(tokens, [first_line | remaining_lines]) do
-    # IO.inspect(tokens, label: "tokens")
-
-    # lines and chars are 1 indexed not 0 indexed
+    # RIP me. Lines and columns returned by the tokenizer are 1-indexed.
+    # The lists and strings we are processing are 0-indexed.
+    # This means we'll have to start the line number and character/byte offsets at 1,
+    # but we'll have to adjust the math later when dealing with lists and strings.
     do_optimized_map_token_column(
       [],
       tokens,
@@ -261,25 +262,32 @@ defmodule Absinthe.Lexer do
     )
   end
 
+  # le base case! if there are no tokens left, return the accumulated results
   defp do_optimized_map_token_column(results, [] = _tokens, _, _, _, _, _), do: results
 
+  # le recursive case
   defp do_optimized_map_token_column(
+         # Accumulator. Tokens with locations adjusted from bytes to chars. Ex: [{:foo, {1, 2}}, {:bar, {2, 1}}]
          results,
+         # The raw tokens (will take one off the front of the list at each step)
          [current_token | rest_tokens],
+         # Which line number we're currently working on
          line_num,
+         # The line string that we're currently working on
          line_part,
+         # The list of lines that come after the current line (remove them as we process)
          remaining_lines,
+         # For the current line, how many characters we've counted so far.
          char_offset,
+         # For the current line, how many bytes we've counted so far
          byte_offset
        ) do
-    # extract byte loc
+    # extract byte loc (gotta handle two token formats)
     {token_line_num, token_byte_col} =
       case current_token do
         {_, byte_location, _} -> byte_location
         {_, byte_location} -> byte_location
       end
-
-    # |> IO.inspect(label: "token")
 
     # update the current line cursor if we need to move to the next line
     {current_line_num, current_line, remaining_lines, char_offset, byte_offset} =
@@ -287,24 +295,25 @@ defmodule Absinthe.Lexer do
         token_line_num > line_num ->
           adjust_lines_cursor(remaining_lines, token_line_num, line_num)
 
-        # |> IO.inspect(label: "gt")
-
         token_line_num == line_num ->
           {line_num, line_part, remaining_lines, char_offset, byte_offset}
-          # |> IO.inspect(label: "eq")
       end
 
+    # count the characters leading up to current token's column, and add the previous offset
     adjusted_byte_col = token_byte_col - byte_offset
     partial_byte_prefix = binary_part(current_line, 0, adjusted_byte_col)
     char_col = String.length(partial_byte_prefix) + char_offset
 
-    # byte_size is constant time!! https://hexdocs.pm/elixir/1.12/Kernel.html#byte_size/1
+    # prepare data for the next recursive call:
+    # cut that token off the front of the line string (removing what we've already processed)
     next_line_part =
       binary_part(current_line, adjusted_byte_col, byte_size(current_line) - adjusted_byte_col)
 
+    # get the next offsets ready
     next_byte_offset = token_byte_col
     next_char_offset = char_col
 
+    # gotta handle two token formats
     result =
       case current_token do
         {ident, _, data} -> {ident, {token_line_num, char_col}, data}
@@ -312,8 +321,6 @@ defmodule Absinthe.Lexer do
       end
 
     results = results ++ [result]
-
-    # IO.inspect("---")
 
     do_optimized_map_token_column(
       results,
@@ -326,11 +333,7 @@ defmodule Absinthe.Lexer do
     )
   end
 
-  # refactor inline?
   defp adjust_lines_cursor(lines, desired_line_num, current_line_num) do
-    # IO.inspect(lines, label: "lines")
-    # IO.inspect(desired_line_num, label: "desired")
-    # IO.inspect(current_line_num, label: "current")
     {_discarded, next_lines} = Enum.split(lines, desired_line_num - current_line_num - 1)
     [current_line | remaining_lines] = next_lines
     {desired_line_num, current_line, remaining_lines, 1, 1}
