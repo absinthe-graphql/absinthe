@@ -248,12 +248,19 @@ defmodule Absinthe.Lexer do
     # This means we'll have to start the line number and character/byte offsets at 1,
     # but we'll have to adjust the math later when dealing with lists and strings.
     do_optimized_map_token_column(
+      # results
       [],
+      # list of tokens, we'll reduce as we go
       tokens,
+      # current line number
       1,
+      # current line string / substring
       first_line,
+      # the lines after the current line
       remaining_lines,
+      # character offset
       1,
+      # byte offset
       1
     )
   end
@@ -285,6 +292,11 @@ defmodule Absinthe.Lexer do
         {_, byte_location} -> byte_location
       end
 
+    # Zoe idea: potentially move condition into adjust_lines_cursor fn to simplify this?
+    # Repetition of variables is confusing
+    # Maybe put all the cursor info in a map and pass it around to update it?
+    # Could help with top recursive function and initializing a gajillion arguments
+
     # update the current line cursor if we need to move to the next line
     {current_line_num, current_line, remaining_lines, char_offset, byte_offset} =
       cond do
@@ -296,6 +308,35 @@ defmodule Absinthe.Lexer do
       end
 
     # count the characters leading up to current token's column, and add the previous offset
+
+    # "b🦕r baz x"
+    # #byte
+    # [
+    #   {:b🦕r, {1, 1}},
+    #   {:baz, {1, 5}},
+    #   {:x, {1, 9}}
+    # ]
+
+    # # 1st: b🦕r
+    # current_line = "b🦕r baz x"
+    # adjusted_byte_col = 1 - 1
+    # partial_byte_prefix = ""
+    # char_col = 0 + 1
+
+    # # 2nd: baz
+    # current_line = "b🦕r baz x"
+    # adjusted_byte_col = 6 - 1
+    # partial_byte_prefix = "b🦕r "
+    # char_col = 4 + 1 == 5
+
+    # #3rd: x --- byte offset is 6 and char offset is 5
+    # current_line = "baz x"
+    # adjusted_byte_col = 10 - 6 == 4
+    # partial_byte_prefix = "baz "
+    # char_col = 4 + 5 == 9'
+
+    # Code review note... it's confusing that current_line has to include the previous token, is there something to make this clearer?
+
     adjusted_byte_col = token_byte_col - byte_offset
     partial_byte_prefix = binary_part(current_line, 0, adjusted_byte_col)
     char_col = String.length(partial_byte_prefix) + char_offset
