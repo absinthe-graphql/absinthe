@@ -242,31 +242,32 @@ defmodule Absinthe.Lexer do
     end
   end
 
-  defp optimized_map_token_column(tokens, [first_line | remaining_lines]) do
+  defp optimized_map_token_column(tokens, [first_line | next_lines]) do
     # RIP me. Lines and columns returned by the tokenizer are 1-indexed.
     # The lists and strings we are processing are 0-indexed.
     # This means we'll have to start the line number and character/byte offsets at 1,
     # but we'll have to adjust the math later when dealing with lists and strings.
+
+    initial_cursor = %{
+      line_num_cursor: 1,
+      current_line_substring: first_line,
+      current_line_char_offset: 1,
+      current_line_byte_offset: 1,
+      next_lines: next_lines
+    }
+
     do_optimized_map_token_column(
       # results
       [],
       # list of tokens, we'll reduce as we go
       tokens,
-      # current line number
-      1,
-      # current line string / substring
-      first_line,
-      # the lines after the current line
-      remaining_lines,
-      # character offset
-      1,
-      # byte offset
-      1
+      # initialized cursor state to start at the beginning of the first line
+      initial_cursor
     )
   end
 
   # le base case! if there are no tokens left, return the accumulated results
-  defp do_optimized_map_token_column(results, [] = _tokens, _, _, _, _, _), do: results
+  defp do_optimized_map_token_column(results, [] = _tokens, _cursor), do: results
 
   # le recursive case
   defp do_optimized_map_token_column(
@@ -274,87 +275,56 @@ defmodule Absinthe.Lexer do
          results,
          # The raw tokens (will take one off the front of the list at each step)
          [current_token | rest_tokens],
-         # Which line number we're currently working on
-         line_num,
-         # The line string that we're currently working on
-         line_part,
-         # The list of lines that come after the current line (remove them as we process)
-         remaining_lines,
-         # For the current line, how many characters we've counted so far.
-         char_offset,
-         # For the current line, how many bytes we've counted so far
-         byte_offset
+         # Cursor data to track where we are in processing currently
+         cursor
        ) do
     # extract byte loc (gotta handle two token formats)
-    {token_line_num, token_byte_col} =
+    {raw_token_line_num, raw_token_byte_col} =
       case current_token do
         {_, byte_location, _} -> byte_location
         {_, byte_location} -> byte_location
       end
 
-    # Zoe idea: potentially move condition into adjust_lines_cursor fn to simplify this?
-    # Repetition of variables is confusing
-    # Maybe put all the cursor info in a map and pass it around to update it?
-    # Could help with top recursive function and initializing a gajillion arguments
-
     # update the current line cursor if we need to move to the next line
-    {current_line_num, current_line, remaining_lines, char_offset, byte_offset} =
-      cond do
-        token_line_num > line_num ->
-          adjust_lines_cursor(remaining_lines, token_line_num, line_num)
-
-        token_line_num == line_num ->
-          {line_num, line_part, remaining_lines, char_offset, byte_offset}
-      end
+    %{
+      # Which line number we're currently working on
+      line_num_cursor: _line_num_cursor,
+      # The line substring that we're currently working on
+      current_line_substring: current_line_substring,
+      # For the current line, how many characters we've counted so far.
+      current_line_char_offset: current_line_char_offset,
+      # For the current line, how many bytes we've counted so far
+      current_line_byte_offset: current_line_byte_offset,
+      # The list of lines that come after the current line (we remove them as we process)
+      next_lines: _next_lines
+    } = cursor = maybe_move_cursor_to_next_line(cursor, raw_token_line_num)
 
     # count the characters leading up to current token's column, and add the previous offset
-
-    # "b🦕r baz x"
-    # #byte
-    # [
-    #   {:b🦕r, {1, 1}},
-    #   {:baz, {1, 5}},
-    #   {:x, {1, 9}}
-    # ]
-
-    # # 1st: b🦕r
-    # current_line = "b🦕r baz x"
-    # adjusted_byte_col = 1 - 1
-    # partial_byte_prefix = ""
-    # char_col = 0 + 1
-
-    # # 2nd: baz
-    # current_line = "b🦕r baz x"
-    # adjusted_byte_col = 6 - 1
-    # partial_byte_prefix = "b🦕r "
-    # char_col = 4 + 1 == 5
-
-    # #3rd: x --- byte offset is 6 and char offset is 5
-    # current_line = "baz x"
-    # adjusted_byte_col = 10 - 6 == 4
-    # partial_byte_prefix = "baz "
-    # char_col = 4 + 5 == 9'
-
     # Code review note... it's confusing that current_line has to include the previous token, is there something to make this clearer?
-
-    adjusted_byte_col = token_byte_col - byte_offset
-    partial_byte_prefix = binary_part(current_line, 0, adjusted_byte_col)
-    char_col = String.length(partial_byte_prefix) + char_offset
+    adjusted_byte_col = raw_token_byte_col - current_line_byte_offset
+    token_partial_prefix = binary_part(current_line_substring, 0, adjusted_byte_col)
+    char_col = String.length(token_partial_prefix) + current_line_char_offset
 
     # prepare data for the next recursive call:
-    # cut that token off the front of the line string (removing what we've already processed)
-    next_line_part =
-      binary_part(current_line, adjusted_byte_col, byte_size(current_line) - adjusted_byte_col)
+    # cut the previous token token off the front of the line string (removing what we've already processed)
+    updated_line_substring =
+      binary_part(
+        current_line_substring,
+        adjusted_byte_col,
+        byte_size(current_line_substring) - adjusted_byte_col
+      )
 
-    # get the next offsets ready
-    next_byte_offset = token_byte_col
-    next_char_offset = char_col
+    next_cursor =
+      cursor
+      |> Map.put(:current_line_substring, updated_line_substring)
+      |> Map.put(:current_line_byte_offset, raw_token_byte_col)
+      |> Map.put(:current_line_char_offset, char_col)
 
-    # gotta handle two token formats
+    # gotta handle two token formats to make the result
     result =
       case current_token do
-        {ident, _, data} -> {ident, {token_line_num, char_col}, data}
-        {ident, _} -> {ident, {token_line_num, char_col}}
+        {ident, _, data} -> {ident, {raw_token_line_num, char_col}, data}
+        {ident, _} -> {ident, {raw_token_line_num, char_col}}
       end
 
     results = results ++ [result]
@@ -362,18 +332,34 @@ defmodule Absinthe.Lexer do
     do_optimized_map_token_column(
       results,
       rest_tokens,
-      current_line_num,
-      next_line_part,
-      remaining_lines,
-      next_char_offset,
-      next_byte_offset
+      next_cursor
     )
   end
 
-  defp adjust_lines_cursor(lines, desired_line_num, current_line_num) do
-    {_discarded, next_lines} = Enum.split(lines, desired_line_num - current_line_num - 1)
-    [current_line | remaining_lines] = next_lines
-    {desired_line_num, current_line, remaining_lines, 1, 1}
+  defp maybe_move_cursor_to_next_line(
+         %{line_num_cursor: line_num_cursor} = cursor,
+         desired_line_num
+       )
+       when desired_line_num == line_num_cursor,
+       do: cursor
+
+  defp maybe_move_cursor_to_next_line(
+         %{line_num_cursor: line_num_cursor, next_lines: next_lines} = _cursor,
+         desired_line_num
+       )
+       when line_num_cursor < desired_line_num do
+    {_completed, unprocessed_lines} =
+      Enum.split(next_lines, desired_line_num - line_num_cursor - 1)
+
+    [current_line | next_lines] = unprocessed_lines
+
+    %{
+      line_num_cursor: desired_line_num,
+      current_line_substring: current_line,
+      current_line_char_offset: 1,
+      current_line_byte_offset: 1,
+      next_lines: next_lines
+    }
   end
 
   defp byte_loc_to_char_loc({line, byte_col}, lines) do
