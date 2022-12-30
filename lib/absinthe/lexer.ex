@@ -233,7 +233,6 @@ defmodule Absinthe.Lexer do
 
     case do_tokenize(input) do
       {:ok, tokens, "", _, _, _} ->
-        # Enum.map(tokens, &convert_token_column(&1, lines))
         tokens = optimized_convert_token_columns(tokens, lines)
         token_count = length(tokens)
         NewRelic.add_attributes(absinthe_token_count: token_count)
