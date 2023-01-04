@@ -233,7 +233,7 @@ defmodule Absinthe.Lexer do
 
     case do_tokenize(input) do
       {:ok, tokens, "", _, _, _} ->
-        tokens = optimized_convert_token_columns(tokens, lines)
+        tokens = convert_token_columns_from_byte_to_char(tokens, lines)
         {:ok, tokens}
 
       {:ok, _, rest, _, {line, line_offset}, byte_offset} ->
@@ -242,8 +242,8 @@ defmodule Absinthe.Lexer do
     end
   end
 
-  defp optimized_convert_token_columns(tokens, [first_line | next_lines]) do
-    initial_cursor = %{
+  defp convert_token_columns_from_byte_to_char(tokens, [first_line | next_lines]) do
+    initial_cursor_state = %{
       line_num_cursor: 1,
       current_line_substring: first_line,
       current_line_char_offset: 1,
@@ -251,86 +251,74 @@ defmodule Absinthe.Lexer do
       next_lines: next_lines
     }
 
-    Enum.reduce(tokens, {[], initial_cursor}, fn current_token, {results, cursor} ->
-      cursor = maybe_move_cursor_to_next_line(cursor, current_token)
-
-      token_byte_col =
+    Enum.reduce(tokens, {[], initial_cursor_state}, fn current_token, {results, cursor_state} ->
+      {token_line_num, token_byte_col} =
         case current_token do
-          {_, {_, byte_col}, _} -> byte_col
-          {_, {_, byte_col}} -> byte_col
+          {_, {token_line_num, token_byte_col}, _} -> {token_line_num, token_byte_col}
+          {_, {token_line_num, token_byte_col}} -> {token_line_num, token_byte_col}
         end
 
-      adjusted_byte_col = token_byte_col - cursor.current_line_byte_offset
-      token_partial_prefix = binary_part(cursor.current_line_substring, 0, adjusted_byte_col)
-      token_char_col = String.length(token_partial_prefix) + cursor.current_line_char_offset
+      cursor_state = maybe_move_cursor_to_next_line(cursor_state, token_line_num)
+
+      adjusted_byte_col = token_byte_col - cursor_state.current_line_byte_offset
+
+      line_part_from_prev_to_current_token =
+        binary_part(cursor_state.current_line_substring, 0, adjusted_byte_col)
+
+      token_char_col =
+        String.length(line_part_from_prev_to_current_token) +
+          cursor_state.current_line_char_offset
 
       updated_line_substring =
         binary_part(
-          cursor.current_line_substring,
+          cursor_state.current_line_substring,
           adjusted_byte_col,
-          byte_size(cursor.current_line_substring) - adjusted_byte_col
+          byte_size(cursor_state.current_line_substring) - adjusted_byte_col
         )
 
-      next_cursor =
-        cursor
+      next_cursor_state =
+        cursor_state
         |> Map.put(:current_line_substring, updated_line_substring)
         |> Map.put(:current_line_byte_offset, token_byte_col)
         |> Map.put(:current_line_char_offset, token_char_col)
 
       result =
         case current_token do
-          {ident, {line_num, _}, data} -> {ident, {line_num, token_char_col}, data}
-          {ident, {line_num, _}} -> {ident, {line_num, token_char_col}}
+          {ident, _, data} -> {ident, {token_line_num, token_char_col}, data}
+          {ident, _} -> {ident, {token_line_num, token_char_col}}
         end
 
-      results = results ++ [result]
-
-      {results, next_cursor}
+      {[result | results], next_cursor_state}
     end)
     |> case do
-      {results, _} -> results
+      {results, _} -> Enum.reverse(results)
     end
   end
 
   defp maybe_move_cursor_to_next_line(
-         %{line_num_cursor: line_num_cursor} = cursor,
-         {_, {token_line, _}, _}
+         %{line_num_cursor: line_num_cursor} = cursor_state,
+         token_line_num
        )
-       when token_line == line_num_cursor,
-       do: cursor
+       when token_line_num == line_num_cursor,
+       do: cursor_state
 
   defp maybe_move_cursor_to_next_line(
-         %{line_num_cursor: line_num_cursor} = cursor,
-         {_, {token_line, _}}
+         %{line_num_cursor: line_num_cursor} = cursor_state,
+         token_line_num
        )
-       when token_line == line_num_cursor,
-       do: cursor
-
-  defp maybe_move_cursor_to_next_line(
-         %{line_num_cursor: line_num_cursor} = cursor,
-         {_, {token_line, _}}
-       )
-       when line_num_cursor < token_line,
-       do: move_cursor_to_next_line(cursor, token_line)
-
-  defp maybe_move_cursor_to_next_line(
-         %{line_num_cursor: line_num_cursor} = cursor,
-         {_, {token_line, _}, _}
-       )
-       when line_num_cursor < token_line,
-       do: move_cursor_to_next_line(cursor, token_line)
+       when line_num_cursor < token_line_num,
+       do: move_cursor_to_next_line(cursor_state, token_line_num)
 
   defp move_cursor_to_next_line(
-         %{line_num_cursor: line_num_cursor, next_lines: next_lines} = _cursor,
-         desired_line_num
+         %{line_num_cursor: line_num_cursor, next_lines: next_lines} = _cursor_state,
+         token_line_num
        ) do
-    {_completed, unprocessed_lines} =
-      Enum.split(next_lines, desired_line_num - line_num_cursor - 1)
+    {_completed, unprocessed_lines} = Enum.split(next_lines, token_line_num - line_num_cursor - 1)
 
     [current_line | next_lines] = unprocessed_lines
 
     %{
-      line_num_cursor: desired_line_num,
+      line_num_cursor: token_line_num,
       current_line_substring: current_line,
       current_line_char_offset: 1,
       current_line_byte_offset: 1,
