@@ -52,7 +52,6 @@ defmodule Absinthe.Pipeline do
 
     [
       Phase.Init,
-      {Phase.Telemetry, Keyword.put(options, :event, [:execute, :operation, :start])},
       # Parse Document
       {Phase.Parse, options},
       # Convert to Blueprint
@@ -63,6 +62,7 @@ defmodule Absinthe.Pipeline do
       # Mark Fragment/Variable Usage
       Phase.Document.Uses,
       # Validate Document Structure
+      Phase.Document.Validation.Init,
       {Phase.Document.Validation.NoFragmentCycles, options},
       Phase.Document.Validation.LoneAnonymousOperation,
       {Phase.Document.Validation.SelectedCurrentOperation, options},
@@ -105,6 +105,7 @@ defmodule Absinthe.Pipeline do
       # Check Validation
       {Phase.Document.Validation.Result, options},
       # Prepare for Execution
+      {Phase.Telemetry, Keyword.put(options, :event, [:execute, :operation, :start])},
       Phase.Document.Arguments.Data,
       # Apply Directives
       Phase.Document.Directives,
@@ -114,9 +115,9 @@ defmodule Absinthe.Pipeline do
       # Execution
       {Phase.Subscription.SubscribeSelf, options},
       {Phase.Document.Execution.Resolution, options},
+      {Phase.Telemetry, Keyword.put(options, :event, [:execute, :operation, :stop])},
       # Format Result
-      Phase.Document.Result,
-      {Phase.Telemetry, Keyword.put(options, :event, [:execute, :operation, :stop])}
+      Phase.Document.Result
     ]
   end
 

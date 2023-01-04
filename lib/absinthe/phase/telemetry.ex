@@ -29,8 +29,7 @@ defmodule Absinthe.Phase.Telemetry do
     {:ok,
      %{
        blueprint
-       | source: blueprint.input,
-         telemetry: %{id: id, start_time_mono: start_time_mono}
+       | telemetry: %{id: id, start_time_mono: start_time_mono}
      }}
   end
 
