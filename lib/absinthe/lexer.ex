@@ -302,7 +302,7 @@ defmodule Absinthe.Lexer do
          %{line_num_cursor: line_num_cursor} = cursor_state,
          token_line_num
        )
-       when token_line_num == line_num_cursor,
+       when line_num_cursor == token_line_num,
        do: cursor_state
 
   defp maybe_move_cursor_to_next_line(
