@@ -251,7 +251,7 @@ defmodule Absinthe.Lexer do
       next_lines: next_lines
     }
 
-    Enum.reduce(tokens, {[], initial_cursor_state}, fn current_token, {results, cursor_state} ->
+    Enum.map_reduce(tokens, initial_cursor_state, fn current_token, cursor_state ->
       {token_line_num, token_byte_col} =
         case current_token do
           {_, {token_line_num, token_byte_col}, _} -> {token_line_num, token_byte_col}
@@ -288,10 +288,10 @@ defmodule Absinthe.Lexer do
           {ident, _} -> {ident, {token_line_num, token_char_col}}
         end
 
-      {[result | results], next_cursor_state}
+      {result, next_cursor_state}
     end)
     |> case do
-      {results, _} -> Enum.reverse(results)
+      {results, _} -> results
     end
   end
 
