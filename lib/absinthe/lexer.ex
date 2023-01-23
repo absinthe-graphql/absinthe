@@ -347,7 +347,7 @@ defmodule Absinthe.Lexer do
     {rest, [{:name, line_and_column(loc, byte_offset, length(value)), value}], context}
   end
 
-  defp labeled_token(_, _, %{token_count: count, token_limit: limit} = _context, _, _)
+  defp labeled_token(_, _, %{token_count: count, token_limit: limit} = _context, _, _, _)
        when count >= limit,
        do: {:error, :stopped_at_token_limit}
 
