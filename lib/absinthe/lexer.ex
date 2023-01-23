@@ -232,7 +232,7 @@ defmodule Absinthe.Lexer do
   def tokenize(input, options \\ []) do
     lines = String.split(input, ~r/\r?\n/)
 
-    tokenize_opts = [context: %{token_limit: Keyword.get(options, :token_limit, 15_000)}]
+    tokenize_opts = [context: %{token_limit: Keyword.get(options, :token_limit, :infinity)}]
 
     case do_tokenize(input, tokenize_opts) do
       {:error, :stopped_at_token_limit, _, _, _, _} ->
