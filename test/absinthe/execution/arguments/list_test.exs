@@ -35,7 +35,7 @@ defmodule Absinthe.Execution.Arguments.ListTest do
   end
 
   @graphql """
-  query ($contacts: [ContactInput]) {
+  query ($contacts: [ContactInput]!) {
     contacts(contacts: $contacts)
   }
   """

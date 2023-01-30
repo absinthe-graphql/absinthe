@@ -182,6 +182,14 @@ defmodule Absinthe.Fixtures.PetsSchema do
       arg :opt1, :integer, default_value: 0
       arg :opt2, :integer, default_value: 0
     end
+
+    field :optional_non_null_boolean_arg_field, :boolean do
+      arg :optional_boolean_arg, non_null(:boolean), default_value: true
+    end
+
+    field :non_null_boolean_arg_field, :boolean do
+      arg :non_null_boolean_arg, non_null(:boolean)
+    end
   end
 
   query do

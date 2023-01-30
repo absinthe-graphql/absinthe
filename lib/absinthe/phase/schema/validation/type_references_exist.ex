@@ -33,6 +33,10 @@ defmodule Absinthe.Phase.Schema.Validation.TypeReferencesExist do
     |> check_types(:imports, fn {type, _}, obj -> check_or_error(obj, type, types) end)
   end
 
+  def validate_types(%Blueprint.Schema.InterfaceTypeDefinition{} = interface, types) do
+    check_types(interface, :interfaces, &check_or_error(&2, &1, types))
+  end
+
   def validate_types(%Blueprint.Schema.InputObjectTypeDefinition{} = object, types) do
     check_types(object, :imports, fn {type, _}, obj -> check_or_error(obj, type, types) end)
   end

@@ -35,7 +35,7 @@ defmodule Elixir.Absinthe.Integration.Execution.InputObjectTest do
                 %{
                   locations: [%{column: 33, line: 2}],
                   message:
-                    "Variable `$input` of type `Boolean` found as input to argument of type `InputThing`."
+                    "Variable `$input` of type `Boolean` found as input to argument of type `InputThing!`."
                 }
               ]
             }} ==

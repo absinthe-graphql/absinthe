@@ -1,5 +1,7 @@
 defmodule Absinthe.Phase.Document.Arguments.VariableTypesMatch do
-  # Partially implements: 5.8.5. All Variable Usages are Allowed
+  @moduledoc false
+
+  # Implements: 5.8.5. All Variable Usages are Allowed
   # Specifically, it implements "Variable usages must be compatible with the arguments they are passed to."
   # See relevant counter-example: https://spec.graphql.org/draft/#example-2028e
 
@@ -7,6 +9,7 @@ defmodule Absinthe.Phase.Document.Arguments.VariableTypesMatch do
 
   alias Absinthe.Blueprint
   alias Absinthe.Blueprint.Document.{Operation, Fragment}
+  alias Absinthe.Type
 
   def run(blueprint, _) do
     blueprint =
@@ -44,44 +47,47 @@ defmodule Absinthe.Phase.Document.Arguments.VariableTypesMatch do
 
   def check_variable_types(%Operation{} = op) do
     variable_defs = Map.new(op.variable_definitions, &{&1.name, &1})
-    Blueprint.prewalk(op, &check_var_type(&1, op.name, variable_defs))
+    Blueprint.prewalk(op, &check_variable_type(&1, op.name, variable_defs))
   end
 
   def check_variable_types(%Operation{} = op, %Fragment.Named{} = fragment) do
     variable_defs = Map.new(op.variable_definitions, &{&1.name, &1})
-    Blueprint.prewalk(fragment, &check_var_type(&1, op.name, variable_defs))
+    Blueprint.prewalk(fragment, &check_variable_type(&1, op.name, variable_defs))
   end
 
-  defp check_var_type(%{schema_node: nil} = node, _, _) do
+  defp check_variable_type(%{schema_node: nil} = node, _, _) do
     {:halt, node}
   end
 
-  defp check_var_type(
-         %Blueprint.Input.Value{
-           raw: %{content: %Blueprint.Input.Variable{} = var},
-           schema_node: schema_node
+  defp check_variable_type(
+         %Absinthe.Blueprint.Input.Argument{
+           input_value: %Blueprint.Input.Value{
+             raw: %{content: %Blueprint.Input.Variable{} = variable}
+           }
          } = node,
-         op_name,
+         operation_name,
          variable_defs
        ) do
-    case Map.fetch(variable_defs, var.name) do
-      {:ok, %{schema_node: var_schema_type}} ->
-        # null vs not null is handled elsewhere
-        var_schema_type = Absinthe.Type.unwrap(var_schema_type)
-        arg_schema_type = Absinthe.Type.unwrap(schema_node)
+    location_type = node.input_value.schema_node
+    location_definition = node.schema_node
 
-        if var_schema_type && arg_schema_type && var_schema_type.name != arg_schema_type.name do
-          # error
-          var_with_error =
-            put_error(var, %Absinthe.Phase.Error{
-              phase: __MODULE__,
-              message: error_message(op_name, var, var_schema_type.name, arg_schema_type.name),
-              locations: [var.source_location]
-            })
-
-          {:halt, put_in(node.raw.content, var_with_error)}
-        else
+    case Map.get(variable_defs, variable.name) do
+      %{schema_node: variable_type} = variable_definition ->
+        if types_compatible?(
+             variable_type,
+             location_type,
+             variable_definition,
+             location_definition
+           ) do
           node
+        else
+          variable =
+            put_error(
+              variable,
+              error(operation_name, variable, variable_definition, location_type)
+            )
+
+          {:halt, put_in(node.input_value.raw.content, variable)}
         end
 
       _ ->
@@ -89,19 +95,98 @@ defmodule Absinthe.Phase.Document.Arguments.VariableTypesMatch do
     end
   end
 
-  defp check_var_type(node, _, _) do
+  defp check_variable_type(node, _, _) do
     node
   end
 
-  def error_message(op, variable, var_type, arg_type) do
+  def types_compatible?(type, type, _, _) do
+    true
+  end
+
+  def types_compatible?(
+        %Type.NonNull{of_type: nullable_variable_type},
+        location_type,
+        variable_definition,
+        location_definition
+      ) do
+    types_compatible?(
+      nullable_variable_type,
+      location_type,
+      variable_definition,
+      location_definition
+    )
+  end
+
+  def types_compatible?(
+        %Type.List{of_type: item_variable_type},
+        %Type.List{
+          of_type: item_location_type
+        },
+        variable_definition,
+        location_definition
+      ) do
+    types_compatible?(
+      item_variable_type,
+      item_location_type,
+      variable_definition,
+      location_definition
+    )
+  end
+
+  # https://github.com/graphql/graphql-spec/blame/October2021/spec/Section%205%20--%20Validation.md#L1885-L1893
+  # if argument has default value the variable can be nullable
+  def types_compatible?(nullable_type, %Type.NonNull{of_type: nullable_type}, _, %{
+        default_value: default_value
+      })
+      when not is_nil(default_value) do
+    true
+  end
+
+  # https://github.com/graphql/graphql-spec/blame/main/spec/Section%205%20--%20Validation.md#L2000-L2005
+  # This behavior is explicitly supported for compatibility with earlier editions of this specification.
+  def types_compatible?(
+        nullable_type,
+        %Type.NonNull{of_type: nullable_type},
+        %{
+          default_value: value
+        },
+        _
+      )
+      when is_struct(value) do
+    true
+  end
+
+  def types_compatible?(_, _, _, _) do
+    false
+  end
+
+  defp error(operation_name, variable, variable_definition, location_type) do
+    # need to rely on the type reference here, since the schema node may not be available
+    # as the type could not exist in the schema
+    variable_name = Absinthe.Blueprint.TypeReference.name(variable_definition.type)
+
+    %Absinthe.Phase.Error{
+      phase: __MODULE__,
+      message:
+        error_message(
+          operation_name,
+          variable,
+          variable_name,
+          Absinthe.Type.name(location_type)
+        ),
+      locations: [variable.source_location]
+    }
+  end
+
+  def error_message(op, variable, variable_name, location_type) do
     start =
       case op || "" do
         "" -> "Variable"
-        op -> "In operation `#{op}, variable"
+        op -> "In operation `#{op}`, variable"
       end
 
-    "#{start} `#{Blueprint.Input.inspect(variable)}` of type `#{var_type}` found as input to argument of type `#{
-      arg_type
+    "#{start} `#{Blueprint.Input.inspect(variable)}` of type `#{variable_name}` found as input to argument of type `#{
+      location_type
     }`."
   end
 end

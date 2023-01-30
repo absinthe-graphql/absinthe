@@ -206,7 +206,7 @@ defmodule Absinthe.Schema do
   When you push a mutation, you can have selections on that mutation result
   to get back data you need, IE
 
-  ```
+  ```graphql
   mutation {
     createUser(accountId: 1, name: "bob") {
       id
@@ -218,7 +218,7 @@ defmodule Absinthe.Schema do
   However, what if you want to know when OTHER people create a new user, so that
   your UI can update as well. This is the point of subscriptions.
 
-  ```
+  ```graphql
   subscription {
     newUsers {
       id

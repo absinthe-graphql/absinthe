@@ -195,6 +195,13 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defmacro object(identifier, attrs, do: block) do
+    block =
+      for {identifier, args} <- build_directives(attrs) do
+        quote do
+          directive(unquote(identifier), unquote(args))
+        end
+      end ++ block
+
     {attrs, block} =
       case Keyword.pop(attrs, :meta) do
         {nil, attrs} ->
@@ -381,6 +388,13 @@ defmodule Absinthe.Schema.Notation do
       end
 
     block =
+      for {identifier, args} <- build_directives(attrs) do
+        quote do
+          directive(unquote(identifier), unquote(args))
+        end
+      end ++ block
+
+    block =
       case Keyword.get(attrs, :meta) do
         nil ->
           block
@@ -410,29 +424,14 @@ defmodule Absinthe.Schema.Notation do
     attrs =
       attrs
       |> expand_ast(caller)
+      |> Keyword.delete(:deprecate)
+      |> Keyword.delete(:directives)
       |> Keyword.delete(:args)
       |> Keyword.delete(:meta)
       |> Keyword.update(:description, nil, &wrap_in_unquote/1)
       |> Keyword.update(:default_value, nil, &wrap_in_unquote/1)
-      |> handle_deprecate
 
     {attrs, block}
-  end
-
-  defp handle_deprecate(attrs) do
-    deprecation = build_deprecation(attrs[:deprecate])
-
-    attrs
-    |> Keyword.delete(:deprecate)
-    |> Keyword.put(:deprecation, deprecation)
-  end
-
-  defp build_deprecation(msg) do
-    case msg do
-      true -> %Absinthe.Type.Deprecation{reason: nil}
-      reason when is_binary(reason) -> %Absinthe.Type.Deprecation{reason: reason}
-      _ -> nil
-    end
   end
 
   # FIELDS
@@ -675,11 +674,11 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro arg(identifier, type, attrs) do
-    attrs = handle_arg_attrs(identifier, type, attrs)
+    {attrs, block} = handle_arg_attrs(identifier, type, attrs)
 
     __CALLER__
     |> recordable!(:arg, @placement[:arg])
-    |> record!(Schema.InputValueDefinition, identifier, attrs, nil)
+    |> record!(Schema.InputValueDefinition, identifier, attrs, block)
   end
 
   @doc """
@@ -688,19 +687,19 @@ defmodule Absinthe.Schema.Notation do
   See `arg/3`
   """
   defmacro arg(identifier, attrs) when is_list(attrs) do
-    attrs = handle_arg_attrs(identifier, nil, attrs)
+    {attrs, block} = handle_arg_attrs(identifier, nil, attrs)
 
     __CALLER__
     |> recordable!(:arg, @placement[:arg])
-    |> record!(Schema.InputValueDefinition, identifier, attrs, nil)
+    |> record!(Schema.InputValueDefinition, identifier, attrs, block)
   end
 
   defmacro arg(identifier, type) do
-    attrs = handle_arg_attrs(identifier, type, [])
+    {attrs, block} = handle_arg_attrs(identifier, type, [])
 
     __CALLER__
     |> recordable!(:arg, @placement[:arg])
-    |> record!(Schema.InputValueDefinition, identifier, attrs, nil)
+    |> record!(Schema.InputValueDefinition, identifier, attrs, block)
   end
 
   # SCALARS
@@ -857,20 +856,34 @@ defmodule Absinthe.Schema.Notation do
   # DIRECTIVES
 
   @placement {:directive, [toplevel: true]}
+  @placement {:applied_directive,
+              [
+                under: [
+                  :arg,
+                  :enum,
+                  :field,
+                  :input_object,
+                  :interface,
+                  :object,
+                  :scalar,
+                  :union,
+                  :value
+                ]
+              ]}
+
   @doc """
-  Defines a directive
+  Defines or applies a directive
 
-  ## Placement
+  ## Defining a directive
+  ### Placement
 
-  #{Utils.placement_docs(@placement)}
+  #{Utils.placement_docs(@placement, :directive)}
 
-  ## Examples
+  ### Examples
 
-  ```
+  ```elixir
   directive :mydirective do
-
     arg :if, non_null(:boolean), description: "Skipped when true."
-
     on [:field, :fragment_spread, :inline_fragment]
 
     expand fn
@@ -879,14 +892,63 @@ defmodule Absinthe.Schema.Notation do
       _, node ->
         node
     end
+  end
+  ```
 
+  ## Applying a type system directive
+  Directives can be applied in your schema. E.g. by default the `@deprecated`
+  directive is available to be applied to fields and enum values.
+
+  You can define your own type system directives. See `Absinthe.Schema.Prototype`
+  for more information.
+
+  ### Placement
+
+  #{Utils.placement_docs(@placement, :applied_directive)}
+
+  ### Examples
+
+  When you have a type system directive named `:feature` it can be applied as
+  follows:
+
+  ```elixir
+  object :post do
+    directive :feature, name: ":object"
+
+    field :name, :string do
+      deprecate "Bye"
+    end
+  end
+
+  scalar :sweet_scalar do
+    directive :feature, name: ":scalar"
+    parse &Function.identity/1
+    serialize &Function.identity/1
   end
   ```
   """
-  defmacro directive(identifier, attrs \\ [], do: block) do
+  defmacro directive(identifier, attrs, do: block) when is_list(attrs) when not is_nil(block) do
     __CALLER__
     |> recordable!(:directive, @placement[:directive])
     |> record_directive!(identifier, attrs, block)
+  end
+
+  defmacro directive(identifier, do: block) when not is_nil(block) do
+    __CALLER__
+    |> recordable!(:directive, @placement[:directive])
+    |> record_directive!(identifier, [], block)
+  end
+
+  defmacro directive(identifier, attrs) when is_list(attrs) do
+    __CALLER__
+    |> recordable!(:directive, @placement[:applied_directive])
+    |> record_applied_directive!(identifier, attrs)
+  end
+
+  defmacro directive(identifier) do
+    __CALLER__
+    |> recordable!(:directive, @placement[:applied_directive])
+    |> record_applied_directive!(identifier, [])
   end
 
   @placement {:on, [under: [:directive]]}
@@ -1328,13 +1390,39 @@ defmodule Absinthe.Schema.Notation do
     scoped_def(env, type, identifier, attrs, block)
   end
 
+  defp build_directives(attrs) do
+    if attrs[:deprecate] do
+      directive = {:deprecated, reason(attrs[:deprecate])}
+
+      directives = Keyword.get(attrs, :directives, [])
+      [directive | directives]
+    else
+      Keyword.get(attrs, :directives, [])
+    end
+  end
+
+  defp reason(true), do: []
+  defp reason(msg) when is_binary(msg), do: [reason: msg]
+  defp reason(msg), do: raise(ArgumentError, "Invalid reason: #{msg}")
+
   def handle_arg_attrs(identifier, type, raw_attrs) do
-    raw_attrs
-    |> Keyword.put_new(:name, to_string(identifier))
-    |> Keyword.put_new(:type, type)
-    |> Keyword.update(:description, nil, &wrap_in_unquote/1)
-    |> Keyword.update(:default_value, nil, &wrap_in_unquote/1)
-    |> handle_deprecate
+    block =
+      for {identifier, args} <- build_directives(raw_attrs) do
+        quote do
+          directive(unquote(identifier), unquote(args))
+        end
+      end
+
+    attrs =
+      raw_attrs
+      |> Keyword.put_new(:name, to_string(identifier))
+      |> Keyword.put_new(:type, type)
+      |> Keyword.delete(:directives)
+      |> Keyword.delete(:deprecate)
+      |> Keyword.update(:description, nil, &wrap_in_unquote/1)
+      |> Keyword.update(:default_value, nil, &wrap_in_unquote/1)
+
+    {attrs, block}
   end
 
   @doc false
@@ -1421,8 +1509,8 @@ defmodule Absinthe.Schema.Notation do
   # Record a deprecation in the current scope
   def record_deprecate!(env, msg) do
     msg = expand_ast(msg, env)
-    deprecation = build_deprecation(msg)
-    put_attr(env.module, {:deprecation, deprecation})
+
+    record_applied_directive!(env, :deprecated, reason: msg)
   end
 
   @doc false
@@ -1468,21 +1556,32 @@ defmodule Absinthe.Schema.Notation do
   def handle_enum_value_attrs(identifier, raw_attrs, env) do
     value = Keyword.get(raw_attrs, :as, identifier)
 
-    raw_attrs
-    |> expand_ast(env)
-    |> Keyword.put(:identifier, identifier)
-    |> Keyword.put(:value, wrap_in_unquote(value))
-    |> Keyword.put_new(:name, String.upcase(to_string(identifier)))
-    |> Keyword.delete(:as)
-    |> Keyword.update(:description, nil, &wrap_in_unquote/1)
-    |> handle_deprecate
+    block =
+      for {identifier, args} <- build_directives(raw_attrs) do
+        quote do
+          directive(unquote(identifier), unquote(args))
+        end
+      end
+
+    attrs =
+      raw_attrs
+      |> expand_ast(env)
+      |> Keyword.delete(:directives)
+      |> Keyword.put(:identifier, identifier)
+      |> Keyword.put(:value, wrap_in_unquote(value))
+      |> Keyword.put_new(:name, String.upcase(to_string(identifier)))
+      |> Keyword.delete(:as)
+      |> Keyword.delete(:deprecate)
+      |> Keyword.update(:description, nil, &wrap_in_unquote/1)
+
+    {attrs, block}
   end
 
   @doc false
   # Record an enum value in the current scope
   def record_value!(env, identifier, raw_attrs) do
-    attrs = handle_enum_value_attrs(identifier, raw_attrs, env)
-    record!(env, Schema.EnumValueDefinition, identifier, attrs, [])
+    {attrs, block} = handle_enum_value_attrs(identifier, raw_attrs, env)
+    record!(env, Schema.EnumValueDefinition, identifier, attrs, block)
   end
 
   @doc false
@@ -1504,6 +1603,39 @@ defmodule Absinthe.Schema.Notation do
     for mutation <- mutations do
       put_attr(env.module, {:trigger, {mutation, attrs}})
     end
+  end
+
+  def record_applied_directive!(env, name, attrs) do
+    name = Atom.to_string(name)
+
+    attrs =
+      attrs
+      |> expand_ast(env)
+      |> build_directive_arguments(env)
+      |> Keyword.put(:name, name)
+      |> put_reference(env)
+
+    directive = struct!(Absinthe.Blueprint.Directive, attrs)
+    put_attr(env.module, {:directive, directive})
+  end
+
+  defp build_directive_arguments(attrs, env) do
+    arguments =
+      attrs
+      |> Enum.map(fn {name, value} ->
+        value = expand_ast(value, env)
+
+        attrs = [
+          name: Atom.to_string(name),
+          value: value,
+          input_value: Absinthe.Blueprint.Input.Value.build(value),
+          source_location: Absinthe.Blueprint.SourceLocation.at(env.line, 0)
+        ]
+
+        struct!(Absinthe.Blueprint.Input.Argument, attrs)
+      end)
+
+    [arguments: arguments]
   end
 
   def record_middleware!(env, new_middleware, opts) do
@@ -1941,7 +2073,7 @@ defmodule Absinthe.Schema.Notation do
     [scope | _] = Module.get_attribute(env.module, :absinthe_scope_stack)
 
     unless recordable?(placement, scope) do
-      raise Absinthe.Schema.Notation.Error, invalid_message(placement, usage)
+      raise Absinthe.Schema.Notation.Error, invalid_message(placement, usage, scope)
     end
 
     env
@@ -1951,16 +2083,22 @@ defmodule Absinthe.Schema.Notation do
   defp recordable?([toplevel: true], scope), do: scope == :schema
   defp recordable?([toplevel: false], scope), do: scope != :schema
 
-  defp invalid_message([under: under], usage) do
+  defp invalid_message([under: under], usage, scope) do
     allowed = under |> Enum.map(&"`#{&1}`") |> Enum.join(", ")
-    "Invalid schema notation: `#{usage}` must only be used within #{allowed}"
+
+    "Invalid schema notation: `#{usage}` must only be used within #{allowed}. #{used_in(scope)}"
   end
 
-  defp invalid_message([toplevel: true], usage) do
-    "Invalid schema notation: `#{usage}` must only be used toplevel"
+  defp invalid_message([toplevel: true], usage, scope) do
+    "Invalid schema notation: `#{usage}` must only be used toplevel. #{used_in(scope)}"
   end
 
-  defp invalid_message([toplevel: false], usage) do
-    "Invalid schema notation: `#{usage}` must not be used toplevel"
+  defp invalid_message([toplevel: false], usage, scope) do
+    "Invalid schema notation: `#{usage}` must not be used toplevel. #{used_in(scope)}"
+  end
+
+  defp used_in(scope) do
+    scope = Atom.to_string(scope)
+    "Was used in `#{scope}`."
   end
 end

@@ -2,7 +2,7 @@ defmodule Absinthe.Mixfile do
   use Mix.Project
 
   @source_url "https://github.com/absinthe-graphql/absinthe"
-  @version "1.6.6"
+  @version "1.7.0"
 
   def project do
     [
@@ -123,7 +123,8 @@ defmodule Absinthe.Mixfile do
       "guides/client/apollo.md",
       "guides/client/relay.md",
       "guides/upgrading/v1.4.md",
-      "guides/upgrading/v1.5.md"
+      "guides/upgrading/v1.5.md",
+      "CHANGELOG.md"
     ]
   end
 
@@ -133,7 +134,8 @@ defmodule Absinthe.Mixfile do
       Tutorial: ~r/guides\/tutorial\/.*/,
       Topics: ~r/guides\/[^\/]+\.md/,
       "Client Guides": ~r/guides\/client\/.*/,
-      "Upgrade Guides": ~r/guides\/upgrading\/.*/
+      "Upgrade Guides": ~r/guides\/upgrading\/.*/,
+      Changelog: "CHANGELOG.md"
     ]
   end
 
@@ -177,7 +179,8 @@ defmodule Absinthe.Mixfile do
       Subscriptions: [
         Absinthe.Subscription,
         Absinthe.Subscription.Pubsub,
-        Absinthe.Subscription.Local
+        Absinthe.Subscription.Local,
+        Absinthe.Subscription.PipelineSerializer
       ],
       Extensibility: [
         Absinthe.Pipeline,

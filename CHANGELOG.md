@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.7.0
+
+- POTENTIALLY BREAKING Bug Fix: [Validate variable usage in according to spec](https://github.com/absinthe-graphql/absinthe/pull/1141). This could break incoming documents previously considered valid. Skip the `Absinthe.Phase.Document.Arguments.VariableTypesMatch` phase to avoid this check. See `Absinthe.Pipeline` on adjusting the document pipeline.
+
+- Feature: [Add GraphQL document formatter](https://github.com/absinthe-graphql/absinthe/pull/1114)
+- Bug Fix: [Fix Phase.Schema.Validation.InputOutputTypesCorrectlyPlaced not applied to SDL schema's](https://github.com/absinthe-graphql/absinthe/pull/1142/files)
+- Bug Fix: [Use inspect/1 to safely encode bad binary samples](https://github.com/absinthe-graphql/absinthe/pull/1121)
+- Bug Fix: [key :is_type_of not found on Interface ](https://github.com/absinthe-graphql/absinthe/issues/1077)
+- Bug Fix: [Validate object/interfaces implement all transitive interfaces](https://github.com/absinthe-graphql/absinthe/pull/1127)
+- Bug Fix: [Fix check unknown types to also cover wrapped types](https://github.com/absinthe-graphql/absinthe/pull/1138) This could break incoming documents previously considered valid. Skip the `Absinthe.Phase.Validation.KnownTypeNames` phase to avoid this check. See `Absinthe.Pipeline` on adjusting the document pipeline.
+- Bug Fix: [Validate field names are unique to an object, interface or an input object](https://github.com/absinthe-graphql/absinthe/pull/1135)
+
+## 1.6.7 (Retired)
+
+Originally included the items from 1.7.0, but the spec validation fix was considered
+too impactful for a patch release.
 ## 1.6.6
 
 - Feature: [Update telemetry dependency to stable ~> 1.0](https://github.com/absinthe-graphql/absinthe/pull/1097)
