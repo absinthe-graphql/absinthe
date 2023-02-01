@@ -94,4 +94,14 @@ defmodule Absinthe.LexerTest do
               {:"}", {7, 1}}
             ]} == Absinthe.Lexer.tokenize(@query)
   end
+
+  @tag timeout: 3_000
+  test "long query doesn't take too long" do
+    # This tests the performance of long queries. Before optimization work, this
+    # test took 16 seconds. After optimization it took 0.08 seconds. Setting
+    # a generous ExUnit timeout ensures there has not been a performance regression
+    # while hopefully preventing testing fragility.
+    many_directives = String.duplicate("@abc ", 10_000)
+    {:ok, _} = Absinthe.Lexer.tokenize("{ __typename #{many_directives} }")
+  end
 end
