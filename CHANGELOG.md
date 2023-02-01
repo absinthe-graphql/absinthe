@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.7.1
 - Bug Fix: [Validate field identifier uniqueness](https://github.com/absinthe-graphql/absinthe/pull/1200)
 - Bug Fix: [Validate type references for invalid wrapped types](https://github.com/absinthe-graphql/absinthe/pull/1195)
 - Breaking Bugfix: [Validate repeatable directives on schemas](https://github.com/absinthe-graphql/absinthe/pull/1179)
@@ -17,6 +17,8 @@
 - Feature: [Add `import_directives` macro](https://github.com/absinthe-graphql/absinthe/pull/1158)
 - Feature: [Support type extensions on schema declarations](https://github.com/absinthe-graphql/absinthe/pull/1176)
 - Bug Fix: [Root objects are marked as referenced correctly](https://github.com/absinthe-graphql/absinthe/pull/1186)
+- Bug Fix: [Prevent DDOS attacks with long queries](https://github.com/absinthe-graphql/absinthe/pull/1220)
+- Feature: [pipeline_modifier option to Absinthe.run/3](https://github.com/absinthe-graphql/absinthe/pull/1221)
 
 ## 1.7.0
 
