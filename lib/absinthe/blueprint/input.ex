@@ -69,6 +69,11 @@ defmodule Absinthe.Blueprint.Input do
     }
   end
 
+  # Handle maps in AST format if they are not unquoted in macros
+  def parse({:%{}, _, map_key_values}) when is_list(map_key_values) do
+    map_key_values |> Enum.into(%{}) |> parse()
+  end
+
   def parse(value) when is_map(value) do
     %Input.Object{
       fields:
