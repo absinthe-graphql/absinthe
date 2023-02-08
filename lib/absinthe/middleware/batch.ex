@@ -137,7 +137,7 @@ defmodule Absinthe.Middleware.Batch do
       start_time_mono = System.monotonic_time()
 
       task =
-        Task.async(fn ->
+        async(fn ->
           {batch_fun, call_batch_fun(batch_fun, batch_data)}
         end)
 
@@ -205,5 +205,14 @@ defmodule Absinthe.Middleware.Batch do
       _ ->
         pipeline
     end
+  end
+
+  # Optionally use `async/1` function from `opentelemetry_process_propagator` if available
+  if Code.ensure_loaded?(OpentelemetryProcessPropagator.Task) do
+    @spec async((() -> any)) :: Task.t()
+    defdelegate async(fun), to: OpentelemetryProcessPropagator.Task
+  else
+    @spec async((() -> any)) :: Task.t()
+    defdelegate async(fun), to: Task
   end
 end

@@ -52,10 +52,22 @@ defmodule Absinthe.Middleware.BatchTest do
           end)
         end
       end
+
+      field :ctx, :string do
+        resolve fn _, _, _ ->
+          batch({__MODULE__, :otel_ctx}, nil, fn batch ->
+            {:ok, batch}
+          end)
+        end
+      end
     end
 
     def by_id(_, ids) do
       Map.take(@organizations, ids)
+    end
+
+    def otel_ctx(_, _) do
+      OpenTelemetry.Ctx.get_value("stored_value", nil)
     end
   end
 
@@ -127,5 +139,15 @@ defmodule Absinthe.Middleware.BatchTest do
 
     assert_receive {:telemetry_event, [:absinthe, :middleware, :batch, :stop], %{duration: _},
                     %{id: _, batch_fun: _, batch_opts: _, batch_data: _, result: _}}
+  end
+
+  test "propagates the OTel context" do
+    doc = """
+    {ctx}
+    """
+
+    OpenTelemetry.Ctx.set_value("stored_value", "some_value")
+
+    assert {:ok, %{data: %{"ctx" => "some_value"}}} == Absinthe.run(doc, Schema)
   end
 end
