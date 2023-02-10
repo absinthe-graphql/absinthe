@@ -121,4 +121,24 @@ defmodule Absinthe.Schema.Rule.ObjectMustDefineFieldsTest do
       Code.eval_string(@schema)
     end)
   end
+
+  @schema ~S(
+    defmodule ExtendObjectSchema do
+      use Absinthe.Schema
+
+      query do
+        field :foo, :string
+      end
+
+      object :bar do
+        field :baz, :string
+      end
+
+      extend object :bar do
+      end
+    end
+    )
+  test "does not error on empty object extension" do
+    assert Code.eval_string(@schema)
+  end
 end
