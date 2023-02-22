@@ -24,6 +24,7 @@
 - Bug Fix: [Root objects are marked as referenced correctly](https://github.com/absinthe-graphql/absinthe/pull/1186)
 - Bug Fix: [Prevent DDOS attacks with long queries](https://github.com/absinthe-graphql/absinthe/pull/1220)
 - Feature: [pipeline_modifier option to Absinthe.run/3](https://github.com/absinthe-graphql/absinthe/pull/1221)
+- Bug Fix: [Add end_time_mono to telemetry :stop events](https://github.com/absinthe-graphql/absinthe/pull/1174)
 
 ## 1.7.0
 
