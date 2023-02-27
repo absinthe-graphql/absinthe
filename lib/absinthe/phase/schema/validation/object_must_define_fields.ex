@@ -18,6 +18,10 @@ defmodule Absinthe.Phase.Schema.Validation.ObjectMustDefineFields do
     obj
   end
 
+  defp validate_objects(%Blueprint.Schema.TypeExtensionDefinition{} = node) do
+    {:halt, node}
+  end
+
   defp validate_objects(%struct{} = node)
        when struct in [
               Blueprint.Schema.ObjectTypeDefinition,

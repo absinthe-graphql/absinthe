@@ -873,6 +873,48 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectTypeTest do
   end
 
   describe "Invalid input object value" do
+    test "Not an input object, an unquoted string" do
+      assert_fails_validation(
+        """
+        {
+          complicatedArgs {
+            complexArgField(complexArg: SIT)
+          }
+        }
+        """,
+        [],
+        [bad_argument("complexArg", "ComplexInput", "SIT", 3, [])]
+      )
+    end
+
+    test "Not an input object, a string" do
+      assert_fails_validation(
+        """
+        {
+          complicatedArgs {
+            complexArgField(complexArg: "SIT")
+          }
+        }
+        """,
+        [],
+        [bad_argument("complexArg", "ComplexInput", ~s("SIT"), 3, [])]
+      )
+    end
+
+    test "Not an input object, a number" do
+      assert_fails_validation(
+        """
+        {
+          complicatedArgs {
+            complexArgField(complexArg: 42)
+          }
+        }
+        """,
+        [],
+        [bad_argument("complexArg", "ComplexInput", "42", 3, [])]
+      )
+    end
+
     test "Partial object, missing required" do
       assert_fails_validation(
         """
