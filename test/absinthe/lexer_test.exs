@@ -106,7 +106,13 @@ defmodule Absinthe.LexerTest do
   end
 
   test "document with tokens exceeding limit" do
-    assert {:error, :exceeded_token_limit} == Absinthe.Lexer.tokenize(too_long_query())
+    query = too_long_query()
+
+    assert {:error, :exceeded_token_limit} ==
+             Absinthe.Lexer.tokenize(query, token_limit: 15_000)
+
+    refute {:error, :exceeded_token_limit} ==
+             Absinthe.Lexer.tokenize(query)
   end
 
   defp too_long_query do
