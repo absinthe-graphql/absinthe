@@ -184,7 +184,7 @@ input fake__options {
   # Only for type `lorem`
   loremSize: fake__loremSize
   # Only for types `*Date`. Example value: `YYYY MM DD`.
-  # [Full Specification](http://momentjs.com/docs/#/displaying/format/)
+  # [Full Specification](https://momentjs.com/docs/#/displaying/format/)
   dateFormat: String
   # Only for type `colorHex`. [Details here](https://stackoverflow.com/a/43235/4989887)
   baseColor: fake__color = { red255: 0, green255: 0, blue255: 0 }

@@ -3,7 +3,7 @@ defmodule Absinthe do
   Documentation for the Absinthe package, a toolkit for building GraphQL
   APIs with Elixir.
 
-  For usage information, see [the documentation](http://hexdocs.pm/absinthe), which
+  For usage information, see [the documentation](https://hexdocs.pm/absinthe), which
   includes guides, API information for important modules, and links to useful resources.
   """
 
@@ -49,6 +49,8 @@ defmodule Absinthe do
           | %{data: nil | result_selection_t, errors: [result_error_t]}
           | %{errors: [result_error_t]}
 
+  @type pipeline_modifier_fun :: (Absinthe.Pipeline.t(), Keyword.t() -> Absinthe.Pipeline.t())
+
   @doc """
   Evaluates a query document against a schema, with options.
 
@@ -92,7 +94,8 @@ defmodule Absinthe do
           operation_name: String.t(),
           analyze_complexity: boolean,
           variables: %{optional(String.t()) => any()},
-          max_complexity: non_neg_integer | :infinity
+          max_complexity: non_neg_integer | :infinity,
+          pipeline_modifier: pipeline_modifier_fun()
         ]
 
   @type run_result :: {:ok, result_t} | {:error, String.t()}
@@ -103,9 +106,12 @@ defmodule Absinthe do
           run_opts
         ) :: run_result
   def run(document, schema, options \\ []) do
+    pipeline_modifier = options[:pipeline_modifier] || (&pipeline_identity/2)
+
     pipeline =
       schema
       |> Absinthe.Pipeline.for_document(options)
+      |> pipeline_modifier.(options)
 
     case Absinthe.Pipeline.run(document, pipeline) do
       {:ok, %{result: result}, _phases} ->
@@ -126,7 +132,7 @@ defmodule Absinthe do
   @spec run!(
           binary | Absinthe.Language.Source.t() | Absinthe.Language.Document.t(),
           Absinthe.Schema.t(),
-          Keyword.t()
+          run_opts
         ) :: result_t | no_return
   def run!(input, schema, options \\ []) do
     case run(input, schema, options) do
@@ -134,4 +140,6 @@ defmodule Absinthe do
       {:error, err} -> raise ExecutionError, message: err
     end
   end
+
+  defp pipeline_identity(pipeline, _options), do: pipeline
 end

@@ -36,7 +36,7 @@ line:
       {Phoenix.PubSub, name: :my_pubsub},
       # Start the endpoint when the application starts
       MyAppWeb.Endpoint,
-      {Absinthe.Subscription, MyAppWeb.Endpoint}
+      {Absinthe.Subscription, pubsub: MyAppWeb.Endpoint}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
@@ -44,6 +44,9 @@ line:
     opts = [strategy: :one_for_one, name: MyAppWeb.Supervisor]
     Supervisor.start_link(children, opts)
 ```
+
+See `Absinthe.Subscription.child_spec/1` for more information on the supported
+options.
 
 In your `MyAppWeb.Endpoint` module add:
 

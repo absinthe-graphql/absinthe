@@ -110,7 +110,7 @@ which is where all the domain logic for posts lives, invoking its
 > for [advanced plugins](middleware-and-plugins.md) that further process the data.
 >
 > If you're asking yourself what the implementation of the domain logic looks like, and exactly how
-> the related Ecto schemas are built, read through the code in the [absinthe_tutorial](http://github.com/absinthe-graphql/absinthe_tutorial)
+> the related Ecto schemas are built, read through the code in the [absinthe_tutorial](https://github.com/absinthe-graphql/absinthe_tutorial)
 > repository. The tutorial content here is intentionally focused on the Absinthe-specific code.
 
 Now that we have the functional pieces in place, let's configure our
@@ -156,7 +156,7 @@ Once it's up-and-running, take a look at [http://localhost:4000/api/graphiql](ht
 
 Make sure that the `URL` is pointing to the correct place and press the play button. If everything goes according to plan, you should see something like this:
 
-<img style="box-shadow: 0 0 6px #ccc;" src="assets/tutorial/graphiql.png" alt=""/>
+<img style="box-shadow: 0 0 6px #ccc;" src="/guides/assets/tutorial/graphiql.png" alt=""/>
 
 ## Next Step
 

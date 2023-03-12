@@ -17,7 +17,7 @@ Goals:
 - Detailed error messages and documentation.
 - A focus on robustness and production-level performance.
 
-Please see the website at [http://absinthe-graphql.org](http://absinthe-graphql.org).
+Please see the website at [https://absinthe-graphql.org](https://absinthe-graphql.org).
 
 ## Why Use Absinthe?
 
@@ -86,7 +86,7 @@ See [CHANGELOG](./CHANGELOG.md) for upgrade steps between versions.
 
 - [Absinthe hexdocs](https://hexdocs.pm/absinthe).
 - For the tutorial, guides, and general information about Absinthe-related
-  projects, see [http://absinthe-graphql.org](http://absinthe-graphql.org).
+  projects, see [https://absinthe-graphql.org](https://absinthe-graphql.org).
 
 ### Mix Tasks
 

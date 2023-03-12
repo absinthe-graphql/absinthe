@@ -94,4 +94,35 @@ defmodule Absinthe.LexerTest do
               {:"}", {7, 1}}
             ]} == Absinthe.Lexer.tokenize(@query)
   end
+
+  @tag timeout: 3_000
+  test "long query doesn't take too long" do
+    # This tests the performance of long queries. Before optimization work, this
+    # test took 16 seconds. After optimization it took 0.08 seconds. Setting
+    # a generous ExUnit timeout ensures there has not been a performance regression
+    # while hopefully preventing testing fragility.
+    many_directives = String.duplicate("@abc ", 10_000)
+    {:ok, _} = Absinthe.Lexer.tokenize("{ __typename #{many_directives} }")
+  end
+
+  test "document with tokens exceeding limit" do
+    query = too_long_query()
+
+    assert {:error, :exceeded_token_limit} ==
+             Absinthe.Lexer.tokenize(query, token_limit: 15_000)
+
+    refute {:error, :exceeded_token_limit} ==
+             Absinthe.Lexer.tokenize(query)
+  end
+
+  defp too_long_query do
+    Enum.to_list(for n <- 1..10000, do: "test#{n}")
+    |> deep_query()
+  end
+
+  defp deep_query([]), do: ""
+
+  defp deep_query([field | rest]) do
+    "{ #{field} #{deep_query(rest)} }"
+  end
 end

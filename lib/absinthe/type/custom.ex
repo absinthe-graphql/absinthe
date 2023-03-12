@@ -61,7 +61,7 @@ defmodule Absinthe.Type.Custom do
     scalar :decimal do
       description """
       The `Decimal` scalar type represents signed double-precision fractional
-      values parsed by the `Decimal` library.  The Decimal appears in a JSON
+      values parsed by the `Decimal` library. The Decimal appears in a JSON
       response as a string to preserve precision.
       """
 

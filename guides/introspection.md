@@ -121,11 +121,5 @@ end
 ```
 
 If you'd prefer to use a desktop application, we recommend using the pre-built
-[Electron](http://electron.atom.io)-based wrapper application,
+[Electron](https://electron.atom.io)-based wrapper application,
 [GraphiQL.app](https://github.com/skevy/graphiql-app).
-
-### GraphQL Hub
-
-[GraphQL Hub](https://www.graphqlhub.com/) is an interesting website that you
-can use to introspect a number of public GraphQL servers, using GraphiQL in the
-browser and providing useful examples.

@@ -100,7 +100,7 @@ With a query string:
 ?query=query+GetItem($id:ID!){item(id:$id){name}}&variables={id:"foo"}
 ```
 
-Due to [varying limits on the maximum size of URLs](http://stackoverflow.com/questions/417142/what-is-the-maximum-length-of-a-url-in-different-browsers),
+Due to [varying limits on the maximum size of URLs](https://stackoverflow.com/questions/417142/what-is-the-maximum-length-of-a-url-in-different-browsers),
 we recommend using one of the POST options below instead, putting the `query` into the body of the request.
 
 ### Via an `application/json` POST

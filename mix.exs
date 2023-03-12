@@ -2,7 +2,7 @@ defmodule Absinthe.Mixfile do
   use Mix.Project
 
   @source_url "https://github.com/absinthe-graphql/absinthe"
-  @version "1.7.0"
+  @version "1.7.1"
 
   def project do
     [
@@ -152,7 +152,6 @@ defmodule Absinthe.Mixfile do
         Absinthe.Type,
         Absinthe.Type.Custom,
         Absinthe.Type.Argument,
-        Absinthe.Type.Custom,
         Absinthe.Type.Directive,
         Absinthe.Type.Enum,
         Absinthe.Type.Enum.Value,
