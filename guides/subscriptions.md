@@ -51,6 +51,12 @@ options.
 In your `MyAppWeb.Endpoint` module add:
 
 ```elixir
+use Absinthe.Phoenix.Endpoint
+```
+
+Now, you need to configure your socket. I.e. in your `MyAppWeb.UserSocket` module add:
+
+```elixir
 use Absinthe.Phoenix.Socket,
   schema: MyAppWeb.Schema
 ```
