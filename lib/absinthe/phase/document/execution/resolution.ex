@@ -118,6 +118,8 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp walk_results([], _, _, res = %{path: [_ | sub_path]}, _, acc),
     do: {:lists.reverse(acc), %{res | path: sub_path}}
 
+  defp walk_results([], _, _, res, _, acc), do: {:lists.reverse(acc), res}
+
   defp resolve_fields(parent, res, source, path) do
     # parent is the parent field, we need to get the return type of that field
     # that return type could be an interface or union, so let's make it concrete
