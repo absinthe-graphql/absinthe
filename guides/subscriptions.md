@@ -36,7 +36,7 @@ line:
       {Phoenix.PubSub, name: :my_pubsub},
       # Start the endpoint when the application starts
       MyAppWeb.Endpoint,
-      {Absinthe.Subscription, pubsub: MyAppWeb.Endpoint}
+      {Absinthe.Subscription, MyAppWeb.Endpoint}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
