@@ -31,7 +31,7 @@ defmodule Absinthe.Phase.Schema.Validation.DefaultEnumValuePresent do
 
     case Map.fetch(enums, type_identifier) do
       {:ok, enum} ->
-        values = Enum.map(enum.values, & &1.value)
+        values = enum.values |> List.flatten() |> Enum.map(&enum_value/1)
         value_list = Enum.map(values, &"\n * #{inspect(&1)}")
 
         case value_conforms_to_enum(node.type, default_value, values) do
@@ -56,6 +56,9 @@ defmodule Absinthe.Phase.Schema.Validation.DefaultEnumValuePresent do
   def validate_defaults(node, _, _) do
     node
   end
+  
+  defp enum_value(value) when is_atom(value), do: value
+  defp enum_value(%{value: value}), do: value
 
   defp value_conforms_to_enum(%Blueprint.TypeReference.List{of_type: of_type}, value, enum_values)
        when is_list(value) do
