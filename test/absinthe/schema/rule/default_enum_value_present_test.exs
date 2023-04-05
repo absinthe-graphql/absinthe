@@ -190,5 +190,29 @@ defmodule Absinthe.Schema.Rule.DefaultEnumValuePresentTest do
 
       assert Code.eval_string(schema)
     end
+
+    test "passes when the enum is generated dynamically" do
+      schema = """
+      defmodule CorrectCatSchema do
+        use Absinthe.Schema
+
+        query do
+          field :cats, type: non_null(list_of(non_null(:cat))) do
+            arg :color, :color, default_value: :cream
+          end
+        end
+
+        enum :color, values: colors()
+
+        object :cat do
+          field :name, :string
+        end
+        
+        def colors, do: [:tabby, :calico, :cream]
+      end
+      """
+
+      assert Code.eval_string(schema)
+    end
   end
 end
