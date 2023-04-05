@@ -56,7 +56,7 @@ defmodule Absinthe.Phase.Schema.Validation.DefaultEnumValuePresent do
   def validate_defaults(node, _, _) do
     node
   end
-  
+
   defp enum_value(value) when is_atom(value), do: value
   defp enum_value(%{value: value}), do: value
 
