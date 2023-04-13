@@ -5,12 +5,15 @@ defmodule Absinthe.Phase.Schema.Build do
     %{schema_definitions: [schema]} = blueprint
 
     types = build_types(blueprint)
-    directive_artifacts = build_directives(blueprint)
+
+    directive_artifacts =
+      (schema.directive_artifacts ++ build_directives(blueprint))
+      |> Enum.uniq_by(fn v -> v.identifier end)
 
     schema = %{
       schema
       | type_artifacts: types,
-        directive_artifacts: schema.directive_artifacts ++ directive_artifacts
+        directive_artifacts: directive_artifacts
     }
 
     blueprint = %{blueprint | schema_definitions: [schema]}
