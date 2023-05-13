@@ -41,7 +41,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
     use Absinthe.Schema
 
     query do
-      # Query type must exist
+      field :foo, :string
     end
 
     object :user do

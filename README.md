@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Last Updated](https://img.shields.io/github/last-commit/absinthe-graphql/absinthe.svg)](https://github.com/absinthe-graphql/absinthe/commits/master)
 
-[GraphQL](https://facebook.github.io/graphql/) implementation for Elixir.
+[GraphQL](https://github.com/graphql-elixir/graphql) implementation for Elixir.
 
 Goals:
 
@@ -17,7 +17,7 @@ Goals:
 - Detailed error messages and documentation.
 - A focus on robustness and production-level performance.
 
-Please see the website at [http://absinthe-graphql.org](http://absinthe-graphql.org).
+Please see the website at [https://absinthe-graphql.org](https://absinthe-graphql.org).
 
 ## Why Use Absinthe?
 
@@ -61,7 +61,7 @@ We care about support for third-party frameworks, both on the back and
 front end.
 
 So far, we include specialized support for Phoenix and Plug on the backend,
-and [Relay](https://facebook.github.io/relay/) on the frontend.
+and [Relay](https://relay.dev/) on the frontend.
 
 Of course we work out of the box with other frontend frameworks and GraphQL
 clients, too.
@@ -72,7 +72,7 @@ Install from [Hex.pm](https://hex.pm/packages/absinthe):
 
 ```elixir
 def deps do
-  [{:absinthe, "~> 1.5.0"}]
+  [{:absinthe, "~> 1.7.0"}]
 end
 ```
 
@@ -86,7 +86,7 @@ See [CHANGELOG](./CHANGELOG.md) for upgrade steps between versions.
 
 - [Absinthe hexdocs](https://hexdocs.pm/absinthe).
 - For the tutorial, guides, and general information about Absinthe-related
-  projects, see [http://absinthe-graphql.org](http://absinthe-graphql.org).
+  projects, see [https://absinthe-graphql.org](https://absinthe-graphql.org).
 
 ### Mix Tasks
 

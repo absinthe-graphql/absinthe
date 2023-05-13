@@ -69,6 +69,20 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(attrs, [bp], [])
   end
 
+  def struct_to_kind(%struct{}), do: struct_to_kind(struct)
+  def struct_to_kind(Blueprint.Schema.DirectiveDefinition), do: "directive"
+  def struct_to_kind(Blueprint.Schema.EnumTypeDefinition), do: "enum type"
+  def struct_to_kind(Blueprint.Schema.EnumValueDefinition), do: "enum value"
+  def struct_to_kind(Blueprint.Schema.FieldDefinition), do: "field"
+  def struct_to_kind(Blueprint.Schema.InputObjectTypeDefinition), do: "input object"
+  def struct_to_kind(Blueprint.Schema.InputValueDefinition), do: "argument"
+  def struct_to_kind(Blueprint.Schema.InterfaceTypeDefinition), do: "interface"
+  def struct_to_kind(Blueprint.Schema.ObjectTypeDefinition), do: "object"
+  def struct_to_kind(Blueprint.Schema.ScalarTypeDefinition), do: "scalar"
+  def struct_to_kind(Blueprint.Schema.UnionTypeDefinition), do: "union"
+  def struct_to_kind(Blueprint.Schema.TypeExtensionDefinition), do: "type extension"
+  def struct_to_kind(_), do: "type"
+
   defp build_types([], [bp], buffer) do
     if buffer != [] do
       raise """
@@ -104,7 +118,9 @@ defmodule Absinthe.Blueprint.Schema do
     Schema.InputValueDefinition,
     Schema.InterfaceTypeDefinition,
     Schema.UnionTypeDefinition,
-    Schema.EnumValueDefinition
+    Schema.EnumValueDefinition,
+    Schema.TypeExtensionDefinition,
+    Schema.SchemaDeclaration
   ]
 
   defp build_types([%module{} = type | rest], stack, buff) when module in @simple_open do
@@ -129,6 +145,11 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(rest, [field | stack], buff)
   end
 
+  defp build_types([{:directive, trigger} | rest], [field | stack], buff) do
+    field = Map.update!(field, :directives, &[trigger | &1])
+    build_types(rest, [field | stack], buff)
+  end
+
   defp build_types([{:trigger, trigger} | rest], [field | stack], buff) do
     field = Map.update!(field, :triggers, &[trigger | &1])
     build_types(rest, [field | stack], buff)
@@ -136,6 +157,11 @@ defmodule Absinthe.Blueprint.Schema do
 
   defp build_types([{:interface, interface} | rest], [obj | stack], buff) do
     obj = Map.update!(obj, :interfaces, &[interface | &1])
+    build_types(rest, [obj | stack], buff)
+  end
+
+  defp build_types([{:type, type} | rest], [obj | stack], buff) do
+    obj = Map.update!(obj, :types, &[type | &1])
     build_types(rest, [obj | stack], buff)
   end
 
@@ -172,6 +198,35 @@ defmodule Absinthe.Blueprint.Schema do
     build_types(rest, [push(field, :arguments, arg) | stack], buff)
   end
 
+  @extendable_types [
+    Schema.EnumTypeDefinition,
+    Schema.InputObjectTypeDefinition,
+    Schema.InterfaceTypeDefinition,
+    Schema.ObjectTypeDefinition,
+    Schema.ScalarTypeDefinition,
+    Schema.SchemaDeclaration,
+    Schema.UnionTypeDefinition
+  ]
+  defp build_types(
+         [:close | rest],
+         [
+           %extendable_type{} = def,
+           %Schema.TypeExtensionDefinition{} = extend | stack
+         ],
+         buff
+       )
+       when extendable_type in @extendable_types do
+    build_types(rest, [%{extend | definition: def} | stack], buff)
+  end
+
+  defp build_types(
+         [:close | rest],
+         [%Schema.FieldDefinition{} = field, %Schema.SchemaDeclaration{} = declaration | stack],
+         buff
+       ) do
+    build_types(rest, [push(declaration, :field_definitions, field) | stack], buff)
+  end
+
   defp build_types([:close | rest], [%Schema.FieldDefinition{} = field, obj | stack], buff) do
     field =
       field
@@ -181,6 +236,14 @@ defmodule Absinthe.Blueprint.Schema do
       |> Map.put(:function_ref, {obj.identifier, field.identifier})
 
     build_types(rest, [push(obj, :fields, field) | stack], buff)
+  end
+
+  defp build_types(
+         [:close | rest],
+         [%Schema.TypeExtensionDefinition{} = extension, schema | stack],
+         buff
+       ) do
+    build_types(rest, [push(schema, :type_extensions, extension) | stack], buff)
   end
 
   defp build_types([:close | rest], [%Schema.ObjectTypeDefinition{} = obj, schema | stack], buff) do
@@ -207,6 +270,7 @@ defmodule Absinthe.Blueprint.Schema do
   end
 
   defp build_types([:close | rest], [%Schema.UnionTypeDefinition{} = union, schema | stack], buff) do
+    union = Map.update!(union, :types, &Enum.reverse/1)
     build_types(rest, [push(schema, :type_definitions, union) | stack], buff)
   end
 
@@ -222,6 +286,17 @@ defmodule Absinthe.Blueprint.Schema do
 
   defp build_types([:close | rest], [%Schema.ScalarTypeDefinition{} = type, schema | stack], buff) do
     schema = push(schema, :type_definitions, type)
+    build_types(rest, [schema | stack], buff)
+  end
+
+  defp build_types(
+         [:close | rest],
+         [%Schema.SchemaDeclaration{} = schema_declaration, schema | stack],
+         buff
+       ) do
+    # The declaration is pushed into the :type_definitions instead of the :schema_declaration
+    # as it will be split off later in the ApplyDeclaration phase
+    schema = push(schema, :type_definitions, schema_declaration)
     build_types(rest, [schema | stack], buff)
   end
 

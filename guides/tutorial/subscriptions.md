@@ -2,9 +2,8 @@
 
 When the need arises for near realtime data GraphQL provides subscriptions. We want to support subscriptions that look like
 
-
 ```graphql
-subscription{
+subscription {
   newPost {
     id
     name
@@ -13,7 +12,6 @@ subscription{
 ```
 
 Since we had already setup mutations to handle creation of posts we can use that as the event we want to subscribe to. In order to achieve this we have to do a little bit of set up
-
 
 Let's start by adding `absinthe_phoenix` as a dependency
 
@@ -35,21 +33,18 @@ In `lib/blog/application.ex`:
   children = [
     # other children ...
     {BlogWeb.Endpoint, []}, # this line should already exist
-    {Absinthe.Subscription, [BlogWeb.Endpoint]}, # add this line
+    {Absinthe.Subscription, BlogWeb.Endpoint}, # add this line
     # other children ...
   ]
 ```
-
-
 
 The lets add a configuration to the phoenix endpoint so it can provide some callbacks Absinthe expects, please note while this guide uses phoenix. Absinthe's support for Subscriptions is good enough to be used without websockets even without a browser.
 
 In `lib/blog_web/endpoint.ex`:
 
-
 ```elixir
 defmodule BlogWeb.Endpoint do
-  use Phoenix.Endpoint, otp_app: :blog # this line should already exist 
+  use Phoenix.Endpoint, otp_app: :blog # this line should already exist
   use Absinthe.Phoenix.Endpoint # add this line
 
   << rest of the file>>
@@ -59,7 +54,7 @@ The `PubSub` stuff is now set up, let's configure our sockets
 
 In `lib/blog_web/channels/user_socket.ex`
 
-``` elixir
+```elixir
 defmodule BlogWeb.UserSocket do
   use Phoenix.Socket # this line should already exist
   use Absinthe.Phoenix.Socket, schema: BlogWeb.Schema # add
@@ -95,22 +90,17 @@ defmodule BlogWeb.Router do
 end
 ```
 
-
 Now let/s set up a subscription root object in our Schema to listen for an event. For this subscription we can set it up to listen every time a new post is created.
-
 
 In `blog_web/schema.ex` :
 
 ```elixir
-
 subscription do
-
   field :new_post, :post do
     config fn _args, _info ->
       {:ok, topic: "*"}
     end
   end
-
 end
 ```
 
@@ -144,4 +134,4 @@ def create_post(_parent, args, %{context: %{current_user: user}}) do
 
 With this, open a tab and run the query at the top of this section. Then open another tab and run a mutation to add a post you should see a result in the other tab have fun.
 
-<img style="box-shadow: 0 0 6px #ccc;" src="/guides/assets/tutorial/graphiql_new_post_sub.png" alt=""/>
+<img style="box-shadow: 0 0 6px #ccc;" src="assets/tutorial/graphiql_new_post_sub.png" alt=""/>

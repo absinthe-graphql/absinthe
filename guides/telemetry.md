@@ -1,6 +1,6 @@
 # Telemetry
 
-Absinthe 1.5 uses `telemetry` to instrument its activity.
+Absinthe 1.5 and up uses `telemetry` to instrument its activity.
 
 Call `:telemetry.attach/4` or `:telemetry.attach_many/4` to attach your
 handler function to any of the following event names:
@@ -62,3 +62,29 @@ After a query is executed, you'll see something like:
   }
 }
 ```
+
+## Opentelemetry
+
+When using Opentelemetry, one usually wants to correlate spans that are created
+in spawned tasks with the main trace. For example, you might have a trace started
+in a Phoenix endpoint, and then have spans around database access.
+
+One can correlate manually by attaching the OTel context the task function:
+
+```elixir
+ctx = OpenTelemetry.Ctx.get_current()
+
+Task.async(fn ->
+  OpenTelemetry.Ctx.attach(ctx)
+
+  # do stuff that might create spans
+end)
+```
+
+When using the `async` and `batch` middleware, the tasks are spawned by Absinthe,
+so you can't attach the context manually.
+
+Instead, you can add the `:opentelemetry_process_propagator` package to your
+dependencies, which has a `Task.async/1` wrapper that will attach the context
+automatically. If the package is installed, the middleware will use it in place
+of the default `Task.async/1`.

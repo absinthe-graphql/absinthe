@@ -10,6 +10,7 @@ defmodule Absinthe.Fixtures.Union do
     end
 
     query do
+      field :foo, :string
     end
 
     union :normal_string, description: "string" do
@@ -54,6 +55,7 @@ defmodule Absinthe.Fixtures.Union do
     end
 
     query do
+      field :foo, :string
     end
 
     def test_function(arg1) do
@@ -110,6 +112,7 @@ defmodule Absinthe.Fixtures.Union do
     end
 
     query do
+      field :foo, :string
     end
 
     def test_function(arg1) do

@@ -1,7 +1,86 @@
 defmodule Absinthe.Schema.Rule.DefaultEnumValuePresentTest do
   use Absinthe.Case, async: true
 
-  describe "rule" do
+  describe "SDL schema" do
+    test "is enforced when the default_value is not in the enum" do
+      schema = """
+      defmodule BadColorSchemaSdl do
+        use Absinthe.Schema
+
+        import_sdl "
+        enum Channel {
+          RED
+          GREEN
+        }
+
+        type Query {
+          info(channel: Channel! = OTHER): Channel
+        }
+        "
+      end
+      """
+
+      error = ~r/The default_value for an enum must be present in the enum values/
+
+      assert_raise(Absinthe.Schema.Error, error, fn ->
+        Code.eval_string(schema)
+      end)
+    end
+
+    test "is enforced when the default_value is a list of enums and some items are not in the enum" do
+      schema = """
+      defmodule MovieSchemaSdl do
+        use Absinthe.Schema
+
+
+        import_sdl "
+        enum MovieGenre {
+          ACTION
+          COMEDY
+          SF
+        }
+
+        type Query {
+          movies(genres: [MovieGenre!]! = [ACTION, OTHER]): [MovieGenre!]!
+        }
+        "
+      end
+      """
+
+      error = ~r/The default_value for an enum must be present in the enum values/
+
+      assert_raise(Absinthe.Schema.Error, error, fn ->
+        Code.eval_string(schema)
+      end)
+    end
+
+    test "passes when the default_value is a list and that list is a valid enum value" do
+      schema = """
+      defmodule CorrectCatSchemSdl do
+        use Absinthe.Schema
+
+        import_sdl "
+        enum CatOrderBy {
+          NAME_ASC
+          NAME_DESC_INSERTED_AT_ASC
+        }
+
+        type Query {
+          cat(orderBy: [CatOrderBy!] = [NAME_ASC]): [Cat!]!
+        }
+
+        type Cat {
+          name: String
+        }
+        "
+      end
+      """
+
+      assert Code.eval_string(schema)
+    end
+  end
+
+  describe "macro schema" do
     test "is enforced when the default_value is not in the enum" do
       schema = """
       defmodule BadColorSchema do

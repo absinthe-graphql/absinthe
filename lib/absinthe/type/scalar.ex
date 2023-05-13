@@ -12,19 +12,28 @@ defmodule Absinthe.Type.Scalar do
   The following built-in scalar types are defined:
 
   * `:boolean` - Represents `true` or `false`. See the [GraphQL Specification](https://www.graphql.org/learn/schema/#scalar-types).
-  * `:float` - Represents signed double‐precision fractional values as specified by [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point). See the [GraphQL Specification](https://www.graphql.org/learn/schema/#scalar-types).
-  * `:id` - Represents a unique identifier, often used to refetch an object or as key for a cache. The ID type is serialized in the same way as a String; however, it is not intended to be human‐readable. See the [GraphQL Specification](https://www.graphql.org/learn/schema/#scalar-types).
-  * `:integer` - Represents a signed 32‐bit numeric non‐fractional value, greater than or equal to -2^31 and less than 2^31. Note that Absinthe uses the full word `:integer` to identify this type, but its `name` (used by variables, for instance), is `"Int"`. See the [GraphQL Specification](https://www.graphql.org/learn/schema/#scalar-types).
-  * `:string` - Represents textual data, represented as UTF‐8 character sequences. The String type is most often used by GraphQL to represent free‐form human‐readable text. See the [GraphQL Specification](https://www.graphql.org/learn/schema/#scalar-types).
-  ## Examples
+  * `:float` - Represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754). See the [GraphQL Specification](https://www.graphql.org/learn/schema/#scalar-types).
+  * `:id` - Represents a unique identifier, often used to refetch an object or as key for a cache. The ID type is serialized in the same way as a String; however, it is not intended to be human-readable. See the [GraphQL Specification](https://www.graphql.org/learn/schema/#scalar-types).
+  * `:integer` - Represents non-fractional signed whole numeric value. **By default it is not compliant with the GraphQl Specification**, it can represent values between `-(2^53 - 1)` and `2^53 - 1` as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754). To use the [GraphQl compliant Int](https://spec.graphql.org/October2021/#sec-Int), representing values between `-2^31` and `2^31 - 1`, in your schema `use Absinthe.Schema, use_spec_compliant_int_scalar: true`.
+  * `:string` - Represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text. See the [GraphQL Specification](https://www.graphql.org/learn/schema/#scalar-types).
 
-  Supporting a time format in ISOz format, using [Timex](http://hexdocs.pm/timex):
+
+  ## Built-in custom types
+
+  Note that absinthe includes a few generic extra scalar types in `Absinthe.Type.Custom`,
+  these are not part of the GraphQL spec thus they must be explicitly imported.
+  Consider using them before implementing a custom type.
+
+
+  ## Example
+
+  Supporting ISO8601 week date format, using [Timex](https://hexdocs.pm/timex):
 
   ```
-  scalar :time do
-    description "Time (in ISOz format)"
-    parse &Timex.DateFormat.parse(&1, "{ISOz}")
-    serialize &Timex.DateFormat.format!(&1, "{ISOz}")
+  scalar :iso_week_date do
+    description "ISO8601 week date (ex: 2022-W42-2)"
+    parse &Timex.parse(&1, "{YYYY}-W{Wiso}-{WDmon}")
+    serialize &Timex.format!(&1, "{YYYY}-W{Wiso}-{WDmon}")
   end
   ```
   """

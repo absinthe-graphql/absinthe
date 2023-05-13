@@ -48,6 +48,14 @@ defmodule Absinthe.Middleware.AsyncTest do
           {:middleware, Elixir.Absinthe.Middleware.Async, task}
         end
       end
+
+      field :async_check_otel_ctx, :string do
+        resolve fn _, _, _ ->
+          async(fn ->
+            {:ok, OpenTelemetry.Ctx.get_value("stored_value", nil)}
+          end)
+        end
+      end
     end
 
     def cool_async(fun) do
@@ -75,12 +83,39 @@ defmodule Absinthe.Middleware.AsyncTest do
     assert {:ok, %{data: %{"asyncBareThing" => "bare task"}}} == Absinthe.run(doc, Schema)
   end
 
-  test "can resolve a field using the normal test helper" do
+  test "can resolve a field using the normal test helper and emit telemetry event", %{test: test} do
     doc = """
     {asyncThing}
     """
 
+    pid = self()
+
+    :ok =
+      :telemetry.attach_many(
+        "#{test}",
+        [
+          [:absinthe, :middleware, :async, :task, :start],
+          [:absinthe, :middleware, :async, :task, :stop]
+        ],
+        fn name, measurements, metadata, _config ->
+          send(pid, {:telemetry_event, name, measurements, metadata})
+        end,
+        _config = %{}
+      )
+
     assert {:ok, %{data: %{"asyncThing" => "we async now"}}} == Absinthe.run(doc, Schema)
+
+    assert_receive {:telemetry_event, [:absinthe, :middleware, :async, :task, :start],
+                    %{system_time: _}, %{}}
+
+    assert_receive {:telemetry_event, [:absinthe, :middleware, :async, :task, :stop],
+                    %{duration: _}, %{}}
+
+    assert_receive {:telemetry_event, [:absinthe, :middleware, :async, :task, :start],
+                    %{system_time: _}, %{}}
+
+    assert_receive {:telemetry_event, [:absinthe, :middleware, :async, :task, :stop],
+                    %{duration: _}, %{}}
   end
 
   test "can resolve a field using a cooler but probably confusing to some people helper" do
@@ -97,5 +132,15 @@ defmodule Absinthe.Middleware.AsyncTest do
     """
 
     assert {:ok, %{data: %{"returnsNil" => nil}}} == Absinthe.run(doc, Schema)
+  end
+
+  test "propagates the OTel context" do
+    doc = """
+    {asyncCheckOtelCtx}
+    """
+
+    OpenTelemetry.Ctx.set_value("stored_value", "some_value")
+
+    assert {:ok, %{data: %{"asyncCheckOtelCtx" => "some_value"}}} == Absinthe.run(doc, Schema)
   end
 end

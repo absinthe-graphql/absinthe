@@ -23,7 +23,7 @@ defmodule Absinthe.Phase.Telemetry do
     :telemetry.execute(
       @operation_start,
       %{system_time: system_time},
-      %{id: id, blueprint: blueprint, options: options}
+      %{id: id, telemetry_span_context: id, blueprint: blueprint, options: options}
     )
 
     {:ok,
@@ -42,7 +42,7 @@ defmodule Absinthe.Phase.Telemetry do
     :telemetry.execute(
       @subscription_start,
       %{system_time: system_time},
-      %{id: id, blueprint: blueprint, options: options}
+      %{id: id, telemetry_span_context: id, blueprint: blueprint, options: options}
     )
 
     {:ok,
@@ -58,8 +58,8 @@ defmodule Absinthe.Phase.Telemetry do
     with %{id: id, start_time_mono: start_time_mono} <- blueprint.telemetry do
       :telemetry.execute(
         @subscription_stop,
-        %{duration: end_time_mono - start_time_mono},
-        %{id: id, blueprint: blueprint, options: options}
+        %{duration: end_time_mono - start_time_mono, end_time_mono: end_time_mono},
+        %{id: id, telemetry_span_context: id, blueprint: blueprint, options: options}
       )
     end
 
@@ -72,8 +72,8 @@ defmodule Absinthe.Phase.Telemetry do
     with %{id: id, start_time_mono: start_time_mono} <- blueprint.telemetry do
       :telemetry.execute(
         @operation_stop,
-        %{duration: end_time_mono - start_time_mono},
-        %{id: id, blueprint: blueprint, options: options}
+        %{duration: end_time_mono - start_time_mono, end_time_mono: end_time_mono},
+        %{id: id, telemetry_span_context: id, blueprint: blueprint, options: options}
       )
     end
 

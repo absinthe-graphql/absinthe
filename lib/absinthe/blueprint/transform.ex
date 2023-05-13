@@ -86,7 +86,15 @@ defmodule Absinthe.Blueprint.Transform do
     Blueprint.Schema.InterfaceTypeDefinition => [:interfaces, :fields, :directives],
     Blueprint.Schema.ObjectTypeDefinition => [:interfaces, :fields, :directives],
     Blueprint.Schema.ScalarTypeDefinition => [:directives],
-    Blueprint.Schema.SchemaDefinition => [:directive_definitions, :type_definitions, :directives],
+    Blueprint.Schema.SchemaDeclaration => [:directives, :field_definitions],
+    Blueprint.Schema.SchemaDefinition => [
+      :directive_definitions,
+      :type_definitions,
+      :type_extensions,
+      :directives,
+      :schema_declaration
+    ],
+    Blueprint.Schema.TypeExtensionDefinition => [:definition],
     Blueprint.Schema.UnionTypeDefinition => [:directives, :types]
   }
 
@@ -118,12 +126,6 @@ defmodule Absinthe.Blueprint.Transform do
   end
 
   for {node_name, children} <- nodes_with_children do
-    if :selections in children do
-      def maybe_walk_children(%unquote(node_name){flags: %{flat: _}} = node, acc, pre, post) do
-        node_with_children(node, unquote(children -- [:selections]), acc, pre, post)
-      end
-    end
-
     def maybe_walk_children(%unquote(node_name){} = node, acc, pre, post) do
       node_with_children(node, unquote(children), acc, pre, post)
     end

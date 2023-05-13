@@ -20,7 +20,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
         use Absinthe.Schema
 
         query do
-          # Query type must exist
+          field :foo, :string
         end
 
         object :foo do
@@ -41,7 +41,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
         use Absinthe.Schema
 
         query do
-          # Query type must exist
+          field :foo, :string
         end
 
         input_object :foo do
@@ -64,7 +64,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
         use Absinthe.Schema
 
         query do
-          # Query type must exist
+          field :foo, :string
         end
 
         object :cool_fields do
@@ -92,7 +92,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
         use Absinthe.Schema
 
         query do
-          # Query type must exist
+          field :foo, :string
         end
 
         object :foo do
@@ -106,6 +106,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
 
         object :baz do
           import_fields :bar
+
           field :age, :integer
         end
       end
@@ -131,7 +132,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
                   extra: %{},
                   locations: [_],
                   message:
-                    "In Bar, :asdf is not defined in your schema.\n\nTypes must exist if referenced.\n",
+                    "In object Bar, :asdf is not defined in your schema.\n\nTypes must exist if referenced.\n",
                   path: [],
                   phase: Absinthe.Phase.Schema.Validation.TypeReferencesExist
                 }
@@ -211,7 +212,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
         use Absinthe.Schema
 
         query do
-          # Query type must exist
+          field :foo, :string
         end
 
         object :foo do
@@ -223,7 +224,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
         use Absinthe.Schema
 
         query do
-          # Query type must exist
+          field :foo, :string
         end
 
         object :bar do
@@ -235,7 +236,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
         use Absinthe.Schema
 
         query do
-          # Query type must exist
+          field :foo, :string
         end
 
         import_types Source1

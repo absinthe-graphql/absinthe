@@ -8,7 +8,7 @@ defmodule Absinthe.Type.UnionTest do
     use Absinthe.Schema
 
     query do
-      # Query type must exist
+      field :foo, :string
     end
 
     object :person do

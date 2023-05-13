@@ -12,10 +12,12 @@ defmodule Absinthe.Blueprint.Schema.SchemaDefinition do
             type_extensions: [],
             directives: [],
             source_location: nil,
+            type_extension_imports: [],
             # Added by phases
             schema_declaration: nil,
             flags: %{},
             imports: [],
+            directive_imports: [],
             errors: [],
             __private__: [],
             __reference__: nil

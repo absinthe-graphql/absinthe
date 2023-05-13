@@ -3,6 +3,82 @@ defmodule Absinthe.IntrospectionTest do
 
   alias Absinthe.Schema
 
+  describe "introspection of directives" do
+    test "builtin" do
+      result =
+        """
+        query IntrospectionQuery {
+          __schema {
+            directives {
+              name
+              description
+              locations
+              isRepeatable
+              onOperation
+              onFragment
+              onField
+            }
+          }
+        }
+        """
+        |> run(Absinthe.Fixtures.ColorSchema)
+
+      assert {:ok,
+              %{
+                data: %{
+                  "__schema" => %{
+                    "directives" => [
+                      %{
+                        "description" =>
+                          "Marks an element of a GraphQL schema as no longer supported.",
+                        "isRepeatable" => false,
+                        "locations" => [
+                          "ARGUMENT_DEFINITION",
+                          "ENUM_VALUE",
+                          "FIELD_DEFINITION",
+                          "INPUT_FIELD_DEFINITION"
+                        ],
+                        "name" => "deprecated",
+                        "onField" => false,
+                        "onFragment" => false,
+                        "onOperation" => false
+                      },
+                      %{
+                        "description" => nil,
+                        "isRepeatable" => false,
+                        "locations" => ["FIELD_DEFINITION"],
+                        "name" => "external",
+                        "onField" => false,
+                        "onFragment" => false,
+                        "onOperation" => false
+                      },
+                      %{
+                        "description" =>
+                          "Directs the executor to include this field or fragment only when the `if` argument is true.",
+                        "isRepeatable" => false,
+                        "locations" => ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"],
+                        "name" => "include",
+                        "onField" => true,
+                        "onFragment" => true,
+                        "onOperation" => false
+                      },
+                      %{
+                        "description" =>
+                          "Directs the executor to skip this field or fragment when the `if` argument is true.",
+                        "isRepeatable" => false,
+                        "locations" => ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"],
+                        "name" => "skip",
+                        "onField" => true,
+                        "onFragment" => true,
+                        "onOperation" => false
+                      }
+                    ]
+                  }
+                }
+              }} = result
+    end
+  end
+
   describe "introspection of an enum type" do
     test "can use __type and value information with deprecations" do
       result =

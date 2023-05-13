@@ -35,12 +35,43 @@ defmodule Absinthe.Subscription do
   @doc """
   Add Absinthe.Subscription to your process tree.
   """
-  defdelegate start_link(pubsub), to: Subscription.Supervisor
+  @spec start_link(atom() | [opt()]) :: Supervisor.on_start()
+  defdelegate start_link(opts_or_pubsub), to: Subscription.Supervisor
 
-  def child_spec(pubsub) do
+  @type opt() ::
+          {:pubsub, atom()} | {:compress_registry?, boolean()} | {:pool_size, pos_integer()}
+
+  @doc """
+  Build a child specification for subscriptions.
+
+  In order to use supscriptions in your application, you must add
+  `Absinthe.Subscription` to your supervision tree after your endpoint.
+
+  See `guides/subscriptions.md` for more information on how to get up and
+  running with subscriptions.
+
+  ## Options
+
+  * `:pubsub` - (Required) The `Phoenix.Pubsub` that should be used to publish
+    subscriptions. Typically this will be your `Phoenix.Endpoint`.
+  * `:compress_registry?` - (Optional - default `true`) A boolean controlling
+    whether the Registry used to keep track of subscriptions will should be
+    compressed or not.
+  * `:pool_size` - (Optional - default `System.schedulers() * 2`) An integer
+    specifying the number of `Absinthe.Subscription.Proxy` processes to start.
+  """
+  @spec child_spec(atom() | [opt()]) :: Supervisor.child_spec()
+  def child_spec(pubsub) when is_atom(pubsub) do
+    # child_spec/1 used to take a single argument - the pub-sub - so in order
+    # to maintain compatibility for existing users of the library we still
+    # accept this argument and transform it into a keyword list.
+    child_spec(pubsub: pubsub)
+  end
+
+  def child_spec(opts) when is_list(opts) do
     %{
       id: __MODULE__,
-      start: {Subscription.Supervisor, :start_link, [pubsub]},
+      start: {Subscription.Supervisor, :start_link, [opts]},
       type: :supervisor
     }
   end
@@ -74,6 +105,8 @@ defmodule Absinthe.Subscription do
           term,
           Absinthe.Resolution.t() | [subscription_field_spec]
         ) :: :ok
+  def publish(_pubsub, _mutation_result, []), do: :ok
+
   def publish(pubsub, mutation_result, %Absinthe.Resolution{} = info) do
     subscribed_fields = get_subscription_fields(info)
     publish(pubsub, mutation_result, subscribed_fields)

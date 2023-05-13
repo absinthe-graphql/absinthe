@@ -23,7 +23,7 @@ defmodule Absinthe.Phase.Schema.Compile do
           do: {type_def.identifier, type_def.name}
 
     directive_list =
-      Map.new(schema.directive_definitions, fn type_def ->
+      Map.new(schema.directive_artifacts, fn type_def ->
         {type_def.identifier, type_def.name}
       end)
 
@@ -62,6 +62,10 @@ defmodule Absinthe.Phase.Schema.Compile do
 
         def __absinthe_prototype_schema__() do
           unquote(Macro.escape(prototype_schema))
+        end
+
+        def __absinthe_schema_declaration__() do
+          unquote(Macro.escape(schema.schema_declaration))
         end
 
         unquote_splicing(metadata)

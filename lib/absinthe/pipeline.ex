@@ -4,6 +4,12 @@ defmodule Absinthe.Pipeline do
 
   A pipeline is merely a list of phases. This module contains functions for building,
   modifying, and executing pipelines of phases.
+
+  Pipelines are used to build, validate and manipulate GraphQL documents or schema's.
+
+  * See [`Absinthe.Plug`](https://hexdocs.pm/absinthe_plug/Absinthe.Plug.html) on adjusting the document pipeline for GraphQL over http requests.
+  * See [`Absinthe.Phoenix`](https://hexdocs.pm/absinthe_phoenix/) on adjusting the document pipeline for GraphQL over Phoenix channels.
+  * See `Absinthe.Schema` on adjusting the schema pipeline for schema manipulation.
   """
 
   alias Absinthe.Phase
@@ -38,6 +44,9 @@ defmodule Absinthe.Pipeline do
 
   @spec for_document(Absinthe.Schema.t()) :: t
   @spec for_document(Absinthe.Schema.t(), Keyword.t()) :: t
+  @doc """
+  The default document pipeline
+  """
   def for_document(schema, options \\ []) do
     options = options(Keyword.put(options, :schema, schema))
 
@@ -111,20 +120,42 @@ defmodule Absinthe.Pipeline do
     ]
   end
 
+  def default_schema_options() do
+    [
+      type_imports: [
+        {Absinthe.Type.BuiltIns.Scalars, []},
+        {Absinthe.Type.BuiltIns.Introspection, []}
+      ],
+      directive_imports: [
+        {Absinthe.Type.BuiltIns.Directives, []}
+      ],
+      type_extension_imports: [
+        {Absinthe.Type.BuiltIns.DeprecatedDirectiveFields, []}
+      ]
+    ]
+  end
+
   @default_prototype_schema Absinthe.Schema.Prototype
 
   @spec for_schema(nil | Absinthe.Schema.t()) :: t
   @spec for_schema(nil | Absinthe.Schema.t(), Keyword.t()) :: t
+  @doc """
+  The default schema pipeline
+  """
   def for_schema(schema, options \\ []) do
     options =
-      options
+      default_schema_options()
+      |> Keyword.merge(options)
       |> Enum.reject(fn {_, v} -> is_nil(v) end)
       |> Keyword.put(:schema, schema)
       |> Keyword.put_new(:prototype_schema, @default_prototype_schema)
 
     [
-      Phase.Schema.TypeImports,
+      {Phase.Schema.DirectiveImports, options},
+      {Phase.Schema.TypeImports, options},
+      {Phase.Schema.TypeExtensionImports, options},
       Phase.Schema.ApplyDeclaration,
+      Phase.Schema.ApplyTypeExtensions,
       Phase.Schema.Introspection,
       {Phase.Schema.Hydrate, options},
       Phase.Schema.Arguments.Normalize,
@@ -139,11 +170,13 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.FieldImports,
       Phase.Schema.Validation.KnownDirectives,
       Phase.Document.Validation.KnownArgumentNames,
+      Phase.Document.Validation.RepeatableDirectives,
       {Phase.Schema.Arguments.Parse, options},
       Phase.Schema.Arguments.Data,
       Phase.Schema.Directives,
       Phase.Schema.Validation.DefaultEnumValuePresent,
       Phase.Schema.Validation.DirectivesMustBeValid,
+      Phase.Schema.Validation.ObjectMustDefineFields,
       Phase.Schema.Validation.InputOutputTypesCorrectlyPlaced,
       Phase.Schema.Validation.InterfacesMustResolveTypes,
       Phase.Schema.Validation.ObjectInterfacesMustBeValid,
@@ -151,11 +184,13 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.Validation.NoInterfaceCyles,
       Phase.Schema.Validation.QueryTypeMustBeObject,
       Phase.Schema.Validation.NamesMustBeValid,
+      Phase.Schema.Validation.UniqueFieldNames,
       Phase.Schema.RegisterTriggers,
       Phase.Schema.MarkReferenced,
       Phase.Schema.ReformatDescriptions,
       # This phase is run again now after additional validations
       {Phase.Schema.Validation.Result, pass: :final},
+      Phase.Schema.ImportPrototypeDirectives,
       Phase.Schema.Build,
       Phase.Schema.InlineFunctions,
       {Phase.Schema.Compile, options}

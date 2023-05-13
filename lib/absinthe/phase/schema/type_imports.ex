@@ -6,33 +6,33 @@ defmodule Absinthe.Phase.Schema.TypeImports do
 
   alias Absinthe.Blueprint.Schema
 
-  def run(blueprint, _opts) do
-    blueprint = Blueprint.prewalk(blueprint, &handle_imports/1)
+  def run(blueprint, opts) do
+    blueprint = Blueprint.prewalk(blueprint, &handle_imports(&1, opts))
     {:ok, blueprint}
   end
 
-  @default_imports [
-    {Absinthe.Type.BuiltIns.Scalars, []},
-    {Absinthe.Type.BuiltIns.Directives, []},
-    {Absinthe.Type.BuiltIns.Introspection, []}
-  ]
-  def handle_imports(%Schema.SchemaDefinition{} = schema) do
-    {types, schema} =
-      do_imports(@default_imports ++ schema.imports, schema.type_definitions, schema)
+  def handle_imports(%Schema.SchemaDefinition{} = schema, opts) do
+    default_imports = Keyword.get(opts, :type_imports, [])
 
-    # special casing the import of the built in directives
-    [builtins] = Absinthe.Type.BuiltIns.Directives.__absinthe_blueprint__().schema_definitions
-    directives = schema.directive_definitions ++ builtins.directive_definitions
-    {:halt, %{schema | type_definitions: types, directive_definitions: directives}}
+    {types, schema} =
+      do_imports(
+        default_imports ++ schema.imports,
+        schema.type_definitions,
+        schema
+      )
+
+    schema = %{schema | type_definitions: types}
+
+    {:halt, %{schema | type_definitions: types}}
   end
 
-  def handle_imports(node), do: node
+  def handle_imports(node, _), do: node
 
   defp do_imports([], types, schema) do
     {types, schema}
   end
 
-  defp do_imports([{module, opts} | rest], acc, schema) do
+  defp do_imports([{module, opts} | rest], types_acc, schema) do
     case ensure_compiled(module) do
       {:module, module} ->
         [other_def] = module.__absinthe_blueprint__.schema_definitions
@@ -51,10 +51,18 @@ defmodule Absinthe.Phase.Schema.TypeImports do
               types
           end
 
-        do_imports(other_def.imports ++ rest, types ++ acc, schema)
+        do_imports(
+          other_def.imports ++ rest,
+          types ++ types_acc,
+          schema
+        )
 
       {:error, reason} ->
-        do_imports(rest, acc, schema |> put_error(error(module, reason)))
+        do_imports(
+          rest,
+          types_acc,
+          schema |> put_error(error(module, reason))
+        )
     end
   end
 
@@ -71,6 +79,13 @@ defmodule Absinthe.Phase.Schema.TypeImports do
     else
       Code.ensure_compiled(module)
     end
+  catch
+    # Code.ensure_compiled! in Elixir >1.12 raises an ArgumentError if it is unable to find the module with message similar to
+    # "could not load module <module> due to reason <reason>"
+    # where reason is an atom :embedded | :badfile | :nofile | :on_load_failure | :unavailable
+    _, %ArgumentError{message: message} ->
+      reason = message |> String.split(":") |> List.last()
+      {:error, reason}
   end
 
   # Generate an error when loading module fails

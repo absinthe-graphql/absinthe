@@ -2,7 +2,7 @@ defmodule Absinthe.Mixfile do
   use Mix.Project
 
   @source_url "https://github.com/absinthe-graphql/absinthe"
-  @version "1.6.5"
+  @version "1.7.1"
 
   def project do
     [
@@ -71,14 +71,16 @@ defmodule Absinthe.Mixfile do
 
   defp deps do
     [
-      {:nimble_parsec, "~> 0.5 or ~> 1.0"},
-      {:telemetry, "~> 0.4.0"},
+      {:nimble_parsec, "~> 1.2.2 or ~> 1.3.0"},
+      {:telemetry, "~> 1.0 or ~> 0.4"},
       {:dataloader, "~> 1.0.0", optional: true},
       {:decimal, "~> 1.0 or ~> 2.0", optional: true},
+      {:opentelemetry_process_propagator, "~> 0.2.1", optional: true},
       {:ex_doc, "~> 0.22", only: :dev},
       {:benchee, ">= 1.0.0", only: :dev},
       {:dialyxir, "~> 1.1.0", only: [:dev, :test], runtime: false},
-      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false}
+      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
+      {:makeup_graphql, "~> 0.1.0", only: :dev}
     ]
   end
 
@@ -121,7 +123,8 @@ defmodule Absinthe.Mixfile do
       "guides/client/apollo.md",
       "guides/client/relay.md",
       "guides/upgrading/v1.4.md",
-      "guides/upgrading/v1.5.md"
+      "guides/upgrading/v1.5.md",
+      "CHANGELOG.md"
     ]
   end
 
@@ -131,7 +134,8 @@ defmodule Absinthe.Mixfile do
       Tutorial: ~r/guides\/tutorial\/.*/,
       Topics: ~r/guides\/[^\/]+\.md/,
       "Client Guides": ~r/guides\/client\/.*/,
-      "Upgrade Guides": ~r/guides\/upgrading\/.*/
+      "Upgrade Guides": ~r/guides\/upgrading\/.*/,
+      Changelog: "CHANGELOG.md"
     ]
   end
 
@@ -149,7 +153,6 @@ defmodule Absinthe.Mixfile do
         Absinthe.Type,
         Absinthe.Type.Custom,
         Absinthe.Type.Argument,
-        Absinthe.Type.Custom,
         Absinthe.Type.Directive,
         Absinthe.Type.Enum,
         Absinthe.Type.Enum.Value,
@@ -175,7 +178,8 @@ defmodule Absinthe.Mixfile do
       Subscriptions: [
         Absinthe.Subscription,
         Absinthe.Subscription.Pubsub,
-        Absinthe.Subscription.Local
+        Absinthe.Subscription.Local,
+        Absinthe.Subscription.PipelineSerializer
       ],
       Extensibility: [
         Absinthe.Pipeline,

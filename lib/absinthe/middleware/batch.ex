@@ -137,7 +137,7 @@ defmodule Absinthe.Middleware.Batch do
       start_time_mono = System.monotonic_time()
 
       task =
-        Task.async(fn ->
+        async(fn ->
           {batch_fun, call_batch_fun(batch_fun, batch_data)}
         end)
 
@@ -149,8 +149,9 @@ defmodule Absinthe.Middleware.Batch do
       timeout = Keyword.get(batch_opts, :timeout, 5_000)
       result = Task.await(task, timeout)
 
-      duration = System.monotonic_time() - start_time_mono
-      emit_stop_event(duration, metadata, result)
+      end_time_mono = System.monotonic_time()
+      duration = end_time_mono - start_time_mono
+      emit_stop_event(duration, end_time_mono, metadata, result)
 
       result
     end)
@@ -160,7 +161,14 @@ defmodule Absinthe.Middleware.Batch do
   @batch_stop [:absinthe, :middleware, :batch, :stop]
   defp emit_start_event(system_time, batch_fun, batch_opts, batch_data) do
     id = :erlang.unique_integer()
-    metadata = %{id: id, batch_fun: batch_fun, batch_opts: batch_opts, batch_data: batch_data}
+
+    metadata = %{
+      id: id,
+      telemetry_span_context: id,
+      batch_fun: batch_fun,
+      batch_opts: batch_opts,
+      batch_data: batch_data
+    }
 
     :telemetry.execute(
       @batch_start,
@@ -171,10 +179,10 @@ defmodule Absinthe.Middleware.Batch do
     metadata
   end
 
-  defp emit_stop_event(duration, metadata, result) do
+  defp emit_stop_event(duration, end_time_mono, metadata, result) do
     :telemetry.execute(
       @batch_stop,
-      %{duration: duration},
+      %{duration: duration, end_time_mono: end_time_mono},
       Map.put(metadata, :result, result)
     )
   end
@@ -197,5 +205,14 @@ defmodule Absinthe.Middleware.Batch do
       _ ->
         pipeline
     end
+  end
+
+  # Optionally use `async/1` function from `opentelemetry_process_propagator` if available
+  if Code.ensure_loaded?(OpentelemetryProcessPropagator.Task) do
+    @spec async((() -> any)) :: Task.t()
+    defdelegate async(fun), to: OpentelemetryProcessPropagator.Task
+  else
+    @spec async((() -> any)) :: Task.t()
+    defdelegate async(fun), to: Task
   end
 end

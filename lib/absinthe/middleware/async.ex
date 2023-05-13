@@ -50,8 +50,14 @@ defmodule Absinthe.Middleware.Async do
   # This function inserts additional middleware into the remaining middleware
   # stack for this field. On the next resolution pass, we need to `Task.await` the
   # task so we have actual data. Thus, we prepend this module to the middleware stack.
-  def call(%{state: :unresolved} = res, {fun, opts}) when is_function(fun),
-    do: call(res, {Task.async(fun), opts})
+  def call(%{state: :unresolved} = res, {fun, opts}) when is_function(fun) do
+    task =
+      async(fn ->
+        :telemetry.span([:absinthe, :middleware, :async, :task], %{}, fn -> {fun.(), %{}} end)
+      end)
+
+    call(res, {task, opts})
+  end
 
   def call(%{state: :unresolved} = res, {task, opts}) do
     task_data = {task, opts}
@@ -103,5 +109,14 @@ defmodule Absinthe.Middleware.Async do
       _ ->
         pipeline
     end
+  end
+
+  # Optionally use `async/1` function from `opentelemetry_process_propagator` if available
+  if Code.ensure_loaded?(OpentelemetryProcessPropagator.Task) do
+    @spec async((() -> any)) :: Task.t()
+    defdelegate async(fun), to: OpentelemetryProcessPropagator.Task
+  else
+    @spec async((() -> any)) :: Task.t()
+    defdelegate async(fun), to: Task
   end
 end

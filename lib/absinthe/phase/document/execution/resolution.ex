@@ -111,9 +111,12 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   # walk list results
   defp walk_results([value | values], bp_node, inner_type, res, [i | sub_path] = path, acc) do
-    {result, res} = walk_result(value, bp_node, inner_type, res, path)
+    {result, res} = walk_result(value, bp_node, inner_type, %{res | path: path}, path)
     walk_results(values, bp_node, inner_type, res, [i + 1 | sub_path], [result | acc])
   end
+
+  defp walk_results([], _, _, res = %{path: [_ | sub_path]}, _, acc),
+    do: {:lists.reverse(acc), %{res | path: sub_path}}
 
   defp walk_results([], _, _, res, _, acc), do: {:lists.reverse(acc), res}
 
@@ -139,7 +142,8 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
         res = %{res | fields_cache: fields_cache}
 
-        do_resolve_fields(fields, res, source, parent_type, path, [])
+        {values, res} = do_resolve_fields(fields, res, source, parent_type, path, [])
+        {values, %{res | path: path}}
     end
   end
 
@@ -281,6 +285,15 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     |> propagate_null_trimming
   end
 
+  defp maybe_add_non_null_error([], values, %Type.NonNull{of_type: %Type.List{}}) do
+    values
+    |> Enum.with_index()
+    |> Enum.filter(&is_nil(elem(&1, 0)))
+    |> Enum.map(fn {_value, index} ->
+      %{message: "Cannot return null for non-nullable field", path: [index]}
+    end)
+  end
+
   defp maybe_add_non_null_error([], nil, %Type.NonNull{}) do
     ["Cannot return null for non-nullable field"]
   end
@@ -310,11 +323,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
       nil
       |> to_result(bp_field, full_type, node.extensions)
-      |> Map.put(:errors, bad_child.errors)
-
-      # ^ We don't have to worry about clobbering the current node's errors because,
-      # if it had any errors, it wouldn't have any children and we wouldn't be
-      # here anyway.
+      |> Map.put(:errors, node.errors ++ bad_child.errors)
     else
       node
     end

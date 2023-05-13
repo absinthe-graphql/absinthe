@@ -7,7 +7,7 @@ Absinthe.
 
 Before you start, it's a good idea to have some background into GraphQL in general. Here are a few resources that might be helpful:
 
-- The official [GraphQL](http://graphql.org/) website
+- The official [GraphQL](https://graphql.org/) website
 - [How to GraphQL](https://www.howtographql.com/) (this includes another [brief tutorial](https://www.howtographql.com/graphql-elixir/0-introduction/) using Absinthe)
 
 ## The Example

@@ -9,7 +9,7 @@ defmodule Absinthe.Type.InputObjectTest do
     use Absinthe.Schema
 
     query do
-      # Query type must exist
+      field :foo, :string
     end
 
     @desc "A profile"

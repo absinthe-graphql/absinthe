@@ -11,7 +11,7 @@ defmodule Absinthe.SchemaTest do
       use Absinthe.Schema
 
       query do
-        # Query type must exist
+        field :foo, :string
       end
 
       object :person do
@@ -206,6 +206,32 @@ defmodule Absinthe.SchemaTest do
     end
   end
 
+  defmodule RootsSchemaDeclaration do
+    use Absinthe.Schema
+
+    schema do
+      description "Custom schema declaration"
+      field :query, :query
+      field :subscription, :subscription
+    end
+
+    query do
+      field :name,
+        type: :string,
+        args: [
+          family_name: [type: :boolean]
+        ]
+    end
+
+    mutation name: "MyRootMutation" do
+      field :name, :string
+    end
+
+    subscription name: "RootSubscriptionTypeThing" do
+      field :name, :string
+    end
+  end
+
   describe "referenced_types" do
     test "does not contain introspection types" do
       assert !Enum.any?(
@@ -279,6 +305,36 @@ defmodule Absinthe.SchemaTest do
     end
   end
 
+  describe "root fields with custom declaration" do
+    test "custom description" do
+      assert "Custom schema declaration" =
+               Schema.schema_declaration(RootsSchemaDeclaration).description
+    end
+
+    test "it skips the mutation type" do
+      assert [%{name: "subscription"}, %{name: "query"}] =
+               Schema.schema_declaration(RootsSchemaDeclaration).field_definitions
+    end
+
+    test "macro declaration sdl" do
+      assert """
+             "Custom schema declaration"
+             schema {
+               subscription: RootSubscriptionTypeThing
+               query: RootQueryType
+             }
+
+             type RootSubscriptionTypeThing {
+               name: String
+             }
+
+             type RootQueryType {
+               name(familyName: Boolean): String
+             }
+             """ == Schema.to_sdl(RootsSchemaDeclaration)
+    end
+  end
+
   describe "fields" do
     test "have the correct structure in query" do
       assert %Type.Field{name: "name"} = Schema.lookup_type(RootsSchema, :query).fields.name
@@ -300,7 +356,7 @@ defmodule Absinthe.SchemaTest do
   describe "to_sdl/1" do
     test "return schema sdl" do
       assert Schema.to_sdl(SourceSchema) == """
-             \"Represents a schema\"\nschema {\n  query: RootQueryType\n}\n\ntype Foo {\n  name: String\n}\n\n\"can describe query\"\ntype RootQueryType {\n  foo: Foo\n}
+             schema {\n  query: RootQueryType\n}\n\ntype Foo {\n  name: String\n}\n\n\"can describe query\"\ntype RootQueryType {\n  foo: Foo\n}
              """
     end
   end
@@ -340,7 +396,7 @@ defmodule Absinthe.SchemaTest do
     use Absinthe.Schema
 
     query do
-      # Query type must exist
+      field :foo, :string
     end
 
     object :foo, meta: [foo: "bar"] do
@@ -350,6 +406,12 @@ defmodule Absinthe.SchemaTest do
       field :bar, :string do
         meta :nice, "yup"
       end
+    end
+
+    directive :foo do
+      meta :is_directive, true
+
+      on :field
     end
 
     input_object :input_foo do
@@ -362,7 +424,6 @@ defmodule Absinthe.SchemaTest do
 
     enum :color do
       meta :rgb_only, true
-      value :red
       value :blue
       value :green
     end
@@ -383,6 +444,10 @@ defmodule Absinthe.SchemaTest do
     union :result do
       types [:foo]
       meta :is_union, true
+    end
+
+    extend enum(:color), meta: [is_extend: true] do
+      value :red
     end
   end
 
@@ -422,6 +487,12 @@ defmodule Absinthe.SchemaTest do
       assert Type.meta(color, :rgb_only) == true
     end
 
+    test "sets directive metadata" do
+      directive = Schema.lookup_directive(MetadataSchema, :foo)
+      assert %{__private__: [meta: [is_directive: true]]} = directive
+      assert Type.meta(directive, :is_directive) == true
+    end
+
     test "sets scalar metadata" do
       my_scalar = Schema.lookup_type(MetadataSchema, :my_scalar)
       assert %{__private__: [meta: [is_scalar: true]]} = my_scalar
@@ -444,6 +515,16 @@ defmodule Absinthe.SchemaTest do
       result = Schema.lookup_type(MetadataSchema, :result)
       assert %{__private__: [meta: [is_union: true]]} = result
       assert Type.meta(result, :is_union) == true
+    end
+
+    test "sets extend metadata" do
+      [schema_def] = MetadataSchema.__absinthe_blueprint__().schema_definitions
+
+      type_extension =
+        Enum.find(schema_def.type_extensions, &(&1.definition.identifier == :color))
+
+      assert %{__private__: [meta: [is_extend: true]]} = type_extension
+      assert Type.meta(type_extension, :is_extend) == true
     end
   end
 end

@@ -9,52 +9,58 @@ on:
 jobs:
   test:
     name: Elixir ${{matrix.elixir}} / OTP ${{matrix.otp}}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     strategy:
       matrix:
         elixir:
-          - '1.10'
-          - '1.11'
+          - "1.12"
+          - "1.13"
+          - "1.14"
         otp:
-          - '22'
-          - '23'
+          - "23"
+          - "24"
+        include:
+          - elixir: "1.14"
+            otp: "24"
+            format: true
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: Set up Elixir
-      uses: erlef/setup-elixir@v1
-      with:
-        elixir-version: ${{ matrix.elixir }}
-        otp-version: ${{ matrix.otp }}
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{ matrix.elixir }}
+          otp-version: ${{ matrix.otp }}
 
-    - name: Restore deps cache
-      uses: actions/cache@v2
-      with:
-        path: |
-          deps
-          _build
-        key: deps-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}-${{ github.sha }}
-        restore-keys: |
-          deps-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
-          deps-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}
+      - name: Restore deps cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            deps
+            _build
+          key: deps-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}-${{ github.sha }}
+          restore-keys: |
+            deps-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+            deps-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}
 
-    - name: Install package dependencies
-      run: mix deps.get
+      - name: Install package dependencies
+        run: mix deps.get
 
-    - name: Check Formatting
-      run: mix format --check-formatted
+      - name: Check Formatting
+        run: mix format --check-formatted
+        if: ${{ matrix.format }}
 
-    - name: Run unit tests
-      run: |
-        mix clean
-        mix test
+      - name: Run unit tests
+        run: |
+          mix clean
+          mix test
 
-    - name: Run unit tests with persistent_term backend
-      run: |
-        mix clean
-        mix test
-      env:
-        SCHEMA_PROVIDER: persistent_term
+      - name: Run unit tests with persistent_term backend
+        run: |
+          mix clean
+          mix test
+        env:
+          SCHEMA_PROVIDER: persistent_term

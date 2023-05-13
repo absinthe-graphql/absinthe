@@ -5,7 +5,6 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.FullTest do
     result = Absinthe.Schema.introspect(Absinthe.Fixtures.ContactSchema)
     {:ok, %{data: %{"__schema" => schema}}} = result
 
-    assert schema["description"] == "Represents a schema"
     assert schema["queryType"]
     assert schema["mutationType"]
     assert schema["subscriptionType"]
@@ -17,6 +16,11 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.FullTest do
     use Absinthe.Schema
 
     query do
+      field :foo, :string
+    end
+
+    def middleware(middleware, %{identifier: :foo}, _) do
+      middleware
     end
 
     def middleware(_, _, _) do

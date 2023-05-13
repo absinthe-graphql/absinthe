@@ -1,5 +1,5 @@
 defmodule Absinthe.Type.BuiltIns.ScalarsTest do
-  use Absinthe.Case, async: true
+  use Absinthe.Case, async: false
 
   alias Absinthe.Type
 
@@ -7,12 +7,12 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
     use Absinthe.Schema
 
     query do
-      # Query type must exist
+      field :foo, :string
     end
   end
 
-  @max_int 9_007_199_254_740_991
-  @min_int -9_007_199_254_740_991
+  @max_ieee_int 9_007_199_254_740_991
+  @min_ieee_int -9_007_199_254_740_991
 
   defp serialize(type, value) do
     TestSchema.__absinthe_type__(type)
@@ -25,27 +25,35 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
   end
 
   describe ":integer" do
-    test "serializes as an integer" do
+    test "can serialize a valid integer using default non standard Int (IEEE 754)" do
+      assert -1 == serialize(:integer, -1)
+      assert 0 == serialize(:integer, 0)
       assert 1 == serialize(:integer, 1)
+      assert @max_ieee_int == serialize(:integer, @max_ieee_int)
+      assert @min_ieee_int == serialize(:integer, @min_ieee_int)
     end
 
-    test "can be parsed from an integer within the valid range" do
+    test "cannot serialize an integer outside boundaries using default non standard Int (IEEE 754)" do
+      assert_raise Absinthe.SerializationError, fn ->
+        serialize(:integer, @max_ieee_int + 1)
+      end
+
+      assert_raise Absinthe.SerializationError, fn ->
+        serialize(:integer, @min_ieee_int - 1)
+      end
+    end
+
+    test "can parse integer using default non standard Int (IEEE 754)" do
       assert {:ok, 0} == parse(:integer, 0)
       assert {:ok, 1} == parse(:integer, 1)
       assert {:ok, -1} == parse(:integer, -1)
-      assert {:ok, @max_int} == parse(:integer, @max_int)
-      assert {:ok, @min_int} == parse(:integer, @min_int)
-      assert :error == parse(:integer, @max_int + 1)
-      assert :error == parse(:integer, @min_int - 1)
+      assert {:ok, @max_ieee_int} == parse(:integer, @max_ieee_int)
+      assert {:ok, @min_ieee_int} == parse(:integer, @min_ieee_int)
     end
 
-    test "cannot be parsed from a float" do
-      assert :error == parse(:integer, 0.0)
-    end
-
-    test "cannot be parsed from a binary" do
-      assert :error == parse(:integer, "")
-      assert :error == parse(:integer, "0")
+    test "cannot parse integer outside boundaries using default non standard Int (IEEE 754)" do
+      assert :error == parse(:integer, @max_ieee_int + 1)
+      assert :error == parse(:integer, @min_ieee_int - 1)
     end
   end
 
@@ -105,8 +113,8 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
 
     test "can be parsed from an integer" do
       assert {:ok, "0"} == parse(:id, 0)
-      assert {:ok, Integer.to_string(@max_int)} == parse(:id, @max_int)
-      assert {:ok, Integer.to_string(@min_int)} == parse(:id, @min_int)
+      assert {:ok, Integer.to_string(@max_ieee_int)} == parse(:id, @max_ieee_int)
+      assert {:ok, Integer.to_string(@min_ieee_int)} == parse(:id, @min_ieee_int)
     end
 
     test "cannot be parsed from a float" do

@@ -8,6 +8,7 @@ defmodule Absinthe.Language.OperationDefinition do
             variable_definitions: [],
             directives: [],
             selection_set: nil,
+            shorthand: false,
             loc: %{line: nil}
 
   @type t :: %__MODULE__{
@@ -16,6 +17,7 @@ defmodule Absinthe.Language.OperationDefinition do
           variable_definitions: [Language.VariableDefinition.t()],
           directives: [Language.Directive.t()],
           selection_set: Language.SelectionSet.t(),
+          shorthand: boolean(),
           loc: Language.loc_t()
         }
 

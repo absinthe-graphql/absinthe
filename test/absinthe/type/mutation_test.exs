@@ -16,6 +16,7 @@ defmodule Absinthe.Type.MutationTest do
     end
 
     query do
+      field :foo, :string
     end
 
     mutation do

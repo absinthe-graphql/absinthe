@@ -6,6 +6,10 @@ defmodule Absinthe.Type.NonNull do
   By default, all types in GraphQL are nullable. To declare a type that
   disallows null, wrap it in a `Absinthe.Type.NonNull` struct.
 
+  Adding non_null/1 to a type is a breaking change, removing it is not. Client documents that specify non null on a
+  variable eg `query ($id: ID!)` are allowed to be passed to arguments which allow null. If the argument however is
+  non_null, then the variable type MUST be non null as well.
+
   ## Examples
 
   Given a type, `:item`, to declare it as non-null, you could do the following:

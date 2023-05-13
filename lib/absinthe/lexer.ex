@@ -227,13 +227,19 @@ defmodule Absinthe.Lexer do
     {:cont, context}
   end
 
-  @spec tokenize(binary()) :: {:ok, [any()]} | {:error, binary(), {integer(), non_neg_integer()}}
-  def tokenize(input) do
+  @spec tokenize(binary(), Keyword.t()) ::
+          {:ok, [any()]} | {:error, binary(), {integer(), non_neg_integer()}}
+  def tokenize(input, options \\ []) do
     lines = String.split(input, ~r/\r?\n/)
 
-    case do_tokenize(input) do
+    tokenize_opts = [context: %{token_limit: Keyword.get(options, :token_limit, :infinity)}]
+
+    case do_tokenize(input, tokenize_opts) do
+      {:error, :stopped_at_token_limit, _, _, _, _} ->
+        {:error, :exceeded_token_limit}
+
       {:ok, tokens, "", _, _, _} ->
-        tokens = Enum.map(tokens, &convert_token_column(&1, lines))
+        tokens = convert_token_columns_from_byte_to_char(tokens, lines)
         {:ok, tokens}
 
       {:ok, _, rest, _, {line, line_offset}, byte_offset} ->
@@ -242,12 +248,88 @@ defmodule Absinthe.Lexer do
     end
   end
 
-  defp convert_token_column({ident, loc, data}, lines) do
-    {ident, byte_loc_to_char_loc(loc, lines), data}
+  defp convert_token_columns_from_byte_to_char(tokens, [first_line | next_lines]) do
+    initial_cursor_state = %{
+      line_num_cursor: 1,
+      current_line_substring: first_line,
+      current_line_char_offset: 1,
+      current_line_byte_offset: 1,
+      next_lines: next_lines
+    }
+
+    Enum.map_reduce(tokens, initial_cursor_state, fn current_token, cursor_state ->
+      {token_line_num, token_byte_col} =
+        case current_token do
+          {_, {token_line_num, token_byte_col}, _} -> {token_line_num, token_byte_col}
+          {_, {token_line_num, token_byte_col}} -> {token_line_num, token_byte_col}
+        end
+
+      cursor_state = maybe_move_cursor_to_next_line(cursor_state, token_line_num)
+
+      adjusted_byte_col = token_byte_col - cursor_state.current_line_byte_offset
+
+      line_part_from_prev_to_current_token =
+        binary_part(cursor_state.current_line_substring, 0, adjusted_byte_col)
+
+      token_char_col =
+        String.length(line_part_from_prev_to_current_token) +
+          cursor_state.current_line_char_offset
+
+      updated_line_substring =
+        binary_part(
+          cursor_state.current_line_substring,
+          adjusted_byte_col,
+          byte_size(cursor_state.current_line_substring) - adjusted_byte_col
+        )
+
+      next_cursor_state =
+        cursor_state
+        |> Map.put(:current_line_substring, updated_line_substring)
+        |> Map.put(:current_line_byte_offset, token_byte_col)
+        |> Map.put(:current_line_char_offset, token_char_col)
+
+      result =
+        case current_token do
+          {ident, _, data} -> {ident, {token_line_num, token_char_col}, data}
+          {ident, _} -> {ident, {token_line_num, token_char_col}}
+        end
+
+      {result, next_cursor_state}
+    end)
+    |> case do
+      {results, _} -> results
+    end
   end
 
-  defp convert_token_column({ident, loc}, lines) do
-    {ident, byte_loc_to_char_loc(loc, lines)}
+  defp maybe_move_cursor_to_next_line(
+         %{line_num_cursor: line_num_cursor} = cursor_state,
+         token_line_num
+       )
+       when line_num_cursor == token_line_num,
+       do: cursor_state
+
+  defp maybe_move_cursor_to_next_line(
+         %{line_num_cursor: line_num_cursor} = cursor_state,
+         token_line_num
+       )
+       when line_num_cursor < token_line_num,
+       do: move_cursor_to_next_line(cursor_state, token_line_num)
+
+  defp move_cursor_to_next_line(
+         %{line_num_cursor: line_num_cursor, next_lines: next_lines} = _cursor_state,
+         token_line_num
+       ) do
+    {_completed, unprocessed_lines} = Enum.split(next_lines, token_line_num - line_num_cursor - 1)
+
+    [current_line | next_lines] = unprocessed_lines
+
+    %{
+      line_num_cursor: token_line_num,
+      current_line_substring: current_line,
+      current_line_char_offset: 1,
+      current_line_byte_offset: 1,
+      next_lines: next_lines
+    }
   end
 
   defp byte_loc_to_char_loc({line, byte_col}, lines) do
@@ -264,7 +346,6 @@ defmodule Absinthe.Lexer do
     repeat(
       choice([
         ignore(ignored),
-        comment,
         punctuator,
         block_string_value,
         string_value,
@@ -275,13 +356,13 @@ defmodule Absinthe.Lexer do
     )
   )
 
-  defp fill_mantissa(_rest, raw, context, _, _), do: {'0.' ++ raw, context}
+  defp fill_mantissa(rest, raw, context, _, _), do: {rest, '0.' ++ raw, context}
 
-  defp unescape_unicode(_rest, content, context, _loc, _) do
+  defp unescape_unicode(rest, content, context, _loc, _) do
     code = content |> Enum.reverse()
     value = :erlang.list_to_integer(code, 16)
     binary = :unicode.characters_to_binary([value])
-    {[binary], context}
+    {rest, [binary], context}
   end
 
   @boolean_words ~w(
@@ -310,53 +391,89 @@ defmodule Absinthe.Lexer do
     union
   ) |> Enum.map(&String.to_charlist/1)
 
+  defp boolean_value_or_name_or_reserved_word(
+         _,
+         _,
+         %{token_count: count, token_limit: limit} = _context,
+         _,
+         _
+       )
+       when count >= limit do
+    {:error, :stopped_at_token_limit}
+  end
+
   defp boolean_value_or_name_or_reserved_word(rest, chars, context, loc, byte_offset) do
+    context = Map.update(context, :token_count, 1, &(&1 + 1))
     value = chars |> Enum.reverse()
     do_boolean_value_or_name_or_reserved_word(rest, value, context, loc, byte_offset)
   end
 
-  defp do_boolean_value_or_name_or_reserved_word(_rest, value, context, loc, byte_offset)
+  defp do_boolean_value_or_name_or_reserved_word(rest, value, context, loc, byte_offset)
        when value in @boolean_words do
-    {[{:boolean_value, line_and_column(loc, byte_offset, length(value)), value}], context}
+    {rest, [{:boolean_value, line_and_column(loc, byte_offset, length(value)), value}], context}
   end
 
-  defp do_boolean_value_or_name_or_reserved_word(_rest, value, context, loc, byte_offset)
+  defp do_boolean_value_or_name_or_reserved_word(rest, value, context, loc, byte_offset)
        when value in @reserved_words do
     token_name = value |> List.to_atom()
-    {[{token_name, line_and_column(loc, byte_offset, length(value))}], context}
+    {rest, [{token_name, line_and_column(loc, byte_offset, length(value))}], context}
   end
 
-  defp do_boolean_value_or_name_or_reserved_word(_rest, value, context, loc, byte_offset) do
-    {[{:name, line_and_column(loc, byte_offset, length(value)), value}], context}
+  defp do_boolean_value_or_name_or_reserved_word(rest, value, context, loc, byte_offset) do
+    {rest, [{:name, line_and_column(loc, byte_offset, length(value)), value}], context}
   end
 
-  defp labeled_token(_rest, chars, context, loc, byte_offset, token_name) do
+  defp labeled_token(_, _, %{token_count: count, token_limit: limit} = _context, _, _, _)
+       when count >= limit,
+       do: {:error, :stopped_at_token_limit}
+
+  defp labeled_token(rest, chars, context, loc, byte_offset, token_name) do
+    context = Map.update(context, :token_count, 1, &(&1 + 1))
     value = chars |> Enum.reverse()
-    {[{token_name, line_and_column(loc, byte_offset, length(value)), value}], context}
+    {rest, [{token_name, line_and_column(loc, byte_offset, length(value)), value}], context}
   end
 
-  defp mark_string_start(_rest, chars, context, loc, byte_offset) do
-    {[chars], Map.put(context, :token_location, line_and_column(loc, byte_offset, 1))}
+  defp mark_string_start(rest, chars, context, loc, byte_offset) do
+    {rest, [chars], Map.put(context, :token_location, line_and_column(loc, byte_offset, 1))}
   end
 
-  defp mark_block_string_start(_rest, _chars, context, loc, byte_offset) do
-    {[], Map.put(context, :token_location, line_and_column(loc, byte_offset, 3))}
+  defp mark_block_string_start(rest, _chars, context, loc, byte_offset) do
+    {rest, [], Map.put(context, :token_location, line_and_column(loc, byte_offset, 3))}
   end
 
-  defp block_string_value_token(_rest, chars, context, _loc, _byte_offset) do
+  defp block_string_value_token(_, _, %{token_count: count, token_limit: limit} = _context, _, _)
+       when count >= limit,
+       do: {:error, :stopped_at_token_limit}
+
+  defp block_string_value_token(rest, chars, context, _loc, _byte_offset) do
+    context = Map.update(context, :token_count, 1, &(&1 + 1))
     value = '"""' ++ (chars |> Enum.reverse()) ++ '"""'
-    {[{:block_string_value, context.token_location, value}], Map.delete(context, :token_location)}
+
+    {rest, [{:block_string_value, context.token_location, value}],
+     Map.delete(context, :token_location)}
   end
 
-  defp string_value_token(_rest, chars, context, _loc, _byte_offset) do
+  defp string_value_token(_, _, %{token_count: count, token_limit: limit} = _context, _, _)
+       when count >= limit,
+       do: {:error, :stopped_at_token_limit}
+
+  defp string_value_token(rest, chars, context, _loc, _byte_offset) do
+    context = Map.update(context, :token_count, 1, &(&1 + 1))
     value = '"' ++ tl(chars |> Enum.reverse()) ++ '"'
-    {[{:string_value, context.token_location, value}], Map.delete(context, :token_location)}
+    {rest, [{:string_value, context.token_location, value}], Map.delete(context, :token_location)}
   end
 
-  defp atom_token(_rest, chars, context, loc, byte_offset) do
+  defp atom_token(_, _, %{token_count: count, token_limit: limit} = _context, _, _)
+       when count >= limit do
+    {:error, :stopped_at_token_limit}
+  end
+
+  defp atom_token(rest, chars, context, loc, byte_offset) do
+    context = Map.update(context, :token_count, 1, &(&1 + 1))
     value = chars |> Enum.reverse()
     token_atom = value |> List.to_atom()
-    {[{token_atom, line_and_column(loc, byte_offset, length(value))}], context}
+
+    {rest, [{token_atom, line_and_column(loc, byte_offset, length(value))}], context}
   end
 
   def line_and_column({line, line_offset}, byte_offset, column_correction) do

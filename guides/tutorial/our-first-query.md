@@ -43,7 +43,7 @@ end
 > custom type name as a `:name` option to the `object` macro.
 
 If you're curious what the type `:id` is used by the `:id` field, see
-the [GraphQL spec](https://facebook.github.io/graphql/#sec-ID). It's
+the [GraphQL spec](https://spec.graphql.org/October2021/#sec-ID). It's
 an opaque value, and in our case is just the regular Ecto id, but
 serialized as a string.
 
@@ -71,9 +71,10 @@ defmodule BlogWeb.Schema do
 end
 ```
 
+> #### More information {: .info}
+>
 > For more information on the macros available to build a schema, see
-> their definitions in `Absinthe.Schema` and
-> `Absinthe.Schema.Notation`.
+> their definitions in `Absinthe.Schema` and `Absinthe.Schema.Notation`.
 
 This uses a resolver module we've created (again, to match the Phoenix context naming)
 at `blog_web/resolvers/content.ex`:
@@ -103,11 +104,13 @@ requested field. Our resolver calls out to the `Blog.Content` module,
 which is where all the domain logic for posts lives, invoking its
 `list_posts/0` function, then returns the posts in an `:ok` tuple.
 
+> #### Note {: .info}
+>
 > Resolvers can return a wide variety of results, to include errors and configuration
 > for [advanced plugins](middleware-and-plugins.md) that further process the data.
 >
 > If you're asking yourself what the implementation of the domain logic looks like, and exactly how
-> the related Ecto schemas are built, read through the code in the [absinthe_tutorial](http://github.com/absinthe-graphql/absinthe_tutorial)
+> the related Ecto schemas are built, read through the code in the [absinthe_tutorial](https://github.com/absinthe-graphql/absinthe_tutorial)
 > repository. The tutorial content here is intentionally focused on the Absinthe-specific code.
 
 Now that we have the functional pieces in place, let's configure our
@@ -137,11 +140,11 @@ defmodule BlogWeb.Router do
 end
 ```
 
-In addition to our API, we've wired in a handy GraphiQL user interface to play with it. Absinthe integrates both the classic [GraphiQL](https://github.com/graphql/graphiql) and  more advanced [GraphiQL Workspace](https://github.com/OlegIlyenko/graphiql-workspace) interfaces as part of the [absinthe_plug](https://hex.pm/packages/absinthe_plug) package.
+In addition to our API, we've wired in a handy GraphiQL user interface to play with it. Absinthe integrates both the classic [GraphiQL](https://github.com/graphql/graphiql) and more advanced [GraphiQL Workspace](https://github.com/OlegIlyenko/graphiql-workspace) interfaces as part of the [absinthe_plug](https://hex.pm/packages/absinthe_plug) package.
 
 Now let's check to make sure everything is working. Start the server:
 
-``` shell
+```shell
 $ mix phx.server
 ```
 
@@ -149,7 +152,7 @@ Absinthe does a number of sanity checks during compilation, so if you misspell a
 
 Once it's up-and-running, take a look at [http://localhost:4000/api/graphiql](http://localhost:4000/api/graphiql):
 
-<img style="box-shadow: 0 0 6px #ccc;" src="/guides/assets/tutorial/graphiql_blank.png" alt=""/>
+<img style="box-shadow: 0 0 6px #ccc;" src="assets/tutorial/graphiql_blank.png" alt=""/>
 
 Make sure that the `URL` is pointing to the correct place and press the play button. If everything goes according to plan, you should see something like this:
 

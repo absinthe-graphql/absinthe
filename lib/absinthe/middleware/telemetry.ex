@@ -16,7 +16,7 @@ defmodule Absinthe.Middleware.Telemetry do
     :telemetry.execute(
       @field_start,
       %{system_time: system_time},
-      %{id: id, resolution: resolution}
+      %{id: id, telemetry_span_context: id, resolution: resolution}
     )
 
     %{
@@ -46,9 +46,10 @@ defmodule Absinthe.Middleware.Telemetry do
 
     :telemetry.execute(
       @field_stop,
-      %{duration: end_time_mono - start_time_mono},
+      %{duration: end_time_mono - start_time_mono, end_time_mono: end_time_mono},
       %{
         id: id,
+        telemetry_span_context: id,
         middleware: middleware,
         resolution: resolution
       }

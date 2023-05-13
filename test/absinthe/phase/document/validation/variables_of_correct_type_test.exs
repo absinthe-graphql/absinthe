@@ -22,7 +22,7 @@ defmodule Absinthe.Phase.Document.Validation.VariablesOfCorrectTypeTest do
         variables: %{"intArg" => 5}
       )
 
-    expected_error_msg = error_message("test", "intArg", "Int", "String")
+    expected_error_msg = error_message("test", "intArg", "Int!", "String")
     assert expected_error_msg in (errors |> Enum.map(& &1.message))
   end
 
@@ -40,7 +40,8 @@ defmodule Absinthe.Phase.Document.Validation.VariablesOfCorrectTypeTest do
         variables: %{"intArg" => 5}
       )
 
-    expected_error_msg = "Argument \"stringArg\" has invalid value $intArg."
+    expected_error_msg = error_message("test", "intArg", "DoesNotExist!", "String")
+
     assert expected_error_msg in (errors |> Enum.map(& &1.message))
   end
 
@@ -82,5 +83,72 @@ defmodule Absinthe.Phase.Document.Validation.VariablesOfCorrectTypeTest do
 
     expected_error_msg = error_message("test", "intArg", "Int", "String")
     assert expected_error_msg in (errors |> Enum.map(& &1.message))
+  end
+
+  test "non null types of variables match non null types of arguments" do
+    {:ok, %{errors: errors}} =
+      Absinthe.run(
+        """
+        query test($intArg: Int) {
+          complicatedArgs {
+            nonNullIntArgField(nonNullIntArg: $intArg)
+          }
+        }
+        """,
+        Absinthe.Fixtures.PetsSchema,
+        variables: %{"intArg" => 5}
+      )
+
+    expected_error_msg = error_message("test", "intArg", "Int", "Int!")
+    assert expected_error_msg in (errors |> Enum.map(& &1.message))
+  end
+
+  test "list types of variables match list types of arguments" do
+    result =
+      Absinthe.run(
+        """
+        query test($stringListArg: [String!]) {
+          complicatedArgs {
+            stringListArgField(stringListArg: $stringListArg)
+          }
+        }
+        """,
+        Absinthe.Fixtures.PetsSchema,
+        variables: %{"stringListArg" => ["a"]}
+      )
+
+    assert {:ok, %{data: %{"complicatedArgs" => nil}}} = result
+  end
+
+  test "variable can be nullable for non-nullable argument with default" do
+    result =
+      Absinthe.run(
+        """
+        query booleanArgQueryWithDefault($booleanArg: Boolean) {
+          complicatedArgs {
+            optionalNonNullBooleanArgField(optionalBooleanArg: $booleanArg)
+          }
+        }
+        """,
+        Absinthe.Fixtures.PetsSchema
+      )
+
+    assert {:ok, %{data: %{"complicatedArgs" => nil}}} = result
+  end
+
+  test "variable with default can be nullable for non-nullable argument" do
+    result =
+      Absinthe.run(
+        """
+        query booleanArgQueryWithDefault($booleanArg: Boolean = true) {
+          complicatedArgs {
+            nonNullBooleanArgField(nonNullBooleanArg: $booleanArg)
+          }
+        }
+        """,
+        Absinthe.Fixtures.PetsSchema
+      )
+
+    assert {:ok, %{data: %{"complicatedArgs" => nil}}} = result
   end
 end

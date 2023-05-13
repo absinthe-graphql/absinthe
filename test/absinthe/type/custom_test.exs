@@ -9,6 +9,7 @@ defmodule Absinthe.Type.CustomTest do
     import_types Type.Custom
 
     query do
+      field :foo, :string
     end
   end
 

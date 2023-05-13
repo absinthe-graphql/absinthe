@@ -54,7 +54,8 @@ defmodule Absinthe.Language.Document do
       Language.InterfaceTypeDefinition,
       Language.ObjectTypeDefinition,
       Language.ScalarTypeDefinition,
-      Language.UnionTypeDefinition
+      Language.UnionTypeDefinition,
+      Language.TypeExtensionDefinition
     ]
     @directives [
       Language.DirectiveDefinition
@@ -82,5 +83,10 @@ defmodule Absinthe.Language.Document do
     defp convert_definition(%struct{} = node, doc, blueprint) when struct in @fragments do
       update_in(blueprint.fragments, &[Blueprint.Draft.convert(node, doc) | &1])
     end
+  end
+
+  defimpl Inspect do
+    defdelegate inspect(term, options),
+      to: Absinthe.Language.Render
   end
 end

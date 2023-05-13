@@ -8,7 +8,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
 
     field :description, :string do
       resolve(fn _, %{schema: schema} ->
-        {:ok, Absinthe.Schema.lookup_type(schema, :__schema).description}
+        {:ok, Absinthe.Schema.schema_declaration(schema).description}
       end)
     end
 
@@ -72,27 +72,6 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
           |> Enum.sort_by(& &1.identifier)
 
         {:ok, args}
-      end
-
-    field :on_operation,
-      deprecate: "Check `locations` field for enum value OPERATION",
-      type: :boolean,
-      resolve: fn _, %{source: source} ->
-        {:ok, Enum.any?(source.locations, &Enum.member?([:query, :mutation, :subscription], &1))}
-      end
-
-    field :on_fragment,
-      deprecate: "Check `locations` field for enum value FRAGMENT_SPREAD",
-      type: :boolean,
-      resolve: fn _, %{source: source} ->
-        {:ok, Enum.member?(source.locations, :fragment_spread)}
-      end
-
-    field :on_field,
-      type: :boolean,
-      deprecate: "Check `locations` field for enum value FIELD",
-      resolve: fn _, %{source: source} ->
-        {:ok, Enum.member?(source.locations, :field)}
       end
 
     field :locations, non_null(list_of(non_null(:__directive_location)))

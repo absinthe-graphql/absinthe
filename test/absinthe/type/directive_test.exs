@@ -28,7 +28,7 @@ defmodule Absinthe.Type.DirectiveTest do
 
   describe "the `@skip` directive" do
     @query_field """
-    query Test($skipPerson: Boolean) {
+    query Test($skipPerson: Boolean!) {
       person @skip(if: $skipPerson) {
         name
       }
@@ -52,16 +52,10 @@ defmodule Absinthe.Type.DirectiveTest do
                  Absinthe.Fixtures.ContactSchema,
                  variables: %{"skipPerson" => true}
                )
-
-      assert_result(
-        {:ok,
-         %{errors: [%{message: ~s(In argument "if": Expected type "Boolean!", found null.)}]}},
-        run(@query_field, Absinthe.Fixtures.ContactSchema)
-      )
     end
 
     @query_fragment """
-    query Test($skipAge: Boolean) {
+    query Test($skipAge: Boolean!) {
       person {
         name
         ...Aging @skip(if: $skipAge)
@@ -81,18 +75,12 @@ defmodule Absinthe.Type.DirectiveTest do
         {:ok, %{data: %{"person" => %{"name" => "Bruce"}}}},
         run(@query_fragment, Absinthe.Fixtures.ContactSchema, variables: %{"skipAge" => true})
       )
-
-      assert_result(
-        {:ok,
-         %{errors: [%{message: ~s(In argument "if": Expected type "Boolean!", found null.)}]}},
-        run(@query_fragment, Absinthe.Fixtures.ContactSchema)
-      )
     end
   end
 
   describe "the `@include` directive" do
     @query_field """
-    query Test($includePerson: Boolean) {
+    query Test($includePerson: Boolean!) {
       person @include(if: $includePerson) {
         name
       }
@@ -112,23 +100,10 @@ defmodule Absinthe.Type.DirectiveTest do
         {:ok, %{data: %{}}},
         run(@query_field, Absinthe.Fixtures.ContactSchema, variables: %{"includePerson" => false})
       )
-
-      assert_result(
-        {:ok,
-         %{
-           errors: [
-             %{
-               locations: [%{column: 19, line: 2}],
-               message: ~s(In argument "if": Expected type "Boolean!", found null.)
-             }
-           ]
-         }},
-        run(@query_field, Absinthe.Fixtures.ContactSchema)
-      )
     end
 
     @query_fragment """
-    query Test($includeAge: Boolean) {
+    query Test($includeAge: Boolean!) {
       person {
         name
         ...Aging @include(if: $includeAge)

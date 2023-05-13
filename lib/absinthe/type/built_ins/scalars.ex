@@ -3,23 +3,30 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
 
   @moduledoc false
 
+  @max_int 9_007_199_254_740_991
+  @min_int -9_007_199_254_740_991
+
   scalar :integer, name: "Int" do
     description """
-    The `Int` scalar type represents non-fractional signed whole numeric values.
-    Int can represent values between `-(2^53 - 1)` and `2^53 - 1` since it is
-    represented in JSON as double-precision floating point numbers specified
-    by [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
+    The `Int` scalar type represents non-fractional signed whole numeric
+    values. It is NOT compliant with the GraphQl spec, it can represent
+    values between `-(2^53 - 1)` and `2^53 - 1` as specified by
+    [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754).
+    It is kept here for backwards compatibility, prefer using
+    the SpecCompliantInt.
     """
 
-    serialize &__MODULE__.serialize_integer/1
+    serialize &__MODULE__.serialize_int/1
     parse parse_with([Absinthe.Blueprint.Input.Integer], &parse_int/1)
   end
 
-  def serialize_integer(n) when is_integer(n), do: n
+  def serialize_int(value) when is_integer(value) and value >= @min_int and value <= @max_int do
+    value
+  end
 
-  def serialize_integer(n) do
+  def serialize_int(value) do
     raise Absinthe.SerializationError, """
-    Value #{inspect(n)} is not a valid integer
+    Value #{inspect(value)} is not a valid Int.
     """
   end
 
@@ -27,7 +34,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     description """
     The `Float` scalar type represents signed double-precision fractional
     values as specified by
-    [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).
+    [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754).
     """
 
     serialize &__MODULE__.serialize_float/1
@@ -92,12 +99,6 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     Value #{inspect(val)} is not a valid boolean
     """
   end
-
-  # Integers are only safe when between -(2^53 - 1) and 2^53 - 1 due to being
-  # encoded in JavaScript and represented in JSON as double-precision floating
-  # point numbers, as specified by IEEE 754.
-  @max_int 9_007_199_254_740_991
-  @min_int -9_007_199_254_740_991
 
   @spec parse_int(any) :: {:ok, integer} | :error
   defp parse_int(value) when is_integer(value) and value >= @min_int and value <= @max_int do

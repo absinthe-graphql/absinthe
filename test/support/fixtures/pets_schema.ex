@@ -128,6 +128,11 @@ defmodule Absinthe.Fixtures.PetsSchema do
     serialize & &1
   end
 
+  scalar :custom_scalar_error do
+    parse &{:error, &1.value}
+    serialize & &1
+  end
+
   object :complicated_args do
     field :int_arg_field, :string do
       arg :int_arg, :integer
@@ -182,6 +187,14 @@ defmodule Absinthe.Fixtures.PetsSchema do
       arg :opt1, :integer, default_value: 0
       arg :opt2, :integer, default_value: 0
     end
+
+    field :optional_non_null_boolean_arg_field, :boolean do
+      arg :optional_boolean_arg, non_null(:boolean), default_value: true
+    end
+
+    field :non_null_boolean_arg_field, :boolean do
+      arg :non_null_boolean_arg, non_null(:boolean)
+    end
   end
 
   query do
@@ -202,6 +215,10 @@ defmodule Absinthe.Fixtures.PetsSchema do
   mutation do
     field :create_dog, :dog do
       arg :custom_scalar_input, non_null(:custom_scalar)
+    end
+
+    field :create_cat, :cat do
+      arg :custom_scalar_error_input, non_null(:custom_scalar_error)
     end
   end
 

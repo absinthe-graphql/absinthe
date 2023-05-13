@@ -3,9 +3,8 @@ defmodule Absinthe.Phase.Schema.Validation.NamesMustBeValid do
 
   use Absinthe.Phase
   alias Absinthe.Blueprint
-  alias Absinthe.Blueprint.Schema
 
-  @valid_name_regex ~r/[_A-Za-z][_0-9A-Za-z]*/
+  @valid_name_regex ~r/^[_A-Za-z][_0-9A-Za-z]*$/
 
   def run(bp, _) do
     bp = Blueprint.prewalk(bp, &validate_names/1)
@@ -20,7 +19,7 @@ defmodule Absinthe.Phase.Schema.Validation.NamesMustBeValid do
     if valid_name?(name) do
       entity
     else
-      kind = struct_to_kind(struct)
+      kind = Absinthe.Blueprint.Schema.struct_to_kind(struct)
       detail = %{artifact: "#{kind} name", value: entity.name}
       entity |> put_error(error(entity, detail))
     end
@@ -31,8 +30,7 @@ defmodule Absinthe.Phase.Schema.Validation.NamesMustBeValid do
   end
 
   defp valid_name?(name) do
-    [match] = Regex.run(@valid_name_regex, name)
-    match == name
+    Regex.match?(@valid_name_regex, name)
   end
 
   defp error(object, data) do
@@ -43,14 +41,6 @@ defmodule Absinthe.Phase.Schema.Validation.NamesMustBeValid do
       extra: data
     }
   end
-
-  defp struct_to_kind(Schema.InputValueDefinition), do: "argument"
-  defp struct_to_kind(Schema.FieldDefinition), do: "field"
-  defp struct_to_kind(Schema.DirectiveDefinition), do: "directive"
-  defp struct_to_kind(Schema.ScalarTypeDefinition), do: "scalar"
-  defp struct_to_kind(Schema.ObjectTypeDefinition), do: "object"
-  defp struct_to_kind(Schema.InputObjectTypeDefinition), do: "input object"
-  defp struct_to_kind(_), do: "type"
 
   @description """
   Name does not match possible #{inspect(@valid_name_regex)} regex.

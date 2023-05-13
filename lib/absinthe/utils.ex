@@ -64,6 +64,11 @@ defmodule Absinthe.Utils do
   end
 
   @doc false
+  def placement_docs(placements, name) do
+    placement = Enum.find(placements, &match?({^name, _}, &1))
+    placement_docs([placement])
+  end
+
   def placement_docs([{_, placement} | _]) do
     placement
     |> do_placement_docs
@@ -78,6 +83,12 @@ defmodule Absinthe.Utils do
   defp do_placement_docs(toplevel: false) do
     """
     Allowed under any block. Not allowed to be top level
+    """
+  end
+
+  defp do_placement_docs(toplevel: true, extend: true) do
+    """
+    Top level in module or in an `extend` block.
     """
   end
 

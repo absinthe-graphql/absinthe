@@ -15,7 +15,7 @@ providing `parse` and `serialize` functions.
 
 Here's the definition for `:datetime` from `Absinthe.Type.Custom`:
 
-``` elixir
+```elixir
 @desc """
 The `DateTime` scalar type represents a date and time in the UTC
 timezone. The DateTime appears in a JSON response as an ISO8601 formatted
@@ -68,7 +68,7 @@ mutation CreatePost {
 
 If our schema defines a `:published_at` argument with the `:datetime` type:
 
-``` elixir
+```elixir
 field :post, :post do
   arg :published_at, :datetime
   resolve fn _, args, _ ->
@@ -90,10 +90,9 @@ correct result. That result will be used as the value of the
 `:published_at` argument when it's passed to the `:post` field
 resolver.
 
-> It's important to note that---currently---the correct result from a
-> scalar's `parse` function in the event of the error is a lone atom,
-> `:error`, not an error tuple with a reason. In a future version of
-> Absinthe, custom parse errors may be supported.
+In the event of an error, the parse function can return either a lone
+atom `:error` or error tuple e.g. `{:error, "Reason of error"}`. The
+reason will be included in the output of the executed GraphQL document.
 
 The serializer of `:datetime` is a pretty simple affair; it uses the
 `DateTime.to_iso8601/1` utility function. It would be called to

@@ -10,7 +10,7 @@ if Code.ensure_loaded?(:persistent_term) do
       type_list =
         for %{identifier: identifier} = type <- schema.type_definitions,
             into: %{},
-            do: {identifier, type.__reference__}
+            do: {identifier, type.name}
 
       types_map =
         schema.type_artifacts
@@ -24,7 +24,7 @@ if Code.ensure_loaded?(:persistent_term) do
             do: {type_def.identifier, type_def.name}
 
       directive_list =
-        Map.new(schema.directive_definitions, fn type_def ->
+        Map.new(schema.directive_artifacts, fn type_def ->
           {type_def.identifier, type_def.name}
         end)
 
@@ -49,7 +49,8 @@ if Code.ensure_loaded?(:persistent_term) do
         __absinthe_prototype_schema__: prototype_schema,
         __absinthe_type__: types_map,
         __absinthe_directive__: directives_map,
-        __absinthe_reference__: metadata
+        __absinthe_reference__: metadata,
+        __absinthe_schema_declaration__: schema.schema_declaration
       }
 
       schema_name = opts[:schema] || raise "no schema name provided"

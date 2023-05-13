@@ -107,7 +107,29 @@ defmodule Mix.Tasks.Absinthe.Schema.SdlTest do
     end
   end
 
+  defmodule PersistentTermTestSchema do
+    use Absinthe.Schema
+
+    @schema_provider Absinthe.Schema.PersistentTerm
+
+    query do
+      field :item, :item
+    end
+
+    object :item do
+      description "A Basic Type"
+      field :id, :id
+      field :name, :string
+    end
+  end
+
   @test_mod_schema "Mix.Tasks.Absinthe.Schema.SdlTest.TestSchemaWithMods"
+
+  setup_all do
+    shell = Mix.shell()
+    Mix.shell(Mix.Shell.Quiet)
+    on_exit(fn -> Mix.shell(shell) end)
+  end
 
   describe "absinthe.schema.sdl" do
     test "parses options" do
@@ -151,5 +173,42 @@ defmodule Mix.Tasks.Absinthe.Schema.SdlTest do
       assert schema =~ "modField: String"
       assert schema =~ "type Robot implements Being"
     end
+
+    if Version.compare(System.version(), "1.11.0") == :lt do
+      setup :tmp_dir_fallback
+    else
+      @tag :tmp_dir
+    end
+
+    test "generates an SDL file", %{tmp_dir: tmp_dir} do
+      path = Path.join(tmp_dir, "schema.sdl")
+
+      argv = ["--schema", @test_schema, path]
+      assert Task.run(argv)
+
+      assert File.exists?(path)
+    end
+
+    if Version.compare(System.version(), "1.11.0") == :lt do
+      setup :tmp_dir_fallback
+    else
+      @tag :tmp_dir
+    end
+
+    test "generates an SDL file for a persistent term schema provider", %{tmp_dir: tmp_dir} do
+      path = Path.join(tmp_dir, "schema.sdl")
+
+      argv = ["--schema", "#{PersistentTermTestSchema}", path]
+      assert Task.run(argv)
+
+      assert File.exists?(path)
+    end
+  end
+
+  defp tmp_dir_fallback(_) do
+    path = Path.join("tmp", "#{__MODULE__}")
+    File.mkdir_p!(path)
+    on_exit(fn -> File.rm_rf!(path) end)
+    [tmp_dir: path]
   end
 end

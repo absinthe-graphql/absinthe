@@ -12,16 +12,14 @@ defmodule Absinthe.Phase.Parse do
   def run(input, options \\ [])
 
   def run(%Absinthe.Blueprint{} = blueprint, options) do
-    options = Map.new(options)
-
-    case parse(blueprint.input) do
+    case parse(blueprint.input, options) do
       {:ok, value} ->
         {:ok, %{blueprint | input: value}}
 
       {:error, error} ->
         blueprint
         |> add_validation_error(error)
-        |> handle_error(options)
+        |> handle_error(Map.new(options))
     end
   end
 
@@ -44,11 +42,14 @@ defmodule Absinthe.Phase.Parse do
     {:error, blueprint}
   end
 
-  @spec tokenize(binary) :: {:ok, [tuple]} | {:error, String.t()}
-  def tokenize(input) do
-    case Absinthe.Lexer.tokenize(input) do
+  @spec tokenize(binary, Keyword.t()) :: {:ok, [tuple]} | {:error, String.t()}
+  def tokenize(input, options \\ []) do
+    case Absinthe.Lexer.tokenize(input, options) do
       {:error, rest, loc} ->
         {:error, format_raw_parse_error({:lexer, rest, loc})}
+
+      {:error, :exceeded_token_limit} ->
+        {:error, %Phase.Error{message: "Token limit exceeded", phase: __MODULE__}}
 
       other ->
         other
@@ -57,15 +58,16 @@ defmodule Absinthe.Phase.Parse do
 
   # This is because Dialyzer is telling us tokenizing can never fail,
   # but we know it's possible.
-  @dialyzer {:no_match, parse: 1}
-  @spec parse(binary | Language.Source.t()) :: {:ok, Language.Document.t()} | {:error, tuple}
-  defp parse(input) when is_binary(input) do
-    parse(%Language.Source{body: input})
+  @dialyzer {:no_match, parse: 2}
+  @spec parse(binary | Language.Source.t(), Map.t()) ::
+          {:ok, Language.Document.t()} | {:error, tuple}
+  defp parse(input, options) when is_binary(input) do
+    parse(%Language.Source{body: input}, options)
   end
 
-  defp parse(input) do
+  defp parse(input, options) do
     try do
-      case tokenize(input.body) do
+      case tokenize(input.body, options) do
         {:ok, []} ->
           {:ok, %Language.Document{}}
 
@@ -104,7 +106,8 @@ defmodule Absinthe.Phase.Parse do
   @spec format_raw_parse_error({:lexer, String.t(), {line :: pos_integer, column :: pos_integer}}) ::
           Phase.Error.t()
   defp format_raw_parse_error({:lexer, rest, {line, column}}) do
-    sample = String.slice(rest, 0, 10)
+    sample_slice = String.slice(rest, 0, 10)
+    sample = if String.valid?(sample_slice), do: sample_slice, else: inspect(sample_slice)
 
     message = "Parsing failed at `#{sample}`"
     %Phase.Error{message: message, locations: [%{line: line, column: column}], phase: __MODULE__}

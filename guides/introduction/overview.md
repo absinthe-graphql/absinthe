@@ -1,6 +1,6 @@
 # Overview
 
-Absinthe is the GraphQL toolkit for Elixir, an implementation of the [GraphQL specification](https://facebook.github.io/graphql/) built to suit the language's capabilities and idiomatic style.
+Absinthe is the GraphQL toolkit for Elixir, an implementation of the [GraphQL specification](https://github.com/graphql-elixir/graphql) built to suit the language's capabilities and idiomatic style.
 
 The Absinthe project consists of several complementary packages. You can find the full listing on the [absinthe-graphql](https://github.com/absinthe-graphql) GitHub organization page.
 
@@ -10,7 +10,7 @@ If you're new to GraphQL, we suggest you read up a bit on GraphQL's foundational
 
 Here are a few resources that might be helpful:
 
-- The official [GraphQL](http://graphql.org/) website
+- The official [GraphQL](https://graphql.org/) website
 - [How to GraphQL](https://www.howtographql.com/), which includes a [brief tutorial](https://www.howtographql.com/graphql-elixir/0-introduction/) using Absinthe
 
 ## Absinthe

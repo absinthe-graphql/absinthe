@@ -98,6 +98,7 @@ The loader is all set up, now let's modify the resolver to use Dataloader. In `l
 That's it! You are now loading associations using [Dataloader](https://github.com/absinthe-graphql/dataloader)
 
 ## More Examples
+
 While the above examples are simple and straightforward we can use other strategies with loading associations consider the following:
 
 ```elixir

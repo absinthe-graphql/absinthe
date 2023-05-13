@@ -1,6 +1,7 @@
 defmodule Absinthe.Schema.Notation.SDL.Render do
   @moduledoc false
   import Inspect.Algebra
+  import Absinthe.Utils.Render
 
   alias Absinthe.Blueprint
 
@@ -37,30 +38,17 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       ]
     } = bp
 
-    schema_declaration =
-      schema_declaration ||
-        %{
-          query: Enum.find(type_definitions, &(&1.identifier == :query)),
-          mutation: Enum.find(type_definitions, &(&1.identifier == :mutation)),
-          subscription: Enum.find(type_definitions, &(&1.identifier == :subscription)),
-          description: Enum.find(type_definitions, &(&1.identifier == :__schema)).description
-        }
-
     directive_definitions =
       directive_definitions
       |> Enum.reject(&(&1.module in @skip_modules))
 
-    all_type_definitions =
-      type_definitions
-      |> Enum.reject(&(&1.__struct__ == Blueprint.Schema.SchemaDeclaration))
-
     types_to_render =
-      all_type_definitions
+      type_definitions
       |> Enum.reject(&(&1.module in @skip_modules))
       |> Enum.filter(& &1.__private__[:__absinthe_referenced__])
 
     ([schema_declaration] ++ directive_definitions ++ types_to_render)
-    |> Enum.map(&render(&1, all_type_definitions))
+    |> Enum.map(&render(&1, type_definitions))
     |> Enum.reject(&(&1 == empty()))
     |> join([line(), line()])
   end
@@ -74,31 +62,6 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       render_list(schema.field_definitions, type_definitions)
     )
     |> description(schema.description)
-  end
-
-  defp render(
-         %{
-           query: query_type,
-           mutation: mutation_type,
-           subscription: subscription_type,
-           description: description
-         },
-         _type_definitions
-       ) do
-    schema_type_docs =
-      [
-        query_type && concat("query: ", string(query_type.name)),
-        mutation_type && concat("mutation: ", string(mutation_type.name)),
-        subscription_type && concat("subscription: ", string(subscription_type.name))
-      ]
-      |> Enum.reject(&is_nil/1)
-      |> join([line()])
-
-    block(
-      "schema",
-      schema_type_docs
-    )
-    |> description(description)
   end
 
   @adapter Absinthe.Adapter.LanguageConventions
@@ -450,62 +413,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   defp render_value(%{value: value}),
     do: to_string(value)
 
-  defp render_string_value(string, indent \\ 2) do
-    string
-    |> String.trim()
-    |> String.split("\n")
-    |> case do
-      [string_line] ->
-        concat([~s("), escape_string(string_line), ~s(")])
-
-      string_lines ->
-        concat(
-          nest(
-            block_string([~s(""")] ++ string_lines),
-            indent,
-            :always
-          ),
-          concat(line(), ~s("""))
-        )
-    end
-  end
-
-  @escaped_chars [?", ?\\, ?/, ?\b, ?\f, ?\n, ?\r, ?\t]
-
-  defp escape_string(string) do
-    escape_string(string, [])
-  end
-
-  defp escape_string(<<char, rest::binary>>, acc) when char in @escaped_chars do
-    escape_string(rest, [acc | escape_char(char)])
-  end
-
-  defp escape_string(<<char::utf8, rest::binary>>, acc) do
-    escape_string(rest, [acc | <<char::utf8>>])
-  end
-
-  defp escape_string(<<>>, acc) do
-    to_string(acc)
-  end
-
-  defp escape_char(?"), do: [?\\, ?"]
-  defp escape_char(?\\), do: [?\\, ?\\]
-  defp escape_char(?/), do: [?\\, ?/]
-  defp escape_char(?\b), do: [?\\, ?b]
-  defp escape_char(?\f), do: [?\\, ?f]
-  defp escape_char(?\n), do: [?\\, ?n]
-  defp escape_char(?\r), do: [?\\, ?r]
-  defp escape_char(?\t), do: [?\\, ?t]
-
   # Algebra Helpers
-
-  defp multiline(docs, true) do
-    force_unfit(docs)
-  end
-
-  defp multiline(docs, false) do
-    docs
-  end
 
   defp block(kind, name, docs) do
     glue(
@@ -535,25 +443,5 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         )
       )
     )
-  end
-
-  defp block_string([string]) do
-    string(string)
-  end
-
-  defp block_string([string | rest]) do
-    string
-    |> string()
-    |> concat(block_string_line(rest))
-    |> concat(block_string(rest))
-  end
-
-  defp block_string_line(["", _ | _]), do: nest(line(), :reset)
-  defp block_string_line(_), do: line()
-
-  def join(docs, joiner) do
-    fold_doc(docs, fn doc, acc ->
-      concat([doc, concat(List.wrap(joiner)), acc])
-    end)
   end
 end
