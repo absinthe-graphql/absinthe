@@ -25,7 +25,7 @@ defmodule Absinthe.Schema.ManipulationTest do
       description "Simple Helper Object used to define blueprint fields"
 
       field :simple_string, :string do
-        description "customer introspection field"
+        description "custom introspection field"
 
         resolve fn _, %{schema: schema} ->
           {:ok, "This is a new introspection type on #{inspect(schema)}"}
@@ -39,7 +39,7 @@ defmodule Absinthe.Schema.ManipulationTest do
                    %{
                      source: source
                    } ->
-          private = source[:__private__] || []
+          private = source.__private__ || []
           meta_items = private[:meta] || []
 
           {:ok, meta_items[:some_string_meta]}

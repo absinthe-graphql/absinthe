@@ -97,7 +97,7 @@ defmodule Absinthe.Phase.Document.Arguments.Parse do
   end
 
   defp build_value(%{__struct__: struct}, %Type.InputObject{}, _)
-       when struct in [Input.Boolean, Input.Float, Input.Integer, Input.String] do
+       when struct in [Input.Boolean, Input.Float, Input.Integer, Input.String, Input.Enum] do
     {:error, :bad_parse}
   end
 

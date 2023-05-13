@@ -49,6 +49,7 @@ defmodule Absinthe.Schema.Prototype.Notation do
         pipeline
         |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.Validation.QueryTypeMustBeObject)
         |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.ImportPrototypeDirectives)
+        |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.DirectiveImports)
         |> Absinthe.Pipeline.replace(
           Absinthe.Phase.Schema.TypeExtensionImports,
           {Absinthe.Phase.Schema.TypeExtensionImports, []}

@@ -4,19 +4,30 @@
 
 - Bug Fix: [Validate type references for invalid wrapped types](https://github.com/absinthe-graphql/absinthe/pull/1195)
 - Feature: [Add `specifiedBy` type system directive](https://github.com/absinthe-graphql/absinthe/pull/1193)
+- Bug Fix: [Object type extensions may be empty](https://github.com/absinthe-graphql/absinthe/pull/1228)
+- Bug Fix: [Validate input object not being an Enum](https://github.com/absinthe-graphql/absinthe/pull/1231)
+- Bug Fix: [Deduplicate directives when building schema](https://github.com/absinthe-graphql/absinthe/pull/1242)
+
+## 1.7.1
 - Breaking Bugfix: [Validate repeatable directives on schemas](https://github.com/absinthe-graphql/absinthe/pull/1179)
+- Breaking Bugfix: [Add "Objects must define fields" schema validation](https://github.com/absinthe-graphql/absinthe/pull/1167)
+- Bug Fix: [Validate field identifier uniqueness](https://github.com/absinthe-graphql/absinthe/pull/1200)
+- Bug Fix: [Validate type references for invalid wrapped types](https://github.com/absinthe-graphql/absinthe/pull/1195)
 - Bug Fix: Adds **optional fix** for non compliant built-in scalar Int type. `use Absinthe.Schema, use_spec_compliant_int_scalar: true` in your schema to use the fixed Int type. It is also advisable to upgrade for custom types if you are leveraging the use of integers outside the GraphQl standard. [#1131](https://github.com/absinthe-graphql/absinthe/pull/1131).
 - Feature: [Support error tuples when scalar parsing fails](https://github.com/absinthe-graphql/absinthe/pull/1187)
 - Feature: [Convert SDL Language.\* structs to SDL notation](https://github.com/absinthe-graphql/absinthe/pull/1160)
+- Feature: [Support passing the resolution struct to dataloader helper callbacks](https://github.com/absinthe-graphql/absinthe/pull/1211)
 - Feature: [Add support for type extensions](https://github.com/absinthe-graphql/absinthe/pull/1157)
 - Bug Fix: [Add type system directives to introspection results](https://github.com/absinthe-graphql/absinthe/pull/1189)
 - Bug Fix: [Add `__private__` field to EnumValueDefinition](https://github.com/absinthe-graphql/absinthe/pull/1148)
 - Bug Fix: [Fix bug in Schema.**absinthe_types**(:all) for Persistent Term](https://github.com/absinthe-graphql/absinthe/pull/1161)
 - Bug Fix: [Fix default enum value check for SDL schema's](https://github.com/absinthe-graphql/absinthe/pull/1188)
-- Bug Fix: [Add "Objects must define fields" schema validation](https://github.com/absinthe-graphql/absinthe/pull/1167)
 - Feature: [Add `import_directives` macro](https://github.com/absinthe-graphql/absinthe/pull/1158)
 - Feature: [Support type extensions on schema declarations](https://github.com/absinthe-graphql/absinthe/pull/1176)
 - Bug Fix: [Root objects are marked as referenced correctly](https://github.com/absinthe-graphql/absinthe/pull/1186)
+- Bug Fix: [Prevent DDOS attacks with long queries](https://github.com/absinthe-graphql/absinthe/pull/1220)
+- Feature: [pipeline_modifier option to Absinthe.run/3](https://github.com/absinthe-graphql/absinthe/pull/1221)
+- Bug Fix: [Add end_time_mono to telemetry :stop events](https://github.com/absinthe-graphql/absinthe/pull/1174)
 
 ## 1.7.0
 

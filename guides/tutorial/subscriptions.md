@@ -33,7 +33,7 @@ In `lib/blog/application.ex`:
   children = [
     # other children ...
     {BlogWeb.Endpoint, []}, # this line should already exist
-    {Absinthe.Subscription, [BlogWeb.Endpoint]}, # add this line
+    {Absinthe.Subscription, BlogWeb.Endpoint}, # add this line
     # other children ...
   ]
 ```

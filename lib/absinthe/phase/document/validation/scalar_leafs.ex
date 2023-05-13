@@ -38,7 +38,6 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafs do
   alias Absinthe.{Blueprint, Phase, Type}
 
   use Absinthe.Phase
-  use Absinthe.Phase.Validation
 
   @doc """
   Run the validation.

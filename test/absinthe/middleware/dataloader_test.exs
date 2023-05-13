@@ -77,6 +77,26 @@ defmodule Absinthe.Middleware.DataloaderTest do
           field :bar_organization, :organization do
             resolve dataloader(:test, :organization, args: %{pid: self()}, use_parent: true)
           end
+
+          field :bar_organization_name, :string do
+            resolve dataloader(
+                      :test,
+                      :organization,
+                      args: %{pid: self()},
+                      callback: fn organization, _parent, _args ->
+                        {:ok, organization.name}
+                      end
+                    )
+          end
+
+          field :bar_organization_state, :string do
+            resolve dataloader(:test, :organization,
+                      args: %{pid: self()},
+                      callback: fn organization, _parent, _args, resolution ->
+                        {:ok, "#{organization.name} - #{resolution.state}"}
+                      end
+                    )
+          end
         end
 
         query do
@@ -155,6 +175,40 @@ defmodule Absinthe.Middleware.DataloaderTest do
         %{"organization" => %{"name" => "Organization: #1"}},
         %{"organization" => %{"name" => "Organization: #2"}},
         %{"organization" => %{"name" => "Organization: #3"}}
+      ]
+    }
+
+    assert {:ok, %{data: data}} = Absinthe.run(doc, DefaultSchema)
+    assert expected_data == data
+
+    assert_receive(:loading)
+    refute_receive(:loading)
+  end
+
+  test "can resolve fields using dataloader helper with callback" do
+    doc = """
+    {
+      users {
+        organizationName: barOrganizationName
+        organizationState: barOrganizationState
+      }
+    }
+    """
+
+    expected_data = %{
+      "users" => [
+        %{
+          "organizationName" => "Organization: #1",
+          "organizationState" => "Organization: #1 - unresolved"
+        },
+        %{
+          "organizationName" => "Organization: #2",
+          "organizationState" => "Organization: #2 - unresolved"
+        },
+        %{
+          "organizationName" => "Organization: #3",
+          "organizationState" => "Organization: #3 - unresolved"
+        }
       ]
     }
 

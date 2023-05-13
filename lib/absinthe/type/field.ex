@@ -12,14 +12,18 @@ defmodule Absinthe.Type.Field do
   alias Absinthe.Type
   alias Absinthe.Type.Deprecation
 
-  use Type.Fetch
-
   @typedoc """
   A resolver function.
 
   See the `Absinthe.Type.Field.t` explanation of `:resolve` for more information.
   """
-  @type resolver_t :: (%{atom => any}, Absinthe.Resolution.t() -> result)
+  @type resolver_t ::
+          (Absinthe.Resolution.arguments(), Absinthe.Resolution.t() -> result)
+          | (Absinthe.Resolution.source(),
+             Absinthe.Resolution.arguments(),
+             Absinthe.Resolution.t() ->
+               result)
+          | {module(), atom()}
 
   @typedoc """
   The result of a resolver.

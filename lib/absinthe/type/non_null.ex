@@ -26,7 +26,6 @@ defmodule Absinthe.Type.NonNull do
   """
 
   use Absinthe.Introspection.TypeKind, :non_null
-  use Absinthe.Type.Fetch
 
   @typedoc """
   A defined non-null type.

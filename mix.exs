@@ -2,7 +2,7 @@ defmodule Absinthe.Mixfile do
   use Mix.Project
 
   @source_url "https://github.com/absinthe-graphql/absinthe"
-  @version "1.7.0"
+  @version "1.7.1"
 
   def project do
     [
@@ -75,6 +75,7 @@ defmodule Absinthe.Mixfile do
       {:telemetry, "~> 1.0 or ~> 0.4"},
       {:dataloader, "~> 1.0.0", optional: true},
       {:decimal, "~> 1.0 or ~> 2.0", optional: true},
+      {:opentelemetry_process_propagator, "~> 0.2.1", optional: true},
       {:ex_doc, "~> 0.22", only: :dev},
       {:benchee, ">= 1.0.0", only: :dev},
       {:dialyxir, "~> 1.1.0", only: [:dev, :test], runtime: false},
