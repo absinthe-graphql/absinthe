@@ -1482,7 +1482,8 @@ defmodule Absinthe.Schema.Notation do
   @doc """
   Import types defined using the Schema Definition Language (SDL).
 
-  TODO: Explain handlers
+  To add resolvers and middleware to the schema, use the callbacks defined in
+  `Absinthe.Schema`, like `c:Absinthe.Schema.hydrate/2`.
 
   ## Placement
 
