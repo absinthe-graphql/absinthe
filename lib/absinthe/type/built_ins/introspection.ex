@@ -54,7 +54,11 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
   object :__directive do
     description "Represents a directive"
 
-    field :name, non_null(:string)
+    field :name,
+      type: non_null(:string),
+      resolve: fn _, %{adapter: adapter, source: source} ->
+        {:ok, adapter.to_external_name(source.name, :field)}
+      end
 
     field :description, :string
 

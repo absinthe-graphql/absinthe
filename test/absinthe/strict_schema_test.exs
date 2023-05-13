@@ -34,7 +34,7 @@ defmodule Absinthe.StrictSchemaTest do
       variables = %{"input" => %{"naiveDatetime" => "2017-01-27T20:31:55"}}
 
       assert_error_message(
-        "Unknown directive `foo_bar_directive'.",
+        "Unknown directive `foo_bar_directive`.",
         run(document, Absinthe.Fixtures.StrictSchema,
           adapter: Absinthe.Adapter.StrictLanguageConventions,
           variables: variables
