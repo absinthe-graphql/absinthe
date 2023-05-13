@@ -4,6 +4,7 @@
 
 - Bug Fix: [Object type extensions may be empty](https://github.com/absinthe-graphql/absinthe/pull/1228)
 - Bug Fix: [Validate input object not being an Enum](https://github.com/absinthe-graphql/absinthe/pull/1231)
+- Bug Fix: [Deduplicate directives when building schema](https://github.com/absinthe-graphql/absinthe/pull/1242)
 
 ## 1.7.1
 - Breaking Bugfix: [Validate repeatable directives on schemas](https://github.com/absinthe-graphql/absinthe/pull/1179)
