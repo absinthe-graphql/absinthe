@@ -12,8 +12,6 @@ defmodule Absinthe.Type.Field do
   alias Absinthe.Type
   alias Absinthe.Type.Deprecation
 
-  use Type.Fetch
-
   @typedoc """
   A resolver function.
 

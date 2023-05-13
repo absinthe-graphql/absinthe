@@ -7,7 +7,6 @@ defmodule Absinthe.Phase.Document.Validation.ProvidedNonNullVariables do
   alias Absinthe.{Blueprint, Phase, Schema}
 
   use Absinthe.Phase
-  use Absinthe.Phase.Validation
 
   @doc """
   Run the validation.

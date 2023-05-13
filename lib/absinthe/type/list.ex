@@ -19,7 +19,6 @@ defmodule Absinthe.Type.List do
   """
 
   use Absinthe.Introspection.TypeKind, :list
-  use Absinthe.Type.Fetch
 
   @typedoc "
   A defined list type.
