@@ -204,11 +204,4 @@ defmodule Mix.Tasks.Absinthe.Schema.SdlTest do
       assert File.exists?(path)
     end
   end
-
-  defp tmp_dir_fallback(_) do
-    path = Path.join("tmp", "#{__MODULE__}")
-    File.mkdir_p!(path)
-    on_exit(fn -> File.rm_rf!(path) end)
-    [tmp_dir: path]
-  end
 end

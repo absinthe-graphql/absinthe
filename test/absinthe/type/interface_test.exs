@@ -358,7 +358,7 @@ defmodule Absinthe.Type.InterfaceTest do
       description "A collection"
       field :name, non_null(:string)
 
-      resolve_type fn value, %{context: %{auth: is_auth}} ->
+      resolve_type fn _value, %{context: %{auth: is_auth}} ->
         if is_auth, do: :private_collection, else: :public_collection
       end
     end
@@ -378,7 +378,7 @@ defmodule Absinthe.Type.InterfaceTest do
       description "An item"
       field :title, non_null(:string)
 
-      resolve_type fn value, %{path: path} ->
+      resolve_type fn _value, %{path: path} ->
         assert [
                  idx,
                  %{name: "items", parent_type: %{identifier: parent_id}},
