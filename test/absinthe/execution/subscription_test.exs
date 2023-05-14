@@ -3,7 +3,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
 
   import ExUnit.CaptureLog
 
-  defmodule ResultPase do
+  defmodule ResultPhase do
     @moduledoc false
 
     alias Absinthe.Blueprint
@@ -206,7 +206,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
                Schema,
                variables: %{"clientId" => client_id},
                context: %{pubsub: PubSub},
-               result_phase: ResultPase
+               result_phase: ResultPhase
              )
 
     Absinthe.Subscription.publish(PubSub, %{foo: "bar"}, thing: client_id)
