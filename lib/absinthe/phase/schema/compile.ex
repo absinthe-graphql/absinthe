@@ -103,7 +103,7 @@ defmodule Absinthe.Phase.Schema.Compile do
         end
 
         def __absinthe_type__(unquote(type.name)) do
-          unquote(ast)
+          __absinthe_type__(unquote(type.identifier))
         end
       end
     end
@@ -126,7 +126,7 @@ defmodule Absinthe.Phase.Schema.Compile do
         end
 
         def __absinthe_directive__(unquote(type.name)) do
-          unquote(ast)
+          __absinthe_directive__(unquote(type.identifier))
         end
       end
     end
