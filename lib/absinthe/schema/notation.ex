@@ -640,6 +640,7 @@ defmodule Absinthe.Schema.Notation do
   ```
   query do
     field :person, :person do
+      arg :id, non_null(:id)
       resolve &Person.resolve/2
     end
   end
@@ -648,6 +649,7 @@ defmodule Absinthe.Schema.Notation do
   ```
   query do
     field :person, :person do
+      arg :id, non_null(:id)
       resolve fn %{id: id}, _ ->
         {:ok, Person.find(id)}
       end
@@ -658,6 +660,7 @@ defmodule Absinthe.Schema.Notation do
   ```
   query do
     field :person, :person do
+      arg :id, non_null(:id)
       resolve lookup(:person)
     end
   end
