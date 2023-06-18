@@ -179,6 +179,7 @@ defmodule Absinthe.Subscription do
 
       {doc_id, doc}
     end)
+    |> Map.new()
   end
 
   @doc false

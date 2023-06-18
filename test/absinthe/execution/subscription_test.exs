@@ -49,7 +49,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
     @behaviour Absinthe.Subscription.Pubsub
 
     def start_link() do
-      Registry.start_link(keys: :unique, name: __MODULE__)
+      Registry.start_link(keys: :duplicate, name: __MODULE__)
     end
 
     def node_name() do
@@ -676,6 +676,44 @@ defmodule Absinthe.Execution.SubscriptionTest do
     assert_receive {[:absinthe, :subscription, :publish, :stop], _, %{id: ^id}, _config}
 
     :telemetry.detach(context.test)
+  end
+
+  @query """
+  subscription {
+    otherUser { id }
+  }
+  """
+  test "de-duplicates pushes to the same context" do
+    documents =
+      Enum.map(1..5, fn _index ->
+        {:ok, doc} = run_subscription(@query, Schema, context: %{context_id: "global"})
+        doc
+      end)
+
+    # assert that all documents are the same
+    first = hd(documents)
+    assert Enum.all?(documents, &(&1 == first))
+
+    Absinthe.Subscription.publish(
+      PubSub,
+      %{id: "global_user_id"},
+      other_user: "*"
+    )
+
+    topic_id = first["subscribed"]
+
+    for _i <- 1..5 do
+      assert_receive(
+        {:broadcast,
+         %{
+           event: "subscription:data",
+           result: %{data: %{"otherUser" => %{"id" => "global_user_id"}}},
+           topic: ^topic_id
+         }}
+      )
+    end
+
+    refute_receive({:broadcast, _})
   end
 
   defp run_subscription(query, schema, opts \\ []) do
