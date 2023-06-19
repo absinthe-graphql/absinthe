@@ -20,7 +20,9 @@ defmodule Absinthe.Pipeline do
 
   @type t :: [phase_config_t | [phase_config_t]]
 
-  @spec run(data_t, t) :: {:ok, data_t, [Phase.t()]} | {:error, String.t(), [Phase.t()]}
+  @spec run(data_t, t) ::
+          {:ok, data_t, [Phase.t()]}
+          | {:error, String.t() | {:http_method, String.t()}, [Phase.t()]}
   def run(input, pipeline) do
     pipeline
     |> List.flatten()
@@ -392,7 +394,8 @@ defmodule Absinthe.Pipeline do
   end
 
   @spec run_phase(t, data_t, [Phase.t()]) ::
-          {:ok, data_t, [Phase.t()]} | {:error, String.t(), [Phase.t()]}
+          {:ok, data_t, [Phase.t()]}
+          | {:error, String.t() | {:http_method, String.t()}, [Phase.t()]}
   def run_phase(pipeline, input, done \\ [])
 
   def run_phase([], input, done) do

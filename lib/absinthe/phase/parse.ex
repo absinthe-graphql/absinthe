@@ -59,7 +59,7 @@ defmodule Absinthe.Phase.Parse do
   # This is because Dialyzer is telling us tokenizing can never fail,
   # but we know it's possible.
   @dialyzer {:no_match, parse: 2}
-  @spec parse(binary | Language.Source.t(), Map.t()) ::
+  @spec parse(binary | Language.Source.t(), Keyword.t()) ::
           {:ok, Language.Document.t()} | {:error, tuple}
   defp parse(input, options) when is_binary(input) do
     parse(%Language.Source{body: input}, options)
