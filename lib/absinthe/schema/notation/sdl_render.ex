@@ -66,14 +66,47 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
   @adapter Absinthe.Adapter.LanguageConventions
   defp render(%Blueprint.Schema.InputValueDefinition{} = input_value, type_definitions) do
+    default_value =
+      case input_value.default_value do
+        nil ->
+          nil
+
+        value when is_atom(value) ->
+          typ =
+            case input_value.type do
+              %Absinthe.Blueprint.TypeReference.NonNull{of_type: t} -> t
+              %Absinthe.Blueprint.TypeReference.List{of_type: t} -> t
+              t -> t
+            end
+
+          definition = Enum.find(type_definitions, fn d -> typ == d.identifier end)
+
+          case definition do
+            nil ->
+              value
+
+            _ ->
+              enum = Absinthe.Blueprint.Schema.EnumTypeDefinition.build(definition, nil)
+
+              %Blueprint.Input.Enum{
+                value: Absinthe.Type.Enum.serialize(enum, value),
+                source_location: input_value.source_location
+              }
+          end
+
+        value ->
+          Blueprint.Input.parse(value)
+      end
+
     concat([
       string(@adapter.to_external_name(input_value.name, :argument)),
       ": ",
       render(input_value.type, type_definitions),
-      default(input_value.default_value_blueprint),
+      default(input_value.default_value_blueprint || default_value),
       directives(input_value.directives, type_definitions)
     ])
     |> description(input_value.description)
+    |> deprecation(input_value.deprecation)
   end
 
   defp render(%Blueprint.Schema.FieldDefinition{} = field, type_definitions) do
@@ -85,6 +118,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       directives(field.directives, type_definitions)
     ])
     |> description(field.description)
+    |> deprecation(field.deprecation)
   end
 
   defp render(%Blueprint.Schema.ObjectTypeDefinition{} = object_type, type_definitions) do
@@ -174,6 +208,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       directives(enum_value.directives, type_definitions)
     ])
     |> description(enum_value.description)
+    |> deprecation(enum_value.deprecation)
   end
 
   defp render(%Blueprint.Schema.ScalarTypeDefinition{} = scalar_type, type_definitions) do
@@ -305,6 +340,10 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     empty()
   end
 
+  defp default(%{value: nil}) do
+    empty()
+  end
+
   defp default(default_value) do
     concat([" = ", render_value(default_value)])
   end
@@ -319,6 +358,14 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       line(),
       docs
     ])
+  end
+
+  defp deprecation(docs, nil) do
+    docs
+  end
+
+  defp deprecation(docs, %Absinthe.Type.Deprecation{reason: reason}) do
+    concat([docs, " @deprecated(reason: \"#{reason}\")"])
   end
 
   defp implements(%{interface_blueprints: [], interfaces: []}, _) do
