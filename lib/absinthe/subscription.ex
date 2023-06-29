@@ -173,13 +173,13 @@ defmodule Absinthe.Subscription do
     pubsub
     |> registry_name
     |> Registry.lookup(key)
+    |> Enum.uniq_by(fn {_, {doc_id, _doc}} -> doc_id end)
     |> Enum.map(fn match ->
       {_, {doc_id, doc}} = match
       doc = Map.update!(doc, :initial_phases, &PipelineSerializer.unpack/1)
 
       {doc_id, doc}
     end)
-    |> Map.new()
   end
 
   @doc false

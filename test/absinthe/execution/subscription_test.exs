@@ -691,8 +691,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
       end)
 
     # assert that all documents are the same
-    first = hd(documents)
-    assert Enum.all?(documents, &(&1 == first))
+    assert [document] = Enum.dedup(documents)
 
     Absinthe.Subscription.publish(
       PubSub,
@@ -700,7 +699,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
       other_user: "*"
     )
 
-    topic_id = first["subscribed"]
+    topic_id = document["subscribed"]
 
     for _i <- 1..5 do
       assert_receive(
