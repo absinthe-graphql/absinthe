@@ -14,12 +14,17 @@ defmodule Absinthe.Schema.Notation do
         object :item do
           field :id, :id
           field :name, :string
+          field :status, :status_enum
+        end
+
+        enum :status_enum do
+          value :current
+          value :discontinued
         end
 
         # ...
 
       end
-
   """
 
   Module.register_attribute(__MODULE__, :placement, accumulate: true)
@@ -635,6 +640,7 @@ defmodule Absinthe.Schema.Notation do
   ```
   query do
     field :person, :person do
+      arg :id, non_null(:id)
       resolve &Person.resolve/2
     end
   end
@@ -643,6 +649,7 @@ defmodule Absinthe.Schema.Notation do
   ```
   query do
     field :person, :person do
+      arg :id, non_null(:id)
       resolve fn %{id: id}, _ ->
         {:ok, Person.find(id)}
       end
@@ -653,6 +660,7 @@ defmodule Absinthe.Schema.Notation do
   ```
   query do
     field :person, :person do
+      arg :id, non_null(:id)
       resolve lookup(:person)
     end
   end
@@ -1477,7 +1485,8 @@ defmodule Absinthe.Schema.Notation do
   @doc """
   Import types defined using the Schema Definition Language (SDL).
 
-  TODO: Explain handlers
+  To add resolvers and middleware to the schema, use the callbacks defined in
+  `Absinthe.Schema`, like `c:Absinthe.Schema.hydrate/2`.
 
   ## Placement
 
@@ -1600,7 +1609,7 @@ defmodule Absinthe.Schema.Notation do
     attrs =
       attrs
       |> Keyword.put(:identifier, identifier)
-      |> Keyword.put_new(:name, to_string(identifier))
+      |> Keyword.put_new(:name, default_name(Schema.DirectiveDefinition, identifier))
       |> Keyword.update(:description, nil, &wrap_in_unquote/1)
 
     scoped_def(env, Schema.DirectiveDefinition, identifier, attrs, block)
@@ -1975,6 +1984,11 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp default_name(Schema.FieldDefinition, identifier) do
+    identifier
+    |> Atom.to_string()
+  end
+
+  defp default_name(Schema.DirectiveDefinition, identifier) do
     identifier
     |> Atom.to_string()
   end
@@ -2399,7 +2413,8 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp expand_ast(ast, env) do
-    Macro.prewalk(ast, fn
+    ast
+    |> Macro.prewalk(fn
       # We don't want to expand `@bla` into `Module.get_attribute(module, @bla)` because this
       # function call will fail if the module is already compiled. Remember that the ast gets put
       # into a generated `__absinthe_blueprint__` function which is called at "__after_compile__"
@@ -2418,6 +2433,22 @@ defmodule Absinthe.Schema.Notation do
       node ->
         node
     end)
+    |> expand_ast_map()
+  end
+
+  # Handle maps in AST format if they are not escaped in macros
+  defp expand_ast_map({:%{}, _, map_key_values} = _node) when is_list(map_key_values) do
+    map_key_values
+    |> Enum.map(fn {key, val} -> {key, expand_ast_map(val)} end)
+    |> Enum.into(%{})
+  end
+
+  defp expand_ast_map(node) when is_list(node) do
+    Enum.map(node, &expand_ast_map/1)
+  end
+
+  defp expand_ast_map(node) do
+    node
   end
 
   @doc false

@@ -2,7 +2,7 @@ defmodule Absinthe.Mixfile do
   use Mix.Project
 
   @source_url "https://github.com/absinthe-graphql/absinthe"
-  @version "1.7.1"
+  @version "1.7.2"
 
   def project do
     [
@@ -30,7 +30,8 @@ defmodule Absinthe.Mixfile do
       ],
       deps: deps(),
       dialyzer: [
-        plt_core_path: "priv/plts",
+        plt_add_deps: :apps_direct,
+        plt_file: {:no_warn, "priv/plts/project.plt"},
         plt_add_apps: [:mix, :dataloader, :decimal, :ex_unit]
       ]
     ]
@@ -75,6 +76,7 @@ defmodule Absinthe.Mixfile do
       {:telemetry, "~> 1.0 or ~> 0.4"},
       {:dataloader, "~> 1.0.0", optional: true},
       {:decimal, "~> 1.0 or ~> 2.0", optional: true},
+      {:opentelemetry_process_propagator, "~> 0.2.1", optional: true},
       {:ex_doc, "~> 0.22", only: :dev},
       {:benchee, ">= 1.0.0", only: :dev},
       {:dialyxir, "~> 1.1.0", only: [:dev, :test], runtime: false},

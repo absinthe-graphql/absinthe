@@ -118,6 +118,8 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp walk_results([], _, _, res = %{path: [_ | sub_path]}, _, acc),
     do: {:lists.reverse(acc), %{res | path: sub_path}}
 
+  defp walk_results([], _, _, res, _, acc), do: {:lists.reverse(acc), res}
+
   defp resolve_fields(parent, res, source, path) do
     # parent is the parent field, we need to get the return type of that field
     # that return type could be an interface or union, so let's make it concrete
@@ -283,6 +285,15 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     |> propagate_null_trimming
   end
 
+  defp maybe_add_non_null_error([], values, %Type.NonNull{of_type: %Type.List{}}) do
+    values
+    |> Enum.with_index()
+    |> Enum.filter(&is_nil(elem(&1, 0)))
+    |> Enum.map(fn {_value, index} ->
+      %{message: "Cannot return null for non-nullable field", path: [index]}
+    end)
+  end
+
   defp maybe_add_non_null_error([], nil, %Type.NonNull{}) do
     ["Cannot return null for non-nullable field"]
   end
@@ -312,11 +323,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
       nil
       |> to_result(bp_field, full_type, node.extensions)
-      |> Map.put(:errors, bad_child.errors)
-
-      # ^ We don't have to worry about clobbering the current node's errors because,
-      # if it had any errors, it wouldn't have any children and we wouldn't be
-      # here anyway.
+      |> Map.put(:errors, node.errors ++ bad_child.errors)
     else
       node
     end

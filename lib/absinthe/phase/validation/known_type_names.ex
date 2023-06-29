@@ -15,7 +15,6 @@ defmodule Absinthe.Phase.Validation.KnownTypeNames do
   alias Absinthe.Phase.Document.Validation.Utils
 
   use Absinthe.Phase
-  use Absinthe.Phase.Validation
 
   @doc """
   Run the validation.

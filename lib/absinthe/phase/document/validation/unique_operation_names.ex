@@ -6,7 +6,6 @@ defmodule Absinthe.Phase.Document.Validation.UniqueOperationNames do
   alias Absinthe.{Blueprint, Phase}
 
   use Absinthe.Phase
-  use Absinthe.Phase.Validation
 
   @doc """
   Run the validation.

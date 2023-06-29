@@ -2,7 +2,7 @@ defmodule Absinthe.Schema.Rule.UniqueFieldNamesTest do
   use Absinthe.Case, async: true
 
   @duplicate_object_fields_macro ~S(
-    defmodule DuplicateObjectFields do
+    defmodule DuplicateObjectFieldsMacro do
       use Absinthe.Schema
 
       query do
@@ -16,7 +16,7 @@ defmodule Absinthe.Schema.Rule.UniqueFieldNamesTest do
     )
 
   @duplicate_object_fields_sdl ~S(
-  defmodule DuplicateObjectFields do
+  defmodule DuplicateObjectFieldsSDL do
     use Absinthe.Schema
 
     query do

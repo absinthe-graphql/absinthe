@@ -4,7 +4,6 @@ defmodule Absinthe.Phase.Schema.Validation.KnownDirectives do
   alias Absinthe.{Blueprint, Phase}
 
   use Absinthe.Phase
-  use Absinthe.Phase.Validation
 
   @doc """
   Run the validation.

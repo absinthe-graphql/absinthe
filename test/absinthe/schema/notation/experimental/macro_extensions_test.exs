@@ -8,8 +8,13 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
   defmodule WithFeatureDirective do
     use Absinthe.Schema.Prototype
 
+    input_object :related_feature do
+      field :name, :string
+    end
+
     directive :feature do
       arg :name, :string
+      arg :related_features, list_of(:related_feature)
       on [:scalar, :schema]
 
       expand(fn _args, node ->
@@ -28,7 +33,7 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
     end
 
     extend schema do
-      directive :feature
+      directive :feature, related_features: [%{"name" => "another_feature"}]
     end
 
     object :person do
@@ -235,6 +240,12 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
            ] = Map.values(object.fields)
 
     assert [:valued_entity] = object.interfaces
+  end
+
+  test "can use map in arguments" do
+    sdl = Absinthe.Schema.to_sdl(ExtendedSchema)
+
+    assert sdl =~ "schema @feature(related_features: [{name: \"another_feature\"}])"
   end
 
   test "raises when definition types do not match" do

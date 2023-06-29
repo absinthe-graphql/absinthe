@@ -36,7 +36,7 @@ line:
       {Phoenix.PubSub, name: :my_pubsub},
       # Start the endpoint when the application starts
       MyAppWeb.Endpoint,
-      {Absinthe.Subscription, pubsub: MyAppWeb.Endpoint}
+      {Absinthe.Subscription, MyAppWeb.Endpoint}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
@@ -49,6 +49,12 @@ See `Absinthe.Subscription.child_spec/1` for more information on the supported
 options.
 
 In your `MyAppWeb.Endpoint` module add:
+
+```elixir
+use Absinthe.Phoenix.Endpoint
+```
+
+Now, you need to configure your socket. I.e. in your `MyAppWeb.UserSocket` module add:
 
 ```elixir
 use Absinthe.Phoenix.Socket,

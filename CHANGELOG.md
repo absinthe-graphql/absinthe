@@ -1,9 +1,16 @@
 # Changelog
 
-## Unreleased
+## 1.7.1
 
+- Bug Fix: [Place extra error attributes in error extensions field](https://github.com/absinthe-graphql/absinthe/pull/1215)
+
+## 1.7.2
+
+- Bug Fix: [Validate type references for invalid wrapped types](https://github.com/absinthe-graphql/absinthe/pull/1195)
+- Feature: [Add `specifiedBy` type system directive](https://github.com/absinthe-graphql/absinthe/pull/1193)
 - Bug Fix: [Object type extensions may be empty](https://github.com/absinthe-graphql/absinthe/pull/1228)
 - Bug Fix: [Validate input object not being an Enum](https://github.com/absinthe-graphql/absinthe/pull/1231)
+- Bug Fix: [Deduplicate directives when building schema](https://github.com/absinthe-graphql/absinthe/pull/1242)
 
 ## 1.7.1
 - Breaking Bugfix: [Validate repeatable directives on schemas](https://github.com/absinthe-graphql/absinthe/pull/1179)

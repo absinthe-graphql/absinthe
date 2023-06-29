@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     name: Elixir ${{matrix.elixir}} / OTP ${{matrix.otp}}
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     strategy:
       matrix:
@@ -63,3 +63,17 @@ jobs:
           mix test
         env:
           SCHEMA_PROVIDER: persistent_term
+
+      - name: Cache/uncache PLTs
+        uses: actions/cache@v3
+        with:
+          path: |
+            priv/plts
+          key: "${{ runner.os }}-\
+                erlang-${{ matrix.otp }}-\
+                elixir-${{ matrix.elixir }}-\
+                ${{ hashFiles('mix.lock') }}"
+
+      - name: Run Dialyzer
+        run: mix dialyzer
+

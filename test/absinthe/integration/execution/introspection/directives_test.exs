@@ -72,6 +72,23 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.DirectivesTest do
                       "onFragment" => true,
                       "onOperation" => false,
                       "isRepeatable" => false
+                    },
+                    %{
+                      "isRepeatable" => false,
+                      "locations" => ["SCALAR"],
+                      "name" => "specifiedBy",
+                      "onField" => false,
+                      "onFragment" => false,
+                      "onOperation" => false,
+                      "args" => [
+                        %{
+                          "name" => "url",
+                          "type" => %{
+                            "kind" => "NON_NULL",
+                            "ofType" => %{"kind" => "SCALAR", "name" => "String"}
+                          }
+                        }
+                      ]
                     }
                   ]
                 }

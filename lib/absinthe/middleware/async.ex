@@ -52,7 +52,7 @@ defmodule Absinthe.Middleware.Async do
   # task so we have actual data. Thus, we prepend this module to the middleware stack.
   def call(%{state: :unresolved} = res, {fun, opts}) when is_function(fun) do
     task =
-      Task.async(fn ->
+      async(fn ->
         :telemetry.span([:absinthe, :middleware, :async, :task], %{}, fn -> {fun.(), %{}} end)
       end)
 
@@ -109,5 +109,14 @@ defmodule Absinthe.Middleware.Async do
       _ ->
         pipeline
     end
+  end
+
+  # Optionally use `async/1` function from `opentelemetry_process_propagator` if available
+  if Code.ensure_loaded?(OpentelemetryProcessPropagator.Task) do
+    @spec async((() -> any)) :: Task.t()
+    defdelegate async(fun), to: OpentelemetryProcessPropagator.Task
+  else
+    @spec async((() -> any)) :: Task.t()
+    defdelegate async(fun), to: Task
   end
 end

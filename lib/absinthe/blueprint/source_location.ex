@@ -23,7 +23,7 @@ defmodule Absinthe.Blueprint.SourceLocation do
   @doc """
   Generate a `SourceLocation.t()` given line and column numbers
   """
-  @spec at(line :: pos_integer, column :: pos_integer) :: t
+  @spec at(line :: pos_integer, column :: non_neg_integer) :: t
   def at(line, column) do
     %__MODULE__{line: line, column: column}
   end
