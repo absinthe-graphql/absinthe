@@ -362,7 +362,7 @@ defmodule Absinthe.Lexer do
     )
   )
 
-  defp fill_mantissa(rest, raw, context, _, _), do: {rest, '0.' ++ raw, context}
+  defp fill_mantissa(rest, raw, context, _, _), do: {rest, ~c"0." ++ raw, context}
 
   defp unescape_unicode(rest, content, context, _loc, _) do
     code = content |> Enum.reverse()
@@ -453,7 +453,7 @@ defmodule Absinthe.Lexer do
 
   defp block_string_value_token(rest, chars, context, _loc, _byte_offset) do
     context = Map.update(context, :token_count, 1, &(&1 + 1))
-    value = '"""' ++ (chars |> Enum.reverse()) ++ '"""'
+    value = ~c"\"\"\"" ++ (chars |> Enum.reverse()) ++ ~c"\"\"\""
 
     {rest, [{:block_string_value, context.token_location, value}],
      Map.delete(context, :token_location)}
@@ -465,7 +465,7 @@ defmodule Absinthe.Lexer do
 
   defp string_value_token(rest, chars, context, _loc, _byte_offset) do
     context = Map.update(context, :token_count, 1, &(&1 + 1))
-    value = '"' ++ tl(chars |> Enum.reverse()) ++ '"'
+    value = ~c"\"" ++ tl(chars |> Enum.reverse()) ++ ~c"\""
     {rest, [{:string_value, context.token_location, value}], Map.delete(context, :token_location)}
   end
 

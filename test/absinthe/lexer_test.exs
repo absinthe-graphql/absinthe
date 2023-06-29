@@ -5,7 +5,7 @@ defmodule Absinthe.LexerTest do
   { foo }
   """
   test "basic document" do
-    assert {:ok, [{:"{", {1, 1}}, {:name, {1, 3}, 'foo'}, {:"}", {1, 7}}]} =
+    assert {:ok, [{:"{", {1, 1}}, {:name, {1, 3}, ~c"foo"}, {:"}", {1, 7}}]} =
              Absinthe.Lexer.tokenize(@query)
   end
 
@@ -13,7 +13,7 @@ defmodule Absinthe.LexerTest do
   { nullName }
   """
   test "document with a name that starts with a keyword" do
-    assert {:ok, [{:"{", {1, 1}}, {:name, {1, 3}, 'nullName'}, {:"}", {1, 12}}]} =
+    assert {:ok, [{:"{", {1, 1}}, {:name, {1, 3}, ~c"nullName"}, {:"}", {1, 12}}]} =
              Absinthe.Lexer.tokenize(@query)
   end
 
@@ -23,7 +23,7 @@ defmodule Absinthe.LexerTest do
   }
   """
   test "basic document, multiple lines" do
-    assert {:ok, [{:"{", {1, 1}}, {:name, {2, 3}, 'foo'}, {:"}", {3, 1}}]} =
+    assert {:ok, [{:"{", {1, 1}}, {:name, {2, 3}, ~c"foo"}, {:"}", {3, 1}}]} =
              Absinthe.Lexer.tokenize(@query)
   end
 
@@ -38,9 +38,9 @@ defmodule Absinthe.LexerTest do
               [
                 {:"{", {1, 1}},
                 {:"{", {2, 3}},
-                {:name, {2, 5}, 'foo'},
+                {:name, {2, 5}, ~c"foo"},
                 {:"(", {2, 8}},
-                {:name, {2, 9}, 'bar'},
+                {:name, {2, 9}, ~c"bar"},
                 {:":", {2, 12}},
                 {:string_value, {2, 14}, ~S("\\FOO") |> String.to_charlist()},
                 {:")", {2, 23}},
@@ -60,11 +60,11 @@ defmodule Absinthe.LexerTest do
     assert {:ok,
             [
               {:"{", {1, 1}},
-              {:name, {2, 3}, 'foo'},
+              {:name, {2, 3}, ~c"foo"},
               {:"(", {2, 6}},
-              {:name, {2, 7}, 'bar'},
+              {:name, {2, 7}, ~c"bar"},
               {:":", {2, 10}},
-              {:block_string_value, {2, 12}, '"""\n  stuff\n  """'},
+              {:block_string_value, {2, 12}, ~c"\"\"\"\n  stuff\n  \"\"\""},
               {:")", {4, 6}},
               {:"}", {5, 1}}
             ]} = Absinthe.Lexer.tokenize(@query)
@@ -82,15 +82,15 @@ defmodule Absinthe.LexerTest do
   test "document with emojis" do
     assert {:ok,
             [
-              {:block_string_value, {2, 1}, '"""\nA block quote with a 👍 emoji.\n"""'},
+              {:block_string_value, {2, 1}, ~c"\"\"\"\nA block quote with a 👍 emoji.\n\"\"\""},
               {:"{", {5, 1}},
-              {:name, {6, 3}, 'foo'},
+              {:name, {6, 3}, ~c"foo"},
               {:"(", {6, 6}},
-              {:name, {6, 7}, 'bar'},
+              {:name, {6, 7}, ~c"bar"},
               {:":", {6, 10}},
-              {:string_value, {6, 12}, '"A string with a 🎉 emoji."'},
+              {:string_value, {6, 12}, ~c"\"A string with a 🎉 emoji.\""},
               {:")", {6, 38}},
-              {:name, {6, 40}, 'anotherOnSameLine'},
+              {:name, {6, 40}, ~c"anotherOnSameLine"},
               {:"}", {7, 1}}
             ]} == Absinthe.Lexer.tokenize(@query)
   end

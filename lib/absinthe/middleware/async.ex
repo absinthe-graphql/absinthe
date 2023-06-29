@@ -113,10 +113,10 @@ defmodule Absinthe.Middleware.Async do
 
   # Optionally use `async/1` function from `opentelemetry_process_propagator` if available
   if Code.ensure_loaded?(OpentelemetryProcessPropagator.Task) do
-    @spec async((() -> any)) :: Task.t()
+    @spec async((-> any)) :: Task.t()
     defdelegate async(fun), to: OpentelemetryProcessPropagator.Task
   else
-    @spec async((() -> any)) :: Task.t()
+    @spec async((-> any)) :: Task.t()
     defdelegate async(fun), to: Task
   end
 end
