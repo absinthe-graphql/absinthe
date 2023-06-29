@@ -1,7 +1,9 @@
 # Changelog
 
-## 1.7.1
+## 1.7.3
 
+- Bug Fix: [OTP 26 and Elixir 1.15 tweaks]https://github.com/absinthe-graphql/absinthe/pull/1253
+- Bug Fix: [OTP 25 twaks]https://github.com/absinthe-graphql/absinthe/pull/1253
 - Bug Fix: [Place extra error attributes in error extensions field](https://github.com/absinthe-graphql/absinthe/pull/1215)
 
 ## 1.7.2
