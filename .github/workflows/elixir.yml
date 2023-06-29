@@ -16,12 +16,14 @@ jobs:
         elixir:
           - "1.13"
           - "1.14"
+          - "1.15"
         otp:
           - "24"
           - "25"
+          - "26"
         include:
-          - elixir: "1.14"
-            otp: "25"
+          - elixir: "1.15"
+            otp: "26"
             format: true
 
     steps:
