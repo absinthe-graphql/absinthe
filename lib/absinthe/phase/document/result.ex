@@ -7,12 +7,12 @@ defmodule Absinthe.Phase.Document.Result do
   use Absinthe.Phase
 
   @spec run(Blueprint.t() | Phase.Error.t(), Keyword.t()) :: {:ok, map}
-  def run(%Blueprint{} = bp, _options \\ []) do
-    result = Map.merge(bp.result, process(bp))
+  def run(%Blueprint{} = bp, options \\ []) do
+    result = Map.merge(bp.result, process(bp, options))
     {:ok, %{bp | result: result}}
   end
 
-  defp process(blueprint) do
+  defp process(blueprint, opts) do
     result =
       case blueprint.execution do
         %{validation_errors: [], result: nil} ->
@@ -25,20 +25,20 @@ defmodule Absinthe.Phase.Document.Result do
           {:validation_failed, errors}
       end
 
-    format_result(result)
+    format_result(result, opts)
   end
 
-  defp format_result({:ok, {data, []}}) do
+  defp format_result({:ok, {data, []}}, _) do
     %{data: data}
   end
 
-  defp format_result({:ok, {data, errors}}) do
-    errors = errors |> Enum.uniq() |> Enum.map(&format_error/1)
+  defp format_result({:ok, {data, errors}}, opts) do
+    errors = errors |> Enum.uniq() |> Enum.map(&format_error(&1, opts))
     %{data: data, errors: errors}
   end
 
-  defp format_result({:validation_failed, errors}) do
-    errors = errors |> Enum.uniq() |> Enum.map(&format_error/1)
+  defp format_result({:validation_failed, errors}, opts) do
+    errors = errors |> Enum.uniq() |> Enum.map(&format_error(&1, opts))
     %{errors: errors}
   end
 
@@ -109,12 +109,13 @@ defmodule Absinthe.Phase.Document.Result do
   defp field_name(%{alias: name}), do: name
   defp field_name(%{name: name}), do: name
 
-  defp format_error(%Phase.Error{locations: []} = error) do
+  defp format_error(%Phase.Error{locations: []} = error, opts) do
     error_object = %{message: error.message}
-    Map.merge(error.extra, error_object)
+
+    merge_error_extensions(error_object, error.extra, opts)
   end
 
-  defp format_error(%Phase.Error{} = error) do
+  defp format_error(%Phase.Error{} = error, opts) do
     error_object = %{
       message: error.message,
       locations: Enum.flat_map(error.locations, &format_location/1)
@@ -126,7 +127,19 @@ defmodule Absinthe.Phase.Document.Result do
         path -> Map.put(error_object, :path, path)
       end
 
-    Map.merge(Map.new(error.extra), error_object)
+    merge_error_extensions(error_object, error.extra, opts)
+  end
+
+  defp merge_error_extensions(error_object, extra, _opts) when extra == %{} do
+    error_object
+  end
+
+  defp merge_error_extensions(error_object, extra, opts) do
+    if opts[:spec_compliant_errors] do
+      Map.merge(%{extensions: extra}, error_object)
+    else
+      Map.merge(extra, error_object)
+    end
   end
 
   defp format_location(%{line: line, column: col}) do
