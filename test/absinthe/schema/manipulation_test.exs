@@ -119,7 +119,7 @@ defmodule Absinthe.Schema.ManipulationTest do
           },
           %Schema.EnumValueDefinition{
             identifier: :bar,
-            value: :foo,
+            value: :bar,
             name: "BAR",
             module: __MODULE__,
             __reference__: Notation.build_reference(__ENV__)

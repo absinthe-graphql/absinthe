@@ -334,6 +334,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
           fields
           |> Map.take(Map.keys(value))
           |> Map.values()
+          |> Enum.sort_by(& &1.identifier)
           |> Enum.map(&render_default_value(schema, adapter, &1, value))
           |> Enum.join(", ")
 

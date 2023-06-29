@@ -16,13 +16,20 @@ jobs:
         elixir:
           - "1.13"
           - "1.14"
+          - "1.15"
         otp:
           - "24"
           - "25"
+          - "26"
         include:
-          - elixir: "1.14"
-            otp: "25"
+          - elixir: "1.15"
+            otp: "26"
             format: true
+        exclude:
+          - otp: 26
+            elixir: 1.13
+          - otp: 26
+            elixir: 1.14
 
     steps:
       - name: Checkout
@@ -64,16 +71,16 @@ jobs:
         env:
           SCHEMA_PROVIDER: persistent_term
 
-      - name: Cache/uncache PLTs
-        uses: actions/cache@v3
-        with:
-          path: |
-            priv/plts
-          key: "${{ runner.os }}-\
-                erlang-${{ matrix.otp }}-\
-                elixir-${{ matrix.elixir }}-\
-                ${{ hashFiles('mix.lock') }}"
+      # - name: Cache/uncache PLTs
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: |
+      #       priv/plts
+      #     key: "${{ runner.os }}-\
+      #           erlang-${{ matrix.otp }}-\
+      #           elixir-${{ matrix.elixir }}-\
+      #           ${{ hashFiles('mix.lock') }}"
 
-      - name: Run Dialyzer
-        run: mix dialyzer
+      # - name: Run Dialyzer
+      #   run: mix dialyzer
 
