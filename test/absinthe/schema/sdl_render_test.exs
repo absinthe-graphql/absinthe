@@ -246,10 +246,10 @@ defmodule Absinthe.Schema.SdlRenderTest do
 
              directive @foo(baz: String) on FIELD
 
-             "Escaped\\t\\\"descrição\\/description\\\""
+             \"Escaped\\t\\\"descrição\\/description\\\"\"
              type RootQueryType {
                echo(
-                 "The number of times"
+                 \"The number of times\"
                  times: Int
 
                  timeInterval: Int
@@ -257,22 +257,16 @@ defmodule Absinthe.Schema.SdlRenderTest do
                search: SearchResult
              }
 
-             type Category {
-               name: String
+             enum OrderStatus {
+               DELIVERED
+               PROCESSING
+               PICKING
              }
-
-             union SearchResult = Order | Category
 
              enum Status {
                ONE
                TWO
                THREE
-             }
-
-             enum OrderStatus {
-               DELIVERED
-               PROCESSING
-               PICKING
              }
 
              type Order {
@@ -282,6 +276,12 @@ defmodule Absinthe.Schema.SdlRenderTest do
                status: OrderStatus
                otherStatus: Status
              }
+
+             type Category {
+               name: String
+             }
+
+             union SearchResult = Order | Category
              """
   end
 end

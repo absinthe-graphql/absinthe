@@ -11,15 +11,14 @@ defmodule Absinthe.Phase.Schema.FieldImports do
   end
 
   def handle_imports(%Schema.SchemaDefinition{} = schema) do
-    # Per Phase.Schema.ValidateTypeReferences, the types are already
-    # in the order they need to be in to accumulate imports properly.
-    types =
-      Enum.reduce(schema.type_definitions, %{}, fn type, types ->
-        Map.put(types, type.identifier, import_fields(type, types))
+    types = Map.new(schema.type_definitions, &{&1.identifier, &1})
+
+    type_definitions =
+      Enum.map(schema.type_definitions, fn type ->
+        import_fields(type, types)
       end)
 
-    types = Enum.map(schema.type_definitions, &Map.fetch!(types, &1.identifier))
-    {:halt, %{schema | type_definitions: types}}
+    {:halt, %{schema | type_definitions: type_definitions}}
   end
 
   def handle_imports(node), do: node
@@ -32,9 +31,14 @@ defmodule Absinthe.Phase.Schema.FieldImports do
   @exclude_fields [
     :__typename
   ]
+  # Per Absinthe.Phase.Schema.Validation.NoCircularFieldImports, there are no cycles
+  # in the field imports. Therefore we can use recursion to resolve the imports.
   def import_fields(%def_type{} = type, types) when def_type in @can_import do
     Enum.reduce(type.imports, type, fn {source, opts}, type ->
-      source_type = Map.fetch!(types, source)
+      source_type =
+        types
+        |> Map.fetch!(source)
+        |> import_fields(types)
 
       rejections = Keyword.get(opts, :except, []) ++ @exclude_fields
 

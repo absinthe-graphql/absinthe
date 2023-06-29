@@ -184,33 +184,35 @@ defmodule Absinthe.Schema.TypeSystemDirectiveTest do
   end
 
   @macro_schema_sdl """
-  schema @feature(name: ":schema") {
+  schema @feature(name: \":schema\") {
     query: RootQueryType
   }
 
-  interface Animal @feature(name: ":interface") {
+  type RootQueryType {
+    post: Post @feature(name: \":field_definition\")
+    sweet: SweetScalar
+    which: Category
+    pet: Dog
+    search(filter: SearchFilter @feature(name: \":argument_definition\")): SearchResult @feature(name: \":argument_definition\")
+  }
+
+  type Post @feature(name: \":object\", number: 3) {
+    name: String @deprecated(reason: \"Bye\")
+  }
+
+  scalar SweetScalar @feature(name: \":scalar\")
+
+  enum Category @feature(name: \":enum\") {
+    THIS
+    THAT @feature(name: \":enum_value\")
+    THE_OTHER @deprecated(reason: \"It's old\")
+  }
+
+  interface Animal @feature(name: \":interface\") {
     legCount: Int! @feature(name: \"\"\"
       Multiline here?
       Second line
     \"\"\")
-  }
-
-  input SearchFilter @feature(name: ":input_object") {
-    query: String @feature(name: ":input_field_definition")
-  }
-
-  type Post @feature(name: ":object", number: 3) {
-    name: String @deprecated(reason: "Bye")
-  }
-
-  scalar SweetScalar @feature(name: ":scalar")
-
-  type RootQueryType {
-    post: Post @feature(name: ":field_definition")
-    sweet: SweetScalar
-    which: Category
-    pet: Dog
-    search(filter: SearchFilter @feature(name: ":argument_definition")): SearchResult @feature(name: ":argument_definition")
   }
 
   type Dog implements Animal {
@@ -218,13 +220,11 @@ defmodule Absinthe.Schema.TypeSystemDirectiveTest do
     name: String! @external
   }
 
-  enum Category @feature(name: ":enum") {
-    THIS
-    THAT @feature(name: ":enum_value")
-    THE_OTHER @deprecated(reason: "It's old")
+  input SearchFilter @feature(name: \":input_object\") {
+    query: String @feature(name: \":input_field_definition\")
   }
 
-  union SearchResult @feature(name: ":union") = Dog | Post
+  union SearchResult @feature(name: \":union\") = Dog | Post
   """
   describe "with macro schema" do
     test "Render SDL with Type System Directives applied" do
