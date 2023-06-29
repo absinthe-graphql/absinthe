@@ -25,6 +25,11 @@ jobs:
           - elixir: "1.15"
             otp: "26"
             format: true
+        exclude:
+          - otp: 26
+            elixir: 1.13
+          - otp: 26
+            elixir: 1.14
 
     steps:
       - name: Checkout
