@@ -159,18 +159,6 @@ defmodule Absinthe.Schema.Notation.ImportTest do
       assert {:error,
               [
                 %Absinthe.Phase.Error{
-                  extra: :bar,
-                  locations: [
-                    %{
-                      line: _
-                    }
-                  ],
-                  message:
-                    "Field Import Cycle Error\n\nField Import in object `bar' `import_fields([foo: []]) forms a cycle via: ([:bar, :foo, :bar])",
-                  path: [],
-                  phase: Absinthe.Phase.Schema.Validation.NoCircularFieldImports
-                },
-                %Absinthe.Phase.Error{
                   extra: :foo,
                   locations: [
                     %{
@@ -179,6 +167,18 @@ defmodule Absinthe.Schema.Notation.ImportTest do
                   ],
                   message:
                     "Field Import Cycle Error\n\nField Import in object `foo' `import_fields([bar: []]) forms a cycle via: ([:foo, :bar, :foo])",
+                  path: [],
+                  phase: Absinthe.Phase.Schema.Validation.NoCircularFieldImports
+                },
+                %Absinthe.Phase.Error{
+                  extra: :bar,
+                  locations: [
+                    %{
+                      line: _
+                    }
+                  ],
+                  message:
+                    "Field Import Cycle Error\n\nField Import in object `bar' `import_fields([foo: []]) forms a cycle via: ([:bar, :foo, :bar])",
                   path: [],
                   phase: Absinthe.Phase.Schema.Validation.NoCircularFieldImports
                 }

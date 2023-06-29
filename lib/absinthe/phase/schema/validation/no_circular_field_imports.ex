@@ -11,40 +11,24 @@ defmodule Absinthe.Phase.Schema.Validation.NoCircularFieldImports do
   end
 
   def validate_schema(%Schema.SchemaDefinition{type_definitions: types} = schema) do
-    {:halt, %{schema | type_definitions: sort_and_validate_types(types)}}
+    {:halt, %{schema | type_definitions: validate_cycles(types)}}
   end
 
   def validate_schema(node), do: node
 
-  def sort_and_validate_types(types) do
+  def validate_cycles(types) do
     graph = :digraph.new([:cyclic])
 
     try do
       _ = build_import_graph(types, graph)
 
-      {types, cycles?} =
-        Enum.reduce(types, {%{}, false}, fn type, {types, cycles?} ->
-          if cycle = :digraph.get_cycle(graph, type.identifier) do
-            type = type |> put_error(error(type, cycle))
-            {Map.put(types, type.identifier, type), true}
-          else
-            {Map.put(types, type.identifier, type), cycles?}
-          end
-        end)
-
-      if cycles? do
-        Map.values(types)
-      else
-        graph
-        |> :digraph_utils.topsort()
-        |> Enum.reverse()
-        |> Enum.flat_map(fn identifier ->
-          case Map.fetch(types, identifier) do
-            {:ok, type} -> [type]
-            _ -> []
-          end
-        end)
-      end
+      Enum.map(types, fn type ->
+        if cycle = :digraph.get_cycle(graph, type.identifier) do
+          type |> put_error(error(type, cycle))
+        else
+          type
+        end
+      end)
     after
       :digraph.delete(graph)
     end

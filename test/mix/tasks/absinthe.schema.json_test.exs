@@ -95,12 +95,7 @@ defmodule Mix.Tasks.Absinthe.Schema.JsonTest do
       assert ugly_content == "test-encoder-ugly"
     end
 
-    if Version.compare(System.version(), "1.11.0") == :lt do
-      setup :tmp_dir_fallback
-    else
-      @tag :tmp_dir
-    end
-
+    @tag :tmp_dir
     test "generates a JSON file", %{tmp_dir: tmp_dir} do
       path = Path.join(tmp_dir, "schema.json")
 
@@ -110,12 +105,7 @@ defmodule Mix.Tasks.Absinthe.Schema.JsonTest do
       assert File.exists?(path)
     end
 
-    if Version.compare(System.version(), "1.11.0") == :lt do
-      setup :tmp_dir_fallback
-    else
-      @tag :tmp_dir
-    end
-
+    @tag :tmp_dir
     test "generates a JSON file for a persistent term schema provider", %{tmp_dir: tmp_dir} do
       path = Path.join(tmp_dir, "schema.json")
 
