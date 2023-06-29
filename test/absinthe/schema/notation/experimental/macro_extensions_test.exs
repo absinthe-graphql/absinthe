@@ -166,7 +166,7 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
                name: "width",
                type: :integer
              }
-           ] = Map.values(object.fields)
+           ] = Map.values(object.fields) |> Enum.sort_by(& &1.name)
 
     assert [:valued_entity] = object.interfaces
   end
@@ -199,7 +199,7 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
                name: "width",
                type: :integer
              }
-           ] = Map.values(object.fields)
+           ] = Map.values(object.fields) |> Enum.sort_by(& &1.name)
   end
 
   test "can extend input objects" do
@@ -214,7 +214,7 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
                name: "y",
                type: :float
              }
-           ] = Map.values(object.fields)
+           ] = Map.values(object.fields) |> Enum.sort_by(& &1.name)
   end
 
   test "can extend interfaces" do
@@ -237,7 +237,7 @@ defmodule Absinthe.Schema.Notation.Experimental.MacroExtensionsTest do
                name: "value",
                type: :integer
              }
-           ] = Map.values(object.fields)
+           ] = Map.values(object.fields) |> Enum.sort_by(& &1.name)
 
     assert [:valued_entity] = object.interfaces
   end
