@@ -33,7 +33,8 @@ defmodule Absinthe.Mixfile do
         plt_add_deps: :apps_direct,
         plt_file: {:no_warn, "priv/plts/project.plt"},
         plt_add_apps: [:mix, :dataloader, :decimal, :ex_unit]
-      ]
+      ],
+      prune_code_paths: prune_code_paths(Mix.env())
     ]
   end
 
@@ -84,6 +85,9 @@ defmodule Absinthe.Mixfile do
       {:makeup_graphql, "~> 0.1.0", only: :dev}
     ]
   end
+
+  defp prune_code_paths(:test), do: false
+  defp prune_code_paths(_), do: true
 
   #
   # Documentation
