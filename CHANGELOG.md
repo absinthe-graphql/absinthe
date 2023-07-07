@@ -1,6 +1,6 @@
 # Changelog
 
-## (1.7.4) Unreleased
+## 1.7.4
 
 - Bug Fix: [Bugfix: multiple pushes per client for subscriptions that have a context_id](https://github.com/absinthe-graphql/absinthe/pull/1249)
 
