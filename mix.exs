@@ -2,7 +2,7 @@ defmodule Absinthe.Mixfile do
   use Mix.Project
 
   @source_url "https://github.com/absinthe-graphql/absinthe"
-  @version "1.7.4"
+  @version "1.7.5"
 
   def project do
     [
@@ -75,7 +75,7 @@ defmodule Absinthe.Mixfile do
     [
       {:nimble_parsec, "~> 1.2.2 or ~> 1.3.0"},
       {:telemetry, "~> 1.0 or ~> 0.4"},
-      {:dataloader, "~> 1.0.0", optional: true},
+      {:dataloader, "~> 1.0.0 or ~> 2.0", optional: true},
       {:decimal, "~> 1.0 or ~> 2.0", optional: true},
       {:opentelemetry_process_propagator, "~> 0.2.1", optional: true},
       {:ex_doc, "~> 0.22", only: :dev},

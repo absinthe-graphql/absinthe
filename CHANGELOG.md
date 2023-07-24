@@ -2,6 +2,10 @@
 
 ## 1.7.4
 
+- Feature: Support Dataloader 2.0
+
+## 1.7.4
+
 - Bug Fix: [Bugfix: multiple pushes per client for subscriptions that have a context_id](https://github.com/absinthe-graphql/absinthe/pull/1249)
 
 ## 1.7.3
