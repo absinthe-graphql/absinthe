@@ -4,17 +4,17 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
   defmodule Schema do
     use Absinthe.Schema
 
-    defp thing_resolver(_, %{make_null: make_null}, _) do
-      if make_null do
-        {:ok, nil}
-      else
-        {:ok, %{}}
-      end
-    end
+    defp thing_resolver(_, %{make_null: true, make_async: true}, _),
+      do: async(fn -> {:ok, nil} end)
 
-    defp thing_resolver(_, _, _) do
-      {:ok, %{}}
-    end
+    defp thing_resolver(_, %{make_null: false, make_async: true}, _),
+      do: async(fn -> {:ok, %{}} end)
+
+    defp thing_resolver(_, %{make_null: true}, _),
+      do: {:ok, nil}
+
+    defp thing_resolver(_, _, _),
+      do: {:ok, %{}}
 
     defp things_resolver(_, %{make_null: make_null}, _) do
       if make_null do
@@ -31,6 +31,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
     object :thing do
       field :nullable, :thing do
         arg :make_null, :boolean
+        arg :make_async, :boolean
         resolve &thing_resolver/3
       end
 
@@ -42,12 +43,19 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       """
       field :non_null, non_null(:thing) do
         arg :make_null, :boolean
+        arg :make_async, :boolean
         resolve &thing_resolver/3
       end
 
       field :non_null_error_field, non_null(:string) do
         resolve fn _, _ ->
           {:error, "boom"}
+        end
+      end
+
+      field :async_non_null_error_field, non_null(:string) do
+        resolve fn _, _ ->
+          async(fn -> {:error, "boom"} end)
         end
       end
 
@@ -69,6 +77,12 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
         end
       end
 
+      field :async_non_null_error_field, non_null(:string) do
+        resolve fn _, _ ->
+          async(fn -> {:error, "boom"} end)
+        end
+      end
+
       field :nullable_list_of_nullable, list_of(:thing) do
         resolve &things_resolver/3
       end
@@ -80,6 +94,24 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       field :non_null_list_of_non_null, non_null(list_of(non_null(:thing))) do
         arg :make_null, :boolean
         resolve &things_resolver/3
+      end
+
+      field :async_nullable_list_of_nullable, list_of(:thing) do
+        resolve fn _, _ ->
+          async(fn -> {:ok, [%{}]} end)
+        end
+      end
+
+      field :async_nullable_list_of_non_null, list_of(non_null(:thing)) do
+        resolve fn _, _ ->
+          async(fn -> {:ok, [%{}]} end)
+        end
+      end
+
+      field :async_non_null_list_of_non_null, non_null(list_of(non_null(:thing))) do
+        resolve fn _, _ ->
+          async(fn -> {:ok, [%{}]} end)
+        end
       end
 
       @desc """
@@ -95,111 +127,222 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
     end
   end
 
-  test "getting a null value normally works fine" do
-    doc = """
-    {
-      nullable { nullable(makeNull: true) { __typename }}
-    }
-    """
-
-    assert {:ok, %{data: %{"nullable" => %{"nullable" => nil}}}} == Absinthe.run(doc, Schema)
-  end
-
-  test "returning nil from a non null field makes the parent nullable null" do
-    doc = """
-    {
-      nullable { nullable { nonNull(makeNull: true) { __typename }}}
-    }
-    """
-
-    data = %{"nullable" => %{"nullable" => nil}}
-
-    errors = [
-      %{
-        locations: [%{column: 25, line: 2}],
-        message: "Cannot return null for non-nullable field",
-        path: ["nullable", "nullable", "nonNull"]
+  describe "synchronous" do
+    test "getting a null value normally works fine" do
+      doc = """
+      {
+        nullable { nullable(makeNull: true) { __typename }}
       }
-    ]
+      """
 
-    assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
-  end
+      assert {:ok, %{data: %{"nullable" => %{"nullable" => nil}}}} == Absinthe.run(doc, Schema)
+    end
 
-  test "returning nil from a non null child of non nulls pushes nil all the way up to data" do
-    doc = """
-    {
-      nonNull { nonNull { nonNull(makeNull: true) { __typename }}}
-    }
-    """
-
-    data = nil
-
-    errors = [
-      %{
-        locations: [%{column: 23, line: 2}],
-        message: "Cannot return null for non-nullable field",
-        path: ["nonNull", "nonNull", "nonNull"]
+    test "returning nil from a non null field makes the parent nullable null" do
+      doc = """
+      {
+        nullable { nullable { nonNull(makeNull: true) { __typename }}}
       }
-    ]
+      """
 
-    assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
-  end
+      data = %{"nullable" => %{"nullable" => nil}}
 
-  test "error propagation to root field returns nil on data" do
-    doc = """
-    {
-      nullable { nullable { nonNullErrorField }}
-    }
-    """
+      errors = [
+        %{
+          locations: [%{column: 25, line: 2}],
+          message: "Cannot return null for non-nullable field",
+          path: ["nullable", "nullable", "nonNull"]
+        }
+      ]
 
-    data = %{"nullable" => %{"nullable" => nil}}
+      assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
+    end
 
-    errors = [
-      %{
-        locations: [%{column: 25, line: 2}],
-        message: "boom",
-        path: ["nullable", "nullable", "nonNullErrorField"]
+    test "returning nil from a non null child of non nulls pushes nil all the way up to data" do
+      doc = """
+      {
+        nonNull { nonNull { nonNull(makeNull: true) { __typename }}}
       }
-    ]
+      """
 
-    assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
-  end
+      data = nil
 
-  test "returning an error from a non null field makes the parent nullable null" do
-    doc = """
-    {
-      nonNull { nonNull { nonNullErrorField }}
-    }
-    """
+      errors = [
+        %{
+          locations: [%{column: 23, line: 2}],
+          message: "Cannot return null for non-nullable field",
+          path: ["nonNull", "nonNull", "nonNull"]
+        }
+      ]
 
-    result = Absinthe.run(doc, Schema)
+      assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
+    end
 
-    errors = [
-      %{
-        locations: [%{column: 23, line: 2}],
-        message: "boom",
-        path: ["nonNull", "nonNull", "nonNullErrorField"]
+    test "error propagation to root field returns nil on data" do
+      doc = """
+      {
+        nullable { nullable { nonNullErrorField }}
       }
-    ]
+      """
 
-    assert {:ok, %{data: nil, errors: errors}} == result
+      data = %{"nullable" => %{"nullable" => nil}}
+
+      errors = [
+        %{
+          locations: [%{column: 25, line: 2}],
+          message: "boom",
+          path: ["nullable", "nullable", "nonNullErrorField"]
+        }
+      ]
+
+      assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
+    end
+
+    test "returning an error from a non null field makes the parent nullable null" do
+      doc = """
+      {
+        nonNull { nonNull { nonNullErrorField }}
+      }
+      """
+
+      result = Absinthe.run(doc, Schema)
+
+      errors = [
+        %{
+          locations: [%{column: 23, line: 2}],
+          message: "boom",
+          path: ["nonNull", "nonNull", "nonNullErrorField"]
+        }
+      ]
+
+      assert {:ok, %{data: nil, errors: errors}} == result
+    end
+
+    test "returning an error from a non null field makes the parent nullable null at arbitrary depth" do
+      doc = """
+      {
+        nullable { nonNull { nonNull { nonNull { nonNull { nonNullErrorField }}}}}
+      }
+      """
+
+      data = %{"nullable" => nil}
+      path = ["nullable", "nonNull", "nonNull", "nonNull", "nonNull", "nonNullErrorField"]
+
+      errors = [
+        %{locations: [%{column: 54, line: 2}], message: "boom", path: path}
+      ]
+
+      assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
+    end
   end
 
-  test "returning an error from a non null field makes the parent nullable null at arbitrary depth" do
-    doc = """
-    {
-      nullable { nonNull { nonNull { nonNull { nonNull { nonNullErrorField }}}}}
-    }
-    """
+  describe "asynchronous" do
+    test "getting a null value normally works fine" do
+      doc = """
+      {
+        nullable { nullable(makeNull: true, makeAsync: true) { __typename }}
+      }
+      """
 
-    data = %{"nullable" => nil}
-    path = ["nullable", "nonNull", "nonNull", "nonNull", "nonNull", "nonNullErrorField"]
+      assert {:ok, %{data: %{"nullable" => %{"nullable" => nil}}}} == Absinthe.run(doc, Schema)
+    end
 
-    errors = [
-      %{locations: [%{column: 54, line: 2}], message: "boom", path: path}
-    ]
+    test "returning nil from a non null field makes the parent nullable null" do
+      doc = """
+      {
+        nullable { nullable { nonNull(makeNull: true, makeAsync: true) { __typename }}}
+      }
+      """
 
-    assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
+      data = %{"nullable" => %{"nullable" => nil}}
+
+      errors = [
+        %{
+          locations: [%{column: 25, line: 2}],
+          message: "Cannot return null for non-nullable field",
+          path: ["nullable", "nullable", "nonNull"]
+        }
+      ]
+
+      assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
+    end
+
+    test "returning nil from a non null child of non nulls pushes nil all the way up to data" do
+      doc = """
+      {
+        nonNull { nonNull { nonNull(makeNull: true, makeAsync: true) { __typename }}}
+      }
+      """
+
+      data = nil
+
+      errors = [
+        %{
+          locations: [%{column: 23, line: 2}],
+          message: "Cannot return null for non-nullable field",
+          path: ["nonNull", "nonNull", "nonNull"]
+        }
+      ]
+
+      assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
+    end
+
+    test "error propagation to root field returns nil on data" do
+      doc = """
+      {
+        nullable { nullable { asyncNonNullErrorField }}
+      }
+      """
+
+      data = %{"nullable" => %{"nullable" => nil}}
+
+      errors = [
+        %{
+          locations: [%{column: 25, line: 2}],
+          message: "boom",
+          path: ["nullable", "nullable", "asyncNonNullErrorField"]
+        }
+      ]
+
+      assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
+    end
+
+    test "returning an error from a non null field makes the parent nullable null" do
+      doc = """
+      {
+        nonNull { nonNull { asyncNonNullErrorField }}
+      }
+      """
+
+      result = Absinthe.run(doc, Schema)
+
+      errors = [
+        %{
+          locations: [%{column: 23, line: 2}],
+          message: "boom",
+          path: ["nonNull", "nonNull", "asyncNonNullErrorField"]
+        }
+      ]
+
+      assert {:ok, %{data: nil, errors: errors}} == result
+    end
+
+    test "returning an error from a non null field makes the parent nullable null at arbitrary depth" do
+      doc = """
+      {
+        nullable { nonNull { nonNull { nonNull { nonNull { asyncNonNullErrorField }}}}}
+      }
+      """
+
+      data = %{"nullable" => nil}
+      path = ["nullable", "nonNull", "nonNull", "nonNull", "nonNull", "asyncNonNullErrorField"]
+
+      errors = [
+        %{locations: [%{column: 54, line: 2}], message: "boom", path: path}
+      ]
+
+      assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
+    end
   end
 
   describe "lists" do
@@ -318,6 +461,68 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
           locations: [%{column: 11, line: 6}],
           message: "Cannot return null for non-nullable field",
           path: path
+        }
+      ]
+
+      assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
+    end
+  end
+
+  describe "async lists" do
+    test "list of nullable things works when child has a null violation" do
+      doc = """
+      {
+        asyncNullableListOfNullable { nonNull(makeNull: true) { __typename } }
+      }
+      """
+
+      data = %{"asyncNullableListOfNullable" => [nil]}
+
+      errors = [
+        %{
+          locations: [%{column: 33, line: 2}],
+          message: "Cannot return null for non-nullable field",
+          path: ["asyncNullableListOfNullable", 0, "nonNull"]
+        }
+      ]
+
+      assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
+    end
+
+    test "list of non null things works when child has a null violation" do
+      doc = """
+      {
+        asyncNullableListOfNonNull { nonNull(makeNull: true) { __typename } }
+      }
+      """
+
+      data = %{"asyncNullableListOfNonNull" => nil}
+
+      errors = [
+        %{
+          locations: [%{column: 32, line: 2}],
+          message: "Cannot return null for non-nullable field",
+          path: ["asyncNullableListOfNonNull", 0, "nonNull"]
+        }
+      ]
+
+      assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
+    end
+
+    test "list of non null things works when child has a null violation and the root field is non null" do
+      doc = """
+      {
+        asyncNonNullListOfNonNull { nonNull(makeNull: true) { __typename } }
+      }
+      """
+
+      data = nil
+
+      errors = [
+        %{
+          locations: [%{column: 31, line: 2}],
+          message: "Cannot return null for non-nullable field",
+          path: ["asyncNonNullListOfNonNull", 0, "nonNull"]
         }
       ]
 
