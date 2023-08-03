@@ -18,6 +18,14 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
 
     defp things_resolver(_, %{make_null: make_null}, _) do
       if make_null do
+        {:ok, nil}
+      else
+        {:ok, [%{}]}
+      end
+    end
+
+    defp things_resolver(_, %{make_child_null: make_child_null}, _) do
+      if make_child_null do
         {:ok, [nil]}
       else
         {:ok, [%{}]}
@@ -53,6 +61,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
 
       field :non_null_list_of_non_null, non_null(list_of(non_null(:thing))) do
         arg :make_null, :boolean
+        arg :make_child_null, :boolean
         resolve &things_resolver/3
       end
     end
@@ -79,6 +88,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
 
       field :non_null_list_of_non_null, non_null(list_of(non_null(:thing))) do
         arg :make_null, :boolean
+        arg :make_child_null, :boolean
         resolve &things_resolver/3
       end
 
@@ -263,10 +273,30 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
     end
 
-    test "list of non null things works when child is null" do
+    test "list of non null things works when root is null" do
       doc = """
       {
         nonNullListOfNonNull(makeNull: true) { __typename }
+      }
+      """
+
+      data = nil
+
+      errors = [
+        %{
+          locations: [%{column: 3, line: 2}],
+          message: "Cannot return null for non-nullable field",
+          path: ["nonNullListOfNonNull"]
+        }
+      ]
+
+      assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
+    end
+
+    test "list of non null things works when child is null" do
+      doc = """
+      {
+        nonNullListOfNonNull(makeChildNull: true) { __typename }
       }
       """
 
@@ -290,7 +320,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
           nonNullListOfNonNull {
             nonNullListOfNonNull {
               nonNullListOfNonNull {
-                nonNullListOfNonNull(makeNull: true) { __typename }
+                nonNullListOfNonNull(makeChildNull: true) { __typename }
               }
             }
           }
