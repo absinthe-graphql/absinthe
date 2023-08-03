@@ -285,7 +285,8 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     |> propagate_null_trimming
   end
 
-  defp maybe_add_non_null_error([], values, %Type.NonNull{of_type: %Type.List{}}) when is_list(values) do
+  defp maybe_add_non_null_error([], values, %Type.NonNull{of_type: %Type.List{}})
+       when is_list(values) do
     values
     |> Enum.with_index()
     |> Enum.filter(&is_nil(elem(&1, 0)))
