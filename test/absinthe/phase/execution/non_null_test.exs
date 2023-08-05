@@ -24,6 +24,14 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       end
     end
 
+    defp things_resolver(_, %{return_null: return_null}, _) do
+      if return_null do
+        {:ok, nil}
+      else
+        {:ok, [%{}]}
+      end
+    end
+
     defp things_resolver(_, _, _) do
       {:ok, [%{}]}
     end
@@ -78,6 +86,12 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       end
 
       field :non_null_list_of_non_null, non_null(list_of(non_null(:thing))) do
+        arg :return_null_element, :boolean
+        resolve &things_resolver/3
+      end
+
+      field :non_null_list_of_nullable, non_null(list_of(:thing)) do
+        arg :return_null, :boolean
         arg :return_null_element, :boolean
         resolve &things_resolver/3
       end
@@ -257,6 +271,26 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
           locations: [%{column: 26, line: 2}],
           message: "Cannot return null for non-nullable field",
           path: ["nonNullListOfNonNull", 0, "nonNull"]
+        }
+      ]
+
+      assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
+    end
+
+    test "non null list of non null returns an error when null" do
+      doc = """
+      {
+        nonNullListOfNullable(returnNull: true) { __typename }
+      }
+      """
+
+      data = nil
+
+      errors = [
+        %{
+          locations: [%{column: 3, line: 2}],
+          message: "Cannot return null for non-nullable field",
+          path: ["nonNullListOfNullable"]
         }
       ]
 
