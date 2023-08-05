@@ -105,7 +105,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
     assert {:ok, %{data: %{"nullable" => %{"nullable" => nil}}}} == Absinthe.run(doc, Schema)
   end
 
-  test "returning nil from a non null field makes the parent nullable null" do
+  test "returning nil from a non null field returns an error and makes the parent nullable null" do
     doc = """
     {
       nullable { nullable { nonNull(returnNull: true) { __typename }}}
@@ -125,7 +125,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
     assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
   end
 
-  test "returning nil from a non null child of non nulls pushes nil all the way up to data" do
+  test "returning nil from a non null child of non nulls returns an error and pushes nil all the way up to data" do
     doc = """
     {
       nonNull { nonNull { nonNull(returnNull: true) { __typename }}}
@@ -145,7 +145,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
     assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
   end
 
-  test "error propagation to root field returns nil on data" do
+  test "returning an error from a non null field makes the parent nullable null" do
     doc = """
     {
       nullable { nullable { nonNullErrorField }}
@@ -165,7 +165,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
     assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
   end
 
-  test "returning an error from a non null field makes the parent nullable null" do
+  test "error propagation to root field returns nil on data" do
     doc = """
     {
       nonNull { nonNull { nonNullErrorField }}
@@ -203,7 +203,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
   end
 
   describe "lists" do
-    test "list of nullable things works when child has a null violation" do
+    test "list of nullable things returns an error when child has a null violation" do
       doc = """
       {
         nullableListOfNullable { nonNull(returnNull: true) { __typename } }
@@ -263,7 +263,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
     end
 
-    test "list of non null things works when child is null" do
+    test "list of non null things returns an error when child is null" do
       doc = """
       {
         nonNullListOfNonNull(returnNullElement: true) { __typename }
