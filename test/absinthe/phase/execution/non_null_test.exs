@@ -86,8 +86,12 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
         resolve &things_resolver/3
       end
 
-      field :non_null_list_of_non_null, non_null(list_of(non_null(:thing))) do
+      field :non_null_list_of_nullable, non_null(list_of(:thing)) do
         arg :make_null, :boolean
+        resolve &things_resolver/3
+      end
+
+      field :non_null_list_of_non_null, non_null(list_of(non_null(:thing))) do
         arg :make_child_null, :boolean
         resolve &things_resolver/3
       end
@@ -273,10 +277,10 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
     end
 
-    test "list of non null things works when root is null" do
+    test "list of non null works when root is null" do
       doc = """
       {
-        nonNullListOfNonNull(makeNull: true) { __typename }
+        nonNullListOfNullable(makeNull: true) { __typename }
       }
       """
 
@@ -286,7 +290,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
         %{
           locations: [%{column: 3, line: 2}],
           message: "Cannot return null for non-nullable field",
-          path: ["nonNullListOfNonNull"]
+          path: ["nonNullListOfNullable"]
         }
       ]
 
