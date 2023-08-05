@@ -24,8 +24,8 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       end
     end
 
-    defp things_resolver(_, %{make_child_null: make_child_null}, _) do
-      if make_child_null do
+    defp things_resolver(_, %{make_element_null: make_element_null}, _) do
+      if make_element_null do
         {:ok, [nil]}
       else
         {:ok, [%{}]}
@@ -61,7 +61,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
 
       field :non_null_list_of_non_null, non_null(list_of(non_null(:thing))) do
         arg :make_null, :boolean
-        arg :make_child_null, :boolean
+        arg :make_element_null, :boolean
         resolve &things_resolver/3
       end
     end
@@ -86,13 +86,14 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
         resolve &things_resolver/3
       end
 
-      field :non_null_list_of_nullable, non_null(list_of(:thing)) do
+      field :non_null_list_of_non_null, non_null(list_of(non_null(:thing))) do
         arg :make_null, :boolean
         resolve &things_resolver/3
       end
 
-      field :non_null_list_of_non_null, non_null(list_of(non_null(:thing))) do
-        arg :make_child_null, :boolean
+      field :non_null_list_of_nullable, non_null(list_of(:thing)) do
+        arg :make_null, :boolean
+        arg :make_element_null, :boolean
         resolve &things_resolver/3
       end
 
@@ -139,7 +140,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
     assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
   end
 
-  test "returning nil from a non null child of non nulls pushes nil all the way up to data" do
+  test "returning nil from a non null child of non nulls pushes nil all the way up to data"" do
     doc = """
     {
       nonNull { nonNull { nonNull(makeNull: true) { __typename }}}
@@ -300,7 +301,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
     test "list of non null things works when child is null" do
       doc = """
       {
-        nonNullListOfNonNull(makeChildNull: true) { __typename }
+        nonNullListOfNonNull(makeNull: true) { __typename }
       }
       """
 
@@ -324,7 +325,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
           nonNullListOfNonNull {
             nonNullListOfNonNull {
               nonNullListOfNonNull {
-                nonNullListOfNonNull(makeChildNull: true) { __typename }
+                nonNullListOfNonNull(makeNull: true) { __typename }
               }
             }
           }
