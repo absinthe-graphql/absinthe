@@ -285,17 +285,27 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     |> propagate_null_trimming
   end
 
-  defp maybe_add_non_null_error([], values, %Type.NonNull{of_type: %Type.List{}}) do
+  defp maybe_add_non_null_error([], nil, %Type.NonNull{}) do
+    ["Cannot return null for non-nullable field"]
+  end
+
+  # Unwrap the non null so we can check again for the possible case of a non null
+  # inside of a list. We want that clause to handle both
+  # - `non_null(list_of(non_null(:thing)))`
+  # - `list_of(non_null(:thing))`
+  # Thus the single layer of unwrapping here.
+  defp maybe_add_non_null_error([], values, %Type.NonNull{of_type: type}) do
+    maybe_add_non_null_error([], values, type)
+  end
+
+  defp maybe_add_non_null_error([], values, %Type.List{of_type: %Type.NonNull{}})
+       when is_list(values) do
     values
     |> Enum.with_index()
     |> Enum.filter(&is_nil(elem(&1, 0)))
     |> Enum.map(fn {_value, index} ->
       %{message: "Cannot return null for non-nullable field", path: [index]}
     end)
-  end
-
-  defp maybe_add_non_null_error([], nil, %Type.NonNull{}) do
-    ["Cannot return null for non-nullable field"]
   end
 
   defp maybe_add_non_null_error(errors, _, _) do
