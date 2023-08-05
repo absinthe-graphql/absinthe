@@ -4,8 +4,8 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
   defmodule Schema do
     use Absinthe.Schema
 
-    defp thing_resolver(_, %{make_null: make_null}, _) do
-      if make_null do
+    defp thing_resolver(_, %{return_null: return_null}, _) do
+      if return_null do
         {:ok, nil}
       else
         {:ok, %{}}
@@ -16,16 +16,8 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       {:ok, %{}}
     end
 
-    defp things_resolver(_, %{make_null: make_null}, _) do
-      if make_null do
-        {:ok, nil}
-      else
-        {:ok, [%{}]}
-      end
-    end
-
-    defp things_resolver(_, %{make_element_null: make_element_null}, _) do
-      if make_element_null do
+    defp things_resolver(_, %{return_null_element: return_null_element}, _) do
+      if return_null_element do
         {:ok, [nil]}
       else
         {:ok, [%{}]}
@@ -38,7 +30,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
 
     object :thing do
       field :nullable, :thing do
-        arg :make_null, :boolean
+        arg :return_null, :boolean
         resolve &thing_resolver/3
       end
 
@@ -49,7 +41,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       testing the null handling behaviour.
       """
       field :non_null, non_null(:thing) do
-        arg :make_null, :boolean
+        arg :return_null, :boolean
         resolve &thing_resolver/3
       end
 
@@ -60,15 +52,14 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       end
 
       field :non_null_list_of_non_null, non_null(list_of(non_null(:thing))) do
-        arg :make_null, :boolean
-        arg :make_element_null, :boolean
+        arg :return_null_element, :boolean
         resolve &things_resolver/3
       end
     end
 
     query do
       field :nullable, :thing do
-        arg :make_null, :boolean
+        arg :return_null, :boolean
         resolve &thing_resolver/3
       end
 
@@ -87,13 +78,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       end
 
       field :non_null_list_of_non_null, non_null(list_of(non_null(:thing))) do
-        arg :make_null, :boolean
-        resolve &things_resolver/3
-      end
-
-      field :non_null_list_of_nullable, non_null(list_of(:thing)) do
-        arg :make_null, :boolean
-        arg :make_element_null, :boolean
+        arg :return_null_element, :boolean
         resolve &things_resolver/3
       end
 
@@ -104,7 +89,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       testing the null handling behaviour.
       """
       field :non_null, non_null(:thing) do
-        arg :make_null, :boolean
+        arg :return_null, :boolean
         resolve &thing_resolver/3
       end
     end
@@ -113,7 +98,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
   test "getting a null value normally works fine" do
     doc = """
     {
-      nullable { nullable(makeNull: true) { __typename }}
+      nullable { nullable(returnNull: true) { __typename }}
     }
     """
 
@@ -123,7 +108,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
   test "returning nil from a non null field makes the parent nullable null" do
     doc = """
     {
-      nullable { nullable { nonNull(makeNull: true) { __typename }}}
+      nullable { nullable { nonNull(returnNull: true) { __typename }}}
     }
     """
 
@@ -143,7 +128,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
   test "returning nil from a non null child of non nulls pushes nil all the way up to data" do
     doc = """
     {
-      nonNull { nonNull { nonNull(makeNull: true) { __typename }}}
+      nonNull { nonNull { nonNull(returnNull: true) { __typename }}}
     }
     """
 
@@ -221,7 +206,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
     test "list of nullable things works when child has a null violation" do
       doc = """
       {
-        nullableListOfNullable { nonNull(makeNull: true) { __typename } }
+        nullableListOfNullable { nonNull(returnNull: true) { __typename } }
       }
       """
 
@@ -238,10 +223,10 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
     end
 
-    test "list of non null things works when child has a null violation" do
+    test "list of non null things returns an error when child has a null violation" do
       doc = """
       {
-        nullableListOfNonNull { nonNull(makeNull: true) { __typename } }
+        nullableListOfNonNull { nonNull(returnNull: true) { __typename } }
       }
       """
 
@@ -258,10 +243,10 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
     end
 
-    test "list of non null things works when child has a null violation and the root field is non null" do
+    test "list of non null things returns an error when child has a null violation and the root field is non null" do
       doc = """
       {
-        nonNullListOfNonNull { nonNull(makeNull: true) { __typename } }
+        nonNullListOfNonNull { nonNull(returnNull: true) { __typename } }
       }
       """
 
@@ -278,30 +263,10 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
     end
 
-    test "list of non null works when root is null" do
-      doc = """
-      {
-        nonNullListOfNullable(makeNull: true) { __typename }
-      }
-      """
-
-      data = nil
-
-      errors = [
-        %{
-          locations: [%{column: 3, line: 2}],
-          message: "Cannot return null for non-nullable field",
-          path: ["nonNullListOfNullable"]
-        }
-      ]
-
-      assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
-    end
-
     test "list of non null things works when child is null" do
       doc = """
       {
-        nonNullListOfNonNull(makeNull: true) { __typename }
+        nonNullListOfNonNull(returnNullElement: true) { __typename }
       }
       """
 
@@ -325,7 +290,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
           nonNullListOfNonNull {
             nonNullListOfNonNull {
               nonNullListOfNonNull {
-                nonNullListOfNonNull(makeNull: true) { __typename }
+                nonNullListOfNonNull(returnNullElement: true) { __typename }
               }
             }
           }
