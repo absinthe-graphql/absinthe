@@ -140,7 +140,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
     assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
   end
 
-  test "returning nil from a non null child of non nulls pushes nil all the way up to data"" do
+  test "returning nil from a non null child of non nulls pushes nil all the way up to data" do
     doc = """
     {
       nonNull { nonNull { nonNull(makeNull: true) { __typename }}}
