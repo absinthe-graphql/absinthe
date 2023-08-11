@@ -80,7 +80,9 @@ defmodule Absinthe.Blueprint.Schema.UnionTypeDefinition do
         description: arg_def.description,
         type: Blueprint.TypeReference.to_type(arg_def.type, schema),
         default_value: arg_def.default_value,
-        deprecation: arg_def.deprecation
+        deprecation: arg_def.deprecation,
+        __reference__: arg_def.__reference__,
+        __private__: arg_def.__private__
       }
 
       {arg_def.identifier, arg}
