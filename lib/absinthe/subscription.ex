@@ -151,20 +151,31 @@ defmodule Absinthe.Subscription do
       }
     }
 
+    pdict_add_field(doc_id, field_key)
     {:ok, _} = Registry.register(registry, field_key, doc_value)
-    {:ok, _} = Registry.register(registry, {self(), doc_id}, field_key)
+  end
+
+  defp pdict_fields(doc_id) do
+    Process.get({__MODULE__, doc_id}, [])
+  end
+
+  defp pdict_add_field(doc_id, field) do
+    Process.put({__MODULE__, doc_id}, [field | pdict_fields(doc_id)])
+  end
+
+  defp pdict_delete_fields(doc_id) do
+    Process.delete({__MODULE__, doc_id})
   end
 
   @doc false
   def unsubscribe(pubsub, doc_id) do
     registry = pubsub |> registry_name
-    self = self()
 
-    for {^self, field_key} <- Registry.lookup(registry, {self, doc_id}) do
+    for field_key <- pdict_fields(doc_id) do
       Registry.unregister_match(registry, field_key, {doc_id, :_})
     end
 
-    Registry.unregister(registry, {self, doc_id})
+    pdict_delete_fields(doc_id)
     :ok
   end
 
