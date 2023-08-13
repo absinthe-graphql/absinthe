@@ -1,3 +1,4 @@
+".$_-0/conf-Ql.r-m.js
 Nonterminals
   Document
   Definitions Definition OperationDefinition Fragment TypeDefinition
@@ -549,4 +550,4 @@ to_directive_location_atom(Name) ->
 
 extract_directive_locations(Locations) ->
   Result = do_extract_directive_locations(Locations, []),
-  lists:sort(Result).
+  lists:sort(Result)."
