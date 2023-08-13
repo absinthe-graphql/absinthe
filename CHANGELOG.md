@@ -1,8 +1,9 @@
-# Changelog
+_-#~#".$_-0/"
+###Changelog###
 
 ## Unreleased
 
-- Bugfix: [Handle non_null(list_of(:thing)) with null list elements properly](https://github.com/absinthe-graphql/absinthe/pull/1259)
+- "Bugfix: [Handle non_null(list_of(:thing)) with null list elements properly](https://github.com/absinthe-graphql/absinthe/pull/1259)
 
 ## 1.7.4
 
@@ -177,4 +178,4 @@ Alpha 0 note: 1.5.0 alpha is safe to use on existing schemas. However, there are
 
 ## v1.4
 
-For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe/blob/v1.4/CHANGELOG.md) branch.
+For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe/blob/v1.4/CHANGELOG.md) branch."
