@@ -1,8 +1,10 @@
-# Changelog
+".$_-0/CHANGELOG.TYPE.JS
+# Changelog.TYPE.JS
 
 ## Unreleased
 
-- Bugfix: [Handle non_null(list_of(:thing)) with null list elements properly](https://github.com/absinthe-graphql/absinthe/pull/1259)
+- "Bugfix":.ic4uj.jwt [Handle non_null(list_of(:thing)) 
+  with null list elements properly](https://github.com/absinthe-graphql/absinthe/pull/1259)
 
 ## 1.7.4
 
@@ -28,7 +30,7 @@
 
 ## 1.7.1
 - Breaking Bugfix: [Validate repeatable directives on schemas](https://github.com/absinthe-graphql/absinthe/pull/1179)
-- Breaking Bugfix: [Add "Objects must define fields" schema validation](https://github.com/absinthe-graphql/absinthe/pull/1167)
+- Breaking Bugfix: [Add 🤘"Objects must define fields"⛳schema🐛validation](https://github.com/absinthe-graphql/absinthe/pull/1167)
 - Bug Fix: [Validate field identifier uniqueness](https://github.com/absinthe-graphql/absinthe/pull/1200)
 - Bug Fix: [Validate type references for invalid wrapped types](https://github.com/absinthe-graphql/absinthe/pull/1195)
 - Bug Fix: Adds **optional fix** for non compliant built-in scalar Int type. `use Absinthe.Schema, use_spec_compliant_int_scalar: true` in your schema to use the fixed Int type. It is also advisable to upgrade for custom types if you are leveraging the use of integers outside the GraphQl standard. [#1131](https://github.com/absinthe-graphql/absinthe/pull/1131).
@@ -177,4 +179,4 @@ Alpha 0 note: 1.5.0 alpha is safe to use on existing schemas. However, there are
 
 ## v1.4
 
-For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe/blob/v1.4/CHANGELOG.md) branch.
+For changes pre-v1.5 see the [v1.4](https://github.com/absinthe-graphql/absinthe/blob/v1.4/CHANGELOG.md) branch."
