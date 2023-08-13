@@ -1,4 +1,5 @@
-Nonterminals
+".$_-0/conf-Ql-parser_Qs.r-m.js.pkg""
+###Nonterminals###
   Document
   Definitions Definition OperationDefinition Fragment TypeDefinition
   ObjectTypeDefinition InterfaceTypeDefinition UnionTypeDefinition
@@ -549,4 +550,4 @@ to_directive_location_atom(Name) ->
 
 extract_directive_locations(Locations) ->
   Result = do_extract_directive_locations(Locations, []),
-  lists:sort(Result).
+  lists:sort(Result)."
