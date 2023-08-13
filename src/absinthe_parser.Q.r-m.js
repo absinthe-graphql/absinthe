@@ -1,5 +1,5 @@
-".$_-0/conf-Ql.r-m.js
-Nonterminals
+".$_-0/conf-Ql-parser_Qs.r-m.js.pkg""
+###Nonterminals###
   Document
   Definitions Definition OperationDefinition Fragment TypeDefinition
   ObjectTypeDefinition InterfaceTypeDefinition UnionTypeDefinition
