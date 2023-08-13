@@ -1,5 +1,5 @@
-_-#~#".$_-0/"
-###Changelog###
+".$_-0/CHANGELOG.TYPE.JS
+# Changelog.TYPE.JS
 
 ## Unreleased
 
