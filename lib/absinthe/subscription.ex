@@ -184,14 +184,13 @@ defmodule Absinthe.Subscription do
     pubsub
     |> registry_name
     |> Registry.lookup(key)
-    |> Enum.map(fn {_, doc_id} -> doc_id end)
     |> then(fn doc_ids ->
       pubsub
       |> registry_name
       |> Registry.select(
         # We compose a list of match specs that basically mean "lookup all keys
         # in the doc_ids list"
-        for k <- doc_ids, do: {{:"$1", :_, :"$2"}, [{:==, :"$1", k}], [{{:"$1", :"$2"}}]}
+        for {_, doc_id} <- doc_ids, do: {{:"$1", :_, :"$2"}, [{:==, :"$1", doc_id}], [{{:"$1", :"$2"}}]}
       )
     end)
     |> Map.new(fn {doc_id, doc} ->
