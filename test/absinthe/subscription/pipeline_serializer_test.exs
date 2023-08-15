@@ -16,7 +16,7 @@ defmodule Absinthe.Subscription.PipelineSerializerTest do
     test "packs full-fledged pipeline successfully" do
       pipeline = Pipeline.for_document(Schema, some: :option)
 
-      assert {:packed, [_ | _], %{{:options, 0} => options}} = PipelineSerializer.pack(pipeline)
+      assert {:packed, [_ | _], %{0 => options}} = PipelineSerializer.pack(pipeline)
       assert options[:some] == :option
     end
 
@@ -30,12 +30,35 @@ defmodule Absinthe.Subscription.PipelineSerializerTest do
 
       assert {:packed,
               [
-                {Phase1, {:options, 0}},
+                {Phase1, [:pack | 0]},
                 Phase2,
-                {Phase3, {:options, 1}},
-                {Phase4, {:options, 0}}
+                {Phase3, [:pack | 1]},
+                {Phase4, [:pack | 0]}
               ],
-              %{{:options, 0} => [option1: :value1], {:options, 1} => [option2: :value2]}} =
+              %{0 => [option1: :value1], 1 => [option2: :value2]}} =
+               PipelineSerializer.pack(pipeline)
+    end
+
+    test "packs variables and contexts in options" do
+      pipeline = [
+        {Phase1, [context: %{large: 123}]},
+        Phase2,
+        {Phase3, [context: %{large: 123}, another: 456]},
+        {Phase4, [context: %{large: 123}]}
+      ]
+
+      assert {:packed,
+              [
+                {Phase1, [:pack | 1]},
+                Phase2,
+                {Phase3, [:pack | 2]},
+                {Phase4, [:pack | 1]}
+              ],
+              %{
+                0 => %{large: 123},
+                1 => [context: [:pack | 0]],
+                2 => [context: [:pack | 0], another: 456]
+              }} =
                PipelineSerializer.pack(pipeline)
     end
   end
@@ -75,9 +98,12 @@ defmodule Absinthe.Subscription.PipelineSerializerTest do
 
   test "flattens nested pipeline in full pack/unpack cycle" do
     pipeline = [
-      {Phase1, [option1: :value1]},
+      {Phase1, [context: %{large: :foobar}, option1: :value1]},
       Phase2,
-      [{Phase3, [option2: :value2]}, {Phase4, [option1: :value1]}]
+      [
+        {Phase3, [variables: %{some: :thing}, option2: :value2]},
+        {Phase4, [context: %{large: :foobar}, option1: :value1]}
+      ]
     ]
 
     unpacked =
@@ -86,10 +112,10 @@ defmodule Absinthe.Subscription.PipelineSerializerTest do
       |> PipelineSerializer.unpack()
 
     assert unpacked == [
-             {Phase1, [option1: :value1]},
+             {Phase1, [context: %{large: :foobar}, option1: :value1]},
              Phase2,
-             {Phase3, [option2: :value2]},
-             {Phase4, [option1: :value1]}
+             {Phase3, [variables: %{some: :thing}, option2: :value2]},
+             {Phase4, [context: %{large: :foobar}, option1: :value1]}
            ]
   end
 end
