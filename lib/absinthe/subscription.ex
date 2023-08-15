@@ -190,7 +190,8 @@ defmodule Absinthe.Subscription do
       |> Registry.select(
         # We compose a list of match specs that basically mean "lookup all keys
         # in the doc_ids list"
-        for {_, doc_id} <- doc_ids, do: {{:"$1", :_, :"$2"}, [{:==, :"$1", doc_id}], [{{:"$1", :"$2"}}]}
+        for {_, doc_id} <- doc_ids,
+            do: {{:"$1", :_, :"$2"}, [{:==, :"$1", doc_id}], [{{:"$1", :"$2"}}]}
       )
     end)
     |> Map.new(fn {doc_id, doc} ->
