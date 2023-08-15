@@ -43,7 +43,7 @@ defmodule Absinthe.Blueprint do
           source: nil | String.t() | Absinthe.Language.Source.t(),
           execution: Blueprint.Execution.t(),
           result: result_t,
-          initial_phases: [Absinthe.Phase.t()]
+          initial_phases: [Absinthe.Phase.t()] | {module(), atom, list()}
         }
 
   @type result_t :: %{

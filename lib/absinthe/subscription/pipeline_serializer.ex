@@ -18,7 +18,12 @@ defmodule Absinthe.Subscription.PipelineSerializer do
 
   @type packed_pipeline :: {:packed, [packed_phase_config()], options_map()}
 
-  @spec pack(Pipeline.t()) :: packed_pipeline()
+  @spec pack(Pipeline.t() | {module(), atom, list()}) :: packed_pipeline()
+  def pack({module, function, args})
+      when is_atom(module) and is_atom(function) and is_list(args) do
+    {module, function, args}
+  end
+
   def pack(pipeline) do
     {packed_pipeline, reverse_map} =
       pipeline
@@ -39,6 +44,10 @@ defmodule Absinthe.Subscription.PipelineSerializer do
       phase ->
         phase
     end)
+  end
+
+  def unpack({module, function, args}) do
+    apply(module, function, args)
   end
 
   def unpack([_ | _] = pipeline) do
