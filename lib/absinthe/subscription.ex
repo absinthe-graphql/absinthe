@@ -140,7 +140,9 @@ defmodule Absinthe.Subscription do
   defp fetch_fields(_, _), do: []
 
   @doc false
-  def subscribe(pubsub, field_key, doc_id, doc) do
+  def subscribe(pubsub, field_keys, doc_id, doc) do
+    field_keys = List.wrap(field_keys)
+
     registry = pubsub |> registry_name
 
     doc_value = %{
@@ -148,8 +150,12 @@ defmodule Absinthe.Subscription do
       source: doc.source
     }
 
-    pdict_add_field(doc_id, field_key)
-    {:ok, _} = Registry.register(registry, field_key, doc_id)
+    pdict_add_fields(doc_id, field_keys)
+
+    for field_key <- field_keys do
+      {:ok, _} = Registry.register(registry, field_key, doc_id)
+    end
+
     {:ok, _} = Registry.register(registry, doc_id, doc_value)
   end
 
@@ -157,8 +163,8 @@ defmodule Absinthe.Subscription do
     Process.get({__MODULE__, doc_id}, [])
   end
 
-  defp pdict_add_field(doc_id, field) do
-    Process.put({__MODULE__, doc_id}, [field | pdict_fields(doc_id)])
+  defp pdict_add_fields(doc_id, field_keys) do
+    Process.put({__MODULE__, doc_id}, field_keys ++ pdict_fields(doc_id))
   end
 
   defp pdict_delete_fields(doc_id) do
