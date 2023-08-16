@@ -26,7 +26,7 @@ defmodule Absinthe.Type.Argument do
           description: binary | nil,
           definition: module,
           __reference__: Type.Reference.t(),
-          __private__: Keyword.t(),
+          __private__: Keyword.t()
         }
 
   defstruct identifier: nil,
