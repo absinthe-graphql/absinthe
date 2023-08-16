@@ -21,6 +21,8 @@ defmodule Absinthe.Type.Enum.Value do
   * `:deprecation` - Deprecation information for a value, usually
     set-up using the `Absinthe.Schema.Notation.deprecate/1` convenience
     function.
+
+  The `__private__` and `__reference__` fields are for internal use.
   """
   @type t :: %{
           name: binary,
@@ -28,12 +30,14 @@ defmodule Absinthe.Type.Enum.Value do
           value: any,
           enum_identifier: atom,
           deprecation: Type.Deprecation.t() | nil,
-          __reference__: Type.Reference.t()
+          __reference__: Type.Reference.t(),
+          __private__: Keyword.t()
         }
   defstruct name: nil,
             description: nil,
             value: nil,
             deprecation: nil,
             enum_identifier: nil,
-            __reference__: nil
+            __reference__: nil,
+            __private__: []
 end

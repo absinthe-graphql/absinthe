@@ -15,6 +15,8 @@ defmodule Absinthe.Type.Argument do
   * `:deprecation` - Deprecation information for an argument, usually
     set-up using `Absinthe.Schema.Notation.deprecate/1`.
   * `:description` - Description of an argument, useful for introspection.
+
+  The `__private__` and `__reference__` fields are for internal use.
   """
   @type t :: %__MODULE__{
           name: binary,
@@ -23,7 +25,8 @@ defmodule Absinthe.Type.Argument do
           deprecation: Type.Deprecation.t() | nil,
           description: binary | nil,
           definition: module,
-          __reference__: Type.Reference.t()
+          __reference__: Type.Reference.t(),
+          __private__: Keyword.t()
         }
 
   defstruct identifier: nil,
@@ -33,5 +36,6 @@ defmodule Absinthe.Type.Argument do
             deprecation: nil,
             default_value: nil,
             definition: nil,
-            __reference__: nil
+            __reference__: nil,
+            __private__: []
 end
