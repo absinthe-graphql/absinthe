@@ -143,16 +143,14 @@ defmodule Absinthe.Subscription do
   def subscribe(pubsub, field_key, doc_id, doc) do
     registry = pubsub |> registry_name
 
-    doc_value = {
-      doc_id,
-      %{
-        initial_phases: PipelineSerializer.pack(doc.initial_phases),
-        source: doc.source
-      }
+    doc_value = %{
+      initial_phases: PipelineSerializer.pack(doc.initial_phases),
+      source: doc.source
     }
 
     pdict_add_field(doc_id, field_key)
-    {:ok, _} = Registry.register(registry, field_key, doc_value)
+    {:ok, _} = Registry.register(registry, field_key, doc_id)
+    {:ok, _} = Registry.register(registry, doc_id, doc_value)
   end
 
   defp pdict_fields(doc_id) do
@@ -172,8 +170,10 @@ defmodule Absinthe.Subscription do
     registry = pubsub |> registry_name
 
     for field_key <- pdict_fields(doc_id) do
-      Registry.unregister_match(registry, field_key, {doc_id, :_})
+      Registry.unregister(registry, field_key)
     end
+
+    Registry.unregister(registry, doc_id)
 
     pdict_delete_fields(doc_id)
     :ok
@@ -184,7 +184,17 @@ defmodule Absinthe.Subscription do
     pubsub
     |> registry_name
     |> Registry.lookup(key)
-    |> Map.new(fn {_, {doc_id, doc}} ->
+    |> then(fn doc_ids ->
+      pubsub
+      |> registry_name
+      |> Registry.select(
+        # We compose a list of match specs that basically mean "lookup all keys
+        # in the doc_ids list"
+        for {_, doc_id} <- doc_ids,
+            do: {{:"$1", :_, :"$2"}, [{:==, :"$1", doc_id}], [{{:"$1", :"$2"}}]}
+      )
+    end)
+    |> Map.new(fn {doc_id, doc} ->
       doc = Map.update!(doc, :initial_phases, &PipelineSerializer.unpack/1)
 
       {doc_id, doc}
