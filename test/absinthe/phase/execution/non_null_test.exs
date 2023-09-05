@@ -96,6 +96,13 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
         resolve &things_resolver/3
       end
 
+      field :non_null_list_of_non_null_list_of_nullable,
+            non_null(list_of(non_null(list_of(:string)))) do
+        resolve fn _, _ ->
+          {:ok, [["ok", nil]]}
+        end
+      end
+
       @desc """
       A field declared to be non null.
 
@@ -217,6 +224,17 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
   end
 
   describe "lists" do
+    test "a field that is a non-null list of a non-null list of a nullable value will return a null value" do
+      doc = """
+      {
+        nonNullListOfNonNullListOfNullable
+      }
+      """
+
+      assert {:ok, %{data: %{"nonNullListOfNonNullListOfNullable" => [["ok", nil]]}}} ==
+               Absinthe.run(doc, Schema)
+    end
+
     test "list of nullable things returns an error when child has a null violation" do
       doc = """
       {
