@@ -103,6 +103,22 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
         end
       end
 
+      field :deeply_nested_non_nullable_list_of_nullable,
+            non_null(list_of(non_null(list_of(non_null(list_of(non_null(list_of(:string)))))))) do
+        resolve fn _, _ ->
+          {:ok, [[[["ok", nil]]]]}
+        end
+      end
+
+      field :deeply_nested_non_nullable_list_of_non_nullable,
+            non_null(
+              list_of(non_null(list_of(non_null(list_of(non_null(list_of(non_null(:string))))))))
+            ) do
+        resolve fn _, _ ->
+          {:ok, [[[["1", nil, "3"], ["4", nil, "6"]]]]}
+        end
+      end
+
       @desc """
       A field declared to be non null.
 
@@ -224,7 +240,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
   end
 
   describe "lists" do
-    test "a field that is a non-null list of a non-null list of a nullable value will return a null value" do
+    test "non-null list of non-null list of nullable value returns null value" do
       doc = """
       {
         nonNullListOfNonNullListOfNullable
@@ -233,6 +249,40 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
 
       assert {:ok, %{data: %{"nonNullListOfNonNullListOfNullable" => [["ok", nil]]}}} ==
                Absinthe.run(doc, Schema)
+    end
+
+    test "deeply nested nullable value inside non-nullable lists can be null" do
+      doc = """
+      {
+        deeplyNestedNonNullableListOfNullable
+      }
+      """
+
+      assert {:ok, %{data: %{"deeplyNestedNonNullableListOfNullable" => [[[["ok", nil]]]]}}} ==
+               Absinthe.run(doc, Schema)
+    end
+
+    test "deeply nested non-nullable value inside non-nullable lists cannot be null" do
+      doc = """
+      {
+        deeplyNestedNonNullableListOfNonNullable
+      }
+      """
+
+      errors = [
+        %{
+          locations: [%{column: 3, line: 2}],
+          message: "Cannot return null for non-nullable field",
+          path: ["deeplyNestedNonNullableListOfNonNullable", 0, 0, 0, 1]
+        },
+        %{
+          locations: [%{column: 3, line: 2}],
+          message: "Cannot return null for non-nullable field",
+          path: ["deeplyNestedNonNullableListOfNonNullable", 0, 0, 1, 1]
+        }
+      ]
+
+      assert {:ok, %{data: nil, errors: errors}} == Absinthe.run(doc, Schema)
     end
 
     test "list of nullable things returns an error when child has a null violation" do
