@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Last Updated](https://img.shields.io/github/last-commit/absinthe-graphql/absinthe.svg)](https://github.com/absinthe-graphql/absinthe/commits/master)
 
-[GraphQL](https://github.com/graphql-elixir/graphql) implementation for Elixir.
+[GraphQL](https://graphql.org) implementation for Elixir.
 
 Goals:
 
