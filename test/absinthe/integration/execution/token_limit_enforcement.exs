@@ -30,7 +30,7 @@ defmodule Elixir.Absinthe.Integration.Execution.TokenLimitEnforcement do
     """
 
     # token count 33 = 8 braces + 2 parens + 2 brackets + 2 string values + 1 null + 1 float + 1 bool +
-    # 3 colons + 1 ... + 1 on + 0 ignroed comment + 1@ + 1 directive + 9 names
+    # 3 colons + 1 ... + 1 on + 0 ignored comment + 1@ + 1 directive + 9 names
 
     assert {:ok, %{errors: [%{message: "Token limit exceeded"}]}} ==
              Absinthe.run(query, Absinthe.Fixtures.Things.MacroSchema, token_limit: 32)

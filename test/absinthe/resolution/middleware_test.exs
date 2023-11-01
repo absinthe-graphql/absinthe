@@ -150,7 +150,7 @@ defmodule Absinthe.MiddlewareTest do
     assert %{"public" => %{"email" => "secret", "name" => "bob"}} == data
   end
 
-  test "secret object cant be accessed without a current user" do
+  test "secret object can't be accessed without a current user" do
     doc = """
     {returnsPrivateObject { key }}
     """
