@@ -44,7 +44,7 @@ defmodule Absinthe.Subscription do
   @doc """
   Build a child specification for subscriptions.
 
-  In order to use supscriptions in your application, you must add
+  In order to use subscriptions in your application, you must add
   `Absinthe.Subscription` to your supervision tree after your endpoint.
 
   See `guides/subscriptions.md` for more information on how to get up and
