@@ -55,9 +55,7 @@ defmodule Elixir.Absinthe.Integration.Execution.OperationByNameTest do
 
   test "scenario #4" do
     assert {:ok, %{data: %{"thing" => %{"name" => "Bar"}}}} ==
-             Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema,
-               operation_name: "ThingBar"
-             )
+             Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, operation_name: "ThingBar")
   end
 
   @query """

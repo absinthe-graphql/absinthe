@@ -41,23 +41,23 @@ defmodule Absinthe.PipelineTest do
       end
     end
 
-    @goodQuery """
+    @good_query """
     { foo { bar } }
     """
 
-    @badQuery """
+    @bad_query """
     { noFoo { bar } }
     """
     test "well-formed query" do
       {:ok, %{execution: %{validation_errors: validation_errors}}, _} =
-        validation_only_query(@goodQuery)
+        validation_only_query(@good_query)
 
       assert length(validation_errors) == 0
     end
 
     test "ill-formed query" do
       {:ok, %{execution: %{validation_errors: validation_errors}}, _} =
-        validation_only_query(@badQuery)
+        validation_only_query(@bad_query)
 
       refute length(validation_errors) == 0
     end
