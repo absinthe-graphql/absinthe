@@ -1,4 +1,4 @@
-defmodule Elixir.Absinthe.Integration.Execution.InputTypes.Null.LiteralToTypeNonNullListOfNonNull_TElementTest do
+defmodule Elixir.Absinthe.Integration.Execution.InputTypes.Null.LiteralToTypeNonNullListOfNonNullTElementTest do
   use Absinthe.Case, async: true
 
   @query """

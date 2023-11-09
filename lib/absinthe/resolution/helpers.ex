@@ -34,8 +34,8 @@ defmodule Absinthe.Resolution.Helpers do
   end
   ```
   """
-  @spec async((-> term)) :: {:middleware, Middleware.Async, term}
-  @spec async((-> term), opts :: [{:timeout, pos_integer}]) ::
+  @spec async((() -> term)) :: {:middleware, Middleware.Async, term}
+  @spec async((() -> term), opts :: [{:timeout, pos_integer}]) ::
           {:middleware, Middleware.Async, term}
   def async(fun, opts \\ []) do
     {:middleware, Middleware.Async, {fun, opts}}

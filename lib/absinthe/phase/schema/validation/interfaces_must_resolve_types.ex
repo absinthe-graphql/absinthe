@@ -31,7 +31,7 @@ defmodule Absinthe.Phase.Schema.Validation.InterfacesMustResolveTypes do
   defp validate_interface(%Blueprint.Schema.InterfaceTypeDefinition{} = iface, implementors) do
     resolve_type = Absinthe.Type.function(iface, :resolve_type)
 
-    if(resolve_type || all_objects_is_type_of?(iface, implementors)) do
+    if resolve_type || all_objects_is_type_of?(iface, implementors) do
       iface
     else
       iface |> put_error(error(iface))
