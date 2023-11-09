@@ -11,7 +11,7 @@ defmodule Absinthe.Phase.Schema.ApplyTypeExtensions do
     {:ok, blueprint}
   end
 
-  defp process(blueprint = %Blueprint{}) do
+  defp process(%Blueprint{} = blueprint) do
     %{blueprint | schema_definitions: update_schema_defs(blueprint.schema_definitions)}
   end
 

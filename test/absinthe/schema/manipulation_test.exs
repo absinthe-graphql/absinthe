@@ -58,7 +58,7 @@ defmodule Absinthe.Schema.ManipulationTest do
     end
 
     # Here's the blueprint of the schema, let's do whatever we want with it.
-    def run(blueprint = %Blueprint{}, _) do
+    def run(%Blueprint{} = blueprint, _) do
       custom_introspection_types = Blueprint.types_by_name(CustomIntrospectionTypes)
       custom_introspection_fields = custom_introspection_types["CustomIntrospectionHelper"]
 
@@ -90,7 +90,7 @@ defmodule Absinthe.Schema.ManipulationTest do
       Pipeline.insert_after(pipeline, Phase.Schema.TypeImports, __MODULE__)
     end
 
-    def run(blueprint = %Blueprint{}, _) do
+    def run(%Blueprint{} = blueprint, _) do
       %{schema_definitions: [schema]} = blueprint
 
       new_enum = build_dynamic_enum()

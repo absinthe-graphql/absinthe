@@ -15,7 +15,7 @@ defmodule Absinthe.Phase.Schema.ApplyDeclaration do
 
   # Apply schema declaration to each schema definition
   @spec process(blueprint :: Blueprint.t()) :: Blueprint.t()
-  defp process(blueprint = %Blueprint{}) do
+  defp process(%Blueprint{} = blueprint) do
     %{
       blueprint
       | schema_definitions: Enum.map(blueprint.schema_definitions, &process_schema_definition/1)

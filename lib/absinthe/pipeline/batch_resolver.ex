@@ -83,7 +83,7 @@ defmodule Absinthe.Pipeline.BatchResolver do
     end
   end
 
-  defp run_pipeline(bp, phases, _abort_on_error? = true) do
+  defp run_pipeline(bp, phases, true) do
     {:ok, blueprint, _} = Absinthe.Pipeline.run(bp, phases)
     {:ok, blueprint}
   end

@@ -63,7 +63,7 @@ defmodule Mix.Tasks.Absinthe.Schema.SdlTest do
     end
 
     # Here's the blueprint of the schema, let's do whatever we want with it.
-    def run(blueprint = %Blueprint{}, _) do
+    def run(%Blueprint{} = blueprint, _) do
       test_mod_types = Blueprint.types_by_name(TestModField)
       test_mod_fields = test_mod_types["TestModHelper"]
 

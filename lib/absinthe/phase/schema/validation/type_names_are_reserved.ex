@@ -10,11 +10,11 @@ defmodule Absinthe.Phase.Schema.Validation.TypeNamesAreReserved do
     {:ok, bp}
   end
 
-  def allow_reserved(node = %{flags: nil}) do
+  def allow_reserved(%{flags: nil} = node) do
     allow_reserved(%{node | flags: %{}})
   end
 
-  def allow_reserved(node = %{flags: flags}) do
+  def allow_reserved(%{flags: flags} = node) do
     flags =
       flags
       |> Map.put(:reserved_name, true)
@@ -22,11 +22,11 @@ defmodule Absinthe.Phase.Schema.Validation.TypeNamesAreReserved do
     %{node | flags: flags}
   end
 
-  def make_reserved(node = %{name: "__" <> _}) do
+  def make_reserved(%{name: "__" <> _} = node) do
     allow_reserved(node)
   end
 
-  def make_reserved(node = %{name: name, identifier: identifier}) do
+  def make_reserved(%{name: name, identifier: identifier} = node) do
     node = %{
       node
       | name: name |> String.replace_prefix("", "__"),

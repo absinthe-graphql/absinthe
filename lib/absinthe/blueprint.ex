@@ -152,7 +152,7 @@ defmodule Absinthe.Blueprint do
   @doc """
   Append the given field or fields to the given type
   """
-  def extend_fields(blueprint = %Blueprint{}, ext_blueprint = %Blueprint{}) do
+  def extend_fields(%Blueprint{} = blueprint, %Blueprint{} = ext_blueprint) do
     ext_types = types_by_name(ext_blueprint)
 
     schema_defs =
@@ -178,7 +178,7 @@ defmodule Absinthe.Blueprint do
     extend_fields(blueprint, ext_blueprint.__absinthe_blueprint__())
   end
 
-  def add_field(blueprint = %Blueprint{}, type_def_name, new_field) do
+  def add_field(%Blueprint{} = blueprint, type_def_name, new_field) do
     schema_defs =
       for schema_def = %{type_definitions: type_defs} <- blueprint.schema_definitions do
         type_defs =
@@ -203,7 +203,7 @@ defmodule Absinthe.Blueprint do
   @doc """
   Index the types by their name
   """
-  def types_by_name(blueprint = %Blueprint{}) do
+  def types_by_name(%Blueprint{} = blueprint) do
     for %{type_definitions: type_defs} <- blueprint.schema_definitions,
         type_def <- type_defs,
         into: %{} do

@@ -24,7 +24,7 @@ defmodule Absinthe.Phase.Schema.Introspection do
   @doc """
   Append the given field or fields to the given type
   """
-  def attach_introspection_fields(blueprint = %Blueprint{}) do
+  def attach_introspection_fields(%Blueprint{} = blueprint) do
     %{blueprint | schema_definitions: update_schema_defs(blueprint.schema_definitions)}
   end
 
