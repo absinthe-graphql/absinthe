@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.7.6
 
 - Bugfix: [Handle non_null(list_of(:thing)) with null list elements properly](https://github.com/absinthe-graphql/absinthe/pull/1259)
 - Bugfix: [More non null result handling improvements](https://github.com/absinthe-graphql/absinthe/pull/1275)
