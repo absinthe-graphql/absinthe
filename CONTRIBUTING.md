@@ -21,7 +21,7 @@ Make your change. Add tests for your change. Make the tests pass:
 
     mix test
 
-Push to your fork (preferably to a non-`master` branch) and
+Push to your fork (preferably to a non-`main` branch) and
 [submit a pull request][pr].
 
 [pr]: https://github.com/absinthe-graphql/absinthe/compare/
