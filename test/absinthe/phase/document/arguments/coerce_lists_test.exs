@@ -112,7 +112,7 @@ defmodule Absinthe.Phase.Document.Arguments.CoerceListsTest do
     end
   end
 
-  describe "when using a List of a coercable type input argument" do
+  describe "when using a List of a coercible type input argument" do
     test "coerces the type from a single element to List" do
       doc = """
       query List {
