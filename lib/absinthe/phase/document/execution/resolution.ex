@@ -292,7 +292,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp maybe_add_non_null_error([], nil, %Type.NonNull{}, path) do
-    [%{message: "Cannot return null for non-nullable field", path: path}]
+    [%{message: "Cannot return null for non-nullable field", path: Enum.reverse(path)}]
   end
 
   defp maybe_add_non_null_error([], value, %Type.NonNull{of_type: %Type.List{} = type}, path) do
@@ -300,9 +300,10 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp maybe_add_non_null_error([], [_ | _] = values, %Type.List{of_type: type}, path) do
-    Enum.with_index(values)
+    values
+    |> Enum.with_index()
     |> Enum.flat_map(fn {value, index} ->
-      maybe_add_non_null_error([], value, type, path ++ [index])
+      maybe_add_non_null_error([], value, type, [index | path])
     end)
   end
 
