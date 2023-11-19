@@ -58,8 +58,7 @@ defmodule Absinthe.Subscription.PipelineSerializerTest do
                 0 => %{large: 123},
                 1 => [context: [:pack | 0]],
                 2 => [context: [:pack | 0], another: 456]
-              }} =
-               PipelineSerializer.pack(pipeline)
+              }} = PipelineSerializer.pack(pipeline)
     end
   end
 

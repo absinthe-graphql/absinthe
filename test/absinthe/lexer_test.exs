@@ -116,7 +116,7 @@ defmodule Absinthe.LexerTest do
   end
 
   defp too_long_query do
-    Enum.to_list(for n <- 1..10000, do: "test#{n}")
+    Enum.to_list(for n <- 1..10_000, do: "test#{n}")
     |> deep_query()
   end
 
