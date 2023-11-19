@@ -43,4 +43,29 @@ defmodule Elixir.Absinthe.Integration.Execution.InputObjectTest do
                variables: %{"input" => true}
              )
   end
+
+  @query """
+  mutation ($input: String) {
+    updateThing(id: "foo", thing: {value: $input}) {
+      name
+      value
+    }
+  }
+  """
+
+  test "errors if an invalid type is passed to nested arg" do
+    assert {:ok,
+            %{
+              errors: [
+                %{
+                  locations: [%{column: 41, line: 2}],
+                  message:
+                    "Variable `$input` of type `String` found as input to argument of type `Int`."
+                }
+              ]
+            }} ==
+             Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema,
+               variables: %{"input" => 1}
+             )
+  end
 end
