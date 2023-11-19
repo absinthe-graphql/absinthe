@@ -60,6 +60,18 @@ defmodule Absinthe.Phase.Document.Arguments.VariableTypesMatch do
   end
 
   defp check_variable_type(
+         %Absinthe.Blueprint.Input.Field{
+           input_value: %Blueprint.Input.Value{
+             raw: %{content: %Blueprint.Input.Variable{} = variable}
+           }
+         } = node,
+         operation_name,
+         variable_defs
+       ) do
+    compare_variable_with_definition(variable, node, operation_name, variable_defs)
+  end
+
+  defp check_variable_type(
          %Absinthe.Blueprint.Input.Argument{
            input_value: %Blueprint.Input.Value{
              raw: %{content: %Blueprint.Input.Variable{} = variable}
@@ -68,6 +80,14 @@ defmodule Absinthe.Phase.Document.Arguments.VariableTypesMatch do
          operation_name,
          variable_defs
        ) do
+    compare_variable_with_definition(variable, node, operation_name, variable_defs)
+  end
+
+  defp check_variable_type(node, _, _) do
+    node
+  end
+
+  defp compare_variable_with_definition(variable, node, operation_name, variable_defs) do
     location_type = node.input_value.schema_node
     location_definition = node.schema_node
 
@@ -93,10 +113,6 @@ defmodule Absinthe.Phase.Document.Arguments.VariableTypesMatch do
       _ ->
         node
     end
-  end
-
-  defp check_variable_type(node, _, _) do
-    node
   end
 
   def types_compatible?(type, type, _, _) do
