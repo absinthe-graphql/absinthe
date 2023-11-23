@@ -32,7 +32,7 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
   end
 
   @graphql """
-  query ($email: String) {
+  query ($email: String!) {
     contacts(contacts: [{email: $email}, {email: $email}])
   }
   """
@@ -67,7 +67,7 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
   end
 
   @graphql """
-  query ($email: String, $defaultWithString: String) {
+  query ($email: String!, $defaultWithString: String) {
     user(contact: {email: $email, defaultWithString: $defaultWithString})
   }
   """
