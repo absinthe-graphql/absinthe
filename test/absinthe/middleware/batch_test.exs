@@ -125,20 +125,20 @@ defmodule Absinthe.Middleware.BatchTest do
           [:absinthe, :middleware, :batch, :start],
           [:absinthe, :middleware, :batch, :stop]
         ],
-        fn name, measurements, metadata, _ ->
-          send(self(), {:telemetry_event, name, measurements, metadata})
-        end,
+        &Absinthe.TestTelemetryHelper.send_to_pid/4,
         nil
       )
 
     assert {:ok, %{data: data}} = Absinthe.run(doc, Schema)
     assert expected_data == data
 
-    assert_receive {:telemetry_event, [:absinthe, :middleware, :batch, :start], %{system_time: _},
-                    %{id: _, batch_fun: _, batch_opts: _, batch_data: _}}
+    assert_receive {:telemetry_event,
+                    {[:absinthe, :middleware, :batch, :start], %{system_time: _},
+                     %{id: _, batch_fun: _, batch_opts: _, batch_data: _}, _}}
 
-    assert_receive {:telemetry_event, [:absinthe, :middleware, :batch, :stop], %{duration: _},
-                    %{id: _, batch_fun: _, batch_opts: _, batch_data: _, result: _}}
+    assert_receive {:telemetry_event,
+                    {[:absinthe, :middleware, :batch, :stop], %{duration: _},
+                     %{id: _, batch_fun: _, batch_opts: _, batch_data: _, result: _}, _}}
   end
 
   test "propagates the OTel context" do

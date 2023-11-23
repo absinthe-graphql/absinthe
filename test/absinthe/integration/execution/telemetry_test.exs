@@ -10,7 +10,7 @@ defmodule Elixir.Absinthe.Integration.Execution.TelemetryTest do
         [:absinthe, :execute, :operation, :start],
         [:absinthe, :execute, :operation, :stop]
       ],
-      &__MODULE__.handle_event/4,
+      &Absinthe.TestTelemetryHelper.send_to_pid/4,
       %{}
     )
 
@@ -19,10 +19,6 @@ defmodule Elixir.Absinthe.Integration.Execution.TelemetryTest do
     end)
 
     :ok
-  end
-
-  def handle_event(event, measurements, metadata, config) do
-    send(self(), {event, measurements, metadata, config})
   end
 
   defmodule TestSchema do
@@ -60,27 +56,34 @@ defmodule Elixir.Absinthe.Integration.Execution.TelemetryTest do
     assert %{"asyncThing" => "ASYNC", "objectThing" => %{"name" => "Foo"}} == data
 
     # Operation events
-    assert_receive {[:absinthe, :execute, :operation, :start], measurements, %{id: id}, _config}
+    assert_receive {:telemetry_event,
+                    {[:absinthe, :execute, :operation, :start], measurements, %{id: id}, _config}}
+
     assert System.convert_time_unit(measurements[:system_time], :native, :millisecond)
 
-    assert_receive {[:absinthe, :execute, :operation, :stop], measurements, %{id: ^id} = meta,
-                    _config}
+    assert_receive {:telemetry_event,
+                    {[:absinthe, :execute, :operation, :stop], measurements, %{id: ^id} = meta,
+                     _config}}
 
     assert is_number(measurements[:duration])
     assert %Absinthe.Blueprint{} = meta[:blueprint]
     assert meta[:options][:schema] == TestSchema
 
     # Field events
-    assert_receive {[:absinthe, :resolve, :field, :start], measurements, %{id: id}, _}
+    assert_receive {:telemetry_event,
+                    {[:absinthe, :resolve, :field, :start], measurements, %{id: id}, _}}
+
     assert System.convert_time_unit(measurements[:system_time], :native, :millisecond)
 
-    assert_receive {[:absinthe, :resolve, :field, :stop], measurements, %{id: ^id} = meta, _}
+    assert_receive {:telemetry_event,
+                    {[:absinthe, :resolve, :field, :stop], measurements, %{id: ^id} = meta, _}}
+
     assert is_number(measurements[:duration])
     assert %Absinthe.Resolution{} = meta[:resolution]
     assert is_list(meta[:middleware])
 
-    assert_receive {[:absinthe, :resolve, :field, :stop], _, _, _}
+    assert_receive {:telemetry_event, {[:absinthe, :resolve, :field, :stop], _, _, _}}
     # Don't execute for resolvers that don't call a resolver function (ie: default `Map.get`)
-    refute_receive {[:absinthe, :resolve, :field, :stop], _, _, _}
+    refute_receive {:telemetry_event, {[:absinthe, :resolve, :field, :stop], _, _, _}}
   end
 end

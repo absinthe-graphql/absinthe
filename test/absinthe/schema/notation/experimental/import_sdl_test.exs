@@ -589,7 +589,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
           [:absinthe, :execute, :operation, :start],
           [:absinthe, :execute, :operation, :stop]
         ],
-        &__MODULE__.handle_event/4,
+        &Absinthe.TestTelemetryHelper.send_to_pid/4,
         %{}
       )
 
@@ -605,16 +605,20 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportSdlTest do
               %{data: %{"posts" => [%{"upcasedTitle" => "FOO"}, %{"upcasedTitle" => "BAR"}]}}} =
                Absinthe.run(@query, Definition)
 
-      assert_receive {[:absinthe, :execute, :operation, :start], _, %{id: id}, _config}
+      assert_receive {:telemetry_event,
+                      {[:absinthe, :execute, :operation, :start], _, %{id: id}, _config}}
 
-      assert_receive {[:absinthe, :execute, :operation, :stop], _measurements, %{id: ^id},
-                      _config}
+      assert_receive {:telemetry_event,
+                      {[:absinthe, :execute, :operation, :stop], _measurements, %{id: ^id},
+                       _config}}
 
-      assert_receive {[:absinthe, :resolve, :field, :start], _measurements,
-                      %{resolution: %{definition: %{name: "posts"}}}, _config}
+      assert_receive {:telemetry_event,
+                      {[:absinthe, :resolve, :field, :start], _measurements,
+                       %{resolution: %{definition: %{name: "posts"}}}, _config}}
 
-      assert_receive {[:absinthe, :resolve, :field, :stop], _measurements,
-                      %{resolution: %{definition: %{name: "posts"}}}, _config}
+      assert_receive {:telemetry_event,
+                      {[:absinthe, :resolve, :field, :stop], _measurements,
+                       %{resolution: %{definition: %{name: "posts"}}}, _config}}
     end
   end
 end

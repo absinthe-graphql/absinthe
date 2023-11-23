@@ -643,9 +643,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
         [:absinthe, :subscription, :publish, :start],
         [:absinthe, :subscription, :publish, :stop]
       ],
-      fn event, measurements, metadata, config ->
-        send(self(), {event, measurements, metadata, config})
-      end,
+      &Absinthe.TestTelemetryHelper.send_to_pid/4,
       %{}
     )
 
@@ -657,10 +655,13 @@ defmodule Absinthe.Execution.SubscriptionTest do
                context: %{pubsub: PubSub}
              )
 
-    assert_receive {[:absinthe, :execute, :operation, :start], measurements, %{id: id}, _config}
+    assert_receive {:telemetry_event,
+                    {[:absinthe, :execute, :operation, :start], measurements, %{id: id}, _config}}
+
     assert System.convert_time_unit(measurements[:system_time], :native, :millisecond)
 
-    assert_receive {[:absinthe, :execute, :operation, :stop], _, %{id: ^id}, _config}
+    assert_receive {:telemetry_event,
+                    {[:absinthe, :execute, :operation, :stop], _, %{id: ^id}, _config}}
 
     Absinthe.Subscription.publish(PubSub, "foo", thing: client_id)
     assert_receive({:broadcast, msg})
@@ -672,8 +673,11 @@ defmodule Absinthe.Execution.SubscriptionTest do
            } == msg
 
     # Subscription events
-    assert_receive {[:absinthe, :subscription, :publish, :start], _, %{id: id}, _config}
-    assert_receive {[:absinthe, :subscription, :publish, :stop], _, %{id: ^id}, _config}
+    assert_receive {:telemetry_event,
+                    {[:absinthe, :subscription, :publish, :start], _, %{id: id}, _config}}
+
+    assert_receive {:telemetry_event,
+                    {[:absinthe, :subscription, :publish, :stop], _, %{id: ^id}, _config}}
 
     :telemetry.detach(context.test)
   end
