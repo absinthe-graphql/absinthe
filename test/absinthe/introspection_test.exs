@@ -278,6 +278,93 @@ defmodule Absinthe.IntrospectionTest do
       assert !match?({:ok, %{data: %{"__type" => %{"fields" => _}}}}, result)
     end
 
+    test "can include deprecated fields based on an arg" do
+      result =
+        """
+        {
+          __type(name: "ProfileInput") {
+            kind
+            name
+            description
+            inputFields(includeDeprecated: true) {
+              name
+              description
+              type {
+                kind
+                name
+                ofType {
+                  kind
+                  name
+                }
+              }
+              defaultValue
+              isDeprecated
+              deprecationReason
+            }
+          }
+        }
+        """
+        |> run(Absinthe.Fixtures.ContactSchema)
+
+      assert_result(
+        {:ok,
+         %{
+           data: %{
+             "__type" => %{
+               "description" => "The basic details for a person",
+               "inputFields" => [
+                 %{
+                   "defaultValue" => nil,
+                   "description" => nil,
+                   "name" => "address",
+                   "type" => %{
+                     "kind" => "SCALAR",
+                     "name" => "String",
+                     "ofType" => nil
+                   },
+                   "deprecationReason" => "change of privacy policy",
+                   "isDeprecated" => true
+                 },
+                 %{
+                   "defaultValue" => "43",
+                   "description" => "The person's age",
+                   "name" => "age",
+                   "type" => %{"kind" => "SCALAR", "name" => "Int", "ofType" => nil},
+                   "deprecationReason" => nil,
+                   "isDeprecated" => false
+                 },
+                 %{
+                   "defaultValue" => nil,
+                   "description" => nil,
+                   "name" => "code",
+                   "type" => %{
+                     "kind" => "NON_NULL",
+                     "name" => nil,
+                     "ofType" => %{"kind" => "SCALAR", "name" => "String"}
+                   },
+                   "deprecationReason" => nil,
+                   "isDeprecated" => false
+                 },
+                 %{
+                   "defaultValue" => "\"Janet\"",
+                   "description" => "The person's name",
+                   "name" => "name",
+                   "type" => %{"kind" => "SCALAR", "name" => "String", "ofType" => nil},
+                   "deprecationReason" => nil,
+                   "isDeprecated" => false
+                 }
+               ],
+               "kind" => "INPUT_OBJECT",
+               "name" => "ProfileInput"
+             }
+           }
+         }},
+        result
+      )
+
+      assert !match?({:ok, %{data: %{"__type" => %{"fields" => _}}}}, result)
+    end
+
     defmodule ComplexDefaultSchema do
       use Absinthe.Schema
 

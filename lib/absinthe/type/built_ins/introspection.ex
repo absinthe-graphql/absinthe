@@ -69,10 +69,22 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
 
     field :args,
       type: non_null(list_of(non_null(:__inputvalue))),
-      resolve: fn _, %{source: source} ->
+      args: [
+        include_deprecated: [
+          type: :boolean,
+          default_value: false
+        ]
+      ],
+      resolve: fn %{include_deprecated: show_deprecated}, %{source: source} ->
         args =
           source.args
-          |> Map.values()
+          |> Enum.flat_map(fn {_, %{deprecation: is_deprecated} = value} ->
+            if !is_deprecated || (is_deprecated && show_deprecated) do
+              [value]
+            else
+              []
+            end
+          end)
           |> Enum.sort_by(& &1.identifier)
 
         {:ok, args}
@@ -191,11 +203,24 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
 
     field :input_fields,
       type: list_of(non_null(:__inputvalue)),
+      args: [
+        include_deprecated: [
+          type: :boolean,
+          default_value: false
+        ]
+      ],
       resolve: fn
-        _, %{source: %Absinthe.Type.InputObject{fields: fields}} ->
+        %{include_deprecated: show_deprecated},
+        %{source: %Absinthe.Type.InputObject{fields: fields}} ->
           input_fields =
             fields
-            |> Map.values()
+            |> Enum.flat_map(fn {_, %{deprecation: is_deprecated} = value} ->
+              if !is_deprecated || (is_deprecated && show_deprecated) do
+                [value]
+              else
+                []
+              end
+            end)
             |> Enum.sort_by(& &1.identifier)
 
           {:ok, input_fields}
@@ -226,10 +251,22 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
 
     field :args,
       type: non_null(list_of(non_null(:__inputvalue))),
-      resolve: fn _, %{source: %{args: args}} ->
+      args: [
+        include_deprecated: [
+          type: :boolean,
+          default_value: false
+        ]
+      ],
+      resolve: fn %{include_deprecated: show_deprecated}, %{source: %{args: args}} ->
         args =
           args
-          |> Map.values()
+          |> Enum.flat_map(fn {_, %{deprecation: is_deprecated} = value} ->
+            if !is_deprecated || (is_deprecated && show_deprecated) do
+              [value]
+            else
+              []
+            end
+          end)
           |> Enum.sort_by(& &1.identifier)
 
         {:ok, args}
@@ -298,6 +335,26 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
 
         _, %{source: _} ->
           {:ok, nil}
+      end
+
+    field :is_deprecated,
+      type: non_null(:boolean),
+      resolve: fn
+        _, %{source: %{deprecation: nil}} ->
+          {:ok, false}
+
+        _, _ ->
+          {:ok, true}
+      end
+
+    field :deprecation_reason,
+      type: :string,
+      resolve: fn
+        _, %{source: %{deprecation: nil}} ->
+          {:ok, nil}
+
+        _, %{source: %{deprecation: dep}} ->
+          {:ok, dep.reason}
       end
   end
 
