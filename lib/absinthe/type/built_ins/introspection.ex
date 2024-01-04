@@ -78,12 +78,9 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       resolve: fn %{include_deprecated: show_deprecated}, %{source: source} ->
         args =
           source.args
-          |> Enum.flat_map(fn {_, %{deprecation: is_deprecated} = value} ->
-            if !is_deprecated || (is_deprecated && show_deprecated) do
-              [value]
-            else
-              []
-            end
+          |> Map.values()
+          |> Enum.filter(fn %{deprecation: is_deprecated} ->
+            !is_deprecated || (is_deprecated && show_deprecated)
           end)
           |> Enum.sort_by(& &1.identifier)
 
@@ -186,12 +183,9 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         %{include_deprecated: show_deprecated}, %{source: %Absinthe.Type.Enum{values: values}} ->
           result =
             values
-            |> Enum.flat_map(fn {_, %{deprecation: is_deprecated} = value} ->
-              if !is_deprecated || (is_deprecated && show_deprecated) do
-                [value]
-              else
-                []
-              end
+            |> Map.values()
+            |> Enum.filter(fn %{deprecation: is_deprecated} ->
+              !is_deprecated || (is_deprecated && show_deprecated)
             end)
             |> Enum.sort_by(& &1.value)
 
@@ -214,12 +208,9 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         %{source: %Absinthe.Type.InputObject{fields: fields}} ->
           input_fields =
             fields
-            |> Enum.flat_map(fn {_, %{deprecation: is_deprecated} = value} ->
-              if !is_deprecated || (is_deprecated && show_deprecated) do
-                [value]
-              else
-                []
-              end
+            |> Map.values()
+            |> Enum.filter(fn %{deprecation: is_deprecated} ->
+              !is_deprecated || (is_deprecated && show_deprecated)
             end)
             |> Enum.sort_by(& &1.identifier)
 
@@ -260,12 +251,9 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       resolve: fn %{include_deprecated: show_deprecated}, %{source: %{args: args}} ->
         args =
           args
-          |> Enum.flat_map(fn {_, %{deprecation: is_deprecated} = value} ->
-            if !is_deprecated || (is_deprecated && show_deprecated) do
-              [value]
-            else
-              []
-            end
+          |> Map.values()
+          |> Enum.filter(fn %{deprecation: is_deprecated} ->
+            !is_deprecated || (is_deprecated && show_deprecated)
           end)
           |> Enum.sort_by(& &1.identifier)
 
