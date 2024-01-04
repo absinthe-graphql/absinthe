@@ -80,7 +80,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
           source.args
           |> Map.values()
           |> Enum.filter(fn %{deprecation: is_deprecated} ->
-            !is_deprecated || (is_deprecated && show_deprecated)
+            !is_deprecated || show_deprecated
           end)
           |> Enum.sort_by(& &1.identifier)
 
@@ -122,7 +122,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
                 Absinthe.Type.introspection?(field) ->
                   []
 
-                !is_deprecated || (is_deprecated && show_deprecated) ->
+                !is_deprecated || show_deprecated ->
                   [field]
 
                 true ->
@@ -185,7 +185,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
             values
             |> Map.values()
             |> Enum.filter(fn %{deprecation: is_deprecated} ->
-              !is_deprecated || (is_deprecated && show_deprecated)
+              !is_deprecated || show_deprecated
             end)
             |> Enum.sort_by(& &1.value)
 
@@ -210,7 +210,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
             fields
             |> Map.values()
             |> Enum.filter(fn %{deprecation: is_deprecated} ->
-              !is_deprecated || (is_deprecated && show_deprecated)
+              !is_deprecated || show_deprecated
             end)
             |> Enum.sort_by(& &1.identifier)
 
@@ -253,7 +253,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
           args
           |> Map.values()
           |> Enum.filter(fn %{deprecation: is_deprecated} ->
-            !is_deprecated || (is_deprecated && show_deprecated)
+            !is_deprecated || show_deprecated
           end)
           |> Enum.sort_by(& &1.identifier)
 
