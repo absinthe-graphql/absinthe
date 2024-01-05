@@ -79,9 +79,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         args =
           source.args
           |> Map.values()
-          |> Enum.filter(fn %{deprecation: is_deprecated} ->
-            !is_deprecated || show_deprecated
-          end)
+          |> filter_deprecated(show_deprecated)
           |> Enum.sort_by(& &1.identifier)
 
         {:ok, args}
@@ -117,18 +115,9 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         when str in [Absinthe.Type.Object, Absinthe.Type.Interface] ->
           result =
             fields
-            |> Enum.flat_map(fn {_, %{deprecation: is_deprecated} = field} ->
-              cond do
-                Absinthe.Type.introspection?(field) ->
-                  []
-
-                !is_deprecated || show_deprecated ->
-                  [field]
-
-                true ->
-                  []
-              end
-            end)
+            |> Map.values()
+            |> filter_deprecated(show_deprecated)
+            |> Enum.filter(&(!Absinthe.Type.introspection?(&1)))
             |> Enum.sort_by(& &1.identifier)
 
           {:ok, result}
@@ -184,9 +173,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
           result =
             values
             |> Map.values()
-            |> Enum.filter(fn %{deprecation: is_deprecated} ->
-              !is_deprecated || show_deprecated
-            end)
+            |> filter_deprecated(show_deprecated)
             |> Enum.sort_by(& &1.value)
 
           {:ok, result}
@@ -209,9 +196,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
           input_fields =
             fields
             |> Map.values()
-            |> Enum.filter(fn %{deprecation: is_deprecated} ->
-              !is_deprecated || show_deprecated
-            end)
+            |> filter_deprecated(show_deprecated)
             |> Enum.sort_by(& &1.identifier)
 
           {:ok, input_fields}
@@ -252,9 +237,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         args =
           args
           |> Map.values()
-          |> Enum.filter(fn %{deprecation: is_deprecated} ->
-            !is_deprecated || show_deprecated
-          end)
+          |> filter_deprecated(show_deprecated)
           |> Enum.sort_by(& &1.identifier)
 
         {:ok, args}
@@ -408,5 +391,11 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       %Absinthe.Type.Scalar{} = sc ->
         inspect(Absinthe.Type.Scalar.serialize(sc, value))
     end
+  end
+
+  defp filter_deprecated(values, show_deprecated) do
+    Enum.filter(values, fn %{deprecation: is_deprecated} ->
+      !is_deprecated || show_deprecated
+    end)
   end
 end
