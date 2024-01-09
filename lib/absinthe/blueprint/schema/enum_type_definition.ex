@@ -50,6 +50,7 @@ defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
             value: value_def.value,
             enum_identifier: type_def.identifier,
             __reference__: value_def.__reference__,
+            __private__: value_def.__private__,
             description: value_def.description,
             deprecation: value_def.deprecation
           }

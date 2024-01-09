@@ -351,11 +351,11 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
   # Render Helpers
 
-  defp render_list(items, type_definitions, seperator \\ line())
+  defp render_list(items, type_definitions, separator \\ line())
 
   # Workaround for `values` macro which temporarily defines
   # values as raw atoms to support dynamic schemas
-  defp render_list([first | _] = items, type_definitions, seperator) when is_atom(first) do
+  defp render_list([first | _] = items, type_definitions, separator) when is_atom(first) do
     items
     |> Enum.map(
       &%Blueprint.Schema.EnumValueDefinition{
@@ -363,10 +363,10 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         name: String.upcase(to_string(&1))
       }
     )
-    |> render_list(type_definitions, seperator)
+    |> render_list(type_definitions, separator)
   end
 
-  defp render_list(items, type_definitions, seperator) do
+  defp render_list(items, type_definitions, separator) do
     items = Enum.reject(items, &(&1.module in @skip_modules))
 
     splitter =
@@ -374,7 +374,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       |> Enum.any?(&(&1.description not in ["", nil]))
       |> case do
         true -> [nest(line(), :reset), line()]
-        false -> [seperator]
+        false -> [separator]
       end
 
     items

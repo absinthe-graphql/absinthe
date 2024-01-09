@@ -4,8 +4,8 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
   defmodule Schema do
     use Absinthe.Schema
 
-    defp thing_resolver(_, %{make_null: make_null}, _) do
-      if make_null do
+    defp thing_resolver(_, %{return_null: return_null}, _) do
+      if return_null do
         {:ok, nil}
       else
         {:ok, %{}}
@@ -16,9 +16,17 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       {:ok, %{}}
     end
 
-    defp things_resolver(_, %{make_null: make_null}, _) do
-      if make_null do
+    defp things_resolver(_, %{return_null_element: return_null_element}, _) do
+      if return_null_element do
         {:ok, [nil]}
+      else
+        {:ok, [%{}]}
+      end
+    end
+
+    defp things_resolver(_, %{return_null: return_null}, _) do
+      if return_null do
+        {:ok, nil}
       else
         {:ok, [%{}]}
       end
@@ -30,7 +38,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
 
     object :thing do
       field :nullable, :thing do
-        arg :make_null, :boolean
+        arg :return_null, :boolean
         resolve &thing_resolver/3
       end
 
@@ -41,7 +49,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       testing the null handling behaviour.
       """
       field :non_null, non_null(:thing) do
-        arg :make_null, :boolean
+        arg :return_null, :boolean
         resolve &thing_resolver/3
       end
 
@@ -52,14 +60,14 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       end
 
       field :non_null_list_of_non_null, non_null(list_of(non_null(:thing))) do
-        arg :make_null, :boolean
+        arg :return_null_element, :boolean
         resolve &things_resolver/3
       end
     end
 
     query do
       field :nullable, :thing do
-        arg :make_null, :boolean
+        arg :return_null, :boolean
         resolve &thing_resolver/3
       end
 
@@ -78,8 +86,37 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       end
 
       field :non_null_list_of_non_null, non_null(list_of(non_null(:thing))) do
-        arg :make_null, :boolean
+        arg :return_null_element, :boolean
         resolve &things_resolver/3
+      end
+
+      field :non_null_list_of_nullable, non_null(list_of(:thing)) do
+        arg :return_null, :boolean
+        arg :return_null_element, :boolean
+        resolve &things_resolver/3
+      end
+
+      field :non_null_list_of_non_null_list_of_nullable,
+            non_null(list_of(non_null(list_of(:string)))) do
+        resolve fn _, _ ->
+          {:ok, [["ok", nil]]}
+        end
+      end
+
+      field :deeply_nested_non_nullable_list_of_nullable,
+            non_null(list_of(non_null(list_of(non_null(list_of(non_null(list_of(:string)))))))) do
+        resolve fn _, _ ->
+          {:ok, [[[["ok", nil]]]]}
+        end
+      end
+
+      field :deeply_nested_non_nullable_list_of_non_nullable,
+            non_null(
+              list_of(non_null(list_of(non_null(list_of(non_null(list_of(non_null(:string))))))))
+            ) do
+        resolve fn _, _ ->
+          {:ok, [[[["1", nil, "3"], ["4", nil, "6"]]]]}
+        end
       end
 
       @desc """
@@ -89,7 +126,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       testing the null handling behaviour.
       """
       field :non_null, non_null(:thing) do
-        arg :make_null, :boolean
+        arg :return_null, :boolean
         resolve &thing_resolver/3
       end
     end
@@ -98,17 +135,17 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
   test "getting a null value normally works fine" do
     doc = """
     {
-      nullable { nullable(makeNull: true) { __typename }}
+      nullable { nullable(returnNull: true) { __typename }}
     }
     """
 
     assert {:ok, %{data: %{"nullable" => %{"nullable" => nil}}}} == Absinthe.run(doc, Schema)
   end
 
-  test "returning nil from a non null field makes the parent nullable null" do
+  test "returning nil from a non null field returns an error and makes the parent nullable null" do
     doc = """
     {
-      nullable { nullable { nonNull(makeNull: true) { __typename }}}
+      nullable { nullable { nonNull(returnNull: true) { __typename }}}
     }
     """
 
@@ -125,10 +162,10 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
     assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
   end
 
-  test "returning nil from a non null child of non nulls pushes nil all the way up to data" do
+  test "returning nil from a non null child of non nulls returns an error and pushes nil all the way up to data" do
     doc = """
     {
-      nonNull { nonNull { nonNull(makeNull: true) { __typename }}}
+      nonNull { nonNull { nonNull(returnNull: true) { __typename }}}
     }
     """
 
@@ -145,7 +182,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
     assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
   end
 
-  test "error propagation to root field returns nil on data" do
+  test "returning an error from a non null field makes the parent nullable null" do
     doc = """
     {
       nullable { nullable { nonNullErrorField }}
@@ -165,7 +202,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
     assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
   end
 
-  test "returning an error from a non null field makes the parent nullable null" do
+  test "error propagation to root field returns nil on data" do
     doc = """
     {
       nonNull { nonNull { nonNullErrorField }}
@@ -203,10 +240,55 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
   end
 
   describe "lists" do
-    test "list of nullable things works when child has a null violation" do
+    test "non-null list of non-null list of nullable value returns null value" do
       doc = """
       {
-        nullableListOfNullable { nonNull(makeNull: true) { __typename } }
+        nonNullListOfNonNullListOfNullable
+      }
+      """
+
+      assert {:ok, %{data: %{"nonNullListOfNonNullListOfNullable" => [["ok", nil]]}}} ==
+               Absinthe.run(doc, Schema)
+    end
+
+    test "deeply nested nullable value inside non-nullable lists can be null" do
+      doc = """
+      {
+        deeplyNestedNonNullableListOfNullable
+      }
+      """
+
+      assert {:ok, %{data: %{"deeplyNestedNonNullableListOfNullable" => [[[["ok", nil]]]]}}} ==
+               Absinthe.run(doc, Schema)
+    end
+
+    test "deeply nested non-nullable value inside non-nullable lists cannot be null" do
+      doc = """
+      {
+        deeplyNestedNonNullableListOfNonNullable
+      }
+      """
+
+      errors = [
+        %{
+          locations: [%{column: 3, line: 2}],
+          message: "Cannot return null for non-nullable field",
+          path: ["deeplyNestedNonNullableListOfNonNullable", 0, 0, 0, 1]
+        },
+        %{
+          locations: [%{column: 3, line: 2}],
+          message: "Cannot return null for non-nullable field",
+          path: ["deeplyNestedNonNullableListOfNonNullable", 0, 0, 1, 1]
+        }
+      ]
+
+      assert {:ok, %{data: nil, errors: errors}} == Absinthe.run(doc, Schema)
+    end
+
+    test "list of nullable things returns an error when child has a null violation" do
+      doc = """
+      {
+        nullableListOfNullable { nonNull(returnNull: true) { __typename } }
       }
       """
 
@@ -223,10 +305,10 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
     end
 
-    test "list of non null things works when child has a null violation" do
+    test "list of non null things returns an error when child has a null violation" do
       doc = """
       {
-        nullableListOfNonNull { nonNull(makeNull: true) { __typename } }
+        nullableListOfNonNull { nonNull(returnNull: true) { __typename } }
       }
       """
 
@@ -243,10 +325,10 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
     end
 
-    test "list of non null things works when child has a null violation and the root field is non null" do
+    test "list of non null things returns an error when child has a null violation and the root field is non null" do
       doc = """
       {
-        nonNullListOfNonNull { nonNull(makeNull: true) { __typename } }
+        nonNullListOfNonNull { nonNull(returnNull: true) { __typename } }
       }
       """
 
@@ -263,10 +345,42 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
       assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
     end
 
-    test "list of non null things works when child is null" do
+    test "non null list of nullable returns an error when null" do
       doc = """
       {
-        nonNullListOfNonNull(makeNull: true) { __typename }
+        nonNullListOfNullable(returnNull: true) { __typename }
+      }
+      """
+
+      data = nil
+
+      errors = [
+        %{
+          locations: [%{column: 3, line: 2}],
+          message: "Cannot return null for non-nullable field",
+          path: ["nonNullListOfNullable"]
+        }
+      ]
+
+      assert {:ok, %{data: data, errors: errors}} == Absinthe.run(doc, Schema)
+    end
+
+    test "non null list of nullable allows returning a list with null elements" do
+      doc = """
+      {
+        nonNullListOfNullable(returnNullElement: true) { __typename }
+      }
+      """
+
+      data = %{"nonNullListOfNullable" => [nil]}
+
+      assert {:ok, %{data: data}} == Absinthe.run(doc, Schema)
+    end
+
+    test "list of non null things returns an error when child is null" do
+      doc = """
+      {
+        nonNullListOfNonNull(returnNullElement: true) { __typename }
       }
       """
 
@@ -290,7 +404,7 @@ defmodule Absinthe.Phase.Document.Execution.NonNullTest do
           nonNullListOfNonNull {
             nonNullListOfNonNull {
               nonNullListOfNonNull {
-                nonNullListOfNonNull(makeNull: true) { __typename }
+                nonNullListOfNonNull(returnNullElement: true) { __typename }
               }
             }
           }

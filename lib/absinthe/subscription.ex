@@ -44,7 +44,7 @@ defmodule Absinthe.Subscription do
   @doc """
   Build a child specification for subscriptions.
 
-  In order to use supscriptions in your application, you must add
+  In order to use subscriptions in your application, you must add
   `Absinthe.Subscription` to your supervision tree after your endpoint.
 
   See `guides/subscriptions.md` for more information on how to get up and
@@ -140,31 +140,48 @@ defmodule Absinthe.Subscription do
   defp fetch_fields(_, _), do: []
 
   @doc false
-  def subscribe(pubsub, field_key, doc_id, doc) do
+  def subscribe(pubsub, field_keys, doc_id, doc) do
+    field_keys = List.wrap(field_keys)
+
     registry = pubsub |> registry_name
 
-    doc_value = {
-      doc_id,
-      %{
-        initial_phases: PipelineSerializer.pack(doc.initial_phases),
-        source: doc.source
-      }
+    doc_value = %{
+      initial_phases: PipelineSerializer.pack(doc.initial_phases),
+      source: doc.source
     }
 
-    {:ok, _} = Registry.register(registry, field_key, doc_value)
-    {:ok, _} = Registry.register(registry, {self(), doc_id}, field_key)
+    pdict_add_fields(doc_id, field_keys)
+
+    for field_key <- field_keys do
+      {:ok, _} = Registry.register(registry, field_key, doc_id)
+    end
+
+    {:ok, _} = Registry.register(registry, doc_id, doc_value)
+  end
+
+  defp pdict_fields(doc_id) do
+    Process.get({__MODULE__, doc_id}, [])
+  end
+
+  defp pdict_add_fields(doc_id, field_keys) do
+    Process.put({__MODULE__, doc_id}, field_keys ++ pdict_fields(doc_id))
+  end
+
+  defp pdict_delete_fields(doc_id) do
+    Process.delete({__MODULE__, doc_id})
   end
 
   @doc false
   def unsubscribe(pubsub, doc_id) do
     registry = pubsub |> registry_name
-    self = self()
 
-    for {^self, field_key} <- Registry.lookup(registry, {self, doc_id}) do
-      Registry.unregister_match(registry, field_key, {doc_id, :_})
+    for field_key <- pdict_fields(doc_id) do
+      Registry.unregister(registry, field_key)
     end
 
-    Registry.unregister(registry, {self, doc_id})
+    Registry.unregister(registry, doc_id)
+
+    pdict_delete_fields(doc_id)
     :ok
   end
 
@@ -173,7 +190,17 @@ defmodule Absinthe.Subscription do
     pubsub
     |> registry_name
     |> Registry.lookup(key)
-    |> Map.new(fn {_, {doc_id, doc}} ->
+    |> then(fn doc_ids ->
+      pubsub
+      |> registry_name
+      |> Registry.select(
+        # We compose a list of match specs that basically mean "lookup all keys
+        # in the doc_ids list"
+        for {_, doc_id} <- doc_ids,
+            do: {{:"$1", :_, :"$2"}, [{:==, :"$1", doc_id}], [{{:"$1", :"$2"}}]}
+      )
+    end)
+    |> Map.new(fn {doc_id, doc} ->
       doc = Map.update!(doc, :initial_phases, &PipelineSerializer.unpack/1)
 
       {doc_id, doc}

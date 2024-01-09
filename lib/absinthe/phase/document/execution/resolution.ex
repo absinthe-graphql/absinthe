@@ -285,20 +285,29 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     |> propagate_null_trimming
   end
 
-  defp maybe_add_non_null_error([], values, %Type.NonNull{of_type: %Type.List{}}) do
-    values
-    |> Enum.with_index()
-    |> Enum.filter(&is_nil(elem(&1, 0)))
-    |> Enum.map(fn {_value, index} ->
-      %{message: "Cannot return null for non-nullable field", path: [index]}
-    end)
-  end
+  defp maybe_add_non_null_error(errors, value, type, path \\ [])
 
-  defp maybe_add_non_null_error([], nil, %Type.NonNull{}) do
+  defp maybe_add_non_null_error([], nil, %Type.NonNull{}, []) do
     ["Cannot return null for non-nullable field"]
   end
 
-  defp maybe_add_non_null_error(errors, _, _) do
+  defp maybe_add_non_null_error([], nil, %Type.NonNull{}, path) do
+    [%{message: "Cannot return null for non-nullable field", path: Enum.reverse(path)}]
+  end
+
+  defp maybe_add_non_null_error([], value, %Type.NonNull{of_type: %Type.List{} = type}, path) do
+    maybe_add_non_null_error([], value, type, path)
+  end
+
+  defp maybe_add_non_null_error([], [_ | _] = values, %Type.List{of_type: type}, path) do
+    values
+    |> Enum.with_index()
+    |> Enum.flat_map(fn {value, index} ->
+      maybe_add_non_null_error([], value, type, [index | path])
+    end)
+  end
+
+  defp maybe_add_non_null_error(errors, _, _, _path) do
     errors
   end
 
@@ -350,26 +359,34 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     false
   end
 
-  # FIXME: Not super happy with this lookup process.
-  # Also it would be nice if we could use the same function as above.
-  defp non_null_list_violation?(%{
-         value: nil,
-         emitter: %{schema_node: %{type: %Type.List{of_type: %Type.NonNull{}}}}
-       }) do
-    true
+  defp non_null_list_violation?(%{values: values}) do
+    Enum.find(values, &non_null_list_violation?/1)
   end
 
-  defp non_null_list_violation?(%{
-         value: nil,
-         emitter: %{
-           schema_node: %{type: %Type.NonNull{of_type: %Type.List{of_type: %Type.NonNull{}}}}
-         }
-       }) do
-    true
+  # FIXME: Not super happy with this lookup process.
+  # Also it would be nice if we could use the same function as above.
+  defp non_null_list_violation?(%{value: nil, emitter: %{schema_node: %{type: type}}}) do
+    !null_allowed_in_list?(type)
   end
 
   defp non_null_list_violation?(_) do
     false
+  end
+
+  defp null_allowed_in_list?(%Type.List{of_type: wrapped_type}) do
+    null_allowed_in_list?(wrapped_type)
+  end
+
+  defp null_allowed_in_list?(%Type.NonNull{of_type: %Type.List{of_type: wrapped_type}}) do
+    null_allowed_in_list?(wrapped_type)
+  end
+
+  defp null_allowed_in_list?(%Type.NonNull{of_type: _wrapped_type}) do
+    false
+  end
+
+  defp null_allowed_in_list?(_type) do
+    true
   end
 
   defp add_errors(result, errors, fun) do
