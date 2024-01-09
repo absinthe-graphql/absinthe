@@ -7,9 +7,7 @@ An Apollo client manages its connection to the GraphQL server using [links](http
 Using Apollo with an HTTP link does not require any Absinthe-specific configuration. You can create an HTTP link pointed at your Absinthe server as follows:
 
 ```javascript
-import ApolloClient from "apollo-client";
-import { createHttpLink } from "apollo-link-http";
-import { InMemoryCache } from "apollo-cache-inmemory";
+import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
 
 // Create an HTTP link to the Absinthe server.
 const link = createHttpLink({
@@ -31,10 +29,8 @@ const client = new ApolloClient({
 You may find that you need to modify the HTTP request that Apollo makes -- for example, if you wish to send the value of a particular cookie in the `Authorization` header. The `setContext` helper allows you to do this, and also demonstrates how links in Apollo can be chained.
 
 ```javascript
-import ApolloClient from "apollo-client";
-import { createHttpLink } from "apollo-link-http";
-import { setContext } from "apollo-link-context";
-import { InMemoryCache } from "apollo-cache-inmemory";
+import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
+import { setContext } from "@apollo/client/link/context";
 import Cookies from "js-cookie";
 
 // Create an HTTP link to the Absinthe server.
@@ -77,11 +73,10 @@ const client = new ApolloClient({
 An HTTP link is suitable for many basic use cases, but if you require two-way communication between the server and the client, you will need to use a websocket link. The most common use case is a client that needs to use GraphQL subscriptions to receive updates from the server when particular events occur. To implement a websocket link, we will need to use the [`@absinthe/socket`](https://www.npmjs.com/package/@absinthe/socket) and [`@absinthe/socket-apollo-link`](https://www.npmjs.com/package/@absinthe/socket-apollo-link) packages.
 
 ```javascript
-import ApolloClient from "apollo-client";
+import { ApolloClient, InMemoryCache } from "@apollo/client";
 import * as AbsintheSocket from "@absinthe/socket";
 import { createAbsintheSocketLink } from "@absinthe/socket-apollo-link";
 import { Socket as PhoenixSocket } from "phoenix";
-import { InMemoryCache } from "apollo-cache-inmemory";
 import Cookies from "js-cookie";
 
 // Create a standard Phoenix websocket connection. If you need
@@ -122,11 +117,10 @@ You may find that you periodically need to reconnect the websocket with differen
 Note that this solution (reconnecting with `phoenixSocket.conn.close();`) is somewhat unstable because it relies upon an implementation detail of the Phoenix socket. Ideally, a future version of the Phoenix package might add a public API method to reconnect the websocket with new parameters.
 
 ```javascript
-import ApolloClient from "apollo-client";
+import { ApolloClient, InMemoryCache } from "@apollo/client";
 import * as AbsintheSocket from "@absinthe/socket";
 import { createAbsintheSocketLink } from "@absinthe/socket-apollo-link";
 import { Socket as PhoenixSocket } from "phoenix";
-import { InMemoryCache } from "apollo-cache-inmemory";
 import Cookies from "js-cookie";
 
 // Create a standard Phoenix websocket connection. If you need
@@ -171,18 +165,20 @@ phoenixSocket.conn.close();
 
 ## Using both HTTP and websocket links
 
-A common configuration for Apollo client applications is to use both HTTP and websocket links -- HTTP for queries and mutations, and a websocket for subscriptions. We can implement this in our client using [directional composition with Apollo's `split` helper](https://www.apollographql.com/docs/link/composition#directional).
+A common configuration for Apollo client applications is to use both HTTP and websocket links -- HTTP for queries and mutations, and a websocket for subscriptions. We can implement this in our client using [directional composition with Apollo's `split` helper](https://www.apollographql.com/docs/react/api/link/introduction/#directional-composition).
 
 ```javascript
-import ApolloClient from "apollo-client";
-import { createHttpLink } from "apollo-link-http";
-import { setContext } from "apollo-link-context";
+import {
+  ApolloClient,
+  InMemoryCache,
+  createHttpLink,
+  split
+} from "@apollo/client";
+import { getMainDefinition } from "@apollo/client/utilities";
+import { setContext } from "@apollo/client/link/context";
 import * as AbsintheSocket from "@absinthe/socket";
 import { createAbsintheSocketLink } from "@absinthe/socket-apollo-link";
 import { Socket as PhoenixSocket } from "phoenix";
-import { hasSubscription } from "@jumpn/utils-graphql";
-import { split } from "apollo-link";
-import { InMemoryCache } from "apollo-cache-inmemory";
 import Cookies from "js-cookie";
 
 // Create an HTTP link to the Absinthe server.
@@ -230,7 +226,14 @@ const websocketLink = createAbsintheSocketLink(absintheSocket);
 // If the query contains a subscription, send it through the
 // websocket link. Otherwise, send it through the HTTP link.
 const link = split(
-  operation => hasSubscription(operation.query),
+  (operation) => {
+    const definition = getMainDefinition(query);
+
+    return (
+      definition.kind === "OperationDefinition" &&
+      definition.operation === "subscription"
+    );
+  },
   websocketLink,
   authedHttpLink
 );
