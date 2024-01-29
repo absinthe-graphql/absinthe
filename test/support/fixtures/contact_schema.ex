@@ -75,6 +75,7 @@ defmodule Absinthe.Fixtures.ContactSchema do
     field :code, type: non_null(:string)
     field :name, type: :string, description: "The person's name", default_value: "Janet"
     field :age, type: :integer, description: "The person's age", default_value: 43
+    field :address, type: :string, deprecate: "change of privacy policy"
   end
 
   interface :named_entity do
