@@ -18,16 +18,21 @@ defmodule Absinthe.Subscription.Local do
   @spec publish_mutation(
           Absinthe.Subscription.Pubsub.t(),
           term,
-          [Absinthe.Subscription.subscription_field_spec()]
+          [Absinthe.Subscription.subscription_field_spec()],
+          Keyword.t()
         ) :: :ok
-  def publish_mutation(pubsub, mutation_result, subscribed_fields) do
+  def publish_mutation(_pubsub, _mutation_result, _subscribed_fields, opts \\ [])
+
+  def publish_mutation(pubsub, mutation_result, subscribed_fields, opts) do
     docs_and_topics =
       for {field, key_strategy} <- subscribed_fields,
           {topic, doc} <- get_docs(pubsub, field, mutation_result, key_strategy) do
         {topic, key_strategy, doc}
       end
 
-    run_docset(pubsub, docs_and_topics, mutation_result)
+    docset_runner = Keyword.get(opts, :docset_runner, &run_docset/3)
+
+    docset_runner.(pubsub, docs_and_topics, mutation_result)
 
     :ok
   end

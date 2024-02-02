@@ -99,22 +99,34 @@ defmodule Absinthe.Subscription do
     other_user_subscription_field: user.id,
   ])
   ```
+
+  ## Options
+  * `:docset_runner` - A custom function used iterate over the subscription docs and
+  publishes them using the pubsub module. The default docset_runner iterates over the subscription docs and runs them sequentially.`
   """
   @spec publish(
           Absinthe.Subscription.Pubsub.t(),
           term,
-          Absinthe.Resolution.t() | [subscription_field_spec]
+          Absinthe.Resolution.t() | [subscription_field_spec],
+          Keyword.t()
         ) :: :ok
-  def publish(_pubsub, _mutation_result, []), do: :ok
+  def publish(
+        _pubsub,
+        _mutation_result,
+        _subscribed_fields,
+        opts \\ []
+      )
 
-  def publish(pubsub, mutation_result, %Absinthe.Resolution{} = info) do
+  def publish(_pubsub, _mutation_result, [], _), do: :ok
+
+  def publish(pubsub, mutation_result, %Absinthe.Resolution{} = info, opts) do
     subscribed_fields = get_subscription_fields(info)
-    publish(pubsub, mutation_result, subscribed_fields)
+    publish(pubsub, mutation_result, subscribed_fields, opts)
   end
 
-  def publish(pubsub, mutation_result, subscribed_fields) do
+  def publish(pubsub, mutation_result, subscribed_fields, opts) do
     _ = publish_remote(pubsub, mutation_result, subscribed_fields)
-    _ = Subscription.Local.publish_mutation(pubsub, mutation_result, subscribed_fields)
+    _ = Subscription.Local.publish_mutation(pubsub, mutation_result, subscribed_fields, opts)
     :ok
   end
 
