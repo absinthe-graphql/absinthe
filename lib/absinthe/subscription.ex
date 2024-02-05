@@ -240,9 +240,9 @@ defmodule Absinthe.Subscription do
 
   ## Middleware callback
   @doc false
-  def call(%{state: :resolved, errors: [], value: value} = res, _) do
+  def call(%{state: :resolved, errors: [], value: value} = res, opts) do
     with {:ok, pubsub} <- extract_pubsub(res.context) do
-      __MODULE__.publish(pubsub, value, res)
+      __MODULE__.publish(pubsub, value, res, opts)
     end
 
     res
