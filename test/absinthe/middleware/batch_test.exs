@@ -1,6 +1,14 @@
 defmodule Absinthe.Middleware.BatchTest do
   use Absinthe.Case, async: true
 
+  import ExUnit.CaptureLog
+
+  defmodule TimeoutModule do
+    def arbitrary_fn_name(_, _) do
+      :timer.sleep(2000)
+    end
+  end
+
   defmodule Schema do
     use Absinthe.Schema
 
@@ -58,6 +66,17 @@ defmodule Absinthe.Middleware.BatchTest do
           batch({__MODULE__, :otel_ctx}, nil, fn batch ->
             {:ok, batch}
           end)
+        end
+      end
+
+      field :timeout, :string do
+        resolve fn _, _, _ ->
+          batch(
+            {TimeoutModule, :arbitrary_fn_name, %{arbitrary: :data}},
+            nil,
+            fn batch -> {:ok, batch} end,
+            timeout: 1
+          )
         end
       end
     end
@@ -149,5 +168,25 @@ defmodule Absinthe.Middleware.BatchTest do
     OpenTelemetry.Ctx.set_value("stored_value", "some_value")
 
     assert {:ok, %{data: %{"ctx" => "some_value"}}} == Absinthe.run(doc, Schema)
+  end
+
+  test "when batch task timeouts it logs batching options" do
+    doc = """
+    {timeout}
+    """
+
+    assert capture_log(fn ->
+             pid =
+               spawn(fn ->
+                 Absinthe.run(doc, Schema)
+               end)
+
+             wait_for_process_to_exit(pid)
+           end) =~ "fn: {Absinthe.Middleware.BatchTest.TimeoutModule, :arbitrary_fn_name, %{arbitrary: :data}}"
+  end
+
+  defp wait_for_process_to_exit(pid) do
+    :timer.sleep(1)
+    if Process.alive?(pid), do: wait_for_process_to_exit(pid)
   end
 end

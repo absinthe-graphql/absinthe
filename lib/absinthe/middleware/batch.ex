@@ -60,6 +60,8 @@ defmodule Absinthe.Middleware.Batch do
   @behaviour Absinthe.Middleware
   @behaviour Absinthe.Plugin
 
+  require Logger
+
   @typedoc """
   The function to be called with the aggregate batch information.
 
@@ -143,18 +145,29 @@ defmodule Absinthe.Middleware.Batch do
 
       metadata = emit_start_event(system_time, batch_fun, batch_opts, batch_data)
 
-      {batch_opts, task, start_time_mono, metadata}
+      {batch_opts, task, start_time_mono, metadata, batch_fun}
     end)
-    |> Map.new(fn {batch_opts, task, start_time_mono, metadata} ->
-      timeout = Keyword.get(batch_opts, :timeout, 5_000)
-      result = Task.await(task, timeout)
+    |> Map.new(&yield_batching_result/1)
+  end
 
-      end_time_mono = System.monotonic_time()
-      duration = end_time_mono - start_time_mono
-      emit_stop_event(duration, end_time_mono, metadata, result)
+  defp yield_batching_result({batch_opts, task, start_time_mono, metadata, batch_fun}) do
+    timeout = Keyword.get(batch_opts, :timeout, 5_000)
 
-      result
-    end)
+    case Task.yield(task, timeout) || Task.shutdown(task) do
+      {:ok, result} ->
+        end_time_mono = System.monotonic_time()
+        duration = end_time_mono - start_time_mono
+        emit_stop_event(duration, end_time_mono, metadata, result)
+
+        result
+
+      _ ->
+        Logger.error(
+          "Failed to get batching result in #{timeout}ms for\nfn: #{inspect(batch_fun)}"
+        )
+
+        Process.exit(self(), :timeout)
+    end
   end
 
   @batch_start [:absinthe, :middleware, :batch, :start]
