@@ -72,7 +72,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Sdl do
              schema.__absinthe_blueprint__(),
              pipeline
            ) do
-      {:ok, inspect(blueprint, pretty: true)}
+      {:ok, inspect(blueprint, pretty: true, custom_options: [sort_maps: true])}
     else
       _ -> {:error, "Failed to render schema"}
     end
