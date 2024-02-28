@@ -257,6 +257,11 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   end
 
   defp directives(directives, type_definitions) do
+    directives =
+      Enum.map(directives, fn directive ->
+        %{directive | name: Absinthe.Utils.camelize(directive.name, lower: true)}
+      end)
+
     concat(Enum.map(directives, &render(&1, type_definitions)))
   end
 

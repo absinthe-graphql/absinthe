@@ -1991,6 +1991,7 @@ defmodule Absinthe.Schema.Notation do
   defp default_name(Schema.DirectiveDefinition, identifier) do
     identifier
     |> Atom.to_string()
+    |> Absinthe.Utils.camelize(lower: true)
   end
 
   defp default_name(_, identifier) do
