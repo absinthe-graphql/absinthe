@@ -208,6 +208,10 @@ defmodule Absinthe.Schema.SdlRenderTest do
       on :field
     end
 
+    directive :foo_foo do
+      on :field
+    end
+
     enum :order_status do
       value :delivered
       value :processing
@@ -244,6 +248,8 @@ defmodule Absinthe.Schema.SdlRenderTest do
                query: RootQueryType
              }
 
+             directive @fooFoo on FIELD
+             
              directive @foo(baz: String) on FIELD
 
              \"Escaped\\t\\\"descrição\\/description\\\"\"
