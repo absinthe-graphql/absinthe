@@ -33,6 +33,10 @@ defmodule Absinthe.Schema.TypeSystemDirectiveTest do
         :input_field_definition
       ]
     end
+
+    directive :camel_case_me do
+      on [:field_definition]
+    end
   end
 
   defmodule TypeSystemDirectivesSdlSchema do
@@ -110,7 +114,7 @@ defmodule Absinthe.Schema.TypeSystemDirectiveTest do
         directive :feature, name: ":field_definition"
       end
 
-      field :sweet, :sweet_scalar
+      field :sweet, :sweet_scalar, directives: [:camel_case_me]
       field :which, :category
       field :pet, :dog
 
@@ -190,7 +194,7 @@ defmodule Absinthe.Schema.TypeSystemDirectiveTest do
 
   type RootQueryType {
     post: Post @feature(name: \":field_definition\")
-    sweet: SweetScalar
+    sweet: SweetScalar @camelCaseMe
     which: Category
     pet: Dog
     search(filter: SearchFilter @feature(name: \":argument_definition\")): SearchResult @feature(name: \":argument_definition\")
