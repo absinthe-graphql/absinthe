@@ -27,7 +27,10 @@ defmodule Absinthe.Subscription.Local do
         {topic, key_strategy, doc}
       end
 
-    run_docset(pubsub, docs_and_topics, mutation_result)
+    run_docset_fn =
+      if function_exported?(pubsub, :run_docset, 3), do: &pubsub.run_docset/3, else: &run_docset/3
+
+    run_docset_fn.(pubsub, docs_and_topics, mutation_result)
 
     :ok
   end
