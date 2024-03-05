@@ -40,26 +40,7 @@ defmodule Absinthe.Subscription.Local do
   defp run_docset(pubsub, docs_and_topics, mutation_result) do
     for {topic, key_strategy, doc} <- docs_and_topics do
       try do
-        pipeline =
-          doc.initial_phases
-          |> Pipeline.replace(
-            Phase.Telemetry,
-            {Phase.Telemetry, event: [:subscription, :publish, :start]}
-          )
-          |> Pipeline.without(Phase.Subscription.SubscribeSelf)
-          |> Pipeline.insert_before(
-            Phase.Document.Execution.Resolution,
-            {Phase.Document.OverrideRoot, root_value: mutation_result}
-          )
-          |> Pipeline.upto(Phase.Document.Execution.Resolution)
-
-        pipeline = [
-          pipeline,
-          [
-            result_phase(doc),
-            {Absinthe.Phase.Telemetry, event: [:subscription, :publish, :stop]}
-          ]
-        ]
+        pipeline = pipeline(doc, mutation_result)
 
         {:ok, %{result: data}, _} = Absinthe.Pipeline.run(doc.source, pipeline)
 
@@ -76,6 +57,31 @@ defmodule Absinthe.Subscription.Local do
           BatchResolver.pipeline_error(e, __STACKTRACE__)
       end
     end
+  end
+
+  def pipeline(doc, mutation_result) do
+    pipeline =
+      doc.initial_phases
+      |> Pipeline.replace(
+        Phase.Telemetry,
+        {Phase.Telemetry, event: [:subscription, :publish, :start]}
+      )
+      |> Pipeline.without(Phase.Subscription.SubscribeSelf)
+      |> Pipeline.insert_before(
+        Phase.Document.Execution.Resolution,
+        {Phase.Document.OverrideRoot, root_value: mutation_result}
+      )
+      |> Pipeline.upto(Phase.Document.Execution.Resolution)
+
+    pipeline = [
+      pipeline,
+      [
+        result_phase(doc),
+        {Absinthe.Phase.Telemetry, event: [:subscription, :publish, :stop]}
+      ]
+    ]
+
+    pipeline
   end
 
   defp get_docs(pubsub, field, mutation_result, topic: topic_fun)
