@@ -30,7 +30,7 @@ end
 ```
 
 
-You may want to refer to the [Absinthe API documentation](https://hexdocs.pm/absinthe/) for more detailed information as you look this over.
+You may want to refer to the [Absinthe API documentation](introduction/overview.md) for more detailed information as you look this over.
 
 
 Some macros and functions used here that are worth mentioning, pulled in automatically from
