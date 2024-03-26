@@ -58,16 +58,20 @@ defmodule Absinthe.Subscription.Local do
           ]
         ]
 
-        {:ok, %{result: data}, _} = Absinthe.Pipeline.run(doc.source, pipeline)
+        case Absinthe.Pipeline.run(doc.source, pipeline) do
+          {:ok, %Absinthe.Blueprint{result: %{errors: errors}}, _} when not is_nil(errors) ->
+            :ok
 
-        Logger.debug("""
-        Absinthe Subscription Publication
-        Field Topic: #{inspect(key_strategy)}
-        Subscription id: #{inspect(topic)}
-        Data: #{inspect(data)}
-        """)
+          {:ok, %{result: data}, _} ->
+            Logger.debug("""
+            Absinthe Subscription Publication
+            Field Topic: #{inspect(key_strategy)}
+            Subscription id: #{inspect(topic)}
+            Data: #{inspect(data)}
+            """)
 
-        :ok = pubsub.publish_subscription(topic, data)
+            :ok = pubsub.publish_subscription(topic, data)
+        end
       rescue
         e ->
           BatchResolver.pipeline_error(e, __STACKTRACE__)
