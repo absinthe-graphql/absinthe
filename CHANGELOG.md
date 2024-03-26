@@ -36,6 +36,7 @@
 - Bug Fix: [Validate field identifier uniqueness](https://github.com/absinthe-graphql/absinthe/pull/1200)
 - Bug Fix: [Validate type references for invalid wrapped types](https://github.com/absinthe-graphql/absinthe/pull/1195)
 - Bug Fix: Adds **optional fix** for non compliant built-in scalar Int type. `use Absinthe.Schema, use_spec_compliant_int_scalar: true` in your schema to use the fixed Int type. It is also advisable to upgrade for custom types if you are leveraging the use of integers outside the GraphQl standard. [#1131](https://github.com/absinthe-graphql/absinthe/pull/1131).
+- Feature: [Support custom opts in schema pipeline modifiers](https://github.com/absinthe-graphql/absinthe/pull/1214)
 - Feature: [Support error tuples when scalar parsing fails](https://github.com/absinthe-graphql/absinthe/pull/1187)
 - Feature: [Convert SDL Language.\* structs to SDL notation](https://github.com/absinthe-graphql/absinthe/pull/1160)
 - Feature: [Support passing the resolution struct to dataloader helper callbacks](https://github.com/absinthe-graphql/absinthe/pull/1211)

@@ -284,4 +284,36 @@ defmodule Absinthe.Schema.SdlRenderTest do
              union SearchResult = Order | Category
              """
   end
+
+  defmodule TestModifier do
+    def pipeline(pipeline, opts) do
+      send(self(), type: :module, opts: opts)
+      pipeline
+    end
+  end
+
+  defmodule ModifiedTestSchema do
+    use Absinthe.Schema
+
+    def custom_pipeline(pipeline, opts) do
+      send(self(), type: :function, opts: opts)
+      pipeline
+    end
+
+    @pipeline_modifier TestModifier
+    @pipeline_modifier {__MODULE__, :custom_pipeline}
+
+    @sdl """
+    type Query {
+      echo: String
+    }
+    """
+    import_sdl @sdl
+  end
+
+  test "Render SDL takes opts" do
+    Absinthe.Schema.to_sdl(ModifiedTestSchema, sdl_render: true)
+    assert_received type: :function, opts: [sdl_render: true]
+    assert_received type: :module, opts: [sdl_render: true]
+  end
 end

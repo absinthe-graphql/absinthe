@@ -362,13 +362,31 @@ defmodule Absinthe.Schema do
   end
 
   @spec apply_modifiers(Absinthe.Pipeline.t(), t) :: Absinthe.Pipeline.t()
-  def apply_modifiers(pipeline, schema) do
+  def apply_modifiers(pipeline, schema, opts \\ []) do
     Enum.reduce(schema.__absinthe_pipeline_modifiers__, pipeline, fn
       {module, function}, pipeline ->
-        apply(module, function, [pipeline])
+        cond do
+          function_exported?(module, function, 1) ->
+            apply(module, function, [pipeline])
+
+          function_exported?(module, function, 2) ->
+            apply(module, function, [pipeline, opts])
+
+          true ->
+            pipeline
+        end
 
       module, pipeline ->
-        module.pipeline(pipeline)
+        cond do
+          function_exported?(module, :pipeline, 1) ->
+            module.pipeline(pipeline)
+
+          function_exported?(module, :pipeline, 2) ->
+            module.pipeline(pipeline, opts)
+
+          true ->
+            pipeline
+        end
     end)
   end
 
@@ -640,12 +658,12 @@ defmodule Absinthe.Schema do
       }"
   """
   @spec to_sdl(schema :: t) :: String.t()
-  def to_sdl(schema) do
+  def to_sdl(schema, opts \\ []) do
     pipeline =
       schema
       |> Absinthe.Pipeline.for_schema(prototype_schema: schema.__absinthe_prototype_schema__)
       |> Absinthe.Pipeline.upto({Absinthe.Phase.Schema.Validation.Result, pass: :final})
-      |> apply_modifiers(schema)
+      |> apply_modifiers(schema, opts)
 
     # we can be assertive here, since this same pipeline was already used to
     # successfully compile the schema.
