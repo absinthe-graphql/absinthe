@@ -182,7 +182,8 @@ defmodule Absinthe.Middleware.BatchTest do
                end)
 
              wait_for_process_to_exit(pid)
-           end) =~ "fn: {Absinthe.Middleware.BatchTest.TimeoutModule, :arbitrary_fn_name, %{arbitrary: :data}}"
+           end) =~
+             "fn: {Absinthe.Middleware.BatchTest.TimeoutModule, :arbitrary_fn_name, %{arbitrary: :data}}"
   end
 
   defp wait_for_process_to_exit(pid) do

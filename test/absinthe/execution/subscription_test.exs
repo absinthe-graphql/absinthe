@@ -79,6 +79,47 @@ defmodule Absinthe.Execution.SubscriptionTest do
     end
   end
 
+  defmodule PubSubWithDocsetRunner do
+    @behaviour Absinthe.Subscription.Pubsub
+
+    def start_link() do
+      Registry.start_link(keys: :duplicate, name: __MODULE__)
+    end
+
+    def node_name() do
+      node()
+    end
+
+    def subscribe(topic) do
+      Registry.register(__MODULE__, topic, [])
+      :ok
+    end
+
+    def publish_subscription(topic, data) do
+      message = %{
+        topic: topic,
+        event: "subscription:data",
+        result: data
+      }
+
+      Registry.dispatch(__MODULE__, topic, fn entries ->
+        for {pid, _} <- entries, do: send(pid, {:broadcast, message})
+      end)
+    end
+
+    def publish_mutation(_proxy_topic, _mutation_result, _subscribed_fields) do
+      # this pubsub is local and doesn't support clusters
+      :ok
+    end
+
+    def run_docset(pubsub, docs_and_topics, _mutation_result) do
+      for {topic, _key_strategy, _doc} <- docs_and_topics do
+        # publish mutation results to topic
+        pubsub.publish_subscription(topic, %{data: %{runner: "calls the custom docset runner"}})
+      end
+    end
+  end
+
   defmodule Schema do
     use Absinthe.Schema
 
@@ -189,6 +230,9 @@ defmodule Absinthe.Execution.SubscriptionTest do
   setup_all do
     {:ok, _} = PubSub.start_link()
     {:ok, _} = Absinthe.Subscription.start_link(PubSub)
+
+    {:ok, _} = PubSubWithDocsetRunner.start_link()
+    {:ok, _} = Absinthe.Subscription.start_link(PubSubWithDocsetRunner)
     :ok
   end
 
@@ -719,12 +763,55 @@ defmodule Absinthe.Execution.SubscriptionTest do
     refute_receive({:broadcast, _})
   end
 
-  defp run_subscription(query, schema, opts \\ []) do
-    opts = Keyword.update(opts, :context, %{pubsub: PubSub}, &Map.put(&1, :pubsub, PubSub))
+  @query """
+  subscription ($userId: ID!) {
+    user(id: $userId) { id name }
+  }
+  """
+  test "calls the optional run_docset callback if supplied" do
+    id = "1"
+
+    assert {:ok, %{"subscribed" => topic}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{"userId" => id},
+               context: %{pubsub: PubSubWithDocsetRunner}
+             )
+
+    mutation = """
+    mutation ($userId: ID!) {
+      updateUser(id: $userId) { id name }
+    }
+    """
+
+    assert {:ok, %{data: _}} =
+             run_subscription(mutation, Schema,
+               variables: %{"userId" => id},
+               context: %{pubsub: PubSubWithDocsetRunner}
+             )
+
+    assert_receive({:broadcast, msg})
+
+    assert %{
+             event: "subscription:data",
+             result: %{data: %{runner: "calls the custom docset runner"}},
+             topic: topic
+           } == msg
+  end
+
+  def run_subscription(query, schema, opts \\ []) do
+    opts =
+      Keyword.update(
+        opts,
+        :context,
+        %{pubsub: PubSub},
+        &Map.put(&1, :pubsub, opts[:context][:pubsub] || PubSub)
+      )
 
     case run(query, schema, opts) do
       {:ok, %{"subscribed" => topic}} = val ->
-        PubSub.subscribe(topic)
+        opts[:context][:pubsub].subscribe(topic)
         val
 
       val ->
