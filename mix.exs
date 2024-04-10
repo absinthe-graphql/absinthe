@@ -28,6 +28,7 @@ defmodule Absinthe.Mixfile do
         extras: extras(),
         groups_for_extras: groups_for_extras()
       ],
+      compilers: [:yecc] ++ Mix.compilers(),
       deps: deps(),
       dialyzer: [
         plt_add_deps: :apps_direct,
