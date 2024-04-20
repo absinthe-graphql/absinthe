@@ -73,4 +73,12 @@ defmodule Absinthe.Subscription.Pubsub do
   only.
   """
   @callback publish_subscription(topic :: binary, data :: map) :: term
+
+  # @doc """
+  # This function is called by publish_mutation and is responsible for resolving the documents
+  # and publishing the results to the appropriate topics.
+  # """
+  @callback run_docset(pubsub :: t, docs_and_topics :: list, mutation_result :: term) :: term
+
+  @optional_callbacks run_docset: 3
 end
