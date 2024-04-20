@@ -8,7 +8,7 @@
 - Bugfix: [Handle non_null(list_of(:thing)) with null list elements properly](https://github.com/absinthe-graphql/absinthe/pull/1259)
 - Bugfix: [More non null result handling improvements](https://github.com/absinthe-graphql/absinthe/pull/1275)
 
-## 1.7.4
+## 1.7.5
 
 - Feature: Support Dataloader 2.0
 
