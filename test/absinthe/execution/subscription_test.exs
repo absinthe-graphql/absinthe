@@ -454,6 +454,47 @@ defmodule Absinthe.Execution.SubscriptionTest do
   end
 
   @query """
+  subscription ($locationId: ID!, $date: Date) {
+    schedule(locationId: $locationId, date: $date)
+  }
+  """
+  test "subscribing twice and unsubscribing once means new messages are only sent to one subscription" do
+    location_id = "12"
+    date1 = "2020-01-01"
+    date2 = "2020-01-02"
+
+    assert {:ok, %{"subscribed" => topic1}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{"locationId" => location_id, "date" => date1},
+               context: %{pubsub: PubSub}
+             )
+
+    assert {:ok, %{"subscribed" => topic2}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{"locationId" => location_id, "date" => date2},
+               context: %{pubsub: PubSub}
+             )
+
+    Absinthe.Subscription.unsubscribe(PubSub, topic1)
+
+    Absinthe.Subscription.publish(PubSub, "foo", schedule: location_id)
+
+    assert_receive({:broadcast, msg})
+
+    assert %{
+             event: "subscription:data",
+             result: %{data: %{"schedule" => "foo"}},
+             topic: topic2
+           } == msg
+
+    refute_receive({:broadcast, _})
+  end
+
+  @query """
   subscription ($userId: ID!) {
     user(id: $userId) { id name }
   }
