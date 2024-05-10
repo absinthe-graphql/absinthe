@@ -77,6 +77,10 @@ defmodule Absinthe.Execution.SubscriptionTest do
       # this pubsub is local and doesn't support clusters
       :ok
     end
+
+    def list_registry_keys() do
+      Registry.keys(__MODULE__, self())
+    end
   end
 
   defmodule PubSubWithDocsetRunner do
@@ -492,6 +496,48 @@ defmodule Absinthe.Execution.SubscriptionTest do
            } == msg
 
     refute_receive({:broadcast, _})
+  end
+
+  @query """
+  subscription ($clientId: ID!) {
+    thing(clientId: $clientId)
+  }
+  """
+  test "repeatedly subscribing and unsubscribing on the same topic doesn't grow registry indefinitely" do
+    client_id = "abc"
+
+    for _i <- 1..3 do
+      assert {:ok, %{"subscribed" => topic}} =
+               run_subscription(@query, Schema,
+                 variables: %{"clientId" => client_id},
+                 context: %{pubsub: PubSub}
+               )
+
+      Absinthe.Subscription.unsubscribe(PubSub, topic)
+    end
+
+    assert [] == PubSub.list_registry_keys()
+  end
+
+  @query """
+  subscription ($clientId: ID!) {
+    thing(clientId: $clientId)
+  }
+  """
+  test "repeatedly subscribing and unsubscribing on multiple topics doesn't grow registry indefinitely" do
+    client_id = "abc"
+
+    for i <- 1..3 do
+      assert {:ok, %{"subscribed" => topic}} =
+               run_subscription(@query, Schema,
+                 variables: %{"clientId" => "#{client_id}#{i}"},
+                 context: %{pubsub: PubSub}
+               )
+
+      Absinthe.Subscription.unsubscribe(PubSub, topic)
+    end
+
+    assert [] == PubSub.list_registry_keys()
   end
 
   @query """
