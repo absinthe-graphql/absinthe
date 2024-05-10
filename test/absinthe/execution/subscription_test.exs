@@ -122,6 +122,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
 
   defmodule Schema do
     use Absinthe.Schema
+    import_types Absinthe.Type.Custom
 
     query do
       field :foo, :string
@@ -186,6 +187,19 @@ defmodule Absinthe.Execution.SubscriptionTest do
             {
               :ok,
               topic: args.client_id
+            }
+        end
+      end
+
+      field :schedule, :string do
+        arg :location_id, non_null(:id)
+        arg :date, :date
+
+        config fn
+          args, _ ->
+            {
+              :ok,
+              topic: args.location_id
             }
         end
       end
@@ -398,6 +412,45 @@ defmodule Absinthe.Execution.SubscriptionTest do
                variables: %{"clientId" => "abc"},
                context: %{pubsub: PubSub}
              )
+  end
+
+  @query """
+  subscription ($locationId: ID!, $date: Date) {
+    schedule(locationId: $locationId, date: $date)
+  }
+  """
+  test "subscribing twice and unsubscribing once keeps one subscription active" do
+    location_id = "12"
+    date1 = "2020-01-01"
+    date2 = "2020-01-02"
+
+    assert {:ok, %{"subscribed" => topic1}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{"locationId" => location_id, "date" => date1},
+               context: %{pubsub: PubSub}
+             )
+
+    assert {:ok, %{"subscribed" => topic2}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{"locationId" => location_id, "date" => date2},
+               context: %{pubsub: PubSub}
+             )
+
+    Absinthe.Subscription.unsubscribe(PubSub, topic1)
+
+    Absinthe.Subscription.publish(PubSub, "foo", schedule: location_id)
+
+    assert_receive({:broadcast, msg})
+
+    assert %{
+             event: "subscription:data",
+             result: %{data: %{"schedule" => "foo"}},
+             topic: topic2
+           } == msg
   end
 
   @query """
