@@ -21,7 +21,7 @@ defmodule Absinthe.Phase.Schema.SpecCompliantInt do
   defp handle_node(%Blueprint.Schema.ScalarTypeDefinition{identifier: :integer}) do
     case ensure_compiled(Absinthe.Type.BuiltIns.SpecCompliantInt) do
       {:module, module} ->
-        [types] = module.__absinthe_blueprint__.schema_definitions
+        [types] = module.__absinthe_blueprint__().schema_definitions
 
         Enum.find(
           types.type_definitions,

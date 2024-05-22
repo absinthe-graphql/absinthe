@@ -16,7 +16,7 @@ defmodule Absinthe.Schema.Compiled do
   end
 
   def __absinthe_types__(schema_mod) do
-    Module.concat([schema_mod, Compiled]).__absinthe_types__
+    Module.concat([schema_mod, Compiled]).__absinthe_types__()
   end
 
   def __absinthe_types__(schema_mod, group) do
@@ -24,14 +24,14 @@ defmodule Absinthe.Schema.Compiled do
   end
 
   def __absinthe_directives__(schema_mod) do
-    Module.concat([schema_mod, Compiled]).__absinthe_directives__
+    Module.concat([schema_mod, Compiled]).__absinthe_directives__()
   end
 
   def __absinthe_interface_implementors__(schema_mod) do
-    Module.concat([schema_mod, Compiled]).__absinthe_interface_implementors__
+    Module.concat([schema_mod, Compiled]).__absinthe_interface_implementors__()
   end
 
   def __absinthe_schema_declaration__(schema_mod) do
-    Module.concat([schema_mod, Compiled]).__absinthe_schema_declaration__
+    Module.concat([schema_mod, Compiled]).__absinthe_schema_declaration__()
   end
 end
