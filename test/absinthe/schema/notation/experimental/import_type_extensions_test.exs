@@ -106,7 +106,7 @@ defmodule Absinthe.Schema.Notation.Experimental.ImportTypeExtensionsTest do
   end
 
   defp imports(module) do
-    %{schema_definitions: [schema]} = module.__absinthe_blueprint__
+    %{schema_definitions: [schema]} = module.__absinthe_blueprint__()
     schema.type_extension_imports
   end
 

@@ -270,7 +270,7 @@ defmodule Absinthe.Schema.Notation.ImportTest do
       |> Absinthe.Pipeline.upto(Phase.Schema.FieldImports)
       |> Kernel.++([Phase.Schema.Validation.Result])
 
-    case Absinthe.Pipeline.run(schema.__absinthe_blueprint__, pipeline) do
+    case Absinthe.Pipeline.run(schema.__absinthe_blueprint__(), pipeline) do
       {ok_or_error, val, _} ->
         {ok_or_error, val}
     end

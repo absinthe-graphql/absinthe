@@ -33,7 +33,7 @@ defmodule Absinthe.Phase.Schema.DirectiveImports do
   defp do_imports([{module, opts} | rest], acc, schema) do
     case ensure_compiled(module) do
       {:module, module} ->
-        [other_def] = module.__absinthe_blueprint__.schema_definitions
+        [other_def] = module.__absinthe_blueprint__().schema_definitions
 
         rejections = MapSet.new(Keyword.get(opts, :except, []))
 

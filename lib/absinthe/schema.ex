@@ -27,7 +27,7 @@ defmodule Absinthe.Schema do
   ```
 
   You can see what your schema's blueprint looks like by calling
-  `__absinthe_blueprint__` on any schema or type definition module.
+  `__absinthe_blueprint__()` on any schema or type definition module.
 
   ```
   defmodule MyAppWeb.Schema do
@@ -38,7 +38,7 @@ defmodule Absinthe.Schema do
     end
   end
 
-  > MyAppWeb.Schema.__absinthe_blueprint__
+  > MyAppWeb.Schema.__absinthe_blueprint__()
   #=> %Absinthe.Blueprint{...}
   ```
 
@@ -88,7 +88,7 @@ defmodule Absinthe.Schema do
     end
   end
 
-  Foo.__absinthe_blueprint__ #=> ...
+  Foo.__absinthe_blueprint__() #=> ...
   ```
   """
 
@@ -363,7 +363,7 @@ defmodule Absinthe.Schema do
 
   @spec apply_modifiers(Absinthe.Pipeline.t(), t) :: Absinthe.Pipeline.t()
   def apply_modifiers(pipeline, schema, opts \\ []) do
-    Enum.reduce(schema.__absinthe_pipeline_modifiers__, pipeline, fn
+    Enum.reduce(schema.__absinthe_pipeline_modifiers__(), pipeline, fn
       {module, function}, pipeline ->
         cond do
           function_exported?(module, function, 1) ->
@@ -400,7 +400,7 @@ defmodule Absinthe.Schema do
       |> Absinthe.Pipeline.for_schema(prototype_schema: prototype_schema)
       |> apply_modifiers(env.module)
 
-    env.module.__absinthe_blueprint__
+    env.module.__absinthe_blueprint__()
     |> Absinthe.Pipeline.run(pipeline)
     |> case do
       {:ok, _, _} ->
@@ -639,7 +639,7 @@ defmodule Absinthe.Schema do
   """
   @spec directives(t) :: [Type.Directive.t()]
   def directives(schema) do
-    schema.__absinthe_directives__
+    schema.__absinthe_directives__()
     |> Map.keys()
     |> Enum.map(&lookup_directive(schema, &1))
   end
@@ -661,13 +661,13 @@ defmodule Absinthe.Schema do
   def to_sdl(schema, opts \\ []) do
     pipeline =
       schema
-      |> Absinthe.Pipeline.for_schema(prototype_schema: schema.__absinthe_prototype_schema__)
+      |> Absinthe.Pipeline.for_schema(prototype_schema: schema.__absinthe_prototype_schema__())
       |> Absinthe.Pipeline.upto({Absinthe.Phase.Schema.Validation.Result, pass: :final})
       |> apply_modifiers(schema, opts)
 
     # we can be assertive here, since this same pipeline was already used to
     # successfully compile the schema.
-    {:ok, bp, _} = Absinthe.Pipeline.run(schema.__absinthe_blueprint__, pipeline)
+    {:ok, bp, _} = Absinthe.Pipeline.run(schema.__absinthe_blueprint__(), pipeline)
 
     inspect(bp, pretty: true)
   end
@@ -677,7 +677,7 @@ defmodule Absinthe.Schema do
   """
   @spec implementors(t, Type.identifier_t() | Type.Interface.t()) :: [Type.Object.t()]
   def implementors(schema, ident) when is_atom(ident) do
-    schema.__absinthe_interface_implementors__
+    schema.__absinthe_interface_implementors__()
     |> Map.get(ident, [])
     |> Enum.map(&lookup_type(schema, &1))
   end
@@ -691,7 +691,7 @@ defmodule Absinthe.Schema do
   """
   @spec types(t) :: [Type.t()]
   def types(schema) do
-    schema.__absinthe_types__
+    schema.__absinthe_types__()
     |> Map.keys()
     |> Enum.map(&lookup_type(schema, &1))
   end
