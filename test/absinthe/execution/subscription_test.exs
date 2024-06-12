@@ -452,6 +452,31 @@ defmodule Absinthe.Execution.SubscriptionTest do
              )
   end
 
+  test "fires telemetry events when subscription config returns error", %{test: test} do
+    :ok =
+      :telemetry.attach_many(
+        "#{test}",
+        [
+          [:absinthe, :execute, :operation, :start],
+          [:absinthe, :execute, :operation, :stop]
+        ],
+        &Absinthe.TestTelemetryHelper.send_to_pid/4,
+        %{pid: self()}
+      )
+
+    assert {:ok, %{errors: [%{locations: [%{column: 3, line: 2}], message: "unauthorized"}]}} ==
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{"clientId" => "abc"},
+               context: %{pubsub: PubSub, authorized: false}
+             )
+
+    assert_received {:telemetry_event, {[:absinthe, :execute, :operation, :start], _, _, _}}
+
+    assert_received {:telemetry_event, {[:absinthe, :execute, :operation, :stop], _, _, _}}
+  end
+
   @query """
   subscription Example {
     reliesOnDocument
