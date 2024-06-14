@@ -130,6 +130,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
     object :user do
       field :id, :id
       field :name, :string
+      field :version, :integer
 
       field :group, :group do
         resolve fn user, _, %{context: %{test_pid: pid}} ->
@@ -214,6 +215,48 @@ defmodule Absinthe.Execution.SubscriptionTest do
           {:ok, topic: "*", context_id: "*", document_id: op_name}
         end
       end
+
+      field :prime, :user do
+        arg :client_id, non_null(:id)
+        arg :prime_data, list_of(:string)
+
+        config fn args, _ ->
+          {
+            :ok,
+            topic: args.client_id,
+            prime: fn %{context: %{prime_id: prime_id}} ->
+              {:ok, Enum.map(args.prime_data, &%{id: prime_id, name: &1})}
+            end
+          }
+        end
+      end
+
+      field :ordinal, :user do
+        arg :client_id, non_null(:id)
+
+        config fn args, _ ->
+          {
+            :ok,
+            topic: args.client_id, ordinal: fn %{version: version} -> version end
+          }
+        end
+      end
+
+      field :prime_ordinal, :user do
+        arg :client_id, non_null(:id)
+        arg :prime_data, list_of(:string)
+
+        config fn args, _ ->
+          {
+            :ok,
+            topic: args.client_id,
+            prime: fn _ ->
+              {:ok, [%{name: "first_user", version: 1}, %{name: "second_user", version: 2}]}
+            end,
+            ordinal: fn %{version: version} -> version end
+          }
+        end
+      end
     end
 
     mutation do
@@ -259,7 +302,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
 
     assert %{
              event: "subscription:data",
-             result: %{data: %{thing: %{foo: "bar"}}},
+             result: %{data: %{thing: %{foo: "bar"}}, ordinal: nil},
              topic: topic
            } == msg
   end
@@ -800,6 +843,116 @@ defmodule Absinthe.Execution.SubscriptionTest do
            } == msg
   end
 
+  @query """
+  subscription ($clientId: ID!, $primeData: [String]) {
+    prime(clientId: $clientId, primeData: $primeData) {
+      id
+      name
+    }
+  }
+  """
+  test "subscription with priming" do
+    client_id = "abc"
+    prime_data = ["name1", "name2"]
+
+    assert {:more, %{"subscribed" => _topic, continuations: continuations}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{
+                 "primeData" => prime_data,
+                 "clientId" => client_id
+               },
+               context: %{prime_id: "test_prime_id"}
+             )
+
+    assert {:more,
+            %{
+              data: %{"prime" => %{"id" => "test_prime_id", "name" => "name1"}},
+              continuations: continuations
+            }} = Absinthe.continue(continuations)
+
+    assert {:ok, %{data: %{"prime" => %{"id" => "test_prime_id", "name" => "name2"}}}} =
+             Absinthe.continue(continuations)
+  end
+
+  test "continuation with no extra data" do
+    client_id = "abc"
+
+    assert {:more, %{"subscribed" => _topic, continuations: continuations}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{
+                 "primeData" => [],
+                 "clientId" => client_id
+               },
+               context: %{prime_id: "test_prime_id"}
+             )
+
+    assert :no_more_results == Absinthe.continue(continuations)
+  end
+
+  @query """
+  subscription ($clientId: ID!) {
+    ordinal(clientId: $clientId) {
+      name
+    }
+  }
+  """
+  test "subscription with ordinals" do
+    client_id = "abc"
+
+    assert {:ok, %{"subscribed" => _topic}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{"clientId" => client_id},
+               context: %{pubsub: PubSub}
+             )
+
+    userv1 = %{id: "1", name: "Alicia", group: %{name: "Elixir Users"}, version: 1}
+    userv2 = %{id: "1", name: "Alicia", group: %{name: "Elixir Users"}, version: 2}
+
+    Absinthe.Subscription.publish(PubSub, userv1, ordinal: client_id)
+    Absinthe.Subscription.publish(PubSub, userv2, ordinal: client_id)
+
+    assert_receive({:broadcast, msg})
+    assert msg.result.ordinal == 1
+    assert_receive({:broadcast, msg})
+    assert msg.result.ordinal == 2
+  end
+
+  @query """
+  subscription ($clientId: ID!) {
+    primeOrdinal(clientId: $clientId) {
+      name
+    }
+  }
+  """
+  test "subscription with both priming and ordinals" do
+    client_id = "abc"
+
+    assert {:more, %{"subscribed" => _topic, continuations: continuations}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{
+                 "clientId" => client_id
+               }
+             )
+
+    assert {:more,
+            %{
+              data: %{"primeOrdinal" => %{"name" => "first_user"}},
+              ordinal: 1,
+              continuations: continuations
+            }} = Absinthe.continue(continuations)
+
+    assert {:ok, %{data: %{"primeOrdinal" => %{"name" => "second_user"}}, ordinal: 2}} =
+             Absinthe.continue(continuations)
+  end
+
   def run_subscription(query, schema, opts \\ []) do
     opts =
       Keyword.update(
@@ -810,7 +963,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
       )
 
     case run(query, schema, opts) do
-      {:ok, %{"subscribed" => topic}} = val ->
+      {response, %{"subscribed" => topic}} = val when response == :ok or response == :more ->
         opts[:context][:pubsub].subscribe(topic)
         val
 

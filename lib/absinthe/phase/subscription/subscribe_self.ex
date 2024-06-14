@@ -29,7 +29,7 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
 
       {:replace, blueprint,
        [
-         {Phase.Subscription.Result, topic: subscription_id},
+         {Phase.Subscription.Result, topic: subscription_id, prime: config[:prime]},
          {Phase.Telemetry, Keyword.put(options, :event, [:execute, :operation, :stop])}
        ]}
     else
@@ -44,11 +44,11 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
     end
   end
 
-  defp get_config(
-         %{schema_node: schema_node, argument_data: argument_data} = field,
-         context,
-         blueprint
-       ) do
+  def get_config(
+        %{schema_node: schema_node, argument_data: argument_data} = field,
+        context,
+        blueprint
+      ) do
     name = schema_node.identifier
 
     config =

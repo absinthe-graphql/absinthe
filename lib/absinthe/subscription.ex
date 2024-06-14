@@ -78,6 +78,8 @@ defmodule Absinthe.Subscription do
 
   @type subscription_field_spec :: {atom, term | (term -> term)}
 
+  @type prime_fun :: (Absinthe.Resolution.t() -> {:ok, [map()]})
+
   @doc """
   Publish a mutation
 
