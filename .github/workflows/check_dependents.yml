@@ -1,0 +1,52 @@
+name: Check Dependents
+
+on:
+  push:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test_dependents:
+    name: Ensure ${{ matrix.dependent }} tests pass
+    runs-on: ubuntu-24.04
+
+    strategy:
+      matrix:
+        dependent:
+          - 'absinthe_plug'
+          - 'absinthe_phoenix'
+          - 'absinthe_relay'
+
+    steps:
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: '1.17'
+          otp-version: '27'
+
+      - name: Checkout absinthe
+        uses: actions/checkout@v4
+
+      - name: Checkout ${{ matrix.dependent }}
+        uses: actions/checkout@v4
+        with:
+          repository: 'absinthe-graphql/${{ matrix.dependent }}'
+          path: '${{ matrix.dependent }}'
+
+      - name: Install absinthe package dependencies
+        run: mix deps.get
+
+      - name: Update absinthe dependency
+        run: 'sed -i -e "s|{:absinthe,.*|{:absinthe, path: \"$GITHUB_WORKSPACE\", override: true},|" mix.exs'
+        working-directory: ./${{ matrix.dependent }}
+
+      - name: Install ${{ matrix.dependent }} package dependencies
+        run: mix deps.get
+        working-directory: ./${{ matrix.dependent }}
+
+      - name: Run unit tests
+        run: |
+          mix clean
+          mix test
+        working-directory: ./${{ matrix.dependent }}

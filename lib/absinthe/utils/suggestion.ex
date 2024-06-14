@@ -1,5 +1,5 @@
 defmodule Absinthe.Utils.Suggestion do
-  @jaro_threshold 0.70
+  @jaro_threshold 0.68
 
   @doc """
   Sort a list of suggestions by Jaro distance to a target string,
