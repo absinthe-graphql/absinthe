@@ -175,10 +175,6 @@ defmodule Absinthe.Subscription do
   def unsubscribe(pubsub, doc_id) do
     registry = pubsub |> registry_name
 
-    for field_key <- pdict_fields(doc_id) do
-      Registry.unregister(registry, field_key)
-    end
-
     Registry.unregister(registry, doc_id)
 
     pdict_delete_fields(doc_id)
