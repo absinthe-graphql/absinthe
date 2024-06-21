@@ -28,12 +28,12 @@ defmodule Absinthe.Schema.Notation.Experimental.ArgumentTest do
 
   describe "arg" do
     test "with a bare type" do
-      assert %{name: "plain", description: nil, type: :string, identifier: :plain} =
+      assert %{name: "plain", description: nil, type: %{id: :string}, identifier: :plain} =
                lookup_argument(Definition, :obj, :field, :plain)
     end
 
     test "with attrs" do
-      assert %{name: "HasAttrs", type: :boolean, identifier: :with_attrs} =
+      assert %{name: "HasAttrs", type: %{id: :boolean}, identifier: :with_attrs} =
                lookup_argument(Definition, :obj, :field, :with_attrs)
     end
 
