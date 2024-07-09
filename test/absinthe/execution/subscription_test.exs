@@ -269,6 +269,23 @@ defmodule Absinthe.Execution.SubscriptionTest do
           }
         end
       end
+
+      field :prime_ordinal_with_compare, :user do
+        arg :client_id, non_null(:id)
+        arg :prime_data, list_of(:string)
+
+        config fn args, _ ->
+          {
+            :ok,
+            topic: args.client_id,
+            prime: fn _ ->
+              {:ok, [%{name: "first_user", version: 1}, %{name: "second_user", version: 2}]}
+            end,
+            ordinal: fn %{version: version} -> version end,
+            ordinal_compare: &custom_ordinal_compare/2
+          }
+        end
+      end
     end
 
     mutation do
@@ -279,6 +296,10 @@ defmodule Absinthe.Execution.SubscriptionTest do
           {:ok, %{id: id, name: "foo"}}
         end
       end
+    end
+
+    def custom_ordinal_compare(a, b) do
+      {a > b, b + 0.5}
     end
   end
 
@@ -1050,6 +1071,39 @@ defmodule Absinthe.Execution.SubscriptionTest do
             }} = Absinthe.continue(continuations)
 
     assert {:ok, %{data: %{"primeOrdinal" => %{"name" => "second_user"}}, ordinal: 2}} =
+             Absinthe.continue(continuations)
+  end
+
+  @query """
+  subscription ($clientId: ID!) {
+    primeOrdinalWithCompare(clientId: $clientId) {
+      name
+    }
+  }
+  """
+  test "subscription with priming, ordinals, and custom ordinal compare function" do
+    client_id = "abc"
+
+    assert {:more, %{"subscribed" => _topic, continuations: continuations}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{
+                 "clientId" => client_id
+               }
+             )
+
+    assert {:more,
+            %{
+              data: %{"primeOrdinalWithCompare" => %{"name" => "first_user"}},
+              ordinal: 1,
+              ordinal_compare_fun: custom_ordinal_compare,
+              continuations: continuations
+            }} = Absinthe.continue(continuations)
+
+    assert custom_ordinal_compare.(1, 2) == {false, 2.5}
+
+    assert {:ok, %{data: %{"primeOrdinalWithCompare" => %{"name" => "second_user"}}, ordinal: 2}} =
              Absinthe.continue(continuations)
   end
 

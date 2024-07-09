@@ -12,25 +12,15 @@ defmodule Absinthe.Phase.Subscription.Result do
   def run(blueprint, options) do
     topic = Keyword.fetch!(options, :topic)
     prime = Keyword.get(options, :prime)
-    result = %{"subscribed" => topic}
 
-    case prime do
-      nil ->
-        {:ok, put_in(blueprint.result, result)}
+    result = maybe_add_prime(%{"subscribed" => topic}, prime, blueprint, options)
 
-      prime_fun when is_function(prime_fun, 1) ->
-        stash_prime(prime_fun, result, blueprint, options)
-
-      val ->
-        raise """
-        Invalid prime function. Must be a function of arity 1.
-
-        #{inspect(val)}
-        """
-    end
+    {:ok, put_in(blueprint.result, result)}
   end
 
-  def stash_prime(prime_fun, base_result, blueprint, options) do
+  def maybe_add_prime(result, nil, _blueprint, _options), do: result
+
+  def maybe_add_prime(result, prime_fun, blueprint, options) when is_function(prime_fun, 1) do
     continuation = %Continuation{
       phase_input: blueprint,
       pipeline: [
@@ -41,8 +31,14 @@ defmodule Absinthe.Phase.Subscription.Result do
       ]
     }
 
-    result = Map.put(base_result, :continuations, [continuation])
+    Map.put(result, :continuations, [continuation])
+  end
 
-    {:ok, put_in(blueprint.result, result)}
+  def maybe_add_prime(_result, prime_fun, _blueprint, _options) do
+    raise """
+        Invalid prime function. Must be a function of arity 1.
+
+    #{inspect(prime_fun)}
+    """
   end
 end

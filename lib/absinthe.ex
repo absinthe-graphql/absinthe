@@ -46,10 +46,15 @@ defmodule Absinthe do
 
   @type continuations_t :: nil | [Absinthe.Blueprint.Continuation.t()]
 
+  @type ordinal_fun :: (term() -> term())
+
+  @type ordinal_compare_fun :: (term(), term() -> {boolean(), term()})
+
   @type result_t ::
           %{
             required(:data) => nil | result_selection_t,
-            optional(:ordinal) => term(),
+            optional(:ordinal_fun) => ordinal_fun(),
+            optional(:ordinal_compare_fun) => ordinal_compare_fun(),
             optional(:continuation) => continuations_t,
             optional(:errors) => [result_error_t]
           }
