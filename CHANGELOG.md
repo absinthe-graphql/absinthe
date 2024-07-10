@@ -1,7 +1,10 @@
 # Changelog
 
-## Unreleased
+## 1.7.7
 - POTENTIALLY BREAKING Bug Fix: [Validate variable usage in nested input arguments](https://github.com/absinthe-graphql/absinthe/pull/1290).This could break incoming documents previously considered valid. Skip the Absinthe.Phase.Document.Arguments.VariableTypesMatch phase to avoid this check. See Absinthe.Pipeline on adjusting the document pipeline.
+- #1321 resolves telemetry issues
+- Various minor dependency versioning tweaks
+- Handle Elixir 1.17 warnings
 
 ## 1.7.6
 
