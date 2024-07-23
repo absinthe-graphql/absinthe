@@ -187,23 +187,21 @@ defmodule Absinthe.Subscription do
 
   @doc false
   def get(pubsub, key) do
-    pubsub
-    |> registry_name
-    |> Registry.lookup(key)
-    |> then(fn doc_ids ->
-      pubsub
-      |> registry_name
-      |> Registry.select(
-        # We compose a list of match specs that basically mean "lookup all keys
-        # in the doc_ids list"
-        for {_, doc_id} <- doc_ids,
-            do: {{:"$1", :_, :"$2"}, [{:==, :"$1", doc_id}], [{{:"$1", :"$2"}}]}
-      )
-    end)
-    |> Map.new(fn {doc_id, doc} ->
-      doc = Map.update!(doc, :initial_phases, &PipelineSerializer.unpack/1)
+    name = registry_name(pubsub)
 
-      {doc_id, doc}
+    name
+    |> Registry.lookup(key)
+    |> MapSet.new(fn {_pid, doc_id} -> doc_id end)
+    |> Enum.reduce(%{}, fn doc_id, acc ->
+      case Registry.lookup(name, doc_id) do
+        [] ->
+          acc
+
+        [{_pid, doc} | _rest] ->
+          Map.put_new_lazy(acc, doc_id, fn ->
+            Map.update!(doc, :initial_phases, &PipelineSerializer.unpack/1)
+          end)
+      end
     end)
   end
 
