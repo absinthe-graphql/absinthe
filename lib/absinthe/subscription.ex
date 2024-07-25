@@ -192,17 +192,17 @@ defmodule Absinthe.Subscription do
     name
     |> Registry.lookup(key)
     |> MapSet.new(fn {_pid, doc_id} -> doc_id end)
-    |> Enum.reduce(%{}, fn doc_id, acc ->
+    |> Enum.reduce([], fn doc_id, acc ->
       case Registry.lookup(name, doc_id) do
         [] ->
           acc
 
         [{_pid, doc} | _rest] ->
-          Map.put_new_lazy(acc, doc_id, fn ->
-            Map.update!(doc, :initial_phases, &PipelineSerializer.unpack/1)
-          end)
+          doc = Map.update!(doc, :initial_phases, &PipelineSerializer.unpack/1)
+          [{doc_id, doc} | acc]
       end
     end)
+    |> Map.new()
   end
 
   @doc false
