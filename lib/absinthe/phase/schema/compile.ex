@@ -8,7 +8,10 @@ defmodule Absinthe.Phase.Schema.Compile do
 
     %{schema_definitions: [schema]} = blueprint
 
-    type_ast = build_types(schema.type_artifacts)
+    prototype_schema = Keyword.fetch!(opts, :prototype_schema)
+
+    type_ast = build_types(schema.type_artifacts, prototype_schema)
+
     directive_ast = build_directives(schema.directive_artifacts)
 
     type_list =
@@ -26,8 +29,6 @@ defmodule Absinthe.Phase.Schema.Compile do
       Map.new(schema.directive_artifacts, fn type_def ->
         {type_def.identifier, type_def.name}
       end)
-
-    prototype_schema = Keyword.fetch!(opts, :prototype_schema)
 
     metadata = build_metadata(schema)
 
@@ -86,7 +87,7 @@ defmodule Absinthe.Phase.Schema.Compile do
     end
   end
 
-  def build_types(types) do
+  def build_types(types, prototype_schema) do
     for type <- types do
       if !type.definition,
         do:
@@ -108,9 +109,13 @@ defmodule Absinthe.Phase.Schema.Compile do
       end
     end
     |> Enum.concat([
-      quote do
-        def __absinthe_type__(_type) do
-          nil
+      if prototype_schema == Absinthe.Schema.Prototype do
+        quote do
+          def __absinthe_type__(_type), do: nil
+        end
+      else
+        quote do
+          def __absinthe_type__(type), do: unquote(prototype_schema).__absinthe_type__(type)
         end
       end
     ])
