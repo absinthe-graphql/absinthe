@@ -314,6 +314,39 @@ defmodule Absinthe.Execution.SubscriptionTest do
     refute_receive({:broadcast, _})
   end
 
+  test "can unsubscribe from duplicate subscriptions individually" do
+    client_id = "abc"
+
+    assert {:ok, %{"subscribed" => topic1}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{"clientId" => client_id},
+               context: %{pubsub: PubSub}
+             )
+
+    assert {:ok, %{"subscribed" => topic2}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{"clientId" => client_id},
+               context: %{pubsub: PubSub}
+             )
+
+    Absinthe.Subscription.publish(PubSub, "foo", thing: client_id)
+    assert_receive({:broadcast, a})
+    assert_receive({:broadcast, b})
+    doc_ids = Enum.map([a, b], &(&1.topic))
+    assert topic1 in doc_ids
+    assert topic2 in doc_ids
+
+    Absinthe.Subscription.unsubscribe(PubSub, topic1)
+    Absinthe.Subscription.publish(PubSub, "bar", thing: client_id)
+    assert_receive({:broadcast, a})
+    refute_receive({:broadcast, _})
+    assert topic2 == a.topic
+  end
+
   @query """
   subscription {
     multipleTopics
