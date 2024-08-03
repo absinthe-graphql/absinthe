@@ -336,7 +336,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
     Absinthe.Subscription.publish(PubSub, "foo", thing: client_id)
     assert_receive({:broadcast, a})
     assert_receive({:broadcast, b})
-    doc_ids = Enum.map([a, b], &(&1.topic))
+    doc_ids = Enum.map([a, b], & &1.topic)
     assert topic1 in doc_ids
     assert topic2 in doc_ids
 
