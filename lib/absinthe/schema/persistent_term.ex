@@ -54,7 +54,20 @@ if Code.ensure_loaded?(:persistent_term) do
       |> get()
       |> Map.fetch!(:__absinthe_type__)
       |> Map.get(name)
+      |> __maybe_absinthe_type_from_prototype(name, schema_mod)
     end
+
+    defp __maybe_absinthe_type_from_prototype(nil, name, schema_mod) do
+      prototype_schema_mod = schema_mod.__absinthe_prototype_schema__()
+
+      if prototype_schema_mod == Absinthe.Schema.Prototype do
+        nil
+      else
+        prototype_schema_mod.__absinthe_type__(name)
+      end
+    end
+
+    defp __maybe_absinthe_type_from_prototype(value, _, _), do: value
 
     def __absinthe_directive__(schema_mod, name) do
       schema_mod
@@ -68,6 +81,7 @@ if Code.ensure_loaded?(:persistent_term) do
       |> get()
       |> Map.fetch!(:__absinthe_types__)
       |> Map.fetch!(:referenced)
+      |> __maybe_merge_types_from_prototype(schema_mod, :referenced)
     end
 
     def __absinthe_types__(schema_mod, group) do
@@ -75,6 +89,17 @@ if Code.ensure_loaded?(:persistent_term) do
       |> get()
       |> Map.fetch!(:__absinthe_types__)
       |> Map.fetch!(group)
+      |> __maybe_merge_types_from_prototype(schema_mod, group)
+    end
+
+    defp __maybe_merge_types_from_prototype(types, schema_mod, group) do
+      prototype_schema_mod = schema_mod.__absinthe_prototype_schema__()
+
+      if prototype_schema_mod == Absinthe.Schema.Prototype do
+        types
+      else
+        Map.merge(types, prototype_schema_mod.__absinthe_types__(group))
+      end
     end
 
     def __absinthe_directives__(schema_mod) do
