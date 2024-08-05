@@ -19,11 +19,29 @@ defmodule Absinthe.Phase.Schema.Compile do
         {type_def.identifier, type_def.name}
       end)
 
+    type_list =
+      case prototype_schema do
+        Absinthe.Schema.Prototype ->
+          type_list
+
+        prototype_schema ->
+          Map.merge(type_list, prototype_schema.__absinthe_types__())
+      end
+
     referenced_types =
       for type_def <- schema.type_definitions,
           type_def.__private__[:__absinthe_referenced__],
           into: %{},
           do: {type_def.identifier, type_def.name}
+
+    referenced_types =
+      case prototype_schema do
+        Absinthe.Schema.Prototype ->
+          referenced_types
+
+        prototype_schema ->
+          Map.merge(referenced_types, prototype_schema.__absinthe_types__(:referenced))
+      end
 
     directive_list =
       Map.new(schema.directive_artifacts, fn type_def ->
