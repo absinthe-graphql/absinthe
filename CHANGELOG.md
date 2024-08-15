@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+- Feature: [Add async option to Absinthe.Subscription](https://github.com/absinthe-graphql/absinthe/pull/1329)
+- Bug Fix: [Avoid table scans on registry](https://github.com/absinthe-graphql/absinthe/pull/1330)
+- Big Fix: [Unregsiter duplicate (listening to the same topic) subscriptions individually](https://github.com/absinthe-graphql/absinthe/pull/1336)
+
 ## 1.7.8
 
 - Bugfix: Fixes an issue where schemas would not find their types, or not be found at all.
