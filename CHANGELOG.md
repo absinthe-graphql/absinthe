@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.8
+
+- Bugfix: Fixes an issue where schemas would not find their types, or not be found at all.
+
 ## 1.7.7
 - POTENTIALLY BREAKING Bug Fix: [Validate variable usage in nested input arguments](https://github.com/absinthe-graphql/absinthe/pull/1290).This could break incoming documents previously considered valid. Skip the Absinthe.Phase.Document.Arguments.VariableTypesMatch phase to avoid this check. See Absinthe.Pipeline on adjusting the document pipeline.
 - #1321 resolves telemetry issues
