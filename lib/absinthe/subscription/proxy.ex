@@ -6,10 +6,11 @@ defmodule Absinthe.Subscription.Proxy do
   defstruct [
     :pubsub,
     :node,
-    :task_super
+    :task_super,
+    :async
   ]
 
-  def child_spec([_, _, shard] = args) do
+  def child_spec([_task_super, _pubsub, shard, _async] = args) do
     %{
       id: {__MODULE__, shard},
       start: {__MODULE__, :start_link, [args]}
@@ -26,11 +27,11 @@ defmodule Absinthe.Subscription.Proxy do
 
   def topic(shard), do: "__absinthe__:proxy:#{shard}"
 
-  def init([task_super, pubsub, shard]) do
+  def init([task_super, pubsub, shard, async]) do
     node_name = pubsub.node_name()
     :ok = pubsub.subscribe(topic(shard))
     Process.send_after(self(), :gc, @gc_interval)
-    {:ok, %__MODULE__{pubsub: pubsub, node: node_name, task_super: task_super}}
+    {:ok, %__MODULE__{pubsub: pubsub, node: node_name, task_super: task_super, async: async}}
   end
 
   def handle_info(:gc, state) do
@@ -42,13 +43,20 @@ defmodule Absinthe.Subscription.Proxy do
   def handle_info(payload, state) do
     # There's no meaningful form of backpressure to have here, and we can't
     # bottleneck execution inside each proxy process
-
     unless payload.node == state.pubsub.node_name() do
-      Subscription.Local.publish_mutation(
-        state.pubsub,
-        payload.mutation_result,
-        payload.subscribed_fields
-      )
+      if state.async do
+        Task.Supervisor.start_child(state.task_super, Subscription.Local, :publish_mutation, [
+          state.pubsub,
+          payload.mutation_result,
+          payload.subscribed_fields
+        ])
+      else
+        Subscription.Local.publish_mutation(
+          state.pubsub,
+          payload.mutation_result,
+          payload.subscribed_fields
+        )
+      end
     end
 
     {:noreply, state}
