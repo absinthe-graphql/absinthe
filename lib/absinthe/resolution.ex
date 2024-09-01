@@ -128,6 +128,7 @@ defmodule Absinthe.Resolution do
   In this case `5` is the 0 based index in the list of users the field is currently
   at.
   """
+  @spec path(t()) :: [String.t()]
   def path(%{path: path}) do
     path
     |> Enum.reverse()
@@ -235,8 +236,30 @@ defmodule Absinthe.Resolution do
 
   def call(res, _), do: res
 
+  @doc """
+  Get a list of strings representing the path to this field resolution.
+  The index of list items is dropped and the schema type is included.
+
+  ## Examples
+  Given some query:
+  ```graphql
+  query {users { email }}
+  ```
+
+  If you called this function inside a resolver on the users email field it
+  returns a value like:
+
+  ```elixir
+  resolve fn _, _, resolution ->
+    Absinthe.Resolution.path(resolution) #=> ["email", "users", "RootQueryType"]
+  end
+  ```
+  """
+  @spec path_string(t()) :: [String.t()]
   def path_string(%__MODULE__{path: path}) do
-    Enum.map(path, fn
+    path
+    |> Enum.reject(fn x -> is_integer(x) end)
+    |> Enum.map(fn
       %{name: name, alias: alias} ->
         alias || name
 
