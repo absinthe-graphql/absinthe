@@ -128,7 +128,7 @@ defmodule Absinthe.Resolution do
   In this case `5` is the 0 based index in the list of users the field is currently
   at.
   """
-  @spec path(t()) :: [String.t()]
+  @spec path(t()) :: [String.t() | integer()]
   def path(%{path: path}) do
     path
     |> Enum.reverse()
@@ -251,20 +251,22 @@ defmodule Absinthe.Resolution do
 
   ```elixir
   resolve fn _, _, resolution ->
-    Absinthe.Resolution.path(resolution) #=> ["email", "users", "RootQueryType"]
+    Absinthe.Resolution.path(resolution) #=> ["email", "0", "users", "RootQueryType"]
   end
   ```
   """
   @spec path_string(t()) :: [String.t()]
   def path_string(%__MODULE__{path: path}) do
     path
-    |> Enum.reject(fn x -> is_integer(x) end)
     |> Enum.map(fn
       %{name: name, alias: alias} ->
         alias || name
 
       %{schema_node: schema_node} ->
         schema_node.name
+
+      n when is_integer(n) ->
+        Integer.to_string(n)
     end)
   end
 
