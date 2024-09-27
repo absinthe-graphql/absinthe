@@ -214,6 +214,18 @@ defmodule Absinthe.Execution.SubscriptionTest do
           {:ok, topic: "*", context_id: "*", document_id: op_name}
         end
       end
+
+      field :config_error, :string do
+        config fn _, _ ->
+          {:error, "failed"}
+        end
+      end
+
+      field :config_error_with_map, :string do
+        config fn _, _ ->
+          {:error, %{message: "failed", extensions: %{code: "FAILED"}}}
+        end
+      end
     end
 
     mutation do
@@ -615,6 +627,36 @@ defmodule Absinthe.Execution.SubscriptionTest do
     # we should get this twice since the different contexts prevent batching.
     assert_receive(:batch_get_group)
     assert_receive(:batch_get_group)
+  end
+
+  @query """
+  subscription Example {
+    configError
+  }
+  """
+  test "config errors" do
+    assert {:ok, %{errors: [%{message: "failed"}]}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{},
+               context: %{pubsub: PubSub}
+             )
+  end
+
+  @query """
+  subscription Example {
+    configErrorWithMap
+  }
+  """
+  test "config errors with a map" do
+    assert {:ok, %{errors: [%{message: "failed", extensions: %{code: "FAILED"}}]}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{},
+               context: %{pubsub: PubSub}
+             )
   end
 
   describe "subscription_ids" do
