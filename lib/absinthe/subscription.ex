@@ -59,6 +59,10 @@ defmodule Absinthe.Subscription do
     compressed or not.
   * `:pool_size` - (Optional - default `System.schedulers() * 2`) An integer
     specifying the number of `Absinthe.Subscription.Proxy` processes to start.
+    You may want to specify a fixed `:pool_size` if your deployment environment
+    does not guarantee an equal number of CPU cores to be available on all
+    application nodes. In such case, using the defaults may lead to missing
+    messages. This situation often happens on cloud-based deployment environments.
   """
   @spec child_spec(atom() | [opt()]) :: Supervisor.child_spec()
   def child_spec(pubsub) when is_atom(pubsub) do
