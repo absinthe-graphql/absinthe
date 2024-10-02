@@ -45,6 +45,14 @@ line:
     Supervisor.start_link(children, opts)
 ```
 
+> Note: If your application is deployed in an environment, where the number of CPU cores can differ between the application instances,
+> be sure to specify a fixed `:pool_size` option, otherwise the messages will not be delivered reliably between your nodes. This can
+> happen often on cloud deployment platforms.
+
+```elixir
+{Absinthe.Subscription, name: MyAppWeb.Endpoint, pool_size: 8}
+```
+
 See `Absinthe.Subscription.child_spec/1` for more information on the supported
 options.
 
