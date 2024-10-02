@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Feature: [Treat maps returned from config/2 as response](https://github.com/absinthe-graphql/absinthe/pull/1341)
 - Feature: [Add async option to Absinthe.Subscription](https://github.com/absinthe-graphql/absinthe/pull/1329)
 - Bug Fix: [Avoid table scans on registry](https://github.com/absinthe-graphql/absinthe/pull/1330)
 - Big Fix: [Unregsiter duplicate (listening to the same topic) subscriptions individually](https://github.com/absinthe-graphql/absinthe/pull/1336)
