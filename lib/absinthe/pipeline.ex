@@ -17,7 +17,9 @@ defmodule Absinthe.Pipeline do
 
   @type data_t :: any
 
-  @type run_result_t :: {:ok, data_t, [Phase.t()]} | {:error, String.t() | {:http_method, String.t()}, [Phase.t()]}
+  @type run_result_t ::
+          {:ok, data_t, [Phase.t()]}
+          | {:error, String.t() | {:http_method, String.t()}, [Phase.t()]}
 
   @type phase_config_t :: Phase.t() | {Phase.t(), Keyword.t()}
 
