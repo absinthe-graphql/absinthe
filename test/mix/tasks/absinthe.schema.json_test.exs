@@ -10,10 +10,27 @@ defmodule Mix.Tasks.Absinthe.Schema.JsonTest do
       field :item, :item
     end
 
+    mutation do
+      field :update_item,
+        type: :item,
+        args: [
+          id: [type: non_null(:string)],
+          item: [type: non_null(:input_item)]
+        ]
+    end
+
     object :item do
       description "A Basic Type"
       field :id, :id
       field :name, :string
+    end
+
+    input_object :input_item do
+      description "A thing as input"
+      field :value, :integer
+      field :deprecated_field, :string, deprecate: true
+      field :deprecated_field_with_reason, :string, deprecate: "reason"
+      field :deprecated_non_null_field, non_null(:string), deprecate: true
     end
   end
 
@@ -99,10 +116,33 @@ defmodule Mix.Tasks.Absinthe.Schema.JsonTest do
     test "generates a JSON file", %{tmp_dir: tmp_dir} do
       path = Path.join(tmp_dir, "schema.json")
 
-      argv = ["--schema", @test_schema, "--json-codec", @test_encoder, path]
+      argv = ["--schema", @test_schema, path]
       assert Task.run(argv)
 
       assert File.exists?(path)
+
+      decoded_schema = path |> File.read!() |> Jason.decode!()
+
+      # Includes deprecated fields by default
+      input_thing_field_names =
+        get_in(
+          decoded_schema,
+          [
+            "data",
+            "__schema",
+            "types",
+            Access.filter(&(&1["name"] == "InputItem")),
+            "inputFields",
+            Access.all(),
+            "name"
+          ]
+        )
+        |> List.flatten()
+
+      assert "value" in input_thing_field_names
+      assert "deprecatedField" in input_thing_field_names
+      assert "deprecatedFieldWithReason" in input_thing_field_names
+      assert "deprecatedNonNullField" in input_thing_field_names
     end
 
     @tag :tmp_dir
