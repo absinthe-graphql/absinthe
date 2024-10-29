@@ -10,6 +10,20 @@ defmodule Mix.Tasks.Absinthe.Schema.JsonTest do
       field :item, :item
     end
 
+    directive :mydirective do
+      arg :if, non_null(:boolean), description: "Skipped when true."
+      arg :unless, non_null(:boolean), description: "Skipped when false.", deprecate: "Use if"
+      on [:field, :fragment_spread, :inline_fragment]
+
+      expand fn
+        %{if: true}, node ->
+          Absinthe.Blueprint.put_flag(node, :skip, __MODULE__)
+
+        _, node ->
+          node
+      end
+    end
+
     mutation do
       field :update_item,
         type: :item,
@@ -164,6 +178,25 @@ defmodule Mix.Tasks.Absinthe.Schema.JsonTest do
 
       assert "id" in update_item_arg_names
       assert "item" in update_item_arg_names
+
+      # Includes deprecated directive args by default
+      my_directive_arg_names =
+        get_in(
+          decoded_schema,
+          [
+            "data",
+            "__schema",
+            "directives",
+            Access.filter(&(&1["name"] == "mydirective")),
+            "args",
+            Access.all(),
+            "name"
+          ]
+        )
+        |> List.flatten()
+
+      assert "if" in my_directive_arg_names
+      assert "unless" in my_directive_arg_names
     end
 
     @tag :tmp_dir
