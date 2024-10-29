@@ -14,7 +14,7 @@ defmodule Mix.Tasks.Absinthe.Schema.JsonTest do
       field :update_item,
         type: :item,
         args: [
-          id: [type: non_null(:string)],
+          id: [type: non_null(:string), deprecate: true],
           item: [type: non_null(:input_item)]
         ]
     end
@@ -143,6 +143,27 @@ defmodule Mix.Tasks.Absinthe.Schema.JsonTest do
       assert "deprecatedField" in input_thing_field_names
       assert "deprecatedFieldWithReason" in input_thing_field_names
       assert "deprecatedNonNullField" in input_thing_field_names
+
+      # Includes deprecated args by default
+      update_item_arg_names =
+        get_in(
+          decoded_schema,
+          [
+            "data",
+            "__schema",
+            "types",
+            Access.filter(&(&1["name"] == "RootMutationType")),
+            "fields",
+            Access.filter(&(&1["name"] == "updateItem")),
+            "args",
+            Access.all(),
+            "name"
+          ]
+        )
+        |> List.flatten()
+
+      assert "id" in update_item_arg_names
+      assert "item" in update_item_arg_names
     end
 
     @tag :tmp_dir
