@@ -18,7 +18,7 @@ query IntrospectionQuery {
       description
       locations
       isRepeatable
-      args {
+      args(includeDeprecated: true) {
         ...InputValue
       }
     }
@@ -32,7 +32,7 @@ fragment FullType on __Type {
   fields(includeDeprecated: true) {
     name
     description
-    args {
+    args(includeDeprecated: true) {
       ...InputValue
     }
     type {
@@ -41,7 +41,7 @@ fragment FullType on __Type {
     isDeprecated
     deprecationReason
   }
-  inputFields {
+  inputFields(includeDeprecated: true) {
     ...InputValue
   }
   interfaces {
