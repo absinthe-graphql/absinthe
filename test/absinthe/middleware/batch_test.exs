@@ -1,8 +1,6 @@
 defmodule Absinthe.Middleware.BatchTest do
   use Absinthe.Case, async: true
 
-  import ExUnit.CaptureLog
-
   defmodule TimeoutModule do
     def arbitrary_fn_name(_, _) do
       :timer.sleep(2000)
@@ -170,20 +168,33 @@ defmodule Absinthe.Middleware.BatchTest do
     assert {:ok, %{data: %{"ctx" => "some_value"}}} == Absinthe.run(doc, Schema)
   end
 
-  test "when batch task timeouts it logs batching options" do
+  test "when batch task timeouts it emits telemetry event", %{test: test} do
     doc = """
     {timeout}
     """
 
-    assert capture_log(fn ->
-             pid =
-               spawn(fn ->
-                 Absinthe.run(doc, Schema)
-               end)
+    :ok =
+      :telemetry.attach(
+        "#{test}",
+        [:absinthe, :middleware, :batch, :timeout],
+        &Absinthe.TestTelemetryHelper.send_to_pid/4,
+        pid: self()
+      )
 
-             wait_for_process_to_exit(pid)
-           end) =~
-             "fn: {Absinthe.Middleware.BatchTest.TimeoutModule, :arbitrary_fn_name, %{arbitrary: :data}}"
+    pid =
+      spawn(fn ->
+        Absinthe.run(doc, Schema)
+      end)
+
+    wait_for_process_to_exit(pid)
+
+    assert_receive {:telemetry_event,
+                    {[:absinthe, :middleware, :batch, :timeout], %{},
+                     %{
+                       fn:
+                         "{Absinthe.Middleware.BatchTest.TimeoutModule, :arbitrary_fn_name, %{arbitrary: :data}}",
+                       timeout: 1
+                     }, _}}
   end
 
   defp wait_for_process_to_exit(pid) do
