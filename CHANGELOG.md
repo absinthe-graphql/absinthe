@@ -5,6 +5,21 @@
 - Feature: [Add async option to Absinthe.Subscription](https://github.com/absinthe-graphql/absinthe/pull/1329)
 - Bug Fix: [Avoid table scans on registry](https://github.com/absinthe-graphql/absinthe/pull/1330)
 - Big Fix: [Unregsiter duplicate (listening to the same topic) subscriptions individually](https://github.com/absinthe-graphql/absinthe/pull/1336)
+- POTENTIALLY BREAKING Feature: [Add telemetry event on batch timeout](https://github.com/absinthe-graphql/absinthe/pull/1347). If you want to keep the behavior from 1.7.8, define a telemetry handler and attach it. For example:
+
+```elixir
+defmodule MyApp.Telemetry do
+  require Logger
+
+  def log_absinthe([:absinthe, :middleware, :batch, :timeout], _, metadata, _) do
+    Logger.error("Failed to get batching result in #{metadata.timeout}ms for\nfn: #{inspect(metadata.fn)}")
+  end
+end
+
+# attach
+
+:telemetry.attach("absinthe-batch-timeout", [:absinthe, :middleware, :batch, :timeout], &MyApp.Telemetry.log_absinthe/4, nil)
+```
 
 ## 1.7.8
 
