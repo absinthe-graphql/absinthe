@@ -10,10 +10,41 @@ defmodule Mix.Tasks.Absinthe.Schema.JsonTest do
       field :item, :item
     end
 
+    directive :mydirective do
+      arg :if, non_null(:boolean), description: "Skipped when true."
+      arg :unless, non_null(:boolean), description: "Skipped when false.", deprecate: "Use if"
+      on [:field, :fragment_spread, :inline_fragment]
+
+      expand fn
+        %{if: true}, node ->
+          Absinthe.Blueprint.put_flag(node, :skip, __MODULE__)
+
+        _, node ->
+          node
+      end
+    end
+
+    mutation do
+      field :update_item,
+        type: :item,
+        args: [
+          id: [type: non_null(:string), deprecate: true],
+          item: [type: non_null(:input_item)]
+        ]
+    end
+
     object :item do
       description "A Basic Type"
       field :id, :id
       field :name, :string
+    end
+
+    input_object :input_item do
+      description "A thing as input"
+      field :value, :integer
+      field :deprecated_field, :string, deprecate: true
+      field :deprecated_field_with_reason, :string, deprecate: "reason"
+      field :deprecated_non_null_field, non_null(:string), deprecate: true
     end
   end
 
@@ -99,10 +130,73 @@ defmodule Mix.Tasks.Absinthe.Schema.JsonTest do
     test "generates a JSON file", %{tmp_dir: tmp_dir} do
       path = Path.join(tmp_dir, "schema.json")
 
-      argv = ["--schema", @test_schema, "--json-codec", @test_encoder, path]
+      argv = ["--schema", @test_schema, path]
       assert Task.run(argv)
 
       assert File.exists?(path)
+
+      decoded_schema = path |> File.read!() |> Jason.decode!()
+
+      # Includes deprecated fields by default
+      input_thing_field_names =
+        get_in(
+          decoded_schema,
+          [
+            "data",
+            "__schema",
+            "types",
+            Access.filter(&(&1["name"] == "InputItem")),
+            "inputFields",
+            Access.all(),
+            "name"
+          ]
+        )
+        |> List.flatten()
+
+      assert "value" in input_thing_field_names
+      assert "deprecatedField" in input_thing_field_names
+      assert "deprecatedFieldWithReason" in input_thing_field_names
+      assert "deprecatedNonNullField" in input_thing_field_names
+
+      # Includes deprecated args by default
+      update_item_arg_names =
+        get_in(
+          decoded_schema,
+          [
+            "data",
+            "__schema",
+            "types",
+            Access.filter(&(&1["name"] == "RootMutationType")),
+            "fields",
+            Access.filter(&(&1["name"] == "updateItem")),
+            "args",
+            Access.all(),
+            "name"
+          ]
+        )
+        |> List.flatten()
+
+      assert "id" in update_item_arg_names
+      assert "item" in update_item_arg_names
+
+      # Includes deprecated directive args by default
+      my_directive_arg_names =
+        get_in(
+          decoded_schema,
+          [
+            "data",
+            "__schema",
+            "directives",
+            Access.filter(&(&1["name"] == "mydirective")),
+            "args",
+            Access.all(),
+            "name"
+          ]
+        )
+        |> List.flatten()
+
+      assert "if" in my_directive_arg_names
+      assert "unless" in my_directive_arg_names
     end
 
     @tag :tmp_dir
