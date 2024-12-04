@@ -55,7 +55,7 @@ defmodule Absinthe do
             required(:data) => nil | result_selection_t,
             optional(:ordinal_fun) => ordinal_fun(),
             optional(:ordinal_compare_fun) => ordinal_compare_fun(),
-            optional(:continuation) => continuations_t,
+            optional(:continuations) => continuations_t,
             optional(:errors) => [result_error_t]
           }
           | %{errors: [result_error_t]}
