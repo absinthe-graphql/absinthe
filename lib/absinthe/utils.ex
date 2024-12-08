@@ -152,23 +152,18 @@ defmodule Absinthe.Utils do
     """
   end
 
+  task_module = Application.compile_env(:absinthe, :task_module)
+
   @spec async((-> any)) :: Task.t()
-  def async(fun) do
-    case Application.fetch_env(:absinthe, :task_module) do
-      {:ok, module} when is_atom(module) ->
-        module.async(fun)
+  cond do
+    is_atom(task_module) and task_module != nil ->
+      def async(fun), do: unquote(task_module).async(fun)
 
-      _ ->
-        async_default(fun)
-    end
-  end
+    # Optionally use `async/1` function from `opentelemetry_process_propagator` if available
+    Code.ensure_loaded?(OpentelemetryProcessPropagator.Task) ->
+      defdelegate async(fun), to: OpentelemetryProcessPropagator.Task
 
-  # Optionally use `async/1` function from `opentelemetry_process_propagator` if available
-  if Code.ensure_loaded?(OpentelemetryProcessPropagator.Task) do
-    @spec async_default((-> any)) :: Task.t()
-    defdelegate async_default(fun), to: OpentelemetryProcessPropagator.Task, as: :async
-  else
-    @spec async_default((-> any)) :: Task.t()
-    defdelegate async_default(fun), to: Task, as: :async
+    true ->
+      defdelegate async(fun), to: Task
   end
 end
