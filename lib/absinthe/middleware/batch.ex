@@ -163,7 +163,7 @@ defmodule Absinthe.Middleware.Batch do
 
       _ ->
         emit_timeout_event(batch_fun, timeout)
-        Process.exit(self(), :timeout)
+        exit({:timeout, timeout, batch_fun})
     end
   end
 
