@@ -72,7 +72,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       args: [
         include_deprecated: [
           type: :boolean,
-          default_value: false
+          default_value: true
         ]
       ],
       resolve: fn %{include_deprecated: show_deprecated}, %{source: source} ->
@@ -187,7 +187,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       args: [
         include_deprecated: [
           type: :boolean,
-          default_value: false
+          default_value: true
         ]
       ],
       resolve: fn
@@ -230,7 +230,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       args: [
         include_deprecated: [
           type: :boolean,
-          default_value: false
+          default_value: true
         ]
       ],
       resolve: fn %{include_deprecated: show_deprecated}, %{source: %{args: args}} ->
