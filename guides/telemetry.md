@@ -89,3 +89,11 @@ Instead, you can add the `:opentelemetry_process_propagator` package to your
 dependencies, which has a `Task.async/1` wrapper that will attach the context
 automatically. If the package is installed, the middleware will use it in place
 of the default `Task.async/1`.
+
+Alternatively, you can configure the `Task` implementation to use:
+
+```elixir
+config :absinthe, task_module: MyTaskModule
+```
+
+The provided module must support the `async/1` function.
