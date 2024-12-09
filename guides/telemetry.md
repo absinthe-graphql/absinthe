@@ -96,4 +96,6 @@ Alternatively, you can configure the `Task` implementation to use:
 config :absinthe, task_module: MyTaskModule
 ```
 
-The provided module must support the `async/1` function.
+This is a compile-time option, so it cannot be configured in `runtime.exs`.
+Instead, place it in `config.exs` or build-specific configs (`dev.exs`,
+`prod.exs`, etc.). The provided module must support the `async/1` function.
