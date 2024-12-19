@@ -44,9 +44,20 @@ defmodule Absinthe do
           %{message: String.t()}
           | %{message: String.t(), locations: [%{line: pos_integer, column: integer}]}
 
+  @type continuations_t :: nil | [Absinthe.Blueprint.Continuation.t()]
+
+  @type ordinal_fun :: (term() -> term())
+
+  @type ordinal_compare_fun :: (term(), term() -> {boolean(), term()})
+
   @type result_t ::
-          %{data: nil | result_selection_t}
-          | %{data: nil | result_selection_t, errors: [result_error_t]}
+          %{
+            required(:data) => nil | result_selection_t,
+            optional(:ordinal_fun) => ordinal_fun(),
+            optional(:ordinal_compare_fun) => ordinal_compare_fun(),
+            optional(:continuations) => continuations_t,
+            optional(:errors) => [result_error_t]
+          }
           | %{errors: [result_error_t]}
 
   @type pipeline_modifier_fun :: (Absinthe.Pipeline.t(), Keyword.t() -> Absinthe.Pipeline.t())
@@ -98,7 +109,8 @@ defmodule Absinthe do
           pipeline_modifier: pipeline_modifier_fun()
         ]
 
-  @type run_result :: {:ok, result_t} | {:error, String.t()}
+  @type run_result :: {:ok, result_t} | {:more, result_t} | {:error, String.t()}
+  @type continue_result :: run_result | :no_more_results
 
   @spec run(
           binary | Absinthe.Language.Source.t() | Absinthe.Language.Document.t(),
@@ -113,7 +125,26 @@ defmodule Absinthe do
       |> Absinthe.Pipeline.for_document(options)
       |> pipeline_modifier.(options)
 
-    case Absinthe.Pipeline.run(document, pipeline) do
+    document
+    |> Absinthe.Pipeline.run(pipeline)
+    |> build_result()
+  end
+
+  @spec continue([Absinthe.Blueprint.Continuation.t()]) :: continue_result
+  def continue(continuations) do
+    continuations
+    |> Absinthe.Pipeline.continue()
+    |> build_result()
+  end
+
+  defp build_result(output) do
+    case output do
+      {:ok, %{result: :no_more_results}, _phases} ->
+        :no_more_results
+
+      {:ok, %{result: %{continuations: c} = result}, _phases} when c != [] ->
+        {:more, result}
+
       {:ok, %{result: result}, _phases} ->
         {:ok, result}
 
@@ -137,6 +168,7 @@ defmodule Absinthe do
   def run!(input, schema, options \\ []) do
     case run(input, schema, options) do
       {:ok, result} -> result
+      {:more, result} -> result
       {:error, err} -> raise ExecutionError, message: err
     end
   end
