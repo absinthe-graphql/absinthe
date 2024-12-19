@@ -77,7 +77,7 @@ defmodule Absinthe.Mixfile do
       {:nimble_parsec, "~> 1.2.2 or ~> 1.3"},
       {:telemetry, "~> 1.0 or ~> 0.4"},
       {:dataloader, "~> 1.0.0 or ~> 2.0", optional: true},
-      {:decimal, "~> 1.0 or ~> 2.0", optional: true},
+      {:decimal, "~> 2.0", optional: true},
       {:opentelemetry_process_propagator, "~> 0.3 or ~> 0.2.1", optional: true},
       {:ex_doc, "~> 0.22", only: :dev},
       {:benchee, ">= 1.0.0", only: :dev},
