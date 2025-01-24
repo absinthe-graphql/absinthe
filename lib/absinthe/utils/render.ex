@@ -48,7 +48,7 @@ defmodule Absinthe.Utils.Render do
   end
 
   defp escape_string(<<char::utf8, rest::binary>>, acc) do
-    escape_string(rest, [acc | <<char::utf8>>])
+    escape_string(rest, acc ++ [<<char::utf8>>])
   end
 
   defp escape_string(<<>>, acc) do
