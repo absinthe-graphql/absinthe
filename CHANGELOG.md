@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v1.7.9
 - Feature: [Allow config/2 to send errors in spec compliant format](https://github.com/absinthe-graphql/absinthe/pull/1341)
 - Feature: [Add async option to Absinthe.Subscription](https://github.com/absinthe-graphql/absinthe/pull/1329)
 - Bug Fix: [Avoid table scans on registry](https://github.com/absinthe-graphql/absinthe/pull/1330)
