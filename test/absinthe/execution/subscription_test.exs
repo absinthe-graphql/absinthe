@@ -79,7 +79,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
     end
 
     def list_registry_keys() do
-      Registry.keys(__MODULE__, self())
+      Registry.keys(__MODULE__.Registry, self())
     end
   end
 
