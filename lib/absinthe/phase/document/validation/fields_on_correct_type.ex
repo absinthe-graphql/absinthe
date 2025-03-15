@@ -121,7 +121,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
         [identifier]
 
       %Type.Interface{identifier: identifier} ->
-        schema.__absinthe_interface_implementors__
+        schema.__absinthe_interface_implementors__()
         |> Map.fetch!(identifier)
 
       %Type.Union{types: types} ->

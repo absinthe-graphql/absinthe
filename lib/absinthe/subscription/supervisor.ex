@@ -24,10 +24,17 @@ defmodule Absinthe.Subscription.Supervisor do
     pool_size = Keyword.get(opts, :pool_size, System.schedulers_online() * 2)
     compress_registry? = Keyword.get(opts, :compress_registry?, true)
 
-    Supervisor.start_link(__MODULE__, {pubsub, pool_size, compress_registry?})
+    # Absinthe.Subscription.Proxy listens for subscription messages
+    # from other nodes and then runs Subscription.Local.publish_mutation to process
+    # the mutation on the local node. By default it runs in a task superivsor so that
+    # requests are handled concurrently. However, this may not work for some
+    # systems. Setting `async` to false makes it so that the requests are processed one at a time.
+    async? = Keyword.get(opts, :async, true)
+
+    Supervisor.start_link(__MODULE__, {pubsub, pool_size, compress_registry?, async?})
   end
 
-  def init({pubsub, pool_size, compress_registry?}) do
+  def init({pubsub, pool_size, compress_registry?, async?}) do
     registry_name = Absinthe.Subscription.registry_name(pubsub)
     meta = [pool_size: pool_size]
 
@@ -40,7 +47,7 @@ defmodule Absinthe.Subscription.Supervisor do
          meta: meta,
          compressed: compress_registry?
        ]},
-      {Absinthe.Subscription.ProxySupervisor, [pubsub, registry_name, pool_size]}
+      {Absinthe.Subscription.ProxySupervisor, [pubsub, registry_name, pool_size, async?]}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

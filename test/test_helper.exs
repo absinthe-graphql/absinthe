@@ -18,6 +18,6 @@ fixtures_schemas = [
 ]
 
 for schema <- fixtures_schemas,
-    schema.__absinthe_schema_provider__ == Absinthe.Schema.PersistentTerm do
+    schema.__absinthe_schema_provider__() == Absinthe.Schema.PersistentTerm do
   Absinthe.Schema.Manager.start_link(schema)
 end

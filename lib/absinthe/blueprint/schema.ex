@@ -59,7 +59,7 @@ defmodule Absinthe.Blueprint.Schema do
 
   def functions(module) do
     if function_exported?(module, :functions, 0) do
-      module.functions
+      module.functions()
     else
       []
     end

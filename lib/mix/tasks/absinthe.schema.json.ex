@@ -101,9 +101,6 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
     with {:ok, result} <- Absinthe.Schema.introspect(schema) do
       content = json_codec.encode!(result, pretty: pretty)
       {:ok, content}
-    else
-      {:error, reason} -> {:error, reason}
-      error -> {:error, error}
     end
   end
 

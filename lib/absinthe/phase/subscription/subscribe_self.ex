@@ -27,17 +27,19 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
 
       Absinthe.Subscription.subscribe(pubsub, field_keys, subscription_id, blueprint)
 
-      {:replace, blueprint,
-       [
-         {Phase.Subscription.Result, topic: subscription_id},
-         {Phase.Telemetry, Keyword.put(options, :event, [:execute, :operation, :stop])}
-       ]}
+      pipeline = [
+        {Phase.Subscription.Result, topic: subscription_id},
+        {Phase.Telemetry, Keyword.put(options, :event, [:execute, :operation, :stop])}
+      ]
+
+      {:replace, blueprint, pipeline}
     else
       {:error, error} ->
         blueprint = update_in(blueprint.execution.validation_errors, &[error | &1])
 
         error_pipeline = [
-          {Phase.Document.Result, options}
+          {Phase.Document.Result, options},
+          {Phase.Telemetry, Keyword.put(options, :event, [:execute, :operation, :stop])}
         ]
 
         {:replace, blueprint, error_pipeline}

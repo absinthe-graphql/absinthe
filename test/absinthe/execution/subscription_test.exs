@@ -232,6 +232,18 @@ defmodule Absinthe.Execution.SubscriptionTest do
           {:ok, topic: "*", context_id: "*", document_id: op_name}
         end
       end
+
+      field :config_error, :string do
+        config fn _, _ ->
+          {:error, "failed"}
+        end
+      end
+
+      field :config_error_with_map, :string do
+        config fn _, _ ->
+          {:error, %{message: "failed", extensions: %{code: "FAILED"}}}
+        end
+      end
     end
 
     mutation do
@@ -330,6 +342,39 @@ defmodule Absinthe.Execution.SubscriptionTest do
     Absinthe.Subscription.publish(PubSub, "foo", thing: client_id)
 
     refute_receive({:broadcast, _})
+  end
+
+  test "can unsubscribe from duplicate subscriptions individually" do
+    client_id = "abc"
+
+    assert {:ok, %{"subscribed" => topic1}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{"clientId" => client_id},
+               context: %{pubsub: PubSub}
+             )
+
+    assert {:ok, %{"subscribed" => topic2}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{"clientId" => client_id},
+               context: %{pubsub: PubSub}
+             )
+
+    Absinthe.Subscription.publish(PubSub, "foo", thing: client_id)
+    assert_receive({:broadcast, a})
+    assert_receive({:broadcast, b})
+    doc_ids = Enum.map([a, b], & &1.topic)
+    assert topic1 in doc_ids
+    assert topic2 in doc_ids
+
+    Absinthe.Subscription.unsubscribe(PubSub, topic1)
+    Absinthe.Subscription.publish(PubSub, "bar", thing: client_id)
+    assert_receive({:broadcast, a})
+    refute_receive({:broadcast, _})
+    assert topic2 == a.topic
   end
 
   @query """
@@ -592,6 +637,31 @@ defmodule Absinthe.Execution.SubscriptionTest do
              )
   end
 
+  test "fires telemetry events when subscription config returns error", %{test: test} do
+    :ok =
+      :telemetry.attach_many(
+        "#{test}",
+        [
+          [:absinthe, :execute, :operation, :start],
+          [:absinthe, :execute, :operation, :stop]
+        ],
+        &Absinthe.TestTelemetryHelper.send_to_pid/4,
+        %{pid: self()}
+      )
+
+    assert {:ok, %{errors: [%{locations: [%{column: 3, line: 2}], message: "unauthorized"}]}} ==
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{"clientId" => "abc"},
+               context: %{pubsub: PubSub, authorized: false}
+             )
+
+    assert_received {:telemetry_event, {[:absinthe, :execute, :operation, :start], _, _, _}}
+
+    assert_received {:telemetry_event, {[:absinthe, :execute, :operation, :stop], _, _, _}}
+  end
+
   @query """
   subscription Example {
     reliesOnDocument
@@ -697,6 +767,36 @@ defmodule Absinthe.Execution.SubscriptionTest do
     # we should get this twice since the different contexts prevent batching.
     assert_receive(:batch_get_group)
     assert_receive(:batch_get_group)
+  end
+
+  @query """
+  subscription Example {
+    configError
+  }
+  """
+  test "config errors" do
+    assert {:ok, %{errors: [%{message: "failed"}]}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{},
+               context: %{pubsub: PubSub}
+             )
+  end
+
+  @query """
+  subscription Example {
+    configErrorWithMap
+  }
+  """
+  test "config errors with a map" do
+    assert {:ok, %{errors: [%{message: "failed", extensions: %{code: "FAILED"}}]}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{},
+               context: %{pubsub: PubSub}
+             )
   end
 
   describe "subscription_ids" do

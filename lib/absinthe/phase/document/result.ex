@@ -109,6 +109,15 @@ defmodule Absinthe.Phase.Document.Result do
   defp field_name(%{alias: name}), do: name
   defp field_name(%{name: name}), do: name
 
+  defp format_error(%Phase.Error{message: %{message: _message} = error_object} = error, _opts) do
+    if Enum.empty?(error.locations) do
+      error_object
+    else
+      locations = Enum.flat_map(error.locations, &format_location/1)
+      Map.put_new(error_object, :locations, locations)
+    end
+  end
+
   defp format_error(%Phase.Error{locations: []} = error, opts) do
     error_object = %{message: error.message}
 

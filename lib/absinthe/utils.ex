@@ -116,7 +116,7 @@ defmodule Absinthe.Utils do
       |> List.last()
 
     types =
-      module.__absinthe_types__
+      module.__absinthe_types__()
       |> Map.keys()
       |> Enum.sort_by(& &1)
       |> Enum.map(fn identifier ->
@@ -131,7 +131,7 @@ defmodule Absinthe.Utils do
       end)
 
     directives =
-      module.__absinthe_directives__
+      module.__absinthe_directives__()
       |> Map.keys()
       |> Enum.sort_by(& &1)
       |> Enum.map(fn identifier ->

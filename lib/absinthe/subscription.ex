@@ -59,6 +59,10 @@ defmodule Absinthe.Subscription do
     compressed or not.
   * `:pool_size` - (Optional - default `System.schedulers() * 2`) An integer
     specifying the number of `Absinthe.Subscription.Proxy` processes to start.
+    You may want to specify a fixed `:pool_size` if your deployment environment
+    does not guarantee an equal number of CPU cores to be available on all
+    application nodes. In such case, using the defaults may lead to missing
+    messages. This situation often happens on cloud-based deployment environments.
   """
   @spec child_spec(atom() | [opt()]) :: Supervisor.child_spec()
   def child_spec(pubsub) when is_atom(pubsub) do
@@ -187,24 +191,22 @@ defmodule Absinthe.Subscription do
 
   @doc false
   def get(pubsub, key) do
-    pubsub
-    |> registry_name
-    |> Registry.lookup(key)
-    |> then(fn doc_ids ->
-      pubsub
-      |> registry_name
-      |> Registry.select(
-        # We compose a list of match specs that basically mean "lookup all keys
-        # in the doc_ids list"
-        for {_, doc_id} <- doc_ids,
-            do: {{:"$1", :_, :"$2"}, [{:==, :"$1", doc_id}], [{{:"$1", :"$2"}}]}
-      )
-    end)
-    |> Map.new(fn {doc_id, doc} ->
-      doc = Map.update!(doc, :initial_phases, &PipelineSerializer.unpack/1)
+    name = registry_name(pubsub)
 
-      {doc_id, doc}
+    name
+    |> Registry.lookup(key)
+    |> MapSet.new(fn {_pid, doc_id} -> doc_id end)
+    |> Enum.reduce([], fn doc_id, acc ->
+      case Registry.lookup(name, doc_id) do
+        [] ->
+          acc
+
+        [{_pid, doc} | _rest] ->
+          doc = Map.update!(doc, :initial_phases, &PipelineSerializer.unpack/1)
+          [{doc_id, doc} | acc]
+      end
     end)
+    |> Map.new()
   end
 
   @doc false

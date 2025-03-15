@@ -162,16 +162,14 @@ defmodule Absinthe.Middleware.Batch do
         result
 
       _ ->
-        Logger.error(
-          "Failed to get batching result in #{timeout}ms for\nfn: #{inspect(batch_fun)}"
-        )
-
-        Process.exit(self(), :timeout)
+        emit_timeout_event(batch_fun, timeout)
+        exit({:timeout, timeout, batch_fun})
     end
   end
 
   @batch_start [:absinthe, :middleware, :batch, :start]
   @batch_stop [:absinthe, :middleware, :batch, :stop]
+  @batch_timeout [:absinthe, :middleware, :batch, :timeout]
   defp emit_start_event(system_time, batch_fun, batch_opts, batch_data) do
     id = :erlang.unique_integer()
 
@@ -198,6 +196,15 @@ defmodule Absinthe.Middleware.Batch do
       %{duration: duration, end_time_mono: end_time_mono},
       Map.put(metadata, :result, result)
     )
+  end
+
+  defp emit_timeout_event(batch_fun, timeout) do
+    metadata = %{
+      fn: inspect(batch_fun),
+      timeout: timeout
+    }
+
+    :telemetry.execute(@batch_timeout, %{}, metadata)
   end
 
   defp call_batch_fun({module, fun}, batch_data) do

@@ -2,38 +2,36 @@ name: CI
 
 on:
   push:
-  pull_request:
     branches:
-      - master
+      - main
+  pull_request:
 
 jobs:
   test:
     name: Elixir ${{matrix.elixir}} / OTP ${{matrix.otp}}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     strategy:
       matrix:
         elixir:
-          - "1.13"
-          - "1.14"
-          - "1.15"
+          - '1.15'
+          - '1.16'
+          - '1.17'
+          - '1.18'
         otp:
-          - "24"
-          - "25"
-          - "26"
-        include:
-          - elixir: "1.15"
-            otp: "26"
-            format: true
+          - '25'
+          - '26'
+          - '27'
+        # see https://hexdocs.pm/elixir/compatibility-and-deprecations.html#between-elixir-and-erlang-otp
         exclude:
-          - otp: 26
-            elixir: 1.13
-          - otp: 26
-            elixir: 1.14
+          - elixir: 1.16
+            otp: 27
+          - elixir: 1.15
+            otp: 27
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
@@ -42,7 +40,7 @@ jobs:
           otp-version: ${{ matrix.otp }}
 
       - name: Restore deps cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: |
             deps
@@ -57,7 +55,6 @@ jobs:
 
       - name: Check Formatting
         run: mix format --check-formatted
-        if: ${{ matrix.format }}
 
       - name: Run unit tests
         run: |
@@ -72,15 +69,14 @@ jobs:
           SCHEMA_PROVIDER: persistent_term
 
       - name: Cache/uncache PLTs
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             priv/plts
           key: "v1-${{ runner.os }}-\
-                erlang-${{ matrix.otp }}-\
-                elixir-${{ matrix.elixir }}-\
-                ${{ hashFiles('mix.lock') }}"
+            erlang-${{ matrix.otp }}-\
+            elixir-${{ matrix.elixir }}-\
+            ${{ hashFiles('mix.lock') }}"
 
       - name: Run Dialyzer
         run: mix dialyzer
-

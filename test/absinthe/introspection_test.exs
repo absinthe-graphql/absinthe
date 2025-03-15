@@ -89,6 +89,160 @@ defmodule Absinthe.IntrospectionTest do
     end
   end
 
+  describe "introspection of complex directives" do
+    defmodule ComplexDirectiveSchema do
+      use Absinthe.Schema
+      use Absinthe.Fixture
+
+      defmodule Utils do
+        def parse(value), do: value
+        def serialize(value), do: value
+      end
+
+      defmodule ComplexDirectivePrototype do
+        use Absinthe.Schema.Prototype
+
+        input_object :complex do
+          field :str, :string
+        end
+
+        scalar :normal_string, description: "string" do
+          parse &Utils.parse/1
+          serialize &Utils.serialize/1
+        end
+
+        scalar :_underscore_normal_string, name: "_UnderscoreNormalString" do
+          parse &Utils.parse/1
+          serialize &Utils.serialize/1
+        end
+
+        enum :color_channel do
+          description "The selected color channel"
+          value :red, as: :r, description: "Color Red"
+          value :green, as: :g, description: "Color Green"
+          value :blue, as: :b, description: "Color Blue"
+        end
+
+        directive :complex_directive do
+          arg :complex, :complex
+          arg :normal_string, :normal_string
+          arg :color_channel, :color_channel
+          arg :_underscore_normal_string, :_underscore_normal_string
+
+          on [:field]
+        end
+      end
+
+      @prototype_schema ComplexDirectivePrototype
+
+      query do
+        field :foo,
+          type: :string,
+          args: [],
+          resolve: fn _, _ -> {:ok, "foo"} end
+      end
+    end
+
+    test "renders type for complex directives" do
+      result =
+        """
+        query IntrospectionQuery {
+          __schema {
+            types {
+              name
+            }
+            directives {
+              name
+              args {
+                name
+                description
+                type {
+                  kind
+                  name
+                }
+                defaultValue
+              }
+            }
+          }
+        }
+        """
+        |> run(ComplexDirectiveSchema)
+
+      assert {:ok,
+              %{
+                data: %{
+                  "__schema" => %{
+                    "directives" => [
+                      %{"name" => "complexDirective", "args" => complex_directive_args}
+                      | _
+                    ],
+                    "types" => types
+                  }
+                }
+              }} = result
+
+      assert Enum.member?(
+               complex_directive_args,
+               %{
+                 "type" => %{
+                   "kind" => "INPUT_OBJECT",
+                   "name" => "Complex"
+                 },
+                 "defaultValue" => nil,
+                 "description" => nil,
+                 "name" => "complex"
+               }
+             )
+
+      assert Enum.member?(types, %{"name" => "Complex"})
+
+      assert Enum.member?(
+               complex_directive_args,
+               %{
+                 "type" => %{
+                   "kind" => "SCALAR",
+                   "name" => "NormalString"
+                 },
+                 "defaultValue" => nil,
+                 "description" => nil,
+                 "name" => "normalString"
+               }
+             )
+
+      assert Enum.member?(types, %{"name" => "NormalString"})
+
+      assert Enum.member?(
+               complex_directive_args,
+               %{
+                 "type" => %{
+                   "kind" => "ENUM",
+                   "name" => "ColorChannel"
+                 },
+                 "defaultValue" => nil,
+                 "description" => nil,
+                 "name" => "colorChannel"
+               }
+             )
+
+      assert Enum.member?(types, %{"name" => "ColorChannel"})
+
+      assert Enum.member?(
+               complex_directive_args,
+               %{
+                 "type" => %{
+                   "kind" => "SCALAR",
+                   "name" => "_UnderscoreNormalString"
+                 },
+                 "defaultValue" => nil,
+                 "description" => nil,
+                 "name" => "_underscoreNormalString"
+               }
+             )
+
+      assert Enum.member?(types, %{"name" => "_UnderscoreNormalString"})
+    end
+  end
+
   describe "introspection of an enum type" do
     test "can use __type and value information with deprecations" do
       result =
