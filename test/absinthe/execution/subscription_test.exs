@@ -77,6 +77,10 @@ defmodule Absinthe.Execution.SubscriptionTest do
       # this pubsub is local and doesn't support clusters
       :ok
     end
+
+    def list_registry_keys() do
+      Registry.keys(__MODULE__.Registry, self())
+    end
   end
 
   defmodule PubSubWithDocsetRunner do
@@ -122,6 +126,7 @@ defmodule Absinthe.Execution.SubscriptionTest do
 
   defmodule Schema do
     use Absinthe.Schema
+    import_types Absinthe.Type.Custom
 
     query do
       field :foo, :string
@@ -186,6 +191,19 @@ defmodule Absinthe.Execution.SubscriptionTest do
             {
               :ok,
               topic: args.client_id
+            }
+        end
+      end
+
+      field :schedule, :string do
+        arg :location_id, non_null(:id)
+        arg :date, :date
+
+        config fn
+          args, _ ->
+            {
+              :ok,
+              topic: args.location_id
             }
         end
       end
@@ -443,6 +461,128 @@ defmodule Absinthe.Execution.SubscriptionTest do
                variables: %{"clientId" => "abc"},
                context: %{pubsub: PubSub}
              )
+  end
+
+  @query """
+  subscription ($locationId: ID!, $date: Date) {
+    schedule(locationId: $locationId, date: $date)
+  }
+  """
+  test "subscribing twice and unsubscribing once keeps one subscription active" do
+    location_id = "12"
+    date1 = "2020-01-01"
+    date2 = "2020-01-02"
+
+    assert {:ok, %{"subscribed" => topic1}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{"locationId" => location_id, "date" => date1},
+               context: %{pubsub: PubSub}
+             )
+
+    assert {:ok, %{"subscribed" => topic2}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{"locationId" => location_id, "date" => date2},
+               context: %{pubsub: PubSub}
+             )
+
+    Absinthe.Subscription.unsubscribe(PubSub, topic1)
+
+    Absinthe.Subscription.publish(PubSub, "foo", schedule: location_id)
+
+    assert_receive({:broadcast, msg})
+
+    assert %{
+             event: "subscription:data",
+             result: %{data: %{"schedule" => "foo"}},
+             topic: topic2
+           } == msg
+  end
+
+  @query """
+  subscription ($locationId: ID!, $date: Date) {
+    schedule(locationId: $locationId, date: $date)
+  }
+  """
+  test "subscribing twice and unsubscribing once means new messages are only sent to one subscription" do
+    location_id = "12"
+    date1 = "2020-01-01"
+    date2 = "2020-01-02"
+
+    assert {:ok, %{"subscribed" => topic1}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{"locationId" => location_id, "date" => date1},
+               context: %{pubsub: PubSub}
+             )
+
+    assert {:ok, %{"subscribed" => topic2}} =
+             run_subscription(
+               @query,
+               Schema,
+               variables: %{"locationId" => location_id, "date" => date2},
+               context: %{pubsub: PubSub}
+             )
+
+    Absinthe.Subscription.unsubscribe(PubSub, topic1)
+
+    Absinthe.Subscription.publish(PubSub, "foo", schedule: location_id)
+
+    assert_receive({:broadcast, msg})
+
+    assert %{
+             event: "subscription:data",
+             result: %{data: %{"schedule" => "foo"}},
+             topic: topic2
+           } == msg
+
+    refute_receive({:broadcast, _})
+  end
+
+  @query """
+  subscription ($clientId: ID!) {
+    thing(clientId: $clientId)
+  }
+  """
+  test "repeatedly subscribing and unsubscribing on the same topic doesn't grow registry indefinitely" do
+    client_id = "abc"
+
+    for _i <- 1..3 do
+      assert {:ok, %{"subscribed" => topic}} =
+               run_subscription(@query, Schema,
+                 variables: %{"clientId" => client_id},
+                 context: %{pubsub: PubSub}
+               )
+
+      Absinthe.Subscription.unsubscribe(PubSub, topic)
+    end
+
+    assert [] == PubSub.list_registry_keys()
+  end
+
+  @query """
+  subscription ($clientId: ID!) {
+    thing(clientId: $clientId)
+  }
+  """
+  test "repeatedly subscribing and unsubscribing on multiple topics doesn't grow registry indefinitely" do
+    client_id = "abc"
+
+    for i <- 1..3 do
+      assert {:ok, %{"subscribed" => topic}} =
+               run_subscription(@query, Schema,
+                 variables: %{"clientId" => "#{client_id}#{i}"},
+                 context: %{pubsub: PubSub}
+               )
+
+      Absinthe.Subscription.unsubscribe(PubSub, topic)
+    end
+
+    assert [] == PubSub.list_registry_keys()
   end
 
   @query """
