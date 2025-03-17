@@ -31,7 +31,14 @@ defmodule Absinthe.Phase.Schema.Validation.DefaultEnumValuePresent do
 
     case Map.fetch(enums, type_identifier) do
       {:ok, enum} ->
-        values = Enum.map(enum.values, & &1.value)
+        values =
+          enum.values
+          |> List.flatten()
+          |> Enum.map(fn
+            %Schema.EnumValueDefinition{value: value} -> value
+            raw_value -> raw_value
+          end)
+
         value_list = Enum.map(values, &"\n * #{inspect(&1)}")
 
         case value_conforms_to_enum(node.type, default_value, values) do
