@@ -74,6 +74,10 @@ defmodule Absinthe.MiddlewareTest do
       field :path, :path do
         resolve fn _, _ -> {:ok, %{}} end
       end
+
+      field :list_of_paths, list_of(:path) do
+        resolve fn _, _ -> {:ok, [%{}]} end
+      end
     end
 
     object :path do
@@ -188,13 +192,13 @@ defmodule Absinthe.MiddlewareTest do
 
   test "it gets the path of the current field" do
     doc = """
-    {foo: path { bar: path { result }}}
+    {foo: listOfPaths { bar: path { result }}}
     """
 
     assert {:ok, %{data: data}} =
              Absinthe.run(doc, __MODULE__.Schema, context: %{current_user: %{}})
 
-    assert %{"foo" => %{"bar" => %{"result" => ["result", "bar", "foo", "RootQueryType"]}}} ==
+    assert %{"foo" => [%{"bar" => %{"result" => ["result", "bar", "0", "foo", "RootQueryType"]}}]} ==
              data
   end
 end
