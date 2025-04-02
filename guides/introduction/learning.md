@@ -4,7 +4,7 @@ The following are some Absinthe-specific educational resources that are availabl
 
 ## Books
 
-* [Craft GraphQL APIs in Elixir with Absinthe](https://pragprog.com/book/wwgraphql/craft-graphql-apis-in-elixir-with-absinthe) by the creators of Absinthe.
+* [Craft GraphQL APIs in Elixir with Absinthe](https://pragprog.com/titles/wwgraphql/craft-graphql-apis-in-elixir-with-absinthe/) by the creators of Absinthe.
 
 ## Online Resources
 
