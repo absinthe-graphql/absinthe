@@ -785,7 +785,11 @@ defmodule Absinthe.Execution.SubscriptionTest do
         [:absinthe, :execute, :operation, :start],
         [:absinthe, :execute, :operation, :stop],
         [:absinthe, :subscription, :publish, :start],
-        [:absinthe, :subscription, :publish, :stop]
+        [:absinthe, :subscription, :publish, :stop],
+        [:absinthe, :subscription, :local, :get_docs, :start],
+        [:absinthe, :subscription, :local, :run_docset, :start],
+        [:absinthe, :subscription, :local, :get_docs, :stop],
+        [:absinthe, :subscription, :local, :run_docset, :stop]
       ],
       &Absinthe.TestTelemetryHelper.send_to_pid/4,
       %{}
@@ -822,6 +826,33 @@ defmodule Absinthe.Execution.SubscriptionTest do
 
     assert_receive {:telemetry_event,
                     {[:absinthe, :subscription, :publish, :stop], _, %{id: ^id}, _config}}
+
+    assert_receive {:telemetry_event,
+                    {[:absinthe, :subscription, :local, :get_docs, :start], _, metadata, _config}}
+
+    assert %{pubsub: PubSub, field: :thing, mutation_result: "foo", key_strategy: "abc"} ==
+             Map.drop(metadata, [:telemetry_span_context])
+
+    assert is_reference(metadata.telemetry_span_context)
+
+    assert_receive {:telemetry_event,
+                    {[:absinthe, :subscription, :local, :get_docs, :stop], _, metadata, _config}}
+
+    assert %{} == Map.drop(metadata, [:telemetry_span_context])
+    assert is_reference(metadata.telemetry_span_context)
+
+    assert_receive {:telemetry_event,
+                    {[:absinthe, :subscription, :local, :run_docset, :start], _, metadata,
+                     _config}}
+
+    assert is_list(metadata.docs_and_topics)
+    assert metadata.mutation_result == "foo"
+    assert is_function(metadata.run_docset_fn, 3)
+
+    assert_receive {:telemetry_event,
+                    {[:absinthe, :subscription, :local, :run_docset, :stop], _, metadata, _config}}
+
+    assert is_reference(metadata.telemetry_span_context)
 
     :telemetry.detach(context.test)
   end
