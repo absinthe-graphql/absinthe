@@ -6,6 +6,7 @@ defmodule Absinthe.Subscription.Local do
   require Logger
 
   alias Absinthe.Pipeline.BatchResolver
+  alias Absinthe.{Phase, Pipeline}
 
   # This module handles running and broadcasting documents that are local to this
   # node.
@@ -23,19 +24,42 @@ defmodule Absinthe.Subscription.Local do
   def publish_mutation(pubsub, mutation_result, subscribed_fields) do
     docs_and_topics =
       for {field, key_strategy} <- subscribed_fields,
-          {topic, doc} <- get_docs(pubsub, field, mutation_result, key_strategy) do
+          {topic, doc} <- get_docs_with_telemetry(pubsub, field, mutation_result, key_strategy) do
         {topic, key_strategy, doc}
       end
 
     run_docset_fn =
       if function_exported?(pubsub, :run_docset, 3), do: &pubsub.run_docset/3, else: &run_docset/3
 
-    run_docset_fn.(pubsub, docs_and_topics, mutation_result)
+    :telemetry.span(
+      [:absinthe, :subscription, :local, :run_docset],
+      %{
+        run_docset_fn: run_docset_fn,
+        mutation_result: mutation_result,
+        docs_and_topics: docs_and_topics
+      },
+      fn ->
+        {run_docset_fn.(pubsub, docs_and_topics, mutation_result), %{}}
+      end
+    )
 
     :ok
   end
 
-  alias Absinthe.{Phase, Pipeline}
+  defp get_docs_with_telemetry(pubsub, field, mutation_result, key_strategy) do
+    :telemetry.span(
+      [:absinthe, :subscription, :local, :get_docs],
+      %{
+        pubsub: pubsub,
+        field: field,
+        mutation_result: mutation_result,
+        key_strategy: key_strategy
+      },
+      fn ->
+        {get_docs(pubsub, field, mutation_result, key_strategy), %{}}
+      end
+    )
+  end
 
   defp run_docset(pubsub, docs_and_topics, mutation_result) do
     for {topic, key_strategy, doc} <- docs_and_topics do
