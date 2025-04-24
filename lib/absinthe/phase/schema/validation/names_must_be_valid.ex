@@ -4,7 +4,6 @@ defmodule Absinthe.Phase.Schema.Validation.NamesMustBeValid do
   use Absinthe.Phase
   alias Absinthe.Blueprint
 
-  @valid_name_regex ~r/^[_A-Za-z][_0-9A-Za-z]*$/
 
   def run(bp, _) do
     bp = Blueprint.prewalk(bp, &validate_names/1)
@@ -30,7 +29,7 @@ defmodule Absinthe.Phase.Schema.Validation.NamesMustBeValid do
   end
 
   defp valid_name?(name) do
-    Regex.match?(@valid_name_regex, name)
+    Regex.match?(valid_name_regex(), name)
   end
 
   defp error(object, data) do
@@ -42,15 +41,7 @@ defmodule Absinthe.Phase.Schema.Validation.NamesMustBeValid do
     }
   end
 
-  @description """
-  Name does not match possible #{inspect(@valid_name_regex)} regex.
-
-  > Names in GraphQL are limited to this ASCII subset of possible characters to
-  > support interoperation with as many other systems as possible.
-
-  Reference: https://graphql.github.io/graphql-spec/June2018/#sec-Names
-
-  """
+  defp valid_name_regex(), do: ~r/^[_A-Za-z][_0-9A-Za-z]*$/
 
   def explanation(%{artifact: artifact, value: value}) do
     artifact_name = String.capitalize(artifact)
@@ -58,7 +49,12 @@ defmodule Absinthe.Phase.Schema.Validation.NamesMustBeValid do
     """
     #{artifact_name} #{inspect(value)} has invalid characters.
 
-    #{@description}
+    Name does not match possible #{inspect(valid_name_regex())} regex.
+
+    > Names in GraphQL are limited to this ASCII subset of possible characters to
+    > support interoperation with as many other systems as possible.
+
+    Reference: https://graphql.github.io/graphql-spec/June2018/#sec-Names
     """
   end
 end
