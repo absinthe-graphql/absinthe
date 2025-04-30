@@ -365,7 +365,7 @@ defmodule Absinthe.Schema do
   def apply_modifiers(pipeline, schema, opts \\ []) do
     Enum.reduce(schema.__absinthe_pipeline_modifiers__(), pipeline, fn
       {module, function}, pipeline ->
-        Code.ensure_loaded!(module)
+        Code.ensure_compiled!(module)
 
         cond do
           function_exported?(module, function, 1) ->
@@ -379,7 +379,7 @@ defmodule Absinthe.Schema do
         end
 
       module, pipeline ->
-        Code.ensure_loaded!(module)
+        Code.ensure_compiled!(module)
 
         cond do
           function_exported?(module, :pipeline, 1) ->
