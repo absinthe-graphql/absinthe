@@ -38,22 +38,22 @@ defmodule Absinthe.Schema.Notation.Experimental.FieldTest do
 
   describe "field" do
     test "without a body and with a bare type" do
-      assert %{name: "plain", description: nil, type: :string, identifier: :plain} =
+      assert %{name: "plain", description: nil, type: %{id: :string}, identifier: :plain} =
                lookup_field(Definition, :obj, :plain)
     end
 
     test "with a body and with a bare type" do
-      assert %{name: "with_block", type: :string, identifier: :with_block} =
+      assert %{name: "with_block", type: %{id: :string}, identifier: :with_block} =
                lookup_field(Definition, :obj, :with_block)
     end
 
     test "with attrs and without a body" do
-      assert %{name: "HasAttrs", type: :boolean, identifier: :with_attrs} =
+      assert %{name: "HasAttrs", type: %{id: :boolean}, identifier: :with_attrs} =
                lookup_field(Definition, :obj, :with_attrs)
     end
 
     test "with attrs and with a body" do
-      assert %{name: "HasAttrsAndBody", type: :boolean, identifier: :with_attrs_and_body} =
+      assert %{name: "HasAttrsAndBody", type: %{id: :boolean}, identifier: :with_attrs_and_body} =
                lookup_field(Definition, :obj, :with_attrs_and_body)
     end
 
