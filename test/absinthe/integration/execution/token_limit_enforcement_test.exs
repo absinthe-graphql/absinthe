@@ -1,4 +1,4 @@
-defmodule Elixir.Absinthe.Integration.Execution.TokenLimitEnforcement do
+defmodule Elixir.Absinthe.Integration.Execution.TokenLimitEnforcementTest do
   use Absinthe.Case, async: true
 
   test "Token limit lexer enforcement is precise" do
