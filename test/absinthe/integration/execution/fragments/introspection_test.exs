@@ -33,12 +33,7 @@ defmodule Elixir.Absinthe.Integration.Execution.Fragments.IntrospectionTest do
               }
             }} = result
 
-    correct = [
-      %{"name" => "address"},
-      %{"name" => "code"},
-      %{"name" => "name"},
-      %{"name" => "age"}
-    ]
+    correct = [%{"name" => "code"}, %{"name" => "name"}, %{"name" => "age"}]
 
     sort = & &1["name"]
     assert Enum.sort_by(input_fields, sort) == Enum.sort_by(correct, sort)

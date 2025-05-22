@@ -211,7 +211,7 @@ defmodule Absinthe.IntrospectionTest do
   end
 
   describe "introspection of an input object type" do
-    test "can use __type and ignore deprecated fields based on an arg" do
+    test "can use __type and ignore deprecated fields" do
       result =
         """
         {
@@ -219,7 +219,7 @@ defmodule Absinthe.IntrospectionTest do
             kind
             name
             description
-            inputFields(includeDeprecated: false) {
+            inputFields {
               name
               description
               type {
@@ -278,7 +278,7 @@ defmodule Absinthe.IntrospectionTest do
       assert !match?({:ok, %{data: %{"__type" => %{"fields" => _}}}}, result)
     end
 
-    test "includes deprecated fields by default" do
+    test "includes deprecated fields based on an arg" do
       result =
         """
         {
@@ -286,7 +286,7 @@ defmodule Absinthe.IntrospectionTest do
             kind
             name
             description
-            inputFields {
+            inputFields(includeDeprecated: true) {
               name
               description
               type {

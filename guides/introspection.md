@@ -91,6 +91,43 @@ Getting the name of the fields for a named type:
 Note that you may have to nest several depths of `type`/`ofType`, as
 type information includes any wrapping layers of [List](https://spec.graphql.org/October2021/#sec-List) and/or [NonNull](https://spec.graphql.org/October2021/#sec-Non-Null).
 
+## Configuration
+
+The introspection system can be configured through your application config:
+
+```elixir
+config :absinthe,
+  include_deprecated: false  # Defaults to false, set to true for backward compatibility
+```
+
+This configuration affects the default behavior of the `includeDeprecated` argument in introspection queries. When set to `false` (the default), deprecated fields and values will not be included in introspection results unless explicitly requested via the `includeDeprecated` argument. When set to `true`, deprecated fields and values will be included by default, matching the behavior of previous versions of Absinthe.
+
+For example, with the default configuration (`include_deprecated: false`), this query will not include deprecated fields:
+
+```graphql
+{
+  __type(name: "User") {
+    fields {
+      name
+    }
+  }
+}
+```
+
+To include deprecated fields, you must explicitly set the `includeDeprecated` argument:
+
+```graphql
+{
+  __type(name: "User") {
+    fields(includeDeprecated: true) {
+      name
+    }
+  }
+}
+```
+
+If you set `include_deprecated: true` in your configuration, the first query would include deprecated fields by default, matching the behavior of previous versions of Absinthe.
+
 ## Using GraphiQL
 
 The [GraphiQL project](https://github.com/graphql/graphiql) is
