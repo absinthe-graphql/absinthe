@@ -102,6 +102,8 @@ config :absinthe,
 
 This configuration affects the default behavior of the `includeDeprecated` argument in introspection queries. When set to `false` (the default), deprecated fields and values will not be included in introspection results unless explicitly requested via the `includeDeprecated` argument. When set to `true`, deprecated fields and values will be included by default, matching the behavior of previous versions of Absinthe.
 
+Note: Setting `include_deprecated` to true will break compatibility with the GraphQL specification, which recommends not including deprecated fields by default. Only use this option if you need to maintain compatibility with existing code that expects deprecated fields to be included.
+
 For example, with the default configuration (`include_deprecated: false`), this query will not include deprecated fields:
 
 ```graphql
