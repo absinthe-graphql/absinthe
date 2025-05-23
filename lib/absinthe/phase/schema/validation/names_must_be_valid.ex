@@ -4,7 +4,6 @@ defmodule Absinthe.Phase.Schema.Validation.NamesMustBeValid do
   use Absinthe.Phase
   alias Absinthe.Blueprint
 
-
   def run(bp, _) do
     bp = Blueprint.prewalk(bp, &validate_names/1)
     {:ok, bp}
