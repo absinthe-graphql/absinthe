@@ -72,7 +72,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       args: [
         include_deprecated: [
           type: :boolean,
-          default_value: false
+          default_value: default_include_deprecated()
         ]
       ],
       resolve: fn %{include_deprecated: show_deprecated}, %{source: source} ->
@@ -165,7 +165,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       args: [
         include_deprecated: [
           type: :boolean,
-          default_value: false
+          default_value: default_include_deprecated()
         ]
       ],
       resolve: fn
@@ -187,7 +187,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       args: [
         include_deprecated: [
           type: :boolean,
-          default_value: false
+          default_value: default_include_deprecated()
         ]
       ],
       resolve: fn
@@ -230,7 +230,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
       args: [
         include_deprecated: [
           type: :boolean,
-          default_value: false
+          default_value: default_include_deprecated()
         ]
       ],
       resolve: fn %{include_deprecated: show_deprecated}, %{source: %{args: args}} ->
@@ -397,5 +397,9 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
     Enum.filter(values, fn %{deprecation: is_deprecated} ->
       !is_deprecated || show_deprecated
     end)
+  end
+
+  defp default_include_deprecated do
+    Application.get_env(:absinthe, :include_deprecated, false)
   end
 end
