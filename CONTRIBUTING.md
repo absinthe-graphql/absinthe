@@ -26,6 +26,8 @@ Push to your fork (preferably to a non-`main` branch) and
 
 [pr]: https://github.com/absinthe-graphql/absinthe/compare/
 
+Ensure your pull request title follows [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) specification.
+
 We'll review and answer your pull request as soon as possible. We may suggest
 some changes, improvements, or alternatives. Let's work through it together.
 
