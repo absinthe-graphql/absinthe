@@ -1,6 +1,6 @@
 # Changelog
 
-### v1.7.10
+## v1.7.10
 - Bug Fix: [Set include_deprecated default value to true for backwards compatibility](https://github.com/absinthe-graphql/absinthe/pull/1333)
 - Bug Fix: [Rename to TokenLimitEnforcementTest to fix warning](https://github.com/absinthe-graphql/absinthe/pull/1362)
 - Bug Fix: [Replace regex with pattern as string to support OTP 28](https://github.com/absinthe-graphql/absinthe/pull/1360)
