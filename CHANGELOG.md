@@ -1,10 +1,16 @@
 # Changelog
 
+## v1.7.10
+- Bug Fix: [Set include_deprecated default value to true for backwards compatibility](https://github.com/absinthe-graphql/absinthe/pull/1333)
+- Bug Fix: [Rename to TokenLimitEnforcementTest to fix warning](https://github.com/absinthe-graphql/absinthe/pull/1362)
+- Bug Fix: [Replace regex with pattern as string to support OTP 28](https://github.com/absinthe-graphql/absinthe/pull/1360)
+- Bug Fix: [Use Code.ensure_compiled! at compile time](https://github.com/absinthe-graphql/absinthe/pull/1361)
+
 ## v1.7.9
 - Feature: [Allow config/2 to send errors in spec compliant format](https://github.com/absinthe-graphql/absinthe/pull/1341)
 - Feature: [Add async option to Absinthe.Subscription](https://github.com/absinthe-graphql/absinthe/pull/1329)
 - Bug Fix: [Avoid table scans on registry](https://github.com/absinthe-graphql/absinthe/pull/1330)
-- Big Fix: [Unregsiter duplicate (listening to the same topic) subscriptions individually](https://github.com/absinthe-graphql/absinthe/pull/1336)
+- Bug Fix: [Unregsiter duplicate (listening to the same topic) subscriptions individually](https://github.com/absinthe-graphql/absinthe/pull/1336)
 - POTENTIALLY BREAKING Feature: [Add telemetry event on batch timeout](https://github.com/absinthe-graphql/absinthe/pull/1347). If you want to keep the behavior from 1.7.8, define a telemetry handler and attach it. For example:
 
 ```elixir
