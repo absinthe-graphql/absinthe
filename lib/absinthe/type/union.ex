@@ -33,7 +33,7 @@ defmodule Absinthe.Type.Union do
   * `:types` - The list of possible types.
   * `:resolve_type` - A function used to determine the concrete type of a resolved object. See also `Absinthe.Type.Object`'s `:is_type_of`. Either `resolve_type` is specified in the union type, or every object type in the union must specify `is_type_of`
 
-  The `:resolve_type` function will be passed two arguments; the object whose type needs to be identified, and the `Absinthe.Execution` struct providing the full execution context.
+  The `:resolve_type` function will be passed two arguments; the object whose type needs to be identified, and the `Absinthe.Resolution` struct providing the full resolution context.
 
   The `__private__` and `:__reference__` keys are for internal use.
 
