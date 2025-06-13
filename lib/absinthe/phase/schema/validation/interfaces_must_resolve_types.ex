@@ -14,7 +14,7 @@ defmodule Absinthe.Phase.Schema.Validation.InterfacesMustResolveTypes do
       schema.type_definitions
       |> Enum.filter(&match?(%Blueprint.Schema.ObjectTypeDefinition{}, &1))
       |> Enum.flat_map(fn obj ->
-        for iface <- obj.interfaces do
+        for %{id: iface} <- obj.interfaces do
           {iface, obj}
         end
       end)
