@@ -12,3 +12,4 @@ missing_rules.rb
 /priv/plts/*.plt
 /priv/plts/*.plt.hash
 /tmp
+mise.toml
