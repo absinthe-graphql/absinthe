@@ -98,7 +98,9 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
         schema: schema,
         json_codec: json_codec
       }) do
-    with {:ok, result} <- Absinthe.Schema.introspect(schema) do
+    adapter = schema.__absinthe_adapter__()
+
+    with {:ok, result} <- Absinthe.Schema.introspect(schema, adapter: adapter) do
       content = json_codec.encode!(result, pretty: pretty)
       {:ok, content}
     end

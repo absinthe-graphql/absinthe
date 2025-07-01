@@ -84,7 +84,7 @@ defmodule Absinthe.Mixfile do
       {:benchee, ">= 1.0.0", only: :dev},
       {:dialyxir, "~> 1.1", only: [:dev, :test], runtime: false},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
-      {:makeup_graphql, "~> 0.1.0", only: :dev},
+      {:makeup_graphql, "~> 0.1.0", only: :dev}
     ]
   end
 
