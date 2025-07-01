@@ -7,9 +7,11 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
   @line_width 120
 
-  def inspect(term, %{pretty: true}) do
+  def inspect(term, %{pretty: true} = options) do
+    adapter = Map.get(options, :adapter, Absinthe.Adapter.LanguageConventions)
+
     term
-    |> render()
+    |> render([], adapter)
     |> concat(line())
     |> format(@line_width)
     |> to_string
@@ -25,9 +27,12 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     Absinthe.Type.BuiltIns.Scalars,
     Absinthe.Type.BuiltIns.Introspection
   ]
-  defp render(bp, type_definitions \\ [])
+  defp render(bp, type_definitions, adapter)
 
-  defp render(%Blueprint{} = bp, _) do
+  defp render(bp, type_definitions),
+    do: render(bp, type_definitions, Absinthe.Adapter.LanguageConventions)
+
+  defp render(%Blueprint{} = bp, _, adapter) do
     %{
       schema_definitions: [
         %Blueprint.Schema.SchemaDefinition{
@@ -48,7 +53,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       |> Enum.filter(& &1.__private__[:__absinthe_referenced__])
 
     ([schema_declaration] ++ directive_definitions ++ types_to_render)
-    |> Enum.map(&render(&1, type_definitions))
+    |> Enum.map(&render(&1, type_definitions, adapter))
     |> Enum.reject(&(&1 == empty()))
     |> join([line(), line()])
   end
@@ -185,19 +190,24 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(scalar_type.description)
   end
 
-  defp render(%Blueprint.Schema.DirectiveDefinition{} = directive, type_definitions) do
+  defp render(%Blueprint.Schema.DirectiveDefinition{} = directive, type_definitions, adapter) do
     locations = directive.locations |> Enum.map(&String.upcase(to_string(&1)))
 
     concat([
       "directive ",
       "@",
-      string(directive.name),
+      string(adapter.to_external_name(directive.name, :directive)),
       arguments(directive.arguments, type_definitions),
       repeatable(directive.repeatable),
       " on ",
       join(locations, " | ")
     ])
     |> description(directive.description)
+  end
+
+  # Backward compatibility - 2-arity version
+  defp render(%Blueprint.Schema.DirectiveDefinition{} = directive, type_definitions) do
+    render(directive, type_definitions, Absinthe.Adapter.LanguageConventions)
   end
 
   defp render(%Blueprint.Directive{} = directive, type_definitions) do
@@ -252,17 +262,25 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
 
   # SDL Syntax Helpers
 
+  defp directives([], _, _) do
+    empty()
+  end
+
   defp directives([], _) do
     empty()
   end
 
-  defp directives(directives, type_definitions) do
+  defp directives(directives, type_definitions, adapter) do
     directives =
       Enum.map(directives, fn directive ->
-        %{directive | name: Absinthe.Utils.camelize(directive.name, lower: true)}
+        %{directive | name: adapter.to_external_name(directive.name, :directive)}
       end)
 
     concat(Enum.map(directives, &render(&1, type_definitions)))
+  end
+
+  defp directives(directives, type_definitions) do
+    directives(directives, type_definitions, Absinthe.Adapter.LanguageConventions)
   end
 
   defp directive_arguments([], _) do
