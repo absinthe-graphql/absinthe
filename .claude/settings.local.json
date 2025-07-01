@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rg:*)",
+      "Bash(find:*)",
+      "Bash(mix compile)",
+      "Bash(mix format:*)"
+    ],
+    "deny": []
+  }
+}
