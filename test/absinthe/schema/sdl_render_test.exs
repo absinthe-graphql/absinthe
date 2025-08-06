@@ -175,6 +175,14 @@ defmodule Absinthe.Schema.SdlRenderTest do
       }
       """)
     end
+
+    test "for a type with directive input object" do
+      assert_rendered("""
+      type TypeWithDirective {
+        some: String @additionalInfo(input: {enabled: true, description: "Some description"})
+      }
+      """)
+    end
   end
 
   defp assert_rendered(sdl) do
@@ -188,8 +196,23 @@ defmodule Absinthe.Schema.SdlRenderTest do
     assert sdl == rendered_sdl
   end
 
+  defmodule SchemaPrototypeTest do
+    use Absinthe.Schema.Prototype
+
+    input_object :info do
+      field :enabled, :boolean
+      field :description, :string
+    end
+
+    directive :additional_info do
+      arg :input, :info
+      on [:field_definition]
+    end
+  end
+
   defmodule MacroTestSchema do
     use Absinthe.Schema
+    @prototype_schema SchemaPrototypeTest
 
     query do
       description "Escaped\t\"descrição/description\""
@@ -200,11 +223,14 @@ defmodule Absinthe.Schema.SdlRenderTest do
       end
 
       field :search, :search_result
+
+      field :documented_field, :string do
+        directive :additional_info, input: %{enabled: true, description: "Some description"}
+      end
     end
 
     directive :foo do
       arg :baz, :string
-
       on :field
     end
 
@@ -228,12 +254,12 @@ defmodule Absinthe.Schema.SdlRenderTest do
       field :name, :string
     end
 
-    union :search_result do
-      types [:order, :category]
-    end
-
     object :imported_fields do
       field :imported, non_null(:boolean)
+    end
+
+    union :search_result do
+      types [:order, :category]
     end
   end
 
@@ -255,6 +281,7 @@ defmodule Absinthe.Schema.SdlRenderTest do
                  timeInterval: Int
                ): String
                search: SearchResult
+               documentedField: String @additionalInfo(input: {enabled: true, description: \"Some description\"})
              }
 
              enum OrderStatus {
