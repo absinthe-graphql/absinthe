@@ -416,10 +416,6 @@ defmodule Absinthe.Language.Render do
     do_block(docs)
   end
 
-  defp block(:doc_nil, docs) do
-    do_block(docs)
-  end
-
   defp block(name, docs) do
     glue(
       name,
