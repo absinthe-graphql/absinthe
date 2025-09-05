@@ -223,37 +223,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         {:ok, adapter.to_external_name(source.name, :field)}
       end
 
-    field :description, :string,
-      resolve: fn _, %{schema: schema, source: source} ->
-        description =
-          case source.description do
-            nil ->
-              # If field has no description, try to get it from the referenced type
-              type_ref = source.type
-              
-              # First unwrap the type to get the base type identifier
-              base_type_ref = Absinthe.Type.unwrap(type_ref)
-              
-              # Then resolve the base type reference to get the actual type struct
-              base_type =
-                case base_type_ref do
-                  atom when is_atom(atom) ->
-                    Absinthe.Schema.lookup_type(schema, atom)
-                  _ ->
-                    base_type_ref
-                end
-              
-              # Extract description from the resolved type
-              case base_type do
-                %{description: type_desc} when is_binary(type_desc) -> type_desc
-                _ -> nil
-              end
-            desc ->
-              desc
-          end
-        
-        {:ok, description}
-      end
+    field :description, :string
 
     field :args,
       type: non_null(list_of(non_null(:__inputvalue))),
