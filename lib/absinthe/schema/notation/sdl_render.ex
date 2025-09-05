@@ -27,11 +27,8 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     Absinthe.Type.BuiltIns.Scalars,
     Absinthe.Type.BuiltIns.Introspection
   ]
-  defp render(bp, type_definitions, adapter)
-
-  defp render(bp, type_definitions),
-    do: render(bp, type_definitions, Absinthe.Adapter.LanguageConventions)
-
+  
+  # 3-arity render functions (with adapter)
   defp render(%Blueprint{} = bp, _, adapter) do
     %{
       schema_definitions: [
@@ -58,6 +55,27 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> join([line(), line()])
   end
 
+  defp render(%Blueprint.Schema.DirectiveDefinition{} = directive, type_definitions, adapter) do
+    locations = directive.locations |> Enum.map(&String.upcase(to_string(&1)))
+
+    concat([
+      "directive ",
+      "@",
+      string(adapter.to_external_name(directive.name, :directive)),
+      arguments(directive.arguments, type_definitions),
+      repeatable(directive.repeatable),
+      " on ",
+      join(locations, " | ")
+    ])
+    |> description(directive.description)
+  end
+
+  # Catch-all 3-arity render - just ignores adapter and delegates to 2-arity
+  defp render(term, type_definitions, _adapter) do
+    render(term, type_definitions)
+  end
+
+  # 2-arity render functions for all types
   defp render(%Blueprint.Schema.SchemaDeclaration{} = schema, type_definitions) do
     block(
       concat([
@@ -190,26 +208,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     |> description(scalar_type.description)
   end
 
-  defp render(%Blueprint.Schema.DirectiveDefinition{} = directive, type_definitions, adapter) do
-    locations = directive.locations |> Enum.map(&String.upcase(to_string(&1)))
-
-    concat([
-      "directive ",
-      "@",
-      string(adapter.to_external_name(directive.name, :directive)),
-      arguments(directive.arguments, type_definitions),
-      repeatable(directive.repeatable),
-      " on ",
-      join(locations, " | ")
-    ])
-    |> description(directive.description)
-  end
-
-  # Backward compatibility - 2-arity version
-  defp render(%Blueprint.Schema.DirectiveDefinition{} = directive, type_definitions) do
-    render(directive, type_definitions, Absinthe.Adapter.LanguageConventions)
-  end
-
+  # 2-arity render functions
   defp render(%Blueprint.Directive{} = directive, type_definitions) do
     concat([
       " @",
@@ -260,13 +259,15 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     render(%Blueprint.TypeReference.Identifier{id: identifier}, type_definitions)
   end
 
-  # SDL Syntax Helpers
-
-  defp directives([], _, _) do
-    empty()
+  # General catch-all for 2-arity render - delegates to 3-arity with default adapter
+  defp render(term, type_definitions) do
+    render(term, type_definitions, Absinthe.Adapter.LanguageConventions)
   end
 
-  defp directives([], _) do
+  # SDL Syntax Helpers
+
+  # 3-arity directives functions
+  defp directives([], _, _) do
     empty()
   end
 
@@ -277,6 +278,11 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       end)
 
     concat(Enum.map(directives, &render(&1, type_definitions)))
+  end
+
+  # 2-arity directives functions
+  defp directives([], _) do
+    empty()
   end
 
   defp directives(directives, type_definitions) do
