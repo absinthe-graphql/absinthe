@@ -115,6 +115,7 @@ defmodule Absinthe.Mixfile do
       "guides/dataloader.md",
       "guides/context-and-authentication.md",
       "guides/subscriptions.md",
+      "guides/incremental-delivery.md",
       "guides/custom-scalars.md",
       "guides/importing-types.md",
       "guides/importing-fields.md",
