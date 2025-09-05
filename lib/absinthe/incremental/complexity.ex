@@ -135,7 +135,7 @@ defmodule Absinthe.Incremental.Complexity do
     
     if streaming_context do
       defer_count = length(Map.get(streaming_context, :deferred_fragments, []))
-      stream_count = length(Map.get(streaming_context, :streamed_fields, []))
+      _stream_count = length(Map.get(streaming_context, :streamed_fields, []))
       
       # Initial + each defer + estimated stream batches
       1 + defer_count + estimate_stream_batches(streaming_context)

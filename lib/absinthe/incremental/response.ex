@@ -11,31 +11,31 @@ defmodule Absinthe.Incremental.Response do
     data: map(),
     pending: list(pending_item()),
     hasNext: boolean(),
-    optional(:errors) => list(map())
+    errors: list(map()) | nil
   }
   
   @type incremental_response :: %{
     incremental: list(incremental_item()),
     hasNext: boolean(),
-    optional(:completed) => list(completed_item())
+    completed: list(completed_item()) | nil
   }
   
   @type pending_item :: %{
     id: String.t(),
     path: list(String.t() | integer()),
-    optional(:label) => String.t()
+    label: String.t() | nil
   }
   
   @type incremental_item :: %{
     data: any(),
     path: list(String.t() | integer()),
-    optional(:label) => String.t(),
-    optional(:errors) => list(map())
+    label: String.t() | nil,
+    errors: list(map()) | nil
   }
   
   @type completed_item :: %{
     id: String.t(),
-    optional(:errors) => list(map())
+    errors: list(map()) | nil
   }
   
   @doc """

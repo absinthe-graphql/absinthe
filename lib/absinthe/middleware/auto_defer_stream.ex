@@ -63,13 +63,15 @@ defmodule Absinthe.Middleware.AutoDeferStream do
   """
   def should_defer?(field, resolution, config) do
     # Check if field is already deferred
-    return false if has_defer_directive?(field)
-    
-    # Calculate field complexity
-    complexity = calculate_field_complexity(field, resolution, config)
-    
-    # Check against threshold
-    complexity > config.auto_defer_threshold
+    if has_defer_directive?(field) do
+      false
+    else
+      # Calculate field complexity
+      complexity = calculate_field_complexity(field, resolution, config)
+      
+      # Check against threshold
+      complexity > config.auto_defer_threshold
+    end
   end
   
   @doc """
@@ -77,16 +79,20 @@ defmodule Absinthe.Middleware.AutoDeferStream do
   """
   def should_stream?(field, resolution, config) do
     # Check if field is already streamed
-    return false if has_stream_directive?(field)
-    
-    # Must be a list type
-    return false unless is_list_field?(field)
-    
-    # Estimate list size
-    estimated_size = estimate_list_size(field, resolution, config)
-    
-    # Check against threshold
-    estimated_size > config.auto_stream_threshold
+    if has_stream_directive?(field) do
+      false
+    else
+      # Must be a list type
+      if not is_list_field?(field) do
+        false
+      else
+        # Estimate list size
+        estimated_size = estimate_list_size(field, resolution, config)
+        
+        # Check against threshold
+        estimated_size > config.auto_stream_threshold
+      end
+    end
   end
   
   @doc """

@@ -321,7 +321,7 @@ defmodule Absinthe.Incremental.ErrorHandler do
     }
   end
   
-  defp attempt_direct_load(context) do
+  defp attempt_direct_load(_context) do
     # Attempt to load data directly without batching
     # This is a fallback when dataloader fails
     Logger.debug("Attempting direct load after dataloader failure")
@@ -343,7 +343,7 @@ defmodule Absinthe.Incremental.ErrorHandler do
   defp clear_dataloader_caches(streaming_context) do
     # Clear any dataloader caches associated with this streaming operation
     # This helps prevent memory leaks
-    if dataloader = Map.get(streaming_context, :dataloader) do
+    if _dataloader = Map.get(streaming_context, :dataloader) do
       # Clear caches (implementation depends on Dataloader version)
       Logger.debug("Clearing dataloader caches for streaming operation")
     end
@@ -357,7 +357,7 @@ defmodule Absinthe.Incremental.ErrorHandler do
     end
   end
   
-  defp check_concurrent_streams(context) do
+  defp check_concurrent_streams(_context) do
     # Check if we're within concurrent stream limits
     max_streams = get_config(:max_concurrent_streams, 100)
     current_streams = get_current_stream_count()
