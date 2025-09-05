@@ -8,15 +8,12 @@ defmodule Absinthe.Mixfile do
     [
       app: :absinthe,
       version: @version,
-      elixir: "~> 1.11",
+      elixir: "~> 1.15",
       elixirc_paths: elixirc_paths(Mix.env()),
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       package: package(),
       source_url: @source_url,
-      preferred_cli_env: [
-        dialyzer: :test
-      ],
       docs: [
         source_ref: "v#{@version}",
         main: "overview",
@@ -37,6 +34,10 @@ defmodule Absinthe.Mixfile do
       ],
       prune_code_paths: prune_code_paths(Mix.env())
     ]
+  end
+
+  def cli do
+    [preferred_envs: [dialyzer: :test]]
   end
 
   defp package do
@@ -83,7 +84,6 @@ defmodule Absinthe.Mixfile do
       {:ex_doc, "~> 0.22", only: :dev},
       {:benchee, ">= 1.0.0", only: :dev},
       {:dialyxir, "~> 1.1", only: [:dev, :test], runtime: false},
-      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:makeup_graphql, "~> 0.1.0", only: :dev}
     ]
   end
