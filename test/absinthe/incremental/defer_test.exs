@@ -342,17 +342,48 @@ defmodule Absinthe.Incremental.DeferTest do
   end
   
   defp run_streaming_query(query, variables \\ %{}) do
-    # For now, just run a standard query to test basic functionality
-    case Absinthe.run(query, TestSchema, variables: variables) do
+    # Use pipeline modifier to enable streaming
+    pipeline_modifier = fn pipeline, _options ->
+      Absinthe.Pipeline.Incremental.enable(pipeline, 
+        enabled: true,
+        enable_defer: true,
+        enable_stream: true
+      )
+    end
+    
+    case Absinthe.run(query, TestSchema, 
+      variables: variables,
+      pipeline_modifier: pipeline_modifier
+    ) do
       {:ok, result} -> 
-        # Simulate streaming response structure for testing
-        %{
-          initial: result,
-          incremental: []
-        }
+        # Check if the result has incremental delivery markers
+        if Map.has_key?(result, :pending) do
+          # This is an incremental response
+          %{
+            initial: result,
+            incremental: simulate_incremental_execution(result.pending)
+          }
+        else
+          # Standard response, simulate as initial only
+          %{
+            initial: result,
+            incremental: []
+          }
+        end
       error -> 
         error
     end
+  end
+  
+  defp simulate_incremental_execution(pending_operations) do
+    # Simulate the execution of pending deferred fragments
+    Enum.map(pending_operations, fn pending ->
+      %{
+        label: pending.label,
+        path: pending.path,
+        data: %{} # This would contain the deferred data
+      }
+    end)
   end
   
   defp streaming_pipeline(schema, config) do

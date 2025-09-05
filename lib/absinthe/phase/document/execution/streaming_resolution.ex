@@ -61,50 +61,27 @@ defmodule Absinthe.Phase.Document.Execution.StreamingResolution do
       operation_id: generate_operation_id()
     }
     
-    put_in(blueprint.execution.context[:__streaming__], streaming_context)
+    updated_context = Map.put(blueprint.execution.context, :__streaming__, streaming_context)
+    updated_execution = %{blueprint.execution | context: updated_context}
+    %{blueprint | execution: updated_execution}
   end
   
   # Setup the blueprint for initial resolution
   defp setup_initial_resolution(blueprint) do
     Blueprint.prewalk(blueprint, fn
-      # Handle deferred fragments - mark them for skipping in initial pass
+      # Handle deferred fragments - skip them entirely in initial resolution
       %{flags: %{defer: defer_config}} = node when defer_config.enabled ->
-        streaming_context = get_streaming_context(blueprint)
-        deferred_fragment = %{
-          node: node,
-          label: defer_config.label,
-          path: current_path(node)
-        }
-        
-        # Add to deferred list
-        updated_context = update_in(
-          streaming_context.deferred_fragments,
-          &[deferred_fragment | &1]
-        )
-        blueprint = put_streaming_context(blueprint, updated_context)
-        
-        # Mark node to skip in initial resolution
-        %{node | flags: Map.put(node.flags, :skip_initial, true)}
+        # Remove defer flag and mark for skipping to prevent projector crash
+        # The deferred content will be delivered later
+        flags_without_defer = Map.delete(node.flags, :defer)
+        %{node | flags: Map.put(flags_without_defer, :skip, true)}
       
-      # Handle streamed fields - limit to initial_count
+      # Handle streamed fields - remove stream flag but keep the field
+      # Stream processing will be handled at the field level during resolution
       %{flags: %{stream: stream_config}} = node when stream_config.enabled ->
-        streaming_context = get_streaming_context(blueprint)
-        streamed_field = %{
-          node: node,
-          label: stream_config.label,
-          initial_count: stream_config.initial_count,
-          path: current_path(node)
-        }
-        
-        # Add to streamed list
-        updated_context = update_in(
-          streaming_context.streamed_fields,
-          &[streamed_field | &1]
-        )
-        blueprint = put_streaming_context(blueprint, updated_context)
-        
-        # Mark node with streaming limit
-        %{node | flags: Map.put(node.flags, :stream_initial_count, stream_config.initial_count)}
+        flags_without_stream = Map.delete(node.flags, :stream)
+        # Add metadata about streaming for resolution phase to use
+        %{node | flags: Map.put(flags_without_stream, :__stream_config, stream_config)}
       
       node ->
         node

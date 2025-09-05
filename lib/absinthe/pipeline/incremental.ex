@@ -216,6 +216,8 @@ defmodule Absinthe.Pipeline.Incremental.TelemetryStart do
   @moduledoc false
   use Absinthe.Phase
   
+  alias Absinthe.Blueprint
+  
   def run(blueprint, _opts) do
     start_time = System.monotonic_time()
     
@@ -229,12 +231,16 @@ defmodule Absinthe.Pipeline.Incremental.TelemetryStart do
       }
     )
     
-    blueprint = put_in(blueprint.execution[:incremental_start_time], start_time)
+    execution = Map.put(blueprint.execution, :incremental_start_time, start_time)
+    blueprint = %{blueprint | execution: execution}
     {:ok, blueprint}
   end
   
   defp get_operation_id(blueprint) do
-    get_in(blueprint, [:execution, :context, :__streaming__, :operation_id])
+    execution = Map.get(blueprint, :execution, %{})
+    context = Map.get(execution, :context, %{})
+    streaming_context = Map.get(context, :__streaming__, %{})
+    Map.get(streaming_context, :operation_id)
   end
   
   defp has_defer?(blueprint) do
@@ -259,18 +265,20 @@ defmodule Absinthe.Pipeline.Incremental.TelemetryStop do
   use Absinthe.Phase
   
   def run(blueprint, _opts) do
-    start_time = get_in(blueprint, [:execution, :incremental_start_time])
-    duration = System.monotonic_time() - start_time
+    execution = Map.get(blueprint, :execution, %{})
+    start_time = Map.get(execution, :incremental_start_time)
+    duration = if start_time, do: System.monotonic_time() - start_time, else: 0
     
-    streaming_context = get_in(blueprint, [:execution, :context, :__streaming__])
+    context = Map.get(execution, :context, %{})
+    streaming_context = Map.get(context, :__streaming__, %{})
     
     :telemetry.execute(
       [:absinthe, :incremental, :stop],
       %{duration: duration},
       %{
-        operation_id: streaming_context[:operation_id],
-        deferred_count: length(streaming_context[:deferred_fragments] || []),
-        streamed_count: length(streaming_context[:streamed_fields] || [])
+        operation_id: Map.get(streaming_context, :operation_id),
+        deferred_count: length(Map.get(streaming_context, :deferred_fragments, [])),
+        streamed_count: length(Map.get(streaming_context, :streamed_fields, []))
       }
     )
     
@@ -325,6 +333,8 @@ defmodule Absinthe.Pipeline.Incremental.DeferHandler do
   @moduledoc false
   use Absinthe.Phase
   
+  alias Absinthe.Blueprint
+  
   def run(blueprint, opts) do
     handler = Keyword.get(opts, :handler, & &1)
     
@@ -343,6 +353,8 @@ end
 defmodule Absinthe.Pipeline.Incremental.StreamHandler do
   @moduledoc false
   use Absinthe.Phase
+  
+  alias Absinthe.Blueprint
   
   def run(blueprint, opts) do
     handler = Keyword.get(opts, :handler, & &1)
