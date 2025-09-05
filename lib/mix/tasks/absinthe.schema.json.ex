@@ -98,7 +98,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
         schema: schema,
         json_codec: json_codec
       }) do
-    adapter = 
+    adapter =
       if function_exported?(schema, :__absinthe_adapter__, 0) do
         schema.__absinthe_adapter__()
       else

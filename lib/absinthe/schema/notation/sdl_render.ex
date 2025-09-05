@@ -27,7 +27,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     Absinthe.Type.BuiltIns.Scalars,
     Absinthe.Type.BuiltIns.Introspection
   ]
-  
+
   # 3-arity render functions (with adapter)
   defp render(%Blueprint{} = bp, _, adapter) do
     %{

@@ -67,7 +67,7 @@ defmodule Mix.Tasks.Absinthe.Schema.Sdl do
       |> Absinthe.Pipeline.upto({Absinthe.Phase.Schema.Validation.Result, pass: :final})
       |> Absinthe.Schema.apply_modifiers(schema)
 
-    adapter = 
+    adapter =
       if function_exported?(schema, :__absinthe_adapter__, 0) do
         schema.__absinthe_adapter__()
       else
