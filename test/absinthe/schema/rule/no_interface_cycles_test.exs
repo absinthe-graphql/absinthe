@@ -1,4 +1,4 @@
-defmodule Absinthe.Schema.Rule.NoInterfacecyclesTest do
+defmodule Absinthe.Schema.Rule.NoInterfaceCyclesTest do
   use Absinthe.Case, async: true
 
   describe "rule" do
