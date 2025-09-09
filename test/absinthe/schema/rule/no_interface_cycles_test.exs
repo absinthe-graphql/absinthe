@@ -15,7 +15,7 @@ defmodule Absinthe.Schema.Rule.NoInterfacecyclesTest do
           message:
             "Interface Cycle Error\n\nInterface `named' forms a cycle via: ([:named, :node, :named])",
           path: [],
-          phase: Absinthe.Phase.Schema.Validation.NoInterfaceCyles
+          phase: Absinthe.Phase.Schema.Validation.NoInterfaceCycles
         },
         %{
           extra: :node,
@@ -28,7 +28,7 @@ defmodule Absinthe.Schema.Rule.NoInterfacecyclesTest do
           message:
             "Interface Cycle Error\n\nInterface `node' forms a cycle via: ([:node, :named, :node])",
           path: [],
-          phase: Absinthe.Phase.Schema.Validation.NoInterfaceCyles
+          phase: Absinthe.Phase.Schema.Validation.NoInterfaceCycles
         }
       ])
     end

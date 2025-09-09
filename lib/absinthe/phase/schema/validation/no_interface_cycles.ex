@@ -1,4 +1,4 @@
-defmodule Absinthe.Phase.Schema.Validation.NoInterfaceCyles do
+defmodule Absinthe.Phase.Schema.Validation.NoInterfaceCycles do
   @moduledoc false
 
   use Absinthe.Phase
