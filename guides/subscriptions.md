@@ -50,7 +50,7 @@ line:
 > happen often on cloud deployment platforms.
 
 ```elixir
-{Absinthe.Subscription, name: MyAppWeb.Endpoint, pool_size: 8}
+{Absinthe.Subscription, pubsub: MyAppWeb.Endpoint, pool_size: 8}
 ```
 
 See `Absinthe.Subscription.child_spec/1` for more information on the supported
