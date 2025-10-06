@@ -67,12 +67,19 @@ defmodule Mix.Tasks.Absinthe.Schema.Sdl do
       |> Absinthe.Pipeline.upto({Absinthe.Phase.Schema.Validation.Result, pass: :final})
       |> Absinthe.Schema.apply_modifiers(schema)
 
+    adapter =
+      if function_exported?(schema, :__absinthe_adapter__, 0) do
+        schema.__absinthe_adapter__()
+      else
+        Absinthe.Adapter.LanguageConventions
+      end
+
     with {:ok, blueprint, _phases} <-
            Absinthe.Pipeline.run(
              schema.__absinthe_blueprint__(),
              pipeline
            ) do
-      {:ok, inspect(blueprint, pretty: true)}
+      {:ok, inspect(blueprint, pretty: true, adapter: adapter)}
     else
       _ -> {:error, "Failed to render schema"}
     end
