@@ -45,13 +45,15 @@ defmodule Absinthe.Blueprint.Schema.InterfaceTypeDefinition do
       identifier: type_def.identifier,
       resolve_type: type_def.resolve_type,
       definition: type_def.module,
-      interfaces: type_def.interfaces
+      interfaces: Enum.map(type_def.interfaces, &Blueprint.TypeReference.to_type(&1, schema))
     }
   end
 
   def find_implementors(iface, type_defs) do
+    type_ref = %Blueprint.TypeReference.Identifier{id: iface.identifier}
+
     for %Schema.ObjectTypeDefinition{} = obj <- type_defs,
-        iface.identifier in obj.interfaces,
+        type_ref in obj.interfaces,
         do: obj.identifier
   end
 
