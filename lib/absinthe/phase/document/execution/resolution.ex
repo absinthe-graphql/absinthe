@@ -409,7 +409,8 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     end
   end
 
-  defp split_error_value(error_value) when is_list(error_value) or is_map(error_value) do
+  defp split_error_value(error_value)
+       when is_list(error_value) or (is_map(error_value) and not is_struct(error_value)) do
     Keyword.split(Enum.to_list(error_value), [:message, :path])
   end
 
