@@ -3,14 +3,11 @@ defmodule Absinthe.Phase.Debug do
 
   @moduledoc false
 
-  alias Absinthe.Blueprint
+  require Logger
 
-  @spec run(any, Keyword.t()) :: {:ok, Blueprint.t()}
+  @spec run(any, Keyword.t()) :: {:ok, Absinthe.Blueprint.t()}
   def run(input, _options \\ []) do
-    if System.get_env("DEBUG") do
-      IO.inspect(input, label: :debug_blueprint_output)
-    end
-
+    Logger.debug("[Absinthe Blueprint]", input)
     {:ok, input}
   end
 end
