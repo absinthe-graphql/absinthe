@@ -6,7 +6,8 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
 
   alias Absinthe.Blueprint
 
-  @spec run(any, Keyword.t()) :: {:ok, Blueprint.t()}
+  @spec run(any, Keyword.t()) ::
+          {:ok, Blueprint.t()} | {:replace, Blueprint.t(), Absinthe.Pipeline.t()} | {:error, any}
   def run(blueprint, options) do
     with %{type: :subscription} = op <- Blueprint.current_operation(blueprint) do
       do_subscription(op, blueprint, options)
