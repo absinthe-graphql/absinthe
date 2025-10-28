@@ -179,7 +179,7 @@ defmodule Absinthe.Schema.SdlRenderTest do
     test "for a type with directive input object" do
       assert_rendered("""
       type TypeWithDirective {
-        some: String @additionalInfo(input: {enabled: true, description: "Some description"})
+        some: String @additionalInfo(input: {enabled: true})
       }
       """)
     end
@@ -201,7 +201,6 @@ defmodule Absinthe.Schema.SdlRenderTest do
 
     input_object :info do
       field :enabled, :boolean
-      field :description, :string
     end
 
     directive :additional_info do
@@ -225,7 +224,7 @@ defmodule Absinthe.Schema.SdlRenderTest do
       field :search, :search_result
 
       field :documented_field, :string do
-        directive :additional_info, input: %{enabled: true, description: "Some description"}
+        directive :additional_info, input: %{enabled: true}
       end
     end
 
@@ -281,7 +280,7 @@ defmodule Absinthe.Schema.SdlRenderTest do
                  timeInterval: Int
                ): String
                search: SearchResult
-               documentedField: String @additionalInfo(input: {enabled: true, description: \"Some description\"})
+               documentedField: String @additionalInfo(input: {enabled: true})
              }
 
              enum OrderStatus {
