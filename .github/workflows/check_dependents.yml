@@ -4,7 +4,7 @@ on:
   push:
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   test_dependents:
@@ -14,16 +14,16 @@ jobs:
     strategy:
       matrix:
         dependent:
-          - 'absinthe_plug'
-          - 'absinthe_phoenix'
-          - 'absinthe_relay'
+          - "absinthe_plug"
+          - "absinthe_phoenix"
+          - "absinthe_relay"
 
     steps:
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
-          elixir-version: '1.17'
-          otp-version: '27'
+          elixir-version: "1.17"
+          otp-version: "27"
 
       - name: Checkout absinthe
         uses: actions/checkout@v4
@@ -31,8 +31,8 @@ jobs:
       - name: Checkout ${{ matrix.dependent }}
         uses: actions/checkout@v4
         with:
-          repository: 'absinthe-graphql/${{ matrix.dependent }}'
-          path: '${{ matrix.dependent }}'
+          repository: "absinthe-graphql/${{ matrix.dependent }}"
+          path: "${{ matrix.dependent }}"
 
       - name: Install absinthe package dependencies
         run: mix deps.get
