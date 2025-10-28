@@ -100,5 +100,5 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@v4
         with:
-          token: ${{ secrets.ORG_GITHUB_TOKEN }}
+          token: ${{ secrets.REPO_GITHUB_TOKEN }}
           release-type: elixir
