@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.11](https://github.com/absinthe-graphql/absinthe/compare/v1.7.10...v1.7.11) (2025-10-29)
+
+
+### Bug Fixes
+
+* SDL rendering for directives with input objects ([#1375](https://github.com/absinthe-graphql/absinthe/issues/1375)) ([02b955c](https://github.com/absinthe-graphql/absinthe/commit/02b955c49e74a25e09aa00d7029d7bdce57e7b81))
+
 ## v1.7.10
 - Bug Fix: [Set include_deprecated default value to true for backwards compatibility](https://github.com/absinthe-graphql/absinthe/pull/1333)
 - Bug Fix: [Rename to TokenLimitEnforcementTest to fix warning](https://github.com/absinthe-graphql/absinthe/pull/1362)
