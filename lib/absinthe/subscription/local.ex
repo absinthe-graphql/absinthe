@@ -69,7 +69,10 @@ defmodule Absinthe.Subscription.Local do
       |> Pipeline.without(Phase.Subscription.SubscribeSelf)
       |> Pipeline.insert_before(
         Phase.Document.Execution.Resolution,
-        {Phase.Document.OverrideRoot, root_value: mutation_result}
+        [
+          {Phase.Document.OverrideRoot, root_value: mutation_result},
+          Phase.Subscription.GetOrdinal
+        ]
       )
       |> Pipeline.upto(Phase.Document.Execution.Resolution)
 
