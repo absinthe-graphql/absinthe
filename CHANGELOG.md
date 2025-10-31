@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.12](https://github.com/absinthe-graphql/absinthe/compare/v1.7.11...v1.7.12) (2025-10-31)
+
+
+### Bug Fixes
+
+* **typespec:** Absinthe.Phase.Subscription.SubscribeSelf.run/2 ([#1384](https://github.com/absinthe-graphql/absinthe/issues/1384)) ([4230cc4](https://github.com/absinthe-graphql/absinthe/commit/4230cc4a33ec8dc00ae5f8650cb012e652780738))
+
 ## [1.7.11](https://github.com/absinthe-graphql/absinthe/compare/v1.7.10...v1.7.11) (2025-10-29)
 
 
