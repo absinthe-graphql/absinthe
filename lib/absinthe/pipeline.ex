@@ -16,7 +16,7 @@ defmodule Absinthe.Pipeline do
 
   @type data_t :: any
 
-  @type phase_config_t :: Phase.t() | {Phase.t(), Keyword.t()}
+  @type phase_config_t :: Phase.config_t()
 
   @type t :: [phase_config_t | [phase_config_t]]
 
