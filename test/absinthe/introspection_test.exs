@@ -64,6 +64,16 @@ defmodule Absinthe.IntrospectionTest do
                       },
                       %{
                         "description" =>
+                          "The @oneOf built-in directive is used within the type system definition language to indicate an Input Object is a OneOf Input Object.\n\nA OneOf Input Object is a special variant of Input Object where exactly one field must be set and non-null, all others being omitted.\nThis is useful for representing situations where an input may be one of many different options.",
+                        "isRepeatable" => false,
+                        "locations" => ["INPUT_OBJECT"],
+                        "name" => "oneOf",
+                        "onField" => false,
+                        "onFragment" => false,
+                        "onOperation" => false
+                      },
+                      %{
+                        "description" =>
                           "Directs the executor to skip this field or fragment when the `if` argument is true.",
                         "isRepeatable" => false,
                         "locations" => ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"],
