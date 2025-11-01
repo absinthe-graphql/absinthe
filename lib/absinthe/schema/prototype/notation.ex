@@ -45,6 +45,19 @@ defmodule Absinthe.Schema.Prototype.Notation do
         on [:scalar]
       end
 
+      # https://spec.graphql.org/September2025/#sec--oneOf
+      directive :one_of do
+        description """
+        The @oneOf built-in directive is used within the type system definition language to indicate an Input Object is a OneOf Input Object.
+
+        A OneOf Input Object is a special variant of Input Object where exactly one field must be set and non-null, all others being omitted.
+        This is useful for representing situations where an input may be one of many different options.
+        """
+
+        repeatable false
+        on [:input_object]
+      end
+
       def pipeline(pipeline) do
         pipeline
         |> Absinthe.Pipeline.without(Absinthe.Phase.Schema.Validation.QueryTypeMustBeObject)
