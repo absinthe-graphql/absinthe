@@ -187,6 +187,7 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.Validation.QueryTypeMustBeObject,
       Phase.Schema.Validation.NamesMustBeValid,
       Phase.Schema.Validation.UniqueFieldNames,
+      Phase.Schema.Validation.OneOfDirective,
       Phase.Schema.RegisterTriggers,
       Phase.Schema.MarkReferenced,
       Phase.Schema.ReformatDescriptions,
