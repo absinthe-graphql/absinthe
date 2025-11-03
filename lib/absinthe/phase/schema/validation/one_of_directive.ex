@@ -1,5 +1,7 @@
 defmodule Absinthe.Phase.Schema.Validation.OneOfDirective do
-  @moduledoc "Schema validation phase that ensures that uses of the `@oneOf` directive comply with the spec"
+  @moduledoc false
+
+  # Schema validation phase that ensures that uses of the `@oneOf` directive comply with the spec
 
   use Absinthe.Phase
 
@@ -7,7 +9,7 @@ defmodule Absinthe.Phase.Schema.Validation.OneOfDirective do
   alias Absinthe.Blueprint.Schema.InputObjectTypeDefinition
   alias Absinthe.Blueprint.TypeReference.NonNull
 
-  def run(blueprint, _opts \\ []) do
+  def run(blueprint, _options \\ []) do
     {:ok, Blueprint.prewalk(blueprint, &process/1)}
   end
 
