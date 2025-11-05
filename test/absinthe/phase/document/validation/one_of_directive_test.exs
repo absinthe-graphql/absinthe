@@ -19,7 +19,7 @@ defmodule Absinthe.Phase.Document.Validation.OneOfDirectiveTest do
   end
 
   @query "query NamedQuery($input: ValidInput!) { valid(input: $input) }"
-  @message ~s[The Input Type "ValidInput" has the @oneOf directive. It must have exactly one non-null field. It has 2.]
+  @message ~s[The Input Type "ValidInput" has the @oneOf directive. It must have exactly one non-null field.]
 
   describe "run/2" do
     test "without arg" do
