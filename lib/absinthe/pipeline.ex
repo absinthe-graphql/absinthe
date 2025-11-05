@@ -103,6 +103,7 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Validation.UniqueArgumentNames,
       Phase.Document.Validation.UniqueInputFieldNames,
       Phase.Document.Validation.FieldsOnCorrectType,
+      Phase.Document.Validation.OneOfDirective,
       Phase.Document.Validation.OnlyOneSubscription,
       # Check Validation
       {Phase.Document.Validation.Result, options},
@@ -187,6 +188,7 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.Validation.QueryTypeMustBeObject,
       Phase.Schema.Validation.NamesMustBeValid,
       Phase.Schema.Validation.UniqueFieldNames,
+      Phase.Schema.Validation.OneOfDirective,
       Phase.Schema.RegisterTriggers,
       Phase.Schema.MarkReferenced,
       Phase.Schema.ReformatDescriptions,
