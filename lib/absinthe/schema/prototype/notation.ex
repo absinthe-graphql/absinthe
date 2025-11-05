@@ -56,6 +56,10 @@ defmodule Absinthe.Schema.Prototype.Notation do
 
         repeatable false
         on [:input_object]
+
+        expand(fn _args, node ->
+          %{node | __private__: Keyword.put(node.__private__, :one_of, true)}
+        end)
       end
 
       def pipeline(pipeline) do

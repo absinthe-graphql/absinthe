@@ -20,13 +20,13 @@ defmodule Absinthe.Phase.Schema.Validation.OneOfDirective do
       one_of? and length(node.fields) == 1 ->
         add_error(node, """
         The oneOf directive is only valid on input types with more then one field.
-        The input type `#{node.name}` only defines one field.
+        The input type "#{node.name}" only defines one field.
         """)
 
       one_of? and Enum.any?(node.fields, &match?(%NonNull{}, &1.type)) ->
         add_error(node, """
         The oneOf directive is only valid on input types with all nullable fields.
-        The input type `#{node.name}` has one or more nullable fields.
+        The input type "#{node.name}" has one or more nullable fields.
         """)
 
       true ->
