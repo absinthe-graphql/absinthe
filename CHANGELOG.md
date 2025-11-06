@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.8.0](https://github.com/absinthe-graphql/absinthe/compare/v1.7.11...v1.8.0) (2025-11-05)
+
+
+### Features
+
+* **spec:** Add support for `[@one](https://github.com/one)Of` directive ([#1386](https://github.com/absinthe-graphql/absinthe/issues/1386)) ([01e8e4b](https://github.com/absinthe-graphql/absinthe/commit/01e8e4b67dd8c380094cb6cf66d2a7f6da661a68))
+
+
+### Bug Fixes
+
+* **typespec:** Absinthe.Phase.Subscription.SubscribeSelf.run/2 ([#1384](https://github.com/absinthe-graphql/absinthe/issues/1384)) ([4230cc4](https://github.com/absinthe-graphql/absinthe/commit/4230cc4a33ec8dc00ae5f8650cb012e652780738))
+
 ## [1.7.11](https://github.com/absinthe-graphql/absinthe/compare/v1.7.10...v1.7.11) (2025-10-29)
 
 
