@@ -89,6 +89,7 @@ jobs:
 
       - name: Run Dialyzer
         run: mix dialyzer
+
   release:
     name: Create or Update Release PR
     runs-on: ubuntu-latest
