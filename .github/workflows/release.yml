@@ -3,6 +3,12 @@ name: Release
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "The git tag for the release to publish"
+        type: string
+        default: ${{ github.ref }}
 
 jobs:
   publish:
@@ -10,8 +16,17 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.tag }}
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: 1.19
 
       - name: Publish to hex.pm
-        uses: wesleimp/action-publish-hex@v1
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+        run: |
+          mix deps.get
+          mix hex.publish --yes
