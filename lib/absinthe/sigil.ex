@@ -23,9 +23,6 @@ defmodule Absinthe.Sigil do
 
         IO.puts(:stderr, err_string)
         string
-
-      other ->
-        other
     end
   end
 end
