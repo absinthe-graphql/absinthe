@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.0](https://github.com/absinthe-graphql/absinthe/compare/v1.8.0...v1.9.0) (2025-11-21)
+
+
+### Features
+
+* add GQL sigil to format and lint static GraphQL docs ([#1391](https://github.com/absinthe-graphql/absinthe/issues/1391)) ([3aef283](https://github.com/absinthe-graphql/absinthe/commit/3aef283cb4defafba5d7755f164292ef450f8f71))
+
 ## [1.8.0](https://github.com/absinthe-graphql/absinthe/compare/v1.7.11...v1.8.0) (2025-11-05)
 
 
