@@ -8,6 +8,7 @@ defmodule Absinthe.Case do
       import Absinthe.Case.Helpers.Run
       import Absinthe.Case.Assertions.Result
       import Absinthe.Case.Assertions.Schema
+      import Absinthe.Sigil
     end
   end
 end
