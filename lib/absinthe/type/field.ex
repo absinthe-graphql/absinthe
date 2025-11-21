@@ -75,7 +75,9 @@ defmodule Absinthe.Type.Field do
 
   * `:name` - The name of the field, usually assigned automatically by
      the `Absinthe.Schema.Notation.field/4`. Including this option will bypass the snake_case to camelCase conversion.
-  * `:description` - Description of a field, useful for introspection.
+  * `:description` - Description of a field, useful for introspection. If no description
+     is provided, the field will inherit the description of its referenced type during
+     introspection (e.g., a field of type `:user` will inherit the User type's description).
   * `:deprecation` - Deprecation information for a field, usually
      set-up using `Absinthe.Schema.Notation.deprecate/1`.
   * `:type` - The type the value of the field should resolve to
