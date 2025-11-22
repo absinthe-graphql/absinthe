@@ -192,6 +192,7 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.RegisterTriggers,
       Phase.Schema.MarkReferenced,
       Phase.Schema.ReformatDescriptions,
+      Phase.Schema.Coordinates,
       # This phase is run again now after additional validations
       {Phase.Schema.Validation.Result, pass: :final},
       Phase.Schema.ImportPrototypeDirectives,

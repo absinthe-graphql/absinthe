@@ -6,6 +6,7 @@ defmodule Absinthe.Blueprint.Schema.InputValueDefinition do
   defstruct [
     :name,
     :identifier,
+    :coordinate,
     :type,
     :module,
     # InputValueDefinitions can have different placements depending on Whether

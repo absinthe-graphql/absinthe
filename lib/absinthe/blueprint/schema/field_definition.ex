@@ -7,6 +7,7 @@ defmodule Absinthe.Blueprint.Schema.FieldDefinition do
   defstruct [
     :name,
     :identifier,
+    :coordinate,
     :type,
     :module,
     description: nil,

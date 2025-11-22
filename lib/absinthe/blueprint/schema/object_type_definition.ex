@@ -7,6 +7,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
   defstruct [
     :name,
     :identifier,
+    :coordinate,
     :module,
     description: nil,
     interfaces: [],

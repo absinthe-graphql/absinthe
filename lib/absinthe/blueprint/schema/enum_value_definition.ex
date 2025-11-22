@@ -8,6 +8,7 @@ defmodule Absinthe.Blueprint.Schema.EnumValueDefinition do
     :value,
     :name,
     :identifier,
+    :coordinate,
     deprecation: nil,
     directives: [],
     source_location: nil,

@@ -5,6 +5,7 @@ defmodule Absinthe.Blueprint.Schema.SchemaDefinition do
 
   defstruct description: nil,
             module: nil,
+            coordinate: nil,
             type_definitions: [],
             directive_definitions: [],
             type_artifacts: [],
