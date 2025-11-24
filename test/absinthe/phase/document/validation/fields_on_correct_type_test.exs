@@ -7,10 +7,12 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
 
   alias Absinthe.Blueprint
 
+  @options []
+
   defp undefined_field(name, type_name, type_suggestions, field_suggestions, line) do
     bad_value(
       Blueprint.Document.Field,
-      @phase.error_message(name, type_name, type_suggestions, field_suggestions),
+      @phase.error_message(name, type_name, type_suggestions, field_suggestions, @options),
       line,
       name: name
     )
@@ -259,32 +261,40 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectTypeTest do
     end
 
     test "fields on correct type error message: Works with no suggestions" do
-      assert ~s(Cannot query field "f" on type "T".) == @phase.error_message("f", "T", [], [])
+      assert ~s(Cannot query field "f" on type "T".) ==
+               @phase.error_message("f", "T", [], [], @options)
     end
 
     test "fields on correct type error message: Works with no small numbers of type suggestions" do
       assert ~s(Cannot query field "f" on type "T". Did you mean to use an inline fragment on "A" or "B"?) ==
-               @phase.error_message("f", "T", ["A", "B"], [])
+               @phase.error_message("f", "T", ["A", "B"], [], @options)
     end
 
     test "fields on correct type error message: Works with no small numbers of field suggestions" do
       assert ~s(Cannot query field "f" on type "T". Did you mean "z" or "y"?) ==
-               @phase.error_message("f", "T", [], ["z", "y"])
+               @phase.error_message("f", "T", [], ["z", "y"], @options)
     end
 
     test "fields on correct type error message: Only shows one set of suggestions at a time, preferring types" do
       assert ~s(Cannot query field "f" on type "T". Did you mean to use an inline fragment on "A" or "B"?) ==
-               @phase.error_message("f", "T", ["A", "B"], ["z", "y"])
+               @phase.error_message("f", "T", ["A", "B"], ["z", "y"], @options)
     end
 
     test "fields on correct type error message: Limits lots of type suggestions" do
       assert ~s(Cannot query field "f" on type "T". Did you mean to use an inline fragment on "A", "B", "C", "D", or "E"?) ==
-               @phase.error_message("f", "T", ["A", "B", "C", "D", "E", "F"], [])
+               @phase.error_message("f", "T", ["A", "B", "C", "D", "E", "F"], [], @options)
     end
 
     test "fields on correct type error message: Limits lots of field suggestions" do
       assert ~s(Cannot query field "f" on type "T". Did you mean "z", "y", "x", "w", or "v"?) ==
-               @phase.error_message("f", "T", [], ["z", "y", "x", "w", "v", "u"])
+               @phase.error_message("f", "T", [], ["z", "y", "x", "w", "v", "u"], @options)
+    end
+
+    test "fields on correct type error message: without suggestions" do
+      assert ~s(Cannot query field "f" on type "T".) ==
+               @phase.error_message("f", "T", [], ["z", "y", "x", "w", "v", "u"],
+                 maximum_number_of_suggestions: 0
+               )
     end
   end
 end

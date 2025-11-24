@@ -18,5 +18,19 @@ defmodule Elixir.Absinthe.Integration.Validation.MissingSelectionSetTest do
                 }
               ]
             }} == Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema, [])
+
+    assert {:ok,
+            %{
+              errors: [
+                %{
+                  message:
+                    "Field \"things\" of type \"[Thing]\" must have a selection of subfields.",
+                  locations: [%{column: 3, line: 2}]
+                }
+              ]
+            }} ==
+             Absinthe.run(@query, Absinthe.Fixtures.Things.MacroSchema,
+               maximum_number_of_suggestions: 0
+             )
   end
 end

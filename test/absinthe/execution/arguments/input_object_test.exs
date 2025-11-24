@@ -172,6 +172,19 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
         variables: %{"contact" => %{"email" => "bubba@joe.com", "default_with_stream" => "asdf"}}
       )
     )
+
+    assert_error_message_lines(
+      [
+        ~s(Argument "contact" has invalid value $contact.),
+        ~s(In field "default_with_stream": Unknown field.)
+      ],
+      run(
+        @graphql,
+        @schema,
+        variables: %{"contact" => %{"email" => "bubba@joe.com", "default_with_stream" => "asdf"}},
+        maximum_number_of_suggestions: 0
+      )
+    )
   end
 
   test "return field error with multiple suggestions" do
@@ -191,6 +204,24 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
         }
       )
     )
+
+    assert_error_message_lines(
+      [
+        ~s(Argument "contact" has invalid value $contact.),
+        ~s(In field "contact_typo": Unknown field.),
+        ~s(In field "default_with_stream": Unknown field.)
+      ],
+      run(@graphql, @schema,
+        variables: %{
+          "contact" => %{
+            "email" => "bubba@joe.com",
+            "default_with_stream" => "asdf",
+            "contact_typo" => "foo"
+          }
+        },
+        maximum_number_of_suggestions: 0
+      )
+    )
   end
 
   test "return field error with suggestion for non-null field" do
@@ -201,6 +232,18 @@ defmodule Absinthe.Execution.Arguments.InputObjectTest do
         ~s(In field "mail": Unknown field. Did you mean "email"?)
       ],
       run(@graphql, @schema, variables: %{"contact" => %{"mail" => "bubba@joe.com"}})
+    )
+
+    assert_error_message_lines(
+      [
+        ~s(Argument "contact" has invalid value $contact.),
+        ~s(In field "email": Expected type "String!", found null.),
+        ~s(In field "mail": Unknown field.)
+      ],
+      run(@graphql, @schema,
+        variables: %{"contact" => %{"mail" => "bubba@joe.com"}},
+        maximum_number_of_suggestions: 0
+      )
     )
   end
 end
