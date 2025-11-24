@@ -83,7 +83,7 @@ defmodule Absinthe.Pipeline do
       # Map to Schema
       {Phase.Schema, options},
       # Ensure Types
-      Phase.Validation.KnownTypeNames,
+      {Phase.Validation.KnownTypeNames, options},
       Phase.Document.Arguments.VariableTypesMatch,
       # Process Arguments
       Phase.Document.Arguments.CoerceEnums,
@@ -95,14 +95,14 @@ defmodule Absinthe.Pipeline do
       # Validate Full Document
       Phase.Document.Validation.KnownDirectives,
       Phase.Document.Validation.RepeatableDirectives,
-      Phase.Document.Validation.ScalarLeafs,
+      {Phase.Document.Validation.ScalarLeafs, options},
       Phase.Document.Validation.VariablesAreInputTypes,
-      Phase.Document.Validation.ArgumentsOfCorrectType,
+      {Phase.Document.Validation.ArgumentsOfCorrectType, options},
       Phase.Document.Validation.KnownArgumentNames,
       Phase.Document.Validation.ProvidedNonNullArguments,
       Phase.Document.Validation.UniqueArgumentNames,
       Phase.Document.Validation.UniqueInputFieldNames,
-      Phase.Document.Validation.FieldsOnCorrectType,
+      {Phase.Document.Validation.FieldsOnCorrectType, options},
       Phase.Document.Validation.OneOfDirective,
       Phase.Document.Validation.OnlyOneSubscription,
       # Check Validation
