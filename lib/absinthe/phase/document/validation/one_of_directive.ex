@@ -20,7 +20,7 @@ defmodule Absinthe.Phase.Document.Validation.OneOfDirective do
 
   defp process(%Argument{input_value: %{normalized: %Object{} = object}} = node) do
     if Keyword.has_key?(object.schema_node.__private__, :one_of) and
-         field_count(object.fields) > 1 do
+         field_count(object.fields) != 1 do
       message =
         ~s[The Input Type "#{object.schema_node.name}" has the @oneOf directive. It must have exactly one non-null field.]
 

@@ -57,6 +57,13 @@ defmodule Absinthe.Phase.Document.Validation.OneOfDirectiveTest do
       refute result[:data]
     end
 
+    test "with both inline args nil" do
+      query = ~s[query { valid(input: {id: null, name: null}) }]
+      assert {:ok, %{errors: [error]} = result} = Absinthe.run(query, Schema)
+      assert %{locations: [%{column: 15, line: 1}], message: @message} = error
+      refute result[:data]
+    end
+
     test "with both variable args" do
       options = [variables: %{"input" => %{"id" => 1, "name" => "a"}}]
       assert {:ok, %{errors: [error]} = result} = Absinthe.run(@query, Schema, options)
