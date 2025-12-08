@@ -31,17 +31,22 @@ defmodule Absinthe.Subscription.Supervisor do
     # systems. Setting `async` to false makes it so that the requests are processed one at a time.
     async? = Keyword.get(opts, :async, true)
 
-    Supervisor.start_link(__MODULE__, {pubsub, pool_size, compress_registry?, async?})
+    # Determines how keys in the registry are unique or duplicate.
+    # Absinthe expects the keys to be duplicates. In Elixir 1.19 there are
+    # more options for when keys are duplicated in the registry.
+    registry_keys_option = Keyword.get(opts, :keys, :duplicate)
+
+    Supervisor.start_link(__MODULE__, {pubsub, pool_size, compress_registry?, async?, registry_keys_option})
   end
 
-  def init({pubsub, pool_size, compress_registry?, async?}) do
+  def init({pubsub, pool_size, compress_registry?, async?, registry_keys_option}) do
     registry_name = Absinthe.Subscription.registry_name(pubsub)
     meta = [pool_size: pool_size]
 
     children = [
       {Registry,
        [
-         keys: :duplicate,
+         keys: registry_keys_option,
          name: registry_name,
          partitions: System.schedulers_online(),
          meta: meta,
