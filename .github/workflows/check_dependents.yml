@@ -26,10 +26,10 @@ jobs:
           otp-version: "27"
 
       - name: Checkout absinthe
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Checkout ${{ matrix.dependent }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: "absinthe-graphql/${{ matrix.dependent }}"
           path: "${{ matrix.dependent }}"
