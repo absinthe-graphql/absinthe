@@ -31,22 +31,34 @@ defmodule Absinthe.Subscription.Supervisor do
     # systems. Setting `async` to false makes it so that the requests are processed one at a time.
     async? = Keyword.get(opts, :async, true)
 
-    # Determines how keys in the registry are unique or duplicate.
-    # Absinthe expects the keys to be duplicates. In Elixir 1.19 there are
-    # more options for when keys are duplicated in the registry.
-    registry_keys_option = Keyword.get(opts, :keys, :duplicate)
+    # Determines how keys in the registry are partitioned.
+    # Absinthe expects duplicate keys and by default used the :duplicate option.
+    # In Elixir 1.19 there are more options to determine how the duplicate keys
+    # are partitioned. {:duplicate, :pid} which is the same as :duplicate and
+    # {:duplicate, :keys} which partitioned by key.
+    registry_partition_strategy = Keyword.get(opts, :registry_partition_strategy, :pid)
 
-    Supervisor.start_link(__MODULE__, {pubsub, pool_size, compress_registry?, async?, registry_keys_option})
+    Supervisor.start_link(
+      __MODULE__,
+      {pubsub, pool_size, compress_registry?, async?, registry_partition_strategy}
+    )
   end
 
-  def init({pubsub, pool_size, compress_registry?, async?, registry_keys_option}) do
+  def init({pubsub, pool_size, compress_registry?, async?, registry_partition_strategy}) do
     registry_name = Absinthe.Subscription.registry_name(pubsub)
     meta = [pool_size: pool_size]
+
+    keys =
+      case registry_partition_strategy do
+        # to support Elixir versions before 1.19
+        :pid -> :duplicate
+        _ -> {:duplicate, :key}
+      end
 
     children = [
       {Registry,
        [
-         keys: registry_keys_option,
+         keys: keys,
          name: registry_name,
          partitions: System.schedulers_online(),
          meta: meta,
