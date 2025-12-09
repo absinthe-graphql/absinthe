@@ -48,6 +48,14 @@ defmodule Absinthe.Resolution.Projector do
     case selection do
       %{flags: %{skip: _}} ->
         do_collect(selections, fragments, parent_type, schema, index, acc)
+      
+      %Blueprint.Document.Field{flags: %{defer: _}} ->
+        # Defer fields should be skipped in standard resolution - they'll be handled by streaming resolution
+        do_collect(selections, fragments, parent_type, schema, index, acc)
+      
+      %Blueprint.Document.Field{flags: %{stream: _}} ->
+        # Stream fields should be skipped in standard resolution - they'll be handled by streaming resolution  
+        do_collect(selections, fragments, parent_type, schema, index, acc)
 
       %Blueprint.Document.Field{} = field ->
         field = update_schema_node(field, parent_type)
@@ -60,6 +68,14 @@ defmodule Absinthe.Resolution.Projector do
 
         do_collect(selections, fragments, parent_type, schema, index + 1, acc)
 
+      %Blueprint.Document.Fragment.Inline{flags: %{defer: _}} ->
+        # Defer inline fragments should be skipped in standard resolution
+        do_collect(selections, fragments, parent_type, schema, index, acc)
+      
+      %Blueprint.Document.Fragment.Inline{flags: %{stream: _}} ->
+        # Stream inline fragments should be skipped in standard resolution
+        do_collect(selections, fragments, parent_type, schema, index, acc)
+      
       %Blueprint.Document.Fragment.Inline{
         type_condition: %{schema_node: condition},
         selections: inner_selections
@@ -75,6 +91,14 @@ defmodule Absinthe.Resolution.Projector do
             acc
           )
 
+        do_collect(selections, fragments, parent_type, schema, index, acc)
+
+      %Blueprint.Document.Fragment.Spread{flags: %{defer: _}} ->
+        # Defer fragment spreads should be skipped in standard resolution
+        do_collect(selections, fragments, parent_type, schema, index, acc)
+      
+      %Blueprint.Document.Fragment.Spread{flags: %{stream: _}} ->
+        # Stream fragment spreads should be skipped in standard resolution
         do_collect(selections, fragments, parent_type, schema, index, acc)
 
       %Blueprint.Document.Fragment.Spread{name: name} ->
