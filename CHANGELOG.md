@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.10.0](https://github.com/absinthe-graphql/absinthe/compare/v1.9.0...v1.10.0) (2025-12-09)
+
+
+### Features
+
+* Add :registry_partition_strategy option to Absinthe.Subscription ([#1395](https://github.com/absinthe-graphql/absinthe/issues/1395)) ([f6ddcc5](https://github.com/absinthe-graphql/absinthe/commit/f6ddcc5ac9be0bfa7c9c0387102be4e014fa039e))
+
+
+### Bug Fixes
+
+* only null values should also trigger error ([#1394](https://github.com/absinthe-graphql/absinthe/issues/1394)) ([a035261](https://github.com/absinthe-graphql/absinthe/commit/a035261bd0172d84c1d8ac72f74d72e64aaa4769))
+
 ## [1.9.0](https://github.com/absinthe-graphql/absinthe/compare/v1.8.0...v1.9.0) (2025-11-21)
 
 
