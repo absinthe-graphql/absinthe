@@ -38,6 +38,8 @@ defmodule Absinthe.Middleware.Async do
   @behaviour Absinthe.Middleware
   @behaviour Absinthe.Plugin
 
+  import Absinthe.Utils, only: [async: 1]
+
   # A function has handed resolution off to this middleware. The first argument
   # is the current resolution struct. The second argument is the function to
   # execute asynchronously, and opts we'll want to use when it is time to await
@@ -109,14 +111,5 @@ defmodule Absinthe.Middleware.Async do
       _ ->
         pipeline
     end
-  end
-
-  # Optionally use `async/1` function from `opentelemetry_process_propagator` if available
-  if Code.ensure_loaded?(OpentelemetryProcessPropagator.Task) do
-    @spec async((-> any)) :: Task.t()
-    defdelegate async(fun), to: OpentelemetryProcessPropagator.Task
-  else
-    @spec async((-> any)) :: Task.t()
-    defdelegate async(fun), to: Task
   end
 end
