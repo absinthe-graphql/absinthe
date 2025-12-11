@@ -342,4 +342,18 @@ defmodule Absinthe.Schema.SdlRenderTest do
     assert_received type: :function, opts: [sdl_render: true]
     assert_received type: :module, opts: [sdl_render: true]
   end
+
+  defmodule SimpleSchema do
+    use Absinthe.Schema
+
+    query do
+      field :hello, :string
+    end
+  end
+
+  test "inspects blueprint without crashing" do
+    inspected = SimpleSchema.__absinthe_blueprint__() |> inspect(pretty: true)
+    refute inspected =~ "#Inspect\.Error"
+    refute inspected =~ "Stacktrace"
+  end
 end

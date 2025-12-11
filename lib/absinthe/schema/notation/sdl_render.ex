@@ -243,7 +243,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   end
 
   defp render(nil, _) do
-    raise "Unexpected nil"
+    empty()
   end
 
   defp render(identifier, type_definitions) when is_atom(identifier) do
