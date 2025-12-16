@@ -7,6 +7,7 @@ defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
   defstruct [
     :name,
     :identifier,
+    :coordinate,
     :description,
     :module,
     values: [],
