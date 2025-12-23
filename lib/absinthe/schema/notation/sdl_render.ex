@@ -324,12 +324,8 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         concat([" = ", string(enum_name)])
 
       :error ->
-        try do
-          blueprint_value = Blueprint.Input.parse(default_value)
-          concat([" = ", render_value(blueprint_value)])
-        rescue
-          _ -> empty()
-        end
+        blueprint_value = Blueprint.Input.parse(default_value)
+        concat([" = ", render_value(blueprint_value)])
     end
   end
 
@@ -339,12 +335,8 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
        )
        when is_binary(default_value) or is_number(default_value) or is_boolean(default_value) or
               is_list(default_value) or is_map(default_value) do
-    try do
-      blueprint_value = Blueprint.Input.parse(default_value)
-      concat([" = ", render_value(blueprint_value)])
-    rescue
-      _ -> empty()
-    end
+    blueprint_value = Blueprint.Input.parse(default_value)
+    concat([" = ", render_value(blueprint_value)])
   end
 
   defp default(%Blueprint.Schema.FieldDefinition{}, _type_definitions) do
