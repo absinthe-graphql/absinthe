@@ -326,6 +326,29 @@ defmodule Absinthe.Execution.SubscriptionTest do
     refute_receive({:broadcast, _})
   end
 
+  test "unsubscribe does not raise when registry is down" do
+    # Use a dedicated pubsub/registry to avoid affecting other tests.
+    # This simulates the scenario where Absinthe.Subscription is terminated
+    # before the Endpoint during graceful shutdown (OTP terminates children
+    # in reverse start order), causing active SSE connections to call
+    # unsubscribe/2 against a registry that no longer exists.
+    pubsub = ShutdownTestPubSub
+    registry_name = Absinthe.Subscription.registry_name(pubsub)
+    Registry.start_link(keys: :duplicate, name: registry_name, partitions: 1)
+
+    doc_id = "test_doc_id"
+    field_key = "test_field_key"
+
+    {:ok, _} = Registry.register(registry_name, field_key, doc_id)
+    {:ok, _} = Registry.register(registry_name, doc_id, %{})
+    Process.put({Absinthe.Subscription, doc_id}, [field_key])
+
+    Process.flag(:trap_exit, true)
+    GenServer.stop(registry_name)
+
+    assert :ok = Absinthe.Subscription.unsubscribe(pubsub, doc_id)
+  end
+
   test "can unsubscribe from duplicate subscriptions individually" do
     client_id = "abc"
 
