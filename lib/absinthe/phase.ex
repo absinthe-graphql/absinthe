@@ -9,11 +9,12 @@ defmodule Absinthe.Phase do
   """
 
   @type t :: module
+  @type config_t :: t | {t, list}
   @type result_t ::
           {:ok, any}
           | {:jump, any, t}
-          | {:insert, any, t | [t]}
-          | {:replace, any, t | [t]}
+          | {:insert, any, config_t | [config_t]}
+          | {:replace, any, config_t | [config_t]}
           | {:error, any}
           | {:record_phases, any, (any, any -> any)}
 

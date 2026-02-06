@@ -57,6 +57,15 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.DirectivesTest do
                       "isRepeatable" => false
                     },
                     %{
+                      "args" => [],
+                      "isRepeatable" => false,
+                      "locations" => ["INPUT_OBJECT"],
+                      "name" => "oneOf",
+                      "onField" => false,
+                      "onFragment" => false,
+                      "onOperation" => false
+                    },
+                    %{
                       "args" => [
                         %{
                           "name" => "if",

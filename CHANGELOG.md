@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.9.0](https://github.com/absinthe-graphql/absinthe/compare/v1.8.0...v1.9.0) (2025-11-21)
+
+
+### Features
+
+* add GQL sigil to format and lint static GraphQL docs ([#1391](https://github.com/absinthe-graphql/absinthe/issues/1391)) ([3aef283](https://github.com/absinthe-graphql/absinthe/commit/3aef283cb4defafba5d7755f164292ef450f8f71))
+
+## [1.8.0](https://github.com/absinthe-graphql/absinthe/compare/v1.7.11...v1.8.0) (2025-11-05)
+
+
+### Features
+
+* **spec:** Add support for `[@one](https://github.com/one)Of` directive ([#1386](https://github.com/absinthe-graphql/absinthe/issues/1386)) ([01e8e4b](https://github.com/absinthe-graphql/absinthe/commit/01e8e4b67dd8c380094cb6cf66d2a7f6da661a68))
+
+
+### Bug Fixes
+
+* **typespec:** Absinthe.Phase.Subscription.SubscribeSelf.run/2 ([#1384](https://github.com/absinthe-graphql/absinthe/issues/1384)) ([4230cc4](https://github.com/absinthe-graphql/absinthe/commit/4230cc4a33ec8dc00ae5f8650cb012e652780738))
+
+## [1.7.11](https://github.com/absinthe-graphql/absinthe/compare/v1.7.10...v1.7.11) (2025-10-29)
+
+
+### Bug Fixes
+
+* SDL rendering for directives with input objects ([#1375](https://github.com/absinthe-graphql/absinthe/issues/1375)) ([02b955c](https://github.com/absinthe-graphql/absinthe/commit/02b955c49e74a25e09aa00d7029d7bdce57e7b81))
+
 ## v1.7.10
 - Bug Fix: [Set include_deprecated default value to true for backwards compatibility](https://github.com/absinthe-graphql/absinthe/pull/1333)
 - Bug Fix: [Rename to TokenLimitEnforcementTest to fix warning](https://github.com/absinthe-graphql/absinthe/pull/1362)

@@ -26,7 +26,7 @@ defmodule Absinthe.Formatter do
   """
 
   def features(_opts) do
-    [sigils: [], extensions: [".graphql", ".gql"]]
+    [sigils: [:GQL], extensions: [".graphql", ".gql"]]
   end
 
   def format(contents, _opts \\ []) do

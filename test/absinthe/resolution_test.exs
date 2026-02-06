@@ -30,6 +30,20 @@ defmodule Absinthe.ResolutionTest do
       field :invalid_resolver, :string do
         resolve("bogus")
       end
+
+      field :map_resolver, :string do
+        resolve fn _, _ ->
+          {:error, %{message: "map"}}
+        end
+      end
+
+      field :struct_resolver, :string do
+        resolve fn _, _ ->
+          # we are using the Date struct here, but it can be any struct
+          # with an implementation for String.Chars
+          {:error, ~D[2025-01-01]}
+        end
+      end
     end
   end
 
@@ -76,5 +90,29 @@ defmodule Absinthe.ResolutionTest do
                  fn ->
                    {:ok, _} = Absinthe.run(doc, Schema)
                  end
+  end
+
+  test "resolves error with map value" do
+    doc = """
+    { mapResolver }
+    """
+
+    assert {:ok,
+            %{
+              data: %{"mapResolver" => nil},
+              errors: [%{message: "map"}]
+            }} = Absinthe.run(doc, Schema)
+  end
+
+  test "resolves error with struct value implementing String.Chars" do
+    doc = """
+    { structResolver }
+    """
+
+    assert {:ok,
+            %{
+              data: %{"structResolver" => nil},
+              errors: [%{message: "2025-01-01"}]
+            }} = Absinthe.run(doc, Schema)
   end
 end

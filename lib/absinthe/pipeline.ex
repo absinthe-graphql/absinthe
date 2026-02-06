@@ -16,7 +16,7 @@ defmodule Absinthe.Pipeline do
 
   @type data_t :: any
 
-  @type phase_config_t :: Phase.t() | {Phase.t(), Keyword.t()}
+  @type phase_config_t :: Phase.config_t()
 
   @type t :: [phase_config_t | [phase_config_t]]
 
@@ -103,6 +103,7 @@ defmodule Absinthe.Pipeline do
       Phase.Document.Validation.UniqueArgumentNames,
       Phase.Document.Validation.UniqueInputFieldNames,
       Phase.Document.Validation.FieldsOnCorrectType,
+      Phase.Document.Validation.OneOfDirective,
       Phase.Document.Validation.OnlyOneSubscription,
       # Check Validation
       {Phase.Document.Validation.Result, options},
@@ -183,10 +184,11 @@ defmodule Absinthe.Pipeline do
       Phase.Schema.Validation.InterfacesMustResolveTypes,
       Phase.Schema.Validation.ObjectInterfacesMustBeValid,
       Phase.Schema.Validation.ObjectMustImplementInterfaces,
-      Phase.Schema.Validation.NoInterfaceCyles,
+      Phase.Schema.Validation.NoInterfaceCycles,
       Phase.Schema.Validation.QueryTypeMustBeObject,
       Phase.Schema.Validation.NamesMustBeValid,
       Phase.Schema.Validation.UniqueFieldNames,
+      Phase.Schema.Validation.OneOfDirective,
       Phase.Schema.RegisterTriggers,
       Phase.Schema.MarkReferenced,
       Phase.Schema.ReformatDescriptions,
