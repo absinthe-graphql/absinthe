@@ -83,6 +83,7 @@ defmodule Absinthe.Type.Scalar do
   defstruct name: nil,
             description: nil,
             identifier: nil,
+            applied_directives: [],
             __private__: [],
             definition: nil,
             __reference__: nil,

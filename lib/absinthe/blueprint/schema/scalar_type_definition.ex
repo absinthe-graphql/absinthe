@@ -36,6 +36,7 @@ defmodule Absinthe.Blueprint.Schema.ScalarTypeDefinition do
       identifier: type_def.identifier,
       name: type_def.name,
       description: type_def.description,
+      applied_directives: Absinthe.Blueprint.Schema.ObjectTypeDefinition.build_applied_directives(type_def.directives),
       definition: type_def.module,
       serialize: type_def.serialize,
       parse: type_def.parse,

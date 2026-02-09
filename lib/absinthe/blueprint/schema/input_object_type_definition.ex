@@ -37,6 +37,7 @@ defmodule Absinthe.Blueprint.Schema.InputObjectTypeDefinition do
       name: type_def.name,
       fields: build_fields(type_def, schema),
       description: type_def.description,
+      applied_directives: Blueprint.Schema.ObjectTypeDefinition.build_applied_directives(type_def.directives),
       definition: type_def.module
     }
   end
@@ -49,6 +50,7 @@ defmodule Absinthe.Blueprint.Schema.InputObjectTypeDefinition do
         description: field_def.description,
         name: field_def.name,
         type: Blueprint.TypeReference.to_type(field_def.type, schema),
+        applied_directives: Blueprint.Schema.ObjectTypeDefinition.build_applied_directives(field_def.directives),
         definition: type_def.module,
         __reference__: field_def.__reference__,
         __private__: field_def.__private__,

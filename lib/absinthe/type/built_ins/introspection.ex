@@ -94,6 +94,36 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
   enum :__directive_location,
     values: Absinthe.Introspection.DirectiveLocation.values()
 
+  @desc "Represents a directive applied to a type, field, argument, or other schema element"
+  object :__applied_directive, name: "__AppliedDirective" do
+    field :name,
+      type: non_null(:string),
+      resolve: fn _, %{source: source} ->
+        {:ok, source.name}
+      end
+
+    field :args,
+      type: non_null(list_of(non_null(:__directive_argument))),
+      resolve: fn _, %{source: source} ->
+        {:ok, Map.get(source, :args, [])}
+      end
+  end
+
+  @desc "Represents an argument of an applied directive"
+  object :__directive_argument, name: "__DirectiveArgument" do
+    field :name,
+      type: non_null(:string),
+      resolve: fn _, %{source: source} ->
+        {:ok, source.name}
+      end
+
+    field :value,
+      type: non_null(:string),
+      resolve: fn _, %{source: source} ->
+        {:ok, source.value}
+      end
+  end
+
   object :__type do
     description "Represents scalars, interfaces, object types, unions, enums in the system"
 
@@ -214,6 +244,12 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         _, _ ->
           {:ok, nil}
       end
+
+    field :applied_directives,
+      type: non_null(list_of(non_null(:__applied_directive))),
+      resolve: fn _, %{source: source} ->
+        {:ok, Map.get(source, :applied_directives, [])}
+      end
   end
 
   object :__field do
@@ -291,6 +327,12 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         _, %{source: source} ->
           {:ok, Absinthe.Type.SemanticNullability.levels(source)}
       end
+
+    field :applied_directives,
+      type: non_null(list_of(non_null(:__applied_directive))),
+      resolve: fn _, %{source: source} ->
+        {:ok, Map.get(source, :applied_directives, [])}
+      end
   end
 
   object :__inputvalue, name: "__InputValue" do
@@ -341,6 +383,12 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         _, %{source: %{deprecation: dep}} ->
           {:ok, dep.reason}
       end
+
+    field :applied_directives,
+      type: non_null(list_of(non_null(:__applied_directive))),
+      resolve: fn _, %{source: source} ->
+        {:ok, Map.get(source, :applied_directives, [])}
+      end
   end
 
   object :__enumvalue, name: "__EnumValue" do
@@ -366,6 +414,12 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
 
         _, %{source: %{deprecation: dep}} ->
           {:ok, dep.reason}
+      end
+
+    field :applied_directives,
+      type: non_null(list_of(non_null(:__applied_directive))),
+      resolve: fn _, %{source: source} ->
+        {:ok, Map.get(source, :applied_directives, [])}
       end
   end
 

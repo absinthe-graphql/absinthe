@@ -75,6 +75,7 @@ defmodule Absinthe.Type.Interface do
             identifier: nil,
             resolve_type: nil,
             interfaces: [],
+            applied_directives: [],
             __private__: [],
             definition: nil,
             __reference__: nil

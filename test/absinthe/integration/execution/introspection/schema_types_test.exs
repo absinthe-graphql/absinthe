@@ -6,7 +6,9 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.SchemaTypesTest do
   """
 
   @expected [
+    "__AppliedDirective",
     "__Directive",
+    "__DirectiveArgument",
     "__DirectiveLocation",
     "__EnumValue",
     "__Field",

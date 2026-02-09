@@ -215,6 +215,7 @@ defmodule Absinthe.Type.Field do
             middleware: [],
             complexity: nil,
             default_value: nil,
+            applied_directives: [],
             __private__: [],
             definition: nil,
             __reference__: nil
