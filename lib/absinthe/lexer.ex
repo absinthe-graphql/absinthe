@@ -155,10 +155,19 @@ defmodule Absinthe.Lexer do
     ])
     |> post_traverse({:labeled_token, [:float_value]})
 
-  # EscapedUnicode :: /[0-9A-Fa-f]{4}/
-  escaped_unicode =
+  # EscapedUnicode (Fixed-width) :: /[0-9A-Fa-f]{4}/
+  # Per GraphQL September 2025 spec, this supports BMP characters and surrogate pairs
+  escaped_unicode_fixed =
     times(ascii_char([?0..?9, ?A..?F, ?a..?f]), 4)
-    |> post_traverse({:unescape_unicode, []})
+    |> post_traverse({:unescape_unicode_fixed, []})
+
+  # EscapedUnicode (Variable-width) :: \u{ [0-9A-Fa-f]+ }
+  # Per GraphQL September 2025 spec, supports full Unicode range U+0000 to U+10FFFF
+  escaped_unicode_variable =
+    ignore(ascii_char([?{]))
+    |> times(ascii_char([?0..?9, ?A..?F, ?a..?f]), min: 1)
+    |> ignore(ascii_char([?}]))
+    |> post_traverse({:unescape_unicode_variable, []})
 
   # EscapedCharacter :: one of `"` \ `/` b f n r t
   escaped_character =
@@ -175,11 +184,15 @@ defmodule Absinthe.Lexer do
 
   # StringCharacter ::
   #   - SourceCharacter but not `"` or \ or LineTerminator
-  #   - \u EscapedUnicode
+  #   - \u{ EscapedUnicode } (variable-width, September 2025 spec)
+  #   - \u EscapedUnicode (fixed-width, legacy)
   #   - \ EscapedCharacter
   string_character =
     choice([
-      ignore(string(~S(\u))) |> concat(escaped_unicode),
+      # Variable-width Unicode escape: \u{XXXXXX}
+      ignore(string(~S(\u))) |> concat(escaped_unicode_variable),
+      # Fixed-width Unicode escape: \uXXXX (with surrogate pair support)
+      ignore(string(~S(\u))) |> concat(escaped_unicode_fixed),
       ignore(ascii_char([?\\])) |> concat(escaped_character),
       any_unicode
     ])
@@ -233,6 +246,7 @@ defmodule Absinthe.Lexer do
           {:ok, [any()]}
           | {:error, binary(), {integer(), non_neg_integer()}}
           | {:error, :exceeded_token_limit}
+          | {:error, :invalid_unicode_escape, binary(), {integer(), non_neg_integer()}}
   def tokenize(input, options \\ []) do
     lines = String.split(input, ~r/\r?\n/)
 
@@ -241,6 +255,12 @@ defmodule Absinthe.Lexer do
     case do_tokenize(input, tokenize_opts) do
       {:error, @stopped_at_token_limit, _, _, _, _} ->
         {:error, :exceeded_token_limit}
+
+      # Handle Unicode escape validation errors
+      {:error, message, _rest, _context, {line, line_offset}, byte_offset}
+      when is_binary(message) ->
+        byte_column = byte_offset - line_offset + 1
+        {:error, :invalid_unicode_escape, message, byte_loc_to_char_loc({line, byte_column}, lines)}
 
       {:ok, tokens, "", _, _, _} ->
         tokens = convert_token_columns_from_byte_to_char(tokens, lines)
@@ -364,11 +384,85 @@ defmodule Absinthe.Lexer do
 
   defp fill_mantissa(rest, raw, context, _, _), do: {rest, ~c"0." ++ raw, context}
 
-  defp unescape_unicode(rest, content, context, _loc, _) do
+  # Unicode scalar value validation per GraphQL September 2025 spec:
+  # Valid ranges: U+0000 to U+D7FF, U+E000 to U+10FFFF
+  # Invalid: surrogate code points U+D800 to U+DFFF (except as surrogate pairs in fixed-width)
+  defp is_unicode_scalar_value?(value) when value >= 0x0000 and value <= 0xD7FF, do: true
+  defp is_unicode_scalar_value?(value) when value >= 0xE000 and value <= 0x10FFFF, do: true
+  defp is_unicode_scalar_value?(_), do: false
+
+  # Check if value is a high surrogate (U+D800 to U+DBFF)
+  defp is_high_surrogate?(value), do: value >= 0xD800 and value <= 0xDBFF
+
+  # Check if value is a low surrogate (U+DC00 to U+DFFF)
+  defp is_low_surrogate?(value), do: value >= 0xDC00 and value <= 0xDFFF
+
+  # Decode a surrogate pair to a Unicode scalar value
+  defp decode_surrogate_pair(high, low) do
+    0x10000 + ((high - 0xD800) * 0x400) + (low - 0xDC00)
+  end
+
+  # Variable-width Unicode escape: \u{XXXXXX}
+  # Must be a valid Unicode scalar value (not a surrogate)
+  defp unescape_unicode_variable(rest, content, context, _loc, _) do
     code = content |> Enum.reverse()
     value = :erlang.list_to_integer(code, 16)
-    binary = :unicode.characters_to_binary([value])
-    {rest, [binary], context}
+
+    if is_unicode_scalar_value?(value) do
+      binary = :unicode.characters_to_binary([value])
+      {rest, [binary], context}
+    else
+      {:error, "Invalid Unicode scalar value in escape sequence"}
+    end
+  end
+
+  # Fixed-width Unicode escape: \uXXXX
+  # Handles BMP characters and surrogate pairs for supplementary characters
+  defp unescape_unicode_fixed(rest, content, context, _loc, _) do
+    code = content |> Enum.reverse()
+    value = :erlang.list_to_integer(code, 16)
+
+    cond do
+      # Valid BMP character (not a surrogate)
+      is_unicode_scalar_value?(value) ->
+        binary = :unicode.characters_to_binary([value])
+        {rest, [binary], context}
+
+      # High surrogate - check for following low surrogate to form a pair
+      is_high_surrogate?(value) ->
+        case rest do
+          # Look ahead for \uXXXX pattern
+          <<?\\, ?u, h1, h2, h3, h4, remaining::binary>>
+          when h1 in ~c"0123456789ABCDEFabcdef" and
+                 h2 in ~c"0123456789ABCDEFabcdef" and
+                 h3 in ~c"0123456789ABCDEFabcdef" and
+                 h4 in ~c"0123456789ABCDEFabcdef" ->
+            low_code = [h1, h2, h3, h4]
+            low_value = :erlang.list_to_integer(low_code, 16)
+
+            if is_low_surrogate?(low_value) do
+              # Valid surrogate pair - decode to scalar value
+              scalar = decode_surrogate_pair(value, low_value)
+              binary = :unicode.characters_to_binary([scalar])
+              {remaining, [binary], context}
+            else
+              # High surrogate not followed by low surrogate
+              {:error, "Invalid Unicode escape: high surrogate not followed by low surrogate"}
+            end
+
+          _ ->
+            # High surrogate without following escape sequence
+            {:error, "Invalid Unicode escape: lone high surrogate"}
+        end
+
+      # Lone low surrogate (invalid)
+      is_low_surrogate?(value) ->
+        {:error, "Invalid Unicode escape: lone low surrogate"}
+
+      # Out of range
+      true ->
+        {:error, "Invalid Unicode scalar value in escape sequence"}
+    end
   end
 
   @boolean_words ~w(

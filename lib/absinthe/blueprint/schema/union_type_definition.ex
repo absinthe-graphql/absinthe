@@ -39,6 +39,7 @@ defmodule Absinthe.Blueprint.Schema.UnionTypeDefinition do
       identifier: type_def.identifier,
       types: type_def.types |> atomize_types(schema),
       fields: build_fields(type_def, schema),
+      applied_directives: Blueprint.Schema.ObjectTypeDefinition.build_applied_directives(type_def.directives),
       definition: type_def.module,
       resolve_type: type_def.resolve_type
     }
@@ -63,6 +64,7 @@ defmodule Absinthe.Blueprint.Schema.UnionTypeDefinition do
         name: field_def.name,
         type: Blueprint.TypeReference.to_type(field_def.type, schema),
         args: build_args(field_def, schema),
+        applied_directives: Blueprint.Schema.ObjectTypeDefinition.build_applied_directives(field_def.directives),
         definition: field_def.module,
         __reference__: field_def.__reference__,
         __private__: field_def.__private__
@@ -81,6 +83,7 @@ defmodule Absinthe.Blueprint.Schema.UnionTypeDefinition do
         type: Blueprint.TypeReference.to_type(arg_def.type, schema),
         default_value: arg_def.default_value,
         deprecation: arg_def.deprecation,
+        applied_directives: Blueprint.Schema.ObjectTypeDefinition.build_applied_directives(arg_def.directives),
         __reference__: arg_def.__reference__,
         __private__: arg_def.__private__
       }

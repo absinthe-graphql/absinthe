@@ -8,6 +8,7 @@ defmodule Absinthe.Blueprint.Document.Fragment.Named do
   defstruct [
     :name,
     :type_condition,
+    :description,
     selections: [],
     directives: [],
     source_location: nil,
@@ -22,6 +23,7 @@ defmodule Absinthe.Blueprint.Document.Fragment.Named do
           directives: [Blueprint.Directive.t()],
           errors: [Absinthe.Phase.Error.t()],
           name: String.t(),
+          description: nil | String.t(),
           selections: [Blueprint.Document.selection_t()],
           schema_node: nil | Absinthe.Type.t(),
           source_location: nil | Blueprint.SourceLocation.t(),

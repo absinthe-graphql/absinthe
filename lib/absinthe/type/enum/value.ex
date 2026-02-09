@@ -38,6 +38,7 @@ defmodule Absinthe.Type.Enum.Value do
             value: nil,
             deprecation: nil,
             enum_identifier: nil,
+            applied_directives: [],
             __reference__: nil,
             __private__: []
 end

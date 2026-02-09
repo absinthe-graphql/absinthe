@@ -17,7 +17,6 @@ jobs:
           - "1.16"
           - "1.17"
           - "1.18"
-          - "1.19"
         otp:
           - "25"
           - "26"
@@ -25,8 +24,6 @@ jobs:
           - "28"
         # see https://hexdocs.pm/elixir/compatibility-and-deprecations.html#between-elixir-and-erlang-otp
         exclude:
-          - elixir: 1.19
-            otp: 25
           - elixir: 1.17
             otp: 28
           - elixir: 1.16

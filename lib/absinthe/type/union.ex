@@ -55,6 +55,7 @@ defmodule Absinthe.Type.Union do
             resolve_type: nil,
             types: [],
             fields: nil,
+            applied_directives: [],
             __private__: [],
             definition: nil,
             __reference__: nil
