@@ -68,6 +68,23 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.DirectivesTest do
                     %{
                       "args" => [
                         %{
+                          "name" => "levels",
+                          "type" => %{
+                            "kind" => "NON_NULL",
+                            "ofType" => %{"kind" => "LIST", "name" => nil}
+                          }
+                        }
+                      ],
+                      "isRepeatable" => false,
+                      "locations" => ["FIELD_DEFINITION"],
+                      "name" => "semanticNonNull",
+                      "onField" => false,
+                      "onFragment" => false,
+                      "onOperation" => false
+                    },
+                    %{
+                      "args" => [
+                        %{
                           "name" => "if",
                           "type" => %{
                             "kind" => "NON_NULL",

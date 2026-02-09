@@ -277,6 +277,20 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         _, %{source: %{deprecation: dep}} ->
           {:ok, dep.reason}
       end
+
+    field :is_semantic_non_null,
+      type: non_null(:boolean),
+      resolve: fn
+        _, %{source: source} ->
+          {:ok, Absinthe.Type.SemanticNullability.semantic_non_null?(source)}
+      end
+
+    field :semantic_non_null_levels,
+      type: list_of(non_null(:integer)),
+      resolve: fn
+        _, %{source: source} ->
+          {:ok, Absinthe.Type.SemanticNullability.levels(source)}
+      end
   end
 
   object :__inputvalue, name: "__InputValue" do

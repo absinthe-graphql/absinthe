@@ -74,6 +74,16 @@ defmodule Absinthe.IntrospectionTest do
                       },
                       %{
                         "description" =>
+                          "Indicates that a field is semantically non-null: the resolver never intentionally returns null,\nbut null may still be returned due to errors.\n\nThis decouples nullability from error handling, allowing clients to understand which fields\nmay be null only due to errors versus fields that may intentionally be null.",
+                        "isRepeatable" => false,
+                        "locations" => ["FIELD_DEFINITION"],
+                        "name" => "semanticNonNull",
+                        "onField" => false,
+                        "onFragment" => false,
+                        "onOperation" => false
+                      },
+                      %{
+                        "description" =>
                           "Directs the executor to skip this field or fragment when the `if` argument is true.",
                         "isRepeatable" => false,
                         "locations" => ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"],
