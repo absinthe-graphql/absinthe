@@ -7,6 +7,7 @@ defmodule Absinthe.Blueprint.Document.Operation do
   defstruct [
     :name,
     :type,
+    :description,
     current: false,
     selections: [],
     directives: [],
@@ -25,6 +26,7 @@ defmodule Absinthe.Blueprint.Document.Operation do
   @type t :: %__MODULE__{
           name: nil | String.t(),
           type: :query | :mutation | :subscription,
+          description: nil | String.t(),
           current: boolean,
           directives: [Blueprint.Directive.t()],
           selections: [Blueprint.Document.selection_t()],
