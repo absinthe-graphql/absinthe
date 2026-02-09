@@ -152,7 +152,7 @@ defmodule Absinthe.Schema.CoordinateTest do
     end
 
     test "resolve/2 resolves argument coordinates" do
-      assert {:ok, arg} = Coordinate.resolve(TestSchema, "Query.user(id:)")
+      assert {:ok, arg} = Coordinate.resolve(TestSchema, "RootQueryType.user(id:)")
       assert arg.identifier == :id
     end
 

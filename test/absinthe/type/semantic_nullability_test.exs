@@ -6,7 +6,7 @@ defmodule Absinthe.Type.SemanticNullabilityTest do
   defmodule TestSchema do
     use Absinthe.Schema
 
-    import_types Absinthe.Type.BuiltIns.SemanticNonNull
+    import_directives Absinthe.Type.BuiltIns.SemanticNonNull
 
     object :post do
       field :id, :id
@@ -308,6 +308,7 @@ defmodule Absinthe.Type.SemanticNullabilityTest do
   describe "schema notation shorthand" do
     defmodule ShorthandSchema do
       use Absinthe.Schema
+      import_directives Absinthe.Type.BuiltIns.SemanticNonNull
 
       query do
         field :simple, :string, semantic_non_null: true

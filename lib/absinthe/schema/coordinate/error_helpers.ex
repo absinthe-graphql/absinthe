@@ -10,7 +10,7 @@ defmodule Absinthe.Schema.Coordinate.ErrorHelpers do
       import Absinthe.Schema.Coordinate.ErrorHelpers
 
       # In an error message
-      "Field #{coordinate_for(type, field)} is deprecated"
+      "Field \#{coordinate_for(type, field)} is deprecated"
 
       # Adding coordinate to error extras
       error
@@ -46,24 +46,24 @@ defmodule Absinthe.Schema.Coordinate.ErrorHelpers do
     Coordinate.for_type(type_name)
   end
 
-  @spec coordinate_for(String.t(), String.t()) :: String.t()
-  def coordinate_for(type_name, field_name) do
-    Coordinate.for_field(to_string(type_name), to_string(field_name))
-  end
-
   @spec coordinate_for(:directive, String.t()) :: String.t()
   def coordinate_for(:directive, directive_name) do
     Coordinate.for_directive(to_string(directive_name))
   end
 
-  @spec coordinate_for(String.t(), String.t(), String.t()) :: String.t()
-  def coordinate_for(type_name, field_name, arg_name) do
-    Coordinate.for_argument(to_string(type_name), to_string(field_name), to_string(arg_name))
+  @spec coordinate_for(String.t(), String.t()) :: String.t()
+  def coordinate_for(type_name, field_name) do
+    Coordinate.for_field(to_string(type_name), to_string(field_name))
   end
 
   @spec coordinate_for(:directive, String.t(), String.t()) :: String.t()
   def coordinate_for(:directive, directive_name, arg_name) do
     Coordinate.for_directive_argument(to_string(directive_name), to_string(arg_name))
+  end
+
+  @spec coordinate_for(String.t(), String.t(), String.t()) :: String.t()
+  def coordinate_for(type_name, field_name, arg_name) do
+    Coordinate.for_argument(to_string(type_name), to_string(field_name), to_string(arg_name))
   end
 
   @doc """
