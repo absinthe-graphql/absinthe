@@ -134,12 +134,10 @@ defmodule Absinthe.Incremental.Supervisor do
   @spec start_deferred_task((-> any())) :: {:ok, pid()} | {:error, term()}
   def start_deferred_task(fun) do
     if running?() do
-      Task.Supervisor.async_nolink(
+      Task.Supervisor.start_child(
         Absinthe.Incremental.DeferredTaskSupervisor,
         fun
       )
-      |> Map.get(:pid)
-      |> then(&{:ok, &1})
     else
       {:error, :supervisor_not_running}
     end
@@ -151,12 +149,10 @@ defmodule Absinthe.Incremental.Supervisor do
   @spec start_stream_task((-> any())) :: {:ok, pid()} | {:error, term()}
   def start_stream_task(fun) do
     if running?() do
-      Task.Supervisor.async_nolink(
+      Task.Supervisor.start_child(
         Absinthe.Incremental.StreamTaskSupervisor,
         fun
       )
-      |> Map.get(:pid)
-      |> then(&{:ok, &1})
     else
       {:error, :supervisor_not_running}
     end
