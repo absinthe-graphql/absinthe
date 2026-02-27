@@ -9,7 +9,7 @@ defmodule Absinthe.Incremental.DeferTest do
 
   use ExUnit.Case, async: true
 
-  alias Absinthe.{Pipeline, Blueprint}
+  alias Absinthe.{Pipeline, Blueprint, Streaming}
 
   defmodule TestSchema do
     use Absinthe.Schema
@@ -78,6 +78,45 @@ defmodule Absinthe.Incremental.DeferTest do
     object :post do
       field :id, non_null(:id)
       field :title, non_null(:string)
+    end
+  end
+
+  defmodule RegressionSchema do
+    use Absinthe.Schema
+
+    import_directives Absinthe.Type.BuiltIns.IncrementalDirectives
+
+    query do
+      field :catalog, :catalog_page do
+        resolve fn _, _ ->
+          {:ok,
+           %{
+             entries: [
+               %{
+                 id: "1",
+                 title: "Entry 1",
+                 related_items: [%{id: "r1", score: 1, note: "Top match"}]
+               }
+             ]
+           }}
+        end
+      end
+    end
+
+    object :catalog_page do
+      field :entries, list_of(:catalog_entry)
+    end
+
+    object :catalog_entry do
+      field :id, :id
+      field :title, :string
+      field :related_items, list_of(:related_item)
+    end
+
+    object :related_item do
+      field :id, :id
+      field :score, :integer
+      field :note, :string
     end
   end
 
@@ -274,6 +313,47 @@ defmodule Absinthe.Incremental.DeferTest do
     end
   end
 
+  describe "streaming resolution regression" do
+    test "inline @defer under list items resolves without projector crash" do
+      query = """
+      query {
+        catalog {
+          entries {
+            id
+            title
+            ... @defer(label: "related") {
+              relatedItems {
+                id
+                score
+                note
+              }
+            }
+          }
+        }
+      }
+      """
+
+      pipeline =
+        RegressionSchema
+        |> Absinthe.Pipeline.for_document(variables: %{})
+        |> Absinthe.Pipeline.Incremental.enable(
+          enabled: true,
+          enable_defer: true,
+          enable_stream: false
+        )
+
+      assert {:ok, blueprint, _} = Absinthe.Pipeline.run(query, pipeline)
+      assert Streaming.has_streaming_tasks?(blueprint)
+
+      assert [%{path: ["catalog", "entries"]} = task] = Streaming.get_streaming_tasks(blueprint)
+
+      assert {:ok, fragment_result} = execute_task(task, blueprint)
+      assert fragment_result.label == "related"
+      assert fragment_result.path in [["catalog", "entries"], ["catalog", "entries", 0]]
+      assert is_map(fragment_result.data)
+    end
+  end
+
   # Helper functions
 
   defp run_phases(query, variables \\ %{}) do
@@ -297,5 +377,12 @@ defmodule Absinthe.Incremental.DeferTest do
       end)
 
     found
+  end
+
+  defp execute_task(task, blueprint) do
+    case :erlang.fun_info(task.execute, :arity) do
+      {:arity, 1} -> task.execute.(blueprint)
+      _ -> task.execute.()
+    end
   end
 end

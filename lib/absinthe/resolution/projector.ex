@@ -46,6 +46,9 @@ defmodule Absinthe.Resolution.Projector do
 
   defp do_collect([selection | selections], fragments, parent_type, schema, index, acc) do
     case selection do
+      nil ->
+        do_collect(selections, fragments, parent_type, schema, index, acc)
+
       %{flags: %{skip: _}} ->
         do_collect(selections, fragments, parent_type, schema, index, acc)
 

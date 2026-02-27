@@ -133,8 +133,14 @@ defmodule Absinthe.Phase.Document.Execution.StreamingResolution do
         {updated_node, updated_acc}
 
       # Track path through fields for accurate path building
-      %Absinthe.Blueprint.Document.Field{name: name} = field_node ->
-        updated_acc = %{acc | path: acc.path ++ [name]}
+      %Absinthe.Blueprint.Document.Field{name: name, selections: selections} = field_node ->
+        updated_acc =
+          if is_list(selections) and selections != [] do
+            %{acc | path: acc.path ++ [name]}
+          else
+            acc
+          end
+
         {field_node, updated_acc}
 
       # Pass through other nodes
@@ -191,15 +197,23 @@ defmodule Absinthe.Phase.Document.Execution.StreamingResolution do
 
   # Filter out selections that are marked for skipping
   defp filter_deferred_selections(blueprint) do
-    Blueprint.prewalk(blueprint, fn
+    blueprint
+    |> Blueprint.prewalk(fn
       # Skip nodes marked for deferral
       %{flags: %{__skip_initial__: true}} ->
         nil
 
       # For streamed fields, limit the resolution to initial_count
-      %{flags: %{__stream_config__: config}} = node ->
+      %{flags: %{__stream_config__: _config}} = node ->
         # The stream config is preserved, resolution middleware will handle limiting
         node
+
+      node ->
+        node
+    end)
+    |> Blueprint.prewalk(fn
+      %{selections: selections} = node when is_list(selections) ->
+        %{node | selections: Enum.reject(selections, &is_nil/1)}
 
       node ->
         node
@@ -280,19 +294,33 @@ defmodule Absinthe.Phase.Document.Execution.StreamingResolution do
     # Restore the original node without skip flag
     node = restore_deferred_node(fragment_info.node)
 
-    # Get the parent data at this path from the initial result
-    parent_data = get_parent_data(blueprint, fragment_info.path)
+    # Resolve against the first list item when deferring inside list selections
+    {parent_data, result_path} =
+      blueprint
+      |> get_data_at_path(fragment_info.path)
+      |> normalize_deferred_parent(fragment_info.path)
 
     # Create a focused blueprint for just this fragment's fields
-    sub_blueprint = build_sub_blueprint(blueprint, node, parent_data, fragment_info.path)
+    sub_blueprint = build_sub_blueprint(blueprint, node, parent_data, result_path)
 
     # Run resolution
     case Resolution.run(sub_blueprint, options) do
       {:ok, resolved_blueprint} ->
-        {:ok, extract_fragment_result(resolved_blueprint, fragment_info)}
+        {:ok, extract_fragment_result(resolved_blueprint, fragment_info, result_path)}
 
-      {:error, _} = error ->
-        error
+      {:insert, resolved_blueprint, phases} ->
+        case Absinthe.Pipeline.run(resolved_blueprint, phases) do
+          {:ok, finalized_blueprint, _} ->
+            {:ok, extract_fragment_result(finalized_blueprint, fragment_info, result_path)}
+
+          {:error, message, _} ->
+            {:error,
+             %{
+               message: inspect(message),
+               path: result_path,
+               extensions: %{code: "DEFERRED_RESOLUTION_ERROR"}
+             }}
+        end
     end
   rescue
     e ->
@@ -353,9 +381,13 @@ defmodule Absinthe.Phase.Document.Execution.StreamingResolution do
   end
 
   # Build a sub-blueprint for resolving deferred/streamed content
-  defp build_sub_blueprint(blueprint, node, parent_data, path) do
+  defp build_sub_blueprint(blueprint, node, parent_data, _path) do
     # Create execution context with parent data
-    execution = %{blueprint.execution | root_value: parent_data, path: path}
+    execution =
+      blueprint.execution
+      |> Map.put(:root_value, parent_data)
+      |> Map.put(:result, nil)
+      |> Map.put(:fields_cache, %{})
 
     # Create a minimal blueprint with just the node to resolve
     %{blueprint | execution: execution, operations: [wrap_in_operation(node, blueprint)]}
@@ -366,8 +398,9 @@ defmodule Absinthe.Phase.Document.Execution.StreamingResolution do
     %Absinthe.Blueprint.Document.Operation{
       name: "__deferred__",
       type: :query,
+      current: true,
       selections: get_node_selections(node),
-      schema_node: get_query_type(blueprint)
+      schema_node: get_operation_schema_node(node, blueprint)
     }
   end
 
@@ -378,14 +411,54 @@ defmodule Absinthe.Phase.Document.Execution.StreamingResolution do
     Absinthe.Schema.lookup_type(blueprint.schema, :query)
   end
 
+  defp get_operation_schema_node(
+         %Absinthe.Blueprint.Document.Fragment.Inline{
+           type_condition: %{schema_node: schema_node}
+         },
+         _blueprint
+       )
+       when not is_nil(schema_node) do
+    schema_node
+  end
+
+  defp get_operation_schema_node(_node, blueprint), do: get_query_type(blueprint)
+
+  defp get_data_at_path(blueprint, path) do
+    data = blueprint.result[:data] || %{}
+    get_in(data, path)
+  end
+
+  defp normalize_deferred_parent(parent_data, path) when is_list(parent_data) do
+    case parent_data do
+      [first | _] -> {first, path ++ [0]}
+      [] -> {%{}, path}
+    end
+  end
+
+  defp normalize_deferred_parent(%{"items" => [first | _]}, path) do
+    {first, path ++ [0]}
+  end
+
+  defp normalize_deferred_parent(%{items: [first | _]}, path) do
+    {first, path ++ [0]}
+  end
+
+  defp normalize_deferred_parent(parent_data, path) when is_map(parent_data) do
+    {parent_data, path}
+  end
+
+  defp normalize_deferred_parent(_parent_data, path) do
+    {%{}, path}
+  end
+
   # Extract result from a resolved deferred fragment
-  defp extract_fragment_result(blueprint, fragment_info) do
+  defp extract_fragment_result(blueprint, fragment_info, path) do
     data = blueprint.result[:data] || %{}
     errors = blueprint.result[:errors] || []
 
     result = %{
       data: data,
-      path: fragment_info.path,
+      path: path,
       label: fragment_info.label
     }
 
