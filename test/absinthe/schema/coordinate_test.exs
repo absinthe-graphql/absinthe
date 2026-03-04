@@ -152,7 +152,7 @@ defmodule Absinthe.Schema.CoordinateTest do
     end
 
     test "resolve/2 resolves argument coordinates" do
-      assert {:ok, arg} = Coordinate.resolve(TestSchema, "Query.user(id:)")
+      assert {:ok, arg} = Coordinate.resolve(TestSchema, "RootQueryType.user(id:)")
       assert arg.identifier == :id
     end
 
@@ -175,8 +175,8 @@ defmodule Absinthe.Schema.CoordinateTest do
     end
 
     test "resolve/2 returns error for non-existent argument" do
-      assert {:error, "Argument not found: Query.user(nonexistent:)"} =
-               Coordinate.resolve(TestSchema, "Query.user(nonexistent:)")
+      assert {:error, "Argument not found: RootQueryType.user(nonexistent:)"} =
+               Coordinate.resolve(TestSchema, "RootQueryType.user(nonexistent:)")
     end
 
     test "resolve/2 returns error for non-existent directive" do
