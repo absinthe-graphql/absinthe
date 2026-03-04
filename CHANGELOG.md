@@ -1,5 +1,38 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+* **draft-spec:** Add `@defer` and `@stream` directives for incremental delivery ([#1377](https://github.com/absinthe-graphql/absinthe/pull/1377))
+  - **Note:** These directives are still in draft/RFC stage and not yet part of the finalized GraphQL specification
+  - **Opt-in required:** `import_directives Absinthe.Type.BuiltIns.IncrementalDirectives` in your schema
+  - Split GraphQL responses into initial + incremental payloads
+  - Configure via `Absinthe.Pipeline.Incremental.enable/2`
+  - Resource limits (max concurrent streams, memory, duration)
+  - Dataloader integration for batched loading
+  - SSE and WebSocket transport support
+* **subscriptions:** Support `@defer` and `@stream` in subscriptions
+  - Subscriptions with deferred content deliver multiple payloads automatically
+  - Existing PubSub implementations work unchanged (calls `publish_subscription/2` multiple times)
+  - Uses standard GraphQL incremental delivery format that clients already understand
+* **streaming:** Unified streaming architecture for queries and subscriptions
+  - New `Absinthe.Streaming` module consolidates shared abstractions
+  - `Absinthe.Streaming.Executor` behaviour for pluggable task execution backends
+  - `Absinthe.Streaming.TaskExecutor` default executor using `Task.async_stream`
+  - `Absinthe.Streaming.Delivery` handles pubsub delivery for subscriptions
+  - Both query and subscription incremental delivery share the same execution path
+* **executors:** Pluggable task execution backends
+  - Implement `Absinthe.Streaming.Executor` to use custom backends (Oban, RabbitMQ, etc.)
+  - Configure via `@streaming_executor` schema attribute, context, or application config
+  - Default executor uses `Task.async_stream` with configurable concurrency and timeouts
+* **telemetry:** Add telemetry events for incremental delivery
+  - `[:absinthe, :incremental, :delivery, :initial]` - initial response
+  - `[:absinthe, :incremental, :delivery, :payload]` - each deferred/streamed payload
+  - `[:absinthe, :incremental, :delivery, :complete]` - stream completed
+  - `[:absinthe, :incremental, :delivery, :error]` - error during streaming
+* **monitoring:** Add `on_event` callback for custom monitoring integrations (Sentry, DataDog)
+
 ## [1.9.0](https://github.com/absinthe-graphql/absinthe/compare/v1.8.0...v1.9.0) (2025-11-21)
 
 
