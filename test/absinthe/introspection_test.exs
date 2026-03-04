@@ -4,6 +4,8 @@ defmodule Absinthe.IntrospectionTest do
   alias Absinthe.Schema
 
   describe "introspection of directives" do
+    # Note: @defer and @stream directives are opt-in and not included in core schemas.
+    # They need to be explicitly imported via: import_directives Absinthe.Type.BuiltIns.IncrementalDirectives
     test "builtin" do
       result =
         """
@@ -68,16 +70,6 @@ defmodule Absinthe.IntrospectionTest do
                         "isRepeatable" => false,
                         "locations" => ["INPUT_OBJECT"],
                         "name" => "oneOf",
-                        "onField" => false,
-                        "onFragment" => false,
-                        "onOperation" => false
-                      },
-                      %{
-                        "description" =>
-                          "Indicates that a field is semantically non-null: the resolver never intentionally returns null,\nbut null may still be returned due to errors.\n\nThis decouples nullability from error handling, allowing clients to understand which fields\nmay be null only due to errors versus fields that may intentionally be null.",
-                        "isRepeatable" => false,
-                        "locations" => ["FIELD_DEFINITION"],
-                        "name" => "semanticNonNull",
                         "onField" => false,
                         "onFragment" => false,
                         "onOperation" => false

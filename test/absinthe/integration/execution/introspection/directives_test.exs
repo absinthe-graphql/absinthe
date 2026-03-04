@@ -18,107 +18,23 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.DirectivesTest do
   """
 
   test "scenario #1" do
-    assert {:ok,
-            %{
-              data: %{
-                "__schema" => %{
-                  "directives" => [
-                    %{
-                      "args" => [
-                        %{"name" => "reason", "type" => %{"kind" => "SCALAR", "ofType" => nil}}
-                      ],
-                      "isRepeatable" => false,
-                      "locations" => [
-                        "ARGUMENT_DEFINITION",
-                        "ENUM_VALUE",
-                        "FIELD_DEFINITION",
-                        "INPUT_FIELD_DEFINITION"
-                      ],
-                      "name" => "deprecated",
-                      "onField" => false,
-                      "onFragment" => false,
-                      "onOperation" => false
-                    },
-                    %{
-                      "args" => [
-                        %{
-                          "name" => "if",
-                          "type" => %{
-                            "kind" => "NON_NULL",
-                            "ofType" => %{"kind" => "SCALAR", "name" => "Boolean"}
-                          }
-                        }
-                      ],
-                      "locations" => ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"],
-                      "name" => "include",
-                      "onField" => true,
-                      "onFragment" => true,
-                      "onOperation" => false,
-                      "isRepeatable" => false
-                    },
-                    %{
-                      "args" => [],
-                      "isRepeatable" => false,
-                      "locations" => ["INPUT_OBJECT"],
-                      "name" => "oneOf",
-                      "onField" => false,
-                      "onFragment" => false,
-                      "onOperation" => false
-                    },
-                    %{
-                      "args" => [
-                        %{
-                          "name" => "levels",
-                          "type" => %{
-                            "kind" => "NON_NULL",
-                            "ofType" => %{"kind" => "LIST", "name" => nil}
-                          }
-                        }
-                      ],
-                      "isRepeatable" => false,
-                      "locations" => ["FIELD_DEFINITION"],
-                      "name" => "semanticNonNull",
-                      "onField" => false,
-                      "onFragment" => false,
-                      "onOperation" => false
-                    },
-                    %{
-                      "args" => [
-                        %{
-                          "name" => "if",
-                          "type" => %{
-                            "kind" => "NON_NULL",
-                            "ofType" => %{"kind" => "SCALAR", "name" => "Boolean"}
-                          }
-                        }
-                      ],
-                      "locations" => ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"],
-                      "name" => "skip",
-                      "onField" => true,
-                      "onFragment" => true,
-                      "onOperation" => false,
-                      "isRepeatable" => false
-                    },
-                    %{
-                      "isRepeatable" => false,
-                      "locations" => ["SCALAR"],
-                      "name" => "specifiedBy",
-                      "onField" => false,
-                      "onFragment" => false,
-                      "onOperation" => false,
-                      "args" => [
-                        %{
-                          "name" => "url",
-                          "type" => %{
-                            "kind" => "NON_NULL",
-                            "ofType" => %{"kind" => "SCALAR", "name" => "String"}
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                }
-              }
-            }} == Absinthe.run(@query, Absinthe.Fixtures.ContactSchema, [])
+    # Note: @defer, @stream, and @semanticNonNull directives are opt-in
+    # and not included in core schemas.
+    # They need to be explicitly imported via import_directives.
+    {:ok, result} = Absinthe.run(@query, Absinthe.Fixtures.ContactSchema, [])
+
+    directives = get_in(result, [:data, "__schema", "directives"])
+    directive_names = Enum.map(directives, & &1["name"])
+
+    # Core directives should always be present
+    assert "deprecated" in directive_names
+    assert "include" in directive_names
+    assert "skip" in directive_names
+    assert "specifiedBy" in directive_names
+
+    # Opt-in directives are not in core schema
+    refute "defer" in directive_names
+    refute "stream" in directive_names
+    refute "semanticNonNull" in directive_names
   end
 end

@@ -23,11 +23,12 @@ defmodule Absinthe.Phase.Schema do
   @spec run(Blueprint.t(), Keyword.t()) :: {:ok, Blueprint.t()}
   def run(input, options \\ []) do
     {input, schema} = apply_settings(input, Map.new(options))
+    blueprint_directives = collect_blueprint_directives(input)
 
     result =
       input
       |> update_context(schema)
-      |> Blueprint.prewalk(&handle_node(&1, schema, input.adapter))
+      |> Blueprint.prewalk(&handle_node(&1, schema, input.adapter, blueprint_directives))
 
     {:ok, result}
   end
@@ -52,23 +53,23 @@ defmodule Absinthe.Phase.Schema do
     put_in(input.execution.context, context)
   end
 
-  defp handle_node(%Blueprint{} = node, schema, adapter) do
-    set_children(node, schema, adapter)
+  defp handle_node(%Blueprint{} = node, schema, adapter, blueprint_directives) do
+    set_children(node, schema, adapter, blueprint_directives)
   end
 
-  defp handle_node(%Absinthe.Blueprint.Document.VariableDefinition{} = node, _, _) do
+  defp handle_node(%Absinthe.Blueprint.Document.VariableDefinition{} = node, _, _, _) do
     {:halt, node}
   end
 
-  defp handle_node(node, schema, adapter) do
-    set_children(node, schema, adapter)
+  defp handle_node(node, schema, adapter, blueprint_directives) do
+    set_children(node, schema, adapter, blueprint_directives)
   end
 
-  defp set_children(parent, schema, adapter) do
+  defp set_children(parent, schema, adapter, blueprint_directives) do
     Blueprint.prewalk(parent, fn
       ^parent -> parent
       %Absinthe.Blueprint.Input.Variable{} = child -> {:halt, child}
-      child -> {:halt, set_schema_node(child, parent, schema, adapter)}
+      child -> {:halt, set_schema_node(child, parent, schema, adapter, blueprint_directives)}
     end)
   end
 
@@ -78,21 +79,23 @@ defmodule Absinthe.Phase.Schema do
            node,
          _parent,
          schema,
-         _adapter
+         _adapter,
+         _blueprint_directives
        ) do
     schema_node = Absinthe.Schema.lookup_type(schema, type_name)
     %{node | schema_node: schema_node, type_condition: %{condition | schema_node: schema_node}}
   end
 
-  defp set_schema_node(%Blueprint.Directive{name: name} = node, _parent, schema, adapter) do
-    %{node | schema_node: find_schema_directive(name, schema, adapter)}
+  defp set_schema_node(%Blueprint.Directive{name: name} = node, _parent, schema, adapter, blueprint_directives) do
+    %{node | schema_node: find_schema_directive(name, schema, adapter, blueprint_directives)}
   end
 
   defp set_schema_node(
          %Blueprint.Document.Operation{type: op_type} = node,
          _parent,
          schema,
-         _adapter
+         _adapter,
+         _blueprint_directives
        ) do
     %{node | schema_node: Absinthe.Schema.lookup_type(schema, op_type)}
   end
@@ -102,7 +105,8 @@ defmodule Absinthe.Phase.Schema do
            node,
          _parent,
          schema,
-         _adapter
+         _adapter,
+         _blueprint_directives
        ) do
     schema_node = Absinthe.Schema.lookup_type(schema, type_name)
     %{node | schema_node: schema_node, type_condition: %{condition | schema_node: schema_node}}
@@ -112,7 +116,8 @@ defmodule Absinthe.Phase.Schema do
          %Blueprint.Document.VariableDefinition{type: type_reference} = node,
          _parent,
          schema,
-         _adapter
+         _adapter,
+         _blueprint_directives
        ) do
     wrapped =
       type_reference
@@ -121,7 +126,7 @@ defmodule Absinthe.Phase.Schema do
     %{node | schema_node: wrapped}
   end
 
-  defp set_schema_node(node, %{schema_node: nil}, _, _) do
+  defp set_schema_node(node, %{schema_node: nil}, _, _, _) do
     # if we don't know the parent schema node, and we aren't one of the earlier nodes,
     # then we can't know our schema node.
     node
@@ -131,7 +136,8 @@ defmodule Absinthe.Phase.Schema do
          %Blueprint.Document.Fragment.Inline{type_condition: nil} = node,
          parent,
          schema,
-         adapter
+         adapter,
+         blueprint_directives
        ) do
     type =
       case parent.schema_node do
@@ -145,24 +151,25 @@ defmodule Absinthe.Phase.Schema do
       %{node | type_condition: %Blueprint.TypeReference.Name{name: type.name, schema_node: type}},
       parent,
       schema,
-      adapter
+      adapter,
+      blueprint_directives
     )
   end
 
-  defp set_schema_node(%Blueprint.Document.Field{} = node, parent, schema, adapter) do
+  defp set_schema_node(%Blueprint.Document.Field{} = node, parent, schema, adapter, _blueprint_directives) do
     %{node | schema_node: find_schema_field(parent.schema_node, node.name, schema, adapter)}
   end
 
-  defp set_schema_node(%Blueprint.Input.Argument{name: name} = node, parent, _schema, adapter) do
+  defp set_schema_node(%Blueprint.Input.Argument{name: name} = node, parent, _schema, adapter, _blueprint_directives) do
     schema_node = find_schema_argument(parent.schema_node, name, adapter)
     %{node | schema_node: schema_node}
   end
 
-  defp set_schema_node(%Blueprint.Document.Fragment.Spread{} = node, _, _, _) do
+  defp set_schema_node(%Blueprint.Document.Fragment.Spread{} = node, _, _, _, _) do
     node
   end
 
-  defp set_schema_node(%Blueprint.Input.Field{} = node, parent, schema, adapter) do
+  defp set_schema_node(%Blueprint.Input.Field{} = node, parent, schema, adapter, _blueprint_directives) do
     case node.name do
       "__" <> _ ->
         %{node | schema_node: nil}
@@ -172,7 +179,7 @@ defmodule Absinthe.Phase.Schema do
     end
   end
 
-  defp set_schema_node(%Blueprint.Input.List{} = node, parent, _schema, _adapter) do
+  defp set_schema_node(%Blueprint.Input.List{} = node, parent, _schema, _adapter, _blueprint_directives) do
     case Type.unwrap_non_null(parent.schema_node) do
       %{of_type: internal_type} ->
         %{node | schema_node: internal_type}
@@ -182,7 +189,7 @@ defmodule Absinthe.Phase.Schema do
     end
   end
 
-  defp set_schema_node(%Blueprint.Input.Value{} = node, parent, schema, _) do
+  defp set_schema_node(%Blueprint.Input.Value{} = node, parent, schema, _, _blueprint_directives) do
     case parent.schema_node do
       %Type.Argument{type: type} ->
         %{node | schema_node: type |> Type.expand(schema)}
@@ -195,11 +202,11 @@ defmodule Absinthe.Phase.Schema do
     end
   end
 
-  defp set_schema_node(%{schema_node: nil} = node, %Blueprint.Input.Value{} = parent, _schema, _) do
+  defp set_schema_node(%{schema_node: nil} = node, %Blueprint.Input.Value{} = parent, _schema, _, _blueprint_directives) do
     %{node | schema_node: parent.schema_node}
   end
 
-  defp set_schema_node(node, _, _, _) do
+  defp set_schema_node(node, _, _, _, _) do
     node
   end
 
@@ -209,7 +216,7 @@ defmodule Absinthe.Phase.Schema do
           String.t(),
           Absinthe.Adapter.t()
         ) :: nil | Type.Argument.t()
-  defp find_schema_argument(%{args: arguments}, name, adapter) do
+  defp find_schema_argument(%{args: arguments}, name, adapter) when is_map(arguments) do
     internal_name = adapter.to_internal_name(name, :argument)
 
     arguments
@@ -217,13 +224,37 @@ defmodule Absinthe.Phase.Schema do
     |> Enum.find(&match?(%{name: ^internal_name}, &1))
   end
 
-  # Given a name, lookup a schema directive
-  @spec find_schema_directive(String.t(), Absinthe.Schema.t(), Absinthe.Adapter.t()) ::
-          nil | Type.Directive.t()
-  defp find_schema_directive(name, schema, adapter) do
-    internal_name = adapter.to_internal_name(name, :directive)
-    schema.__absinthe_directive__(internal_name)
+  defp find_schema_argument(%{arguments: arguments}, name, adapter) when is_list(arguments) do
+    internal_name = adapter.to_internal_name(name, :argument)
+    Enum.find(arguments, &match?(%{name: ^internal_name}, &1))
   end
+
+  defp find_schema_argument(_, _, _), do: nil
+
+  # Given a name, lookup a schema directive, falling back to blueprint directives
+  defp find_schema_directive(name, schema, adapter, blueprint_directives) do
+    internal_name = adapter.to_internal_name(name, :directive)
+
+    case schema.__absinthe_directive__(internal_name) do
+      nil -> Map.get(blueprint_directives, internal_name)
+      directive -> directive
+    end
+  end
+
+  # Collect directive definitions from the blueprint for fallback resolution.
+  # This is needed because import_directives makes definitions available in the
+  # blueprint, but Phase.Schema resolves against the compiled prototype schema
+  # which doesn't include imported directives.
+  defp collect_blueprint_directives(%{schema_definitions: schema_defs}) do
+    for schema_def <- schema_defs,
+        directive_def <- Map.get(schema_def, :directive_definitions, []),
+        key <- [directive_def.identifier, to_string(directive_def.identifier)],
+        into: %{} do
+      {key, directive_def}
+    end
+  end
+
+  defp collect_blueprint_directives(_), do: %{}
 
   # Given a schema type, lookup a child field definition
   @spec find_schema_field(nil | Type.t(), String.t(), Absinthe.Schema.t(), Absinthe.Adapter.t()) ::

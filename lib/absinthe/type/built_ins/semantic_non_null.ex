@@ -12,7 +12,7 @@ defmodule Absinthe.Type.BuiltIns.SemanticNonNull do
       defmodule MyApp.Schema do
         use Absinthe.Schema
 
-        import_types Absinthe.Type.BuiltIns.SemanticNonNull
+        import_directives Absinthe.Type.BuiltIns.SemanticNonNull
 
         query do
           # ...
