@@ -46,16 +46,16 @@ defmodule Absinthe.UnicodeTest do
 
     test "parses Japanese characters" do
       assert {:ok, [{:string_value, {1, 1}, value}]} =
-               Lexer.tokenize(~s(""))
+               Lexer.tokenize(~s("\u3053\u3093\u306B\u3061\u306F"))
 
-      assert to_string(value) == ~s("")
+      assert to_string(value) == ~s("\u3053\u3093\u306B\u3061\u306F")
     end
 
     test "parses Arabic characters" do
       assert {:ok, [{:string_value, {1, 1}, value}]} =
-               Lexer.tokenize(~s(""))
+               Lexer.tokenize(~s("\u0645\u0631\u062D\u0628\u0627"))
 
-      assert to_string(value) == ~s("")
+      assert to_string(value) == ~s("\u0645\u0631\u062D\u0628\u0627")
     end
 
     test "parses mixed Unicode scripts" do
