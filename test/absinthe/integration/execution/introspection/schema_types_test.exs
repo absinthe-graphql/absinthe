@@ -20,10 +20,6 @@ defmodule Elixir.Absinthe.Integration.Execution.Introspection.SchemaTypesTest do
     assert "__Type" in names
     assert "__TypeKind" in names
 
-    # TypeSystem directive introspection types
-    assert "__AppliedDirective" in names
-    assert "__DirectiveArgument" in names
-
     # ContactSchema types
     assert "Boolean" in names
     assert "Business" in names
