@@ -262,14 +262,14 @@ defmodule Absinthe.Phase.Document.Execution.StreamingResolution do
     put_streaming_context(blueprint, updated_context)
   end
 
-  defp create_deferred_task(fragment_info, blueprint, options) do
+  defp create_deferred_task(fragment_info, _blueprint, options) do
     %{
       id: generate_task_id(),
       type: :defer,
       label: fragment_info.label,
       path: fragment_info.path,
       status: :pending,
-      execute: fn ->
+      execute: fn blueprint ->
         resolve_deferred_fragment(fragment_info, blueprint, options)
       end
     }
@@ -306,7 +306,8 @@ defmodule Absinthe.Phase.Document.Execution.StreamingResolution do
     # Run resolution
     case Resolution.run(sub_blueprint, options) do
       {:ok, resolved_blueprint} ->
-        {:ok, extract_fragment_result(resolved_blueprint, fragment_info, result_path)}
+        {:ok, finalized} = Absinthe.Phase.Document.Result.run(resolved_blueprint)
+        {:ok, extract_fragment_result(finalized, fragment_info, result_path)}
 
       {:insert, resolved_blueprint, phases} ->
         case Absinthe.Pipeline.run(resolved_blueprint, phases) do
@@ -390,7 +391,7 @@ defmodule Absinthe.Phase.Document.Execution.StreamingResolution do
       |> Map.put(:fields_cache, %{})
 
     # Create a minimal blueprint with just the node to resolve
-    %{blueprint | execution: execution, operations: [wrap_in_operation(node, blueprint)]}
+    %{blueprint | execution: execution, result: %{}, operations: [wrap_in_operation(node, blueprint)]}
   end
 
   # Wrap a node in a minimal operation structure
