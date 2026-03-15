@@ -1,5 +1,7 @@
 # Changelog
 
+## [1.9.1](https://github.com/absinthe-graphql/absinthe/compare/v1.9.0...v1.9.1) (2026-03-15)
+
 ## [1.9.0](https://github.com/absinthe-graphql/absinthe/compare/v1.8.0...v1.9.0) (2025-11-21)
 
 
