@@ -14,3 +14,4 @@ missing_rules.rb
 /priv/plts/*.plt.hash
 /tmp
 mise.toml
+.expert
