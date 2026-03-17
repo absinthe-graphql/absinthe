@@ -507,6 +507,7 @@ defmodule Absinthe.Schema.Notation do
       |> Keyword.delete(:directives)
       |> Keyword.delete(:args)
       |> Keyword.delete(:meta)
+      |> Keyword.delete(:semantic_non_null)
       |> Keyword.update(:description, nil, &wrap_in_unquote/1)
       |> Keyword.update(:default_value, nil, &wrap_in_unquote/1)
 
@@ -1556,14 +1557,29 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp build_directives(attrs) do
-    if attrs[:deprecate] do
-      directive = {:deprecated, reason(attrs[:deprecate])}
+    directives = Keyword.get(attrs, :directives, [])
 
-      directives = Keyword.get(attrs, :directives, [])
-      [directive | directives]
-    else
-      Keyword.get(attrs, :directives, [])
-    end
+    directives =
+      if attrs[:deprecate] do
+        directive = {:deprecated, reason(attrs[:deprecate])}
+        [directive | directives]
+      else
+        directives
+      end
+
+    directives =
+      case attrs[:semantic_non_null] do
+        nil ->
+          directives
+
+        true ->
+          [{:semantic_non_null, []} | directives]
+
+        levels when is_list(levels) ->
+          [{:semantic_non_null, [levels: levels]} | directives]
+      end
+
+    directives
   end
 
   defp reason(true), do: []
