@@ -8,6 +8,7 @@ defmodule Absinthe.Phase.Debug do
   @spec run(any, Keyword.t()) :: {:ok, Absinthe.Blueprint.t()}
   def run(input, _options \\ []) do
     Logger.debug("[Absinthe Blueprint]", input)
+
     {:ok, input}
   end
 end
