@@ -266,3 +266,101 @@ Since we provided a `context_id`, Absinthe will only run two documents per publi
 
 1. Once for _user 1_ and _user 3_ because they have the same context ID (`"global"`) and sent the same document.
 2. Once for _user 2_. While _user 2_ has the same context ID (`"global"`), they provided a different document, so it cannot be de-duplicated with the other two.
+
+### Incremental Delivery with Subscriptions
+
+Subscriptions support `@defer` and `@stream` directives for incremental delivery. This allows you to receive subscription data progressively - immediately available data first, followed by deferred content.
+
+First, import the incremental directives in your schema:
+
+```elixir
+defmodule MyAppWeb.Schema do
+  use Absinthe.Schema
+
+  # Enable @defer and @stream directives
+  import_directives Absinthe.Type.BuiltIns.IncrementalDirectives
+
+  # ... rest of schema
+end
+```
+
+Then use `@defer` in your subscription queries:
+
+```graphql
+subscription {
+  commentAdded(repoName: "absinthe-graphql/absinthe") {
+    id
+    content
+    author {
+      name
+    }
+
+    # Defer expensive operations
+    ... @defer(label: "authorDetails") {
+      author {
+        email
+        avatarUrl
+        recentActivity {
+          type
+          timestamp
+        }
+      }
+    }
+  }
+}
+```
+
+When a mutation triggers this subscription, clients receive multiple payloads:
+
+**Initial payload** (sent immediately):
+```json
+{
+  "data": {
+    "commentAdded": {
+      "id": "123",
+      "content": "Great library!",
+      "author": { "name": "John" }
+    }
+  },
+  "pending": [{"id": "0", "label": "authorDetails", "path": ["commentAdded"]}],
+  "hasNext": true
+}
+```
+
+**Incremental payload** (sent when deferred data resolves):
+```json
+{
+  "incremental": [{
+    "id": "0",
+    "data": {
+      "author": {
+        "email": "john@example.com",
+        "avatarUrl": "https://...",
+        "recentActivity": [...]
+      }
+    }
+  }],
+  "hasNext": false
+}
+```
+
+This is handled automatically by the subscription system. Your existing PubSub implementation works unchanged - it receives multiple `publish_subscription/2` calls with the standard GraphQL incremental format.
+
+#### Custom Executors for Subscriptions
+
+For long-running deferred operations in subscriptions, you can configure a custom executor (e.g., Oban for persistence):
+
+```elixir
+defmodule MyAppWeb.Schema do
+  use Absinthe.Schema
+
+  # Use Oban for deferred task execution
+  @streaming_executor MyApp.ObanExecutor
+
+  import_directives Absinthe.Type.BuiltIns.IncrementalDirectives
+
+  # ...
+end
+```
+
+See the [Incremental Delivery guide](incremental-delivery.md) for details on implementing custom executors.

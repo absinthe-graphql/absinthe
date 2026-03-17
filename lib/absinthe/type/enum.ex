@@ -83,6 +83,7 @@ defmodule Absinthe.Type.Enum do
             values: %{},
             values_by_internal_value: %{},
             values_by_name: %{},
+            applied_directives: [],
             __private__: [],
             definition: nil,
             __reference__: nil

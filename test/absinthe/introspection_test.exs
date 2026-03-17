@@ -4,6 +4,8 @@ defmodule Absinthe.IntrospectionTest do
   alias Absinthe.Schema
 
   describe "introspection of directives" do
+    # Note: @defer and @stream directives are opt-in and not included in core schemas.
+    # They need to be explicitly imported via: import_directives Absinthe.Type.BuiltIns.IncrementalDirectives
     test "builtin" do
       result =
         """

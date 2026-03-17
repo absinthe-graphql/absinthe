@@ -36,6 +36,7 @@ defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
       values: values_by(type_def, :identifier),
       values_by_internal_value: values_by(type_def, :value),
       values_by_name: values_by(type_def, :name),
+      applied_directives: Blueprint.Schema.ObjectTypeDefinition.build_applied_directives(type_def.directives),
       definition: type_def.module,
       description: type_def.description
     }
@@ -52,7 +53,8 @@ defmodule Absinthe.Blueprint.Schema.EnumTypeDefinition do
             __reference__: value_def.__reference__,
             __private__: value_def.__private__,
             description: value_def.description,
-            deprecation: value_def.deprecation
+            deprecation: value_def.deprecation,
+            applied_directives: Blueprint.Schema.ObjectTypeDefinition.build_applied_directives(value_def.directives)
           }
 
           {Map.fetch!(value_def, key), value}

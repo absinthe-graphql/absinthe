@@ -214,6 +214,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         _, _ ->
           {:ok, nil}
       end
+
   end
 
   object :__field do
@@ -277,6 +278,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         _, %{source: %{deprecation: dep}} ->
           {:ok, dep.reason}
       end
+
   end
 
   object :__inputvalue, name: "__InputValue" do
@@ -327,6 +329,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         _, %{source: %{deprecation: dep}} ->
           {:ok, dep.reason}
       end
+
   end
 
   object :__enumvalue, name: "__EnumValue" do
@@ -353,6 +356,7 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         _, %{source: %{deprecation: dep}} ->
           {:ok, dep.reason}
       end
+
   end
 
   def render_default_value(schema, adapter, type, value) do

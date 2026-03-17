@@ -35,6 +35,7 @@ defmodule Absinthe.Type.Argument do
             type: nil,
             deprecation: nil,
             default_value: nil,
+            applied_directives: [],
             definition: nil,
             __reference__: nil,
             __private__: []

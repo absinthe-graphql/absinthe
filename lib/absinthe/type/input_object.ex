@@ -59,6 +59,7 @@ defmodule Absinthe.Type.InputObject do
             description: nil,
             fields: %{},
             identifier: nil,
+            applied_directives: [],
             __private__: [],
             definition: nil,
             __reference__: nil

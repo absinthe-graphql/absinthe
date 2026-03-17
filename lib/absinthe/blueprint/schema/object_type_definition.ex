@@ -48,6 +48,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
       description: type_def.description,
       fields: build_fields(type_def, schema),
       interfaces: type_def.interfaces,
+      applied_directives: build_applied_directives(type_def.directives),
       definition: type_def.module,
       is_type_of: type_def.is_type_of,
       __private__: type_def.__private__
@@ -67,6 +68,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
         name: field_def.name,
         type: Blueprint.TypeReference.to_type(field_def.type, schema),
         args: build_args(field_def, schema),
+        applied_directives: build_applied_directives(field_def.directives),
         definition: field_def.module,
         __reference__: field_def.__reference__,
         __private__: field_def.__private__
@@ -85,6 +87,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
         type: Blueprint.TypeReference.to_type(arg_def.type, schema),
         default_value: arg_def.default_value,
         deprecation: arg_def.deprecation,
+        applied_directives: build_applied_directives(arg_def.directives),
         __reference__: arg_def.__reference__,
         __private__: arg_def.__private__
       }
@@ -92,6 +95,43 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
       {arg_def.identifier, arg}
     end)
   end
+
+  @doc """
+  Converts Blueprint.Directive structs to a simple format for introspection.
+  """
+  def build_applied_directives(directives) when is_list(directives) do
+    Enum.map(directives, fn directive ->
+      %{
+        name: directive.name,
+        args: Enum.map(directive.arguments, fn arg ->
+          %{
+            name: arg.name,
+            value: serialize_argument_value(arg.input_value)
+          }
+        end)
+      }
+    end)
+  end
+
+  def build_applied_directives(_), do: []
+
+  defp serialize_argument_value(%Absinthe.Blueprint.Input.String{value: value}), do: inspect(value)
+  defp serialize_argument_value(%Absinthe.Blueprint.Input.Integer{value: value}), do: to_string(value)
+  defp serialize_argument_value(%Absinthe.Blueprint.Input.Float{value: value}), do: to_string(value)
+  defp serialize_argument_value(%Absinthe.Blueprint.Input.Boolean{value: value}), do: to_string(value)
+  defp serialize_argument_value(%Absinthe.Blueprint.Input.Null{}), do: "null"
+  defp serialize_argument_value(%Absinthe.Blueprint.Input.Enum{value: value}), do: value
+  defp serialize_argument_value(%Absinthe.Blueprint.Input.List{items: items}) do
+    "[" <> Enum.map_join(items, ", ", &serialize_argument_value/1) <> "]"
+  end
+  defp serialize_argument_value(%Absinthe.Blueprint.Input.Object{fields: fields}) do
+    "{" <> Enum.map_join(fields, ", ", fn field ->
+      "#{field.name}: #{serialize_argument_value(field.input_value)}"
+    end) <> "}"
+  end
+  defp serialize_argument_value(%Absinthe.Blueprint.Input.RawValue{content: content}), do: serialize_argument_value(content)
+  defp serialize_argument_value(%Absinthe.Blueprint.Input.Value{raw: raw}), do: serialize_argument_value(raw)
+  defp serialize_argument_value(value), do: inspect(value)
 
   defimpl Inspect do
     defdelegate inspect(term, options),

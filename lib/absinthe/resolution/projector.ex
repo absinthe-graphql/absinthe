@@ -49,6 +49,12 @@ defmodule Absinthe.Resolution.Projector do
       %{flags: %{skip: _}} ->
         do_collect(selections, fragments, parent_type, schema, index, acc)
 
+      # Skip nodes that have been explicitly marked for skipping in streaming resolution
+      # Note: :defer and :stream flags alone do NOT cause skipping in standard resolution
+      # Only :__skip_initial__ flag (set by streaming_resolution) causes skipping
+      %{flags: %{__skip_initial__: true}} ->
+        do_collect(selections, fragments, parent_type, schema, index, acc)
+
       %Blueprint.Document.Field{} = field ->
         field = update_schema_node(field, parent_type)
         key = response_key(field)

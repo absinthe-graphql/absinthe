@@ -99,6 +99,7 @@ defmodule Absinthe.Type.Object do
             description: nil,
             fields: nil,
             interfaces: [],
+            applied_directives: [],
             __private__: [],
             definition: nil,
             __reference__: nil,
