@@ -2248,7 +2248,7 @@ defmodule Absinthe.Schema.Notation do
     # TODO: handle multiple schemas
     [schema] = blueprint.schema_definitions
 
-    {schema, functions} = lift_functions(schema, env.module)
+    {schema, {functions, _counter}} = lift_functions(schema, env.module)
 
     sdl_definitions =
       (Module.get_attribute(env.module, :__absinthe_sdl_definitions__) || [])
@@ -2286,12 +2286,12 @@ defmodule Absinthe.Schema.Notation do
   end
 
   def lift_functions(schema, origin) do
-    Absinthe.Blueprint.prewalk(schema, [], &lift_functions(&1, &2, origin))
+    Absinthe.Blueprint.prewalk(schema, {[], %{}}, &lift_functions(&1, &2, origin))
   end
 
-  def lift_functions(node, acc, origin) do
-    {node, ast} = functions_for_type(node, origin)
-    {node, ast ++ acc}
+  def lift_functions(node, {acc, counter}, origin) do
+    {node, ast, counter} = functions_for_type(node, origin, counter)
+    {node, {ast ++ acc, counter}}
   end
 
   defp block_from_directive_attrs(attrs, block \\ []) do
@@ -2329,31 +2329,54 @@ defmodule Absinthe.Schema.Notation do
     end)
   end
 
-  defp functions_for_type(%Schema.FieldDefinition{} = type, origin) do
+  defp functions_for_type(%Schema.FieldDefinition{} = type, origin, counter) do
     grab_functions(
       origin,
       type,
       {Schema.FieldDefinition, type.function_ref},
-      Schema.functions(Schema.FieldDefinition)
+      Schema.functions(Schema.FieldDefinition),
+      counter
     )
   end
 
-  defp functions_for_type(%module{identifier: identifier} = type, origin) do
-    grab_functions(origin, type, {module, identifier}, Schema.functions(module))
+  defp functions_for_type(%module{identifier: identifier} = type, origin, counter) do
+    grab_functions(origin, type, {module, identifier}, Schema.functions(module), counter)
   end
 
-  defp functions_for_type(type, _) do
-    {type, []}
+  defp functions_for_type(type, _, counter) do
+    {type, [], counter}
   end
 
-  def grab_functions(origin, type, identifier, attrs) do
+  def grab_functions(_origin, type, _identifier, [], counter) do
+    {type, [], counter}
+  end
+
+  def grab_functions(origin, type, identifier, attrs, counter) do
+    {name, counter, dispatch} =
+      case counter do
+        %{^identifier => name} ->
+          {name, counter, []}
+
+        %{} ->
+          name = :"__absinthe_function_#{map_size(counter)}__"
+
+          def =
+            quote do
+              def __absinthe_function__(unquote(identifier), attr) do
+                unquote(name)(attr)
+              end
+            end
+
+          {name, Map.put(counter, identifier, name), [def]}
+      end
+
     {ast, type} =
-      Enum.flat_map_reduce(attrs, type, fn attr, type ->
+      Enum.map_reduce(attrs, type, fn attr, type ->
         value = Map.fetch!(type, attr)
 
         ast =
-          quote do
-            def __absinthe_function__(unquote(identifier), unquote(attr)) do
+          quote generated: true do
+            defp unquote(name)(unquote(attr)) do
               unquote(value)
             end
           end
@@ -2369,10 +2392,10 @@ defmodule Absinthe.Schema.Notation do
               ref
           end)
 
-        {[ast], type}
+        {ast, type}
       end)
 
-    {type, ast}
+    {type, dispatch ++ ast, counter}
   end
 
   @doc false
