@@ -13,7 +13,6 @@ defmodule Absinthe.Incremental.ResourceManager do
     max_concurrent_streams: 100,
     # 30 seconds
     max_stream_duration: 30_000,
-    max_memory_mb: 500,
     # Check resources every 5 seconds
     check_interval: 5_000
   }
@@ -21,14 +20,12 @@ defmodule Absinthe.Incremental.ResourceManager do
   defstruct [
     :config,
     :active_streams,
-    :stream_stats,
-    :memory_baseline
+    :stream_stats
   ]
 
   @type stream_info :: %{
           operation_id: String.t(),
           started_at: integer(),
-          memory_baseline: integer(),
           pid: pid() | nil,
           label: String.t() | nil,
           path: list()
@@ -100,8 +97,7 @@ defmodule Absinthe.Incremental.ResourceManager do
      %__MODULE__{
        config: config,
        active_streams: %{},
-       stream_stats: init_stats(),
-       memory_baseline: :erlang.memory(:total)
+       stream_stats: init_stats()
      }}
   end
 
@@ -116,16 +112,11 @@ defmodule Absinthe.Incremental.ResourceManager do
       map_size(state.active_streams) >= state.config.max_concurrent_streams ->
         {:reply, {:error, :max_concurrent_streams}, state}
 
-      # Check memory limit
-      exceeds_memory_limit?(state) ->
-        {:reply, {:error, :memory_limit_exceeded}, state}
-
       true ->
         # Acquire the slot
         stream_info = %{
           operation_id: operation_id,
           started_at: System.monotonic_time(:millisecond),
-          memory_baseline: :erlang.memory(:total),
           pid: Keyword.get(opts, :pid),
           label: Keyword.get(opts, :label),
           path: Keyword.get(opts, :path, [])
@@ -156,7 +147,6 @@ defmodule Absinthe.Incremental.ResourceManager do
       active_streams: map_size(state.active_streams),
       total_streams: state.stream_stats.total_count,
       failed_streams: state.stream_stats.failed_count,
-      memory_usage_mb: :erlang.memory(:total) / 1_048_576,
       avg_stream_duration_ms: calculate_avg_duration(state.stream_stats),
       config: state.config
     }
@@ -289,11 +279,6 @@ defmodule Absinthe.Incremental.ResourceManager do
     update_in(state.stream_stats.failed_count, &(&1 + 1))
   end
 
-  defp exceeds_memory_limit?(state) do
-    current_memory_mb = :erlang.memory(:total) / 1_048_576
-    current_memory_mb > state.config.max_memory_mb
-  end
-
   defp schedule_stream_timeout(operation_id, timeout_ms) do
     Process.send_after(self(), {:stream_timeout, operation_id}, timeout_ms)
   end
@@ -302,16 +287,7 @@ defmodule Absinthe.Incremental.ResourceManager do
     Process.send_after(self(), :check_resources, interval_ms)
   end
 
-  defp check_memory_pressure(state) do
-    if exceeds_memory_limit?(state) do
-      Logger.warning("Memory pressure detected, may reject new streams")
-
-      # Could implement more aggressive cleanup here
-      # For now, just log the warning
-    end
-
-    state
-  end
+  defp check_memory_pressure(state), do: state
 
   defp check_stale_streams(state) do
     now = System.monotonic_time(:millisecond)

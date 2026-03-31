@@ -13,8 +13,6 @@ jobs:
     strategy:
       matrix:
         elixir:
-          - "1.15"
-          - "1.16"
           - "1.17"
           - "1.18"
         otp:
@@ -26,14 +24,6 @@ jobs:
         exclude:
           - elixir: 1.17
             otp: 28
-          - elixir: 1.16
-            otp: 28
-          - elixir: 1.16
-            otp: 27
-          - elixir: 1.15
-            otp: 28
-          - elixir: 1.15
-            otp: 27
 
     steps:
       - name: Checkout
