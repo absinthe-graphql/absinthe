@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.11.0](https://github.com/absinthe-graphql/absinthe/compare/v1.10.0...v1.11.0) (2026-04-03)
+
+
+### Features
+
+* add description support for operations and fragments ([#1404](https://github.com/absinthe-graphql/absinthe/issues/1404)) ([c029a61](https://github.com/absinthe-graphql/absinthe/commit/c029a611640a764b687f6e3b5ce647880eff99fd))
+* PartitionSupervisor for subscription tasks ([#1416](https://github.com/absinthe-graphql/absinthe/issues/1416)) ([18665af](https://github.com/absinthe-graphql/absinthe/commit/18665af918a1f135171feec4f6b0d494ac105339))
+
+
+### Bug Fixes
+
+* Handle missing registry in Subscription.unsubscribe/2 during shutdown ([#1411](https://github.com/absinthe-graphql/absinthe/issues/1411)) ([8f9816a](https://github.com/absinthe-graphql/absinthe/commit/8f9816a62de93462536e0479f91c35eb57d3dfc1))
+
 ## [1.10.0](https://github.com/absinthe-graphql/absinthe/compare/v1.9.0...v1.10.0) (2026-04-03)
 
 
