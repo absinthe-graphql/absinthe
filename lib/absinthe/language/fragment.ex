@@ -4,6 +4,7 @@ defmodule Absinthe.Language.Fragment do
   alias Absinthe.{Blueprint, Language}
 
   defstruct name: nil,
+            description: nil,
             type_condition: nil,
             directives: [],
             selection_set: nil,
@@ -11,6 +12,7 @@ defmodule Absinthe.Language.Fragment do
 
   @type t :: %__MODULE__{
           name: String.t(),
+          description: nil | String.t(),
           type_condition: nil | Language.NamedType.t(),
           directives: [Language.Directive.t()],
           selection_set: Language.SelectionSet.t(),
@@ -21,6 +23,7 @@ defmodule Absinthe.Language.Fragment do
     def convert(node, doc) do
       %Blueprint.Document.Fragment.Named{
         name: node.name,
+        description: node.description,
         type_condition: Blueprint.Draft.convert(node.type_condition, doc),
         selections: Blueprint.Draft.convert(node.selection_set.selections, doc),
         directives: Blueprint.Draft.convert(node.directives, doc),

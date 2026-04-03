@@ -24,14 +24,17 @@ defmodule Absinthe.Language.Render do
   end
 
   defp render(%Absinthe.Language.OperationDefinition{} = op) do
-    if op.shorthand do
-      concat(operation_definition(op), block(render_list(op.selection_set.selections)))
-    else
-      glue(
-        concat([to_string(op.operation), operation_definition(op)]),
-        block(render_list(op.selection_set.selections))
-      )
-    end
+    doc =
+      if op.shorthand do
+        concat(operation_definition(op), block(render_list(op.selection_set.selections)))
+      else
+        glue(
+          concat([to_string(op.operation), operation_definition(op)]),
+          block(render_list(op.selection_set.selections))
+        )
+      end
+
+    description(doc, op.description)
   end
 
   defp render(%Absinthe.Language.Field{} = field) do
@@ -133,6 +136,7 @@ defmodule Absinthe.Language.Render do
       directives(fragment.directives)
     ])
     |> block(render_list(fragment.selection_set.selections))
+    |> description(fragment.description)
   end
 
   # Schema

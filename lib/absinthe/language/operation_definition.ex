@@ -5,6 +5,7 @@ defmodule Absinthe.Language.OperationDefinition do
 
   defstruct operation: nil,
             name: nil,
+            description: nil,
             variable_definitions: [],
             directives: [],
             selection_set: nil,
@@ -14,6 +15,7 @@ defmodule Absinthe.Language.OperationDefinition do
   @type t :: %__MODULE__{
           operation: :query | :mutation | :subscription,
           name: nil | String.t(),
+          description: nil | String.t(),
           variable_definitions: [Language.VariableDefinition.t()],
           directives: [Language.Directive.t()],
           selection_set: Language.SelectionSet.t(),
@@ -26,6 +28,7 @@ defmodule Absinthe.Language.OperationDefinition do
       %Blueprint.Document.Operation{
         name: node.name,
         type: node.operation,
+        description: node.description,
         directives: Absinthe.Blueprint.Draft.convert(node.directives, doc),
         variable_definitions: Blueprint.Draft.convert(node.variable_definitions, doc),
         selections: Blueprint.Draft.convert(node.selection_set.selections, doc),
