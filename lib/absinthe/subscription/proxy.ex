@@ -45,7 +45,9 @@ defmodule Absinthe.Subscription.Proxy do
     # bottleneck execution inside each proxy process
     unless payload.node == state.pubsub.node_name() do
       if state.async do
-        Task.Supervisor.start_child(state.task_super, Subscription.Local, :publish_mutation, [
+        via = {:via, PartitionSupervisor, {state.task_super, self()}}
+
+        Task.Supervisor.start_child(via, Subscription.Local, :publish_mutation, [
           state.pubsub,
           payload.mutation_result,
           payload.subscribed_fields
