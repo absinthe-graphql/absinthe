@@ -425,16 +425,12 @@ defimpl Inspect, for: Absinthe.Resolution do
   import Inspect.Algebra
 
   def inspect(res, opts) do
-    # TODO: better inspect representation
     inner =
       res
       |> Map.from_struct()
-      |> Map.update!(:fields_cache, fn _ ->
-        "#fieldscache<...>"
-      end)
+      |> Map.update!(:fields_cache, fn _ -> "#fieldscache<...>" end)
       |> Map.to_list()
-      |> Inspect.List.inspect(opts)
 
-    concat(["#Absinthe.Resolution<", inner, ">"])
+    container_doc("#Absinthe.Resolution<", inner, ">", opts, &Inspect.List.keyword/2)
   end
 end
