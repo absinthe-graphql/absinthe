@@ -281,7 +281,7 @@ defmodule Absinthe.Schema.SdlRenderTest do
              type RootQueryType {
                echo(
                  \"The number of times\"
-                 times: Int
+                 times: Int = 10
 
                  timeInterval: Int
                ): String

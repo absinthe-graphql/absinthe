@@ -70,7 +70,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       string(@adapter.to_external_name(input_value.name, :argument)),
       ": ",
       render(input_value.type, type_definitions),
-      default(input_value.default_value_blueprint),
+      default(input_value, type_definitions),
       directives(input_value.directives, type_definitions)
     ])
     |> description(input_value.description)
@@ -107,7 +107,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
         string(input_object_type.name),
         directives(input_object_type.directives, type_definitions)
       ]),
-      render_list(input_object_type.fields, type_definitions)
+      render_input_fields(input_object_type.fields, type_definitions)
     )
     |> description(input_object_type.description)
   end
@@ -306,13 +306,110 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     )
   end
 
-  defp default(nil) do
+  defp default(%Blueprint.Schema.FieldDefinition{default_value: nil}, _type_definitions) do
     empty()
   end
 
-  defp default(default_value) do
-    concat([" = ", render_value(default_value)])
+  defp default(%Blueprint.Schema.FieldDefinition{default_value: {:ref, _, _}}, _type_definitions) do
+    empty()
   end
+
+  defp default(
+         %Blueprint.Schema.FieldDefinition{type: type, default_value: default_value},
+         type_definitions
+       )
+       when is_atom(default_value) do
+    case find_enum_value_name(type, default_value, type_definitions) do
+      {:ok, enum_name} ->
+        concat([" = ", string(enum_name)])
+
+      :error ->
+        blueprint_value = Blueprint.Input.parse(default_value)
+        concat([" = ", render_value(blueprint_value)])
+    end
+  end
+
+  defp default(
+         %Blueprint.Schema.FieldDefinition{default_value: default_value},
+         _type_definitions
+       )
+       when is_binary(default_value) or is_number(default_value) or is_boolean(default_value) or
+              is_list(default_value) or is_map(default_value) do
+    blueprint_value = Blueprint.Input.parse(default_value)
+    concat([" = ", render_value(blueprint_value)])
+  end
+
+  defp default(%Blueprint.Schema.FieldDefinition{}, _type_definitions) do
+    empty()
+  end
+
+  defp default(
+         %Blueprint.Schema.InputValueDefinition{
+           default_value_blueprint: nil,
+           default_value: nil
+         },
+         _type_definitions
+       ) do
+    empty()
+  end
+
+  defp default(
+         %Blueprint.Schema.InputValueDefinition{
+           default_value_blueprint: nil,
+           default_value: default_value
+         },
+         _type_definitions
+       )
+       when not is_nil(default_value) do
+    blueprint_value = Blueprint.Input.parse(default_value)
+    concat([" = ", render_value(blueprint_value)])
+  end
+
+  defp default(
+         %Blueprint.Schema.InputValueDefinition{
+           default_value_blueprint: default_value_blueprint
+         },
+         _type_definitions
+       )
+       when not is_nil(default_value_blueprint) do
+    concat([" = ", render_value(default_value_blueprint)])
+  end
+
+  defp default(_, _) do
+    empty()
+  end
+
+  defp find_enum_value_name(type, internal_value, type_definitions) do
+    enum_identifier = unwrap_type_identifier(type)
+
+    with enum_def when not is_nil(enum_def) <-
+           Enum.find(type_definitions, &(&1.identifier == enum_identifier)),
+         %Blueprint.Schema.EnumTypeDefinition{} <- enum_def,
+         enum_value when not is_nil(enum_value) <-
+           Enum.find(List.flatten(enum_def.values), fn
+             %Blueprint.Schema.EnumValueDefinition{value: ^internal_value} -> true
+             atom when is_atom(atom) and atom == internal_value -> true
+             _ -> false
+           end) do
+      case enum_value do
+        %Blueprint.Schema.EnumValueDefinition{name: name} -> {:ok, name}
+        atom when is_atom(atom) -> {:ok, atom |> to_string() |> String.upcase()}
+      end
+    else
+      _ -> :error
+    end
+  end
+
+  defp unwrap_type_identifier(%Blueprint.TypeReference.NonNull{of_type: inner}),
+    do: unwrap_type_identifier(inner)
+
+  defp unwrap_type_identifier(%Blueprint.TypeReference.List{of_type: inner}),
+    do: unwrap_type_identifier(inner)
+
+  defp unwrap_type_identifier(%Blueprint.TypeReference.Identifier{id: id}), do: id
+  defp unwrap_type_identifier(%Blueprint.TypeReference.Name{name: name}), do: name
+  defp unwrap_type_identifier(atom) when is_atom(atom), do: atom
+  defp unwrap_type_identifier(_), do: nil
 
   defp description(docs, nil) do
     docs
@@ -355,6 +452,47 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
   defp repeatable(_), do: empty()
 
   # Render Helpers
+
+  defp render_input_fields(fields, type_definitions) do
+    items = Enum.reject(fields, &(&1.module in @skip_modules))
+
+    splitter =
+      items
+      |> Enum.any?(&(&1.description not in ["", nil]))
+      |> case do
+        true -> [nest(line(), :reset), line()]
+        false -> [line()]
+      end
+
+    items
+    |> Enum.reverse()
+    |> Enum.reduce(:start, fn
+      item, :start -> render_input_field(item, type_definitions)
+      item, acc -> concat([render_input_field(item, type_definitions)] ++ splitter ++ [acc])
+    end)
+  end
+
+  defp render_input_field(%Blueprint.Schema.FieldDefinition{} = field, type_definitions) do
+    concat([
+      string(@adapter.to_external_name(field.name, :field)),
+      ": ",
+      render(field.type, type_definitions),
+      default(field, type_definitions),
+      directives(field.directives, type_definitions)
+    ])
+    |> description(field.description)
+  end
+
+  defp render_input_field(%Blueprint.Schema.InputValueDefinition{} = field, type_definitions) do
+    concat([
+      string(@adapter.to_external_name(field.name, :argument)),
+      ": ",
+      render(field.type, type_definitions),
+      default(field, type_definitions),
+      directives(field.directives, type_definitions)
+    ])
+    |> description(field.description)
+  end
 
   defp render_list(items, type_definitions, separator \\ line())
 
