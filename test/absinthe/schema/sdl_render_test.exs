@@ -233,6 +233,10 @@ defmodule Absinthe.Schema.SdlRenderTest do
       on :field
     end
 
+    directive :my_custom do
+      on :input_object
+    end
+
     enum :order_status do
       value :delivered
       value :processing
@@ -268,6 +272,8 @@ defmodule Absinthe.Schema.SdlRenderTest do
              schema {
                query: RootQueryType
              }
+
+             directive @myCustom on INPUT_OBJECT
 
              directive @foo(baz: String) on FIELD
 

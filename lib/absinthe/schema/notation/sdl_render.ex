@@ -191,7 +191,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     concat([
       "directive ",
       "@",
-      string(directive.name),
+      string(Absinthe.Utils.camelize(directive.name, lower: true)),
       arguments(directive.arguments, type_definitions),
       repeatable(directive.repeatable),
       " on ",
