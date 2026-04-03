@@ -433,7 +433,7 @@ defimpl Inspect, for: Absinthe.Resolution do
         "#fieldscache<...>"
       end)
       |> Map.to_list()
-      |> Inspect.List.inspect(opts)
+      |> to_doc(opts)
 
     concat(["#Absinthe.Resolution<", inner, ">"])
   end
