@@ -51,6 +51,9 @@ defmodule Absinthe.Phase.Parse do
       {:error, :exceeded_token_limit} ->
         {:error, %Phase.Error{message: "Token limit exceeded", phase: __MODULE__}}
 
+      {:error, :invalid_unicode_escape, message, loc} ->
+        {:error, format_raw_parse_error({:unicode_escape, message, loc})}
+
       other ->
         other
     end
@@ -110,6 +113,12 @@ defmodule Absinthe.Phase.Parse do
     sample = if String.valid?(sample_slice), do: sample_slice, else: inspect(sample_slice)
 
     message = "Parsing failed at `#{sample}`"
+    %Phase.Error{message: message, locations: [%{line: line, column: column}], phase: __MODULE__}
+  end
+
+  @spec format_raw_parse_error({:unicode_escape, String.t(), {line :: pos_integer, column :: pos_integer}}) ::
+          Phase.Error.t()
+  defp format_raw_parse_error({:unicode_escape, message, {line, column}}) do
     %Phase.Error{message: message, locations: [%{line: line, column: column}], phase: __MODULE__}
   end
 
