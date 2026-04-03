@@ -39,7 +39,7 @@ jobs:
           otp-version: ${{ matrix.otp }}
 
       - name: Restore deps cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             deps
@@ -68,7 +68,7 @@ jobs:
           SCHEMA_PROVIDER: persistent_term
 
       - name: Cache/uncache PLTs
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             priv/plts
