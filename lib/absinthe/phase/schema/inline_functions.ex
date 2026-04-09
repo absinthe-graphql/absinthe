@@ -68,11 +68,6 @@ defmodule Absinthe.Phase.Schema.InlineFunctions do
 
             {field_ident, %{field | middleware: [middleware_shim]}}
           end
-
-        {field_ident, field} ->
-          middleware = Absinthe.Middleware.expand(schema, field.middleware, field, type)
-
-          {field_ident, %{field | middleware: middleware}}
       end)
     end)
   end
