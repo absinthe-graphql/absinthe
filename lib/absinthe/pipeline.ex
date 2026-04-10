@@ -14,6 +14,9 @@ defmodule Absinthe.Pipeline do
 
   alias Absinthe.Phase
 
+  @phase_start [:absinthe, :pipeline, :phase, :start]
+  @phase_stop [:absinthe, :pipeline, :phase, :stop]
+
   @type data_t :: any
 
   @type phase_config_t :: Phase.t() | {Phase.t(), Keyword.t()}
@@ -405,7 +408,14 @@ defmodule Absinthe.Pipeline do
   def run_phase([phase_config | todo] = all_phases, input, done) do
     {phase, options} = phase_invocation(phase_config)
 
-    case phase.run(input, options) do
+    metadata = %{phase: phase}
+    :telemetry.execute(@phase_start, %{system_time: System.system_time()}, metadata)
+
+    result = phase.run(input, options)
+
+    :telemetry.execute(@phase_stop, %{system_time: System.system_time()}, metadata)
+
+    case result do
       {:record_phases, result, fun} ->
         result = fun.(result, all_phases)
         run_phase(todo, result, [phase | done])
