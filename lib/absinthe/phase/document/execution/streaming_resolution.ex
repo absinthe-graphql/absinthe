@@ -25,7 +25,12 @@ defmodule Absinthe.Phase.Document.Execution.StreamingResolution do
         {:ok, blueprint} ->
           streaming_context = %{
             defer_info: defer_info,
-            operation_id: generate_operation_id()
+            operation_id: generate_operation_id(),
+            # Backwards-compat keys expected by Absinthe.Incremental.*
+            deferred_fragments: defer_info,
+            streamed_fields: [],
+            deferred_tasks: [],
+            stream_tasks: []
           }
 
           updated_context = Map.put(blueprint.execution.context, :__streaming__, streaming_context)
@@ -44,17 +49,17 @@ defmodule Absinthe.Phase.Document.Execution.StreamingResolution do
   defp collect_defer_info(blueprint) do
     blueprint.operations
     |> Enum.flat_map(fn op ->
-      walk_selections(op.selections, [])
+      walk_selections(op.selections, [], blueprint)
     end)
   end
 
-  defp walk_selections(selections, parent_path) when is_list(selections) do
-    Enum.flat_map(selections, fn sel -> walk_selection(sel, parent_path) end)
+  defp walk_selections(selections, parent_path, blueprint) when is_list(selections) do
+    Enum.flat_map(selections, fn sel -> walk_selection(sel, parent_path, blueprint) end)
   end
-  defp walk_selections(_, _), do: []
+  defp walk_selections(_, _, _blueprint), do: []
 
-  defp walk_selection(%Blueprint.Document.Field{name: name, selections: sels}, parent_path) do
-    walk_selections(sels, parent_path ++ [name])
+  defp walk_selection(%Blueprint.Document.Field{name: name, selections: sels}, parent_path, blueprint) do
+    walk_selections(sels, parent_path ++ [name], blueprint)
   end
 
   defp walk_selection(
@@ -62,21 +67,48 @@ defmodule Absinthe.Phase.Document.Execution.StreamingResolution do
            flags: %{defer: %{enabled: true} = config},
            selections: sels
          },
-         parent_path
+         parent_path,
+         blueprint
        ) do
     field_names = Enum.flat_map(sels, &extract_field_names/1)
 
     [
       %{label: config[:label], field_names: field_names, parent_path: parent_path}
-      | walk_selections(sels, parent_path)
+      | walk_selections(sels, parent_path, blueprint)
     ]
   end
 
-  defp walk_selection(%Blueprint.Document.Fragment.Inline{selections: sels}, parent_path) do
-    walk_selections(sels, parent_path)
+  defp walk_selection(%Blueprint.Document.Fragment.Inline{selections: sels}, parent_path, blueprint) do
+    walk_selections(sels, parent_path, blueprint)
   end
 
-  defp walk_selection(_, _parent_path), do: []
+  # Handle Fragment.Spread — resolve the named fragment and check for @defer
+  # on both the spread itself and nested inline fragments within the fragment.
+  defp walk_selection(
+         %Blueprint.Document.Fragment.Spread{name: name, flags: flags},
+         parent_path,
+         blueprint
+       ) do
+    case Blueprint.fragment(blueprint, name) do
+      nil ->
+        []
+
+      %{selections: sels} ->
+        spread_defers =
+          case flags do
+            %{defer: %{enabled: true} = config} ->
+              field_names = Enum.flat_map(sels, &extract_field_names/1)
+              [%{label: config[:label], field_names: field_names, parent_path: parent_path}]
+
+            _ ->
+              []
+          end
+
+        spread_defers ++ walk_selections(sels, parent_path, blueprint)
+    end
+  end
+
+  defp walk_selection(_, _parent_path, _blueprint), do: []
 
   defp extract_field_names(%Blueprint.Document.Field{name: name}), do: [name]
   defp extract_field_names(%{selections: sels}) when is_list(sels) do
