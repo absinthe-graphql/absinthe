@@ -14,6 +14,8 @@ defmodule Absinthe.Schema.Notation.SDL do
       definitions =
         doc.input.definitions
         |> Enum.map(&Absinthe.Blueprint.Draft.convert(&1, doc))
+        # Comments are converted to `nil` values to be ignored
+        |> Enum.reject(&is_nil/1)
         |> Enum.map(&put_ref(&1, ref, opts))
         |> Enum.map(fn type -> %{type | module: module} end)
 

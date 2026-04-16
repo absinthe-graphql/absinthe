@@ -6,7 +6,10 @@ end
 
 defimpl Absinthe.Blueprint.Draft, for: List do
   def convert(nodes, root) do
-    Enum.map(nodes, &Absinthe.Blueprint.Draft.convert(&1, root))
+    nodes
+    |> Enum.map(&Absinthe.Blueprint.Draft.convert(&1, root))
+    # Comments are converted to `nil` values to be ignored
+    |> Enum.reject(&is_nil/1)
   end
 end
 
