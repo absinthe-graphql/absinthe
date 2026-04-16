@@ -14,4 +14,8 @@ defmodule Absinthe.Language.Comment do
     # Comments are not part of the executable document; skip them silently.
     def convert(_comment, _doc), do: nil
   end
+
+  defimpl Inspect do
+    defdelegate inspect(term, options), to: Absinthe.Language.Render
+  end
 end

@@ -19,8 +19,22 @@ defmodule Absinthe.Language.Render do
 
   defp render(bp)
 
+  defp render(%Absinthe.Language.Comment{value: value}) do
+    value
+  end
+
   defp render(%Absinthe.Language.Document{} = doc) do
-    doc.definitions |> Enum.map(&render/1) |> join([line(), line()])
+    doc.definitions
+    |> Stream.chunk_every(2, 1)
+    |> Enum.flat_map(fn
+      [def, next_def] ->
+        sep = if comment?(def) or comment?(next_def), do: [line()], else: [line(), line()]
+        [render(def) | sep]
+
+      [def] ->
+        [render(def)]
+    end)
+    |> concat()
   end
 
   defp render(%Absinthe.Language.OperationDefinition{} = op) do
@@ -461,4 +475,7 @@ defmodule Absinthe.Language.Render do
       item, acc -> concat([render(item)] ++ splitter ++ [acc])
     end)
   end
+
+  defp comment?(%Absinthe.Language.Comment{}), do: true
+  defp comment?(_), do: false
 end
