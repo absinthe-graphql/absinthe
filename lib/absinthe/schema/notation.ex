@@ -1416,12 +1416,21 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro import_types(type_module_ast, opts \\ []) do
-    env = __CALLER__
+    # Ideally prevent introducing compile-time dependencies.
+    ast =
+      if Macro.quoted_literal?(type_module_ast) do
+        Macro.prewalk(type_module_ast, &expand_alias(&1, __CALLER__))
+      else
+        Macro.expand(type_module_ast, __CALLER__)
+      end
 
-    type_module_ast
-    |> Macro.expand(env)
-    |> do_import_types(env, opts)
+    do_import_types(ast, __CALLER__, opts)
   end
+
+  defp expand_alias({:__aliases__, _, _} = alias, env),
+    do: Macro.expand(alias, %{env | function: {:__absinthe_function_n__, 1}})
+
+  defp expand_alias(other, _env), do: raise(inspect(other)) #TODO debugging - can remove if nothing triggers this
 
   @placement {:import_directives, [toplevel: true]}
   @doc """
