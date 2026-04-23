@@ -1416,21 +1416,22 @@ defmodule Absinthe.Schema.Notation do
   ```
   """
   defmacro import_types(type_module_ast, opts \\ []) do
-    # Ideally prevent introducing compile-time dependencies.
-    ast =
-      if Macro.quoted_literal?(type_module_ast) do
-        Macro.prewalk(type_module_ast, &expand_alias(&1, __CALLER__))
-      else
-        Macro.expand(type_module_ast, __CALLER__)
-      end
+    type_module_ast
+    |> expand_aliases(__CALLER__)
+    |> do_import_types(__CALLER__, opts)
+  end
 
-    do_import_types(ast, __CALLER__, opts)
+  defp expand_aliases(ast, env) do
+    # Ideally prevents introducing compile-time dependencies by setting the alias's env as occurring within a function
+    if Macro.quoted_literal?(ast),
+      do: Macro.prewalk(ast, &expand_alias(&1, env)),
+      else: Macro.expand(ast, env)
   end
 
   defp expand_alias({:__aliases__, _, _} = alias, env),
     do: Macro.expand(alias, %{env | function: {:__absinthe_function_n__, 1}})
 
-  defp expand_alias(other, _env), do: raise(inspect(other)) #TODO debugging - can remove if nothing triggers this
+  defp expand_alias(other, _env), do: other
 
   @placement {:import_directives, [toplevel: true]}
   @doc """
@@ -1457,7 +1458,7 @@ defmodule Absinthe.Schema.Notation do
     env = __CALLER__
 
     type_module_ast
-    |> Macro.expand(env)
+    |> expand_aliases(env)
     |> do_import_directives(env, opts)
   end
 
@@ -1485,7 +1486,7 @@ defmodule Absinthe.Schema.Notation do
     env = __CALLER__
 
     type_module_ast
-    |> Macro.expand(env)
+    |> expand_aliases(env)
     |> do_import_type_extensions(env, opts)
   end
 
@@ -2458,6 +2459,9 @@ defmodule Absinthe.Schema.Notation do
       # and it's comment for more information
       {:@, _, _} = node ->
         node
+
+      {:__aliases__, _, _} = alias ->
+        expand_alias(alias, env)
 
       {_, _, _} = node ->
         Macro.expand(node, env)
