@@ -73,6 +73,64 @@ defmodule Absinthe.Phase.Document.Validation.KnownDirectivesTest do
     )
   end
 
+  test "with unknown directive on query, with name" do
+    assert_fails_validation(
+      """
+      query name @unknown(directive: "value") {
+        dog {
+          name
+        }
+      }
+      """,
+      [],
+      [
+        unknown_directive("unknown", 1)
+      ]
+    )
+  end
+
+  test "with unknown directive on query, without name" do
+    assert_fails_validation(
+      """
+      query @unknown(directive: "value") {
+        dog {
+          name
+        }
+      }
+      """,
+      [],
+      [
+        unknown_directive("unknown", 1)
+      ]
+    )
+  end
+
+  test "with known directive on query, with name" do
+    assert_passes_validation(
+      """
+      query name @onQuery {
+        dog {
+          name
+        }
+      }
+      """,
+      []
+    )
+  end
+
+  test "with known directive on query, without name" do
+    assert_passes_validation(
+      """
+      query @onQuery {
+        dog {
+          name
+        }
+      }
+      """,
+      []
+    )
+  end
+
   test "with many unknown directives" do
     assert_fails_validation(
       """

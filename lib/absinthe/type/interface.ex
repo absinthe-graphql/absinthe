@@ -54,7 +54,7 @@ defmodule Absinthe.Type.Interface do
   * `:args` - A map of `Absinthe.Type.Argument` structs. See `Absinthe.Schema.Notation.arg/2`.
   * `:resolve_type` - A function used to determine the implementing type of a resolved object. See also `Absinthe.Type.Object`'s `:is_type_of`.
 
-  The `:resolve_type` function will be passed two arguments; the object whose type needs to be identified, and the `Absinthe.Execution` struct providing the full execution context.
+  The `:resolve_type` function will be passed two arguments; the object whose type needs to be identified, and the `Absinthe.Resolution` struct providing the full resolution context.
 
   The `__private__` and `:__reference__` keys are for internal use.
   """

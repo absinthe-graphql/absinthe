@@ -412,8 +412,14 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     concat(["[", join(default_list, ", "), "]"])
   end
 
-  defp render_value(%Blueprint.Input.Field{name: name, input_value: value}),
-    do: concat([name, ": ", render_value(value)])
+  defp render_value(%Blueprint.Input.Field{name: name, input_value: value}) when is_atom(name) do
+    concat([string(Atom.to_string(name)), ": ", render_value(value)])
+  end
+
+  defp render_value(%Blueprint.Input.Field{name: name, input_value: value})
+       when is_binary(name) do
+    concat([string(name), ": ", render_value(value)])
+  end
 
   defp render_value(%{value: value}),
     do: to_string(value)

@@ -28,15 +28,12 @@ defmodule Absinthe.Subscription.PipelineSerializerTest do
         {Phase4, [option1: :value1]}
       ]
 
-      assert {:packed,
-              [
-                {Phase1, [:pack | 0]},
-                Phase2,
-                {Phase3, [:pack | 1]},
-                {Phase4, [:pack | 0]}
-              ],
-              %{0 => [option1: :value1], 1 => [option2: :value2]}} =
-               PipelineSerializer.pack(pipeline)
+      assert {:packed, config, options} = PipelineSerializer.pack(pipeline)
+
+      assert [{Phase1, [:pack | 0]}, Phase2, {Phase3, [:pack | 1]}, {Phase4, [:pack | 0]}] =
+               config
+
+      assert %{0 => [option1: :value1], 1 => [option2: :value2]} = options
     end
 
     test "packs variables and contexts in options" do
