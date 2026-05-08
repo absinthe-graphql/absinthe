@@ -1873,6 +1873,10 @@ defmodule Absinthe.Schema.Notation do
               {:{}, [], [{env.module, atom}, opts]}
           end
 
+        # Special handling for Module.concat to allow breaking of compilation cycles
+        {{:., _meta, [Module, :concat]}, _call_meta, _args} = val ->
+          {:{}, [], [{val, :call}, opts]}
+
         val ->
           val
       end
