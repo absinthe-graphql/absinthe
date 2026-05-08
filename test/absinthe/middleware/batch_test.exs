@@ -7,6 +7,12 @@ defmodule Absinthe.Middleware.BatchTest do
     end
   end
 
+  defmodule RaisingModule do
+    def boom(_, _) do
+      raise "kaboom"
+    end
+  end
+
   defmodule Schema do
     use Absinthe.Schema
 
@@ -74,6 +80,16 @@ defmodule Absinthe.Middleware.BatchTest do
             nil,
             fn batch -> {:ok, batch} end,
             timeout: 1
+          )
+        end
+      end
+
+      field :raising, :string do
+        resolve fn _, _, _ ->
+          batch(
+            {RaisingModule, :boom},
+            nil,
+            fn batch -> {:ok, batch} end
           )
         end
       end
@@ -195,6 +211,50 @@ defmodule Absinthe.Middleware.BatchTest do
                          "{Absinthe.Middleware.BatchTest.TimeoutModule, :arbitrary_fn_name, %{arbitrary: :data}}",
                        timeout: 1
                      }, _}}
+  end
+
+  test "when batch function raises it emits an :exception telemetry event", %{test: test} do
+    doc = """
+    {raising}
+    """
+
+    :ok =
+      :telemetry.attach_many(
+        "#{test}",
+        [
+          [:absinthe, :middleware, :batch, :start],
+          [:absinthe, :middleware, :batch, :exception]
+        ],
+        &Absinthe.TestTelemetryHelper.send_to_pid/4,
+        pid: self()
+      )
+
+    on_exit(fn -> :telemetry.detach("#{test}") end)
+
+    pid =
+      spawn(fn ->
+        Absinthe.run(doc, Schema)
+      end)
+
+    wait_for_process_to_exit(pid)
+
+    assert_receive {:telemetry_event,
+                    {[:absinthe, :middleware, :batch, :start], %{system_time: _},
+                     %{id: start_id, batch_fun: {RaisingModule, :boom}}, _}}
+
+    assert_receive {:telemetry_event,
+                    {[:absinthe, :middleware, :batch, :exception], %{duration: duration},
+                     %{
+                       id: stop_id,
+                       batch_fun: {RaisingModule, :boom},
+                       batch_opts: _,
+                       batch_data: _,
+                       kind: :error,
+                       reason: %RuntimeError{message: "kaboom"},
+                       stacktrace: stacktrace
+                     }, _}}
+
+    assert start_id == stop_id
   end
 
   defp wait_for_process_to_exit(pid) do

@@ -13,7 +13,13 @@ handler function to any of the following event names:
 - `[:absinthe, :resolve, :field, :stop]` when field resolution finishes
 - `[:absinthe, :middleware, :batch, :start]` when the batch processing starts
 - `[:absinthe, :middleware, :batch, :stop]` when the batch processing finishes
-- `[:absinthe, :middleware, :batch, :timeout]` whe the batch processing times out
+- `[:absinthe, :middleware, :batch, :exception]` when the batch function raises,
+  throws, or exits. The metadata includes `:kind`, `:reason`, and `:stacktrace`
+  in addition to the start metadata. `:stacktrace` may be an empty list when the
+  task is killed externally (no stacktrace is available in that case). The
+  exception is re-raised after the event is emitted, so existing error-handling
+  code is not affected.
+- `[:absinthe, :middleware, :batch, :timeout]` when the batch processing times out
 
 Telemetry handlers are called with `measurements` and `metadata`. For details on
 what is passed, checkout `Absinthe.Phase.Telemetry`, `Absinthe.Middleware.Telemetry`,

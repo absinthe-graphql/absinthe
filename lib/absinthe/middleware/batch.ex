@@ -140,7 +140,12 @@ defmodule Absinthe.Middleware.Batch do
 
       task =
         async(fn ->
-          {batch_fun, call_batch_fun(batch_fun, batch_data)}
+          try do
+            {:ok, call_batch_fun(batch_fun, batch_data)}
+          catch
+            kind, reason ->
+              {:exception, kind, reason, __STACKTRACE__}
+          end
         end)
 
       metadata = emit_start_event(system_time, batch_fun, batch_opts, batch_data)
@@ -153,22 +158,37 @@ defmodule Absinthe.Middleware.Batch do
   defp yield_batching_result({batch_opts, task, start_time_mono, metadata, batch_fun}) do
     timeout = Keyword.get(batch_opts, :timeout, 5_000)
 
-    case Task.yield(task, timeout) || Task.shutdown(task) do
-      {:ok, result} ->
+    case Task.yield(task, timeout) do
+      {:ok, {:ok, batch_result}} ->
         end_time_mono = System.monotonic_time()
         duration = end_time_mono - start_time_mono
+        result = {batch_fun, batch_result}
         emit_stop_event(duration, end_time_mono, metadata, result)
 
         result
 
-      _ ->
+      {:ok, {:exception, kind, reason, stacktrace}} ->
+        end_time_mono = System.monotonic_time()
+        duration = end_time_mono - start_time_mono
+        emit_exception_event(duration, metadata, kind, reason, stacktrace)
+        :erlang.raise(kind, reason, stacktrace)
+
+      nil ->
+        Task.shutdown(task)
         emit_timeout_event(batch_fun, timeout)
         exit({:timeout, timeout, batch_fun})
+
+      {:exit, reason} ->
+        end_time_mono = System.monotonic_time()
+        duration = end_time_mono - start_time_mono
+        emit_exception_event(duration, metadata, :exit, reason, [])
+        exit(reason)
     end
   end
 
   @batch_start [:absinthe, :middleware, :batch, :start]
   @batch_stop [:absinthe, :middleware, :batch, :stop]
+  @batch_exception [:absinthe, :middleware, :batch, :exception]
   @batch_timeout [:absinthe, :middleware, :batch, :timeout]
   defp emit_start_event(system_time, batch_fun, batch_opts, batch_data) do
     id = :erlang.unique_integer()
@@ -195,6 +215,17 @@ defmodule Absinthe.Middleware.Batch do
       @batch_stop,
       %{duration: duration, end_time_mono: end_time_mono},
       Map.put(metadata, :result, result)
+    )
+  end
+
+  defp emit_exception_event(duration, metadata, kind, reason, stacktrace) do
+    :telemetry.execute(
+      @batch_exception,
+      %{duration: duration},
+      metadata
+      |> Map.put(:kind, kind)
+      |> Map.put(:reason, reason)
+      |> Map.put(:stacktrace, stacktrace)
     )
   end
 
