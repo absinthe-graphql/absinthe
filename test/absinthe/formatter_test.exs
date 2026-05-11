@@ -10,7 +10,7 @@ defmodule Absinthe.FormatterTest do
     assert Absinthe.Formatter.format(@query) == "{\n  version\n}\n"
   end
 
-  test "keeps comments" do
+  test "keeps single-line comments" do
     assert Absinthe.Formatter.format("""
            # Comment before
            query { entity {
@@ -27,6 +27,28 @@ defmodule Absinthe.FormatterTest do
              }
            }
            # Comment after
+           """
+  end
+
+  test "keeps multi-line comments" do
+    assert Absinthe.Formatter.format("""
+           \"\"\"
+           Query the entity
+               and its ID
+             \"\"\"
+           query { entity {
+             id
+           }}
+           """) == """
+           \"\"\"
+           Query the entity
+               and its ID
+           \"\"\"
+           query {
+             entity {
+               id
+             }
+           }
            """
   end
 end
