@@ -173,6 +173,15 @@ defmodule Absinthe.Phase.ParseTest do
     assert {:ok, _} = run(@query)
   end
 
+  test "can parse ON as an operation name" do
+    assert {:ok,
+            %Absinthe.Language.Document{
+              definitions: [
+                %Absinthe.Language.OperationDefinition{name: "ON", operation: :query}
+              ]
+            }} = run("query ON { id }")
+  end
+
   @query """
   query QueryWithNullLiterals($name: String = null) {
     fieldWithNullLiteral(name: $name, literalNull: null) @direct(arg: null)

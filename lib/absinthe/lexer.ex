@@ -387,7 +387,6 @@ defmodule Absinthe.Lexer do
     mutation
     null
     on
-    ON
     query
     repeatable
     scalar
