@@ -64,8 +64,16 @@ defmodule Absinthe.Phase.Schema.Validation.DefaultEnumValuePresent do
     |> Enum.find({:ok, value}, &match?({:error, _}, &1))
   end
 
+  defp value_conforms_to_enum(%Blueprint.TypeReference.NonNull{}, nil, _) do
+    {:error, nil}
+  end
+
   defp value_conforms_to_enum(%_{of_type: of_type}, value, enum_values) do
     value_conforms_to_enum(of_type, value, enum_values)
+  end
+
+  defp value_conforms_to_enum(_, nil, _) do
+    {:ok, nil}
   end
 
   defp value_conforms_to_enum(_, value, enum_values) do
