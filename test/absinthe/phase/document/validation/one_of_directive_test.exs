@@ -70,5 +70,12 @@ defmodule Absinthe.Phase.Document.Validation.OneOfDirectiveTest do
       assert %{locations: [%{column: 47, line: 1}], message: @message} = error
       refute result[:data]
     end
+
+    test "introspection exposes isOneOf on the input type" do
+      query = ~s[{ __type(name: "ValidInput") { kind isOneOf } }]
+
+      assert {:ok, %{data: %{"__type" => %{"kind" => "INPUT_OBJECT", "isOneOf" => true}}}} =
+               Absinthe.run(query, Schema)
+    end
   end
 end
