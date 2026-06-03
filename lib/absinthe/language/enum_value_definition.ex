@@ -19,6 +19,9 @@ defmodule Absinthe.Language.EnumValueDefinition do
         }
 
   defimpl Blueprint.Draft do
+    # Schema SDL is developer-authored and processed at build time; identifiers
+    # are atoms by Absinthe's design, so this is not attacker-controlled input.
+    # sobelow_skip ["DOS.StringToAtom"]
     def convert(node, doc) do
       %Blueprint.Schema.EnumValueDefinition{
         value: node.value |> Macro.underscore() |> String.to_atom(),

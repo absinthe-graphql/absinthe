@@ -26,6 +26,9 @@ defmodule Absinthe.Phase.Schema.Validation.TypeNamesAreReserved do
     allow_reserved(node)
   end
 
+  # `identifier` comes from a developer-authored schema type, derived from the
+  # schema's own (bounded) set of identifiers at build time.
+  # sobelow_skip ["DOS.StringToAtom"]
   def make_reserved(node = %{name: name, identifier: identifier}) do
     node = %{
       node
