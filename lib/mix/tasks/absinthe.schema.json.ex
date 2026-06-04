@@ -1,5 +1,4 @@
 defmodule Mix.Tasks.Absinthe.Schema.Json do
-  require Logger
   use Mix.Task
   import Mix.Generator
 

@@ -21,8 +21,7 @@ if Code.ensure_loaded?(Decimal) do
     end
 
     def parse(%Input.Integer{value: value}) when is_integer(value) do
-      decimal = Decimal.new(value)
-      if Decimal.nan?(decimal), do: :error, else: {:ok, decimal}
+      {:ok, Decimal.new(value)}
     end
 
     def parse(%Input.Null{}) do
