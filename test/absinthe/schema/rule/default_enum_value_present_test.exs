@@ -1,6 +1,58 @@
 defmodule Absinthe.Schema.Rule.DefaultEnumValuePresentTest do
   use Absinthe.Case, async: true
 
+  alias Absinthe.Blueprint.Schema.{
+    EnumTypeDefinition,
+    EnumValueDefinition,
+    InputValueDefinition,
+    SchemaDefinition
+  }
+
+  alias Absinthe.Blueprint.TypeReference.{Identifier, NonNull}
+  alias Absinthe.Blueprint.TypeReference.List, as: ListType
+  alias Absinthe.Phase.Schema.Validation.DefaultEnumValuePresent
+
+  describe "validate_defaults/3" do
+    setup do
+      enum = %EnumTypeDefinition{
+        name: "MovieGenre",
+        identifier: :movie_genre,
+        values: [
+          %EnumValueDefinition{name: "ACTION", identifier: :action, value: :action},
+          %EnumValueDefinition{name: "COMEDY", identifier: :comedy, value: :comedy},
+          %EnumValueDefinition{name: "SF", identifier: :sf, value: :sf}
+        ]
+      }
+
+      schema = %SchemaDefinition{type_definitions: [enum]}
+
+      {:ok, enums: %{movie_genre: enum}, schema: schema}
+    end
+
+    test "is enforced when a non-null enum list default contains nil", %{
+      enums: enums,
+      schema: schema
+    } do
+      type = list_of(non_null(:movie_genre))
+      node = input_value(type: type, default_value: [:action, nil])
+
+      result = DefaultEnumValuePresent.validate_defaults(node, enums, schema)
+
+      assert [
+               %Absinthe.Phase.Error{
+                 phase: DefaultEnumValuePresent,
+                 extra: %{default_value: nil, type: ^type}
+               }
+             ] = result.errors
+    end
+
+    test "passes when a nullable enum list default contains nil", %{enums: enums, schema: schema} do
+      node = input_value(type: list_of(:movie_genre), default_value: [:action, nil])
+
+      assert DefaultEnumValuePresent.validate_defaults(node, enums, schema) == node
+    end
+  end
+
   describe "SDL schema" do
     test "is enforced when the default_value is not in the enum" do
       schema = """
@@ -52,54 +104,6 @@ defmodule Absinthe.Schema.Rule.DefaultEnumValuePresentTest do
       assert_raise(Absinthe.Schema.Error, error, fn ->
         Code.eval_string(schema)
       end)
-    end
-
-    test "is enforced when a non-null enum list default contains null" do
-      schema = """
-      defmodule NonNullMovieGenreSchemaSdl do
-        use Absinthe.Schema
-
-        import_sdl "
-        enum MovieGenre {
-          ACTION
-          COMEDY
-          SF
-        }
-
-        type Query {
-          movies(genres: [MovieGenre!] = [ACTION, null]): Int
-        }
-        "
-      end
-      """
-
-      error = ~r/The default_value for an enum must be present in the enum values/
-
-      assert_raise(Absinthe.Schema.Error, error, fn ->
-        Code.eval_string(schema)
-      end)
-    end
-
-    test "passes when a nullable enum list default contains null" do
-      schema = """
-      defmodule NullableMovieGenreSchemaSdl do
-        use Absinthe.Schema
-
-        import_sdl "
-        enum MovieGenre {
-          ACTION
-          COMEDY
-          SF
-        }
-
-        type Query {
-          movies(genres: [MovieGenre] = [ACTION, null]): Int
-        }
-        "
-      end
-      """
-
-      assert Code.eval_string(schema)
     end
 
     test "passes when the default_value is a list and that list is a valid enum value" do
@@ -207,68 +211,6 @@ defmodule Absinthe.Schema.Rule.DefaultEnumValuePresentTest do
       end)
     end
 
-    test "is enforced when a non-null enum list default contains nil" do
-      schema = """
-      defmodule NonNullMovieGenreSchema do
-        use Absinthe.Schema
-
-        query do
-
-          field :movies,
-            type: :integer,
-            args: [
-              genres: [type: list_of(non_null(:movie_genre)), default_value: [:action, nil]],
-            ],
-            resolve: fn
-              %{genres: _}, _ -> {:ok, 1}
-            end
-
-        end
-
-        enum :movie_genre do
-          value :action, as: :action
-          value :comedy, as: :comedy
-          value :sf, as: :sf
-        end
-      end
-      """
-
-      error = ~r/The default_value for an enum must be present in the enum values/
-
-      assert_raise(Absinthe.Schema.Error, error, fn ->
-        Code.eval_string(schema)
-      end)
-    end
-
-    test "passes when a nullable enum list default contains nil" do
-      schema = """
-      defmodule NullableMovieGenreSchema do
-        use Absinthe.Schema
-
-        query do
-
-          field :movies,
-            type: :integer,
-            args: [
-              genres: [type: list_of(:movie_genre), default_value: [:action, nil]],
-            ],
-            resolve: fn
-              %{genres: _}, _ -> {:ok, 1}
-            end
-
-        end
-
-        enum :movie_genre do
-          value :action, as: :action
-          value :comedy, as: :comedy
-          value :sf, as: :sf
-        end
-      end
-      """
-
-      assert Code.eval_string(schema)
-    end
-
     test "passes when the default_value is a list and that list is a valid enum value" do
       schema = """
       defmodule CorrectCatSchema do
@@ -300,5 +242,22 @@ defmodule Absinthe.Schema.Rule.DefaultEnumValuePresentTest do
 
       assert Code.eval_string(schema)
     end
+  end
+
+  defp input_value(attrs) do
+    attrs
+    |> Keyword.put_new(:__reference__, reference())
+    |> then(&struct!(InputValueDefinition, &1))
+  end
+
+  defp list_of(type), do: %ListType{of_type: type_reference(type)}
+
+  defp non_null(type), do: %NonNull{of_type: type_reference(type)}
+
+  defp type_reference(%_{} = type), do: type
+  defp type_reference(identifier) when is_atom(identifier), do: %Identifier{id: identifier}
+
+  defp reference do
+    %{location: %{file: __ENV__.file, line: __ENV__.line}}
   end
 end
