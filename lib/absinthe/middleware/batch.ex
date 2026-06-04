@@ -60,8 +60,6 @@ defmodule Absinthe.Middleware.Batch do
   @behaviour Absinthe.Middleware
   @behaviour Absinthe.Plugin
 
-  require Logger
-
   @typedoc """
   The function to be called with the aggregate batch information.
 
