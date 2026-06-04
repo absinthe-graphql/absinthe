@@ -27,7 +27,14 @@ jobs:
           - elixir: 1.19
             otp: 25
           - elixir: 1.17
-            otp: 28
+- elixir: 1.20
+  otp: 25
+- elixir: 1.20
+  otp: 26
+- elixir: 1.19
+  otp: 25
+- elixir: 1.17
+  otp: 28
 
     steps:
       - name: Checkout
