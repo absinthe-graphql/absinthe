@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.11.0](https://github.com/absinthe-graphql/absinthe/compare/v1.10.0...v1.11.0) (2026-06-04)
+
+
+### Features
+
+* add description support for operations and fragments ([#1404](https://github.com/absinthe-graphql/absinthe/issues/1404)) ([c029a61](https://github.com/absinthe-graphql/absinthe/commit/c029a611640a764b687f6e3b5ce647880eff99fd))
+* PartitionSupervisor for subscription tasks ([#1416](https://github.com/absinthe-graphql/absinthe/issues/1416)) ([18665af](https://github.com/absinthe-graphql/absinthe/commit/18665af918a1f135171feec4f6b0d494ac105339))
+
+
+### Bug Fixes
+
+* elixir 1.20 redundant clause warnings ([#1441](https://github.com/absinthe-graphql/absinthe/issues/1441)) ([0fd4781](https://github.com/absinthe-graphql/absinthe/commit/0fd478115b0450cca00a3881ec756524e5c15bdc))
+* Handle missing registry in Subscription.unsubscribe/2 during shutdown ([#1411](https://github.com/absinthe-graphql/absinthe/issues/1411)) ([8f9816a](https://github.com/absinthe-graphql/absinthe/commit/8f9816a62de93462536e0479f91c35eb57d3dfc1))
+* Prevent non-executable definitions in document pipeline ([f968ddf](https://github.com/absinthe-graphql/absinthe/commit/f968ddf286d464a7d90aa66696c146b2d3ee0a1c))
+
 ## [1.10.2](https://github.com/absinthe-graphql/absinthe/compare/v1.10.1...v1.10.2) (2026-05-08)
 
 * Patch for CVE
