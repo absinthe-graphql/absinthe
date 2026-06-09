@@ -383,6 +383,7 @@ defmodule Absinthe.IntrospectionTest do
             kind
             name
             description
+            isOneOf
             inputFields {
               name
               description
@@ -407,6 +408,7 @@ defmodule Absinthe.IntrospectionTest do
            data: %{
              "__type" => %{
                "description" => "The basic details for a person",
+               "isOneOf" => false,
                "inputFields" => [
                  %{
                    "defaultValue" => "43",

@@ -214,6 +214,16 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         _, _ ->
           {:ok, nil}
       end
+
+    field :is_one_of,
+      type: :boolean,
+      resolve: fn
+        _, %{source: %Absinthe.Type.InputObject{__private__: private}} ->
+          {:ok, Keyword.get(private, :one_of, false)}
+
+        _, _ ->
+          {:ok, nil}
+      end
   end
 
   object :__field do
