@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.12.0](https://github.com/absinthe-graphql/absinthe/compare/v1.11.0...v1.12.0) (2026-06-09)
+
+
+### Features
+
+* Expose oneOf via schema introspection ([#1438](https://github.com/absinthe-graphql/absinthe/issues/1438)) ([112f051](https://github.com/absinthe-graphql/absinthe/commit/112f05162ad5a70cccab614cbb30052eead2e82d))
+
+
+### Bug Fixes
+
+* allow nulls in nullable enum list defaults ([#1436](https://github.com/absinthe-graphql/absinthe/issues/1436)) ([d4c66fa](https://github.com/absinthe-graphql/absinthe/commit/d4c66faa9e642e4ad2b9b32ff12c0ef9b2a504ff))
+* Fix oneOf validation failure when used in list ([#1439](https://github.com/absinthe-graphql/absinthe/issues/1439)) ([b902386](https://github.com/absinthe-graphql/absinthe/commit/b9023869a56a822983d90880bfc21092a1a68bbf))
+
 ## [1.11.0](https://github.com/absinthe-graphql/absinthe/compare/v1.10.0...v1.11.0) (2026-06-04)
 
 
