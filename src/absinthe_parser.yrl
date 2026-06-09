@@ -1,5 +1,6 @@
 Nonterminals
   Document
+  Comment
   Definitions Definition OperationDefinition Fragment TypeDefinition
   ObjectTypeDefinition InterfaceTypeDefinition UnionTypeDefinition
   ScalarTypeDefinition EnumTypeDefinition InputObjectTypeDefinition TypeExtensionDefinition
@@ -21,14 +22,18 @@ Terminals
   '{' '}' '(' ')' '[' ']' '!' ':' '@' '$' '=' '|' '...'
   'query' 'mutation' 'subscription' 'fragment' 'on' 'directive' 'repeatable'
   'type' 'implements' 'interface' 'union' 'scalar' 'enum' 'input' 'extend' 'schema'
-  name int_value float_value string_value block_string_value boolean_value null.
+  name int_value float_value string_value block_string_value boolean_value null comment.
 
 Rootsymbol Document.
 
 Document -> Definitions : build_ast_node('Document', #{'definitions' => '$1'}, extract_location('$1')).
 
+Comment -> comment : build_ast_node('Comment', #{'value' => extract_comment_value('$1')}, extract_location('$1')).
+
 Definitions -> Definition : ['$1'].
 Definitions -> Definition Definitions : ['$1'|'$2'].
+Definitions -> Comment : ['$1'].
+Definitions -> Comment Definitions : ['$1'|'$2'].
 
 Definition -> OperationDefinition : '$1'.
 Definition -> DescriptionDefinition OperationDefinition : put_description('$2', '$1').
@@ -79,6 +84,8 @@ SelectionSet -> '{' Selections '}' : build_ast_node('SelectionSet', #{'selection
 
 Selections -> Selection : ['$1'].
 Selections -> Selection Selections : ['$1'|'$2'].
+Selections -> Comment : ['$1'].
+Selections -> Comment Selections : ['$1'|'$2'].
 
 Selection -> Field : '$1'.
 Selection -> FragmentSpread : '$1'.
@@ -275,6 +282,8 @@ FieldDefinitionList -> FieldDefinition : ['$1'].
 FieldDefinitionList -> FieldDefinition FieldDefinitionList : ['$1'|'$2'].
 FieldDefinitionList -> DescriptionDefinition FieldDefinition : [put_description('$2', '$1')].
 FieldDefinitionList -> DescriptionDefinition FieldDefinition FieldDefinitionList : [put_description('$2', '$1')|'$3'].
+FieldDefinitionList -> Comment : ['$1'].
+FieldDefinitionList -> Comment FieldDefinitionList : ['$1'|'$2'].
 
 FieldDefinition -> Name ':' Type : build_ast_node('FieldDefinition', #{'name' => extract_binary('$1'), 'type' => '$3'}, extract_location('$1')).
 FieldDefinition -> Name ':' Type DirectivesConst : build_ast_node('FieldDefinition', #{'name' => extract_binary('$1'), 'type' => '$3', 'directives' => '$4'}, extract_location('$1')).
@@ -289,6 +298,8 @@ InputValueDefinitionList -> InputValueDefinition InputValueDefinitionList : ['$1
 
 InputValueDefinitionList -> DescriptionDefinition InputValueDefinition : [put_description('$2', '$1')].
 InputValueDefinitionList -> DescriptionDefinition InputValueDefinition InputValueDefinitionList : [put_description('$2', '$1')|'$3'].
+InputValueDefinitionList -> Comment : ['$1'].
+InputValueDefinitionList -> Comment InputValueDefinitionList : ['$1'|'$2'].
 
 InputValueDefinition -> Name ':' Type : build_ast_node('InputValueDefinition', #{'name' => extract_binary('$1'), 'type' => '$3'}, extract_location('$1')).
 InputValueDefinition -> Name ':' Type DirectivesConst : build_ast_node('InputValueDefinition', #{'name' => extract_binary('$1'), 'type' => '$3', 'directives' => '$4'}, extract_location('$1')).
@@ -339,6 +350,8 @@ EnumValueDefinitionList -> EnumValueDefinition EnumValueDefinitionList : ['$1'|'
 
 EnumValueDefinitionList -> DescriptionDefinition EnumValueDefinition : [put_description('$2', '$1')].
 EnumValueDefinitionList -> DescriptionDefinition EnumValueDefinition EnumValueDefinitionList : [put_description('$2', '$1')|'$3'].
+EnumValueDefinitionList -> Comment : ['$1'].
+EnumValueDefinitionList -> Comment EnumValueDefinitionList : ['$1'|'$2'].
 
 DirectiveDefinitionLocations -> Name : [extract_binary('$1')].
 DirectiveDefinitionLocations -> Name '|' DirectiveDefinitionLocations : [extract_binary('$1')|'$3'].
@@ -392,6 +405,9 @@ extract_child_location(_) ->
   #{'line' => nil, 'column' => nil}.
 
 % Value-level Utilities
+
+extract_comment_value({comment, _Loc, Value}) ->
+  Value.
 
 extract_atom({Value, _Loc}) ->
   Value.
