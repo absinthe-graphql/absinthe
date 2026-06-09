@@ -13,6 +13,7 @@ defmodule Absinthe.Phase.Document.Validation.OneOfDirectiveTest do
     query do
       field :valid, :boolean do
         arg :input, :valid_input
+        arg :inputs, list_of(:valid_input)
         resolve fn _, _ -> {:ok, true} end
       end
     end
@@ -53,21 +54,28 @@ defmodule Absinthe.Phase.Document.Validation.OneOfDirectiveTest do
     test "with both inline args" do
       query = ~s[query { valid(input: {id: 1, name: "a"}) }]
       assert {:ok, %{errors: [error]} = result} = Absinthe.run(query, Schema)
-      assert %{locations: [%{column: 15, line: 1}], message: @message} = error
+      assert %{locations: [%{column: 23, line: 1}], message: @message} = error
       refute result[:data]
     end
 
     test "with both inline args nil" do
       query = ~s[query { valid(input: {id: null, name: null}) }]
       assert {:ok, %{errors: [error]} = result} = Absinthe.run(query, Schema)
-      assert %{locations: [%{column: 15, line: 1}], message: @message} = error
+      assert %{locations: [%{column: 23, line: 1}], message: @message} = error
       refute result[:data]
     end
 
     test "with both variable args" do
       options = [variables: %{"input" => %{"id" => 1, "name" => "a"}}]
       assert {:ok, %{errors: [error]} = result} = Absinthe.run(@query, Schema, options)
-      assert %{locations: [%{column: 47, line: 1}], message: @message} = error
+      assert %{locations: [], message: @message} = error
+      refute result[:data]
+    end
+
+    test "with an inline list of oneOf inputs and both fields set" do
+      query = ~s|query { valid(inputs: [{id: 1, name: "a"}]) }|
+      assert {:ok, %{errors: [error]} = result} = Absinthe.run(query, Schema)
+      assert %{message: @message} = error
       refute result[:data]
     end
 

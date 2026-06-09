@@ -7,22 +7,18 @@ defmodule Absinthe.Phase.Document.Validation.OneOfDirective do
   use Absinthe.Phase
 
   alias Absinthe.Blueprint
-  alias Absinthe.Blueprint.Input.Argument
   alias Absinthe.Blueprint.Input.Object
   alias Absinthe.Phase.Error
+  alias Absinthe.Type
 
   def run(blueprint, _options \\ []) do
     {:ok, Blueprint.prewalk(blueprint, &process/1)}
   end
 
-  # Ignore input objects without schema nodes
-  defp process(%Argument{input_value: %{normalized: %Object{schema_node: nil}}} = node), do: node
-
-  defp process(%Argument{input_value: %{normalized: %Object{} = object}} = node) do
-    if Keyword.has_key?(object.schema_node.__private__, :one_of) and
-         field_count(object.fields) != 1 do
+  defp process(%Object{schema_node: %Type.InputObject{__private__: private} = schema_node} = node) do
+    if Keyword.has_key?(private, :one_of) and field_count(node.fields) != 1 do
       message =
-        ~s[The Input Type "#{object.schema_node.name}" has the @oneOf directive. It must have exactly one non-null field.]
+        ~s[The Input Type "#{schema_node.name}" has the @oneOf directive. It must have exactly one non-null field.]
 
       error = %Error{locations: [node.source_location], message: message, phase: __MODULE__}
       put_error(node, error)
