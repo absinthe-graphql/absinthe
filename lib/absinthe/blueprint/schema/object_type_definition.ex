@@ -47,7 +47,7 @@ defmodule Absinthe.Blueprint.Schema.ObjectTypeDefinition do
       name: type_def.name,
       description: type_def.description,
       fields: build_fields(type_def, schema),
-      interfaces: type_def.interfaces,
+      interfaces: Enum.map(type_def.interfaces, &Blueprint.TypeReference.to_type(&1, schema)),
       definition: type_def.module,
       is_type_of: type_def.is_type_of,
       __private__: type_def.__private__
