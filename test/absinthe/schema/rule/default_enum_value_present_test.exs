@@ -1,6 +1,58 @@
 defmodule Absinthe.Schema.Rule.DefaultEnumValuePresentTest do
   use Absinthe.Case, async: true
 
+  alias Absinthe.Blueprint.Schema.{
+    EnumTypeDefinition,
+    EnumValueDefinition,
+    InputValueDefinition,
+    SchemaDefinition
+  }
+
+  alias Absinthe.Blueprint.TypeReference.{Identifier, NonNull}
+  alias Absinthe.Blueprint.TypeReference.List, as: ListType
+  alias Absinthe.Phase.Schema.Validation.DefaultEnumValuePresent
+
+  describe "validate_defaults/3" do
+    setup do
+      enum = %EnumTypeDefinition{
+        name: "MovieGenre",
+        identifier: :movie_genre,
+        values: [
+          %EnumValueDefinition{name: "ACTION", identifier: :action, value: :action},
+          %EnumValueDefinition{name: "COMEDY", identifier: :comedy, value: :comedy},
+          %EnumValueDefinition{name: "SF", identifier: :sf, value: :sf}
+        ]
+      }
+
+      schema = %SchemaDefinition{type_definitions: [enum]}
+
+      {:ok, enums: %{movie_genre: enum}, schema: schema}
+    end
+
+    test "is enforced when a non-null enum list default contains nil", %{
+      enums: enums,
+      schema: schema
+    } do
+      type = list_of(non_null(:movie_genre))
+      node = input_value(type: type, default_value: [:action, nil])
+
+      result = DefaultEnumValuePresent.validate_defaults(node, enums, schema)
+
+      assert [
+               %Absinthe.Phase.Error{
+                 phase: DefaultEnumValuePresent,
+                 extra: %{default_value: nil, type: ^type}
+               }
+             ] = result.errors
+    end
+
+    test "passes when a nullable enum list default contains nil", %{enums: enums, schema: schema} do
+      node = input_value(type: list_of(:movie_genre), default_value: [:action, nil])
+
+      assert DefaultEnumValuePresent.validate_defaults(node, enums, schema) == node
+    end
+  end
+
   describe "SDL schema" do
     test "is enforced when the default_value is not in the enum" do
       schema = """
@@ -190,5 +242,22 @@ defmodule Absinthe.Schema.Rule.DefaultEnumValuePresentTest do
 
       assert Code.eval_string(schema)
     end
+  end
+
+  defp input_value(attrs) do
+    attrs
+    |> Keyword.put_new(:__reference__, reference())
+    |> then(&struct!(InputValueDefinition, &1))
+  end
+
+  defp list_of(type), do: %ListType{of_type: type_reference(type)}
+
+  defp non_null(type), do: %NonNull{of_type: type_reference(type)}
+
+  defp type_reference(%_{} = type), do: type
+  defp type_reference(identifier) when is_atom(identifier), do: %Identifier{id: identifier}
+
+  defp reference do
+    %{location: %{file: __ENV__.file, line: __ENV__.line}}
   end
 end
