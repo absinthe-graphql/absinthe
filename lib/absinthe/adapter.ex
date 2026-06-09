@@ -8,7 +8,7 @@ defmodule Absinthe.Adapter do
   Adapters aren't a part of GraphQL, but a utility that Absinthe adds so that
   both client and server can use use conventions most natural to them.
 
-  Absinthe ships with four adapters:
+  Absinthe ships with five adapters:
 
   * `Absinthe.Adapter.LanguageConventions`, which expects schemas to be defined
     in `snake_case` (the standard Elixir convention), translating to/from `camelCase`
@@ -24,6 +24,9 @@ defmodule Absinthe.Adapter do
   * `Absinthe.Adapter.StrictLanguageConventions`, which expects schemas to be
     defined in `snake_case`, translating to `camelCase` for outgoing results.
     This adapter requires incoming query documents to use `camelCase`.
+  * `Absinthe.Adapter.DigitAwareLanguageConventions`, which extends the behavior
+    of `Absinthe.Adapter.LanguageConventions` with correct roundtrip handling of
+    field names containing digits (e.g., `requires_2fa`, `address_line_1`).
 
   To set an adapter, you pass a configuration option at runtime:
 
