@@ -423,6 +423,8 @@ defmodule Absinthe.Schema do
   Convenience function.
   """
   @spec introspect(schema :: t, opts :: Absinthe.run_opts()) :: Absinthe.run_result()
+  # The path is fully hardcoded; no part of it is derived from user input.
+  # sobelow_skip ["Traversal.FileModule"]
   def introspect(schema, opts \\ []) do
     [:code.priv_dir(:absinthe), "graphql", "introspection.graphql"]
     |> Path.join()

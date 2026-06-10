@@ -23,6 +23,9 @@ defmodule Absinthe.Language.InputValueDefinition do
         }
 
   defimpl Blueprint.Draft do
+    # Schema SDL is developer-authored and processed at build time; identifiers
+    # are atoms by Absinthe's design, so this is not attacker-controlled input.
+    # sobelow_skip ["DOS.StringToAtom"]
     def convert(node, doc) do
       %Blueprint.Schema.InputValueDefinition{
         name: Macro.underscore(node.name),
@@ -42,6 +45,8 @@ defmodule Absinthe.Language.InputValueDefinition do
     defp to_term(nil),
       do: nil
 
+      # Default values come from developer-authored schema SDL, not user input.
+      # sobelow_skip ["DOS.StringToAtom"]
     defp to_term(%Language.EnumValue{value: value}),
       do: value |> Macro.underscore() |> String.to_atom()
 
@@ -51,6 +56,8 @@ defmodule Absinthe.Language.InputValueDefinition do
     defp to_term(%Language.NullValue{}),
       do: nil
 
+      # Object value field names come from developer-authored schema SDL.
+      # sobelow_skip ["DOS.StringToAtom"]
     defp to_term(%Language.ObjectValue{fields: fields}),
       do: Enum.into(fields, %{}, &{String.to_atom(&1.name), to_term(&1.value)})
 
