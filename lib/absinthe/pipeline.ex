@@ -408,7 +408,17 @@ defmodule Absinthe.Pipeline do
   def run_phase([phase_config | todo] = all_phases, input, done) do
     {phase, options} = phase_invocation(phase_config)
 
-    case phase.run(input, options) do
+    result =
+      try do
+        phase.run(input, options)
+      catch
+        kind, reason ->
+          stacktrace = __STACKTRACE__
+          Phase.Telemetry.handle_pipeline_exception(input, kind, reason, stacktrace)
+          :erlang.raise(kind, reason, stacktrace)
+      end
+
+    case result do
       {:record_phases, result, fun} ->
         result = fun.(result, all_phases)
         run_phase(todo, result, [phase | done])
