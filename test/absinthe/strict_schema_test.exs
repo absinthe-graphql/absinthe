@@ -164,6 +164,17 @@ defmodule Absinthe.StrictSchemaTest do
           variables: variables
         )
       )
+
+      assert_error_message(
+        "Cannot query field \"foo_bar_query\" on type \"RootQueryType\".",
+        run(
+          document,
+          Absinthe.Fixtures.StrictSchema,
+          adapter: Absinthe.Adapter.StrictLanguageConventions,
+          variables: variables,
+          maximum_number_of_suggestions: 0
+        )
+      )
     end
 
     test "returns an error when underscore external name used in argument" do
@@ -286,6 +297,15 @@ defmodule Absinthe.StrictSchemaTest do
         run(document, Absinthe.Fixtures.StrictSchema,
           adapter: Absinthe.Adapter.StrictLanguageConventions,
           variables: variables
+        )
+      )
+
+      assert_error_message(
+        "Cannot query field \"foo_bar_mutation\" on type \"RootMutationType\".",
+        run(document, Absinthe.Fixtures.StrictSchema,
+          adapter: Absinthe.Adapter.StrictLanguageConventions,
+          variables: variables,
+          maximum_number_of_suggestions: 0
         )
       )
     end
