@@ -120,7 +120,7 @@ defmodule Absinthe.Mixfile do
       "guides/variables.md",
       "guides/introspection.md",
       "guides/telemetry.md",
-      "guides/deprecation.md",
+      "guides/directives.md",
       "guides/adapters.md",
       "guides/complexity-analysis.md",
       "guides/file-uploads.md",
