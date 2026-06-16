@@ -20,7 +20,7 @@ Absinthe's functionality generally falls into two broad areas. You can read more
 * [Defining Schemas](schemas.md). A schema:
   * defines the structure of data entities and the relationships between, as well as the available queries, mutations, and subscriptions, using an elegant collection of declarative macros
   * defines [custom scalar](custom-scalars.md) types
-  * declares any [deprecated](deprecation.md) definitions
+  * declares any [deprecated](directives.md) definitions, and applies other [directives](directives.md)
   * defines resolution functions to access data, using a flexible and extensible middleware/plugin system
 * Executing Documents. A GraphQL document:
   * can be any standard GraphQL query, mutation, or subscription
