@@ -85,10 +85,43 @@ jobs:
       - name: Run Dialyzer
         run: mix dialyzer
 
+  sobelow:
+    name: Scan for insecure coding practices (Sobelow)
+    runs-on: ubuntu-24.04
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19"
+          otp-version: "28"
+
+      - name: Restore deps cache
+        uses: actions/cache@v5
+        with:
+          path: |
+            deps
+            _build
+          key: sobelow-deps-${{ runner.os }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            sobelow-deps-${{ runner.os }}-
+
+      - name: Install package dependencies
+        run: mix deps.get
+
+      - name: Run Sobelow
+        # --skip honors the documented `# sobelow_skip` annotations for reviewed
+        # false positives; --exit Low fails the build on any new finding.
+        run: mix sobelow --config
+
   release:
     name: Create or Update Release PR
     runs-on: ubuntu-latest
-    needs: [test]
+    needs: [test, sobelow]
     if: github.ref == 'refs/heads/main'
     permissions:
       contents: write

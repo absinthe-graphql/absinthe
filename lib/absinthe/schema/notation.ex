@@ -2351,6 +2351,9 @@ defmodule Absinthe.Schema.Notation do
     {type, [], counter}
   end
 
+  # Compile-time code generation; the atom is interpolated with an integer
+  # index (map_size), bounded by the number of functions in the schema.
+  # sobelow_skip ["DOS.BinToAtom"]
   def grab_functions(origin, type, identifier, attrs, counter) do
     {name, counter, dispatch} =
       case counter do

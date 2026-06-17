@@ -419,6 +419,9 @@ defmodule Absinthe.Lexer do
     {rest, [{:boolean_value, line_and_column(loc, byte_offset, length(value)), value}], context}
   end
 
+  # Only reached when `value` is one of the fixed @reserved_words, so the set of
+  # atoms produced is bounded and known at compile time.
+  # sobelow_skip ["DOS.ListToAtom"]
   defp do_boolean_value_or_name_or_reserved_word(rest, value, context, loc, byte_offset)
        when value in @reserved_words do
     token_name = value |> List.to_atom()
@@ -474,6 +477,9 @@ defmodule Absinthe.Lexer do
     {:error, @stopped_at_token_limit}
   end
 
+  # Only fed by the `punctuator` combinator, which matches a fixed set of
+  # punctuation characters (!, $, etc.), so the set of atoms produced is bounded.
+  # sobelow_skip ["DOS.ListToAtom"]
   defp atom_token(rest, chars, context, loc, byte_offset) do
     context = Map.update(context, :token_count, 1, &(&1 + 1))
     value = chars |> Enum.reverse()

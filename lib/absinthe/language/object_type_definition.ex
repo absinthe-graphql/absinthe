@@ -20,6 +20,9 @@ defmodule Absinthe.Language.ObjectTypeDefinition do
         }
 
   defimpl Blueprint.Draft do
+    # Schema SDL is developer-authored and processed at build time; identifiers
+    # are atoms by Absinthe's design, so this is not attacker-controlled input.
+    # sobelow_skip ["DOS.StringToAtom"]
     def convert(node, doc) do
       %Blueprint.Schema.ObjectTypeDefinition{
         name: node.name,
@@ -36,6 +39,8 @@ defmodule Absinthe.Language.ObjectTypeDefinition do
     defp source_location(%{loc: nil}), do: nil
     defp source_location(%{loc: loc}), do: Blueprint.SourceLocation.at(loc)
 
+    # Interface names come from developer-authored schema SDL, not user input.
+    # sobelow_skip ["DOS.StringToAtom"]
     defp interfaces(interfaces, doc) do
       interfaces
       |> Absinthe.Blueprint.Draft.convert(doc)
