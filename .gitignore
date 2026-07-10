@@ -1,4 +1,8 @@
-/bench
+# Track the committed benchmark suite (scripts + README) but keep any local
+# scratch output under bench/ ignored.
+/bench/*
+!/bench/*.exs
+!/bench/README.md
 /_build
 /cover
 /deps
