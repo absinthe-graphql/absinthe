@@ -110,13 +110,18 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   # walk list results
-  defp walk_results([value | values], bp_node, inner_type, res, [i | sub_path] = path, acc) do
-    {result, res} = walk_result(value, bp_node, inner_type, %{res | path: path}, path)
+  #
+  # The element path is threaded through the explicit `path` argument, not by
+  # mutating `res.path`: every field resolver gets its path set by
+  # build_resolution_struct, and the only consumer of the accumulator's path
+  # before that point is a Union/Interface resolve_type callback, which now has
+  # the path stamped lazily in get_concrete_type. This avoids allocating a fresh
+  # Absinthe.Resolution struct per list element just to bump the path.
+  defp walk_results([value | values], bp_node, inner_type, res, [i | sub_path], acc) do
+    path = [i | sub_path]
+    {result, res} = walk_result(value, bp_node, inner_type, res, path)
     walk_results(values, bp_node, inner_type, res, [i + 1 | sub_path], [result | acc])
   end
-
-  defp walk_results([], _, _, res = %{path: [_ | sub_path]}, _, acc),
-    do: {:lists.reverse(acc), %{res | path: sub_path}}
 
   defp walk_results([], _, _, res, _, acc), do: {:lists.reverse(acc), res}
 
@@ -125,7 +130,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     # that return type could be an interface or union, so let's make it concrete
     parent
     |> get_return_type
-    |> get_concrete_type(source, res)
+    |> get_concrete_type(source, res, path)
     |> case do
       nil ->
         {[], res}
@@ -157,15 +162,15 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   defp get_return_type(type), do: type
 
-  defp get_concrete_type(%Type.Union{} = parent_type, source, res) do
-    Type.Union.resolve_type(parent_type, source, res)
+  defp get_concrete_type(%Type.Union{} = parent_type, source, res, path) do
+    Type.Union.resolve_type(parent_type, source, %{res | path: path})
   end
 
-  defp get_concrete_type(%Type.Interface{} = parent_type, source, res) do
-    Type.Interface.resolve_type(parent_type, source, res)
+  defp get_concrete_type(%Type.Interface{} = parent_type, source, res, path) do
+    Type.Interface.resolve_type(parent_type, source, %{res | path: path})
   end
 
-  defp get_concrete_type(parent_type, _source, _res) do
+  defp get_concrete_type(parent_type, _source, _res, _path) do
     parent_type
   end
 
@@ -318,16 +323,33 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp maybe_add_non_null_error([], [_ | _] = values, %Type.List{of_type: type}, path) do
-    values
-    |> Enum.with_index()
-    |> Enum.flat_map(fn {value, index} ->
-      maybe_add_non_null_error([], value, type, [index | path])
-    end)
+    # Only walk the list when the element type actually carries a non-null
+    # constraint that could be violated; for a plain `[Foo]` there is nothing to
+    # check, so skip the O(n) pass entirely. When we do walk, track the index
+    # manually rather than materializing an Enum.with_index/1 tuple list.
+    if contains_non_null?(type) do
+      list_non_null_errors(values, type, path, 0)
+    else
+      []
+    end
   end
 
   defp maybe_add_non_null_error(errors, _, _, _path) do
     errors
   end
+
+  defp list_non_null_errors([], _type, _path, _index), do: []
+
+  defp list_non_null_errors([value | values], type, path, index) do
+    case maybe_add_non_null_error([], value, type, [index | path]) do
+      [] -> list_non_null_errors(values, type, path, index + 1)
+      errors -> errors ++ list_non_null_errors(values, type, path, index + 1)
+    end
+  end
+
+  defp contains_non_null?(%Type.NonNull{}), do: true
+  defp contains_non_null?(%Type.List{of_type: inner}), do: contains_non_null?(inner)
+  defp contains_non_null?(_), do: false
 
   defp propagate_null_trimming({%{values: values} = node, res}) do
     values = Enum.map(values, &do_propagate_null_trimming/1)
