@@ -259,15 +259,18 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp build_result(res, source, path) do
     %{
       value: value,
-      definition: bp_field,
       extensions: extensions,
-      schema: schema,
       errors: errors
     } = res
 
-    full_type = Type.expand(bp_field.schema_node.type, schema)
-
-    bp_field = put_in(bp_field.schema_node.type, full_type)
+    # The emitter is the field's blueprint node with its schema_node type fully
+    # expanded (atom refs resolved to their type structs). It is a pure function
+    # of (field, schema), so for a list it is identical for every element — cache
+    # and share one term across them instead of rebuilding it per element. This
+    # is invisible to middleware: build_result runs after resolution, and the
+    # emitter is never written back into res.definition.
+    {bp_field, res} = prepared_emitter(res)
+    full_type = bp_field.schema_node.type
 
     # if there are any errors, the value is always nil
     value =
@@ -283,6 +286,21 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     |> add_errors(Enum.reverse(errors), &put_result_error_value(&1, &2, bp_field, source, path))
     |> walk_result(bp_field, full_type, res, path)
     |> propagate_null_trimming
+  end
+
+  defp prepared_emitter(%{fields_cache: cache} = res) do
+    %{definition: bp_field, schema: schema, parent_type: parent_type, path: path} = res
+    key = {:emitter, Absinthe.Resolution.Projector.cache_key(path, parent_type.identifier)}
+
+    case Map.fetch(cache, key) do
+      {:ok, emitter} ->
+        {emitter, res}
+
+      :error ->
+        full_type = Type.expand(bp_field.schema_node.type, schema)
+        emitter = put_in(bp_field.schema_node.type, full_type)
+        {emitter, %{res | fields_cache: Map.put(cache, key, emitter)}}
+    end
   end
 
   defp maybe_add_non_null_error(errors, value, type, path \\ [])
