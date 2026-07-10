@@ -99,6 +99,11 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     {result, res}
   end
 
+  # Compact scalar/enum list: its raw values have no fields to resolve.
+  def walk_result(%Result.LeafList{} = result, _, _, res, _) do
+    {result, res}
+  end
+
   def walk_result(%{values: values} = result, bp_node, schema_type, res, path) do
     {values, res} = walk_results(values, bp_node, schema_type, res, [0 | path], [])
     {%{result | values: values}, res}
@@ -351,6 +356,12 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp contains_non_null?(%Type.List{of_type: inner}), do: contains_non_null?(inner)
   defp contains_non_null?(_), do: false
 
+  # A compact leaf list has nullable elements and no per-element nodes, so there
+  # is nothing to trim.
+  defp propagate_null_trimming({%Result.LeafList{} = node, res}) do
+    {node, res}
+  end
+
   defp propagate_null_trimming({%{values: values} = node, res}) do
     values = Enum.map(values, &do_propagate_null_trimming/1)
     node = %{node | values: values}
@@ -380,6 +391,12 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   defp find_bad_child(%{fields: fields}) do
     Enum.find(fields, &non_null_violation?/1)
+  end
+
+  # Compact leaf lists are only built for nullable element types, so no element
+  # can be a non-null violation.
+  defp find_bad_child(%Result.LeafList{}) do
+    false
   end
 
   defp find_bad_child(%{values: values}) do
@@ -480,6 +497,20 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   defp to_result(root_value, blueprint, %Type.Union{}, extensions) do
     %Result.Object{root_value: root_value, emitter: blueprint, extensions: extensions}
+  end
+
+  # Nullable list of leaf values (scalars/enums): elements never run middleware
+  # and can't be individually errored or null-trimmed, so hold the raw values in
+  # a single compact node instead of a Result.Leaf per element. Serialized in
+  # bulk by Phase.Document.Result. A non-null element type (%Type.List{of_type:
+  # %Type.NonNull{}}) does not match these clauses and keeps the per-element path
+  # below, preserving null propagation.
+  defp to_result(root_value, blueprint, %Type.List{of_type: %Type.Scalar{}}, extensions) do
+    %Result.LeafList{values: List.wrap(root_value), emitter: blueprint, extensions: extensions}
+  end
+
+  defp to_result(root_value, blueprint, %Type.List{of_type: %Type.Enum{}}, extensions) do
+    %Result.LeafList{values: List.wrap(root_value), emitter: blueprint, extensions: extensions}
   end
 
   defp to_result(root_value, blueprint, %Type.List{of_type: inner_type}, extensions) do

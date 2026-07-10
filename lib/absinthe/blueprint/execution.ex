@@ -53,6 +53,7 @@ defmodule Absinthe.Blueprint.Execution do
   @type node_t ::
           Result.Object
           | Result.List
+          | Result.LeafList
           | Result.Leaf
 
   def get(%{execution: %{result: nil} = exec} = bp_root, operation) do

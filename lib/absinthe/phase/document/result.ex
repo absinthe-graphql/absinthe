@@ -44,33 +44,24 @@ defmodule Absinthe.Phase.Document.Result do
 
   defp data(%{errors: [_ | _] = field_errors}, errors), do: {nil, field_errors ++ errors}
 
+  # Compact list of leaf values (nullable scalar/enum elements): serialize the
+  # raw values in one pass. Equivalent to a list of Result.Leaf, without the
+  # per-element structs.
+  defp data(%Blueprint.Result.LeafList{values: values, emitter: emitter}, errors) do
+    serialized =
+      Enum.map(values, fn
+        nil -> nil
+        value -> serialize_leaf(value, emitter)
+      end)
+
+    {serialized, errors}
+  end
+
   # Leaf
   defp data(%{value: nil}, errors), do: {nil, errors}
 
   defp data(%{value: value, emitter: emitter}, errors) do
-    value =
-      case Type.unwrap(emitter.schema_node.type) do
-        %Type.Scalar{} = schema_node ->
-          try do
-            Type.Scalar.serialize(schema_node, value)
-          rescue
-            _e in [Absinthe.SerializationError, Protocol.UndefinedError] ->
-              raise(
-                Absinthe.SerializationError,
-                """
-                Could not serialize term #{inspect(value)} as type #{schema_node.name}
-
-                When serializing the field:
-                #{emitter.parent_type.name}.#{emitter.schema_node.name} (#{emitter.schema_node.__reference__.location.file}:#{emitter.schema_node.__reference__.location.line})
-                """
-              )
-          end
-
-        %Type.Enum{} = schema_node ->
-          Type.Enum.serialize(schema_node, value)
-      end
-
-    {value, errors}
+    {serialize_leaf(value, emitter), errors}
   end
 
   # Object
@@ -78,6 +69,29 @@ defmodule Absinthe.Phase.Document.Result do
 
   # List
   defp data(%{values: values}, errors), do: list_data(values, errors)
+
+  defp serialize_leaf(value, emitter) do
+    case Type.unwrap(emitter.schema_node.type) do
+      %Type.Scalar{} = schema_node ->
+        try do
+          Type.Scalar.serialize(schema_node, value)
+        rescue
+          _e in [Absinthe.SerializationError, Protocol.UndefinedError] ->
+            raise(
+              Absinthe.SerializationError,
+              """
+              Could not serialize term #{inspect(value)} as type #{schema_node.name}
+
+              When serializing the field:
+              #{emitter.parent_type.name}.#{emitter.schema_node.name} (#{emitter.schema_node.__reference__.location.file}:#{emitter.schema_node.__reference__.location.line})
+              """
+            )
+        end
+
+      %Type.Enum{} = schema_node ->
+        Type.Enum.serialize(schema_node, value)
+    end
+  end
 
   defp list_data(fields, errors, acc \\ [])
   defp list_data([], errors, acc), do: {:lists.reverse(acc), errors}
