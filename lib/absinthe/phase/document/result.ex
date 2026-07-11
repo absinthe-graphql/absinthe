@@ -42,35 +42,36 @@ defmodule Absinthe.Phase.Document.Result do
     %{errors: errors}
   end
 
+  defp data(%Blueprint.Result.Pending{} = node, _errors) do
+    raise """
+    Found a pending field placeholder!
+
+    A field suspended but was never resumed. This can happen when a middleware
+    suspends resolution without a plugin scheduling another resolution phase,
+    or when plugin callbacks are disabled.
+
+    #{inspect(node.emitter.name)} at #{inspect(node.emitter.source_location)}
+    """
+  end
+
   defp data(%{errors: [_ | _] = field_errors}, errors), do: {nil, field_errors ++ errors}
+
+  # A leaf list — serialize all of its raw values in one pass.
+  defp data(%Blueprint.Result.LeafList{values: values, emitter: emitter}, errors) do
+    serialized =
+      Enum.map(values, fn
+        nil -> nil
+        value -> serialize_leaf(value, emitter)
+      end)
+
+    {serialized, errors}
+  end
 
   # Leaf
   defp data(%{value: nil}, errors), do: {nil, errors}
 
   defp data(%{value: value, emitter: emitter}, errors) do
-    value =
-      case Type.unwrap(emitter.schema_node.type) do
-        %Type.Scalar{} = schema_node ->
-          try do
-            Type.Scalar.serialize(schema_node, value)
-          rescue
-            _e in [Absinthe.SerializationError, Protocol.UndefinedError] ->
-              raise(
-                Absinthe.SerializationError,
-                """
-                Could not serialize term #{inspect(value)} as type #{schema_node.name}
-
-                When serializing the field:
-                #{emitter.parent_type.name}.#{emitter.schema_node.name} (#{emitter.schema_node.__reference__.location.file}:#{emitter.schema_node.__reference__.location.line})
-                """
-              )
-          end
-
-        %Type.Enum{} = schema_node ->
-          Type.Enum.serialize(schema_node, value)
-      end
-
-    {value, errors}
+    {serialize_leaf(value, emitter), errors}
   end
 
   # Object
@@ -78,6 +79,29 @@ defmodule Absinthe.Phase.Document.Result do
 
   # List
   defp data(%{values: values}, errors), do: list_data(values, errors)
+
+  defp serialize_leaf(value, emitter) do
+    case Type.unwrap(emitter.schema_node.type) do
+      %Type.Scalar{} = schema_node ->
+        try do
+          Type.Scalar.serialize(schema_node, value)
+        rescue
+          _e in [Absinthe.SerializationError, Protocol.UndefinedError] ->
+            raise(
+              Absinthe.SerializationError,
+              """
+              Could not serialize term #{inspect(value)} as type #{schema_node.name}
+
+              When serializing the field:
+              #{emitter.parent_type.name}.#{emitter.schema_node.name} (#{emitter.schema_node.__reference__.location.file}:#{emitter.schema_node.__reference__.location.line})
+              """
+            )
+        end
+
+      %Type.Enum{} = schema_node ->
+        Type.Enum.serialize(schema_node, value)
+    end
+  end
 
   defp list_data(fields, errors, acc \\ [])
   defp list_data([], errors, acc), do: {:lists.reverse(acc), errors}
@@ -89,16 +113,6 @@ defmodule Absinthe.Phase.Document.Result do
 
   defp field_data(fields, errors, acc \\ [])
   defp field_data([], errors, acc), do: {Map.new(acc), errors}
-
-  defp field_data([%Absinthe.Resolution{} = res | _], _errors, _acc) do
-    raise """
-    Found unresolved resolution struct!
-
-    You probably forgot to run the resolution phase again.
-
-    #{inspect(res)}
-    """
-  end
 
   defp field_data([field | fields], errors, acc) do
     {value, errors} = data(field, errors)

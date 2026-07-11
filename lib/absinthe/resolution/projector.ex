@@ -12,12 +12,7 @@ defmodule Absinthe.Resolution.Projector do
   field merging, and other wonderful stuff like that.
   """
   def project(selections, %{identifier: parent_ident} = parent_type, path, cache, exec) do
-    path =
-      for %{parent_type: %{identifier: i}, name: name, alias: alias} <- path do
-        {i, alias || name}
-      end
-
-    key = [parent_ident | path]
+    key = cache_key(path, parent_ident)
 
     case Map.fetch(cache, key) do
       {:ok, fields} ->
@@ -31,6 +26,22 @@ defmodule Absinthe.Resolution.Projector do
 
         {fields, Map.put(cache, key, fields)}
     end
+  end
+
+  @doc """
+  Builds the cache key for a projection at `path` under `parent_ident`.
+
+  List indices are dropped from the path, so every element of a list maps to the
+  same key. That's what lets a projection (and the resolution phase's emitter
+  cache) be computed once for the whole list instead of once per element.
+  """
+  def cache_key(path, parent_ident) do
+    path =
+      for %{parent_type: %{identifier: i}, name: name, alias: alias} <- path do
+        {i, alias || name}
+      end
+
+    [parent_ident | path]
   end
 
   defp response_key(%{alias: nil, name: name}), do: name
