@@ -42,6 +42,18 @@ defmodule Absinthe.Phase.Document.Result do
     %{errors: errors}
   end
 
+  defp data(%Blueprint.Result.Pending{} = node, _errors) do
+    raise """
+    Found a pending field placeholder!
+
+    A field suspended but was never resumed. This can happen when a middleware
+    suspends resolution without a plugin scheduling another resolution phase,
+    or when plugin callbacks are disabled.
+
+    #{inspect(node.emitter.name)} at #{inspect(node.emitter.source_location)}
+    """
+  end
+
   defp data(%{errors: [_ | _] = field_errors}, errors), do: {nil, field_errors ++ errors}
 
   # Leaf
@@ -89,16 +101,6 @@ defmodule Absinthe.Phase.Document.Result do
 
   defp field_data(fields, errors, acc \\ [])
   defp field_data([], errors, acc), do: {Map.new(acc), errors}
-
-  defp field_data([%Absinthe.Resolution{} = res | _], _errors, _acc) do
-    raise """
-    Found unresolved resolution struct!
-
-    You probably forgot to run the resolution phase again.
-
-    #{inspect(res)}
-    """
-  end
 
   defp field_data([field | fields], errors, acc) do
     {value, errors} = data(field, errors)

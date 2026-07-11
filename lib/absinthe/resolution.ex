@@ -74,7 +74,10 @@ defmodule Absinthe.Resolution do
     path: [],
     state: :unresolved,
     fragments: [],
-    fields_cache: %{}
+    fields_cache: %{},
+    # Internal to the resolution phase: suspended fields collected during the
+    # current pass, as `{ref, %Absinthe.Resolution{}}` in reverse walk order.
+    pending: []
   ]
 
   def resolver_spec(fun) do
