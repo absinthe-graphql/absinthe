@@ -29,14 +29,11 @@ defmodule Absinthe.Resolution.Projector do
   end
 
   @doc """
-  Build the cache key identifying a projection (or any per-field prepared data)
-  for a given path and parent type identifier.
+  Builds the cache key for a projection at `path` under `parent_ident`.
 
-  The key deliberately drops list indices from the path (the comprehension only
-  matches field-shaped path entries, skipping bare integers), so every element
-  of a list shares one key. This is what lets projection — and the prepared
-  emitter cache in the resolution phase — be computed once per list rather than
-  once per element.
+  List indices are dropped from the path, so every element of a list maps to the
+  same key. That's what lets a projection (and the resolution phase's emitter
+  cache) be computed once for the whole list instead of once per element.
   """
   def cache_key(path, parent_ident) do
     path =

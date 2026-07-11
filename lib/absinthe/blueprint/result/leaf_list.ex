@@ -1,13 +1,11 @@
 defmodule Absinthe.Blueprint.Result.LeafList do
   @moduledoc false
 
-  # A list whose elements are leaf values (scalars or enums) with nullable
-  # element type. Because such elements never run middleware and can never be
-  # errored or null-trimmed individually, the whole list is held as one node of
-  # raw values instead of wrapping each element in a `Result.Leaf`. Serialization
-  # happens in bulk in `Absinthe.Phase.Document.Result`. Lists with a non-null
-  # element type keep the per-element `Result.Leaf` representation so the
-  # null-propagation machinery is unchanged.
+  # Holds a list of nullable scalar or enum values as a single node, rather than
+  # one `Result.Leaf` per element. That's safe because these elements never run
+  # middleware and can't be null-trimmed on their own. Lists with non-null
+  # elements keep the per-element form. The values are serialized in bulk by
+  # `Absinthe.Phase.Document.Result`.
 
   alias Absinthe.{Blueprint, Phase}
 

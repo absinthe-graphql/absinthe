@@ -99,7 +99,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     {result, res}
   end
 
-  # Compact scalar/enum list: its raw values have no fields to resolve.
+  # A leaf list is just raw values — there are no sub-fields to walk into.
   def walk_result(%Result.LeafList{} = result, _, _, res, _) do
     {result, res}
   end
@@ -116,14 +116,12 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   # walk list results
   #
-  # The element path is threaded through the explicit `path` argument, not by
-  # mutating `res.path`: every field resolver gets its path set by
-  # build_resolution_struct, and the only consumer of the accumulator's path
-  # before that point is a Union/Interface resolve_type callback, which now has
-  # the path stamped lazily in get_concrete_type. This avoids allocating a fresh
-  # Absinthe.Resolution struct per list element just to bump the path.
-  defp walk_results([value | values], bp_node, inner_type, res, [i | sub_path], acc) do
-    path = [i | sub_path]
+  # We pass each element's path along as an argument instead of writing it into
+  # `res`. Updating `res` meant building a new Resolution struct for every element
+  # just to record the path, which adds up on large lists. The only thing that
+  # actually reads the path off `res` is a Union/Interface `resolve_type`
+  # callback, so get_concrete_type sets it there, only when it's needed.
+  defp walk_results([value | values], bp_node, inner_type, res, [i | sub_path] = path, acc) do
     {result, res} = walk_result(value, bp_node, inner_type, res, path)
     walk_results(values, bp_node, inner_type, res, [i + 1 | sub_path], [result | acc])
   end
@@ -273,12 +271,10 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       errors: errors
     } = res
 
-    # The emitter is the field's blueprint node with its schema_node type fully
-    # expanded (atom refs resolved to their type structs). It is a pure function
-    # of (field, schema), so for a list it is identical for every element — cache
-    # and share one term across them instead of rebuilding it per element. This
-    # is invisible to middleware: build_result runs after resolution, and the
-    # emitter is never written back into res.definition.
+    # Every element of a list ends up with the same emitter (the field node with
+    # its type expanded), so we build it once for the field and reuse it instead
+    # of rebuilding it for each element. It's never written back to res.definition,
+    # so middleware doesn't see any difference.
     {bp_field, res} = prepared_emitter(res)
     full_type = bp_field.schema_node.type
 
@@ -328,10 +324,10 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp maybe_add_non_null_error([], [_ | _] = values, %Type.List{of_type: type}, path) do
-    # Only walk the list when the element type actually carries a non-null
-    # constraint that could be violated; for a plain `[Foo]` there is nothing to
-    # check, so skip the O(n) pass entirely. When we do walk, track the index
-    # manually rather than materializing an Enum.with_index/1 tuple list.
+    # There's only something to check when the element type is non-null; a plain
+    # `[Foo]` can't have a non-null violation, so skip the walk entirely. When we
+    # do walk, we carry the index along in the recursion rather than building a
+    # tuple for every element with Enum.with_index/1.
     if contains_non_null?(type) do
       list_non_null_errors(values, type, path, 0)
     else
@@ -356,8 +352,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp contains_non_null?(%Type.List{of_type: inner}), do: contains_non_null?(inner)
   defp contains_non_null?(_), do: false
 
-  # A compact leaf list has nullable elements and no per-element nodes, so there
-  # is nothing to trim.
+  # A leaf list only holds nullable elements, so there's never anything to trim.
   defp propagate_null_trimming({%Result.LeafList{} = node, res}) do
     {node, res}
   end
@@ -391,12 +386,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   defp find_bad_child(%{fields: fields}) do
     Enum.find(fields, &non_null_violation?/1)
-  end
-
-  # Compact leaf lists are only built for nullable element types, so no element
-  # can be a non-null violation.
-  defp find_bad_child(%Result.LeafList{}) do
-    false
   end
 
   defp find_bad_child(%{values: values}) do
@@ -499,12 +488,11 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     %Result.Object{root_value: root_value, emitter: blueprint, extensions: extensions}
   end
 
-  # Nullable list of leaf values (scalars/enums): elements never run middleware
-  # and can't be individually errored or null-trimmed, so hold the raw values in
-  # a single compact node instead of a Result.Leaf per element. Serialized in
-  # bulk by Phase.Document.Result. A non-null element type (%Type.List{of_type:
-  # %Type.NonNull{}}) does not match these clauses and keeps the per-element path
-  # below, preserving null propagation.
+  # For a list of nullable scalars or enums there's nothing to resolve per element
+  # and nothing to null-trim, so we keep the raw values in a single node rather
+  # than wrapping each one in a Result.Leaf; they get serialized together later in
+  # Phase.Document.Result. Lists whose elements are non-null fall through to the
+  # regular clause below.
   defp to_result(root_value, blueprint, %Type.List{of_type: %Type.Scalar{}}, extensions) do
     %Result.LeafList{values: List.wrap(root_value), emitter: blueprint, extensions: extensions}
   end

@@ -44,9 +44,7 @@ defmodule Absinthe.Phase.Document.Result do
 
   defp data(%{errors: [_ | _] = field_errors}, errors), do: {nil, field_errors ++ errors}
 
-  # Compact list of leaf values (nullable scalar/enum elements): serialize the
-  # raw values in one pass. Equivalent to a list of Result.Leaf, without the
-  # per-element structs.
+  # A leaf list — serialize all of its raw values in one pass.
   defp data(%Blueprint.Result.LeafList{values: values, emitter: emitter}, errors) do
     serialized =
       Enum.map(values, fn
