@@ -136,15 +136,19 @@ defmodule Absinthe.Resolution.Projector do
     end
   end
 
-  # necessary when the field in question is on an abstract type.
-  defp update_schema_node(%{name: "__" <> _} = field, _) do
-    field
+  # necessary when the field in question is on an abstract type. We also record
+  # the concrete parent type on the field here: the projection is cached per
+  # parent type, so this happens once per (type, path) instead of copying the
+  # field struct again for every element during resolution.
+  defp update_schema_node(%{name: "__" <> _} = field, parent_type) do
+    %{field | parent_type: parent_type}
   end
 
-  defp update_schema_node(%{schema_node: %{identifier: identifier}} = field, %{
-         fields: concrete_fields
-       }) do
-    %{field | schema_node: :maps.get(identifier, concrete_fields)}
+  defp update_schema_node(
+         %{schema_node: %{identifier: identifier}} = field,
+         %{fields: concrete_fields} = parent_type
+       ) do
+    %{field | schema_node: :maps.get(identifier, concrete_fields), parent_type: parent_type}
   end
 
   defp normalize_condition(%{schema_node: condition}, schema) do

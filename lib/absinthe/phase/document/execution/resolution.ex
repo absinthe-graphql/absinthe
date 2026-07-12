@@ -187,7 +187,10 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   """
   def walk_result(%{fields: nil} = result, bp_node, _schema_type, res, path) do
     {fields, res} = resolve_fields(bp_node, res, result.root_value, path)
-    {%{result | fields: fields}, res}
+    # The source value is only needed to resolve this object's own fields, so
+    # release it here: otherwise every object in the tree pins its source data
+    # in memory until the whole response has been serialized.
+    {%{result | fields: fields, root_value: nil}, res}
   end
 
   def walk_result(%Result.Leaf{} = result, _, _, res, _) do
@@ -268,12 +271,57 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp do_resolve_fields([field | fields], res, source, parent_type, path, acc) do
-    field = %{field | parent_type: parent_type}
-    {result, res} = resolve_field(field, res, source, parent_type, [field | path])
+    {result, res} = maybe_fast_resolve(field, res, source, parent_type, [field | path])
     do_resolve_fields(fields, res, source, parent_type, path, [result | acc])
   end
 
   defp do_resolve_fields([], res, _, _, _, acc), do: {:lists.reverse(acc), res}
+
+  # Fast path for the default resolver. A field whose middleware is exactly
+  # `[{MapGet, key}]` cannot error, suspend, or touch anything on the
+  # resolution struct, so building one (and copying it again inside
+  # `MapGet.call/2`) is pure overhead — we just fetch the value and build its
+  # result directly. The fast path only applies when MapGet is the field's
+  # *only* middleware; abstract return types fall through to the regular path
+  # because `resolve_type` callbacks receive the resolution struct.
+  #
+  # NOTE: We plan to generalize this into an opt-in `{:fast, {module, fun,
+  # args}}` middleware spec so that schemas which replace the default (e.g.
+  # with an Ecto-aware getter) keep the fast path. That's a user-facing
+  # feature with docs/validation/naming work attached — see
+  # FAST_MIDDLEWARE_PLAN.md for the design and a validated prototype.
+  defp maybe_fast_resolve(
+         %{schema_node: %{middleware: [{Absinthe.Middleware.MapGet, key}]}} = field,
+         res,
+         source,
+         parent_type,
+         path
+       ) do
+    {emitter, res} = prepared_emitter(res, field, parent_type, path)
+    full_type = emitter.schema_node.type
+
+    case Type.unwrap(full_type) do
+      %struct{} when struct in [Type.Union, Type.Interface] ->
+        resolve_field(field, res, source, parent_type, path)
+
+      _ ->
+        value = Map.get(source, key)
+        errors = maybe_add_non_null_error([], value, full_type)
+
+        value
+        |> to_result(emitter, full_type, res.extensions)
+        |> add_errors(
+          Enum.reverse(errors),
+          &put_result_error_value(&1, &2, emitter, source, path)
+        )
+        |> walk_result(emitter, full_type, res, path)
+        |> propagate_null_trimming
+    end
+  end
+
+  defp maybe_fast_resolve(field, res, source, parent_type, path) do
+    resolve_field(field, res, source, parent_type, path)
+  end
 
   def resolve_field(field, res, source, parent_type, path) do
     res
@@ -372,7 +420,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     # its type expanded), so we build it once for the field and reuse it instead
     # of rebuilding it for each element. It's never written back to res.definition,
     # so middleware doesn't see any difference.
-    {bp_field, res} = prepared_emitter(res)
+    {bp_field, res} = prepared_emitter(res, res.definition, res.parent_type, res.path)
     full_type = bp_field.schema_node.type
 
     # if there are any errors, the value is always nil
@@ -391,8 +439,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     |> propagate_null_trimming
   end
 
-  defp prepared_emitter(%{fields_cache: cache} = res) do
-    %{definition: bp_field, schema: schema, parent_type: parent_type, path: path} = res
+  defp prepared_emitter(%{fields_cache: cache} = res, bp_field, parent_type, path) do
     key = {:emitter, Absinthe.Resolution.Projector.cache_key(path, parent_type.identifier)}
 
     case Map.fetch(cache, key) do
@@ -400,7 +447,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
         {emitter, res}
 
       :error ->
-        full_type = Type.expand(bp_field.schema_node.type, schema)
+        full_type = Type.expand(bp_field.schema_node.type, res.schema)
         emitter = put_in(bp_field.schema_node.type, full_type)
         {emitter, %{res | fields_cache: Map.put(cache, key, emitter)}}
     end
@@ -455,9 +502,16 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp propagate_null_trimming({%{values: values} = node, res}) do
-    values = Enum.map(values, &do_propagate_null_trimming/1)
-    node = %{node | values: values}
-    {do_propagate_null_trimming(node), res}
+    # Only rebuild the list when something actually needs to be trimmed; in the
+    # common all-good case this avoids re-allocating the values list (and a
+    # copy of the node) just to put back identical elements.
+    if Enum.any?(values, &needs_trimming?/1) do
+      values = Enum.map(values, &do_propagate_null_trimming/1)
+      node = %{node | values: values}
+      {do_propagate_null_trimming(node), res}
+    else
+      {node, res}
+    end
   end
 
   defp propagate_null_trimming({node, res}) do
@@ -479,6 +533,12 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     else
       node
     end
+  end
+
+  # A list element needs the trimming pass if it must be nulled out itself
+  # (a bad child of its own) or if it violates the list's element nullability.
+  defp needs_trimming?(element) do
+    find_bad_child(element) || non_null_list_violation?(element)
   end
 
   defp find_bad_child(%{fields: fields}) do
