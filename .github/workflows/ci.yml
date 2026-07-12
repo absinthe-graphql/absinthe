@@ -77,7 +77,7 @@ jobs:
         with:
           path: |
             priv/plts
-          key: "v1-${{ runner.os }}-\
+          key: "v2-${{ runner.os }}-\
             erlang-${{ matrix.otp }}-\
             elixir-${{ matrix.elixir }}-\
             ${{ hashFiles('mix.lock') }}"
