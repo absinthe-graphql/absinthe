@@ -185,12 +185,13 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   encountered leave a `%Result.Pending{}` placeholder and are accumulated on
   the resolution struct's `:pending` list.
   """
+  # Note: `root_value` must stay on the built object even though this phase no
+  # longer needs it — downstream result phases can consume it (e.g.
+  # Absinthe.Phoenix.Controller.Result returns raw source values for objects
+  # without subselections and merges them for `@put`).
   def walk_result(%{fields: nil} = result, bp_node, _schema_type, res, path) do
     {fields, res} = resolve_fields(bp_node, res, result.root_value, path)
-    # The source value is only needed to resolve this object's own fields, so
-    # release it here: otherwise every object in the tree pins its source data
-    # in memory until the whole response has been serialized.
-    {%{result | fields: fields, root_value: nil}, res}
+    {%{result | fields: fields}, res}
   end
 
   def walk_result(%Result.Leaf{} = result, _, _, res, _) do
