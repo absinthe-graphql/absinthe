@@ -243,7 +243,7 @@ defmodule Absinthe.Middleware.BatchTest do
                      %{id: start_id, batch_fun: {RaisingModule, :boom}}, _}}
 
     assert_receive {:telemetry_event,
-                    {[:absinthe, :middleware, :batch, :exception], %{duration: duration},
+                    {[:absinthe, :middleware, :batch, :exception], %{duration: _duration},
                      %{
                        id: stop_id,
                        batch_fun: {RaisingModule, :boom},
@@ -251,7 +251,7 @@ defmodule Absinthe.Middleware.BatchTest do
                        batch_data: _,
                        kind: :error,
                        reason: %RuntimeError{message: "kaboom"},
-                       stacktrace: stacktrace
+                       stacktrace: _stacktrace
                      }, _}}
 
     assert start_id == stop_id
