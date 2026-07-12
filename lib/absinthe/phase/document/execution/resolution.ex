@@ -290,8 +290,8 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
          parent_type,
          path
        ) do
-    full_type = Type.expand(field.schema_node.type, res.schema)
-    emitter = put_in(field.schema_node.type, full_type)
+    {emitter, res} = prepared_emitter(res, field, parent_type, path)
+    full_type = emitter.schema_node.type
 
     case Type.unwrap(full_type) do
       %struct{} when struct in [Type.Union, Type.Interface] ->
@@ -405,15 +405,17 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp build_result(res, source, path) do
     %{
       value: value,
-      definition: bp_field,
       extensions: extensions,
-      schema: schema,
       errors: errors
     } = res
 
-    full_type = Type.expand(bp_field.schema_node.type, schema)
-
-    bp_field = put_in(bp_field.schema_node.type, full_type)
+    # Every element of a list ends up with the same emitter (the field node
+    # with its type expanded), so we build it once per field and reuse it
+    # instead of rebuilding it for each element. It's never written back to
+    # res.definition, so middleware sees no difference; result nodes carry the
+    # same emitter values as before, just shared.
+    {bp_field, res} = prepared_emitter(res, res.definition, res.parent_type, res.path)
+    full_type = bp_field.schema_node.type
 
     # if there are any errors, the value is always nil
     value =
@@ -429,6 +431,20 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     |> add_errors(Enum.reverse(errors), &put_result_error_value(&1, &2, bp_field, source, path))
     |> walk_result(bp_field, full_type, res, path)
     |> propagate_null_trimming
+  end
+
+  defp prepared_emitter(%{fields_cache: cache} = res, bp_field, parent_type, path) do
+    key = {:emitter, Absinthe.Resolution.Projector.cache_key(path, parent_type.identifier)}
+
+    case Map.fetch(cache, key) do
+      {:ok, emitter} ->
+        {emitter, res}
+
+      :error ->
+        full_type = Type.expand(bp_field.schema_node.type, res.schema)
+        emitter = put_in(bp_field.schema_node.type, full_type)
+        {emitter, %{res | fields_cache: Map.put(cache, key, emitter)}}
+    end
   end
 
   defp maybe_add_non_null_error(errors, value, type, path \\ [])
