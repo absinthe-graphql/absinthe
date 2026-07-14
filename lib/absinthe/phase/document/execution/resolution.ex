@@ -5,6 +5,17 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   #
   # Blueprint results are placed under `blueprint.result.execution`. This is
   # because the results form basically a new tree from the original blueprint.
+  #
+  # The first run of this phase walks the operation and builds the result tree.
+  # Fields that suspend (async, batch, dataloader) leave a
+  # `%Result.Pending{ref: ref}` placeholder in the tree; the suspended
+  # `%Absinthe.Resolution{}` structs are collected in a flat pool under
+  # `execution.pending`. Subsequent runs of this phase iterate only that pool —
+  # the already-built result tree is not re-walked. Results of resumed fields
+  # (which may themselves contain new placeholders) accumulate in
+  # `execution.resolved`, keyed by ref. Once the pool is empty, placeholders
+  # are replaced by their results in a single substitution pass that also
+  # applies non-null propagation along the substituted paths.
 
   alias Absinthe.{Blueprint, Type, Phase}
   alias Blueprint.{Result, Execution}
@@ -62,6 +73,16 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
       }
       |> Map.merge(common)
 
+    exec = do_perform_resolution(exec, operation, res)
+
+    exec = plugins |> run_callbacks(:after_resolution, exec, run_callbacks?)
+
+    maybe_substitute_pending(exec)
+  end
+
+  # First run: expand the operation into the result tree. Suspended fields
+  # leave placeholders in the tree and are collected into the pending pool.
+  defp do_perform_resolution(%{result: %{fields: nil}} = exec, operation, res) do
     {result, res} =
       exec.result
       |> walk_result(operation, operation.schema_node, res, [operation])
@@ -69,9 +90,88 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
     exec = update_persisted_fields(exec, res)
 
-    exec = plugins |> run_callbacks(:after_resolution, exec, run_callbacks?)
+    %{exec | result: result, pending: Enum.reverse(res.pending)}
+  end
 
-    %{exec | result: result}
+  # Subsequent runs: resume only the suspended fields in the pending pool. The
+  # result tree already built in previous runs is left untouched; completed
+  # results are stored by ref for the final substitution pass.
+  defp do_perform_resolution(exec, _operation, res) do
+    {pool, resolved, res} =
+      Enum.reduce(exec.pending, {[], exec.resolved, res}, &resolve_pending/2)
+
+    exec = update_persisted_fields(exec, res)
+
+    %{exec | pending: Enum.reverse(pool, Enum.reverse(res.pending)), resolved: resolved}
+  end
+
+  defp resolve_pending({ref, old_res}, {pool, resolved, res}) do
+    res = update_persisted_fields(old_res, res)
+
+    res
+    |> reduce_resolution
+    |> case do
+      %{state: :resolved} = res ->
+        {result, res} = build_result(res, res.source, res.path)
+        {pool, Map.put(resolved, ref, result), res}
+
+      %{state: :suspended} = suspended_res ->
+        pool = [{ref, %{suspended_res | pending: []}} | pool]
+        {pool, resolved, update_persisted_fields(res, suspended_res)}
+
+      final_res ->
+        raise """
+        Should have halted or suspended middleware
+        Started with: #{inspect(res)}
+        Ended with: #{inspect(final_res)}
+        """
+    end
+  end
+
+  # Once nothing remains suspended, splice the resolved results in over their
+  # placeholders. This is the only walk of the existing tree that re-running
+  # this phase performs, and it happens exactly once per document.
+  defp maybe_substitute_pending(%{pending: [], resolved: resolved} = exec)
+       when map_size(resolved) > 0 do
+    {result, _} = substitute(exec.result, resolved)
+    %{exec | result: result, resolved: %{}}
+  end
+
+  defp maybe_substitute_pending(exec), do: exec
+
+  defp substitute(%Result.Pending{ref: ref}, resolved) do
+    {node, _} = substitute(Map.fetch!(resolved, ref), resolved)
+    {node, true}
+  end
+
+  defp substitute(%Result.Object{fields: fields} = node, resolved) do
+    case substitute_all(fields, resolved) do
+      {_, false} ->
+        {node, false}
+
+      {fields, true} ->
+        {do_propagate_null_trimming(%{node | fields: fields}), true}
+    end
+  end
+
+  defp substitute(%Result.List{values: values} = node, resolved) do
+    case substitute_all(values, resolved) do
+      {_, false} ->
+        {node, false}
+
+      {values, true} ->
+        values = Enum.map(values, &do_propagate_null_trimming/1)
+        {do_propagate_null_trimming(%{node | values: values}), true}
+    end
+  end
+
+  defp substitute(node, _resolved), do: {node, false}
+
+  defp substitute_all(nodes, resolved) do
+    Enum.map_reduce(nodes, false, fn node, changed ->
+      {node, node_changed} = substitute(node, resolved)
+      {node, changed or node_changed}
+    end)
   end
 
   defp run_callbacks(plugins, callback, acc, true) do
@@ -81,17 +181,16 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp run_callbacks(_, _, acc, _), do: acc
 
   @doc """
-  This function walks through any existing results. If no results are found at a
-  given node, it will call the requisite function to expand and build those results
+  This function builds the results under a given node. Any suspended fields
+  encountered leave a `%Result.Pending{}` placeholder and are accumulated on
+  the resolution struct's `:pending` list.
   """
+  # Note: `root_value` must stay on the built object even though this phase no
+  # longer needs it — downstream result phases can consume it (e.g.
+  # Absinthe.Phoenix.Controller.Result returns raw source values for objects
+  # without subselections and merges them for `@put`).
   def walk_result(%{fields: nil} = result, bp_node, _schema_type, res, path) do
     {fields, res} = resolve_fields(bp_node, res, result.root_value, path)
-    {%{result | fields: fields}, res}
-  end
-
-  def walk_result(%{fields: fields} = result, bp_node, schema_type, res, path) do
-    {fields, res} = walk_results(fields, bp_node, schema_type, res, [0 | path], [])
-
     {%{result | fields: fields}, res}
   end
 
@@ -102,11 +201,6 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   def walk_result(%{values: values} = result, bp_node, schema_type, res, path) do
     {values, res} = walk_results(values, bp_node, schema_type, res, [0 | path], [])
     {%{result | values: values}, res}
-  end
-
-  def walk_result(%Absinthe.Resolution{} = old_res, _bp_node, _schema_type, res, _path) do
-    res = update_persisted_fields(old_res, res)
-    do_resolve_field(res, res.source, res.path)
   end
 
   # walk list results
@@ -170,12 +264,57 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp do_resolve_fields([field | fields], res, source, parent_type, path, acc) do
-    field = %{field | parent_type: parent_type}
-    {result, res} = resolve_field(field, res, source, parent_type, [field | path])
+    {result, res} = maybe_fast_resolve(field, res, source, parent_type, [field | path])
     do_resolve_fields(fields, res, source, parent_type, path, [result | acc])
   end
 
   defp do_resolve_fields([], res, _, _, _, acc), do: {:lists.reverse(acc), res}
+
+  # Fast path for the default resolver. A field whose middleware is exactly
+  # `[{MapGet, key}]` cannot error, suspend, or touch anything on the
+  # resolution struct, so building one (and copying it again inside
+  # `MapGet.call/2`) is pure overhead — we just fetch the value and build its
+  # result directly. The fast path only applies when MapGet is the field's
+  # *only* middleware; abstract return types fall through to the regular path
+  # because `resolve_type` callbacks receive the resolution struct.
+  #
+  # NOTE: We plan to generalize this into an opt-in `{:fast, {module, fun,
+  # args}}` middleware spec so that schemas which replace the default (e.g.
+  # with an Ecto-aware getter) keep the fast path. That's a user-facing
+  # feature with docs/validation/naming work attached — see
+  # FAST_MIDDLEWARE_PLAN.md for the design and a validated prototype.
+  defp maybe_fast_resolve(
+         %{schema_node: %{middleware: [{Absinthe.Middleware.MapGet, key}]}} = field,
+         res,
+         source,
+         parent_type,
+         path
+       ) do
+    {emitter, res} = prepared_emitter(res, field, parent_type, path)
+    full_type = emitter.schema_node.type
+
+    case Type.unwrap(full_type) do
+      %struct{} when struct in [Type.Union, Type.Interface] ->
+        resolve_field(field, res, source, parent_type, path)
+
+      _ ->
+        value = Map.get(source, key)
+        errors = maybe_add_non_null_error([], value, full_type)
+
+        value
+        |> to_result(emitter, full_type, res.extensions)
+        |> add_errors(
+          Enum.reverse(errors),
+          &put_result_error_value(&1, &2, emitter, source, path)
+        )
+        |> walk_result(emitter, full_type, res, path)
+        |> propagate_null_trimming
+    end
+  end
+
+  defp maybe_fast_resolve(field, res, source, parent_type, path) do
+    resolve_field(field, res, source, parent_type, path)
+  end
 
   def resolve_field(field, res, source, parent_type, path) do
     res
@@ -192,7 +331,9 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
         build_result(res, source, path)
 
       %{state: :suspended} = res ->
-        {res, res}
+        ref = make_ref()
+        placeholder = %Result.Pending{ref: ref, emitter: res.definition}
+        {placeholder, %{res | pending: [{ref, %{res | pending: []}} | res.pending]}}
 
       final_res ->
         raise """
@@ -203,8 +344,13 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     end
   end
 
-  defp update_persisted_fields(dest, %{acc: acc, context: context, fields_cache: cache}) do
-    %{dest | acc: acc, context: context, fields_cache: cache}
+  defp update_persisted_fields(dest, %{
+         acc: acc,
+         context: context,
+         fields_cache: cache,
+         pending: pending
+       }) do
+    %{dest | acc: acc, context: context, fields_cache: cache, pending: pending}
   end
 
   defp build_resolution_struct(
@@ -259,15 +405,17 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   defp build_result(res, source, path) do
     %{
       value: value,
-      definition: bp_field,
       extensions: extensions,
-      schema: schema,
       errors: errors
     } = res
 
-    full_type = Type.expand(bp_field.schema_node.type, schema)
-
-    bp_field = put_in(bp_field.schema_node.type, full_type)
+    # Every element of a list ends up with the same emitter (the field node
+    # with its type expanded), so we build it once per field and reuse it
+    # instead of rebuilding it for each element. It's never written back to
+    # res.definition, so middleware sees no difference; result nodes carry the
+    # same emitter values as before, just shared.
+    {bp_field, res} = prepared_emitter(res, res.definition, res.parent_type, res.path)
+    full_type = bp_field.schema_node.type
 
     # if there are any errors, the value is always nil
     value =
@@ -283,6 +431,20 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     |> add_errors(Enum.reverse(errors), &put_result_error_value(&1, &2, bp_field, source, path))
     |> walk_result(bp_field, full_type, res, path)
     |> propagate_null_trimming
+  end
+
+  defp prepared_emitter(%{fields_cache: cache} = res, bp_field, parent_type, path) do
+    key = {:emitter, Absinthe.Resolution.Projector.cache_key(path, parent_type.identifier)}
+
+    case Map.fetch(cache, key) do
+      {:ok, emitter} ->
+        {emitter, res}
+
+      :error ->
+        full_type = Type.expand(bp_field.schema_node.type, res.schema)
+        emitter = put_in(bp_field.schema_node.type, full_type)
+        {emitter, %{res | fields_cache: Map.put(cache, key, emitter)}}
+    end
   end
 
   defp maybe_add_non_null_error(errors, value, type, path \\ [])
@@ -312,9 +474,16 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp propagate_null_trimming({%{values: values} = node, res}) do
-    values = Enum.map(values, &do_propagate_null_trimming/1)
-    node = %{node | values: values}
-    {do_propagate_null_trimming(node), res}
+    # Only rebuild the list when something actually needs to be trimmed; in the
+    # common all-good case this avoids re-allocating the values list (and a
+    # copy of the node) just to put back identical elements.
+    if Enum.any?(values, &needs_trimming?/1) do
+      values = Enum.map(values, &do_propagate_null_trimming/1)
+      node = %{node | values: values}
+      {do_propagate_null_trimming(node), res}
+    else
+      {node, res}
+    end
   end
 
   defp propagate_null_trimming({node, res}) do
@@ -336,6 +505,12 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     else
       node
     end
+  end
+
+  # A list element needs the trimming pass if it must be nulled out itself
+  # (a bad child of its own) or if it violates the list's element nullability.
+  defp needs_trimming?(element) do
+    find_bad_child(element) || non_null_list_violation?(element)
   end
 
   defp find_bad_child(%{fields: fields}) do

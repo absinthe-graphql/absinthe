@@ -41,19 +41,24 @@ defmodule Absinthe.Blueprint.Execution do
     result: nil,
     acc: %{},
     context: %{},
-    root_value: %{}
+    root_value: %{},
+    pending: [],
+    resolved: %{}
   ]
 
   @type t :: %__MODULE__{
           validation_errors: [Phase.Error.t()],
           result: nil | Result.Object.t(),
-          acc: acc
+          acc: acc,
+          pending: [{reference, Absinthe.Resolution.t()}],
+          resolved: %{optional(reference) => node_t}
         }
 
   @type node_t ::
           Result.Object
           | Result.List
           | Result.Leaf
+          | Result.Pending
 
   def get(%{execution: %{result: nil} = exec} = bp_root, operation) do
     result = %Result.Object{
