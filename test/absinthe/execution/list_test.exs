@@ -18,6 +18,16 @@ defmodule Absinthe.Execution.ListTest.Schema do
       end
     end
 
+    field :categories_with_nils, list_of(:string) do
+      resolve fn _, _ ->
+        {:ok, ["foo", nil, "baz", nil]}
+      end
+    end
+
+    field :list_of_list_of_numbers_with_nils, list_of(list_of(:integer)) do
+      resolve fn _, _ -> {:ok, [[1, nil, 3], nil, [4]]} end
+    end
+
     field :items, list_of(:item) do
       resolve fn _, _ ->
         items = [
@@ -110,6 +120,28 @@ defmodule Absinthe.Execution.ListTest do
 
   test "should resolve list of numbers" do
     assert {:ok, %{data: %{"numbers" => [1, 2, 3]}}} == Absinthe.run(@query, __MODULE__.Schema)
+  end
+
+  @query """
+  {
+    categoriesWithNils
+  }
+  """
+
+  test "should keep nil elements in a list of nullable strings" do
+    assert {:ok, %{data: %{"categoriesWithNils" => ["foo", nil, "baz", nil]}}} ==
+             Absinthe.run(@query, __MODULE__.Schema)
+  end
+
+  @query """
+  {
+    listOfListOfNumbersWithNils
+  }
+  """
+
+  test "should keep nil elements and nil inner lists in nested nullable lists" do
+    assert {:ok, %{data: %{"listOfListOfNumbersWithNils" => [[1, nil, 3], nil, [4]]}}} ==
+             Absinthe.run(@query, __MODULE__.Schema)
   end
 
   @query """
