@@ -189,7 +189,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   # longer needs it — downstream result phases can consume it (e.g.
   # Absinthe.Phoenix.Controller.Result returns raw source values for objects
   # without subselections and merges them for `@put`).
-  def walk_result(%{fields: nil} = result, bp_node, _schema_type, res, path) do
+  def walk_result(%Result.Object{fields: nil} = result, bp_node, _schema_type, res, path) do
     {fields, res} = resolve_fields(bp_node, res, result.root_value, path)
     {%{result | fields: fields}, res}
   end
@@ -198,19 +198,24 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     {result, res}
   end
 
-  def walk_result(%{values: values} = result, bp_node, schema_type, res, path) do
+  # Compact scalar/enum list: its raw values have no fields to resolve.
+  def walk_result(%Result.LeafList{} = result, _, _, res, _) do
+    {result, res}
+  end
+
+  def walk_result(%Result.List{values: values} = result, bp_node, schema_type, res, path) do
     {values, res} = walk_results(values, bp_node, schema_type, res, [0 | path], [])
     {%{result | values: values}, res}
   end
 
-  # walk list results
+  # Walk list results. The element path is threaded as an argument rather than
+  # written to `res` (which would copy the struct once per element). Only Union
+  # and Interface `resolve_type` callbacks read the path off `res`;
+  # `get_concrete_type` sets it there right before invoking them.
   defp walk_results([value | values], bp_node, inner_type, res, [i | sub_path] = path, acc) do
-    {result, res} = walk_result(value, bp_node, inner_type, %{res | path: path}, path)
+    {result, res} = walk_result(value, bp_node, inner_type, res, path)
     walk_results(values, bp_node, inner_type, res, [i + 1 | sub_path], [result | acc])
   end
-
-  defp walk_results([], _, _, res = %{path: [_ | sub_path]}, _, acc),
-    do: {:lists.reverse(acc), %{res | path: sub_path}}
 
   defp walk_results([], _, _, res, _, acc), do: {:lists.reverse(acc), res}
 
@@ -219,7 +224,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     # that return type could be an interface or union, so let's make it concrete
     parent
     |> get_return_type
-    |> get_concrete_type(source, res)
+    |> get_concrete_type(source, res, path)
     |> case do
       nil ->
         {[], res}
@@ -251,15 +256,15 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   defp get_return_type(type), do: type
 
-  defp get_concrete_type(%Type.Union{} = parent_type, source, res) do
-    Type.Union.resolve_type(parent_type, source, res)
+  defp get_concrete_type(%Type.Union{} = parent_type, source, res, path) do
+    Type.Union.resolve_type(parent_type, source, %{res | path: path})
   end
 
-  defp get_concrete_type(%Type.Interface{} = parent_type, source, res) do
-    Type.Interface.resolve_type(parent_type, source, res)
+  defp get_concrete_type(%Type.Interface{} = parent_type, source, res, path) do
+    Type.Interface.resolve_type(parent_type, source, %{res | path: path})
   end
 
-  defp get_concrete_type(parent_type, _source, _res) do
+  defp get_concrete_type(parent_type, _source, _res, _path) do
     parent_type
   end
 
@@ -462,18 +467,34 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
   end
 
   defp maybe_add_non_null_error([], [_ | _] = values, %Type.List{of_type: type}, path) do
-    values
-    |> Enum.with_index()
-    |> Enum.flat_map(fn {value, index} ->
-      maybe_add_non_null_error([], value, type, [index | path])
-    end)
+    # Only a non-null element type can produce a violation, so plain `[Foo]`
+    # lists skip the walk entirely. The element index is carried through the
+    # recursion for the error path.
+    if contains_non_null?(type) do
+      list_non_null_errors(values, type, path, 0)
+    else
+      []
+    end
   end
 
   defp maybe_add_non_null_error(errors, _, _, _path) do
     errors
   end
 
-  defp propagate_null_trimming({%{values: values} = node, res}) do
+  defp list_non_null_errors([], _type, _path, _index), do: []
+
+  defp list_non_null_errors([value | values], type, path, index) do
+    case maybe_add_non_null_error([], value, type, [index | path]) do
+      [] -> list_non_null_errors(values, type, path, index + 1)
+      errors -> errors ++ list_non_null_errors(values, type, path, index + 1)
+    end
+  end
+
+  defp contains_non_null?(%Type.NonNull{}), do: true
+  defp contains_non_null?(%Type.List{of_type: inner}), do: contains_non_null?(inner)
+  defp contains_non_null?(_), do: false
+
+  defp propagate_null_trimming({%Result.List{values: values} = node, res}) do
     # Only rebuild the list when something actually needs to be trimmed; in the
     # common all-good case this avoids re-allocating the values list (and a
     # copy of the node) just to put back identical elements.
@@ -513,11 +534,11 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     find_bad_child(element) || non_null_list_violation?(element)
   end
 
-  defp find_bad_child(%{fields: fields}) do
+  defp find_bad_child(%Result.Object{fields: fields}) do
     Enum.find(fields, &non_null_violation?/1)
   end
 
-  defp find_bad_child(%{values: values}) do
+  defp find_bad_child(%Result.List{values: values}) do
     Enum.find(values, &non_null_list_violation?/1)
   end
 
@@ -534,7 +555,7 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
     false
   end
 
-  defp non_null_list_violation?(%{values: values}) do
+  defp non_null_list_violation?(%Result.List{values: values}) do
     Enum.find(values, &non_null_list_violation?/1)
   end
 
@@ -615,6 +636,14 @@ defmodule Absinthe.Phase.Document.Execution.Resolution do
 
   defp to_result(root_value, blueprint, %Type.Union{}, extensions) do
     %Result.Object{root_value: root_value, emitter: blueprint, extensions: extensions}
+  end
+
+  # A list of nullable leaf values is kept as one compact node — see
+  # Result.LeafList. Non-null element types don't match this clause and fall
+  # through to the per-element form below, preserving null propagation.
+  defp to_result(root_value, blueprint, %Type.List{of_type: %leaf{}}, extensions)
+       when leaf in [Type.Scalar, Type.Enum] do
+    %Result.LeafList{values: List.wrap(root_value), emitter: blueprint, extensions: extensions}
   end
 
   defp to_result(root_value, blueprint, %Type.List{of_type: inner_type}, extensions) do
