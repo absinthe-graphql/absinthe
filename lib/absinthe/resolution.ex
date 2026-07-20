@@ -92,7 +92,7 @@ defmodule Absinthe.Resolution do
   See `project/2` for details.
   """
   def project(info) do
-    case info.definition.schema_node.type do
+    case Absinthe.Schema.lookup_type(info.schema, info.definition.schema_node.type) do
       %Absinthe.Type.Interface{} ->
         raise need_concrete_type_error()
 
