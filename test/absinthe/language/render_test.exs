@@ -101,6 +101,37 @@ defmodule Absinthe.Language.RenderTest do
       """)
     end
 
+    test "for input objects that exceed the line width" do
+      assert_rendered("""
+      mutation {
+        createThing(
+          input: {
+            name: "Thing"
+            nested: { enabled: false, startingStorage: "100" }
+            ratings: [{ ratedEnergy: "5000", ratedPower: "50000" }, { ratedEnergy: "6000", ratedPower: "60000" }]
+            remoteId: "a fairly long remote identifier"
+          }
+        ) {
+          id
+        }
+      }
+      """)
+    end
+
+    test "for lists that exceed the line width" do
+      assert_rendered("""
+      query {
+        search(
+          filters: [
+            { field: "status", value: "active" }
+            { field: "category", value: "books" }
+            { field: "region", value: "europe" }
+          ]
+        )
+      }
+      """)
+    end
+
     test "for variables" do
       assert_rendered("""
       query ($id: ID, $mult: Int = 6, $list: [Int!]! = [1, 2], $customScalar: CustomScalar!) {

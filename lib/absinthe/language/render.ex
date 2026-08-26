@@ -108,9 +108,19 @@ defmodule Absinthe.Language.Render do
   end
 
   defp render(%Absinthe.Language.ObjectValue{fields: fields}) do
-    fields = fields |> Enum.map(&render(&1)) |> join(", ")
+    fields = fields |> Enum.map(&render(&1)) |> join(break(", "))
 
-    concat(["{ ", fields, " }"])
+    group(
+      glue(
+        nest(
+          glue("{", " ", fields),
+          2,
+          :break
+        ),
+        " ",
+        "}"
+      )
+    )
   end
 
   defp render(%Absinthe.Language.NullValue{}) do
@@ -122,9 +132,19 @@ defmodule Absinthe.Language.Render do
   end
 
   defp render(%Absinthe.Language.ListValue{values: values}) do
-    values = values |> Enum.map(&render(&1)) |> join(", ")
+    values = values |> Enum.map(&render(&1)) |> join(break(", "))
 
-    concat(["[", values, "]"])
+    group(
+      glue(
+        nest(
+          glue("[", "", values),
+          2,
+          :break
+        ),
+        "",
+        "]"
+      )
+    )
   end
 
   defp render(%Absinthe.Language.Fragment{} = fragment) do
