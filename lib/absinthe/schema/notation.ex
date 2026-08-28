@@ -684,10 +684,13 @@ defmodule Absinthe.Schema.Notation do
   end
 
   defp mark_aliases_as_runtime(ast, env) do
-    Macro.prewalk ast, fn
-      {:__aliases__, _, _} = alias -> Macro.expand(alias, %{env | function: {:__absinthe_resolver__, 1}})
-      other -> other
-    end
+    Macro.prewalk(ast, fn
+      {:__aliases__, _, _} = alias ->
+        Macro.expand(alias, %{env | function: {:__absinthe_resolver__, 1}})
+
+      other ->
+        other
+    end)
   end
 
   @placement {:complexity, [under: [:field]]}
