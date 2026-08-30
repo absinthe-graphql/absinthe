@@ -105,6 +105,8 @@ defmodule Absinthe.Mixfile do
       "guides/tutorial/query-arguments.md",
       "guides/tutorial/mutations.md",
       "guides/tutorial/complex-arguments.md",
+      {"guides/tutorial/dataloader.md", filename: "tutorial-dataloader"},
+      {"guides/tutorial/subscriptions.md", filename: "tutorial-subscriptions"},
       "guides/tutorial/conclusion.md",
       "guides/schemas.md",
       "guides/plug-phoenix.md",
