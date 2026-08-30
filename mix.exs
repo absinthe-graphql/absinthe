@@ -19,7 +19,7 @@ defmodule Absinthe.Mixfile do
         main: "overview",
         logo: "logo.png",
         extra_section: "GUIDES",
-        assets: "guides/assets",
+        assets: %{"guides/assets" => "assets"},
         formatters: ["html", "epub"],
         groups_for_modules: groups_for_modules(),
         extras: extras(),
