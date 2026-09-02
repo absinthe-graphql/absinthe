@@ -6,7 +6,12 @@ end
 
 defimpl Absinthe.Blueprint.Draft, for: List do
   def convert(nodes, root) do
-    Enum.map(nodes, &Absinthe.Blueprint.Draft.convert(&1, root))
+    Enum.flat_map(nodes, fn node ->
+      case Absinthe.Blueprint.Draft.convert(node, root) do
+        nil -> []
+        converted -> [converted]
+      end
+    end)
   end
 end
 
