@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.12.0](https://github.com/absinthe-graphql/absinthe/compare/v1.11.0...v1.12.0) (2026-09-02)
+
+
+### Features
+
+* Expose oneOf via schema introspection ([#1438](https://github.com/absinthe-graphql/absinthe/issues/1438)) ([112f051](https://github.com/absinthe-graphql/absinthe/commit/112f05162ad5a70cccab614cbb30052eead2e82d))
+
+
+### Bug Fixes
+
+* allow nulls in nullable enum list defaults ([#1436](https://github.com/absinthe-graphql/absinthe/issues/1436)) ([d4c66fa](https://github.com/absinthe-graphql/absinthe/commit/d4c66faa9e642e4ad2b9b32ff12c0ef9b2a504ff))
+* **compilation:** mark `middleware`, `resolve`, `resolve_type` macro ast as runtime ([#1454](https://github.com/absinthe-graphql/absinthe/issues/1454)) ([86b5158](https://github.com/absinthe-graphql/absinthe/commit/86b515832dab9100d6e704f4ea3770c869414034))
+* ex_doc configuration, image path ([#1456](https://github.com/absinthe-graphql/absinthe/issues/1456)) ([3a4ebb0](https://github.com/absinthe-graphql/absinthe/commit/3a4ebb0ca87a03e96ab22e1609969aff5bf65d1e))
+* Fix oneOf validation failure when used in list ([#1439](https://github.com/absinthe-graphql/absinthe/issues/1439)) ([b902386](https://github.com/absinthe-graphql/absinthe/commit/b9023869a56a822983d90880bfc21092a1a68bbf))
+* wrap long input objects and lists onto multiple lines ([#1455](https://github.com/absinthe-graphql/absinthe/issues/1455)) ([20dacc6](https://github.com/absinthe-graphql/absinthe/commit/20dacc6ca8c0027461f1e1e44595f7c019cfc544))
+
+
+### Performance Improvements
+
+* Avoid rewalking the tree for suspended fields ([#1450](https://github.com/absinthe-graphql/absinthe/issues/1450)) ([de0e411](https://github.com/absinthe-graphql/absinthe/commit/de0e411f3ca4f31ad8cf5e31921c735aa3b0f986))
+
 ## [1.12.0](https://github.com/absinthe-graphql/absinthe/compare/v1.11.0...v1.12.0) (Pending)
 
 ### Features
