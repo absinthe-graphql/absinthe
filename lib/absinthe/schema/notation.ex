@@ -460,7 +460,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro resolve_type(func_ast) do
     __CALLER__
     |> recordable!(:resolve_type, @placement[:resolve_type])
-    |> record_resolve_type!(func_ast)
+    |> record_resolve_type!(mark_aliases_as_runtime(func_ast, __CALLER__))
   end
 
   defp handle_field_attrs(attrs, caller) do
@@ -676,9 +676,21 @@ defmodule Absinthe.Schema.Notation do
     __CALLER__
     |> recordable!(:resolve, @placement[:resolve])
 
+    func_ast = mark_aliases_as_runtime(func_ast, __CALLER__)
+
     quote do
       middleware Absinthe.Resolution, unquote(func_ast)
     end
+  end
+
+  defp mark_aliases_as_runtime(ast, env) do
+    Macro.prewalk(ast, fn
+      {:__aliases__, _, _} = alias ->
+        Macro.expand(alias, %{env | function: {:__absinthe_resolver__, 1}})
+
+      other ->
+        other
+    end)
   end
 
   @placement {:complexity, [under: [:field]]}
@@ -720,7 +732,7 @@ defmodule Absinthe.Schema.Notation do
   defmacro middleware(new_middleware, opts \\ []) do
     __CALLER__
     |> recordable!(:middleware, @placement[:middleware])
-    |> record_middleware!(new_middleware, opts)
+    |> record_middleware!(mark_aliases_as_runtime(new_middleware, __CALLER__), opts)
   end
 
   @placement {:is_type_of, [under: [:object]]}
