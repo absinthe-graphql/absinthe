@@ -14,6 +14,9 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
   @max_ieee_int 9_007_199_254_740_991
   @min_ieee_int -9_007_199_254_740_991
 
+  # The largest integer that still has a finite IEEE 754 double representation.
+  @max_finite_float_int trunc(1.7976931348623157e308)
+
   defp serialize(type, value) do
     TestSchema.__absinthe_type__(type)
     |> Type.Scalar.serialize(value)
@@ -77,6 +80,21 @@ defmodule Absinthe.Type.BuiltIns.ScalarsTest do
     test "cannot be parsed from a binary" do
       assert :error == parse(:float, "")
       assert :error == parse(:float, "0.0")
+    end
+
+    test "cannot be parsed from an integer with no finite float representation" do
+      assert :error == parse(:float, @max_finite_float_int + 1)
+      assert :error == parse(:float, -@max_finite_float_int - 1)
+    end
+
+    test "cannot serialize an integer with no finite float representation" do
+      assert_raise Absinthe.SerializationError, fn ->
+        serialize(:float, @max_finite_float_int + 1)
+      end
+
+      assert_raise Absinthe.SerializationError, fn ->
+        serialize(:float, -@max_finite_float_int - 1)
+      end
     end
   end
 
