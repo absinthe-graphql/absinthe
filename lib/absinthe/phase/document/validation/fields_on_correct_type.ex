@@ -11,13 +11,13 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
   Run the validation.
   """
   @spec run(Blueprint.t(), Keyword.t()) :: Phase.result_t()
-  def run(input, _options \\ []) do
-    result = Blueprint.prewalk(input, &handle_node(&1, input))
+  def run(input, options \\ []) do
+    result = Blueprint.prewalk(input, &handle_node(&1, input, options))
     {:ok, result}
   end
 
-  @spec handle_node(Blueprint.node_t(), Schema.t()) :: Blueprint.node_t()
-  defp handle_node(%Blueprint.Document.Operation{schema_node: nil} = node, _) do
+  @spec handle_node(Blueprint.node_t(), Schema.t(), Absinthe.run_opts()) :: Blueprint.node_t()
+  defp handle_node(%Blueprint.Document.Operation{schema_node: nil} = node, _, _options) do
     error = %Phase.Error{
       phase: __MODULE__,
       message: "Operation \"#{node.type}\" not supported",
@@ -31,7 +31,8 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
 
   defp handle_node(
          %{selections: selections, schema_node: parent_schema_node} = node,
-         %{schema: schema} = input
+         %{schema: schema} = input,
+         options
        )
        when not is_nil(parent_schema_node) do
     possible_parent_types = possible_types(parent_schema_node, schema)
@@ -41,16 +42,18 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
         %Blueprint.Document.Field{schema_node: nil} = field ->
           type = named_type(parent_schema_node, schema)
 
-          field
-          |> flag_invalid(:unknown_field)
-          |> put_error(
+          error =
             error(
               field,
               type.name,
               suggested_type_names(field.name, type, input),
-              suggested_field_names(field.name, type, input)
+              suggested_field_names(field.name, type, input),
+              options
             )
-          )
+
+          field
+          |> flag_invalid(:unknown_field)
+          |> put_error(error)
 
         %Blueprint.Document.Fragment.Spread{errors: []} = spread ->
           fragment = Enum.find(input.fragments, &(&1.name == spread.name))
@@ -59,7 +62,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
           if Enum.any?(possible_child_types, &(&1 in possible_parent_types)) do
             spread
           else
-            spread_error(spread, possible_parent_types, possible_child_types, schema)
+            spread_error(spread, possible_parent_types, possible_child_types, schema, options)
           end
 
         %Blueprint.Document.Fragment.Inline{} = fragment ->
@@ -68,7 +71,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
           if Enum.any?(possible_child_types, &(&1 in possible_parent_types)) do
             fragment
           else
-            spread_error(fragment, possible_parent_types, possible_child_types, schema)
+            spread_error(fragment, possible_parent_types, possible_child_types, schema, options)
           end
 
         other ->
@@ -78,7 +81,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
     %{node | selections: selections}
   end
 
-  defp handle_node(node, _) do
+  defp handle_node(node, _, _options) do
     node
   end
 
@@ -88,7 +91,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
     end
   end
 
-  defp spread_error(spread, parent_types_idents, child_types_idents, schema) do
+  defp spread_error(spread, parent_types_idents, child_types_idents, schema, _options) do
     parent_types = idents_to_names(parent_types_idents, schema)
     child_types = idents_to_names(child_types_idents, schema)
 
@@ -142,12 +145,21 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
   end
 
   # Generate the error for a field
-  @spec error(Blueprint.node_t(), String.t(), [String.t()], [String.t()]) :: Phase.Error.t()
-  defp error(field_node, parent_type_name, type_suggestions, field_suggestions) do
+  @spec error(Blueprint.node_t(), String.t(), [String.t()], [String.t()], Absinthe.run_opts()) ::
+          Phase.Error.t()
+  defp error(field_node, parent_type_name, type_suggestions, field_suggestions, options) do
+    message =
+      error_message(
+        field_node.name,
+        parent_type_name,
+        type_suggestions,
+        field_suggestions,
+        options
+      )
+
     %Phase.Error{
       phase: __MODULE__,
-      message:
-        error_message(field_node.name, parent_type_name, type_suggestions, field_suggestions),
+      message: message,
       locations: [field_node.source_location]
     }
   end
@@ -155,25 +167,32 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
   @doc """
   Generate an error for a field
   """
-  @spec error_message(String.t(), String.t(), [String.t()], [String.t()]) :: String.t()
-  def error_message(field_name, type_name, type_suggestions \\ [], field_suggestions \\ [])
+  @spec error_message(String.t(), String.t(), [String.t()], [String.t()], Absinthe.run_opts()) ::
+          String.t()
+  def error_message(
+        field_name,
+        type_name,
+        type_suggestions \\ [],
+        field_suggestions \\ [],
+        options \\ []
+      )
 
-  def error_message(field_name, type_name, [], []) do
+  def error_message(field_name, type_name, [], [], _options) do
     ~s(Cannot query field "#{field_name}" on type "#{type_name}".)
   end
 
-  def error_message(field_name, type_name, [], field_suggestions) do
-    error_message(field_name, type_name) <>
-      Utils.MessageSuggestions.suggest_message(field_suggestions)
+  def error_message(field_name, type_name, [], field_suggestions, options) do
+    error_message(field_name, type_name, [], [], options) <>
+      Utils.MessageSuggestions.suggest_message(field_suggestions, options)
   end
 
-  def error_message(field_name, type_name, type_suggestions, []) do
-    error_message(field_name, type_name) <>
-      Utils.MessageSuggestions.suggest_fragment_message(type_suggestions)
+  def error_message(field_name, type_name, type_suggestions, [], options) do
+    error_message(field_name, type_name, [], [], options) <>
+      Utils.MessageSuggestions.suggest_fragment_message(type_suggestions, options)
   end
 
-  def error_message(field_name, type_name, type_suggestions, _) do
-    error_message(field_name, type_name, type_suggestions)
+  def error_message(field_name, type_name, type_suggestions, _, options) do
+    error_message(field_name, type_name, type_suggestions, [], options)
   end
 
   defp suggested_type_names(external_field_name, type, blueprint) do
@@ -214,7 +233,7 @@ defmodule Absinthe.Phase.Document.Validation.FieldsOnCorrectType do
 
   defp find_possible_interfaces(field_name, possible_types, schema) do
     possible_types
-    |> types_to_interface_idents
+    |> types_to_interface_idents()
     |> Enum.uniq()
     |> sort_by_implementation_count(possible_types)
     |> Enum.map(&Schema.lookup_type(schema, &1))

@@ -70,6 +70,8 @@ defmodule Absinthe do
   executing an operation.
   * `:max_complexity` -> An integer (or `:infinity`) for the maximum allowed
   complexity for the operation being executed.
+  # `:maximum_number_of_suggestions` -> An integer for the maximum number of suggestions
+  to be used on error messages. 0 can be passed to disable suggestions and avoid schema instrospection.
 
   ## Examples
 
@@ -95,7 +97,8 @@ defmodule Absinthe do
           analyze_complexity: boolean,
           variables: %{optional(String.t()) => any()},
           max_complexity: non_neg_integer | :infinity,
-          pipeline_modifier: pipeline_modifier_fun()
+          pipeline_modifier: pipeline_modifier_fun(),
+          maximum_number_of_suggestions: non_neg_integer() | nil
         ]
 
   @type run_result :: {:ok, result_t} | {:error, String.t()}

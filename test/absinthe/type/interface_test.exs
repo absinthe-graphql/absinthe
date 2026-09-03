@@ -107,6 +107,11 @@ defmodule Absinthe.Type.InterfaceTest do
         ~s(Cannot query field "age" on type "NamedEntity". Did you mean to use an inline fragment on "Person"?),
         run(@graphql, Absinthe.Fixtures.ContactSchema)
       )
+
+      assert_error_message(
+        ~s(Cannot query field "age" on type "NamedEntity".),
+        run(@graphql, Absinthe.Fixtures.ContactSchema, maximum_number_of_suggestions: 0)
+      )
     end
 
     @graphql """
@@ -258,6 +263,11 @@ defmodule Absinthe.Type.InterfaceTest do
     assert_error_message(
       ~s(Cannot query field "cost" on type "Item". Did you mean to use an inline fragment on "ValuedItem"?),
       run(@graphql, InterfaceSchema)
+    )
+
+    assert_error_message(
+      ~s(Cannot query field "cost" on type "Item".),
+      run(@graphql, InterfaceSchema, maximum_number_of_suggestions: 0)
     )
   end
 
