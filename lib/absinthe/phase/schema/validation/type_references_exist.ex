@@ -131,6 +131,10 @@ defmodule Absinthe.Phase.Schema.Validation.TypeReferencesExist do
     name
   end
 
+  defp inner_type(%Absinthe.Blueprint.TypeReference.Identifier{id: id}) do
+    id
+  end
+
   defp unwrapped?(value) when is_binary(value) or is_atom(value), do: {:ok, value}
   defp unwrapped?(%Absinthe.Blueprint.TypeReference.Name{name: name}), do: {:ok, name}
   defp unwrapped?(%Absinthe.Blueprint.TypeReference.Identifier{id: id}), do: {:ok, id}
