@@ -159,10 +159,35 @@ defmodule Absinthe.Lexer do
     ])
     |> post_traverse({:labeled_token, [:float_value]})
 
+  hex_digit = ascii_char([?0..?9, ?A..?F, ?a..?f])
+
+  # A Leading Surrogate is in the range U+D800 to U+DBFF, a Trailing Surrogate in
+  # the range U+DC00 to U+DFFF. Surrogates are not Unicode scalar values, so a
+  # lone `\uXXXX` escape describing one is invalid. A Leading Surrogate followed
+  # by a Trailing Surrogate is a valid JSON-style escape sequence for a single
+  # supplementary code point, and is decoded as such.
+  leading_surrogate_digits =
+    ascii_char([?d, ?D])
+    |> ascii_char([?8..?9, ?a..?b, ?A..?B])
+    |> concat(hex_digit)
+    |> concat(hex_digit)
+
+  trailing_surrogate_digits =
+    ascii_char([?d, ?D])
+    |> ascii_char([?c..?f, ?C..?F])
+    |> concat(hex_digit)
+    |> concat(hex_digit)
+
   # EscapedUnicode :: /[0-9A-Fa-f]{4}/
   escaped_unicode =
-    times(ascii_char([?0..?9, ?A..?F, ?a..?f]), 4)
-    |> post_traverse({:unescape_unicode, []})
+    choice([
+      leading_surrogate_digits
+      |> ignore(string(~S(\u)))
+      |> concat(trailing_surrogate_digits)
+      |> post_traverse({:unescape_unicode_pair, []}),
+      times(hex_digit, 4)
+      |> post_traverse({:unescape_unicode, []})
+    ])
 
   # EscapedCharacter :: one of `"` \ `/` b f n r t
   escaped_character =
@@ -385,9 +410,17 @@ defmodule Absinthe.Lexer do
     encode_code_point(rest, value, context)
   end
 
-  # Surrogates are not Unicode scalar values and cannot be encoded. Reject them
-  # here so that they are reported as a located syntax error rather than flowing
-  # into the parser as an error tuple.
+  defp unescape_unicode_pair(rest, content, context, _loc, _) do
+    {leading, trailing} = content |> Enum.reverse() |> Enum.split(4)
+    leading_value = :erlang.list_to_integer(leading, 16)
+    trailing_value = :erlang.list_to_integer(trailing, 16)
+    value = (leading_value - 0xD800) * 0x400 + (trailing_value - 0xDC00) + 0x10000
+    encode_code_point(rest, value, context)
+  end
+
+  # Values that are not Unicode scalar values (unpaired surrogates) cannot be
+  # encoded. Reject them here so that they are reported as a located syntax
+  # error rather than flowing into the parser as an error tuple.
   defp encode_code_point(rest, value, context) do
     case :unicode.characters_to_binary([value]) do
       binary when is_binary(binary) ->

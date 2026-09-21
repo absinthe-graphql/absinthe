@@ -278,6 +278,32 @@ defmodule Absinthe.Phase.ParseTest do
            ] == bp.execution.validation_errors
   end
 
+  @query ~S"""
+  mutation {
+    item(data: "\ud83d\ude00 \uD83D\uDE00") {
+      id
+      data
+    }
+  }
+  """
+  test "combines surrogate pair escapes into supplementary code points" do
+    assert {:ok, res} = run(@query)
+
+    path = [
+      Access.key!(:definitions),
+      Access.at(0),
+      Access.key!(:selection_set),
+      Access.key!(:selections),
+      Access.at(0),
+      Access.key!(:arguments),
+      Access.at(0),
+      Access.key!(:value),
+      Access.key!(:value)
+    ]
+
+    assert "😀 😀" == get_in(res, path)
+  end
+
   def run(input) do
     with {:ok, %{input: input}} <- Absinthe.Phase.Parse.run(input) do
       {:ok, input}

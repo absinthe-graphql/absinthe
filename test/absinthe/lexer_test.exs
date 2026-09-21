@@ -96,6 +96,23 @@ defmodule Absinthe.LexerTest do
   end
 
   @query ~S"""
+  { foo(bar: "\ud83d\ude00") }
+  """
+  test "document with a surrogate pair escape" do
+    assert {:ok,
+            [
+              {:"{", {1, 1}},
+              {:name, {1, 3}, ~c"foo"},
+              {:"(", {1, 6}},
+              {:name, {1, 7}, ~c"bar"},
+              {:":", {1, 10}},
+              {:string_value, {1, 12}, [?", "😀", ?"]},
+              {:")", {1, 26}},
+              {:"}", {1, 28}}
+            ]} == Absinthe.Lexer.tokenize(@query)
+  end
+
+  @query ~S"""
   { foo(bar: "a\ud800b") }
   """
   test "document with an unpaired leading surrogate escape" do
@@ -107,6 +124,13 @@ defmodule Absinthe.LexerTest do
   """
   test "document with an unpaired trailing surrogate escape" do
     assert {:error, {:invalid_unicode_escape, {1, 14}}} == Absinthe.Lexer.tokenize(@query)
+  end
+
+  @query ~S"""
+  { foo(bar: "\ud83d\u0041") }
+  """
+  test "document with a leading surrogate escape not followed by a trailing surrogate" do
+    assert {:error, {:invalid_unicode_escape, {1, 13}}} == Absinthe.Lexer.tokenize(@query)
   end
 
   @tag timeout: 3_000
