@@ -95,6 +95,20 @@ defmodule Absinthe.LexerTest do
             ]} == Absinthe.Lexer.tokenize(@query)
   end
 
+  @query ~S"""
+  { foo(bar: "a\ud800b") }
+  """
+  test "document with an unpaired leading surrogate escape" do
+    assert {:error, {:invalid_unicode_escape, {1, 14}}} == Absinthe.Lexer.tokenize(@query)
+  end
+
+  @query ~S"""
+  { foo(bar: "a\udc00b") }
+  """
+  test "document with an unpaired trailing surrogate escape" do
+    assert {:error, {:invalid_unicode_escape, {1, 14}}} == Absinthe.Lexer.tokenize(@query)
+  end
+
   @tag timeout: 3_000
   test "long query doesn't take too long" do
     # This tests the performance of long queries. Before optimization work, this

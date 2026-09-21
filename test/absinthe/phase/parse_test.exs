@@ -260,6 +260,24 @@ defmodule Absinthe.Phase.ParseTest do
     assert ~s(\" \\ \/ \b \f \n \r \t ó ó ӹ) == get_in(res, path)
   end
 
+  @graphql ~S"""
+  {
+    item(data: "a\ud800b")
+  }
+  """
+  test "returns a located error for an unpaired surrogate escape" do
+    assert {:error, bp} = Absinthe.Phase.Parse.run(@graphql, jump_phases: false)
+
+    assert [
+             %Absinthe.Phase.Error{
+               extra: %{},
+               locations: [%{column: 16, line: 2}],
+               message: "Invalid Unicode escape sequence",
+               phase: Absinthe.Phase.Parse
+             }
+           ] == bp.execution.validation_errors
+  end
+
   def run(input) do
     with {:ok, %{input: input}} <- Absinthe.Phase.Parse.run(input) do
       {:ok, input}

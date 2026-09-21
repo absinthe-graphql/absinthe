@@ -9,6 +9,10 @@ defmodule Absinthe.Lexer do
   @unicode_bom 0xFEFF
 
   @stopped_at_token_limit ":stopped_at_token_limit"
+  @invalid_unicode_escape ":invalid_unicode_escape"
+
+  # Byte length of a `\uXXXX` escape sequence.
+  @unicode_escape_byte_length 6
 
   # SourceCharacter :: /[\u0009\u000A\u000D\u0020-\uFFFF]/
 
@@ -233,6 +237,7 @@ defmodule Absinthe.Lexer do
           {:ok, [any()]}
           | {:error, binary(), {integer(), non_neg_integer()}}
           | {:error, :exceeded_token_limit}
+          | {:error, {:invalid_unicode_escape, {integer(), non_neg_integer()}}}
   def tokenize(input, options \\ []) do
     lines = String.split(input, ~r/\r?\n/)
 
@@ -241,6 +246,16 @@ defmodule Absinthe.Lexer do
     case do_tokenize(input, tokenize_opts) do
       {:error, @stopped_at_token_limit, _, _, _, _} ->
         {:error, :exceeded_token_limit}
+
+      {:error, @invalid_unicode_escape, _rest, _, {line, line_offset}, byte_offset} ->
+        # The escape sequence has already been consumed by the time it is
+        # rejected, so rewind to report the location of its `\u`.
+        byte_column = byte_offset - line_offset + 1 - @unicode_escape_byte_length
+        {:error, {:invalid_unicode_escape, byte_loc_to_char_loc({line, byte_column}, lines)}}
+
+      {:error, _reason, rest, _, {line, line_offset}, byte_offset} ->
+        byte_column = byte_offset - line_offset + 1
+        {:error, rest, byte_loc_to_char_loc({line, byte_column}, lines)}
 
       {:ok, tokens, "", _, _, _} ->
         tokens = convert_token_columns_from_byte_to_char(tokens, lines)
@@ -367,8 +382,20 @@ defmodule Absinthe.Lexer do
   defp unescape_unicode(rest, content, context, _loc, _) do
     code = content |> Enum.reverse()
     value = :erlang.list_to_integer(code, 16)
-    binary = :unicode.characters_to_binary([value])
-    {rest, [binary], context}
+    encode_code_point(rest, value, context)
+  end
+
+  # Surrogates are not Unicode scalar values and cannot be encoded. Reject them
+  # here so that they are reported as a located syntax error rather than flowing
+  # into the parser as an error tuple.
+  defp encode_code_point(rest, value, context) do
+    case :unicode.characters_to_binary([value]) do
+      binary when is_binary(binary) ->
+        {rest, [binary], context}
+
+      _error_or_incomplete ->
+        {:error, @invalid_unicode_escape}
+    end
   end
 
   @boolean_words ~w(
