@@ -14,7 +14,7 @@ defmodule Absinthe.Blueprint.Input.Null do
   @type t :: %__MODULE__{
           flags: Blueprint.flags_t(),
           schema_node: nil | Absinthe.Type.t(),
-          source_location: Blueprint.SourceLocation.t(),
+          source_location: nil | Blueprint.SourceLocation.t(),
           errors: [Phase.Error.t()]
         }
 end
