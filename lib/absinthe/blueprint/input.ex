@@ -33,7 +33,7 @@ defmodule Absinthe.Blueprint.Input do
     Input.Null
   ]
 
-  @spec parse(any) :: nil | t
+  @spec parse(any) :: nil | t | Input.Field.t()
   def parse(%struct{} = value) when struct in @parse_types do
     value
   end
