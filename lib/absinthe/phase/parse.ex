@@ -51,6 +51,14 @@ defmodule Absinthe.Phase.Parse do
       {:error, :exceeded_token_limit} ->
         {:error, %Phase.Error{message: "Token limit exceeded", phase: __MODULE__}}
 
+      {:error, {:invalid_unicode_escape, {line, column}}} ->
+        {:error,
+         %Phase.Error{
+           message: "Invalid Unicode escape sequence",
+           locations: [%{line: line, column: column}],
+           phase: __MODULE__
+         }}
+
       other ->
         other
     end

@@ -9,6 +9,10 @@ defmodule Absinthe.Lexer do
   @unicode_bom 0xFEFF
 
   @stopped_at_token_limit ":stopped_at_token_limit"
+  @invalid_unicode_escape ":invalid_unicode_escape"
+
+  # Byte length of a `\uXXXX` escape sequence.
+  @unicode_escape_byte_length 6
 
   # SourceCharacter :: /[\u0009\u000A\u000D\u0020-\uFFFF]/
 
@@ -155,10 +159,35 @@ defmodule Absinthe.Lexer do
     ])
     |> post_traverse({:labeled_token, [:float_value]})
 
+  hex_digit = ascii_char([?0..?9, ?A..?F, ?a..?f])
+
+  # A Leading Surrogate is in the range U+D800 to U+DBFF, a Trailing Surrogate in
+  # the range U+DC00 to U+DFFF. Surrogates are not Unicode scalar values, so a
+  # lone `\uXXXX` escape describing one is invalid. A Leading Surrogate followed
+  # by a Trailing Surrogate is a valid JSON-style escape sequence for a single
+  # supplementary code point, and is decoded as such.
+  leading_surrogate_digits =
+    ascii_char([?d, ?D])
+    |> ascii_char([?8..?9, ?a..?b, ?A..?B])
+    |> concat(hex_digit)
+    |> concat(hex_digit)
+
+  trailing_surrogate_digits =
+    ascii_char([?d, ?D])
+    |> ascii_char([?c..?f, ?C..?F])
+    |> concat(hex_digit)
+    |> concat(hex_digit)
+
   # EscapedUnicode :: /[0-9A-Fa-f]{4}/
   escaped_unicode =
-    times(ascii_char([?0..?9, ?A..?F, ?a..?f]), 4)
-    |> post_traverse({:unescape_unicode, []})
+    choice([
+      leading_surrogate_digits
+      |> ignore(string(~S(\u)))
+      |> concat(trailing_surrogate_digits)
+      |> post_traverse({:unescape_unicode_pair, []}),
+      times(hex_digit, 4)
+      |> post_traverse({:unescape_unicode, []})
+    ])
 
   # EscapedCharacter :: one of `"` \ `/` b f n r t
   escaped_character =
@@ -233,6 +262,7 @@ defmodule Absinthe.Lexer do
           {:ok, [any()]}
           | {:error, binary(), {integer(), non_neg_integer()}}
           | {:error, :exceeded_token_limit}
+          | {:error, {:invalid_unicode_escape, {integer(), non_neg_integer()}}}
   def tokenize(input, options \\ []) do
     lines = String.split(input, ~r/\r?\n/)
 
@@ -241,6 +271,16 @@ defmodule Absinthe.Lexer do
     case do_tokenize(input, tokenize_opts) do
       {:error, @stopped_at_token_limit, _, _, _, _} ->
         {:error, :exceeded_token_limit}
+
+      {:error, @invalid_unicode_escape, _rest, _, {line, line_offset}, byte_offset} ->
+        # The escape sequence has already been consumed by the time it is
+        # rejected, so rewind to report the location of its `\u`.
+        byte_column = byte_offset - line_offset + 1 - @unicode_escape_byte_length
+        {:error, {:invalid_unicode_escape, byte_loc_to_char_loc({line, byte_column}, lines)}}
+
+      {:error, _reason, rest, _, {line, line_offset}, byte_offset} ->
+        byte_column = byte_offset - line_offset + 1
+        {:error, rest, byte_loc_to_char_loc({line, byte_column}, lines)}
 
       {:ok, tokens, "", _, _, _} ->
         tokens = convert_token_columns_from_byte_to_char(tokens, lines)
@@ -367,8 +407,28 @@ defmodule Absinthe.Lexer do
   defp unescape_unicode(rest, content, context, _loc, _) do
     code = content |> Enum.reverse()
     value = :erlang.list_to_integer(code, 16)
-    binary = :unicode.characters_to_binary([value])
-    {rest, [binary], context}
+    encode_code_point(rest, value, context)
+  end
+
+  defp unescape_unicode_pair(rest, content, context, _loc, _) do
+    {leading, trailing} = content |> Enum.reverse() |> Enum.split(4)
+    leading_value = :erlang.list_to_integer(leading, 16)
+    trailing_value = :erlang.list_to_integer(trailing, 16)
+    value = (leading_value - 0xD800) * 0x400 + (trailing_value - 0xDC00) + 0x10000
+    encode_code_point(rest, value, context)
+  end
+
+  # Values that are not Unicode scalar values (unpaired surrogates) cannot be
+  # encoded. Reject them here so that they are reported as a located syntax
+  # error rather than flowing into the parser as an error tuple.
+  defp encode_code_point(rest, value, context) do
+    case :unicode.characters_to_binary([value]) do
+      binary when is_binary(binary) ->
+        {rest, [binary], context}
+
+      _error_or_incomplete ->
+        {:error, @invalid_unicode_escape}
+    end
   end
 
   @boolean_words ~w(
