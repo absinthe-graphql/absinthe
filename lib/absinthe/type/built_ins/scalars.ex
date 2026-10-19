@@ -6,6 +6,11 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   @max_int 9_007_199_254_740_991
   @min_int -9_007_199_254_740_991
 
+  # Integers larger than this have no finite IEEE 754 double representation,
+  # so converting them raises ArithmeticError instead of failing as invalid.
+  @max_float 1.7976931348623157e308
+  @min_float -1.7976931348623157e308
+
   scalar :integer, name: "Int" do
     description """
     The `Int` scalar type represents non-fractional signed whole numeric
@@ -46,7 +51,7 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
   end
 
   def serialize_float(n) when is_float(n), do: n
-  def serialize_float(n) when is_integer(n), do: n * 1.0
+  def serialize_float(n) when is_integer(n) and n >= @min_float and n <= @max_float, do: n * 1.0
 
   def serialize_float(n) do
     raise Absinthe.SerializationError, """
@@ -114,7 +119,8 @@ defmodule Absinthe.Type.BuiltIns.Scalars do
     {:ok, value}
   end
 
-  defp parse_float(value) when is_integer(value) do
+  defp parse_float(value)
+       when is_integer(value) and value >= @min_float and value <= @max_float do
     {:ok, value * 1.0}
   end
 
