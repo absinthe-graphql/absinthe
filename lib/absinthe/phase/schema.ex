@@ -214,7 +214,7 @@ defmodule Absinthe.Phase.Schema do
 
     arguments
     |> Map.values()
-    |> Enum.find(&match?(%{name: ^internal_name}, &1))
+    |> Enum.find(fn arg -> arg.name == internal_name or (internal_name && arg.name == name) end)
   end
 
   # Given a name, lookup a schema directive
@@ -238,7 +238,9 @@ defmodule Absinthe.Phase.Schema do
 
     fields
     |> Map.values()
-    |> Enum.find(&match?(%{name: ^internal_name}, &1))
+    |> Enum.find(fn field ->
+      field.name == internal_name or (internal_name && field.name == name)
+    end)
   end
 
   defp find_schema_field(%Type.Field{type: maybe_wrapped_type}, name, schema, adapter) do
