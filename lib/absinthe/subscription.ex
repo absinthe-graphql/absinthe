@@ -154,13 +154,17 @@ defmodule Absinthe.Subscription do
       source: doc.source
     }
 
-    pdict_add_fields(doc_id, field_keys)
+    if pdict_holder_count(doc_id) == 0 do
+      pdict_add_fields(doc_id, field_keys)
 
-    for field_key <- field_keys do
-      {:ok, _} = Registry.register(registry, field_key, doc_id)
+      for field_key <- field_keys do
+        {:ok, _} = Registry.register(registry, field_key, doc_id)
+      end
+
+      {:ok, _} = Registry.register(registry, doc_id, doc_value)
     end
 
-    {:ok, _} = Registry.register(registry, doc_id, doc_value)
+    pdict_add_holder(doc_id)
   end
 
   defp pdict_fields(doc_id) do
@@ -175,19 +179,40 @@ defmodule Absinthe.Subscription do
     Process.delete({__MODULE__, doc_id})
   end
 
+  # Reference count of how many times this process holds the subscription.
+  # A second `subscribe/4` for an already-held `doc_id` (e.g. the same
+  # document pushed twice on one channel when `config` sets `context_id`)
+  # must not add duplicate registry entries, and a single `unsubscribe/2`
+  # must not tear down the still-held subscription.
+  defp pdict_holder_count(doc_id) do
+    Process.get({__MODULE__, :holders, doc_id}, 0)
+  end
+
+  defp pdict_add_holder(doc_id) do
+    Process.put({__MODULE__, :holders, doc_id}, pdict_holder_count(doc_id) + 1)
+  end
+
+  defp pdict_drop_holder(doc_id) do
+    case pdict_holder_count(doc_id) do
+      count when count <= 1 -> Process.delete({__MODULE__, :holders, doc_id})
+      count -> Process.put({__MODULE__, :holders, doc_id}, count - 1)
+    end
+  end
+
   @doc false
   def unsubscribe(pubsub, doc_id) do
     registry = pubsub |> registry_name
 
-    if Process.whereis(registry) do
+    if Process.whereis(registry) && pdict_holder_count(doc_id) <= 1 do
       for field_key <- pdict_fields(doc_id) do
         Registry.unregister_match(registry, field_key, doc_id)
       end
 
       Registry.unregister(registry, doc_id)
+      pdict_delete_fields(doc_id)
     end
 
-    pdict_delete_fields(doc_id)
+    pdict_drop_holder(doc_id)
     :ok
   end
 

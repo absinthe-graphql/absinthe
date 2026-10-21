@@ -349,6 +349,34 @@ defmodule Absinthe.Execution.SubscriptionTest do
     assert :ok = Absinthe.Subscription.unsubscribe(pubsub, doc_id)
   end
 
+  test "subscribing twice with the same doc_id registers once and unsubscribes symmetrically" do
+    # Dedicated registry so the entry counts are exact.
+    pubsub = DedupCountTestPubSub
+    registry = Absinthe.Subscription.registry_name(pubsub)
+    {:ok, _} = Registry.start_link(keys: :duplicate, name: registry, partitions: 1)
+
+    doc_id = "dedup_doc_id_#{System.unique_integer([:positive])}"
+    field_key = "dedup_field_key"
+    doc = %{initial_phases: [], source: "subscription { thing }"}
+
+    Absinthe.Subscription.subscribe(pubsub, field_key, doc_id, doc)
+    Absinthe.Subscription.subscribe(pubsub, field_key, doc_id, doc)
+
+    assert length(Registry.lookup(registry, doc_id)) == 1
+    assert length(Registry.lookup(registry, field_key)) == 1
+
+    # The first unsubscribe must not tear down the still-held subscription.
+    Absinthe.Subscription.unsubscribe(pubsub, doc_id)
+
+    assert length(Registry.lookup(registry, doc_id)) == 1
+    assert length(Registry.lookup(registry, field_key)) == 1
+
+    Absinthe.Subscription.unsubscribe(pubsub, doc_id)
+
+    assert Registry.lookup(registry, doc_id) == []
+    assert Registry.lookup(registry, field_key) == []
+  end
+
   test "can unsubscribe from duplicate subscriptions individually" do
     client_id = "abc"
 
