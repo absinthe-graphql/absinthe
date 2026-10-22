@@ -20,6 +20,10 @@ defmodule Absinthe.Integration.Execution.SerializationTest do
       field :bad_string, :string do
         resolve fn _, _, _ -> {:ok, %{}} end
       end
+
+      field :bad_string_list, list_of(:string) do
+        resolve fn _, _, _ -> {:ok, ["ok", %{}]} end
+      end
     end
   end
 
@@ -54,6 +58,15 @@ defmodule Absinthe.Integration.Execution.SerializationTest do
   query { badString }
   """
   test "returning a type that can't `to_string` for a string raises" do
+    assert_raise(Absinthe.SerializationError, fn ->
+      Absinthe.run(@query, Schema)
+    end)
+  end
+
+  @query """
+  query { badStringList }
+  """
+  test "returning a type that can't `to_string` inside a list of strings raises" do
     assert_raise(Absinthe.SerializationError, fn ->
       Absinthe.run(@query, Schema)
     end)
