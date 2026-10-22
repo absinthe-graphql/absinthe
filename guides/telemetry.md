@@ -7,6 +7,12 @@ handler function to any of the following event names:
 
 - `[:absinthe, :execute, :operation, :start]` when the operation starts
 - `[:absinthe, :execute, :operation, :stop]` when the operation finishes
+- `[:absinthe, :execute, :operation, :exception]` when any phase of the document
+  pipeline raises, throws, or exits after the operation has started (for example,
+  a resolver that raises). The metadata includes `:kind`, `:reason`, and
+  `:stacktrace` in addition to the start metadata. The exception is re-raised
+  after the event is emitted, so existing error-handling code is not affected.
+  When this event fires, `:stop` is **not** emitted for the same operation.
 - `[:absinthe, :subscription, :publish, :start]` when a subscription starts
 - `[:absinthe, :subscription, :publish, :stop]` when a subscription finishes
 - `[:absinthe, :resolve, :field, :start]` when field resolution starts
