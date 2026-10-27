@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.12.1](https://github.com/absinthe-graphql/absinthe/compare/v1.12.0...v1.12.1) (2026-10-27)
+
+
+### Bug Fixes
+
+* handle Unicode surrogate escapes in string values ([#1460](https://github.com/absinthe-graphql/absinthe/issues/1460)) ([74af95b](https://github.com/absinthe-graphql/absinthe/commit/74af95b7fd74f507ab005fce677cb7e46f77ee86))
+* reject integers with no finite float representation ([#1457](https://github.com/absinthe-graphql/absinthe/issues/1457)) ([68486bc](https://github.com/absinthe-graphql/absinthe/commit/68486bc958ddac2d9a63525fab7855ae6670d840))
+
 ## [1.12.0](https://github.com/absinthe-graphql/absinthe/compare/v1.11.0...v1.12.0) (2026-09-02)
 
 
