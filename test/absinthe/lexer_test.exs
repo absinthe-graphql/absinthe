@@ -82,6 +82,7 @@ defmodule Absinthe.LexerTest do
   test "document with emojis" do
     assert {:ok,
             [
+              {:comment, {1, 1}, "# A comment with a 😕 emoji."},
               {:block_string_value, {2, 1}, ~c"\"\"\"\nA block quote with a 👍 emoji.\n\"\"\""},
               {:"{", {5, 1}},
               {:name, {6, 3}, ~c"foo"},

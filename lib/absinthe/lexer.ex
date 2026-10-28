@@ -59,7 +59,6 @@ defmodule Absinthe.Lexer do
   #   - UnicodeBOM
   #   - WhiteSpace
   #   - LineTerminator
-  #   - Comment
   #   - Comma
   #   - Ampersand
   ignored =
@@ -67,7 +66,6 @@ defmodule Absinthe.Lexer do
       unicode_bom,
       whitespace,
       line_terminator,
-      comment,
       comma,
       ampersand
     ])
@@ -392,6 +390,7 @@ defmodule Absinthe.Lexer do
     repeat(
       choice([
         ignore(ignored),
+        post_traverse(comment, {:comment_token, []}),
         punctuator,
         block_string_value,
         string_value,
@@ -540,6 +539,11 @@ defmodule Absinthe.Lexer do
     token_atom = value |> List.to_atom()
 
     {rest, [{token_atom, line_and_column(loc, byte_offset, length(value))}], context}
+  end
+
+  defp comment_token(rest, chars, context, loc, byte_offset) do
+    value = chars |> Enum.reverse() |> List.to_string()
+    {rest, [{:comment, line_and_column(loc, byte_offset, byte_size(value)), value}], context}
   end
 
   def line_and_column({line, line_offset}, byte_offset, column_correction) do
