@@ -57,6 +57,7 @@ defmodule Absinthe.Blueprint.Execution do
   @type node_t ::
           Result.Object
           | Result.List
+          | Result.LeafList
           | Result.Leaf
           | Result.Pending
 
