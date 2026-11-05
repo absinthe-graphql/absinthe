@@ -24,6 +24,9 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
      Default: [`Jason`](https://hexdocs.pm/jason/)
   * `--pretty` - Whether to pretty-print.
      Default: `false`
+  * `--include-deprecated` - Whether to include deprecated fields, enum values, arguments and input fields.
+     Default: Deprecated fields and enum values are included; deprecated arguments and input fields
+     follow the `:include_deprecated` [configuration](introspection.html#configuration) for `:absinthe`
 
   ## Examples
 
@@ -43,6 +46,10 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
 
       mix absinthe.schema.json --schema MySchema --json-codec MyCodec
 
+  Write to default path `#{@default_filename}` using the `MySchema` schema, including everything deprecated:
+
+      mix absinthe.schema.json --schema MySchema --include-deprecated
+
 
   ## Custom Codecs
 
@@ -59,13 +66,18 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   defmodule Options do
     @moduledoc false
 
-    defstruct filename: nil, schema: nil, json_codec: nil, pretty: false
+    defstruct filename: nil,
+              schema: nil,
+              json_codec: nil,
+              pretty: false,
+              include_deprecated: nil
 
     @type t() :: %__MODULE__{
             filename: String.t(),
             schema: module(),
             json_codec: module(),
-            pretty: boolean()
+            pretty: boolean(),
+            include_deprecated: boolean() | nil
           }
   end
 
@@ -95,25 +107,46 @@ defmodule Mix.Tasks.Absinthe.Schema.Json do
   def generate_schema(%Options{
         pretty: pretty,
         schema: schema,
-        json_codec: json_codec
+        json_codec: json_codec,
+        include_deprecated: include_deprecated
       }) do
-    with {:ok, result} <- Absinthe.Schema.introspect(schema) do
+    with {:ok, result} <-
+           Absinthe.Schema.introspect(schema, variables: variables(include_deprecated)) do
       content = json_codec.encode!(result, pretty: pretty)
       {:ok, content}
     end
   end
 
+  defp variables(nil), do: %{}
+
+  defp variables(include_deprecated) do
+    %{
+      "includeDeprecatedFields" => include_deprecated,
+      "includeDeprecatedEnumValues" => include_deprecated,
+      "includeDeprecatedInputValues" => include_deprecated
+    }
+  end
+
   @doc false
   @spec parse_options([String.t()]) :: Options.t()
   def parse_options(argv) do
-    parse_options = [strict: [schema: :string, json_codec: :string, pretty: :boolean]]
+    parse_options = [
+      strict: [
+        schema: :string,
+        json_codec: :string,
+        pretty: :boolean,
+        include_deprecated: :boolean
+      ]
+    ]
+
     {opts, args, _} = OptionParser.parse(argv, parse_options)
 
     %Options{
       filename: args |> List.first() || @default_filename,
       schema: find_schema(opts),
       json_codec: json_codec_as_atom(opts),
-      pretty: Keyword.get(opts, :pretty, false)
+      pretty: Keyword.get(opts, :pretty, false),
+      include_deprecated: Keyword.get(opts, :include_deprecated)
     }
   end
 
