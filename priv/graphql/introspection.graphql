@@ -1,4 +1,4 @@
-query IntrospectionQuery {
+query IntrospectionQuery($includeDeprecatedFields: Boolean = true, $includeDeprecatedEnumValues: Boolean = true, $includeDeprecatedInputValues: Boolean) {
   __schema {
     description
     queryType {
@@ -18,7 +18,7 @@ query IntrospectionQuery {
       description
       locations
       isRepeatable
-      args {
+      args(includeDeprecated: $includeDeprecatedInputValues) {
         ...InputValue
       }
     }
@@ -30,10 +30,10 @@ fragment FullType on __Type {
   name
   description
   isOneOf
-  fields(includeDeprecated: true) {
+  fields(includeDeprecated: $includeDeprecatedFields) {
     name
     description
-    args {
+    args(includeDeprecated: $includeDeprecatedInputValues) {
       ...InputValue
     }
     type {
@@ -42,13 +42,13 @@ fragment FullType on __Type {
     isDeprecated
     deprecationReason
   }
-  inputFields {
+  inputFields(includeDeprecated: $includeDeprecatedInputValues) {
     ...InputValue
   }
   interfaces {
     ...TypeRef
   }
-  enumValues(includeDeprecated: true) {
+  enumValues(includeDeprecated: $includeDeprecatedEnumValues) {
     name
     description
     isDeprecated
@@ -66,6 +66,8 @@ fragment InputValue on __InputValue {
     ...TypeRef
   }
   defaultValue
+  isDeprecated
+  deprecationReason
 }
 
 fragment TypeRef on __Type {
