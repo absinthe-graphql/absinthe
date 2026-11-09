@@ -20,9 +20,21 @@ defmodule Absinthe.Pipeline do
 
   @type t :: [phase_config_t | [phase_config_t]]
 
+  @typedoc """
+  The reason a pipeline run halted: the `reason` from the `{:error, reason}` the
+  halting phase returned (see `t:Absinthe.Phase.result_t/0`), passed through unchanged.
+
+  Absinthe's own document phases (parsing, validation, complexity) return the
+  `Absinthe.Blueprint` itself, carrying its `validation_errors`, when the pipeline
+  is built with `jump_phases: false`. A run that reaches a phase returning an
+  unrecognised value halts with a message string, and other phases may return any
+  term (for example `{:http_method, String.t()}` from `absinthe_plug`).
+  """
+  @type error_reason_t :: any
+
   @spec run(data_t, t) ::
           {:ok, data_t, [Phase.t()]}
-          | {:error, String.t() | {:http_method, String.t()}, [Phase.t()]}
+          | {:error, error_reason_t, [Phase.t()]}
   def run(input, pipeline) do
     pipeline
     |> List.flatten()
@@ -398,7 +410,7 @@ defmodule Absinthe.Pipeline do
 
   @spec run_phase(t, data_t, [Phase.t()]) ::
           {:ok, data_t, [Phase.t()]}
-          | {:error, String.t() | {:http_method, String.t()}, [Phase.t()]}
+          | {:error, error_reason_t, [Phase.t()]}
   def run_phase(pipeline, input, done \\ [])
 
   def run_phase([], input, done) do
