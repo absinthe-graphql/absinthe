@@ -31,6 +31,16 @@ defmodule Absinthe.PipelineTest do
               ]} =
                Pipeline.run(@query, pipeline)
     end
+
+    test "halts with the blueprint as the error reason when jump_phases is false" do
+      pipeline =
+        Pipeline.for_document(Schema, jump_phases: false)
+        |> Pipeline.upto(Phase.Document.Validation.Result)
+
+      assert {:error, %Blueprint{execution: %{validation_errors: [_ | _]}},
+              [Phase.Document.Validation.Result | _]} =
+               Pipeline.run("{ noFoo }", pipeline)
+    end
   end
 
   describe ".run handles pipelines that exclude Execution and Subscription phases" do
