@@ -45,6 +45,10 @@ defmodule Absinthe.Blueprint.TypeReference do
     name
   end
 
+  def name(%__MODULE__.Identifier{id: id}) do
+    name(id)
+  end
+
   def name(name) do
     name |> to_string() |> String.capitalize()
   end

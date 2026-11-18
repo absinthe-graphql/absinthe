@@ -54,7 +54,7 @@ defmodule Absinthe.Language.ObjectTypeDefinitionTest do
 
       assert %Blueprint.Schema.ObjectTypeDefinition{
                name: "Person",
-               interfaces: [:entity],
+               interfaces: [%Blueprint.TypeReference.Identifier{id: :entity}],
                interface_blueprints: [%Blueprint.TypeReference.Name{name: "Entity"}]
              } = rep
     end
@@ -72,7 +72,7 @@ defmodule Absinthe.Language.ObjectTypeDefinitionTest do
 
       assert %Blueprint.Schema.ObjectTypeDefinition{
                name: "Person",
-               interfaces: [:entity],
+               interfaces: [%Blueprint.TypeReference.Identifier{id: :entity}],
                interface_blueprints: [%Blueprint.TypeReference.Name{name: "Entity"}],
                directives: [%{name: "description"}]
              } = rep

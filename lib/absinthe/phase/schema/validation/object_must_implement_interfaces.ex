@@ -36,7 +36,7 @@ defmodule Absinthe.Phase.Schema.Validation.ObjectMustImplementInterfaces do
   end
 
   defp validate_objects(%struct{} = object, ifaces, types) when struct in @interface_types do
-    Enum.reduce(object.interfaces, object, fn ident, object ->
+    Enum.reduce(object.interfaces, object, fn %{id: ident}, object ->
       case Map.fetch(ifaces, ident) do
         {:ok, iface} -> validate_object(object, iface, types)
         _ -> object
@@ -162,6 +162,7 @@ defmodule Absinthe.Phase.Schema.Validation.ObjectMustImplementInterfaces do
          types
        ) do
     %{interfaces: field_type_interfaces} = Map.get(types, field_type)
+    field_type_interfaces = Enum.map(field_type_interfaces, & &1.id)
     (interface_ident in field_type_interfaces && :ok) || {:error, field_ident}
   end
 
@@ -197,6 +198,15 @@ defmodule Absinthe.Phase.Schema.Validation.ObjectMustImplementInterfaces do
   end
 
   defp check_covariant(
+         %Blueprint.TypeReference.Identifier{id: id},
+         %Blueprint.TypeReference.Identifier{id: id},
+         _field_ident,
+         _types
+       ) do
+    :ok
+  end
+
+  defp check_covariant(
          %Blueprint.TypeReference.Name{name: iface_name},
          %Blueprint.TypeReference.Name{name: type_name},
          field_ident,
@@ -206,6 +216,15 @@ defmodule Absinthe.Phase.Schema.Validation.ObjectMustImplementInterfaces do
     {_, type} = Enum.find(types, fn {_, %{name: name}} -> name == type_name end)
 
     check_covariant(itype, type, field_ident, types)
+  end
+
+  defp check_covariant(
+         %Blueprint.TypeReference.Identifier{id: iface_identifier},
+         %Blueprint.TypeReference.Identifier{id: type_identifier},
+         field_ident,
+         types
+       ) do
+    check_covariant(iface_identifier, type_identifier, field_ident, types)
   end
 
   defp check_covariant(nil, _, field_ident, _), do: {:error, field_ident}
