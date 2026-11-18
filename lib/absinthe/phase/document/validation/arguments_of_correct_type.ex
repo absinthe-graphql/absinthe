@@ -11,26 +11,30 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
   Run this validation.
   """
   @spec run(Blueprint.t(), Keyword.t()) :: Phase.result_t()
-  def run(input, _options \\ []) do
-    result = Blueprint.prewalk(input, &handle_node(&1, input.schema))
+  def run(input, options \\ []) do
+    result = Blueprint.prewalk(input, &handle_node(&1, input.schema, options))
 
     {:ok, result}
   end
 
   # Check arguments, objects, fields, and lists
-  @spec handle_node(Blueprint.node_t(), Schema.t()) :: Blueprint.node_t()
+  @spec handle_node(Blueprint.node_t(), Schema.t(), Absinthe.run_opts()) :: Blueprint.node_t()
   # handled by Phase.Document.Validation.KnownArgumentNames
-  defp handle_node(%Blueprint.Input.Argument{schema_node: nil} = node, _schema) do
+  defp handle_node(%Blueprint.Input.Argument{schema_node: nil} = node, _schema, _options) do
     {:halt, node}
   end
 
   # handled by Phase.Document.Validation.ProvidedNonNullArguments
-  defp handle_node(%Blueprint.Input.Argument{input_value: %{normalized: nil}} = node, _schema) do
+  defp handle_node(
+         %Blueprint.Input.Argument{input_value: %{normalized: nil}} = node,
+         _schema,
+         _options
+       ) do
     {:halt, node}
   end
 
-  defp handle_node(%Blueprint.Input.Argument{flags: %{invalid: _}} = node, schema) do
-    descendant_errors = collect_child_errors(node.input_value, schema)
+  defp handle_node(%Blueprint.Input.Argument{flags: %{invalid: _}} = node, schema, options) do
+    descendant_errors = collect_child_errors(node.input_value, schema, options)
 
     message =
       error_message(
@@ -46,17 +50,17 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
     {:halt, node}
   end
 
-  defp handle_node(node, _) do
+  defp handle_node(node, _, _options) do
     node
   end
 
-  defp collect_child_errors(%Blueprint.Input.List{} = node, schema) do
+  defp collect_child_errors(%Blueprint.Input.List{} = node, schema, options) do
     node.items
     |> Enum.map(& &1.normalized)
     |> Enum.with_index()
     |> Enum.flat_map(fn
       {%{schema_node: nil} = child, _} ->
-        collect_child_errors(child, schema)
+        collect_child_errors(child, schema, options)
 
       {%{flags: %{invalid: invalid_flag}} = child, idx} ->
         child_type_name =
@@ -73,15 +77,15 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
             child_inspected_value,
             custom_error(invalid_flag)
           )
-          | collect_child_errors(child, schema)
+          | collect_child_errors(child, schema, options)
         ]
 
       {child, _} ->
-        collect_child_errors(child, schema)
+        collect_child_errors(child, schema, options)
     end)
   end
 
-  defp collect_child_errors(%Blueprint.Input.Object{} = node, schema) do
+  defp collect_child_errors(%Blueprint.Input.Object{} = node, schema, options) do
     node.fields
     |> Enum.flat_map(fn
       %{flags: %{invalid: _}, schema_node: nil} = child ->
@@ -93,7 +97,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
             _ -> suggested_field_names(node.schema_node, child.name)
           end
 
-        [unknown_field_error_message(child.name, field_suggestions)]
+        [unknown_field_error_message(child.name, field_suggestions, options)]
 
       %{flags: %{invalid: invalid_flag}} = child ->
         child_type_name =
@@ -104,7 +108,7 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
           case child.schema_node do
             %Type.Scalar{} -> []
             %Type.Enum{} -> []
-            _ -> collect_child_errors(child.input_value, schema)
+            _ -> collect_child_errors(child.input_value, schema, options)
           end
 
         child_inspected_value = Blueprint.Input.inspect(child.input_value)
@@ -120,22 +124,23 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
         ]
 
       child ->
-        collect_child_errors(child.input_value.normalized, schema)
+        collect_child_errors(child.input_value.normalized, schema, options)
     end)
   end
 
   defp collect_child_errors(
          %Blueprint.Input.Value{normalized: %{flags: %{invalid: {_, reason}}} = norm},
-         schema
+         schema,
+         options
        ) do
-    [reason | collect_child_errors(norm, schema)]
+    [reason | collect_child_errors(norm, schema, options)]
   end
 
-  defp collect_child_errors(%Blueprint.Input.Value{normalized: norm}, schema) do
-    collect_child_errors(norm, schema)
+  defp collect_child_errors(%Blueprint.Input.Value{normalized: norm}, schema, options) do
+    collect_child_errors(norm, schema, options)
   end
 
-  defp collect_child_errors(_node, _) do
+  defp collect_child_errors(_node, _, _options) do
     []
   end
 
@@ -179,15 +184,15 @@ defmodule Absinthe.Phase.Document.Validation.ArgumentsOfCorrectType do
       expected_type_error_message(expected_type_name, inspected_value, custom_error)
   end
 
-  def unknown_field_error_message(field_name, suggestions \\ [])
+  def unknown_field_error_message(field_name, suggestions \\ [], options \\ [])
 
-  def unknown_field_error_message(field_name, []) do
+  def unknown_field_error_message(field_name, [], _options) do
     ~s(In field "#{field_name}": Unknown field.)
   end
 
-  def unknown_field_error_message(field_name, suggestions) do
+  def unknown_field_error_message(field_name, suggestions, options) do
     ~s(In field "#{field_name}": Unknown field.) <>
-      Utils.MessageSuggestions.suggest_message(suggestions)
+      Utils.MessageSuggestions.suggest_message(suggestions, options)
   end
 
   defp expected_type_error_message(expected_type_name, inspected_value, nil) do

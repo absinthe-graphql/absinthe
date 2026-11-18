@@ -19,7 +19,7 @@ defmodule Absinthe.Phase.Document.Validation.ScalarLeafsTest do
   defp missing_obj_subselection(node_name, type_name, line) do
     bad_value(
       Blueprint.Document.Field,
-      @phase.required_subselection_message(node_name, type_name),
+      @phase.required_subselection_message(node_name, type_name, []),
       line,
       name: node_name
     )
