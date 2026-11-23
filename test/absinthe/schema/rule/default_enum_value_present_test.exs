@@ -242,6 +242,48 @@ defmodule Absinthe.Schema.Rule.DefaultEnumValuePresentTest do
 
       assert Code.eval_string(schema)
     end
+
+    test "passes when the default_value is in an enum defined with the values shorthand" do
+      schema = """
+      defmodule ShorthandColorSchema do
+        use Absinthe.Schema
+
+        query do
+          field :info, :channel do
+            arg :channel, :channel, default_value: :red
+            resolve fn %{channel: channel}, _ -> {:ok, channel} end
+          end
+        end
+
+        enum :channel, values: [:red, :green]
+      end
+      """
+
+      assert Code.eval_string(schema)
+    end
+
+    test "is enforced when the default_value is not in an enum defined with the values shorthand" do
+      schema = """
+      defmodule BadShorthandColorSchema do
+        use Absinthe.Schema
+
+        query do
+          field :info, :channel do
+            arg :channel, :channel, default_value: :other
+            resolve fn %{channel: channel}, _ -> {:ok, channel} end
+          end
+        end
+
+        enum :channel, values: [:red, :green]
+      end
+      """
+
+      error = ~r/The default_value for an enum must be present in the enum values/
+
+      assert_raise(Absinthe.Schema.Error, error, fn ->
+        Code.eval_string(schema)
+      end)
+    end
   end
 
   defp input_value(attrs) do
