@@ -208,6 +208,14 @@ defmodule Absinthe.Execution.SubscriptionTest do
         end
       end
 
+      field :task_assigned, :string do
+        config fn _, %{context: %{user_id: user_id, context_id: context_id}} ->
+          {:ok, topic: user_id, context_id: context_id}
+        end
+
+        resolve fn task, _, _ -> {:ok, task} end
+      end
+
       field :relies_on_document, :string do
         config fn _, %{document: %Absinthe.Blueprint{} = document} ->
           %{type: :subscription, name: op_name} = Absinthe.Blueprint.current_operation(document)
@@ -711,6 +719,47 @@ defmodule Absinthe.Execution.SubscriptionTest do
                run_subscription(@query, Schema, context: %{context_id: "not-logged-in"})
 
       assert doc1 != doc2
+    end
+
+    @query """
+    subscription {
+      taskAssigned
+    }
+    """
+    test "subscriptions with the same context_id and source document but different topics have different subscription_ids" do
+      assert {:ok, %{"subscribed" => doc1}} =
+               run_subscription(@query, Schema, context: %{context_id: "global", user_id: "a"})
+
+      assert {:ok, %{"subscribed" => doc2}} =
+               run_subscription(@query, Schema, context: %{context_id: "global", user_id: "b"})
+
+      assert doc1 != doc2
+    end
+
+    test "subscriptions with the same context_id, source document and topic have the same subscription_id" do
+      assert {:ok, %{"subscribed" => doc1}} =
+               run_subscription(@query, Schema, context: %{context_id: "global", user_id: "a"})
+
+      assert {:ok, %{"subscribed" => doc2}} =
+               run_subscription(@query, Schema, context: %{context_id: "global", user_id: "a"})
+
+      assert doc1 == doc2
+    end
+
+    test "an event published to one topic is not delivered to another topic sharing the context_id" do
+      assert {:ok, %{"subscribed" => doc_a}} =
+               run_subscription(@query, Schema, context: %{context_id: "global", user_id: "a"})
+
+      assert {:ok, %{"subscribed" => doc_b}} =
+               run_subscription(@query, Schema, context: %{context_id: "global", user_id: "b"})
+
+      Absinthe.Subscription.publish(PubSub, "task for a", task_assigned: "a")
+
+      assert_receive(
+        {:broadcast, %{topic: ^doc_a, result: %{data: %{"taskAssigned" => "task for a"}}}}
+      )
+
+      refute_receive({:broadcast, %{topic: ^doc_b}})
     end
 
     test "subscriptions with same context_id but different source document have different subscription_ids" do
