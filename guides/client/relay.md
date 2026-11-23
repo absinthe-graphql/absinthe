@@ -308,7 +308,7 @@ server.
 ## Connections
 
 One of the more popular features of Relay is the rich pagination support provided by its
-connections. [This medium post](https://dev-blog.apollodata.com/explaining-graphql-connections-c48b7c3d6976)
+connections. [This blog post](https://www.apollographql.com/blog/explaining-graphql-connections)
 has a good explanation of the full feature set and nomenclature.
 
 For example, you could define a connection for paginating `:location` objects with:
