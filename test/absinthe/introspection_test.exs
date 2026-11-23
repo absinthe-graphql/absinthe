@@ -679,6 +679,65 @@ defmodule Absinthe.IntrospectionTest do
       )
     end
 
+    defmodule MapScalarDefaultSchema do
+      use Absinthe.Schema
+
+      scalar :map, open_ended: true do
+        serialize & &1
+        parse fn _ -> {:ok, %{}} end
+      end
+
+      query do
+        field :map_default, :string do
+          arg :empty_map, :map, default_value: %{}
+          arg :filled_map, :map, default_value: %{"a" => 1, "b" => [true, nil], "c" => "x"}
+        end
+      end
+    end
+
+    test "can introspect default_value of a scalar serialized as a map" do
+      result =
+        """
+        {
+          __schema {
+            queryType {
+              fields {
+                args {
+                  name
+                  defaultValue
+                }
+              }
+            }
+          }
+        }
+        """
+        |> run(MapScalarDefaultSchema)
+
+      assert_result(
+        {:ok,
+         %{
+           data: %{
+             "__schema" => %{
+               "queryType" => %{
+                 "fields" => [
+                   %{
+                     "args" => [
+                       %{"name" => "emptyMap", "defaultValue" => "{}"},
+                       %{
+                         "name" => "filledMap",
+                         "defaultValue" => "{a: 1, b: [true, null], c: \"x\"}"
+                       }
+                     ]
+                   }
+                 ]
+               }
+             }
+           }
+         }},
+        result
+      )
+    end
+
     defmodule ImportFieldsIntoInputSchema do
       use Absinthe.Schema
 

@@ -399,9 +399,34 @@ defmodule Absinthe.Type.BuiltIns.Introspection do
         render_default_value(schema, adapter, type, value)
 
       %Absinthe.Type.Scalar{} = sc ->
-        inspect(Absinthe.Type.Scalar.serialize(sc, value))
+        sc
+        |> Absinthe.Type.Scalar.serialize(value)
+        |> render_serialized_value()
     end
   end
+
+  defp render_serialized_value(value) when is_map(value) and not is_struct(value) do
+    object_values =
+      value
+      |> Enum.sort_by(fn {key, _} -> to_string(key) end)
+      |> Enum.map(fn {key, val} -> "#{key}: #{render_serialized_value(val)}" end)
+      |> Enum.join(", ")
+
+    "{#{object_values}}"
+  end
+
+  defp render_serialized_value(value) when is_list(value) do
+    list_values =
+      value
+      |> Enum.map(&render_serialized_value/1)
+      |> Enum.join(", ")
+
+    "[#{list_values}]"
+  end
+
+  defp render_serialized_value(nil), do: "null"
+
+  defp render_serialized_value(value), do: inspect(value)
 
   defp filter_deprecated(values, show_deprecated) do
     Enum.filter(values, fn %{deprecation: is_deprecated} ->
