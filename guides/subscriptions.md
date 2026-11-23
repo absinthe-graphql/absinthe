@@ -266,3 +266,5 @@ Since we provided a `context_id`, Absinthe will only run two documents per publi
 
 1. Once for _user 1_ and _user 3_ because they have the same context ID (`"global"`) and sent the same document.
 2. Once for _user 2_. While _user 2_ has the same context ID (`"global"`), they provided a different document, so it cannot be de-duplicated with the other two.
+
+De-duplication also requires the same topic(s). Subscriptions that share a `context_id` and document but listen on different topics (for example, a per-user topic such as `topic: user.id`) are kept separate, so an event published to one subscriber's topic is never delivered to another's.

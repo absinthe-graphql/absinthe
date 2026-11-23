@@ -23,7 +23,7 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
 
     with {:ok, config} <- get_config(field, context, blueprint) do
       field_keys = get_field_keys(field, config)
-      subscription_id = get_subscription_id(config, blueprint, options)
+      subscription_id = get_subscription_id(config, field_keys, blueprint, options)
 
       Absinthe.Subscription.subscribe(pubsub, field_keys, subscription_id, blueprint)
 
@@ -138,16 +138,34 @@ defmodule Absinthe.Phase.Subscription.SubscribeSelf do
     end
   end
 
-  defp get_subscription_id(config, blueprint, options) do
-    context_id = get_context_id(config)
+  defp get_subscription_id(config, field_keys, blueprint, options) do
+    context_id = get_context_id(config, field_keys)
     document_id = get_document_id(config, blueprint, options)
 
     "__absinthe__:doc:#{context_id}:#{document_id}"
   end
 
-  defp get_context_id(config) do
-    context_id = config[:context_id] || :erlang.unique_integer()
-    to_string(context_id)
+  # Subscriptions that share a subscription id share a single execution and a
+  # single broadcast, so the id must only be shared by subscribers who are
+  # entitled to the same events. A `context_id` says the resolved data is the
+  # same for them, but subscribers listening on different topics must still be
+  # kept apart: otherwise an event published to one subscriber's topic is
+  # delivered to every subscriber with the same context and document. The
+  # topics are therefore part of the id whenever a `context_id` is given.
+  defp get_context_id(config, field_keys) do
+    case config[:context_id] do
+      nil -> to_string(:erlang.unique_integer())
+      context_id -> "#{context_id}:#{topics_id(field_keys)}"
+    end
+  end
+
+  defp topics_id(field_keys) do
+    field_keys
+    |> Enum.sort()
+    |> Enum.dedup()
+    |> :erlang.term_to_binary()
+    |> then(&:crypto.hash(:sha256, &1))
+    |> Base.encode16()
   end
 
   defp get_document_id(config, blueprint, options) do
