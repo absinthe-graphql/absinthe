@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.12.1](https://github.com/absinthe-graphql/absinthe/compare/v1.12.0...v1.12.1) (2026-11-23)
+
+
+### Bug Fixes
+
+* handle Unicode surrogate escapes in string values ([#1460](https://github.com/absinthe-graphql/absinthe/issues/1460)) ([74af95b](https://github.com/absinthe-graphql/absinthe/commit/74af95b7fd74f507ab005fce677cb7e46f77ee86))
+* keep subscriptions on different topics apart when they share a context_id ([#1472](https://github.com/absinthe-graphql/absinthe/issues/1472)) ([dd09906](https://github.com/absinthe-graphql/absinthe/commit/dd09906fa564af0b7b6b3cbc4f8d9144d524dc8d))
+* reject integers with no finite float representation ([#1457](https://github.com/absinthe-graphql/absinthe/issues/1457)) ([68486bc](https://github.com/absinthe-graphql/absinthe/commit/68486bc958ddac2d9a63525fab7855ae6670d840))
+* render map scalar default values as GraphQL literals in introspection ([#1471](https://github.com/absinthe-graphql/absinthe/issues/1471)) ([220106a](https://github.com/absinthe-graphql/absinthe/commit/220106a711203e276e542675f1892c4a650f8593)), closes [#1415](https://github.com/absinthe-graphql/absinthe/issues/1415)
+* widen Absinthe.Pipeline.run/2 error spec to the reason phases actually return ([#1468](https://github.com/absinthe-graphql/absinthe/issues/1468)) ([f766bee](https://github.com/absinthe-graphql/absinthe/commit/f766beee4061a3eb724a73ed62857e8d9d37b3dc)), closes [#1467](https://github.com/absinthe-graphql/absinthe/issues/1467)
+
 ## [1.12.0](https://github.com/absinthe-graphql/absinthe/compare/v1.11.0...v1.12.0) (2026-09-02)
 
 
