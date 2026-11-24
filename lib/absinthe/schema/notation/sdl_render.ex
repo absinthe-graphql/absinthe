@@ -70,7 +70,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       string(@adapter.to_external_name(input_value.name, :argument)),
       ": ",
       render(input_value.type, type_definitions),
-      default(input_value.default_value_blueprint),
+      default(input_value, type_definitions),
       directives(input_value.directives, type_definitions)
     ])
     |> description(input_value.description)
@@ -82,6 +82,7 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
       arguments(field.arguments, type_definitions),
       ": ",
       render(field.type, type_definitions),
+      default(field, type_definitions),
       directives(field.directives, type_definitions)
     ])
     |> description(field.description)
@@ -306,12 +307,77 @@ defmodule Absinthe.Schema.Notation.SDL.Render do
     )
   end
 
-  defp default(nil) do
+  defp default(%{default_value_blueprint: %{} = default_value}, _type_definitions) do
+    concat([" = ", render_value(default_value)])
+  end
+
+  defp default(%{default_value: nil}, _type_definitions) do
     empty()
   end
 
-  defp default(default_value) do
-    concat([" = ", render_value(default_value)])
+  defp default(%{default_value: default_value, type: type}, type_definitions) do
+    concat([" = ", render_value(default_value_input(default_value, type, type_definitions))])
+  end
+
+  # Default values defined with macros are Elixir terms, so they are converted to
+  # input values using the type they are defined for.
+  defp default_value_input(nil, _type, _type_definitions) do
+    %Blueprint.Input.Null{}
+  end
+
+  defp default_value_input(
+         value,
+         %Blueprint.TypeReference.NonNull{of_type: type},
+         type_definitions
+       ) do
+    default_value_input(value, type, type_definitions)
+  end
+
+  defp default_value_input(value, %Blueprint.TypeReference.List{of_type: type}, type_definitions) do
+    %Blueprint.Input.List{
+      items: value |> List.wrap() |> Enum.map(&default_value_input(&1, type, type_definitions))
+    }
+  end
+
+  defp default_value_input(value, %Blueprint.TypeReference.Identifier{id: id}, type_definitions) do
+    default_value_input(value, id, type_definitions)
+  end
+
+  defp default_value_input(value, identifier, type_definitions) when is_atom(identifier) do
+    case Enum.find(type_definitions, &(&1.identifier == identifier)) do
+      %Blueprint.Schema.EnumTypeDefinition{values: values} ->
+        %Blueprint.Input.Enum{value: enum_value_name(values, value), source_location: nil}
+
+      %Blueprint.Schema.InputObjectTypeDefinition{fields: fields} ->
+        %Blueprint.Input.Object{
+          fields:
+            for field <- fields, Map.has_key?(value, field.identifier) do
+              %Blueprint.Input.Field{
+                name: @adapter.to_external_name(field.name, :field),
+                input_value:
+                  default_value_input(
+                    Map.get(value, field.identifier),
+                    field.type,
+                    type_definitions
+                  )
+              }
+            end
+        }
+
+      %Blueprint.Schema.ScalarTypeDefinition{} = scalar ->
+        scalar
+        |> Absinthe.Type.function(:serialize)
+        |> apply([value])
+        |> Blueprint.Input.parse()
+    end
+  end
+
+  defp enum_value_name(values, value) do
+    Enum.find_value(List.flatten(values), fn
+      %Blueprint.Schema.EnumValueDefinition{value: ^value, name: name} -> name
+      ^value when is_atom(value) -> String.upcase(to_string(value))
+      _ -> nil
+    end)
   end
 
   defp description(docs, nil) do

@@ -281,7 +281,7 @@ defmodule Absinthe.Schema.SdlRenderTest do
              type RootQueryType {
                echo(
                  \"The number of times\"
-                 times: Int
+                 times: Int = 10
 
                  timeInterval: Int
                ): String
@@ -314,6 +314,67 @@ defmodule Absinthe.Schema.SdlRenderTest do
              }
 
              union SearchResult = Order | Category
+             """
+  end
+
+  defmodule MacroDefaultValueTestSchema do
+    use Absinthe.Schema
+
+    query do
+      field :search, :string do
+        arg :enabled, :boolean, default_value: true
+        arg :term, :string, default_value: "all"
+        arg :size, :size, default_value: "LG"
+      end
+
+      field :filtered, :string do
+        arg :sorts, list_of(:sort), default_value: [:asc]
+        arg :filter, :filter, default_value: %{max_results: 5, size: "SM"}
+      end
+    end
+
+    enum :size do
+      value :small, as: "SM"
+      value :large, as: "LG"
+    end
+
+    enum :sort do
+      value :asc
+      value :desc
+    end
+
+    input_object :filter do
+      field :max_results, non_null(:integer), default_value: 10
+      field :size, :size
+    end
+  end
+
+  test "Render SDL with default values defined with macros" do
+    assert Absinthe.Schema.to_sdl(MacroDefaultValueTestSchema) ==
+             """
+             schema {
+               query: RootQueryType
+             }
+
+             type RootQueryType {
+               search(enabled: Boolean = true, term: String = "all", size: Size = LARGE): String
+               filtered(sorts: [Sort] = [ASC], filter: Filter = {maxResults: 5, size: SMALL}): String
+             }
+
+             enum Size {
+               SMALL
+               LARGE
+             }
+
+             enum Sort {
+               ASC
+               DESC
+             }
+
+             input Filter {
+               maxResults: Int! = 10
+               size: Size
+             }
              """
   end
 
