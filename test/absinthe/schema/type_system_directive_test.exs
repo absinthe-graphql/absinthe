@@ -225,7 +225,7 @@ defmodule Absinthe.Schema.TypeSystemDirectiveTest do
   }
 
   input SearchFilter @feature(name: \":input_object\") {
-    query: String @feature(name: \":input_field_definition\")
+    query: String = \"default\" @feature(name: \":input_field_definition\")
   }
 
   union SearchResult @feature(name: \":union\") = Dog | Post
