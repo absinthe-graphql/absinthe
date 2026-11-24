@@ -38,6 +38,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Set up Elixir
+        id: beam
         uses: erlef/setup-beam@v1
         with:
           elixir-version: ${{ matrix.elixir }}
@@ -77,9 +78,9 @@ jobs:
         with:
           path: |
             priv/plts
-          key: "v2-${{ runner.os }}-\
-            erlang-${{ matrix.otp }}-\
-            elixir-${{ matrix.elixir }}-\
+          key: "v3-${{ runner.os }}-\
+            erlang-${{ steps.beam.outputs.otp-version }}-\
+            elixir-${{ steps.beam.outputs.elixir-version }}-\
             ${{ hashFiles('mix.lock') }}"
 
       - name: Run Dialyzer
