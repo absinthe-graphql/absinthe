@@ -84,6 +84,14 @@ defmodule Absinthe.Language.RenderTest do
       """)
     end
 
+    test "for strings containing slashes" do
+      assert_rendered("""
+      query {
+        field(url: "https://example.com/path")
+      }
+      """)
+    end
+
     test "for null values" do
       assert_rendered("""
       query {

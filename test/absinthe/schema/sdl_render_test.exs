@@ -183,6 +183,14 @@ defmodule Absinthe.Schema.SdlRenderTest do
       }
       """)
     end
+
+    test "for a string containing slashes" do
+      assert_rendered("""
+      schema @link(url: "https://specs.apollo.dev/federation/v2.0") {
+        query: Query
+      }
+      """)
+    end
   end
 
   defp assert_rendered(sdl) do
@@ -277,7 +285,7 @@ defmodule Absinthe.Schema.SdlRenderTest do
 
              directive @foo(baz: String) on FIELD
 
-             \"Escaped\\t\\\"descrição\\/description\\\"\"
+             \"Escaped\\t\\\"descrição/description\\\"\"
              type RootQueryType {
                echo(
                  \"The number of times\"

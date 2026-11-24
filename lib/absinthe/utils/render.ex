@@ -37,7 +37,7 @@ defmodule Absinthe.Utils.Render do
     end
   end
 
-  @escaped_chars [?", ?\\, ?/, ?\b, ?\f, ?\n, ?\r, ?\t]
+  @escaped_chars [?", ?\\, ?\b, ?\f, ?\n, ?\r, ?\t]
 
   defp escape_string(string) do
     escape_string(string, [])
@@ -57,7 +57,6 @@ defmodule Absinthe.Utils.Render do
 
   defp escape_char(?"), do: [?\\, ?"]
   defp escape_char(?\\), do: [?\\, ?\\]
-  defp escape_char(?/), do: [?\\, ?/]
   defp escape_char(?\b), do: [?\\, ?b]
   defp escape_char(?\f), do: [?\\, ?f]
   defp escape_char(?\n), do: [?\\, ?n]
