@@ -215,6 +215,27 @@ If you want to subscribe to mutations from within your application, you can do:
 MyAppWeb.Endpoint.subscribe(topic)
 ```
 
+### Checking for Subscribers
+
+To find out whether anyone is currently subscribed to a field and topic, for example to skip work that only matters when a client is watching, use `Absinthe.Subscription.subscribed?/3`:
+
+```elixir
+Absinthe.Subscription.subscribed?(MyAppWeb.Endpoint, :comment_added, "absinthe-graphql/absinthe")
+```
+
+This only inspects subscribers connected to the local node. In a cluster, use `Absinthe.Subscription.subscribed_anywhere?/4`, which also asks the other nodes:
+
+```elixir
+Absinthe.Subscription.subscribed_anywhere?(
+  MyAppWeb.Endpoint,
+  :comment_added,
+  "absinthe-graphql/absinthe",
+  timeout: 250
+)
+```
+
+The cluster check uses `:erpc` and so requires distributed Erlang. Nodes that fail, time out, or run a version of Absinthe without this function count as having no subscriber, and the result is best-effort because subscribers connect and disconnect continuously.
+
 ### De-duplicating Updates
 
 By default, Absinthe will resolve each outgoing publish once per individual subscription. This ensures:

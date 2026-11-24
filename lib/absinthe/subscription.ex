@@ -191,6 +191,80 @@ defmodule Absinthe.Subscription do
     :ok
   end
 
+  @typedoc """
+  Options for `subscribed_anywhere?/4`.
+
+    * `:nodes` - the nodes to ask, in addition to the local node (default: `Node.list()`)
+    * `:timeout` - the per-call cap in milliseconds (default: `500`)
+  """
+  @type subscribed_opt() :: {:nodes, [node()]} | {:timeout, timeout()}
+
+  @doc """
+  Whether this node has a subscriber for `field` under `topic`.
+
+  `field` is the subscription field identifier and `topic` is a topic returned by
+  the field's `config` function. Topics are converted with `to_string/1`, as they
+  are when subscribing and publishing. Only the local registry is consulted, so
+  subscribers connected to other nodes are not counted. See `subscribed_anywhere?/4`.
+
+  Returns `false` when the subscription registry for `pubsub` is not running.
+
+  ## Examples
+
+      Absinthe.Subscription.subscribed?(MyAppWeb.Endpoint, :comment_added, "absinthe-graphql/absinthe")
+      #=> true
+  """
+  @spec subscribed?(pubsub :: atom(), field :: atom(), topic :: String.Chars.t()) :: boolean()
+  def subscribed?(pubsub, field, topic) do
+    registry_name(pubsub)
+    |> Registry.lookup({field, to_string(topic)})
+    |> Kernel.!=([])
+  rescue
+    ArgumentError -> false
+  end
+
+  @doc """
+  Whether any connected node has a subscriber for `field` under `topic`.
+
+  The local node is checked first. The remaining nodes are asked with
+  `:erpc.multicall/5`, which requires distributed Erlang and the same `pubsub`
+  name on every node. A node that fails, times out, or runs a version of Absinthe
+  without `subscribed?/3` (as during a rolling upgrade) counts as having no
+  subscriber.
+
+  The answer is best-effort: a subscriber that has just disconnected may still be
+  reported, and one that has just connected may be missed.
+
+  ## Options
+
+    * `:nodes` - the nodes to ask, in addition to the local node (default: `Node.list()`)
+    * `:timeout` - the per-call cap in milliseconds (default: `500`)
+
+  ## Examples
+
+      Absinthe.Subscription.subscribed_anywhere?(
+        MyAppWeb.Endpoint,
+        :comment_added,
+        "absinthe-graphql/absinthe"
+      )
+      #=> true
+  """
+  @spec subscribed_anywhere?(
+          pubsub :: atom(),
+          field :: atom(),
+          topic :: String.Chars.t(),
+          [subscribed_opt()]
+        ) :: boolean()
+  def subscribed_anywhere?(pubsub, field, topic, opts \\ []) do
+    nodes = Keyword.get(opts, :nodes, Node.list())
+    timeout = Keyword.get(opts, :timeout, 500)
+
+    subscribed?(pubsub, field, topic) or
+      nodes
+      |> :erpc.multicall(__MODULE__, :subscribed?, [pubsub, field, topic], timeout)
+      |> Enum.any?(&match?({:ok, true}, &1))
+  end
+
   @doc false
   def get(pubsub, key) do
     name = registry_name(pubsub)
