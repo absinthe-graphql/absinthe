@@ -12,10 +12,17 @@ defmodule Absinthe.Schema.Notation.SDL do
   def parse(sdl, module, ref, opts) do
     with {:ok, doc} <- Absinthe.Phase.Parse.run(sdl) do
       definitions =
-        doc.input.definitions
-        |> Enum.map(&Absinthe.Blueprint.Draft.convert(&1, doc))
-        |> Enum.map(&put_ref(&1, ref, opts))
-        |> Enum.map(fn type -> %{type | module: module} end)
+        Enum.flat_map(doc.input.definitions, fn node ->
+          case Absinthe.Blueprint.Draft.convert(node, doc) do
+            # Comments are converted to `nil` values to be ignored
+            nil ->
+              []
+
+            converted ->
+              type = put_ref(converted, ref, opts)
+              [%{type | module: module}]
+          end
+        end)
 
       {:ok, definitions}
     else
